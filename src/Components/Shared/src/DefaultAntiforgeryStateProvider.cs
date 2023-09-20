@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -25,7 +26,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         {
             state.PersistAsJson(PersistenceKey, _currentToken);
             return Task.CompletedTask;
-        });
+        }, new InteractiveAutoRenderMode());
 
         state.TryTakeFromJson(PersistenceKey, out _currentToken);
     }

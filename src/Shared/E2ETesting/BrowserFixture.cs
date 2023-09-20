@@ -142,7 +142,7 @@ public class BrowserFixture : IAsyncLifetime
     {
         var opts = new ChromeOptions();
 
-        if (string.Equals(context, StreamingContext, StringComparison.Ordinal))
+        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true)
         {
             // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
             opts.PageLoadStrategy = PageLoadStrategy.None;

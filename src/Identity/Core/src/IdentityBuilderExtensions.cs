@@ -97,6 +97,7 @@ public static class IdentityBuilderExtensions
 
         builder.AddSignInManager();
         builder.AddDefaultTokenProviders();
+        builder.Services.TryAddTransient(typeof(IEmailSender<>), typeof(DefaultMessageEmailSender<>));
         builder.Services.TryAddTransient<IEmailSender, NoOpEmailSender>();
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, IdentityEndpointsJsonOptionsSetup>());
         return builder;

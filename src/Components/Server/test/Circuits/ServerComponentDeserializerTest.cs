@@ -394,6 +394,93 @@ public class ServerComponentDeserializerTest
         Assert.False(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(firstInvocationMarkers[0], out _));
     }
 
+    [Fact]
+    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenAddOperationIsMissingSelectorId()
+    {
+        // Arrange
+        var operation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Add,
+            SelectorId = 1,
+            Marker = new ComponentMarker()
+            {
+                Descriptor = "some random text",
+            },
+        };
+        var operationsJson = JsonSerializer.Serialize(
+            new[] { operation },
+            ServerComponentSerializationSettings.JsonSerializationOptions);
+        var deserializer = CreateServerComponentDeserializer();
+
+        // Act
+        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(parsed);
+    }
+
+    [Fact]
+    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenComponentIdIsMissing()
+    {
+        // Arrange
+        var operation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
+            {
+                ["Message"] = "Some other message",
+            }),
+        };
+        var operationsJson = JsonSerializer.Serialize(
+            new[] { operation },
+            ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        var deserializer = CreateServerComponentDeserializer();
+
+        // Act
+        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(parsed);
+    }
+
+    [Fact]
+    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenComponentIdIsRepeated()
+    {
+        // Arrange
+        var operation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            ComponentId = 1,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
+            {
+                ["Message"] = "Some other message",
+            }),
+        };
+
+        var other = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Remove,
+            ComponentId = 1,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
+        };
+
+        var operationsJson = JsonSerializer.Serialize(
+            new[] { operation, other },
+            ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        var deserializer = CreateServerComponentDeserializer();
+
+        // Act
+        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(parsed);
+    }
+
     private string SerializeComponent(string assembly, string type) =>
         JsonSerializer.Serialize(
             new ServerComponent(0, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
@@ -410,6 +497,18 @@ public class ServerComponentDeserializerTest
 
     private string SerializeMarkers(ComponentMarker[] markers) =>
         JsonSerializer.Serialize(markers, ServerComponentSerializationSettings.JsonSerializationOptions);
+
+    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
+    {
+        var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+        serializer.SerializeInvocation(
+            ref marker,
+            _invocationSequence,
+            type,
+            parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
+        return marker;
+    }
 
     private ComponentMarker[] CreateMarkers(params Type[] types)
     {
@@ -464,6 +563,12 @@ public class ServerComponentDeserializerTest
     {
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
 
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class DynamicallyAddedComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
     }
 }

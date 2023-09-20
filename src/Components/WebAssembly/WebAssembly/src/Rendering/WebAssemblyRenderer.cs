@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -23,7 +22,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// </summary>
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
-    private readonly RootComponentTypeCache _rootComponentCache = new();
     private readonly ILogger _logger;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
@@ -32,6 +30,28 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
+        DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(OperationDescriptor[] operations)
+    {
+        for (var i = 0; i < operations.Length; i++)
+        {
+            var (operation, componentType, parameters) = operations[i];
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    _ = AddComponentAsync(componentType!, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                    break;
+                case RootComponentOperationType.Update:
+                    _ = RenderRootComponentAsync(operation.ComponentId!.Value, parameters);
+                    break;
+                case RootComponentOperationType.Remove:
+                    RemoveRootComponent(operation.ComponentId!.Value);
+                    break;
+            }
+        }
     }
 
     public override Dispatcher Dispatcher => NullDispatcher.Instance;
@@ -51,89 +71,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             domElementSelector,
             componentId,
             RendererId);
-    }
-
-    [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    protected override void UpdateRootComponents(string operationsJson)
-    {
-        var operations = JsonSerializer.Deserialize<IEnumerable<RootComponentOperation>>(
-            operationsJson,
-            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
-
-        foreach (var operation in operations)
-        {
-            switch (operation.Type)
-            {
-                case RootComponentOperationType.Add:
-                    AddRootComponent(operation);
-                    break;
-                case RootComponentOperationType.Update:
-                    UpdateRootComponent(operation);
-                    break;
-                case RootComponentOperationType.Remove:
-                    RemoveRootComponent(operation);
-                    break;
-            }
-        }
-
-        return;
-
-        [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
-        void AddRootComponent(RootComponentOperation operation)
-        {
-            if (operation.SelectorId is not { } selectorId)
-            {
-                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
-            }
-
-            if (operation.Marker is not { } marker)
-            {
-                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
-            }
-
-            var componentType = _rootComponentCache.GetRootComponent(marker.Assembly!, marker.TypeName!)
-                ?? throw new InvalidOperationException($"Root component type '{marker.TypeName}' could not be found in the assembly '{marker.Assembly}'.");
-
-            var parameters = DeserializeComponentParameters(marker);
-            _ = AddComponentAsync(componentType, parameters, selectorId.ToString(CultureInfo.InvariantCulture));
-        }
-
-        void UpdateRootComponent(RootComponentOperation operation)
-        {
-            if (operation.ComponentId is not { } componentId)
-            {
-                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
-            }
-
-            if (operation.Marker is not { } marker)
-            {
-                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
-            }
-
-            var parameters = DeserializeComponentParameters(marker);
-            _ = RenderRootComponentAsync(componentId, parameters);
-        }
-
-        void RemoveRootComponent(RootComponentOperation operation)
-        {
-            if (operation.ComponentId is not { } componentId)
-            {
-                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
-            }
-
-            this.RemoveRootComponent(componentId);
-        }
-
-        static ParameterView DeserializeComponentParameters(ComponentMarker marker)
-        {
-            var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
-            var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
-            var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
-            var parameters = componentDeserializer.DeserializeParameters(definitions, values);
-
-            return parameters;
-        }
     }
 
     /// <inheritdoc />

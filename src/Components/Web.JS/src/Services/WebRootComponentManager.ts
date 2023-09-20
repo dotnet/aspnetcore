@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
-import { isRendererAttached, registerRendererAttachedListener, updateRootComponents } from '../Rendering/WebRendererInteropMethods';
+import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
-import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer } from '../Boot.Server.Common';
-import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, loadWebAssemblyPlatformIfNotStarted, startWebAssembly, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
+import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
+import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
 import { MonoConfig } from 'dotnet';
 import { RootComponentManager } from './RootComponentManager';
 import { Blazor } from '../GlobalExports';
@@ -109,6 +109,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
+
+    setWaitForRootComponents();
 
     const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
 
@@ -263,10 +265,22 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     for (const [rendererId, operations] of operationsByRendererId) {
       const operationsJson = JSON.stringify(operations);
-      updateRootComponents(rendererId, operationsJson);
+      if (rendererId === WebRendererId.Server) {
+        updateServerRootComponents(operationsJson);
+      } else {
+        this.updateWebAssemblyRootComponents(operationsJson);
+      }
     }
 
     this.circuitMayHaveNoRootComponents();
+  }
+
+  private updateWebAssemblyRootComponents(operationsJson: string) {
+    if (isFirstUpdate()) {
+      resolveInitialUpdate(operationsJson);
+    } else {
+      updateWebAssemblyRootComponents(operationsJson);
+    }
   }
 
   private resolveRendererIdForDescriptor(descriptor: ComponentDescriptor): WebRendererId | null {
@@ -345,6 +359,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       // updates.
     } else {
       this.unregisterComponent(component);
+      if (component.assignedRendererId !== undefined && component.interactiveComponentId !== undefined) {
+        const renderer = getRendererer(component.assignedRendererId);
+        renderer?.disposeComponent(component.interactiveComponentId);
+      }
 
       if (component.interactiveComponentId !== undefined) {
         // We have an interactive component for this marker, so we'll remove it.

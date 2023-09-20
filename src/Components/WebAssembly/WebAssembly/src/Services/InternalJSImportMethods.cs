@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -15,6 +17,29 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     public string GetPersistedState()
         => GetPersistedStateCore();
+
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    public static async Task<RootComponentMapping[]> GetInitialComponentUpdate()
+    {
+        var components = await InternalJSImportMethods.GetInitialUpdateCore();
+        var operations = DefaultWebAssemblyJSRuntime.DeserializeOperations(components);
+        var mappings = new RootComponentMapping[operations.Length];
+
+        for (var i = 0; i < operations.Length; i++)
+        {
+            var (operation, component, parameters) = operations[i];
+            if (operation.Type != RootComponentOperationType.Add)
+            {
+                throw new InvalidOperationException("All initial operations must be additions.");
+            }
+            mappings[i] = new RootComponentMapping(
+                component!,
+                operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture),
+                parameters);
+        }
+
+        return mappings;
+    }
 
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
@@ -51,6 +76,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport("Blazor._internal.getPersistedState", "blazor-internal")]
     private static partial string GetPersistedStateCore();
+
+    [JSImport("Blazor._internal.getInitialComponentsUpdate", "blazor-internal")]
+    private static partial Task<string> GetInitialUpdateCore();
 
     [JSImport("Blazor._internal.getApplicationEnvironment", "blazor-internal")]
     private static partial string GetApplicationEnvironmentCore();
