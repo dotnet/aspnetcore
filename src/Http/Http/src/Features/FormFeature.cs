@@ -20,6 +20,7 @@ public class FormFeature : IFormFeature
     private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
     private IFormCollection? _form;
+    private MediaTypeHeaderValue? _mediaTypeHeaderValue;
 
     /// <summary>
     /// Initializes a new instance of <see cref="FormFeature"/>.
@@ -70,8 +71,12 @@ public class FormFeature : IFormFeature
     {
         get
         {
-            _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
-            return mt;
+            if (_mediaTypeHeaderValue != null)
+            {
+                return _mediaTypeHeaderValue;
+            }
+            _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out _mediaTypeHeaderValue);
+            return _mediaTypeHeaderValue;
         }
     }
 
@@ -86,7 +91,7 @@ public class FormFeature : IFormFeature
                 return true;
             }
 
-            return HttpExtensions.HasApplicationFormContentType(_request.ContentType) || HttpExtensions.HasMultipartFormContentType(_request.ContentType);
+            return HttpExtensions.HasAnyFormContentType(_request.ContentType);
         }
     }
 

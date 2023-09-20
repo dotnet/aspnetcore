@@ -11,6 +11,9 @@ internal static class HttpExtensions
     internal static bool IsValidHttpMethodForForm(string method) =>
         HttpMethods.IsPost(method) || HttpMethods.IsPut(method) || HttpMethods.IsPatch(method);
 
+    internal static bool HasAnyFormContentType([NotNullWhen(true)] string? contentType)
+        => HasApplicationFormContentType(contentType) || HasMultipartFormContentType(contentType);
+
     internal static bool HasApplicationFormContentType([NotNullWhen(true)] string? contentType)
     {
         // Content-Type: application/x-www-form-urlencoded; charset=utf-8
