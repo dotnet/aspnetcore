@@ -33,12 +33,7 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
         _options = options.Value;
 
         AuthenticationStateChanged += OnAuthenticationStateChanged;
-        #if (UseServer && UseWebAssembly)
-        _subscription = state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveAuto);
-        }, RenderMode.InteractiveAuto);
-        #else
-        _subscription = state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveServer);
-        #endif
+        _subscription = state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveWebAssembly);
     }
 
     protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);

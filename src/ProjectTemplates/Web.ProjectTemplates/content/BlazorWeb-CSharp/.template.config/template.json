@@ -113,8 +113,10 @@
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Account/**",
             "BlazorWeb-CSharp/Components/Identity/**",
+            "BlazorWeb-CSharp/Components/Layout/ManageLayout.razor",
+            "BlazorWeb-CSharp/Components/Layout/ManageNavMenu.razor",
+            "BlazorWeb-CSharp/Components/Pages/Account/**",
             "BlazorWeb-CSharp/Data/**",
             "BlazorWeb-CSharp/Identity/**",
             "BlazorWeb-CSharp.Client/PersistentAuthenticationStateProvider.cs",
