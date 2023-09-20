@@ -11,7 +11,6 @@ public class PersistentAuthenticationStateProvider(PersistentComponentState pers
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        // REVIEW: Is TryTakeFromJson correctly annotated? "|| userInfo is null" should not be necessary.
         if (!persistentState.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) || userInfo is null)
         {
             return _unauthenticatedTask;

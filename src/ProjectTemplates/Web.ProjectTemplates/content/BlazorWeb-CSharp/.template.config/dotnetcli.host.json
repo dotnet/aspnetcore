@@ -56,6 +56,6 @@
     }
   },
   "usageExamples": [
-    "--use-wasm --auth Individual --use-local-db"
+    "-int auto --auth individual --use-local-db"
   ]
 }

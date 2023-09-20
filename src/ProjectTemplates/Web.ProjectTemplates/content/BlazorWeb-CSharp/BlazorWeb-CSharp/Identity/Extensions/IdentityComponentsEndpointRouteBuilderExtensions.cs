@@ -18,8 +18,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("IdentityUI");
         var accountGroup = endpoints.MapGroup("/Account");
 
         accountGroup.MapPost("/PerformExternalLogin", (
@@ -60,6 +58,9 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return Results.Challenge(properties, [provider]);
         });
 
+        var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
+        var downloadLogger = loggerFactory.CreateLogger("DownloadPersonalData");
+
         manageGroup.MapPost("/DownloadPersonalData", async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
@@ -72,7 +73,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             }
 
             var userId = await userManager.GetUserIdAsync(user);
-            logger.LogInformation("User with ID '{UserId}' asked for their personal data.", userId);
+            downloadLogger.LogInformation("User with ID '{UserId}' asked for their personal data.", userId);
 
             // Only include personal data for download
             var personalData = new Dictionary<string, string>();
