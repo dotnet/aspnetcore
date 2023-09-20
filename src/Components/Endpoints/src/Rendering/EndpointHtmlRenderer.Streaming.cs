@@ -212,7 +212,7 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
-        var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering && !_isHandlingErrors;
+        var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
 
         ComponentEndMarker? endMarkerOrNull = default;
 
@@ -248,7 +248,7 @@ internal partial class EndpointHtmlRenderer
             output.Write("-->");
         }
 
-        if (endMarkerOrNull is { } endMarker && !_isHandlingErrors)
+        if (endMarkerOrNull is { } endMarker)
         {
             var serializedEndRecord = JsonSerializer.Serialize(endMarker, ServerComponentSerializationSettings.JsonSerializationOptions);
             output.Write("<!--Blazor:");
