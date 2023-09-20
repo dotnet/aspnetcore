@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -82,13 +81,12 @@ public class FormFeature : IFormFeature
         get
         {
             // Set directly
-            if (Form != null)
+            if (_form != null)
             {
                 return true;
             }
 
-            var contentType = ContentType;
-            return HasApplicationFormContentType(contentType) || HasMultipartFormContentType(contentType);
+            return HttpExtensions.HasApplicationFormContentType(_request.ContentType) || HttpExtensions.HasMultipartFormContentType(_request.ContentType);
         }
     }
 
@@ -177,11 +175,11 @@ public class FormFeature : IFormFeature
         // Some of these code paths use StreamReader which does not support cancellation tokens.
         using (cancellationToken.Register((state) => ((HttpContext)state!).Abort(), _request.HttpContext))
         {
-            var contentType = ContentType;
+            var contentType = _request.ContentType;
             // Check the content-type
-            if (HasApplicationFormContentType(contentType))
+            if (HttpExtensions.HasApplicationFormContentType(contentType))
             {
-                var encoding = FilterEncoding(contentType.Encoding);
+                var encoding = FilterEncoding(ContentType!.Encoding);
                 var formReader = new FormPipeReader(_request.BodyReader, encoding)
                 {
                     ValueCountLimit = _options.ValueCountLimit,
@@ -190,12 +188,12 @@ public class FormFeature : IFormFeature
                 };
                 formFields = new FormCollection(await formReader.ReadFormAsync(cancellationToken));
             }
-            else if (HasMultipartFormContentType(contentType))
+            else if (HttpExtensions.HasMultipartFormContentType(contentType))
             {
                 var formAccumulator = new KeyValueAccumulator();
                 var sectionCount = 0;
 
-                var boundary = GetBoundary(contentType, _options.MultipartBoundaryLengthLimit);
+                var boundary = GetBoundary(ContentType!, _options.MultipartBoundaryLengthLimit);
                 var multipartReader = new MultipartReader(boundary, _request.Body)
                 {
                     HeadersCountLimit = _options.MultipartHeadersCountLimit,
@@ -310,18 +308,6 @@ public class FormFeature : IFormFeature
             return Encoding.UTF8;
         }
         return encoding;
-    }
-
-    private static bool HasApplicationFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
-    {
-        // Content-Type: application/x-www-form-urlencoded; charset=utf-8
-        return contentType != null && contentType.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool HasMultipartFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
-    {
-        // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
-        return contentType != null && contentType.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase);
     }
 
     private bool ResolveHasInvalidAntiforgeryValidationFeature()

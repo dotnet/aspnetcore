@@ -147,10 +147,7 @@ internal sealed class DefaultHttpRequest : HttpRequest
         set { Headers.ContentType = value; }
     }
 
-    public override bool HasFormContentType
-    {
-        get { return FormFeature.HasFormContentType; }
-    }
+    public override bool HasFormContentType => HttpExtensions.HasApplicationFormContentType(ContentType) || HttpExtensions.HasMultipartFormContentType(ContentType);
 
     public override IFormCollection Form
     {
