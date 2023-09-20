@@ -28,7 +28,7 @@
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    public string? RequestId { get; set; }
+    private string? RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
     protected override void OnInitialized() =>
