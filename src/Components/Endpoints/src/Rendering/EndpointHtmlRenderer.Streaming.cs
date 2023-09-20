@@ -127,6 +127,17 @@ internal partial class EndpointHtmlRenderer
                     continue;
                 }
 
+                // Of the components that updated, we want to emit the roots of all the streaming subtrees, and not
+                // any non-streaming ancestors. There's no point emitting non-streaming ancestor content since there
+                // are no markers in the document to receive it. Also we don't want to call WriteComponentHtml for
+                // nonstreaming ancestors, as that would make us skip over their descendants who may in fact be the
+                // roots of streaming subtrees.
+                var componentState = (EndpointComponentState)GetComponentState(componentId);
+                if (!componentState.StreamRendering)
+                {
+                    continue;
+                }
+
                 // This format relies on the component producing well-formed markup (i.e., it can't have a
                 // </template> at the top level without a preceding matching <template>). Alternatively we
                 // could look at using a custom TextWriter that does some extra encoding of all the content
