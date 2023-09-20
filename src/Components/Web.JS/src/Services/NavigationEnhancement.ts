@@ -44,6 +44,10 @@ export function isPageLoading() {
   return performingEnhancedPageLoad || document.readyState === 'loading';
 }
 
+export function hasNeverStartedAnyEnhancedPageLoad() {
+  return !currentEnhancedNavigationAbortController;
+}
+
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
   navigationEnhancementCallbacks = callbacks;
   document.addEventListener('click', onDocumentClick);

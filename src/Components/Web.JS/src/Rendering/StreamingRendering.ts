@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { SsrStartOptions } from '../Platform/SsrStartOptions';
-import { NavigationEnhancementCallbacks, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, hasNeverStartedAnyEnhancedPageLoad, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
 import { isWithinBaseUriSpace, toAbsoluteUri } from '../Services/NavigationUtils';
 import { synchronizeDomContent } from './DomMerging/DomSync';
 
@@ -36,7 +36,14 @@ class BlazorStreamingUpdate extends HTMLElement {
       if (node instanceof HTMLTemplateElement) {
         const componentId = node.getAttribute('blazor-component-id');
         if (componentId) {
-          insertStreamingContentIntoDocument(componentId, node.content);
+          // For enhanced nav page loads, we automatically cancel the response stream if another enhanced nav supersedes it. But there's
+          // no way to cancel the original page load. So, to avoid continuing to process <blazor-ssr> blocks from the original page load
+          // if an enhanced nav supersedes it, we must explicitly check whether this content is from the original page load, and if so,
+          // ignore it if any enhanced nav has started yet. Fixes https://github.com/dotnet/aspnetcore/issues/50733
+          const isFromEnhancedNav = node.getAttribute('enhanced-nav') === 'true';
+          if (isFromEnhancedNav || hasNeverStartedAnyEnhancedPageLoad()) {
+            insertStreamingContentIntoDocument(componentId, node.content);
+          }
         } else {
           switch (node.getAttribute('type')) {
             case 'redirection':
