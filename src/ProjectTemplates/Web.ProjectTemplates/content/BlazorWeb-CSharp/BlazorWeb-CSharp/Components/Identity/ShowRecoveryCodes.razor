@@ -1,10 +1,4 @@
-﻿@page "/Account/Manage/ShowRecoveryCodes"
-
-@inject NavigationManager NavigationManager
-
-<PageTitle>Recovery codes</PageTitle>
-
-<StatusMessage />
+﻿<StatusMessage Message="@StatusMessage" />
 <h3>Recovery codes</h3>
 <div class="alert alert-warning" role="alert">
     <p>
@@ -30,14 +24,9 @@
 </div>
 
 @code {
-    [SupplyParameterFromQuery]
+    [Parameter]
     public string[] RecoveryCodes { get; set; } = default!;
 
-    protected override void OnInitialized()
-    {
-        if (RecoveryCodes is not { Length: > 0 })
-        {
-            NavigationManager.RedirectTo("/Account/Manage/TwoFactorAuthentication");
-        }
-    }
+    [Parameter]
+    public string StatusMessage { get; set; } = default!;
 }
