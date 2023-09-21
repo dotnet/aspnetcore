@@ -1,7 +1,10 @@
 name: Backport PR to branch
 on:
-  issue_comment:
-    types: [created]
+  push:
+    branches:
+      preston-some-branch-that-doesn't-exist
+  #issue_comment:
+  #  types: [created]
 
 permissions:
   contents: write
