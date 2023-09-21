@@ -2101,6 +2101,9 @@ public static partial class RequestDelegateFactory
             ArrayPoolSharedReturnMethod,
             formBuffer,
             Expression.Constant(false));
+        var conditionalReturnBufferExpr = Expression.IfThen(
+            Expression.NotEqual(formBuffer, Expression.Constant(null)),
+            returnBufferExpr);
 
         var parameterTypeNameConstant = Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false));
         var parameterNameConstant = Expression.Constant(parameter.Name);
@@ -2133,7 +2136,6 @@ public static partial class RequestDelegateFactory
                     initializeReaderExpr,
                     setMaxRecursionDepthExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
-<<<<<<< HEAD
                 conditionalReturnBufferExpr,
                 Expression.Catch(formDataMappingException, Expression.Block(
                     typeof(void),
@@ -2146,10 +2148,6 @@ public static partial class RequestDelegateFactory
                         formDataMappingException,
                         Expression.Constant(factoryContext.ThrowOnBadRequest))
                 )))
-=======
-                returnBufferExpr),
-            formArgument
->>>>>>> parent of e231c61c3a (Re-run routing for implicit middlewares that require endpoints (#49732))
         );
 
         factoryContext.ParamCheckExpressions.Add(bindAndCheckForm);

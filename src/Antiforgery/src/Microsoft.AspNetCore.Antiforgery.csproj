@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)HttpMethodExtensions.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared"/>
   </ItemGroup>
 </Project>
