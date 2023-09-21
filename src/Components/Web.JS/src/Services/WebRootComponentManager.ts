@@ -302,12 +302,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
-    // Use whatever renderer already has components, preferring WebAssembly.
+    // If WebAssembly components already exist on the page, use WebAssembly.
     if (this.rendererHasComponents(WebRendererId.WebAssembly)) {
       return 'webassembly';
     }
 
-    if (this.rendererHasComponents(WebRendererId.Server)) {
+    // If a circuit is already in use, keep using it.
+    if (hasStartedServer() && isCircuitAvailable()) {
       return 'server';
     }
 
