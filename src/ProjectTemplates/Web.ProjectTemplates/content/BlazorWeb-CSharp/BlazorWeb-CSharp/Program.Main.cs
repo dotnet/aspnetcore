@@ -52,10 +52,11 @@ public class Program
         builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
         #else
         builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-
-        builder.Services.AddAuthorization();
         #endif
 
+        #if (!UseServer)
+        builder.Services.AddAuthorization();
+        #endif
         builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
             .AddIdentityCookies();
 
