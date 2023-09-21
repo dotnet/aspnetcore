@@ -19,7 +19,7 @@ public class Program
             .ConfigureLogging(loggingBuilder =>
             {
                 loggingBuilder.AddFilter((category, level) =>
-                    category.StartsWith("Microsoft.AspNetCore.Http2Cat", StringComparison.Ordinal) || level >= LogLevel.Debug);
+                    level >= LogLevel.Information || category.StartsWith("Microsoft.AspNetCore.Http2Cat", StringComparison.Ordinal));
                 loggingBuilder.AddConsole();
             })
             .UseHttp2Cat("https://localhost:5001", RunTestCase)
