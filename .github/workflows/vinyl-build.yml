@@ -8,15 +8,15 @@ jobs:
   vinyl-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dotnet
-        uses: actions/setup-dotnet@v3
-        with:
-          global-json-file: global.json
-
       - name: Check out repository code
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: global.json
 
       - name: Build AspNetCore
         run: ./pack.sh
