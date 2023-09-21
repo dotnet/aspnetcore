@@ -18,6 +18,8 @@ public class Program
         using var host = new HostBuilder()
             .ConfigureLogging(loggingBuilder =>
             {
+                loggingBuilder.AddFilter((category, level) =>
+                    category.StartsWith("Microsoft.AspNetCore.Http2Cat", StringComparison.Ordinal) || level >= LogLevel.Debug);
                 loggingBuilder.AddConsole();
             })
             .UseHttp2Cat("https://localhost:5001", RunTestCase)
@@ -28,7 +30,7 @@ public class Program
 
     internal static async Task RunTestCase(Http2Utilities h2Connection)
     {
-        await h2Connection.InitializeConnectionAsync();
+        await h2Connection.InitializeConnectionAsync(expectedSettingsCount: 4);
 
         h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
