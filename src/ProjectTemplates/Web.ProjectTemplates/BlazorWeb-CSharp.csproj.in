@@ -9,8 +9,14 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWeb-CSharp</RootNamespace>
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
   </PropertyGroup>
-  <!--#if (UseWebAssembly || IndividualLocalAuth) -->
 
+  <!--#if (IndividualLocalAuth && !UseLocalDB) -->
+  <ItemGroup>
+    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
+  <!--#endif -->
+  <!--#if (UseWebAssembly || IndividualLocalAuth) -->
   <ItemGroup>
     <ProjectReference Include="..\BlazorWeb-CSharp.Client\BlazorWeb-CSharp.Client.csproj" Condition="'$(UseWebAssembly)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="${MicrosoftAspNetCoreComponentsWebAssemblyServerVersion}" Condition="'$(UseWebAssembly)' == 'True'" />
@@ -20,6 +26,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerVersion}" Condition="'$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
   </ItemGroup>
-  <!--#endif -->
 
+  <!--#endif -->
 </Project>

@@ -1188,6 +1188,8 @@
         "{ProjectName}/Components/Identity/LogoutForm.razor",
         "{ProjectName}/Components/Identity/ShowRecoveryCodes.razor",
         "{ProjectName}/Components/Identity/StatusMessage.razor",
+        "{ProjectName}/Components/Layout/MainLayout.razor",
+        "{ProjectName}/Components/Layout/MainLayout.razor.css",
         "{ProjectName}/Components/Layout/ManageLayout.razor",
         "{ProjectName}/Components/Layout/ManageNavMenu.razor",
         "{ProjectName}/Components/Pages/Home.razor",
