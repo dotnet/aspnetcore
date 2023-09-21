@@ -37,7 +37,7 @@ type RootComponentInfo = {
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
   interactiveComponentId?: number;
-}
+};
 
 export class WebRootComponentManager implements DescriptorHandler, RootComponentManager<never> {
   private readonly _rootComponents = new Set<RootComponentInfo>();
@@ -193,7 +193,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private circuitMayHaveNoRootComponents() {
-    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server);
+    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto');
     if (isCircuitInUse) {
       // Clear the timeout because we know the circuit is in use.
       clearTimeout(this._circuitInactivityTimeoutId);
@@ -208,7 +208,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // Start a new timeout to dispose the circuit unless it starts getting used.
     this._circuitInactivityTimeoutId = setTimeout(() => {
-      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server)) {
+      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto')) {
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
@@ -220,7 +220,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return renderer !== undefined && renderer.getRootComponentCount() > 0;
   }
 
-  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId): boolean {
+  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
     if (this.rendererHasComponents(rendererId)) {
       return true;
     }
@@ -237,8 +237,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         continue;
       }
 
-      if ((rendererId === WebRendererId.Server && type === 'server') ||
-          (rendererId === WebRendererId.WebAssembly && type === 'webassembly')) {
+      if (descriptorTypesToConsider.indexOf(type) !== -1) {
         // The component has not been assigned a renderer yet, but it might get activated with the specified renderer
         // if it doesn't get removed from the page.
         return true;
@@ -307,12 +306,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
     // If WebAssembly components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly)) {
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, 'webassembly')) {
       return 'webassembly';
     }
 
     // If Server components exist or may exist soon, use WebAssembly.
-    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server)) {
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server')) {
       return 'server';
     }
 
