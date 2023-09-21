@@ -18,8 +18,6 @@ public class Program
         using var host = new HostBuilder()
             .ConfigureLogging(loggingBuilder =>
             {
-                loggingBuilder.AddFilter((category, level) =>
-                    level >= LogLevel.Information || category.StartsWith("Microsoft.AspNetCore.Http2Cat", StringComparison.Ordinal));
                 loggingBuilder.AddConsole();
             })
             .UseHttp2Cat("https://localhost:5001", RunTestCase)
@@ -30,6 +28,7 @@ public class Program
 
     internal static async Task RunTestCase(Http2Utilities h2Connection)
     {
+        // Kestrel sends a fourth setting, SETTINGS_ENABLE_CONNECT_PROTOCOL
         await h2Connection.InitializeConnectionAsync(expectedSettingsCount: 4);
 
         h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
