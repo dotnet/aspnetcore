@@ -38,6 +38,7 @@ builder.Services.AddRazorComponents()
 #if (IndividualLocalAuth)
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<UserAccessor>();
+builder.Services.AddScoped<IdentityRedirectManager>();
 #if (UseServer && UseWebAssembly)
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 #elif (UseServer)

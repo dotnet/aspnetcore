@@ -1,12 +1,13 @@
 ﻿@page "/Account/Manage/ResetAuthenticator"
 
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Identity
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserAccessor UserAccessor
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<ResetAuthenticator> Logger
 
 <PageTitle>Reset authenticator key</PageTitle>
@@ -47,8 +48,8 @@
 
         await SignInManager.RefreshSignInAsync(_user);
 
-        NavigationManager.RedirectTo(
+        RedirectManager.RedirectToWithStatus(
             "/Account/Manage/EnableAuthenticator",
-            new() { ["Message"] = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key." });
+            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.");
     }
 }

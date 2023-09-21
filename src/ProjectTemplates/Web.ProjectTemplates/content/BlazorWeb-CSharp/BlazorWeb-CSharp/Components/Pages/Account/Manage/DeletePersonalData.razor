@@ -3,11 +3,12 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserAccessor UserAccessor
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<DeletePersonalData> Logger
 
 <PageTitle>Delete Personal Data</PageTitle>
@@ -73,7 +74,7 @@
 
         Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
 
-        NavigationManager.RedirectToCurrentPage();
+        RedirectManager.RedirectToCurrentPage();
     }
 
     private sealed class InputModel

@@ -4,12 +4,13 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Identity;
 @using BlazorWeb_CSharp.Data;
+@using BlazorWeb_CSharp.Identity
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserAccessor UserAccessor;
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Profile</PageTitle>
 
@@ -61,13 +62,13 @@
             var setPhoneResult = await UserManager.SetPhoneNumberAsync(_user, Input.PhoneNumber);
             if (!setPhoneResult.Succeeded)
             {
-                NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Unexpected error when trying to set phone number." });
+                RedirectManager.RedirectToCurrentPageWithStatus("Unexpected error when trying to set phone number.");
                 return;
             }
         }
 
         await SignInManager.RefreshSignInAsync(_user);
-        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Your profile has been updated" });
+        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated");
     }
 
     private sealed class InputModel

@@ -7,11 +7,13 @@
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.AspNetCore.WebUtilities
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject UserAccessor UserAccessor
 @inject IEmailSender EmailSender
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Manage email</PageTitle>
 
@@ -88,11 +90,11 @@
                 "Confirm your email",
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-            NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Confirmation link to change email sent. Please check your email." });
+            RedirectManager.RedirectToCurrentPageWithStatus("Confirmation link to change email sent. Please check your email.");
             return;
         }
 
-        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Your email is unchanged." });
+        RedirectManager.RedirectToCurrentPageWithStatus("Your email is unchanged.");
     }
 
     private async Task OnSendEmailVerificationAsync()
@@ -108,7 +110,7 @@
             "Confirm your email",
             $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Verification email sent. Please check your email." });
+        RedirectManager.RedirectToCurrentPageWithStatus("Verification email sent. Please check your email.");
     }
 
     private sealed class InputModel

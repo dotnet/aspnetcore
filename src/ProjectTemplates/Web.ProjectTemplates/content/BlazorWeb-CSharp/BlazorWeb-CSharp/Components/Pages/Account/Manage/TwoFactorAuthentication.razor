@@ -1,13 +1,14 @@
 ﻿@page "/Account/Manage/TwoFactorAuthentication"
 
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Http.Features
 @using Microsoft.AspNetCore.Identity
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserAccessor UserAccessor
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Two-factor authentication (2FA)</PageTitle>
 
@@ -94,9 +95,7 @@ else
     {
         await SignInManager.ForgetTwoFactorClientAsync();
 
-        NavigationManager.RedirectToCurrentPage(new()
-            {
-                ["Message"] = "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.",
-            });
+        RedirectManager.RedirectToCurrentPageWithStatus(
+            "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.");
     }
 }

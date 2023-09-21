@@ -8,12 +8,14 @@
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.AspNetCore.WebUtilities
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
 @inject IEmailSender EmailSender
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<ExternalLogin> Logger
 
 @{
@@ -77,18 +79,14 @@
 
         if (RemoteError is not null)
         {
-            NavigationManager.RedirectTo(
-                "/Account/Login",
-                new() { ["Message"] = "Error from external provider: " + RemoteError });
+            RedirectManager.RedirectToWithStatus("/Account/Login", "Error from external provider: " + RemoteError);
             return;
         }
 
         var externalLoginInfo = await SignInManager.GetExternalLoginInfoAsync();
         if (externalLoginInfo is null)
         {
-            NavigationManager.RedirectTo(
-                "/Account/Login",
-                new() { ["Message"] = "Error loading external login information." });
+            RedirectManager.RedirectToWithStatus("/Account/Login", "Error loading external login information.");
             return;
         }
 
@@ -105,7 +103,7 @@
 
             // We should only reach this page via the login callback, so redirect back to
             // the login page if we get here some other way.
-            NavigationManager.RedirectTo("/Account/Login");
+            RedirectManager.RedirectTo("/Account/Login");
             return;
         }
     }
@@ -124,13 +122,13 @@
                 "{Name} logged in with {LoginProvider} provider.",
                 _externalLoginInfo.Principal.Identity?.Name,
                 _externalLoginInfo.LoginProvider);
-            NavigationManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo(ReturnUrl);
             return;
         }
 
         if (result.IsLockedOut)
         {
-            NavigationManager.RedirectTo("/Account/Lockout");
+            RedirectManager.RedirectTo("/Account/Lockout");
             return;
         }
 
@@ -169,12 +167,12 @@
                 // If account confirmation is required, we need to show the link if we don't have a real email sender
                 if (UserManager.Options.SignIn.RequireConfirmedAccount)
                 {
-                    NavigationManager.RedirectTo("/Account/RegisterConfirmation", new() { ["Email"] = Input.Email });
+                    RedirectManager.RedirectTo("/Account/RegisterConfirmation", new() { ["Email"] = Input.Email });
                     return;
                 }
 
                 await SignInManager.SignInAsync(user, isPersistent: false, _externalLoginInfo.LoginProvider);
-                NavigationManager.RedirectTo(ReturnUrl);
+                RedirectManager.RedirectTo(ReturnUrl);
                 return;
             }
         }

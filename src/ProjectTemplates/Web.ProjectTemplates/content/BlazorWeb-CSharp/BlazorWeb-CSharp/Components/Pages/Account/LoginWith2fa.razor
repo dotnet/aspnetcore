@@ -1,13 +1,13 @@
 ﻿@page "/Account/LoginWith2fa"
 
 @using System.ComponentModel.DataAnnotations
-@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWith2fa> Logger
 
 <PageTitle>Two-factor authentication</PageTitle>
@@ -42,7 +42,7 @@
 </div>
 <p>
     Don't have access to your authenticator device? You can
-    <a id="recovery-code-login" href="/Account/LoginWithRecoveryCode?ReturnUrl=@HtmlEncoder.Default.Encode(ReturnUrl ?? "/")">log in with a recovery code</a>.
+    <a id="recovery-code-login" href="/Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">log in with a recovery code</a>.
 </p>
 
 @code {
@@ -61,6 +61,7 @@
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
+        ReturnUrl ??= "/";
 
         var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
         if (user is null)
@@ -80,12 +81,12 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", _user.Id);
-            NavigationManager.RedirectTo(ReturnUrl ?? "/");
+            RedirectManager.RedirectTo(ReturnUrl ?? "/");
         }
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("User with ID '{UserId}' account locked out.", _user.Id);
-            NavigationManager.RedirectTo("/Account/Lockout");
+            RedirectManager.RedirectTo("/Account/Lockout");
         }
         else
         {

@@ -3,11 +3,12 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.AspNetCore.WebUtilities
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
@@ -15,6 +16,7 @@
 @inject ILogger<Register> Logger
 @inject IEmailSender EmailSender
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register</PageTitle>
 
@@ -134,14 +136,14 @@
 
             if (UserManager.Options.SignIn.RequireConfirmedAccount)
             {
-                NavigationManager.RedirectTo(
+                RedirectManager.RedirectTo(
                     "/Account/RegisterConfirmation",
                     new() { ["Email"] = Input.Email, ["ReturnUrl"] = ReturnUrl });
             }
             else
             {
                 await SignInManager.SignInAsync(user, isPersistent: false);
-                NavigationManager.RedirectTo(ReturnUrl);
+                RedirectManager.RedirectTo(ReturnUrl);
             }
         }
         else

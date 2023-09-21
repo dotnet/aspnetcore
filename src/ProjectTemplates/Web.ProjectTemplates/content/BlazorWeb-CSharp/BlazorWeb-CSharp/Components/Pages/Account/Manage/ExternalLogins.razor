@@ -2,14 +2,15 @@
 
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Mvc.ViewFeatures
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserAccessor UserAccessor
 @inject IUserStore<ApplicationUser> UserStore
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Manage your external logins</PageTitle>
 
@@ -118,12 +119,12 @@
         var result = await UserManager.RemoveLoginAsync(_user, LoginProvider!, ProviderKey!);
         if (!result.Succeeded)
         {
-            NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "The external login was not removed." });
+            RedirectManager.RedirectToCurrentPageWithStatus("The external login was not removed.");
             return;
         }
 
         await SignInManager.RefreshSignInAsync(_user);
-        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "The external login was removed." });
+        RedirectManager.RedirectToCurrentPageWithStatus("The external login was removed.");
     }
 
     private async Task OnGetLinkLoginCallbackAsync()
@@ -132,20 +133,20 @@
         var info = await SignInManager.GetExternalLoginInfoAsync(userId);
         if (info == null)
         {
-            NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Unexpected error occurred loading external login info." });
+            RedirectManager.RedirectToCurrentPageWithStatus("Unexpected error occurred loading external login info.");
             return;
         }
 
         var result = await UserManager.AddLoginAsync(_user, info);
         if (!result.Succeeded)
         {
-            NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "The external login was not added. External logins can only be associated with one account." });
+            RedirectManager.RedirectToCurrentPageWithStatus("The external login was not added. External logins can only be associated with one account.");
             return;
         }
 
         // Clear the existing external cookie to ensure a clean login process
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-        NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "The external login was added." });
+        RedirectManager.RedirectToCurrentPageWithStatus("The external login was added.");
     }
 }

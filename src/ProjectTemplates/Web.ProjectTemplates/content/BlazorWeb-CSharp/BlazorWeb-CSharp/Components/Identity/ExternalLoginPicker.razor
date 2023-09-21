@@ -2,9 +2,10 @@
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Components.Pages.Account
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 @if ((_externalLogins?.Count ?? 0) == 0)
 {

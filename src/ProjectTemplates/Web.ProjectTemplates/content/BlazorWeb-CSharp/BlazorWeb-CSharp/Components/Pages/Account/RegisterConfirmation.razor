@@ -1,14 +1,16 @@
 ﻿@page "/Account/RegisterConfirmation"
 
 @using System.Text
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.AspNetCore.WebUtilities
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender EmailSender
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register confirmation</PageTitle>
 
@@ -39,7 +41,7 @@ else
     {
         if (Email == null)
         {
-            NavigationManager.RedirectTo("/");
+            RedirectManager.RedirectTo("/");
         }
         else
         {

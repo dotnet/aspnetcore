@@ -2,14 +2,16 @@
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Log in</PageTitle>
 
@@ -110,18 +112,18 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
-            NavigationManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo(ReturnUrl);
         }
         if (result.RequiresTwoFactor)
         {
-            NavigationManager.RedirectTo(
+            RedirectManager.RedirectTo(
                 "/Account/LoginWith2fa",
                 new() { ["ReturnUrl"] = ReturnUrl, ["RememberMe"] = Input.RememberMe });
         }
         if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
-            NavigationManager.RedirectTo("/Account/Lockout");
+            RedirectManager.RedirectTo("/Account/Lockout");
         }
         else
         {

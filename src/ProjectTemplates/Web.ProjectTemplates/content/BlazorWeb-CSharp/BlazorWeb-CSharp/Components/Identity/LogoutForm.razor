@@ -1,8 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <form @onsubmit="OnSubmitAsync" @formname="logout" method="post" @attributes="AdditionalAttributes">
     <AntiforgeryToken />
@@ -26,7 +28,7 @@
         if (SignInManager.IsSignedIn(user))
         {
             await SignInManager.SignOutAsync();
-            NavigationManager.RedirectTo(ReturnUrl ?? "/");
+            RedirectManager.RedirectTo(ReturnUrl ?? "/");
         }
     }
 }

@@ -6,18 +6,19 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject UserAccessor UserAccessor
 @inject UrlEncoder UrlEncoder
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<EnableAuthenticator> Logger
 
 <PageTitle>Configure authenticator app</PageTitle>
 
 @if (_recoveryCodes is not null)
 {
-    <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_statusMessage" />
+    <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_message" />
 }
 else
 {
@@ -74,7 +75,7 @@ else
     private string? _authenticatorUri;
 
     private IEnumerable<string>? _recoveryCodes;
-    private string? _statusMessage;
+    private string? _message;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
@@ -99,7 +100,7 @@ else
         if (!is2faTokenValid)
         {
             await LoadSharedKeyAndQrCodeUriAsync(_user);
-            NavigationManager.RedirectToCurrentPage(new() { ["Message"] = "Error: Verification code is invalid." });
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Verification code is invalid.");
             return;
         }
 
@@ -107,7 +108,7 @@ else
         var userId = await UserManager.GetUserIdAsync(_user);
         Logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
 
-        _statusMessage = "Your authenticator app has been verified.";
+        _message = "Your authenticator app has been verified.";
 
         if (await UserManager.CountRecoveryCodesAsync(_user) == 0)
         {
@@ -115,9 +116,7 @@ else
         }
         else
         {
-            NavigationManager.RedirectTo(
-                "/Account/Manage/TwoFactorAuthentication",
-                new() { ["Message"] = _statusMessage });
+            RedirectManager.RedirectToWithStatus("/Account/Manage/TwoFactorAuthentication", _message);
         }
     }
 

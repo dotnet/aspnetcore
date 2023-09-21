@@ -2,17 +2,18 @@
 
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject UserAccessor UserAccessor
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<GenerateRecoveryCodes> Logger
 
 <PageTitle>Generate two-factor authentication (2FA) recovery codes</PageTitle>
 
 @if (_recoveryCodes is not null)
 {
-    <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_statusMessage" />
+    <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_message" />
 }
 else
 {
@@ -42,7 +43,7 @@ else
     private ApplicationUser _user = default!;
 
     private IEnumerable<string>? _recoveryCodes;
-    private string? _statusMessage;
+    private string? _message;
 
     protected override async Task OnInitializedAsync()
     {
@@ -59,7 +60,7 @@ else
     {
         var userId = await UserManager.GetUserIdAsync(_user);
         _recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10);
-        _statusMessage = "You have generated new recovery codes.";
+        _message = "You have generated new recovery codes.";
 
         Logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", userId);
     }

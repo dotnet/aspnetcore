@@ -1,12 +1,13 @@
 ﻿@page "/Account/ConfirmEmail"
 
 @using System.Text
-@using BlazorWeb_CSharp.Data
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email</PageTitle>
 
@@ -26,7 +27,7 @@
     {
         if (UserId == null || Code == null)
         {
-            NavigationManager.RedirectTo("/");
+            RedirectManager.RedirectTo("/");
         }
         else
         {

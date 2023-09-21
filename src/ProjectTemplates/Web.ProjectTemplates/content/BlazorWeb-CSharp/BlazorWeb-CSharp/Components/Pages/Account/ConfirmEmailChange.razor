@@ -4,11 +4,12 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserAccessor UserAccessor
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email change</PageTitle>
 
@@ -33,9 +34,8 @@
     {
         if (UserId is null || Email is null || Code is null)
         {
-            NavigationManager.RedirectTo(
-                "/Account/Login",
-                new() { ["Message"] = "Error: Invalid email change confirmation link." });
+            RedirectManager.RedirectToWithStatus(
+                "/Account/Login", "Error: Invalid email change confirmation link.");
             return;
         }
 

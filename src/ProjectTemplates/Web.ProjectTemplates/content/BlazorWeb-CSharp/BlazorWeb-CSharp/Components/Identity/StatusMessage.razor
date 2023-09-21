@@ -1,5 +1,12 @@
-﻿@{
-    var message = Message ?? MessageFromQuery;
+﻿@using BlazorWeb_CSharp.Identity
+
+@{
+    var message = Message ?? MessageFromCookie;
+
+    if (MessageFromCookie is not null)
+    {
+        HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+    }
 }
 
 @if (!string.IsNullOrEmpty(message))
@@ -15,6 +22,8 @@
     [Parameter]
     public string? Message { get; set; }
 
-    [SupplyParameterFromQuery(Name = "Message")]
-    public string? MessageFromQuery { get; set; }
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private string? MessageFromCookie => HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
 }

@@ -4,10 +4,11 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Mvc
 @using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
-@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWithRecoveryCode> Logger
 
 <PageTitle>Recovery code verification</PageTitle>
@@ -69,12 +70,12 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", _user.Id);
-            NavigationManager.RedirectTo(ReturnUrl ?? "/");
+            RedirectManager.RedirectTo(ReturnUrl ?? "/");
         }
         if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
-            NavigationManager.RedirectTo("/Account/Lockout");
+            RedirectManager.RedirectTo("/Account/Lockout");
         }
         else
         {
