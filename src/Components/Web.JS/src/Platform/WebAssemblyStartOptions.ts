@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { DotnetHostBuilder, AssetBehaviors } from 'dotnet';
+import { IBlazor } from '../GlobalExports';
 
 export interface WebAssemblyStartOptions {
   /**
@@ -27,6 +28,8 @@ export interface WebAssemblyStartOptions {
    */
   applicationCulture?: string;
 
+  initializers?: WebAssemblyInitializers;
+
   /**
    * Allows to override .NET runtime configuration.
    */
@@ -37,3 +40,11 @@ export interface WebAssemblyStartOptions {
 // Instead, this represents the public API through which certain aspects
 // of boot resource loading can be customized.
 export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'globalization' | 'manifest' | 'configuration';
+
+export type BeforeBlazorWebAssemblyStartedCallback = (options: Partial<WebAssemblyStartOptions>) => Promise<void>;
+export type AfterBlazorWebAssemblyStartedCallback = (blazor: IBlazor) => Promise<void>;
+
+export type WebAssemblyInitializers = {
+  beforeStart: BeforeBlazorWebAssemblyStartedCallback [],
+  afterStarted: AfterBlazorWebAssemblyStartedCallback [],
+}

@@ -103,6 +103,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitOpened){
+        handler.onCircuitOpened();
+      }
+    }
+
     return true;
   }
 
@@ -332,5 +338,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
 
     detachWebRendererInterop(WebRendererId.Server);
+
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitClosed) {
+        handler.onCircuitClosed();
+      }
+    }
   }
 }

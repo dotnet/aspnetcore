@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
     private readonly IServiceProvider _services;
+    private readonly RazorComponentsServiceOptions _options;
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
 
@@ -50,6 +52,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         : base(serviceProvider, loggerFactory)
     {
         _services = serviceProvider;
+        _options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
     }
 
     internal HttpContext? HttpContext => _httpContext;
