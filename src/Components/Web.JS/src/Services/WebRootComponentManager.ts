@@ -193,7 +193,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private circuitMayHaveNoRootComponents() {
-    const isCircuitInUse = this.hasAnyExistingOrPendingServerComponents();
+    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server);
     if (isCircuitInUse) {
       // Clear the timeout because we know the circuit is in use.
       clearTimeout(this._circuitInactivityTimeoutId);
@@ -208,7 +208,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // Start a new timeout to dispose the circuit unless it starts getting used.
     this._circuitInactivityTimeoutId = setTimeout(() => {
-      if (!this.hasAnyExistingOrPendingServerComponents()) {
+      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server)) {
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
@@ -220,23 +220,27 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return renderer !== undefined && renderer.getRootComponentCount() > 0;
   }
 
-  private hasAnyExistingOrPendingServerComponents(): boolean {
-    // If there are active Blazor Server components on the page, we shouldn't dispose the circuit.
-    if (this.rendererHasComponents(WebRendererId.Server)) {
+  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId): boolean {
+    if (this.rendererHasComponents(rendererId)) {
       return true;
     }
 
-    // If we have SSR components that may become Blazor Server components in the future,
-    // we shouldn't dispose the circuit.
+    // We consider SSR'd components on the page that may get activated using the specified renderer.
     for (const { descriptor: { type }, assignedRendererId } of this._rootComponents) {
-      if (assignedRendererId === WebRendererId.Server) {
-        // The component has been assigned to use Blazor Server.
+      if (assignedRendererId === rendererId) {
+        // The component has been assigned to use the specified renderer.
         return true;
       }
 
-      if (assignedRendererId === undefined && (type === 'auto' || type === 'server')) {
-        // The component has not been assigned a renderer yet, so it's possible it might
-        // use Blazor Server.
+      if (assignedRendererId !== undefined) {
+        // The component has been assigned to use another renderer.
+        continue;
+      }
+
+      if ((rendererId === WebRendererId.Server && type === 'server') ||
+          (rendererId === WebRendererId.WebAssembly && type === 'webassembly')) {
+        // The component has not been assigned a renderer yet, but it might get activated with the specified renderer
+        // if it doesn't get removed from the page.
         return true;
       }
     }
@@ -302,13 +306,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
-    // If WebAssembly components already exist on the page, use WebAssembly.
-    if (this.rendererHasComponents(WebRendererId.WebAssembly)) {
+    // If WebAssembly components exist or may exist soon, use WebAssembly.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly)) {
       return 'webassembly';
     }
 
-    // If a circuit is already in use, keep using it.
-    if (hasStartedServer() && isCircuitAvailable()) {
+    // If Server components exist or may exist soon, use WebAssembly.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server)) {
       return 'server';
     }
 
