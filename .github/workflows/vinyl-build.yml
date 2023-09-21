@@ -1,0 +1,31 @@
+name: Vinyl Maui Build
+run-name: ${{ github.actor }} is creating a vinyl maui build.
+on: 
+  push:
+    branches: jbrelease/*
+
+jobs:
+  vinyl-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: global.json
+
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build AspNetCore
+        run: ./pack.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: vinyl-maui-aspnetcore
+          path: |
+            "artifacts/packages/Release/*.nupkg"
+      
+      # Upload to github packages.
