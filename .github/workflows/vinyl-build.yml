@@ -21,12 +21,6 @@ jobs:
       - name: Build AspNetCore
         run: ./pack.sh
 
-      - name: PWD
-        run: pwd
-      
-      - name: LS
-        run: ls -al
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
