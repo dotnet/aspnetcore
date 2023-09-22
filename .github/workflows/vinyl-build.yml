@@ -33,3 +33,9 @@ jobs:
           name: vinyl-maui-aspnetcore
           path: |
             artifacts/packages/Release/Shipping/*.nupkg
+
+      - name: Add nuget source
+        run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/jitterbit/index.json"
+        
+      - name: Upload github nuget packages (skipping duplicates)
+        run: dotnet nuget push *.nupkg --source "github" --skip-duplicate
