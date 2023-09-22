@@ -20,7 +20,10 @@ jobs:
 
       #- name: Build AspNetCore
       #  run: ./pack.sh
-      
+
+      - name: Restore nuget packages.
+        run: dotnet restore
+
       - name: Build AspNetCore
         shell: pwsh
         run: ./pack.ps1
