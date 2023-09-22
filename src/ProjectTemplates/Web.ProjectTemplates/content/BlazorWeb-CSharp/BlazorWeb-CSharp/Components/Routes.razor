@@ -4,7 +4,11 @@
 <Router AppAssembly="@typeof(Program).Assembly">
 ##endif*@
     <Found Context="routeData">
+        @*#if (IndividualLocalAuth)
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        ##else
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        ##endif*@
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>
