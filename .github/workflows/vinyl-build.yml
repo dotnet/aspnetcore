@@ -18,15 +18,8 @@ jobs:
         with:
           global-json-file: global.json
 
-      #- name: Build AspNetCore
-      #  run: ./pack.sh
-
-      - name: Restore nuget packages.
-        run: dotnet restore
-
       - name: Build AspNetCore
-        shell: pwsh
-        run: ./pack.ps1
+        run: ./pack.sh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -35,4 +28,8 @@ jobs:
           path: |
             "artifacts/packages/Release/*.nupkg"
       
-      # Upload to github packages.
+      - name: Add nuget source
+        run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/jitterbit/index.json"
+    
+      - name: Upload to nuget packages
+        run: dotnet nuget push *.nupkg --source "github"
