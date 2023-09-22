@@ -726,7 +726,7 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     internal Task UpdateRootComponents(
-        (RootComponentOperation, ComponentDescriptor?)[] operations,
+        RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -735,6 +735,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
+            var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+            var (isNewInvocation, operations) = operationBatch;
             var shouldClearStore = false;
             Task[]? pendingTasks = null;
             try
@@ -763,7 +765,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     await OnCircuitOpenedAsync(cancellation);
                     await OnConnectionUpAsync(cancellation);
 
-                    for (var i = 0; i < operations.Length; i++)
+                    for (var i = 0; i < operations.Count; i++)
                     {
                         var operation = operations[i];
                         if (operation.Item1.Type != RootComponentOperationType.Add)
@@ -772,21 +774,22 @@ internal partial class CircuitHost : IAsyncDisposable
                         }
                     }
 
-                    pendingTasks = new Task[operations.Length];
+                    pendingTasks = new Task[operations.Count];
                 }
 
-                for (var i = 0; i < operations.Length;i++)
+                if (isNewInvocation)
+                {
+                    webRootComponentManager.NewInvocationHasStarted();
+                }
+
+                // Handle update and remove operations first. We handle add operations after
+                // verifying components from previous invocations have either been renewed via
+                // an update or removed entirely.
+                for (var i = 0; i < operations.Count; i++)
                 {
                     var (operation, descriptor) = operations[i];
                     switch (operation.Type)
                     {
-                        case RootComponentOperationType.Add:
-                            var task = Renderer.HandleRootComponentAddOperationAsync(descriptor.ComponentType, descriptor.Parameters, operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture));
-                            if (pendingTasks != null)
-                            {
-                                pendingTasks[i] = task;
-                            }
-                            break;
                         case RootComponentOperationType.Update:
                             var componentType = Renderer.GetExistingComponentType(operation.ComponentId.Value);
                             if (descriptor.ComponentType != componentType)
@@ -797,12 +800,42 @@ internal partial class CircuitHost : IAsyncDisposable
 
                             // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
                             var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
-                            _ = Renderer.HandleRootComponentRemoveOperationAsync(operation.ComponentId.Value, componentType, descriptor.Parameters, selectorId);
+                            _ = webRootComponentManager.UpdateRootComponentAsync(
+                                operation.ComponentId.Value,
+                                componentType,
+                                descriptor.Parameters,
+                                operation.Marker?.Key,
+                                selectorId);
 
                             break;
                         case RootComponentOperationType.Remove:
-                            Renderer.HandleRootComponentRemoveOperation(operation.ComponentId.Value);
+                            webRootComponentManager.RemoveRootComponent(operation.ComponentId.Value);
                             break;
+                    }
+                }
+
+                if (isNewInvocation)
+                {
+                    // Before adding new root components, verify that components from the previous invocation
+                    // have been removed or updated.
+                    webRootComponentManager.PreviousInvocationIsStale();
+                }
+
+                for (var i = 0; i < operations.Count; i++)
+                {
+                    var (operation, descriptor) = operations[i];
+                    if (operation.Type is RootComponentOperationType.Add)
+                    {
+                        var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
+                        var task = webRootComponentManager.AddRootComponentAsync(
+                            descriptor.ComponentType,
+                            descriptor.Parameters,
+                            operation.Marker?.Key,
+                            selectorId);
+                        if (pendingTasks != null)
+                        {
+                            pendingTasks[i] = task;
+                        }
                     }
                 }
 
