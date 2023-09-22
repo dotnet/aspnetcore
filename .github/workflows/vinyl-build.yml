@@ -28,8 +28,15 @@ jobs:
           path: |
             artifacts/packages/Release/Shipping/*.nupkg
 
-      - name: Add nuget source
-        run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/jitterbit/index.json"
+      # Something to do with uploading the nuget packages is failing sporadically.
+      # I *think* it's because the symbol file is uploaded either before or too quickly after 
+      # the main nuget package. If I run these steps manually after downloading the artifacts,
+      # I can just keep doing it until all packages get uploaded. So removing this step from
+      # the github workflow and making it manual for now. It's a pretty big decision to upload
+      # nuget packages anyhow since they can never be deleted.
+
+      #- name: Add nuget source
+      #  run: dotnet nuget add source --username USERNAME --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/jitterbit/index.json"
         
-      - name: Upload github nuget packages (skipping duplicates)
-        run: dotnet nuget push artifacts/packages/Release/Shipping/*.nupkg --source "github" --skip-duplicate
+      #- name: Upload github nuget packages (skipping duplicates)
+      #  run: dotnet nuget push artifacts/packages/Release/Shipping/*.nupkg --source "github" --skip-duplicate
