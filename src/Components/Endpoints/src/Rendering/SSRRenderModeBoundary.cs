@@ -193,7 +193,15 @@ internal class SSRRenderModeBoundary : IComponent
     private string GenerateMarkerKey(int sequence, object? key)
     {
         var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, ComputeComponentTypeNameHash);
-        return $"{componentTypeNameHash}:{sequence}:{(key as IFormattable)?.ToString(null, CultureInfo.InvariantCulture)}";
+        var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
+        var formattedComponentKey = (key as IFormattable)?.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty;
+
+        var boundaryMarkerKey = new BoundaryMarkerKey(
+            componentTypeNameHash.AsMemory(),
+            sequenceString.AsMemory(),
+            formattedComponentKey.AsMemory());
+
+        return boundaryMarkerKey.ToString();
     }
 
     private static string ComputeComponentTypeNameHash(Type componentType)

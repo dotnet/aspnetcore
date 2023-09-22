@@ -11,6 +11,8 @@ internal sealed class ComponentDescriptor
 
     public int Sequence { get; set; }
 
+    public string? Key { get; set; }
+
     public Guid InvocationId { get; set; }
 
     public void Deconstruct(out Type componentType, out ParameterView parameters, out int sequence) =>

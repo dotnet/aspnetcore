@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -18,14 +20,15 @@ internal sealed class ServerComponentSerializer
 
     public void SerializeInvocation(ref ComponentMarker marker, ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters)
     {
-        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters);
+        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, marker.Key!);
         marker.WriteServerData(sequence, serverComponent);
     }
 
     private (int sequence, string payload) CreateSerializedServerComponent(
         ServerComponentInvocationSequence invocationId,
         Type rootComponent,
-        ParameterView parameters)
+        ParameterView parameters,
+        string key)
     {
         var sequence = invocationId.Next();
 
@@ -33,6 +36,7 @@ internal sealed class ServerComponentSerializer
 
         var serverComponent = new ServerComponent(
             sequence,
+            key,
             rootComponent.Assembly.GetName().Name ?? throw new InvalidOperationException("Cannot prerender components from assemblies with a null name"),
             rootComponent.FullName ?? throw new InvalidOperationException("Cannot prerender component types with a null name"),
             definitions,

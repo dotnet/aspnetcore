@@ -724,9 +724,8 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.CircuitTransmitErrorFailed(_logger, CircuitId, ex);
         }
     }
-
     internal Task UpdateRootComponents(
-        RootComponentOperationBatch operationBatch,
+        (RootComponentOperation, ComponentDescriptor?)[] operations,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -736,7 +735,6 @@ internal partial class CircuitHost : IAsyncDisposable
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
             var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
-            var (isNewInvocation, operations) = operationBatch;
             var shouldClearStore = false;
             Task[]? pendingTasks = null;
             try
@@ -765,7 +763,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     await OnCircuitOpenedAsync(cancellation);
                     await OnConnectionUpAsync(cancellation);
 
-                    for (var i = 0; i < operations.Count; i++)
+                    for (var i = 0; i < operations.Length; i++)
                     {
                         var operation = operations[i];
                         if (operation.Item1.Type != RootComponentOperationType.Add)
@@ -774,68 +772,53 @@ internal partial class CircuitHost : IAsyncDisposable
                         }
                     }
 
-                    pendingTasks = new Task[operations.Count];
-                }
-
-                if (isNewInvocation)
-                {
-                    webRootComponentManager.NewInvocationHasStarted();
+                    pendingTasks = new Task[operations.Length];
                 }
 
                 // Handle update and remove operations first. We handle add operations after
                 // verifying components from previous invocations have either been renewed via
                 // an update or removed entirely.
-                for (var i = 0; i < operations.Count; i++)
+                for (var i = 0; i < operations.Length; i++)
                 {
                     var (operation, descriptor) = operations[i];
                     switch (operation.Type)
                     {
-                        case RootComponentOperationType.Update:
-                            var componentType = Renderer.GetExistingComponentType(operation.ComponentId.Value);
-                            if (descriptor.ComponentType != componentType)
+                        case RootComponentOperationType.Add:
                             {
-                                Log.InvalidComponentTypeForUpdate(_logger, message: "Component type mismatch.");
-                                throw new InvalidOperationException($"Incorrect type for descriptor '{descriptor.ComponentType.FullName}'");
+                                var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
+                                var task = webRootComponentManager.AddRootComponentAsync(
+                                    descriptor.ComponentType,
+                                    descriptor.Parameters,
+                                    descriptor.Key,
+                                    selectorId);
+                                if (pendingTasks != null)
+                                {
+                                    pendingTasks[i] = task;
+                                }
                             }
+                            break;
+                        case RootComponentOperationType.Update:
+                            {
+                                var componentType = Renderer.GetExistingComponentType(operation.ComponentId.Value);
+                                if (descriptor.ComponentType != componentType)
+                                {
+                                    Log.InvalidComponentTypeForUpdate(_logger, message: "Component type mismatch.");
+                                    throw new InvalidOperationException($"Incorrect type for descriptor '{descriptor.ComponentType.FullName}'");
+                                }
 
-                            // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                            var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
-                            _ = webRootComponentManager.UpdateRootComponentAsync(
-                                operation.ComponentId.Value,
-                                componentType,
-                                descriptor.Parameters,
-                                operation.Marker?.Key,
-                                selectorId);
-
+                                // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                                var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
+                                _ = webRootComponentManager.UpdateRootComponentAsync(
+                                    operation.ComponentId.Value,
+                                    componentType,
+                                    descriptor.Parameters,
+                                    descriptor.Key,
+                                    selectorId);
+                            }
                             break;
                         case RootComponentOperationType.Remove:
                             webRootComponentManager.RemoveRootComponent(operation.ComponentId.Value);
                             break;
-                    }
-                }
-
-                if (isNewInvocation)
-                {
-                    // Before adding new root components, verify that components from the previous invocation
-                    // have been removed or updated.
-                    webRootComponentManager.PreviousInvocationIsStale();
-                }
-
-                for (var i = 0; i < operations.Count; i++)
-                {
-                    var (operation, descriptor) = operations[i];
-                    if (operation.Type is RootComponentOperationType.Add)
-                    {
-                        var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
-                        var task = webRootComponentManager.AddRootComponentAsync(
-                            descriptor.ComponentType,
-                            descriptor.Parameters,
-                            operation.Marker?.Key,
-                            selectorId);
-                        if (pendingTasks != null)
-                        {
-                            pendingTasks[i] = task;
-                        }
                     }
                 }
 
