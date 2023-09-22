@@ -1,0 +1,67 @@
+﻿@page "/Account/RegisterConfirmation"
+
+@using System.Text
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity.UI.Services
+@using Microsoft.AspNetCore.WebUtilities
+@using BlazorWeb_CSharp.Data
+@using BlazorWeb_CSharp.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IEmailSender EmailSender
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Register confirmation</PageTitle>
+
+<h1>Register confirmation</h1>
+
+<StatusMessage Message="@statusMessage" />
+
+@if (emailConfirmationLink is not null)
+{
+    <p>
+        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these docs</a> for how to configure a real email sender.
+        Normally this would be emailed: <a id="confirm-link" href="@emailConfirmationLink">Click here to confirm your account</a>
+    </p>
+}
+else
+{
+    <p>Please check your email to confirm your account.</p>
+}
+
+@code {
+    string? emailConfirmationLink;
+    string? statusMessage;
+
+    [SupplyParameterFromQuery] public string? Email { get; set; }
+    [SupplyParameterFromQuery] public string ReturnUrl { get; set; } = "/";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Email == null)
+        {
+            RedirectManager.RedirectTo("/");
+        }
+        else
+        {
+
+            var user = await UserManager.FindByEmailAsync(Email);
+            if (user == null)
+            {
+                // Need a way to trigger a 404 from Blazor: https://github.com/dotnet/aspnetcore/issues/45654
+                statusMessage = $"Error finding user for unspecified email";
+            }
+            else if (EmailSender is NoOpEmailSender)
+            {
+                // Once you add a real email sender, you should remove this code that lets you confirm the account
+                var userId = await UserManager.GetUserIdAsync(user);
+                var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
+                    NavigationManager.ToAbsoluteUri("/Account/ConfirmEmail").AbsoluteUri,
+                    new Dictionary<string, object?> { { "userId", userId }, { "code", code }, { "returnUrl", ReturnUrl } });
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using BlazorWeb_CSharp.Data;
+
+@inject SignInManager<ApplicationUser> SignInManager;
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+        <NavLink id="profile" class="nav-link" href="/Account/Manage" Match="NavLinkMatch.All">Profile</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink id="manage-email" class="nav-link" href="/Account/Manage/Email">Email</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink id="change-password" class="nav-link" href="/Account/Manage/ChangePassword">Password</NavLink>
+    </li>
+    @if (_hasExternalLogins)
+    {
+        <li id="external-logins" class="nav-item">
+            <NavLink id="external-login" class="nav-link" href="/Account/Manage/ExternalLogins">External logins</NavLink>
+        </li>
+    }
+    <li class="nav-item">
+        <NavLink id="two-factor" class="nav-link" href="/Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink id="personal-data" class="nav-link" href="/Account/Manage/PersonalData">Personal data</NavLink>
+    </li>
+</ul>
+
+@code {
+    private bool _hasExternalLogins;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    }
+}
