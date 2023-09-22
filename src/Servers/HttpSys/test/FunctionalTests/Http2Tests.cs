@@ -37,7 +37,7 @@ public class Http2Tests : LoggedTest
             Assert.False(httpContext.Request.CanHaveBody());
             // Default 200
             return Task.CompletedTask;
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -70,7 +70,7 @@ public class Http2Tests : LoggedTest
         using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
         {
             throw new NotImplementedException();
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -120,7 +120,7 @@ public class Http2Tests : LoggedTest
             Assert.Null(httpContext.Request.ContentLength);
             Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
             return Task.CompletedTask;
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -170,7 +170,7 @@ public class Http2Tests : LoggedTest
             Assert.Equal(11, httpContext.Request.ContentLength);
             Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
             return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -235,7 +235,7 @@ public class Http2Tests : LoggedTest
             // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
             Assert.Equal("chunked", httpContext.Request.Headers.TransferEncoding);
             return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -287,7 +287,7 @@ public class Http2Tests : LoggedTest
         using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
         {
             return httpContext.Response.WriteAsync("Hello World");
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -323,7 +323,7 @@ public class Http2Tests : LoggedTest
         {
             httpContext.Response.Headers.Connection = "close";
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -367,7 +367,7 @@ public class Http2Tests : LoggedTest
         {
             httpContext.Response.Headers.Connection = "close";
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -406,7 +406,7 @@ public class Http2Tests : LoggedTest
         {
             httpContext.Connection.RequestClose();
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -445,7 +445,7 @@ public class Http2Tests : LoggedTest
         {
             httpContext.Response.Headers.Connection = "close";
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -518,7 +518,7 @@ public class Http2Tests : LoggedTest
         using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
         {
             throw new Exception("Application exception");
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -551,7 +551,7 @@ public class Http2Tests : LoggedTest
         {
             await httpContext.Response.Body.FlushAsync();
             throw new Exception("Application exception");
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -583,7 +583,7 @@ public class Http2Tests : LoggedTest
         {
             await httpContext.Response.Body.FlushAsync();
             throw new Exception("Application exception");
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -637,7 +637,7 @@ public class Http2Tests : LoggedTest
             var feature = httpContext.Features.Get<IHttpResetFeature>();
             Assert.Null(feature);
             return httpContext.Response.WriteAsync("Hello World");
-        });
+        }, LoggerFactory);
 
         var handler = new HttpClientHandler();
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -709,7 +709,7 @@ public class Http2Tests : LoggedTest
             {
                 appResult.SetException(ex);
             }
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -756,7 +756,7 @@ public class Http2Tests : LoggedTest
             {
                 appResult.SetException(ex);
             }
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -808,7 +808,7 @@ public class Http2Tests : LoggedTest
             {
                 appResult.SetException(ex);
             }
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -862,7 +862,7 @@ public class Http2Tests : LoggedTest
             {
                 appResult.SetException(ex);
             }
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -910,7 +910,7 @@ public class Http2Tests : LoggedTest
             {
                 appResult.SetException(ex);
             }
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
@@ -960,7 +960,7 @@ public class Http2Tests : LoggedTest
             {
                 appResult.SetException(ex);
             }
-        });
+        }, LoggerFactory);
 
         await new HostBuilder()
             .UseHttp2Cat(address, async h2Connection =>
