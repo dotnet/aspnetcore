@@ -33,6 +33,7 @@ Microsoft.AspNetCore.Http.Results.csproj
 Microsoft.AspNetCore.HttpOverrides.csproj
 Microsoft.AspNetCore.Localization.csproj
 Microsoft.AspNetCore.Metadata.csproj
+Microsoft.AspNetCore.Mvc.Abstractions.csproj
 Microsoft.AspNetCore.Mvc.ApiExplorer.csproj
 Microsoft.AspNetCore.Mvc.Core.csproj
 Microsoft.AspNetCore.Mvc.Cors.csproj
