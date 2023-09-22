@@ -18,8 +18,12 @@ jobs:
         with:
           global-json-file: global.json
 
+      #- name: Build AspNetCore
+      #  run: ./pack.sh
+      
       - name: Build AspNetCore
-        run: ./pack.sh
+        shell: pwsh
+        run: ./pack.ps1
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
