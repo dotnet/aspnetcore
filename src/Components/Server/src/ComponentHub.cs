@@ -170,7 +170,7 @@ internal sealed partial class ComponentHub : Hub
 
         if (!_serverComponentSerializer.TryDeserializeRootComponentOperations(
             serializedComponentOperations,
-            out var operationBatch))
+            out var operations))
         {
             // There was an error, so kill the circuit.
             await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
@@ -184,7 +184,7 @@ internal sealed partial class ComponentHub : Hub
             new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
             new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
 
-        _ = circuitHost.UpdateRootComponents(operationBatch, store, _serverComponentSerializer, Context.ConnectionAborted);
+        _ = circuitHost.UpdateRootComponents(operations, store, _serverComponentSerializer, Context.ConnectionAborted);
     }
 
     public async ValueTask<bool> ConnectCircuit(string circuitIdSecret)

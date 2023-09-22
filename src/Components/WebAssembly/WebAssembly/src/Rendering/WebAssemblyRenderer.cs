@@ -36,19 +36,29 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
     private void OnUpdateRootComponents(OperationDescriptor[] operations)
     {
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
         for (var i = 0; i < operations.Length; i++)
         {
             var (operation, componentType, parameters) = operations[i];
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    _ = HandleRootComponentAddOperationAsync(componentType!, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        componentType!,
+                        parameters,
+                        operation.Marker!.Value.Key!,
+                        operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
                     break;
                 case RootComponentOperationType.Update:
-                    _ = HandleRootComponentUpdateOperationAsync(operation.ComponentId!.Value, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.ComponentId!.Value,
+                        componentType!,
+                        parameters,
+                        operation.Marker!.Value.Key!,
+                        operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
                     break;
                 case RootComponentOperationType.Remove:
-                    HandleRootComponentRemoveOperation(operation.ComponentId!.Value);
+                    webRootComponentManager.RemoveRootComponent(operation.ComponentId!.Value);
                     break;
             }
         }

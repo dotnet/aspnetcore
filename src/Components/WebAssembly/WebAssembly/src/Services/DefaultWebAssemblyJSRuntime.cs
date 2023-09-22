@@ -106,7 +106,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    [SuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "Types in that cache are components from the user assembly which are never trimmed.")]
     internal static OperationDescriptor[] DeserializeOperations(string operationsJson)
     {
         var deserialized = JsonSerializer.Deserialize<RootComponentOperation[]>(
@@ -138,6 +137,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
                 throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
             }
 
+            Type? componentType = null;
             if (operation.Type == RootComponentOperationType.Add ||
                 operation.Type == RootComponentOperationType.Update)
             {
@@ -145,11 +145,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
                 {
                     throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
                 }
-            }
 
-            Type? componentType = null;
-            if (operation.Type == RootComponentOperationType.Add)
-            {
                 componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
             }

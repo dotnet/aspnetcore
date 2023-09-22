@@ -483,7 +483,7 @@ public class ServerComponentDeserializerTest
 
     private string SerializeComponent(string assembly, string type) =>
         JsonSerializer.Serialize(
-            new ServerComponent(0, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
+            new ServerComponent(0, null, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
     private ServerComponentDeserializer CreateServerComponentDeserializer()

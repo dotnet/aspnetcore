@@ -438,7 +438,7 @@ public class CircuitHostTest
 
         // Act
         await circuitHost.UpdateRootComponents(
-            new(false, [(operation, descriptor)]), null, CreateDeserializer(), CancellationToken.None);
+            [(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -478,7 +478,7 @@ public class CircuitHostTest
         };
 
         // Act
-        await circuitHost.UpdateRootComponents(new(false, [(operation, descriptor)]), null, CreateDeserializer(), CancellationToken.None);
+        await circuitHost.UpdateRootComponents([(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -528,7 +528,7 @@ public class CircuitHostTest
             handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
             handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
             () => circuitHost.UpdateRootComponents(
-                new(false, [(operation, descriptor)]), null, CreateDeserializer(), CancellationToken.None));
+                [(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None));
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -561,7 +561,7 @@ public class CircuitHostTest
         };
 
         // Act
-        await circuitHost.UpdateRootComponents(new(false, [(operation, null)]), null, CreateDeserializer(), CancellationToken.None);
+        await circuitHost.UpdateRootComponents([(operation, null)], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         Assert.Throws<ArgumentException>(() =>
@@ -586,7 +586,7 @@ public class CircuitHostTest
 
         // Add component
         await circuitHost.UpdateRootComponents(
-            new(false, [(addOperation, addDescriptor)]), null, CreateDeserializer(), CancellationToken.None);
+            [(addOperation, addDescriptor)], null, CreateDeserializer(), CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -789,7 +789,7 @@ public class CircuitHostTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationBatch)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out (RootComponentOperation, ComponentDescriptor)[] operationBatch)
         {
             operationBatch = default;
             return true;

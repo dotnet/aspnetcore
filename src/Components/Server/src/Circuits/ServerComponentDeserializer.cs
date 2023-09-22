@@ -266,24 +266,24 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             ComponentType = componentType,
             Parameters = parameters,
             Sequence = serverComponent.Sequence,
+            Key = serverComponent.Key,
             InvocationId = serverComponent.InvocationId,
         };
 
         return (componentDescriptor, serverComponent);
     }
 
-    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out RootComponentOperationBatch? operationBatch)
+    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out (RootComponentOperation, ComponentDescriptor?)[]? operations)
     {
         int[]? seenComponentIdsStorage = null;
         Guid? seenInvocationId = null;
-        var previousInvocationId = _currentInvocationId;
         try
         {
             var result = JsonSerializer.Deserialize<RootComponentOperation[]>(
                 serializedComponentOperations,
                 ServerComponentSerializationSettings.JsonSerializationOptions);
 
-            var operations = new (RootComponentOperation, ComponentDescriptor?)[result.Length];
+            operations = new (RootComponentOperation, ComponentDescriptor?)[result.Length];
 
             Span<int> seenComponentIds = result.Length <= 128
                 ? stackalloc int[result.Length]
@@ -298,7 +298,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                     if (operation.ComponentId == null)
                     {
                         Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing component ID.");
-                        operationBatch = null;
+                        operations = null;
                         return false;
                     }
 
@@ -306,7 +306,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                         .Contains(operation.ComponentId.Value))
                     {
                         Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
-                        operationBatch = null;
+                        operations = null;
                         return false;
                     }
 
@@ -325,7 +325,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                     if (operation.SelectorId is not { } selectorId)
                     {
                         Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing selector ID.");
-                        operationBatch = null;
+                        operations = null;
                         return false;
                     }
                 }
@@ -333,13 +333,13 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                 if (operation.Marker == null)
                 {
                     Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
-                    operationBatch = null;
+                    operations = null;
                     return false;
                 }
 
                 if (!TryDeserializeSingleComponentDescriptor(operation.Marker.Value, out var descriptor))
                 {
-                    operationBatch = null;
+                    operations = null;
                     return false;
                 }
 
@@ -350,21 +350,19 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                 else if (seenInvocationId != descriptor.InvocationId)
                 {
                     Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Mismatching invocation IDs.");
-                    operationBatch = null;
+                    operations = null;
                     return false;
                 }
 
                 operations[i] = (operation, descriptor);
             }
 
-            var isNewInvocation = previousInvocationId != seenInvocationId;
-            operationBatch = new(isNewInvocation, operations);
             return true;
         }
         catch (Exception ex)
         {
             Log.FailedToProcessRootComponentOperations(_logger, ex);
-            operationBatch = null;
+            operations = null;
             return false;
         }
         finally
