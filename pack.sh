@@ -12,7 +12,4 @@ do
     echo $line
     fullPath=$(pwd)/$(find . -iname "$line")
     ./dockerbuild.sh bionic --pack --configuration $configuration --projects $fullPath
-
-    # temporary quick exit while testing.
-    exit 0
 done
