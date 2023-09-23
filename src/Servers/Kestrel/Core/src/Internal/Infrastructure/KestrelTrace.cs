@@ -395,6 +395,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Http3GoAwayStreamId(_http3Logger, connectionId, goAwayStreamId);
         }
 
+        [LoggerMessage(54, LogLevel.Error, @"Connection id ""{ConnectionId}"" aborted since at least ""{Count}"" ENHANCE_YOUR_CALM responses were required per second.", EventName = "Http2TooManyEnhanceYourCalms")]
+        private static partial void Http2TooManyEnhanceYourCalms(ILogger logger, string connectionId, int count);
+
+        public void Http2TooManyEnhanceYourCalms(string connectionId, int count)
+        {
+            Http2TooManyEnhanceYourCalms(_http2Logger, connectionId, count);
+        }
+
+        [LoggerMessage(55, LogLevel.Error, @"Connection id ""{ConnectionId}"" exceeded the output flow control maximum queue size of ""{Count}"".", EventName = "Http2FlowControlQueueOperationsExceeded")]
+        private static partial void Http2FlowControlQueueOperationsExceeded(ILogger logger, string connectionId, int count);
+
+        public void Http2FlowControlQueueOperationsExceeded(string connectionId, int count)
+        {
+            Http2FlowControlQueueOperationsExceeded(_http3Logger, connectionId, count);
+        }
+
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             => _generalLogger.Log(logLevel, eventId, state, exception, formatter);
 
