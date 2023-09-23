@@ -78,7 +78,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http2FrameSending(string connectionId, Http2Frame frame);
 
+        void Http2TooManyEnhanceYourCalms(string connectionId, int count);
+
         void Http2MaxConcurrentStreamsReached(string connectionId);
+
+        void Http2FlowControlQueueOperationsExceeded(string connectionId, int count);
 
         void InvalidResponseHeaderRemoved();
 
