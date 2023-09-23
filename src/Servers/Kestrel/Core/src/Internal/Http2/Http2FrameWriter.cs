@@ -20,6 +20,29 @@ internal sealed class Http2FrameWriter
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
     private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
+    private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
+
+    private static readonly int? ConfiguredMaximumFlowControlQueueSize = GetConfiguredMaximumFlowControlQueueSize();
+
+    private static int? GetConfiguredMaximumFlowControlQueueSize()
+    {
+        var data = AppContext.GetData(MaximumFlowControlQueueSizeProperty);
+
+        if (data is int count)
+        {
+            return count;
+        }
+
+        if (data is string countStr && int.TryParse(countStr, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+    }
+
+    private readonly int _maximumFlowControlQueueSize;
+
     private readonly object _writeLock = new object();
     private readonly Http2Frame _outgoingFrame;
     private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
@@ -79,6 +102,16 @@ internal sealed class Http2FrameWriter
 
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
 
+        _maximumFlowControlQueueSize = ConfiguredMaximumFlowControlQueueSize is null
+            ? 4 * maxStreamsPerConnection
+            : (int)ConfiguredMaximumFlowControlQueueSize;
+
+        if (_maximumFlowControlQueueSize < maxStreamsPerConnection)
+        {
+            _log.Http2FlowControlQueueMaximumTooLow(_connectionContext.ConnectionId, maxStreamsPerConnection, _maximumFlowControlQueueSize);
+            _maximumFlowControlQueueSize = maxStreamsPerConnection;
+        }
+
         // This is bounded by the maximum number of concurrent Http2Streams per Http2Connection.
         // This isn't the same as SETTINGS_MAX_CONCURRENT_STREAMS, but typically double (with a floor of 100)
         // which is the max number of Http2Streams that can end up in the Http2Connection._streams dictionary.
@@ -101,7 +134,8 @@ internal sealed class Http2FrameWriter
     {
         if (!_channel.Writer.TryWrite(producer))
         {
-            // It should not be possible to exceed the bound of the channel.
+            // This can happen if a client resets streams faster than we can clear them out - we end up with a backlog
+            // exceeding the channel size.  Disconnecting seems appropriate in this case.
             var ex = new ConnectionAbortedException("HTTP/2 connection exceeded the output operations maximum queue size.");
             _log.Http2QueueOperationsExceeded(_connectionId, ex);
             _http2Connection.Abort(ex);
@@ -304,7 +338,7 @@ internal sealed class Http2FrameWriter
                 }
                 else
                 {
-                    _waitingForMoreConnectionWindow.Enqueue(producer);
+                    EnqueueWaitingForMoreConnectionWindow(producer);
                 }
 
                 return true;
@@ -898,7 +932,7 @@ internal sealed class Http2FrameWriter
                 _lastWindowConsumer = null;
 
                 // Put the consumer of the connection window last
-                _waitingForMoreConnectionWindow.Enqueue(producer);
+                EnqueueWaitingForMoreConnectionWindow(producer);
             }
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
@@ -927,7 +961,7 @@ internal sealed class Http2FrameWriter
                 _lastWindowConsumer = null;
 
                 // Put the consumer of the connection window last
-                _waitingForMoreConnectionWindow.Enqueue(producer);
+                EnqueueWaitingForMoreConnectionWindow(producer);
             }
 
             while (_waitingForMoreConnectionWindow.TryDequeue(out producer))
@@ -936,5 +970,17 @@ internal sealed class Http2FrameWriter
             }
         }
         return true;
+    }
+
+    private void EnqueueWaitingForMoreConnectionWindow(Http2OutputProducer producer)
+    {
+        _waitingForMoreConnectionWindow.Enqueue(producer);
+        // This is re-entrant because abort will cause a final enqueue.
+        // Easier to check for that condition than to make each enqueuer reason about what to call.
+        if (!_aborted && _maximumFlowControlQueueSize > 0 && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
+        {
+            _log.Http2FlowControlQueueOperationsExceeded(_connectionId, _maximumFlowControlQueueSize);
+            _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
+        }
     }
 }

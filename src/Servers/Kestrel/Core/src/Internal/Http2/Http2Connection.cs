@@ -46,6 +46,18 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private const int MaxStreamPoolSize = 100;
     private const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
 
+    private const string EnhanceYourCalmMaximumCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.EnhanceYourCalmCount";
+
+    private static readonly int _enhanceYourCalmMaximumCount = AppContext.GetData(EnhanceYourCalmMaximumCountProperty) is int eycMaxCount
+        ? eycMaxCount
+        : 10;
+
+    // Accumulate _enhanceYourCalmCount over the course of EnhanceYourCalmTickWindowCount ticks.
+    // This should make bursts less likely to trigger disconnects.
+    private const int EnhanceYourCalmTickWindowCount = 5;
+
+    private static bool IsEnhanceYourCalmEnabled => _enhanceYourCalmMaximumCount > 0;
+
     private readonly HttpConnectionContext _context;
     private readonly Http2FrameWriter _frameWriter;
     private readonly Pipe _input;
@@ -73,6 +85,9 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     private int _clientActiveStreamCount;
     private int _serverActiveStreamCount;
+
+    private int _enhanceYourCalmCount;
+    private int _tickCount;
 
     // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
     private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
@@ -361,13 +376,20 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                     stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                 }
 
-                // Use the server _serverActiveStreamCount to drain all requests on the server side.
-                // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
-                // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
-                while (_serverActiveStreamCount > 0)
+                // For some reason, this loop doesn't terminate when we're trying to abort.
+                // Since we're making a narrow fix for a patch, we'll bypass it in such scenarios.
+                // TODO: This is probably a bug - something in here should probably detect aborted
+                // connections and short-circuit.
+                if (!IsEnhanceYourCalmEnabled || error is not Http2ConnectionErrorException)
                 {
-                    await _streamCompletionAwaitable;
-                    UpdateCompletedStreams();
+                    // Use the server _serverActiveStreamCount to drain all requests on the server side.
+                    // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
+                    // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
+                    while (_serverActiveStreamCount > 0)
+                    {
+                        await _streamCompletionAwaitable;
+                        UpdateCompletedStreams();
+                    }
                 }
 
                 while (StreamPool.TryPop(out var pooledStream))
@@ -1170,6 +1192,20 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 // Server is getting hit hard with connection resets.
                 // Tell client to calm down.
                 // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
+
+                if (IsEnhanceYourCalmEnabled && Interlocked.Increment(ref _enhanceYourCalmCount) > EnhanceYourCalmTickWindowCount * _enhanceYourCalmMaximumCount)
+                {
+                    Log.Http2TooManyEnhanceYourCalms(_context.ConnectionId, _enhanceYourCalmMaximumCount);
+
+                    // Now that we've logged a useful message, we can put vague text in the exception
+                    // messages in case they somehow make it back to the client (not expected)
+
+                    // This will close the socket - we want to do that right away
+                    Abort(new ConnectionAbortedException(CoreStrings.Http2ConnectionFaulted));
+                    // Throwing an exception as well will help us clean up on our end more quickly by (e.g.) skipping processing of already-buffered input
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ConnectionFaulted, Http2ErrorCode.ENHANCE_YOUR_CALM);
+                }
+
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2TellClientToCalmDown, Http2ErrorCode.ENHANCE_YOUR_CALM);
             }
         }
@@ -1241,6 +1277,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     void IRequestProcessor.Tick(DateTimeOffset now)
     {
         Input.CancelPendingRead();
+        if (IsEnhanceYourCalmEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
+        {
+            Interlocked.Exchange(ref _enhanceYourCalmCount, 0);
+        }
     }
 
     void IHttp2StreamLifetimeHandler.OnStreamCompleted(Http2Stream stream)
