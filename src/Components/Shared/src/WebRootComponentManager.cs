@@ -37,6 +37,13 @@ internal partial class WebAssemblyRenderer
             string key,
             string domElementSelector)
         {
+#if COMPONENTS_SERVER
+            if (_webRootComponentInfo.Count + 1 > renderer._options.RootComponents.MaxInteractiveServerRootComponentCount)
+            {
+                throw new InvalidOperationException("Exceeded the maximum number of allowed server interactive root components.");
+            }
+#endif
+
             if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
             {
                 throw new InvalidOperationException($"The boundary marker key '{boundaryMarkerKey}' had an invalid format.");
