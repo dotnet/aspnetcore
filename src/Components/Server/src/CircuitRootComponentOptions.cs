@@ -18,4 +18,11 @@ public class CircuitRootComponentOptions : IJSComponentConfiguration
     /// </summary>
     /// <value>Defaults to <c>100</c>.</value>
     public int MaxJSRootComponents { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the maximum number of root components with an interactive server
+    /// render mode that may exist on a circuit at any given time.
+    /// </summary>
+    /// <value>Defaults to <c>1000</c>.</value>
+    public int MaxInteractiveServerRootComponentCount { get; set; } = 1000;
 }
