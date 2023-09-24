@@ -426,7 +426,7 @@ public class CircuitHostTest
         var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Add,
-            SelectorId = 1,
+            SsrComponentId = 1,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent), parameters),
         };
         var descriptor = new ComponentDescriptor()
@@ -434,6 +434,7 @@ public class CircuitHostTest
             ComponentType = typeof(DynamicallyAddedComponent),
             Parameters = ParameterView.FromDictionary(parameters),
             Sequence = 0,
+            Key = operation.Marker.Value.Key,
         };
 
         // Act
@@ -454,27 +455,29 @@ public class CircuitHostTest
             remoteRenderer: GetRemoteRenderer(),
             serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
         var expectedMessage = "Updated message";
+        var componentKey = "mykey";
 
         Dictionary<string, object> parameters = new()
         {
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         };
-        await AddComponent<DynamicallyAddedComponent>(circuitHost, parameters);
+        await AddComponent<DynamicallyAddedComponent>(circuitHost, parameters, componentKey);
 
         var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
-            ComponentId = 0,
+            SsrComponentId = 1,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
             {
                 [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
-            }),
+            }, componentKey),
         };
         var descriptor = new ComponentDescriptor()
         {
             ComponentType = typeof(DynamicallyAddedComponent),
             Parameters = ParameterView.FromDictionary(new Dictionary<string, object>()),
             Sequence = 0,
+            Key = operation.Marker.Value.Key,
         };
 
         // Act
@@ -493,6 +496,7 @@ public class CircuitHostTest
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: GetRemoteRenderer(),
             serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var componentKey = "mykey";
 
         // Arrange
         var expectedMessage = "Existing message";
@@ -501,7 +505,7 @@ public class CircuitHostTest
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         });
 
-        await AddComponent<TestComponent>(circuitHost, []);
+        await AddComponent<TestComponent>(circuitHost, [], componentKey);
 
         Dictionary<string, object> parameters = new()
         {
@@ -510,14 +514,15 @@ public class CircuitHostTest
         var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
-            ComponentId = 0,
-            Marker = CreateMarker(typeof(TestComponent) /* Note the incorrect component type */, parameters),
+            SsrComponentId = 0,
+            Marker = CreateMarker(typeof(TestComponent) /* Note the incorrect component type */, parameters, componentKey),
         };
         var descriptor = new ComponentDescriptor()
         {
             ComponentType = typeof(TestComponent),
             Parameters = ParameterView.FromDictionary(parameters),
             Sequence = 0,
+            Key = operation.Marker.Value.Key,
         };
         var operationsJson = JsonSerializer.Serialize(
             new[] { operation },
@@ -557,7 +562,7 @@ public class CircuitHostTest
         var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Remove,
-            ComponentId = 0,
+            SsrComponentId = 1,
         };
 
         // Act
@@ -568,20 +573,21 @@ public class CircuitHostTest
             ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
     }
 
-    private async Task AddComponent<TComponent>(CircuitHost circuitHost, Dictionary<string, object> parameters)
+    private async Task AddComponent<TComponent>(CircuitHost circuitHost, Dictionary<string, object> parameters, string componentKey = "")
     where TComponent : IComponent
     {
         var addOperation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Add,
-            SelectorId = 1,
-            Marker = CreateMarker(typeof(TComponent), parameters),
+            SsrComponentId = 1,
+            Marker = CreateMarker(typeof(TComponent), parameters, componentKey),
         };
         var addDescriptor = new ComponentDescriptor()
         {
             ComponentType = typeof(TComponent),
             Parameters = ParameterView.FromDictionary(parameters),
             Sequence = 0,
+            Key = addOperation.Marker.Value.Key,
         };
 
         // Add component
@@ -628,10 +634,11 @@ public class CircuitHostTest
             .Verifiable();
     }
 
-    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
+    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null, string componentKey = "")
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+        var key = new BoundaryMarkerKey(type.FullName.AsMemory(), "0".AsMemory(), componentKey.AsMemory());
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key.ToString());
         serializer.SerializeInvocation(
             ref marker,
             _invocationSequence,

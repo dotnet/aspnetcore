@@ -220,10 +220,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             }
 
             pendingRenders.Add(webRootComponentManager.AddRootComponentAsync(
+                operation.SsrComponentId,
                 componentType!,
                 parameters,
-                operation.Marker!.Value.Key!,
-                operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture)));
+                operation.Marker!.Value.Key!));
         }
     }
 }

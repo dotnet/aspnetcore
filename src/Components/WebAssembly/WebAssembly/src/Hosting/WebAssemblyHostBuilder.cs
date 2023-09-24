@@ -106,7 +106,7 @@ public sealed class WebAssemblyHostBuilder
             var typeName = jsMethods.RegisteredComponents_GetTypeName(i);
             var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(i);
             var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(i);
-            registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, null);
+            registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, string.Empty);
             registeredComponents[i].WriteWebAssemblyData(
                 assembly,
                 typeName,

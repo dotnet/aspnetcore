@@ -6,5 +6,5 @@ import { ComponentDescriptor } from './ComponentDescriptorDiscovery';
 export interface RootComponentManager<InitialComponentsDescriptorType> {
   initialComponents: InitialComponentsDescriptorType[];
   onAfterRenderBatch?(browserRendererId: number): void;
-  resolveRootComponent(selectorId: number, componentId: number): ComponentDescriptor;
+  resolveRootComponent(ssrComponentId: number): ComponentDescriptor;
 }

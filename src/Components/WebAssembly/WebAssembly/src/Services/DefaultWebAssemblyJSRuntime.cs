@@ -117,15 +117,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         for (var i = 0; i < deserialized.Length; i++)
         {
             var operation = deserialized[i];
-            if (operation.Type == RootComponentOperationType.Remove ||
-                operation.Type == RootComponentOperationType.Update)
-            {
-                if (operation.ComponentId == null)
-                {
-                    throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
-                }
-            }
-
             if (operation.Type == RootComponentOperationType.Remove)
             {
                 operations[i] = new(operation, null, ParameterView.Empty);
@@ -141,11 +132,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             if (operation.Type == RootComponentOperationType.Add ||
                 operation.Type == RootComponentOperationType.Update)
             {
-                if (operation.SelectorId == null)
-                {
-                    throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
-                }
-
                 componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
             }
