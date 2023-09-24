@@ -44,21 +44,19 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             {
                 case RootComponentOperationType.Add:
                     _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
                         componentType!,
                         parameters,
-                        operation.Marker!.Value.Key!,
-                        operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                        operation.Marker!.Value.Key!);
                     break;
                 case RootComponentOperationType.Update:
                     _ = webRootComponentManager.UpdateRootComponentAsync(
-                        operation.ComponentId!.Value,
-                        componentType!,
+                        operation.SsrComponentId,
                         parameters,
-                        operation.Marker!.Value.Key!,
-                        operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                        operation.Marker!.Value.Key!);
                     break;
                 case RootComponentOperationType.Remove:
-                    webRootComponentManager.RemoveRootComponent(operation.ComponentId!.Value);
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
         }

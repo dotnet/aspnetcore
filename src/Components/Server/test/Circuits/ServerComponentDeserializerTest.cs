@@ -395,32 +395,6 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenAddOperationIsMissingSelectorId()
-    {
-        // Arrange
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Add,
-            SelectorId = 1,
-            Marker = new ComponentMarker()
-            {
-                Descriptor = "some random text",
-            },
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
-        var deserializer = CreateServerComponentDeserializer();
-
-        // Act
-        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
-
-        // Assert
-        Assert.False(result);
-        Assert.Null(parsed);
-    }
-
-    [Fact]
     public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenComponentIdIsMissing()
     {
         // Arrange
@@ -447,13 +421,13 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenComponentIdIsRepeated()
+    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenSsrComponentIdIsRepeated()
     {
         // Arrange
         var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
-            ComponentId = 1,
+            SsrComponentId = 1,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
             {
                 ["Message"] = "Some other message",
@@ -463,7 +437,7 @@ public class ServerComponentDeserializerTest
         var other = new RootComponentOperation
         {
             Type = RootComponentOperationType.Remove,
-            ComponentId = 1,
+            SsrComponentId = 1,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
         };
 
@@ -501,7 +475,8 @@ public class ServerComponentDeserializerTest
     private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+        var key = new BoundaryMarkerKey(type.FullName.AsMemory(), "0".AsMemory(), Memory<char>.Empty);
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key.ToString());
         serializer.SerializeInvocation(
             ref marker,
             _invocationSequence,

@@ -292,42 +292,19 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             for (var i = 0; i < result.Length; i++)
             {
                 var operation = result[i];
-                if (operation.Type == RootComponentOperationType.Remove ||
-                    operation.Type == RootComponentOperationType.Update)
+                if (seenComponentIds[0..currentComponentIdIndex].Contains(operation.SsrComponentId))
                 {
-                    if (operation.ComponentId == null)
-                    {
-                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing component ID.");
-                        operations = null;
-                        return false;
-                    }
-
-                    if (seenComponentIds[0..currentComponentIdIndex]
-                        .Contains(operation.ComponentId.Value))
-                    {
-                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
-                        operations = null;
-                        return false;
-                    }
-
-                    seenComponentIds[currentComponentIdIndex++] = operation.ComponentId.Value;
+                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
+                    operations = null;
+                    return false;
                 }
+
+                seenComponentIds[currentComponentIdIndex++] = operation.SsrComponentId;
 
                 if (operation.Type == RootComponentOperationType.Remove)
                 {
                     operations[i] = (operation, null);
                     continue;
-                }
-
-                if (operation.Type == RootComponentOperationType.Add ||
-                    operation.Type == RootComponentOperationType.Update)
-                {
-                    if (operation.SelectorId is not { } selectorId)
-                    {
-                        Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing selector ID.");
-                        operations = null;
-                        return false;
-                    }
                 }
 
                 if (operation.Marker == null)

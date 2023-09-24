@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
@@ -29,87 +30,145 @@ internal partial class WebAssemblyRenderer
     // via Blazor endpoint invocations.
     public sealed class WebRootComponentManager(Renderer renderer)
     {
-        private readonly Dictionary<int, WebRootComponentInfo> _webRootComponentInfo = new();
+        private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
 
-        public Task AddRootComponentAsync(
+        public async Task AddRootComponentAsync(
+            int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
             ParameterView parameters,
-            string key,
-            string domElementSelector)
+            string key)
         {
 #if COMPONENTS_SERVER
-            if (_webRootComponentInfo.Count + 1 > renderer._options.RootComponents.MaxInteractiveServerRootComponentCount)
+            if (_webRootComponents.Count + 1 > renderer._options.RootComponents.MaxInteractiveServerRootComponentCount)
             {
                 throw new InvalidOperationException("Exceeded the maximum number of allowed server interactive root components.");
             }
 #endif
 
-            if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
-            {
-                throw new InvalidOperationException($"The boundary marker key '{boundaryMarkerKey}' had an invalid format.");
-            }
-
-            var componentId = renderer.AddRootComponent(componentType, domElementSelector);
-            var canSupplyNewParameters = boundaryMarkerKey.HasComponentKey;
-            _webRootComponentInfo[componentId] = new(key, parameters, canSupplyNewParameters);
-
-            return renderer.RenderRootComponentAsync(componentId, parameters);
+            var component = await WebRootComponent.CreateAndRenderAsync(
+                renderer,
+                ssrComponentId,
+                componentType,
+                parameters,
+                key);
+            _webRootComponents[ssrComponentId] = component;
         }
 
         public Task UpdateRootComponentAsync(
-            int componentId,
-            [DynamicallyAccessedMembers(Component)] Type componentType,
+            int ssrComponentId,
             ParameterView newParameters,
-            string key,
-            string domElementSelector)
+            string key)
         {
-            if (!_webRootComponentInfo.TryGetValue(componentId, out var component))
+            var component = GetRequiredWebRootComponent(ssrComponentId);
+            return component.SetParametersAsync(renderer, newParameters, key);
+        }
+
+        public void RemoveRootComponent(int ssrComponentId)
+        {
+            var component = GetRequiredWebRootComponent(ssrComponentId);
+            component.Remove(renderer);
+            _webRootComponents.Remove(ssrComponentId);
+        }
+
+        private WebRootComponent GetRequiredWebRootComponent(int ssrComponentId)
+        {
+            if (!_webRootComponents.TryGetValue(ssrComponentId, out var component))
             {
-                // TODO: The client should get confirmation about whether a component was replaced or re-rendered
-                // before sending additional updates. Otherwise, it may send updates to a removed component without
-                // realizing it was replaced by a component with a new component ID.
-                throw new InvalidOperationException(
-                    "Attempted to update a root component that either doesn't exist yet or was previously disposed.");
+                throw new InvalidOperationException($"No root component exists with SSR component ID {ssrComponentId}.");
             }
 
-            if (!string.Equals(key, component.Key, StringComparison.Ordinal))
-            {
-                // The client should always supply updated parameters to a component with a matching key, even if the key is null.
-                throw new InvalidOperationException("Cannot update components with mismatching keys.");
-            }
+            return component;
+        }
 
-            if (component.CanSupplyNewParameters)
+        private sealed class WebRootComponent
+        {
+            [DynamicallyAccessedMembers(Component)]
+            private readonly Type _componentType;
+            private readonly string _ssrComponentIdString;
+            private readonly string _key;
+            private readonly bool _canSupplyNewParameters;
+
+            private ParameterView _latestParameters;
+            private int _interactiveComponentId;
+
+            public static async Task<WebRootComponent> CreateAndRenderAsync(
+                Renderer renderer,
+                int ssrComponentId,
+                [DynamicallyAccessedMembers(Component)] Type componentType,
+                ParameterView initialParameters,
+                string key)
             {
-                return renderer.RenderRootComponentAsync(componentId, newParameters);
-            }
-            else
-            {
-                if (component.InitialParameters.DefinitelyEquals(newParameters))
+                if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
                 {
-                    // The parameters haven't changed, so there's no work to do.
-                    return Task.CompletedTask;
+                    throw new InvalidOperationException($"The boundary marker key '{boundaryMarkerKey}' had an invalid format.");
+                }
+
+                var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
+                var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
+                var canSupplyNewParameters = boundaryMarkerKey.HasComponentKey;
+
+                await renderer.RenderRootComponentAsync(interactiveComponentId, initialParameters);
+
+                return new(componentType, ssrComponentIdString, interactiveComponentId, initialParameters, key, canSupplyNewParameters);
+            }
+
+            private WebRootComponent(
+                [DynamicallyAccessedMembers(Component)] Type componentType,
+                string ssrComponentIdString,
+                int interactiveComponentId,
+                in ParameterView initialParameters,
+                string key,
+                bool canSupplyNewParameters)
+            {
+                _componentType = componentType;
+                _ssrComponentIdString = ssrComponentIdString;
+                _interactiveComponentId = interactiveComponentId;
+                _latestParameters = initialParameters;
+                _key = key;
+                _canSupplyNewParameters = canSupplyNewParameters;
+            }
+
+            public Task SetParametersAsync(
+                Renderer renderer,
+                ParameterView newParameters,
+                string key)
+            {
+                if (!string.Equals(key, _key, StringComparison.Ordinal))
+                {
+                    // The client should always supply updated parameters to a component with a matching key, even if the key is null.
+                    throw new InvalidOperationException("Cannot update components with mismatching keys.");
+                }
+
+                if (_canSupplyNewParameters)
+                {
+                    _latestParameters = newParameters;
+                    return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters);
                 }
                 else
                 {
-                    // The component parameters have changed. Rather than update the existing instance, we'll dispose
-                    // it and replace it with a new one. This is because it's the client's choice how to
-                    // match prerendered components with existing components, and we don't want to allow
-                    // clients to maliciously assign parameters to the wrong component.
-                    RemoveRootComponent(componentId);
-                    return AddRootComponentAsync(componentType, newParameters, key, domElementSelector);
+                    if (_latestParameters.DefinitelyEquals(newParameters))
+                    {
+                        // The parameters haven't changed, so there's no work to do.
+                        return Task.CompletedTask;
+                    }
+                    else
+                    {
+                        // The component parameters have changed. Rather than update the existing instance, we'll dispose
+                        // it and replace it with a new one. This is because it's the client's choice how to
+                        // match prerendered components with existing components, and we don't want to allow
+                        // clients to maliciously assign parameters to the wrong component.
+                        renderer.RemoveRootComponent(_interactiveComponentId);
+                        _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
+                        _latestParameters = newParameters;
+                        return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters);
+                    }
                 }
             }
-        }
 
-        public void RemoveRootComponent(int componentId)
-        {
-            _webRootComponentInfo.Remove(componentId);
-            renderer.RemoveRootComponent(componentId);
+            public void Remove(Renderer renderer)
+            {
+                renderer.RemoveRootComponent(_interactiveComponentId);
+            }
         }
-
-        private readonly record struct WebRootComponentInfo(
-            string Key,
-            ParameterView InitialParameters,
-            bool CanSupplyNewParameters);
     }
 }

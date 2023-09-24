@@ -785,12 +785,11 @@ internal partial class CircuitHost : IAsyncDisposable
                     {
                         case RootComponentOperationType.Add:
                             {
-                                var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
                                 var task = webRootComponentManager.AddRootComponentAsync(
+                                    operation.SsrComponentId,
                                     descriptor.ComponentType,
                                     descriptor.Parameters,
-                                    descriptor.Key,
-                                    selectorId);
+                                    descriptor.Key);
                                 if (pendingTasks != null)
                                 {
                                     pendingTasks[i] = task;
@@ -799,25 +798,15 @@ internal partial class CircuitHost : IAsyncDisposable
                             break;
                         case RootComponentOperationType.Update:
                             {
-                                var componentType = Renderer.GetExistingComponentType(operation.ComponentId.Value);
-                                if (descriptor.ComponentType != componentType)
-                                {
-                                    Log.InvalidComponentTypeForUpdate(_logger, message: "Component type mismatch.");
-                                    throw new InvalidOperationException($"Incorrect type for descriptor '{descriptor.ComponentType.FullName}'");
-                                }
-
                                 // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                                var selectorId = operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture);
                                 _ = webRootComponentManager.UpdateRootComponentAsync(
-                                    operation.ComponentId.Value,
-                                    componentType,
+                                    operation.SsrComponentId,
                                     descriptor.Parameters,
-                                    descriptor.Key,
-                                    selectorId);
+                                    descriptor.Key);
                             }
                             break;
                         case RootComponentOperationType.Remove:
-                            webRootComponentManager.RemoveRootComponent(operation.ComponentId.Value);
+                            webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                             break;
                     }
                 }

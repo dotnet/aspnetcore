@@ -59,7 +59,7 @@ internal struct ComponentMarker
 
     #endregion
 
-    public static ComponentMarker Create(string type, bool prerendered, string? key)
+    public static ComponentMarker Create(string type, bool prerendered, string key)
     {
         return new()
         {
