@@ -103,6 +103,7 @@ public class Program
 
         #endif
         app.UseStaticFiles();
+        app.UseAntiforgery();
 
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
