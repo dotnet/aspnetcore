@@ -359,17 +359,18 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         component.assignedRendererId = rendererId;
         component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
         return { type: 'add', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
-      }
+      } else {
+        // The component has already been added for interactivity.
+        if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
+          // The descriptor has not changed since the last update.
+          // Nothing to do.
+          return null;
+        }
 
-      if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
-        // The descriptor has not changed since the last update.
-        // Nothing to do.
-        return null;
+        // The descriptor has changed since it was last updated, so we'll update the component's parameters.
+        component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
+        return { type: 'update', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
       }
-
-      // The descriptor has changed since it was last updated, so we'll update the component's parameters.
-      component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
-      return { type: 'update', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
     } else {
       // The descriptor was removed from the document.
       this.unregisterComponent(component);
