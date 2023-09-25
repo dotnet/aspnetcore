@@ -545,6 +545,7 @@ public class Http2Tests : LoggedTest
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without custom Reset support")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/50916", Queues = "Windows.Amd64.VS2022.Pre")]
     public async Task AppException_AfterHeaders_PriorOSVersions_ResetCancel()
     {
         using var server = Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -629,6 +630,7 @@ public class Http2Tests : LoggedTest
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "This is last version without Reset support")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/50916", Queues = "Windows.Amd64.VS2022.Pre")]
     public async Task Reset_PriorOSVersions_NotSupported()
     {
         using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
