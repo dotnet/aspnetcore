@@ -350,30 +350,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         {
             Browser.Click(By.Id(addCounterLinkIds[i]));
             Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+
             Browser.Click(By.Id($"increment-{i}"));
             Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
-        }
 
-        for (var i = 0; i < addCounterLinkIds.Length; i++)
-        {
             Browser.Click(By.Id($"update-counter-link-{i}"));
             Browser.Equal("2", () => Browser.FindElement(By.Id($"increment-amount-{i}")).Text);
-            Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text); // Resets back to 0 because the parameter changed
 
-            // Ensure that interactivity still works, and the correct parameters have been supplied.
             Browser.Click(By.Id($"increment-{i}"));
-            Browser.Equal("2", () => Browser.FindElement(By.Id($"count-{i}")).Text);
-
-            for (var j = 0; j < addCounterLinkIds.Length; j++)
-            {
-                if (j == i)
-                {
-                    continue;
-                }
-
-                // Ensure that other components didn't get reset; their parameters did not change.
-                Browser.NotEqual("0", () => Browser.FindElement(By.Id($"count-{j}")).Text);
-            }
+            Browser.Equal("3", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
 
         AssertBrowserLogDoesNotContainErrors();
@@ -393,8 +378,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         {
             Browser.Click(By.Id(addCounterLinkIds[i]));
             Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
-            Browser.Click(By.Id($"increment-{i}"));
-            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
 
         Browser.Click(By.Id("start-streaming-link"));
@@ -402,28 +385,14 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         for (var i = 0; i < addCounterLinkIds.Length; i++)
         {
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
             Browser.Click(By.Id($"update-counter-link-{i}"));
             Browser.Equal("2", () => Browser.FindElement(By.Id($"increment-amount-{i}")).Text);
-            Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text); // Resets back to 0 because the parameter changed
 
-            // Ensure that interactivity still works, and the correct parameters have been supplied.
-            // Note that while SSR'd components don't become interactive during stream rendering,
-            // this streaming update replaced an already-interactive component. To ensure that supplying
-            // unchanged parameters behaves the same way as supplying updated parameters, we
-            // check that the component is still interactive.
             Browser.Click(By.Id($"increment-{i}"));
-            Browser.Equal("2", () => Browser.FindElement(By.Id($"count-{i}")).Text);
-
-            for (var j = 0; j < addCounterLinkIds.Length; j++)
-            {
-                if (j == i)
-                {
-                    continue;
-                }
-
-                // Ensure that other components didn't get reset; their parameters did not change.
-                Browser.NotEqual("0", () => Browser.FindElement(By.Id($"count-{j}")).Text);
-            }
+            Browser.Equal("3", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
 
         Browser.Click(By.Id("stop-streaming-link"));
