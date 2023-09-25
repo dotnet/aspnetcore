@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, canMergeDescriptors, discoverComponents, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
-import { isInteractiveRootComponentElement } from '../BrowserRenderer';
+import { isInteractiveRootComponentElement, setShouldPreserveContentOnInteractiveComponentDisposal } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
 import { synchronizeAttributes } from './AttributeSync';
@@ -331,7 +331,8 @@ function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDes
     if (existingDescriptor) {
       allDescriptors.push(existingDescriptor);
     } else {
-      toLogicalRootCommentElement(descriptor);
+      const logicalElement = toLogicalRootCommentElement(descriptor);
+      setShouldPreserveContentOnInteractiveComponentDisposal(logicalElement, true);
 
       // Since we've already parsed the payloads from the start and end comments,
       // we sanitize them to reduce noise in the DOM.
