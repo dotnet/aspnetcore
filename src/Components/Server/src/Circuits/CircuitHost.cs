@@ -724,8 +724,9 @@ internal partial class CircuitHost : IAsyncDisposable
             Log.CircuitTransmitErrorFailed(_logger, CircuitId, ex);
         }
     }
+
     internal Task UpdateRootComponents(
-        (RootComponentOperation, ComponentDescriptor?)[] operations,
+        CircuitRootComponentOperation[] operations,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -766,7 +767,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     for (var i = 0; i < operations.Length; i++)
                     {
                         var operation = operations[i];
-                        if (operation.Item1.Type != RootComponentOperationType.Add)
+                        if (operation.Type != RootComponentOperationType.Add)
                         {
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
@@ -775,25 +776,18 @@ internal partial class CircuitHost : IAsyncDisposable
                     pendingTasks = new Task[operations.Length];
                 }
 
-                // Handle update and remove operations first. We handle add operations after
-                // verifying components from previous invocations have either been renewed via
-                // an update or removed entirely.
                 for (var i = 0; i < operations.Length; i++)
                 {
-                    var (operation, descriptor) = operations[i];
+                    var operation = operations[i];
                     switch (operation.Type)
                     {
                         case RootComponentOperationType.Add:
                             {
-                                var parameters = new WebRootComponentParameters(
-                                    descriptor.Parameters,
-                                    descriptor.ParameterDefinitions.AsReadOnly(),
-                                    descriptor.SerializedParameterValues.AsReadOnly());
                                 var task = webRootComponentManager.AddRootComponentAsync(
                                     operation.SsrComponentId,
-                                    descriptor.ComponentType,
-                                    parameters,
-                                    descriptor.Key);
+                                    operation.Descriptor.ComponentType,
+                                    operation.Descriptor.Parameters,
+                                    operation.Descriptor.Key);
                                 if (pendingTasks != null)
                                 {
                                     pendingTasks[i] = task;
@@ -803,14 +797,10 @@ internal partial class CircuitHost : IAsyncDisposable
                         case RootComponentOperationType.Update:
                             {
                                 // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                                var parameters = new WebRootComponentParameters(
-                                    descriptor.Parameters,
-                                    descriptor.ParameterDefinitions.AsReadOnly(),
-                                    descriptor.SerializedParameterValues.AsReadOnly());
                                 _ = webRootComponentManager.UpdateRootComponentAsync(
                                     operation.SsrComponentId,
-                                    parameters,
-                                    descriptor.Key);
+                                    operation.Descriptor.Parameters,
+                                    operation.Descriptor.Key);
                             }
                             break;
                         case RootComponentOperationType.Remove:

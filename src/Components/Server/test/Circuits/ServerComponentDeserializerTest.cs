@@ -304,20 +304,19 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void TryDeserializeSingleComponentDescriptor_CanParseSingleMarker()
+    public void TryDeserializeWebRootComponentDescriptor_CanParseSingleMarker()
     {
         // Arrange
         var markers = CreateMarkers(typeof(TestComponent));
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[0], out var descriptor));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out var descriptor));
         Assert.Equal(typeof(TestComponent).FullName, descriptor.ComponentType.FullName);
-        Assert.Equal(0, descriptor.Sequence);
     }
 
     [Fact]
-    public void TryDeserializeSingleComponentDescriptor_CanParseMultipleMarkersWithAndWithoutParameters()
+    public void TryDeserializeWebRootComponentDescriptor_CanParseMultipleMarkersWithAndWithoutParameters()
     {
         // Arrange
         var markers = CreateMarkers(
@@ -326,19 +325,17 @@ public class ServerComponentDeserializerTest
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[0], out var firstDescriptor));
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[1], out var secondDescriptor));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out var firstDescriptor));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[1], out var secondDescriptor));
 
         Assert.Equal(typeof(TestComponent).FullName, firstDescriptor.ComponentType.FullName);
-        Assert.Equal(0, firstDescriptor.Sequence);
-        var firstParameters = firstDescriptor.Parameters.ToDictionary();
+        var firstParameters = firstDescriptor.Parameters.Parameters.ToDictionary();
         Assert.Single(firstParameters);
         Assert.Contains("First", firstParameters.Keys);
         Assert.Equal("Value", firstParameters["First"]);
 
         Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
-        Assert.Equal(1, secondDescriptor.Sequence);
-        Assert.Empty(secondDescriptor.Parameters.ToDictionary());
+        Assert.Empty(secondDescriptor.Parameters.Parameters.ToDictionary());
     }
 
     [Fact]
@@ -349,8 +346,8 @@ public class ServerComponentDeserializerTest
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[1], out _));
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[1], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out _));
     }
 
     [Fact]
@@ -363,8 +360,8 @@ public class ServerComponentDeserializerTest
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(firstInvocationMarkers[0], out _));
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(secondInvocationMarkers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(firstInvocationMarkers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(secondInvocationMarkers[0], out _));
     }
 
     [Fact]
@@ -375,8 +372,8 @@ public class ServerComponentDeserializerTest
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[0], out _));
-        Assert.False(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(markers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out _));
+        Assert.False(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out _));
     }
 
     [Fact]
@@ -389,9 +386,9 @@ public class ServerComponentDeserializerTest
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(firstInvocationMarkers[0], out _));
-        Assert.True(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(secondInvocationMarkers[0], out _));
-        Assert.False(serverComponentDeserializer.TryDeserializeSingleComponentDescriptor(firstInvocationMarkers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(firstInvocationMarkers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(secondInvocationMarkers[0], out _));
+        Assert.False(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(firstInvocationMarkers[0], out _));
     }
 
     [Fact]

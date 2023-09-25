@@ -429,17 +429,15 @@ public class CircuitHostTest
             SsrComponentId = 1,
             Marker = CreateMarker(typeof(DynamicallyAddedComponent), parameters),
         };
-        var descriptor = new ComponentDescriptor()
-        {
-            ComponentType = typeof(DynamicallyAddedComponent),
-            Parameters = ParameterView.FromDictionary(parameters),
-            Sequence = 0,
-            Key = operation.Marker.Value.Key,
-        };
+        var descriptor = new WebRootComponentDescriptor(
+            componentType: typeof(DynamicallyAddedComponent),
+            key: operation.Marker.Value.Key,
+            parameters: CreateWebRootComponentParameters(parameters));
+        var circuitOperation = new CircuitRootComponentOperation(operation, descriptor);
 
         // Act
         await circuitHost.UpdateRootComponents(
-            [(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
+            [circuitOperation], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -472,16 +470,13 @@ public class CircuitHostTest
                 [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
             }, componentKey),
         };
-        var descriptor = new ComponentDescriptor()
-        {
-            ComponentType = typeof(DynamicallyAddedComponent),
-            Parameters = ParameterView.FromDictionary(new Dictionary<string, object>()),
-            Sequence = 0,
-            Key = operation.Marker.Value.Key,
-        };
+        var descriptor = new WebRootComponentDescriptor(
+            componentType: typeof(DynamicallyAddedComponent),
+            key: operation.Marker.Value.Key,
+            parameters: CreateWebRootComponentParameters(new Dictionary<string, object>()));
 
         // Act
-        await circuitHost.UpdateRootComponents([(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
+        await circuitHost.UpdateRootComponents([new(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -514,26 +509,20 @@ public class CircuitHostTest
         var operation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Update,
-            SsrComponentId = 0,
+            SsrComponentId = 1,
             Marker = CreateMarker(typeof(TestComponent) /* Note the incorrect component type */, parameters, componentKey),
         };
-        var descriptor = new ComponentDescriptor()
-        {
-            ComponentType = typeof(TestComponent),
-            Parameters = ParameterView.FromDictionary(parameters),
-            Sequence = 0,
-            Key = operation.Marker.Value.Key,
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
+        var descriptor = new WebRootComponentDescriptor(
+            componentType: typeof(TestComponent),
+            parameters: CreateWebRootComponentParameters(parameters),
+            key: operation.Marker.Value.Key);
 
         // Act
         var evt = Assert.Raises<UnhandledExceptionEventArgs>(
             handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
             handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
             () => circuitHost.UpdateRootComponents(
-                [(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None));
+                [new(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None));
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -566,7 +555,7 @@ public class CircuitHostTest
         };
 
         // Act
-        await circuitHost.UpdateRootComponents([(operation, null)], null, CreateDeserializer(), CancellationToken.None);
+        await circuitHost.UpdateRootComponents([new(operation, null)], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         Assert.Throws<ArgumentException>(() =>
@@ -582,17 +571,14 @@ public class CircuitHostTest
             SsrComponentId = 1,
             Marker = CreateMarker(typeof(TComponent), parameters, componentKey),
         };
-        var addDescriptor = new ComponentDescriptor()
-        {
-            ComponentType = typeof(TComponent),
-            Parameters = ParameterView.FromDictionary(parameters),
-            Sequence = 0,
-            Key = addOperation.Marker.Value.Key,
-        };
+        var addDescriptor = new WebRootComponentDescriptor(
+            componentType: typeof(TComponent),
+            key: addOperation.Marker.Value.Key,
+            parameters: CreateWebRootComponentParameters(parameters));
 
         // Add component
         await circuitHost.UpdateRootComponents(
-            [(addOperation, addDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+            [new(addOperation, addDescriptor)], null, CreateDeserializer(), CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -645,6 +631,16 @@ public class CircuitHostTest
             type,
             parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
         return marker;
+    }
+
+    private static WebRootComponentParameters CreateWebRootComponentParameters(IDictionary<string, object> parameters)
+    {
+        var parameterView = ParameterView.FromDictionary(parameters);
+        var (parameterDefinitions, parameterValues) = ComponentParameter.FromParameterView(parameterView);
+        return new WebRootComponentParameters(
+            parameterView,
+            parameterDefinitions.AsReadOnly(),
+            parameterValues.AsReadOnly());
     }
 
     private class TestRemoteRenderer : RemoteRenderer
@@ -796,7 +792,7 @@ public class CircuitHostTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out (RootComponentOperation, ComponentDescriptor)[] operationBatch)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out CircuitRootComponentOperation[] operationBatch)
         {
             operationBatch = default;
             return true;

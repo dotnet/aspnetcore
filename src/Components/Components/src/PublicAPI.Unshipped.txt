@@ -19,7 +19,6 @@ Microsoft.AspNetCore.Components.IComponentRenderMode
 Microsoft.AspNetCore.Components.InjectAttribute.Key.get -> object?
 Microsoft.AspNetCore.Components.InjectAttribute.Key.init -> void
 Microsoft.AspNetCore.Components.IPersistentComponentStateStore.SupportsRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> bool
-Microsoft.AspNetCore.Components.ParameterView.DefinitelyEquals(Microsoft.AspNetCore.Components.ParameterView oldParameters) -> bool
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 *REMOVED*Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription

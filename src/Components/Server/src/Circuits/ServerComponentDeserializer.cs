@@ -100,14 +100,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         var previousInstance = new ServerComponent();
         foreach (var marker in markers)
         {
-            if (!IsWellFormedServerComponent(marker))
-            {
-                // The client sent us a marker with missing or obviously incorrect info.
-                descriptors.Clear();
-                return false;
-            }
-
-            var (descriptor, serverComponent) = DeserializeServerComponent(marker);
+            var (descriptor, serverComponent) = DeserializeComponentDescriptor(marker);
             if (descriptor == null)
             {
                 // We failed to deserialize the component descriptor for some reason.
@@ -149,20 +142,78 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return true;
     }
 
-    public bool TryDeserializeSingleComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out ComponentDescriptor? result)
+    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out CircuitRootComponentOperation[]? operations)
+    {
+        int[]? seenComponentIdsStorage = null;
+        try
+        {
+            var result = JsonSerializer.Deserialize<RootComponentOperation[]>(
+                serializedComponentOperations,
+                ServerComponentSerializationSettings.JsonSerializationOptions);
+
+            operations = new CircuitRootComponentOperation[result.Length];
+
+            Span<int> seenSsrComponentIds = result.Length <= 128
+                ? stackalloc int[result.Length]
+                : (seenComponentIdsStorage = ArrayPool<int>.Shared.Rent(result.Length)).AsSpan(0, result.Length);
+            var currentSsrComponentIdIndex = 0;
+            for (var i = 0; i < result.Length; i++)
+            {
+                var operation = result[i];
+                if (seenSsrComponentIds[0..currentSsrComponentIdIndex].Contains(operation.SsrComponentId))
+                {
+                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
+                    operations = null;
+                    return false;
+                }
+
+                seenSsrComponentIds[currentSsrComponentIdIndex++] = operation.SsrComponentId;
+
+                if (operation.Type == RootComponentOperationType.Remove)
+                {
+                    operations[i] = new(operation, null);
+                    continue;
+                }
+
+                if (operation.Marker == null)
+                {
+                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
+                    operations = null;
+                    return false;
+                }
+
+                if (!TryDeserializeWebRootComponentDescriptor(operation.Marker.Value, out var descriptor))
+                {
+                    operations = null;
+                    return false;
+                }
+
+                operations[i] = new(operation, descriptor);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToProcessRootComponentOperations(_logger, ex);
+            operations = null;
+            return false;
+        }
+        finally
+        {
+            if (seenComponentIdsStorage != null)
+            {
+                ArrayPool<int>.Shared.Return(seenComponentIdsStorage);
+            }
+        }
+    }
+
+    public bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor? result)
     {
         result = default;
 
-        if (!IsWellFormedServerComponent(record))
+        if (!TryDeserializeServerComponent(record, out var serverComponent))
         {
-            // The client sent us a marker with missing or obviously incorrect info.
-            return false;
-        }
-
-        var (descriptor, serverComponent) = DeserializeServerComponent(record);
-        if (descriptor is null)
-        {
-            // We failed to deserialize the component descriptor for some reason.
             return false;
         }
 
@@ -196,13 +247,49 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return false;
         }
 
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        {
+            return false;
+        }
+
         _seenSequenceNumbersForCurrentInvocation.Add(serverComponent.Sequence);
-        result = descriptor;
+
+        var webRootComponentParameters = new WebRootComponentParameters(
+            parameters,
+            serverComponent.ParameterDefinitions.AsReadOnly(),
+            serverComponent.ParameterValues.AsReadOnly());
+
+        result = new(componentType, serverComponent.Key, webRootComponentParameters);
         return true;
     }
 
-    private bool IsWellFormedServerComponent(ComponentMarker record)
+    private (ComponentDescriptor, ServerComponent) DeserializeComponentDescriptor(ComponentMarker record)
     {
+        if (!TryDeserializeServerComponent(record, out var serverComponent))
+        {
+            return default;
+        }
+
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        {
+            return default;
+        }
+
+        var componentDescriptor = new ComponentDescriptor
+        {
+            ComponentType = componentType,
+            Parameters = parameters,
+            Sequence = serverComponent.Sequence,
+        };
+
+        return (componentDescriptor, serverComponent);
+    }
+
+
+    private bool TryDeserializeServerComponent(ComponentMarker record, out ServerComponent result)
+    {
+        result = default;
+
         if (record.Type is not (ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType))
         {
             Log.InvalidMarkerType(_logger, record.Type);
@@ -215,11 +302,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return false;
         }
 
-        return true;
-    }
-
-    private (ComponentDescriptor, ServerComponent) DeserializeServerComponent(ComponentMarker record)
-    {
         string unprotected;
         try
         {
@@ -230,127 +312,44 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         catch (Exception e)
         {
             Log.FailedToUnprotectDescriptor(_logger, e);
-            return default;
+            result = default;
+            return false;
         }
 
-        ServerComponent serverComponent;
         try
         {
-            serverComponent = JsonSerializer.Deserialize<ServerComponent>(
+            result = JsonSerializer.Deserialize<ServerComponent>(
                 unprotected,
                 ServerComponentSerializationSettings.JsonSerializationOptions);
+            return true;
         }
         catch (Exception e)
         {
             Log.FailedToDeserializeDescriptor(_logger, e);
-            return default;
+            result = default;
+            return false;
         }
+    }
 
-        var componentType = _rootComponentTypeCache
+    private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
+    {
+        parameters = default;
+        componentType = _rootComponentTypeCache
             .GetRootComponent(serverComponent.AssemblyName, serverComponent.TypeName);
 
         if (componentType == null)
         {
             Log.FailedToFindComponent(_logger, serverComponent.TypeName, serverComponent.AssemblyName);
-            return default;
+            return false;
         }
 
-        if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParameterDefinitions, serverComponent.ParameterValues, out var parameters))
+        if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParameterDefinitions, serverComponent.ParameterValues, out parameters))
         {
             // TryDeserializeParameters does appropriate logging.
             return default;
         }
 
-        var componentDescriptor = new ComponentDescriptor
-        {
-            ComponentType = componentType,
-            Parameters = parameters,
-            ParameterDefinitions = serverComponent.ParameterDefinitions,
-            SerializedParameterValues = serverComponent.ParameterValues,
-            Sequence = serverComponent.Sequence,
-            Key = serverComponent.Key,
-            InvocationId = serverComponent.InvocationId,
-        };
-
-        return (componentDescriptor, serverComponent);
-    }
-
-    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out (RootComponentOperation, ComponentDescriptor?)[]? operations)
-    {
-        int[]? seenComponentIdsStorage = null;
-        Guid? seenInvocationId = null;
-        try
-        {
-            var result = JsonSerializer.Deserialize<RootComponentOperation[]>(
-                serializedComponentOperations,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
-
-            operations = new (RootComponentOperation, ComponentDescriptor?)[result.Length];
-
-            Span<int> seenComponentIds = result.Length <= 128
-                ? stackalloc int[result.Length]
-                : (seenComponentIdsStorage = ArrayPool<int>.Shared.Rent(result.Length)).AsSpan(0, result.Length);
-            var currentComponentIdIndex = 0;
-            for (var i = 0; i < result.Length; i++)
-            {
-                var operation = result[i];
-                if (seenComponentIds[0..currentComponentIdIndex].Contains(operation.SsrComponentId))
-                {
-                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
-                    operations = null;
-                    return false;
-                }
-
-                seenComponentIds[currentComponentIdIndex++] = operation.SsrComponentId;
-
-                if (operation.Type == RootComponentOperationType.Remove)
-                {
-                    operations[i] = (operation, null);
-                    continue;
-                }
-
-                if (operation.Marker == null)
-                {
-                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
-                    operations = null;
-                    return false;
-                }
-
-                if (!TryDeserializeSingleComponentDescriptor(operation.Marker.Value, out var descriptor))
-                {
-                    operations = null;
-                    return false;
-                }
-
-                if (seenInvocationId is null)
-                {
-                    seenInvocationId = descriptor.InvocationId;
-                }
-                else if (seenInvocationId != descriptor.InvocationId)
-                {
-                    Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Mismatching invocation IDs.");
-                    operations = null;
-                    return false;
-                }
-
-                operations[i] = (operation, descriptor);
-            }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.FailedToProcessRootComponentOperations(_logger, ex);
-            operations = null;
-            return false;
-        }
-        finally
-        {
-            if (seenComponentIdsStorage != null)
-            {
-                ArrayPool<int>.Shared.Return(seenComponentIdsStorage);
-            }
-        }
+        return true;
     }
 
     private static partial class Log

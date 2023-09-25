@@ -145,13 +145,10 @@ public readonly struct ParameterView
         return false;
     }
 
-    /// <summary>
-    /// Returns whether the parameters in this <see cref="ParameterView"/> are definitely equal to <paramref name="oldParameters"/>.
-    /// This is primarily used to detect whether a component's parameters have changed in a way that requires it to be re-rendered.
-    /// </summary>
-    /// <param name="oldParameters">The parameters to compare against.</param>
-    /// <returns><c>true</c> if the parameters are definitely equal, otherwise false.</returns>
-    public bool DefinitelyEquals(ParameterView oldParameters)
+    // It's internal because there isn't a known use case for user code comparing
+    // ParameterView instances, and even if there was, it's unlikely it should
+    // use these equality rules which are designed for their effect on rendering.
+    internal bool DefinitelyEquals(ParameterView oldParameters)
     {
         // In general we can't detect mutations on arbitrary objects. We can't trust
         // things like .Equals or .GetHashCode because they usually only tell us about
