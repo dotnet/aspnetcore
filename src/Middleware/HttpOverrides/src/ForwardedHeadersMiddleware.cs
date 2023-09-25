@@ -174,8 +174,7 @@ public class ForwardedHeadersMiddleware
             if (_options.RequireHeaderSymmetry
                 && ((checkFor && forwardedFor!.Length != forwardedPort.Length)
                     || (checkProto && forwardedProto!.Length != forwardedPort.Length)
-                    || (checkHost && forwardedHost!.Length != forwardedPort.Length)
-                    || (checkPort && forwardedPort!.Length != forwardedPort.Length)))
+                    || (checkHost && forwardedHost!.Length != forwardedPort.Length)))
             {
                 _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Prefix and X-Forwarded-Host and X-Forwarded-Port and X-Forwarded-For or X-Forwarded-Proto.");
                 return;
