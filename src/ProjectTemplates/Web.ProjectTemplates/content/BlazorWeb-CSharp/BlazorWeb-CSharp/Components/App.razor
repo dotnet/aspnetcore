@@ -48,19 +48,32 @@
 </body>
 
 </html>
-@*#if (InteractiveAtRoot && IndividualLocalAuth)
+@*#if (!InteractiveAtRoot || !IndividualLocalAuth)
+#elseif (UseServer && UseWebAssembly)
 
 @code {
     [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
-        @*#if (UseServer && UseWebAssembly)
         : RenderMode.InteractiveAuto;
-        ##elseif (UseServer)
-        : RenderMode.InteractiveServer;
-        ##else
-        : RenderMode.InteractiveWebAssembly;
-        ##endif*@
 }
-##endif*@
+#elseif (UseServer)
+
+@code {
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : RenderMode.InteractiveServer;
+}
+#else
+
+@code {
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : RenderMode.InteractiveWebAssembly;
+}
+#endif*@
