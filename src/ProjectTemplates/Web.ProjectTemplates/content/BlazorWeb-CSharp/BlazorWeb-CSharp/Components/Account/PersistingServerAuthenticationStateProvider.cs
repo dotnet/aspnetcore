@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using BlazorWeb_CSharp.Client;
 
-namespace BlazorWeb_CSharp.Identity;
+namespace BlazorWeb_CSharp.Components.Account;
 
 public class PersistingServerAuthenticationStateProvider : ServerAuthenticationStateProvider, IDisposable
 {

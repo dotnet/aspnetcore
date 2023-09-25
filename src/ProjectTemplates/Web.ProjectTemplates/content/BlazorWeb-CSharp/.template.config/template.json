@@ -140,19 +140,19 @@
         {
           "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
+            "BlazorWeb-CSharp/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
+            "BlazorWeb-CSharp/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Account/PersistingServerAuthenticationStateProvider.cs"
+            "BlazorWeb-CSharp/Components/Account/PersistingServerAuthenticationStateProvider.cs"
           ]
         },
         {

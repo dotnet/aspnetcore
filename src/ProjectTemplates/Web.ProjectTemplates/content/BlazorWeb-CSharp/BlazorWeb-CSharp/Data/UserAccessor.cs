@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using BlazorWeb_CSharp.Identity;
+using BlazorWeb_CSharp.Components.Account;
 
 namespace BlazorWeb_CSharp.Data;
 
