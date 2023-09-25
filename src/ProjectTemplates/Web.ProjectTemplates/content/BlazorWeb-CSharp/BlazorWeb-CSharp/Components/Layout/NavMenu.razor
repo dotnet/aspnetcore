@@ -1,8 +1,4 @@
-﻿@*#if (IndividualLocalAuth)
-@using BlazorWeb_CSharp.Components.Identity
-
-##endif*@
-<div class="top-row ps-3 navbar navbar-dark">
+﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BlazorWeb-CSharp</a>
     </div>
@@ -47,7 +43,6 @@
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <LogoutForm id="logout-form" />
                     <NavLink class="nav-link" href="#" onclick="document.getElementById('logout-form').submit(); return false;">
                         <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
                     </NavLink>
