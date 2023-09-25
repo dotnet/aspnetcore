@@ -1,5 +1,5 @@
 @inherits LayoutComponentBase
-@*#if (UseWebAssembly)
+@*#if (UseWebAssembly && InteractiveAtRoot)
 @layout BlazorWeb_CSharp.Client.Layout.MainLayout
 ##else
 @layout BlazorWeb_CSharp.Components.Layout.MainLayout
