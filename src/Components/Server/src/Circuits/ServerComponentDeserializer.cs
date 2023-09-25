@@ -285,7 +285,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return (componentDescriptor, serverComponent);
     }
 
-
     private bool TryDeserializeServerComponent(ComponentMarker record, out ServerComponent result)
     {
         result = default;

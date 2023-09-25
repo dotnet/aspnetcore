@@ -433,11 +433,10 @@ public class CircuitHostTest
             componentType: typeof(DynamicallyAddedComponent),
             key: operation.Marker.Value.Key,
             parameters: CreateWebRootComponentParameters(parameters));
-        var circuitOperation = new CircuitRootComponentOperation(operation, descriptor);
 
         // Act
         await circuitHost.UpdateRootComponents(
-            [circuitOperation], null, CreateDeserializer(), CancellationToken.None);
+            [new(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
