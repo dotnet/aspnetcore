@@ -339,7 +339,7 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void TryDeserializeSingleComponentDescriptor_AllowsParsingMarkersOutOfOrder()
+    public void TryDeserializeWebRootComponentDescriptor_AllowsParsingMarkersOutOfOrder()
     {
         // Arrange
         var markers = CreateMarkers(typeof(TestComponent), typeof(TestComponent));
@@ -351,7 +351,7 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void TryDeserializeSingleComponentDescriptor_AllowsParsingMarkersFromMultipleInvocations()
+    public void TryDeserializeWebRootComponentDescriptor_AllowsParsingMarkersFromMultipleInvocations()
     {
         // Arrange
         var firstInvocationMarkers = CreateMarkers(typeof(TestComponent));
@@ -365,7 +365,7 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void TryDeserializeSingleComponentDescriptor_DoesNotParseTheSameMarkerTwice()
+    public void TryDeserializeWebRootComponentDescriptor_DoesNotParseTheSameMarkerTwice()
     {
         // Arrange
         var markers = CreateMarkers(typeof(TestComponent));
@@ -377,7 +377,7 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void TryDeserializeSingleComponentDescriptor_DoesNotParseMarkerFromOldInvocation()
+    public void TryDeserializeWebRootComponentDescriptor_DoesNotParseMarkerFromOldInvocation()
     {
         // Arrange
         var firstInvocationMarkers = CreateMarkers(typeof(TestComponent), typeof(TestComponent));

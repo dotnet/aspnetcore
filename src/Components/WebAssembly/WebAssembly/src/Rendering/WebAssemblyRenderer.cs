@@ -45,14 +45,14 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     _ = webRootComponentManager.AddRootComponentAsync(
                         operation.SsrComponentId,
                         componentType!,
-                        parameters,
-                        operation.Marker!.Value.Key!);
+                        operation.Marker!.Value.Key!,
+                        parameters);
                     break;
                 case RootComponentOperationType.Update:
                     _ = webRootComponentManager.UpdateRootComponentAsync(
                         operation.SsrComponentId,
-                        parameters,
-                        operation.Marker!.Value.Key!);
+                        operation.Marker!.Value.Key!,
+                        parameters);
                     break;
                 case RootComponentOperationType.Remove:
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);

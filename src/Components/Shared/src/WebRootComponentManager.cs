@@ -35,8 +35,8 @@ internal partial class WebAssemblyRenderer
         public async Task AddRootComponentAsync(
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
-            WebRootComponentParameters parameters,
-            string key)
+            string key,
+            WebRootComponentParameters parameters)
         {
 #if COMPONENTS_SERVER
             if (_webRootComponents.Count + 1 > renderer._options.RootComponents.MaxInteractiveServerRootComponentCount)
@@ -50,23 +50,18 @@ internal partial class WebAssemblyRenderer
                 throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
             }
 
-            var component = await WebRootComponent.CreateAndRenderAsync(
-                renderer,
-                ssrComponentId,
-                componentType,
-                parameters,
-                key);
+            var component = await WebRootComponent.CreateAndRenderAsync(renderer, componentType, ssrComponentId, key, parameters);
 
             _webRootComponents.Add(ssrComponentId, component);
         }
 
         public Task UpdateRootComponentAsync(
             int ssrComponentId,
-            WebRootComponentParameters newParameters,
-            string key)
+            string newKey,
+            WebRootComponentParameters newParameters)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
-            return component.SetParametersAsync(renderer, newParameters, key);
+            return component.UpdateAsync(renderer, newKey, newParameters);
         }
 
         public void RemoveRootComponent(int ssrComponentId)
@@ -99,10 +94,10 @@ internal partial class WebAssemblyRenderer
 
             public static async Task<WebRootComponent> CreateAndRenderAsync(
                 Renderer renderer,
-                int ssrComponentId,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
-                WebRootComponentParameters initialParameters,
-                string key)
+                int ssrComponentId,
+                string key,
+                WebRootComponentParameters initialParameters)
             {
                 if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
                 {
@@ -115,31 +110,31 @@ internal partial class WebAssemblyRenderer
 
                 await renderer.RenderRootComponentAsync(interactiveComponentId, initialParameters.Parameters);
 
-                return new(componentType, ssrComponentIdString, interactiveComponentId, initialParameters, key, canSupplyNewParameters);
+                return new(componentType, ssrComponentIdString, key, canSupplyNewParameters, interactiveComponentId, initialParameters);
             }
 
             private WebRootComponent(
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 string ssrComponentIdString,
-                int interactiveComponentId,
-                in WebRootComponentParameters initialParameters,
                 string key,
-                bool canSupplyNewParameters)
+                bool canSupplyNewParameters,
+                int interactiveComponentId,
+                in WebRootComponentParameters initialParameters)
             {
                 _componentType = componentType;
                 _ssrComponentIdString = ssrComponentIdString;
-                _interactiveComponentId = interactiveComponentId;
-                _latestParameters = initialParameters;
                 _key = key;
                 _canSupplyNewParameters = canSupplyNewParameters;
+                _interactiveComponentId = interactiveComponentId;
+                _latestParameters = initialParameters;
             }
 
-            public Task SetParametersAsync(
+            public Task UpdateAsync(
                 Renderer renderer,
-                WebRootComponentParameters newParameters,
-                string key)
+                string newKey,
+                WebRootComponentParameters newParameters)
             {
-                if (!string.Equals(key, _key, StringComparison.Ordinal))
+                if (!string.Equals(newKey, _key, StringComparison.Ordinal))
                 {
                     // The client should always supply updated parameters to a component with a matching key.
                     throw new InvalidOperationException("Cannot update components with mismatching keys.");

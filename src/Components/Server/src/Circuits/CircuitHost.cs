@@ -786,8 +786,8 @@ internal partial class CircuitHost : IAsyncDisposable
                                 var task = webRootComponentManager.AddRootComponentAsync(
                                     operation.SsrComponentId,
                                     operation.Descriptor.ComponentType,
-                                    operation.Descriptor.Parameters,
-                                    operation.Descriptor.Key);
+                                    operation.Descriptor.Key,
+                                    operation.Descriptor.Parameters);
                                 if (pendingTasks != null)
                                 {
                                     pendingTasks[i] = task;
@@ -799,8 +799,8 @@ internal partial class CircuitHost : IAsyncDisposable
                                 // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
                                 _ = webRootComponentManager.UpdateRootComponentAsync(
                                     operation.SsrComponentId,
-                                    operation.Descriptor.Parameters,
-                                    operation.Descriptor.Key);
+                                    operation.Descriptor.Key,
+                                    operation.Descriptor.Parameters);
                             }
                             break;
                         case RootComponentOperationType.Remove:
