@@ -9,6 +9,10 @@ internal sealed class ComponentDescriptor
 
     public ParameterView Parameters { get; set; }
 
+    public IList<ComponentParameter> ParameterDefinitions { get; set; }
+
+    public IList<object?> SerializedParameterValues { get; set; }
+
     public int Sequence { get; set; }
 
     public string? Key { get; set; }

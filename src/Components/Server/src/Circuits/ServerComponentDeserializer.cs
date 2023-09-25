@@ -265,6 +265,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         {
             ComponentType = componentType,
             Parameters = parameters,
+            ParameterDefinitions = serverComponent.ParameterDefinitions,
+            SerializedParameterValues = serverComponent.ParameterValues,
             Sequence = serverComponent.Sequence,
             Key = serverComponent.Key,
             InvocationId = serverComponent.InvocationId,

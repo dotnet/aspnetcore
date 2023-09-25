@@ -35,7 +35,7 @@ internal partial class WebAssemblyRenderer
         public async Task AddRootComponentAsync(
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
-            ParameterView parameters,
+            WebRootComponentParameters parameters,
             string key)
         {
 #if COMPONENTS_SERVER
@@ -56,7 +56,7 @@ internal partial class WebAssemblyRenderer
 
         public Task UpdateRootComponentAsync(
             int ssrComponentId,
-            ParameterView newParameters,
+            WebRootComponentParameters newParameters,
             string key)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
@@ -88,14 +88,14 @@ internal partial class WebAssemblyRenderer
             private readonly string _key;
             private readonly bool _canSupplyNewParameters;
 
-            private ParameterView _latestParameters;
+            private WebRootComponentParameters _latestParameters;
             private int _interactiveComponentId;
 
             public static async Task<WebRootComponent> CreateAndRenderAsync(
                 Renderer renderer,
                 int ssrComponentId,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
-                ParameterView initialParameters,
+                WebRootComponentParameters initialParameters,
                 string key)
             {
                 if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
@@ -107,7 +107,7 @@ internal partial class WebAssemblyRenderer
                 var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
                 var canSupplyNewParameters = boundaryMarkerKey.HasComponentKey;
 
-                await renderer.RenderRootComponentAsync(interactiveComponentId, initialParameters);
+                await renderer.RenderRootComponentAsync(interactiveComponentId, initialParameters.Parameters);
 
                 return new(componentType, ssrComponentIdString, interactiveComponentId, initialParameters, key, canSupplyNewParameters);
             }
@@ -116,7 +116,7 @@ internal partial class WebAssemblyRenderer
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 string ssrComponentIdString,
                 int interactiveComponentId,
-                in ParameterView initialParameters,
+                in WebRootComponentParameters initialParameters,
                 string key,
                 bool canSupplyNewParameters)
             {
@@ -130,19 +130,19 @@ internal partial class WebAssemblyRenderer
 
             public Task SetParametersAsync(
                 Renderer renderer,
-                ParameterView newParameters,
+                WebRootComponentParameters newParameters,
                 string key)
             {
                 if (!string.Equals(key, _key, StringComparison.Ordinal))
                 {
-                    // The client should always supply updated parameters to a component with a matching key, even if the key is null.
+                    // The client should always supply updated parameters to a component with a matching key.
                     throw new InvalidOperationException("Cannot update components with mismatching keys.");
                 }
 
                 if (_canSupplyNewParameters)
                 {
                     _latestParameters = newParameters;
-                    return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters);
+                    return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
                 }
                 else
                 {
@@ -160,7 +160,7 @@ internal partial class WebAssemblyRenderer
                         renderer.RemoveRootComponent(_interactiveComponentId);
                         _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
                         _latestParameters = newParameters;
-                        return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters);
+                        return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
                     }
                 }
             }

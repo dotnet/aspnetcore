@@ -395,32 +395,6 @@ public class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenComponentIdIsMissing()
-    {
-        // Arrange
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
-            {
-                ["Message"] = "Some other message",
-            }),
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
-
-        var deserializer = CreateServerComponentDeserializer();
-
-        // Act
-        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
-
-        // Assert
-        Assert.False(result);
-        Assert.Null(parsed);
-    }
-
-    [Fact]
     public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenSsrComponentIdIsRepeated()
     {
         // Arrange

@@ -43,6 +43,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentManager.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" Link="Prerendering/ComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="Prerendering/WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />

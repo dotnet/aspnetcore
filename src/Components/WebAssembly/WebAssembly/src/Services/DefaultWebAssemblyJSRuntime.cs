@@ -119,7 +119,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             var operation = deserialized[i];
             if (operation.Type == RootComponentOperationType.Remove)
             {
-                operations[i] = new(operation, null, ParameterView.Empty);
+                operations[i] = new(operation, null, WebRootComponentParameters.Empty);
                 continue;
             }
 
@@ -143,14 +143,14 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         return operations;
     }
 
-    static ParameterView DeserializeComponentParameters(ComponentMarker marker)
+    static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
     {
         var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
         var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         var parameters = componentDeserializer.DeserializeParameters(definitions, values);
 
-        return parameters;
+        return new(parameters, definitions, values.AsReadOnly());
     }
 
     [JSExport]
@@ -171,25 +171,18 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     }
 }
 
-internal readonly struct OperationDescriptor
+internal readonly struct OperationDescriptor(
+    RootComponentOperation operation,
+    Type? componentType,
+    WebRootComponentParameters parameters)
 {
-    public OperationDescriptor(
-        RootComponentOperation operation,
-        Type? componentType,
-        ParameterView parameters)
-    {
-        Operation = operation;
-        ComponentType = componentType;
-        Parameters = parameters;
-    }
+    public RootComponentOperation Operation { get; } = operation;
 
-    public RootComponentOperation Operation { get; }
+    public Type? ComponentType { get; } = componentType;
 
-    public Type? ComponentType { get; }
+    public WebRootComponentParameters Parameters { get; } = parameters;
 
-    public ParameterView Parameters { get; }
-
-    public void Deconstruct(out RootComponentOperation operation, out Type? componentType, out ParameterView parameters)
+    public void Deconstruct(out RootComponentOperation operation, out Type? componentType, out WebRootComponentParameters parameters)
     {
         operation = Operation;
         componentType = ComponentType;
