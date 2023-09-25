@@ -785,10 +785,14 @@ internal partial class CircuitHost : IAsyncDisposable
                     {
                         case RootComponentOperationType.Add:
                             {
+                                var parameters = new WebRootComponentParameters(
+                                    descriptor.Parameters,
+                                    descriptor.ParameterDefinitions.AsReadOnly(),
+                                    descriptor.SerializedParameterValues.AsReadOnly());
                                 var task = webRootComponentManager.AddRootComponentAsync(
                                     operation.SsrComponentId,
                                     descriptor.ComponentType,
-                                    descriptor.Parameters,
+                                    parameters,
                                     descriptor.Key);
                                 if (pendingTasks != null)
                                 {
@@ -799,9 +803,13 @@ internal partial class CircuitHost : IAsyncDisposable
                         case RootComponentOperationType.Update:
                             {
                                 // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                                var parameters = new WebRootComponentParameters(
+                                    descriptor.Parameters,
+                                    descriptor.ParameterDefinitions.AsReadOnly(),
+                                    descriptor.SerializedParameterValues.AsReadOnly());
                                 _ = webRootComponentManager.UpdateRootComponentAsync(
                                     operation.SsrComponentId,
-                                    descriptor.Parameters,
+                                    parameters,
                                     descriptor.Key);
                             }
                             break;
