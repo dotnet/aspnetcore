@@ -1,5 +1,9 @@
 @inherits LayoutComponentBase
+@*#if (UseWebAssembly)
+@layout BlazorWeb_CSharp.Client.Layout.MainLayout
+##else
 @layout BlazorWeb_CSharp.Components.Layout.MainLayout
+##endif*@
 @inject NavigationManager Nav
 
 @if (HttpContext is null)

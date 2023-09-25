@@ -55,6 +55,12 @@
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
+        @*#if (UseServer && UseWebAssembly)
+        : RenderMode.InteractiveAuto;
+        ##elseif (UseServer)
         : RenderMode.InteractiveServer;
+        ##else
+        : RenderMode.InteractiveWebAssembly;
+        ##endif*@
 }
 ##endif*@
