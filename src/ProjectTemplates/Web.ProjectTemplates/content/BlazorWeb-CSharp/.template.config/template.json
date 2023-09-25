@@ -190,6 +190,12 @@
           "exclude": [
             "BlazorWeb-CSharp/Data/SqlServer/**"
           ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Components/Account/Shared/RedirectToLogin.razor": "BlazorWeb-CSharp.Client/RedirectToLogin.razor"
+          }
         }
       ]
     }

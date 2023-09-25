@@ -1,4 +1,4 @@
-﻿@*#if (IndividualLocalAuth)
+﻿@*#if (IndividualLocalAuth && !UseWebAssembly)
 @using BlazorWeb_CSharp.Components.Account.Shared
 ##endif*@
 @*#if (UseWebAssembly && !InteractiveAtRoot)
@@ -8,7 +8,7 @@
 ##endif*@
     <Found Context="routeData">
         @*#if (IndividualLocalAuth)
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)"
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
             <NotAuthorized>
                 <RedirectToLogin />
             </NotAuthorized>
