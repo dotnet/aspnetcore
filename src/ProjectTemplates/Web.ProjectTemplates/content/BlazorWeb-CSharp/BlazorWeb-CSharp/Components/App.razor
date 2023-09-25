@@ -1,6 +1,5 @@
 ﻿@*#if (IndividualLocalAuth)
 @using BlazorWeb_CSharp.Components.Identity
-
 ##endif*@
 <!DOCTYPE html>
 <html lang="en">
@@ -52,9 +51,9 @@
 @*#if (InteractiveAtRoot && IndividualLocalAuth)
 
 @code {
-    [CascadingParameter] HttpContext? HttpContext { get; set; }
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
 
-    IComponentRenderMode? RenderModeForPage => HttpContext.PageHasLayout<AccountLayout>()
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
         : RenderMode.InteractiveServer;
 }

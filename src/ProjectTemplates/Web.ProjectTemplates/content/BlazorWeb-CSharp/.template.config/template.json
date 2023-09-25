@@ -192,12 +192,6 @@
           "exclude": [
             "BlazorWeb-CSharp/Data/SqlServer/**"
           ]
-        },
-        {
-          "condition": "(IndividualLocalAuth && !InteractiveAtRoot)",
-          "exclude": [
-            "BlazorWeb-CSharp/Identity/PageLayoutTypeExtensions.cs"
-          ]
         }
       ]
     }
