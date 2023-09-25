@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace Microsoft.AspNetCore.Components;
 
 internal readonly struct WebRootComponentParameters(
-    ParameterView parameters,
+    ParameterView parameterView,
     IReadOnlyList<ComponentParameter> parameterDefinitions,
     IReadOnlyList<object> serializedParameterValues)
 {
@@ -16,7 +16,7 @@ internal readonly struct WebRootComponentParameters(
     private readonly IReadOnlyList<ComponentParameter> _parameterDefinitions = parameterDefinitions;
     private readonly IReadOnlyList<object> _serializedParameterValues = serializedParameterValues;
 
-    public ParameterView Parameters => parameters;
+    public ParameterView Parameters => parameterView;
 
     public bool DefinitelyEquals(in WebRootComponentParameters other)
     {

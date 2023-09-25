@@ -10,5 +10,5 @@ internal interface IServerComponentDeserializer
     bool TryDeserializeComponentDescriptorCollection(
         string serializedComponentRecords,
         out List<ComponentDescriptor> descriptors);
-    bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out (RootComponentOperation, ComponentDescriptor?)[]? operationsWithDescriptors);
+    bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out CircuitRootComponentOperation[]? operationsWithDescriptors);
 }

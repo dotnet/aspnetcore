@@ -45,13 +45,19 @@ internal partial class WebAssemblyRenderer
             }
 #endif
 
+            if (_webRootComponents.ContainsKey(ssrComponentId))
+            {
+                throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
+            }
+
             var component = await WebRootComponent.CreateAndRenderAsync(
                 renderer,
                 ssrComponentId,
                 componentType,
                 parameters,
                 key);
-            _webRootComponents[ssrComponentId] = component;
+
+            _webRootComponents.Add(ssrComponentId, component);
         }
 
         public Task UpdateRootComponentAsync(
