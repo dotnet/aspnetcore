@@ -67,7 +67,12 @@
           "condition": "(UseWebAssembly && InteractiveAtRoot)",
           "rename": {
             "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
-            "BlazorWeb-CSharp/Components/Pages/": "./BlazorWeb-CSharp.Client/Pages/",
+            "BlazorWeb-CSharp/Components/Pages/Home.razor": "./BlazorWeb-CSharp.Client/Pages/Home.razor",
+            "BlazorWeb-CSharp/Components/Pages/Home.razor.css": "./BlazorWeb-CSharp.Client/Pages/Home.razor.css",
+            "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
+            "BlazorWeb-CSharp/Components/Pages/Weather.razor.css": "./BlazorWeb-CSharp.Client/Pages/Weather.razor.css",
+            "BlazorWeb-CSharp/Components/Pages/Counter.razor": "./BlazorWeb-CSharp.Client/Pages/Counter.razor",
+            "BlazorWeb-CSharp/Components/Pages/Counter.razor.css": "./BlazorWeb-CSharp.Client/Pages/Counter.razor.css",
             "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
           }
         },
@@ -114,8 +119,6 @@
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
             "BlazorWeb-CSharp/Components/Identity/**",
-            "BlazorWeb-CSharp/Components/Layout/ManageLayout.razor",
-            "BlazorWeb-CSharp/Components/Layout/ManageNavMenu.razor",
             "BlazorWeb-CSharp/Components/Pages/Account/**",
             "BlazorWeb-CSharp/Data/**",
             "BlazorWeb-CSharp/Identity/**",
@@ -188,6 +191,12 @@
           },
           "exclude": [
             "BlazorWeb-CSharp/Data/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !InteractiveAtRoot)",
+          "exclude": [
+            "BlazorWeb-CSharp/Identity/PageLayoutTypeExtensions.cs"
           ]
         }
       ]
@@ -349,7 +358,7 @@
       "defaultValue": "InteractivePerPage",
       "displayName": "_Interactivity location",
       "description": "Chooses which components will have interactive rendering enabled",
-      "isEnabled": "(InteractivityPlatform != \"None\" && auth == \"None\")",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
       "choices": [
         {
           "choice": "InteractivePerPage",
@@ -413,7 +422,7 @@
     "AllInteractive": {
       "type": "parameter",
       "datatype": "bool",
-      "isEnabled": "(InteractivityPlatform != \"None\" && auth == \"None\")",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
       "defaultValue": "false",
       "displayName": "_Enable interactive rendering globally throughout the site",
       "description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis."
