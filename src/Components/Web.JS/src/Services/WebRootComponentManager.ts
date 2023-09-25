@@ -12,6 +12,8 @@ import { RootComponentManager } from './RootComponentManager';
 import { Blazor } from '../GlobalExports';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
+import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { LogicalElement } from '../Rendering/LogicalElements';
 
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
@@ -356,6 +358,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
           return null;
         }
 
+        // .NET may dispose and re-initialize the interactive component as a result of a future 'update' operation.
+        // This call prevents the component's content from being deleted from the DOM between the disposal
+        // and subsequent re-initialization.
+        setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, true);
+
         component.assignedRendererId = rendererId;
         component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
         return { type: 'add', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
@@ -380,6 +387,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         // so we don't have to notify .NET that anything has changed.
         return null;
       }
+
+      // Since the component will be getting completedly diposed from .NET (rather than replaced by another component, which can
+      // happen as a result of an 'update' operation), we indicate that its content should no longer be preserved on disposal.
+      setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, false);
 
       // This component was removed from the document and we've assigned a renderer ID,
       // so we'll dispose it in .NET.
