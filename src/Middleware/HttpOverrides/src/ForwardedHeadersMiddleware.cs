@@ -193,7 +193,7 @@ public class ForwardedHeadersMiddleware
                     || (checkHost && forwardedHost!.Length != forwardedPrefix.Length)
                     || (checkPort && forwardedPort!.Length != forwardedPrefix.Length)))
             {
-                _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Prefix and X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
+                _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Prefix and X-Forwarded-Host and X-Forwarded-For and X-Forwarded-Proto or X-Forwarded-Port.");
                 return;
             }
             entryCount = Math.Max(forwardedPrefix.Length, entryCount);
