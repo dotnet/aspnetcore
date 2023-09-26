@@ -222,4 +222,50 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
             }
         }
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async void StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
+    {
+        IWebElement originalH1Elem;
+
+        if (duringEnhancedNavigation)
+        {
+            Navigate($"{ServerPathBase}/nav");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello", () => originalH1Elem.Text);
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/streaming");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+        }
+
+        // Initial "waiting" state
+        Browser.Equal("Streaming Rendering", () => originalH1Elem.Text);
+        var getStatusText = () => Browser.Exists(By.Id("status"));
+        var getDisplayedItems = () => Browser.FindElements(By.TagName("li"));
+        var addItemsUrl = Browser.FindElement(By.Id("add-item-link")).GetDomProperty("href");
+        var endResponseUrl = Browser.FindElement(By.Id("end-response-link")).GetDomProperty("href");
+        Assert.Equal("Waiting for more...", getStatusText().Text);
+        Assert.Empty(getDisplayedItems());
+        Assert.StartsWith("http", addItemsUrl);
+
+        // Navigate away using enhanced nav, before the response is completed
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming with interactivity")).Click();
+        Browser.Equal("Streaming Rendering with Interactivity", () => originalH1Elem.Text);
+        var statusElem = Browser.FindElement(By.Id("status"));
+        Assert.Equal("Not streaming", statusElem.Text);
+
+        // Now if the earlier navigation produces more output, we do *not* add it to the page
+        var addItemsOutput = await new HttpClient().GetStringAsync(addItemsUrl);
+        Assert.Equal("Added item", addItemsOutput);
+        await Task.Delay(1000); // Make sure we would really have seen the UI change by now if it was going to
+        Browser.Equal("Not streaming", () => statusElem.Text); // It didn't get removed from the doc, nor was its text updated
+
+        // Tidy up
+        await new HttpClient().GetAsync(endResponseUrl);
+    }
 }
