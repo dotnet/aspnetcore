@@ -100,7 +100,6 @@ internal sealed partial class KestrelTrace : ILogger
         Http2Log.Http2FlowControlQueueMaximumTooLow(_http2Logger, connectionId, expected, actual);
     }
 
-
     private static partial class Http2Log
     {
         [LoggerMessage(29, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.", EventName = "Http2ConnectionError")]
