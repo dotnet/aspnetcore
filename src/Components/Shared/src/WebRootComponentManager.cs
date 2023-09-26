@@ -101,7 +101,7 @@ internal partial class WebAssemblyRenderer
             {
                 if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
                 {
-                    throw new InvalidOperationException($"The boundary marker key '{boundaryMarkerKey}' had an invalid format.");
+                    throw new InvalidOperationException($"The key '{key}' had an invalid format.");
                 }
 
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
