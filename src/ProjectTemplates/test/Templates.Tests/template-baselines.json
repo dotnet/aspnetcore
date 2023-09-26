@@ -510,11 +510,7 @@
       "Files": [
         "appsettings.Development.json",
         "appsettings.json",
-        "{ProjectName}.csproj",
-        "Program.cs",
         "Components/App.razor",
-        "Components/Routes.razor",
-        "Components/_Imports.razor",
         "Components/Layout/MainLayout.razor",
         "Components/Layout/MainLayout.razor.css",
         "Components/Layout/NavMenu.razor",
@@ -522,11 +518,15 @@
         "Components/Pages/Error.razor",
         "Components/Pages/Home.razor",
         "Components/Pages/Weather.razor",
+        "Components/Routes.razor",
+        "Components/_Imports.razor",
+        "Program.cs",
         "Properties/launchSettings.json",
         "wwwroot/app.css",
-        "wwwroot/favicon.png",
         "wwwroot/bootstrap/bootstrap.min.css",
-        "wwwroot/bootstrap/bootstrap.min.css.map"
+        "wwwroot/bootstrap/bootstrap.min.css.map",
+        "wwwroot/favicon.png",
+        "{ProjectName}.csproj"
       ],
       "AuthOption": "None"
     },
