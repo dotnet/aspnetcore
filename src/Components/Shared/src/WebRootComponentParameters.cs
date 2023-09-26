@@ -18,6 +18,11 @@ internal readonly struct WebRootComponentParameters(
 
     public ParameterView Parameters => parameterView;
 
+    // Unlike the equality checking implementation in ParameterView, this method
+    // compares the serialized values of parameters. This is because it's a requirement that
+    // component parameters for interactive root components are serializable, so we can
+    // compare the serialized representation without relying on .NET equality checking
+    // for the deserialized values, which may yield false negatives.
     public bool DefinitelyEquals(in WebRootComponentParameters other)
     {
         var count = _parameterDefinitions.Count;
@@ -28,7 +33,14 @@ internal readonly struct WebRootComponentParameters(
 
         for (var i = 0; i < count; i++)
         {
-            if (!string.Equals(_parameterDefinitions[i].Name, other._parameterDefinitions[i].Name, StringComparison.Ordinal))
+            // We rely on parameter definitions and values having a consistent order between
+            // multiple endpoint invocations. This should be true because component parameters
+            // are usually rendered in a deterministic order.
+            var definition = _parameterDefinitions[i];
+            var otherDefinition = other._parameterDefinitions[i];
+            if (!string.Equals(definition.Name, otherDefinition.Name, StringComparison.Ordinal) ||
+                !string.Equals(definition.TypeName, otherDefinition.TypeName, StringComparison.Ordinal) ||
+                !string.Equals(definition.Assembly, otherDefinition.Assembly, StringComparison.Ordinal))
             {
                 return false;
             }
