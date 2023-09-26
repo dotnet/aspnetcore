@@ -402,6 +402,103 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     [Theory]
     [MemberData(nameof(AddCounterLinkSequences))]
+    public void InteractiveRootComponents_GetReinitialized_WhenNoKeyIsProvided_AfterReceivingSsrParameterUpdates_FromEnhancedNavigation(string[] addCounterLinkIds)
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        Browser.Click(By.Id("disable-keys-link"));
+        Browser.Exists(By.Id("enable-keys-link"));
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id($"update-counter-link-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"increment-amount-{i}")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text); // Resets back to 0 because the parameter changed
+
+            // Ensure that interactivity still works, and the correct parameters have been supplied.
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
+            for (var j = 0; j < addCounterLinkIds.Length; j++)
+            {
+                if (j == i)
+                {
+                    continue;
+                }
+
+                // Ensure that other components didn't get reset; their parameters did not change.
+                Browser.NotEqual("0", () => Browser.FindElement(By.Id($"count-{j}")).Text);
+            }
+        }
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [MemberData(nameof(AddCounterLinkSequences))]
+    public void InteractiveRootComponents_GetReinitialized_WhenNoKeyIsProvided_AfterReceivingSsrParameterUpdates_FromStreamingRenderingUpdate(string[] addCounterLinkIds)
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        Browser.Click(By.Id("disable-keys-link"));
+        Browser.Exists(By.Id("enable-keys-link"));
+
+        // Components don't become interactive during streaming rendering, so we need to
+        // add then via enhanced navigation first
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id($"update-counter-link-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"increment-amount-{i}")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text); // Resets back to 0 because the parameter changed
+
+            // Ensure that interactivity still works, and the correct parameters have been supplied.
+            // Note that while SSR'd components don't become interactive during stream rendering,
+            // this streaming update replaced an already-interactive component. To ensure that supplying
+            // unchanged parameters behaves the same way as supplying updated parameters, we
+            // check that the component is still interactive.
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
+            for (var j = 0; j < addCounterLinkIds.Length; j++)
+            {
+                if (j == i)
+                {
+                    continue;
+                }
+
+                // Ensure that other components didn't get reset; their parameters did not change.
+                Browser.NotEqual("0", () => Browser.FindElement(By.Id($"count-{j}")).Text);
+            }
+        }
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [MemberData(nameof(AddCounterLinkSequences))]
     public void InteractiveRootComponents_CanGetDisposed_FromEnhancedNavigation(string[] addCounterLinkIds)
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
