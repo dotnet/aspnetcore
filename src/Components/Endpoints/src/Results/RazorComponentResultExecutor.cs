@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Buffers;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +47,8 @@ internal static class RazorComponentResultExecutor
         var endpointHtmlRenderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
         return endpointHtmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
-            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext);
+            var isErrorHandler = httpContext.Features.Get<IExceptionHandlerFeature>() is not null;
+            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext, isErrorHandler);
             EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(httpContext);
 
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView

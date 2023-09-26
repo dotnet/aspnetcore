@@ -268,4 +268,11 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Tidy up
         await new HttpClient().GetAsync(endResponseUrl);
     }
+
+    [Fact]
+    public void CanStreamDirectlyIntoSectionContentConnectedToNonStreamingOutlet()
+    {
+        Navigate($"{ServerPathBase}/streaming-with-sections");
+        Browser.Equal("This is some streaming content", () => Browser.Exists(By.Id("streaming-message")).Text);
+    }
 }
