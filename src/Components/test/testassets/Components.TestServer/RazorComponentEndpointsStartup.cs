@@ -9,6 +9,7 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
 
@@ -147,6 +148,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             response.ContentType = "text/html";
             await response.WriteAsync("<html><body><h1>This is a non-Blazor endpoint</h1><p>That's all</p></body></html>");
+        });
+
+        endpoints.MapPost("api/antiforgery-form", ([FromForm] string value) =>
+        {
+            return Results.Ok(value);
         });
 
         static Task PerformRedirection(HttpRequest request, HttpResponse response)
