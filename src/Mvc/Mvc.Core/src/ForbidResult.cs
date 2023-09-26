@@ -95,7 +95,7 @@ public partial class ForbidResult : ActionResult
         var httpContext = context.HttpContext;
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<ForbidResult>();
+        var logger = loggerFactory.CreateLogger(typeof(ForbidResult));
         Log.ForbidResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)

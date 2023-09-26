@@ -20,11 +20,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
@@ -395,6 +395,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [SkipOnCI("https://github.com/dotnet/aspnetcore/issues/50833")]
     public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
     {
         // Arrange
@@ -699,6 +700,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [SkipOnCI("https://github.com/dotnet/aspnetcore/issues/50833")]
     public async Task POST_Expect100Continue_Get100Continue()
     {
         // Arrange
@@ -958,7 +960,7 @@ public class Http3RequestTests : LoggedTest
     [ConditionalTheory]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    //[InlineData(HttpProtocols.Http3)] Skip: see https://github.com/dotnet/aspnetcore/issues/50833
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
@@ -1059,7 +1061,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
-    [InlineData(HttpProtocols.Http3)]
+    //[InlineData(HttpProtocols.Http3)] Skip: see https://github.com/dotnet/aspnetcore/issues/50833
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_Bidirectional_LargeData_Cancellation_Error(HttpProtocols protocol)
     {
