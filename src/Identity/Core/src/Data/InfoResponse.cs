@@ -25,5 +25,5 @@ public sealed class InfoResponse
     /// <summary>
     /// The <see cref="ClaimsPrincipal.Claims"/> from the authenticated <see cref="HttpContext.User"/>.
     /// </summary>
-    public required IDictionary<string, string> Claims { get; init; }
+    public required IDictionary<string, string[]> Claims { get; init; }
 }

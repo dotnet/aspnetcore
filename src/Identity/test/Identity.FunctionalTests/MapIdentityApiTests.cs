@@ -12,8 +12,8 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Identity.DefaultUI.WebSite;
 using Identity.DefaultUI.WebSite.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -862,7 +862,7 @@ public class MapIdentityApiTests : LoggedTest
         client.DefaultRequestHeaders.Authorization = new("Bearer", recoveryAccessToken);
 
         var updated2faResponse = await client.PostAsJsonAsync("/identity/manage/2fa", new object());
-        var updated2faContent = await updated2faResponse.Content.ReadFromJsonAsync<JsonElement>();;
+        var updated2faContent = await updated2faResponse.Content.ReadFromJsonAsync<JsonElement>();
         Assert.Equal(8, updated2faContent.GetProperty("recoveryCodesLeft").GetInt32());
         Assert.Null(updated2faContent.GetProperty("recoveryCodes").GetString());
 
@@ -1026,10 +1026,31 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal(Email, infoResponse.GetProperty("email").GetString());
 
         var claims = infoResponse.GetProperty("claims");
-        Assert.Equal(Email, claims.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(Email, claims.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal("pwd", claims.GetProperty("amr").GetString());
-        Assert.NotNull(claims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(Email, GetSingleClaim(claims, ClaimTypes.Name));
+        Assert.Equal(Email, GetSingleClaim(claims, ClaimTypes.Email));
+        Assert.Equal("pwd", GetSingleClaim(claims, "amr"));
+        Assert.NotNull(GetSingleClaim(claims, ClaimTypes.NameIdentifier));
+    }
+
+    [Fact]
+    public async Task CanGetMultipleRoles()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+            services.AddSingleton<IClaimsTransformation, AddMultipleRolesClaimsTransformation>();
+        });
+        using var client = app.GetTestClient();
+
+        await RegisterAsync(client);
+        await LoginAsync(client);
+
+        var infoResponse = await client.GetFromJsonAsync<JsonElement>("/identity/manage/info");
+        var claims = infoResponse.GetProperty("claims");
+
+        Assert.Collection(claims.GetProperty(ClaimsIdentity.DefaultRoleClaimType).EnumerateArray(),
+            role1 => Assert.Equal("role1", role1.GetString()),
+            role2 => Assert.Equal("role2", role2.GetString()));
     }
 
     [Theory]
@@ -1059,11 +1080,11 @@ public class MapIdentityApiTests : LoggedTest
         Assert.True(infoResponse.GetProperty("isEmailConfirmed").GetBoolean());
 
         var infoClaims = infoResponse.GetProperty("claims");
-        Assert.Equal("pwd", infoClaims.GetProperty("amr").GetString());
-        Assert.Equal(Email, infoClaims.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(Email, infoClaims.GetProperty(ClaimTypes.Email).GetString());
+        Assert.Equal("pwd", GetSingleClaim(infoClaims, "amr"));
+        Assert.Equal(Email, GetSingleClaim(infoClaims, ClaimTypes.Name));
+        Assert.Equal(Email, GetSingleClaim(infoClaims, ClaimTypes.Email));
 
-        var originalNameIdentifier = infoResponse.GetProperty("claims").GetProperty(ClaimTypes.NameIdentifier).GetString();
+        var originalNameIdentifier = GetSingleClaim(infoResponse.GetProperty("claims"), ClaimTypes.NameIdentifier);
         var newEmail = $"New-{Email}";
 
         // The email must pass DataAnnotations validation by EmailAddressAttribute.
@@ -1078,9 +1099,9 @@ public class MapIdentityApiTests : LoggedTest
 
         // And none of the claims have yet been updated.
         var infoPostClaims = infoPostContent.GetProperty("claims");
-        Assert.Equal(Email, infoPostClaims.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(Email, infoPostClaims.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(Email, GetSingleClaim(infoPostClaims, ClaimTypes.Name));
+        Assert.Equal(Email, GetSingleClaim(infoPostClaims, ClaimTypes.Email));
+        Assert.Equal(originalNameIdentifier, GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier));
 
         // We cannot log in with the new email until we confirm the email change.
         await AssertProblemAsync(await client.PostAsJsonAsync("/identity/login", new { Email = newEmail, Password }),
@@ -1104,9 +1125,9 @@ public class MapIdentityApiTests : LoggedTest
 
         // The email still won't be available as a claim until we get a new token.
         var claimsAfterEmailChange = infoAfterEmailChange.GetProperty("claims");
-        Assert.Equal(Email, claimsAfterEmailChange.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(Email, claimsAfterEmailChange.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(Email, GetSingleClaim(claimsAfterEmailChange, ClaimTypes.Name));
+        Assert.Equal(Email, GetSingleClaim(claimsAfterEmailChange, ClaimTypes.Email));
+        Assert.Equal(originalNameIdentifier, GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier));
 
         // And now the email has changed, the refresh token is invalidated by the security stamp.
         AssertUnauthorizedAndEmpty(await client.PostAsJsonAsync("/identity/refresh", new { RefreshToken = originalRefreshToken }));
@@ -1119,9 +1140,9 @@ public class MapIdentityApiTests : LoggedTest
         Assert.True(infoAfterFinalLogin.GetProperty("isEmailConfirmed").GetBoolean());
 
         var claimsAfterFinalLogin = infoAfterFinalLogin.GetProperty("claims");
-        Assert.Equal(newEmail, claimsAfterFinalLogin.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(newEmail, claimsAfterFinalLogin.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(newEmail, GetSingleClaim(claimsAfterFinalLogin, ClaimTypes.Name));
+        Assert.Equal(newEmail, GetSingleClaim(claimsAfterFinalLogin, ClaimTypes.Email));
+        Assert.Equal(originalNameIdentifier, GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier));
     }
 
     [Fact]
@@ -1153,11 +1174,11 @@ public class MapIdentityApiTests : LoggedTest
         var infoResponse = await client.GetFromJsonAsync<JsonElement>("/identity/manage/info");
         Assert.Equal(Email, infoResponse.GetProperty("email").GetString());
         var infoClaims = infoResponse.GetProperty("claims");
-        Assert.Equal("pwd", infoClaims.GetProperty("amr").GetString());
-        Assert.Equal(Email, infoClaims.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(Email, infoClaims.GetProperty(ClaimTypes.Email).GetString());
+        Assert.Equal("pwd", GetSingleClaim(infoClaims, "amr"));
+        Assert.Equal(Email, GetSingleClaim(infoClaims, ClaimTypes.Name));
+        Assert.Equal(Email, GetSingleClaim(infoClaims, ClaimTypes.Email));
 
-        var originalNameIdentifier = infoResponse.GetProperty("claims").GetProperty(ClaimTypes.NameIdentifier).GetString();
+        var originalNameIdentifier = GetSingleClaim(infoResponse.GetProperty("claims"), ClaimTypes.NameIdentifier);
         var newEmail = $"NewEmailPrefix-{Email}";
 
         var infoPostResponse = await client.PostAsJsonAsync("/identity/manage/info", new { newEmail });
@@ -1170,8 +1191,8 @@ public class MapIdentityApiTests : LoggedTest
 
         // The claims have not been updated to match.
         var infoPostClaims = infoPostContent.GetProperty("claims");
-        Assert.Equal(Email, infoPostClaims.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(Email, GetSingleClaim(infoPostClaims, ClaimTypes.Email));
+        Assert.Equal(originalNameIdentifier, GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier));
 
         // Two emails have now been sent. The first was sent during registration. And the second for the email change.
         Assert.Equal(2, emailSender.Emails.Count);
@@ -1192,8 +1213,8 @@ public class MapIdentityApiTests : LoggedTest
 
         // The email still won't be available as a claim until we get a new cookie.
         var claimsAfterEmailChange = infoAfterEmailChange.GetProperty("claims");
-        Assert.Equal(Email, claimsAfterEmailChange.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(Email, GetSingleClaim(claimsAfterEmailChange, ClaimTypes.Email));
+        Assert.Equal(originalNameIdentifier, GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier));
 
         // We will finally see all the claims updated after logging in again.
         var secondLoginResponse = await client.PostAsJsonAsync("/identity/login?useCookies=true", new { Email = newEmail, Password });
@@ -1203,9 +1224,9 @@ public class MapIdentityApiTests : LoggedTest
         Assert.Equal(newEmail, infoAfterFinalLogin.GetProperty("email").GetString());
 
         var claimsAfterFinalLogin = infoAfterFinalLogin.GetProperty("claims");
-        Assert.Equal(newEmail, claimsAfterFinalLogin.GetProperty(ClaimTypes.Name).GetString());
-        Assert.Equal(newEmail, claimsAfterFinalLogin.GetProperty(ClaimTypes.Email).GetString());
-        Assert.Equal(originalNameIdentifier, infoClaims.GetProperty(ClaimTypes.NameIdentifier).GetString());
+        Assert.Equal(newEmail, GetSingleClaim(claimsAfterFinalLogin, ClaimTypes.Name));
+        Assert.Equal(newEmail, GetSingleClaim(claimsAfterFinalLogin, ClaimTypes.Email));
+        Assert.Equal(originalNameIdentifier, GetSingleClaim(infoClaims, ClaimTypes.NameIdentifier));
     }
 
     [Fact]
@@ -1367,6 +1388,8 @@ public class MapIdentityApiTests : LoggedTest
 
     public static object[][] AddIdentityModes => AddIdentityActions.Keys.Select(key => new object[] { key }).ToArray();
 
+    private static string? GetSingleClaim(JsonElement claims, string name) => claims.GetProperty(name).EnumerateArray().Single().GetString();
+
     private static string GetEmailConfirmationLink(TestEmail email)
     {
         // Update if we add more links to the email.
@@ -1517,6 +1540,17 @@ public class MapIdentityApiTests : LoggedTest
         {
             return string.Join(":", userId, purpose, "ImmaToken");
         }
+    }
+
+    private sealed class AddMultipleRolesClaimsTransformation : IClaimsTransformation
+    {
+        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal) =>
+            Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity(
+                principal.Claims.Concat(new[]
+            {
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, "role1"),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, "role2"),
+            }), principal.Identity?.AuthenticationType)));
     }
 
     private sealed class TestEmailSender : IEmailSender
