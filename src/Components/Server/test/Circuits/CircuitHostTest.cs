@@ -636,6 +636,12 @@ public class CircuitHostTest
     {
         var parameterView = ParameterView.FromDictionary(parameters);
         var (parameterDefinitions, parameterValues) = ComponentParameter.FromParameterView(parameterView);
+        for (var i = 0; i < parameterValues.Count; i++)
+        {
+            // WebRootComponentParameters expects serialized parameter values to be JsonElements.
+            var jsonElement = JsonSerializer.SerializeToElement(parameterValues[i]);
+            parameterValues[i] = jsonElement;
+        }
         return new WebRootComponentParameters(
             parameterView,
             parameterDefinitions.AsReadOnly(),
