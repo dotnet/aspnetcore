@@ -51,6 +51,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                 case RootComponentOperationType.Update:
                     _ = webRootComponentManager.UpdateRootComponentAsync(
                         operation.SsrComponentId,
+                        componentType!,
                         operation.Marker?.Key,
                         parameters);
                     break;
