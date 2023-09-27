@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Windows.Win32.Foundation;
 using Windows.Win32.Networking.HttpServer;
 

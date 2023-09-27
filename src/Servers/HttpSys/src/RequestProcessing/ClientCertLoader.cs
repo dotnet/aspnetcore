@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 // failures are handled internally and reported via ClientCertException or ClientCertError.
 internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposable
 {
-    private const uint CertBoblSize = 1500;
+    private const uint CertBlobSize = 1500;
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
 
     private SafeNativeOverlapped? _overlapped;
@@ -37,7 +36,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         _tcs = new TaskCompletionSource<object?>();
         // we will use this overlapped structure to issue async IO to ul
         // the event handle will be put in by the BeginHttpApi2.ERROR_SUCCESS() method
-        Reset(CertBoblSize);
+        Reset(CertBlobSize);
 
         if (cancellationToken.CanBeCanceled)
         {
@@ -151,7 +150,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     // HTTP.SYS will not do this for you automatically
     internal Task LoadClientCertificateAsync()
     {
-        var size = CertBoblSize;
+        var size = CertBlobSize;
         bool retry;
         do
         {

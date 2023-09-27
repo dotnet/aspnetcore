@@ -7,7 +7,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
@@ -657,38 +656,7 @@ internal unsafe class NativeRequestContext : IDisposable
             return null;
         }
         var address = (IntPtr)(pMemoryBlob + _bufferAlignment - (byte*)_originalBufferAddress + source);
-        return CopyOutAddress(address);
-    }
-
-    private static SocketAddress? CopyOutAddress(IntPtr address)
-    {
-        var addressFamily = *((ushort*)address);
-        if (addressFamily == (ushort)AddressFamily.InterNetwork)
-        {
-            var v4address = new SocketAddress(AddressFamily.InterNetwork, SocketAddress.IPv4AddressSize);
-            fixed (byte* pBuffer = v4address.Buffer)
-            {
-                for (var index = 2; index < SocketAddress.IPv4AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v4address;
-        }
-        if (addressFamily == (ushort)AddressFamily.InterNetworkV6)
-        {
-            var v6address = new SocketAddress(AddressFamily.InterNetworkV6, SocketAddress.IPv6AddressSize);
-            fixed (byte* pBuffer = v6address.Buffer)
-            {
-                for (var index = 2; index < SocketAddress.IPv6AddressSize; index++)
-                {
-                    pBuffer[index] = ((byte*)address)[index];
-                }
-            }
-            return v6address;
-        }
-
-        return null;
+        return SocketAddress.CopyOutAddress(address);
     }
 
     internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
