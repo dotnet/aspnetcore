@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private const string EnhanceYourCalmMaximumCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.EnhanceYourCalmCount";
+        private const string MaximumEnhanceYourCalmCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxEnhanceYourCalmCount";
         private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
 
-        private static readonly int _enhanceYourCalmMaximumCount = GetEnhanceYourCalmMaximumCount();
+        private static readonly int _enhanceYourCalmMaximumCount = GetMaximumEnhanceYourCalmCount();
 
-        private static int GetEnhanceYourCalmMaximumCount()
+        private static int GetMaximumEnhanceYourCalmCount()
         {
-            var data = AppContext.GetData(EnhanceYourCalmMaximumCountProperty);
+            var data = AppContext.GetData(MaximumEnhanceYourCalmCountProperty);
             if (data is int count)
             {
                 return count;
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
 
             _maximumFlowControlQueueSize = ConfiguredMaximumFlowControlQueueSize is null
-                ? 4 * http2Limits.MaxStreamsPerConnection
+                ? 4 * http2Limits.MaxStreamsPerConnection // 4 is a magic number to give us some padding above the expected maximum size
                 : (int)ConfiguredMaximumFlowControlQueueSize;
 
             if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < http2Limits.MaxStreamsPerConnection)
@@ -1224,6 +1224,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IRequestProcessor.Tick(DateTimeOffset now)
         {
             Input.CancelPendingRead();
+            // We count EYCs over a window of a given length to avoid flagging short-lived bursts.
+            // At the end of each window, reset the count.
             if (IsEnhanceYourCalmEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
             {
                 Interlocked.Exchange(ref _enhanceYourCalmCount, 0);
