@@ -464,7 +464,7 @@ public class RemoteRendererTest
     }
 
     [Fact]
-    public async Task WebRootComponentManager_AddRootComponentAsync_Throws_IfKeyIsMalformed()
+    public async Task WebRootComponentManager_AddRootComponentAsync_Throws_IfKeyIsInvalid()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
@@ -477,11 +477,11 @@ public class RemoteRendererTest
             await webRootComponentManager.AddRootComponentAsync(
                 0,
                 typeof(TestComponent),
-                "malformed-key",
+                default, // Invalid key
                 WebRootComponentParameters.Empty);
         });
 
-        Assert.Equal("The key 'malformed-key' had an invalid format.", ex.Message);
+        Assert.Equal("An invalid component marker key was provided.", ex.Message);
     }
 
     [Fact]
@@ -512,7 +512,7 @@ public class RemoteRendererTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            await webRootComponentManager.UpdateRootComponentAsync(1, key.ToString(), WebRootComponentParameters.Empty);
+            await webRootComponentManager.UpdateRootComponentAsync(1, key, WebRootComponentParameters.Empty);
         });
 
         Assert.Equal($"No root component exists with SSR component ID 1.", ex.Message);
@@ -532,7 +532,7 @@ public class RemoteRendererTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            await webRootComponentManager.UpdateRootComponentAsync(0, "invalid-key", WebRootComponentParameters.Empty);
+            await webRootComponentManager.UpdateRootComponentAsync(0, new("1", null), WebRootComponentParameters.Empty);
         });
 
         Assert.Equal("Cannot update components with mismatching keys.", ex.Message);
@@ -551,7 +551,7 @@ public class RemoteRendererTest
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
             var parameters = new Dictionary<string, object> { ["Name"] = "value" };
-            webRootComponentManager.UpdateRootComponentAsync(0, key.ToString(), CreateWebRootComponentParameters(parameters));
+            webRootComponentManager.UpdateRootComponentAsync(0, key, CreateWebRootComponentParameters(parameters));
         });
 
         // Assert
@@ -570,7 +570,7 @@ public class RemoteRendererTest
         await renderer.Dispatcher.InvokeAsync(() =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            webRootComponentManager.UpdateRootComponentAsync(0, key.ToString(), WebRootComponentParameters.Empty);
+            webRootComponentManager.UpdateRootComponentAsync(0, key, WebRootComponentParameters.Empty);
         });
 
         // Assert
@@ -590,7 +590,7 @@ public class RemoteRendererTest
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
             var parameters = new Dictionary<string, object> { ["Name"] = "value" };
-            webRootComponentManager.UpdateRootComponentAsync(0, key.ToString(), CreateWebRootComponentParameters(parameters));
+            webRootComponentManager.UpdateRootComponentAsync(0, key, CreateWebRootComponentParameters(parameters));
         });
 
         // Assert
@@ -656,7 +656,7 @@ public class RemoteRendererTest
             {
                 RootComponents =
                 {
-                    MaxInteractiveServerRootComponentCount = MaxInteractiveServerRootComponentCount
+                    MaxJSRootComponents = MaxInteractiveServerRootComponentCount
                 },
             },
             circuitClient ?? new CircuitClientProxy(),
@@ -664,20 +664,21 @@ public class RemoteRendererTest
             NullLogger.Instance);
     }
 
-    private static Task<BoundaryMarkerKey> AddWebRootComponentAsync(RemoteRenderer renderer, int ssrComponentId, string componentKey = null)
+    private static Task<ComponentMarkerKey> AddWebRootComponentAsync(RemoteRenderer renderer, int ssrComponentId, string componentKey = null)
         => renderer.Dispatcher.InvokeAsync(async () =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            var boundaryMarkerKey = new BoundaryMarkerKey(
-                nameof(TestComponent).AsMemory(),
-                ssrComponentId.ToString(CultureInfo.CurrentCulture).AsMemory(),
-                componentKey?.AsMemory() ?? ReadOnlyMemory<char>.Empty);
+            var componentMarkerKey = new ComponentMarkerKey()
+            {
+                LocationHash = ssrComponentId.ToString(CultureInfo.CurrentCulture),
+                FormattedComponentKey = componentKey,
+            };
             await webRootComponentManager.AddRootComponentAsync(
                 ssrComponentId,
                 typeof(TestComponent),
-                boundaryMarkerKey.ToString(),
+                componentMarkerKey,
                 WebRootComponentParameters.Empty);
-            return boundaryMarkerKey;
+            return componentMarkerKey;
         });
 
     private static WebRootComponentParameters CreateWebRootComponentParameters(IDictionary<string, object> parameters)

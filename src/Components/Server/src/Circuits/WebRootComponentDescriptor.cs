@@ -5,12 +5,12 @@ namespace Microsoft.AspNetCore.Components.Server;
 
 internal sealed class WebRootComponentDescriptor(
     Type componentType,
-    string key,
+    ComponentMarkerKey? key,
     WebRootComponentParameters parameters)
 {
     public Type ComponentType => componentType;
 
-    public string Key => key;
+    public ComponentMarkerKey? Key => key;
 
     public WebRootComponentParameters Parameters => parameters;
 }

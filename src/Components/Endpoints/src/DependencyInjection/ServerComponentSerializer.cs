@@ -18,7 +18,7 @@ internal sealed class ServerComponentSerializer
 
     public void SerializeInvocation(ref ComponentMarker marker, ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters)
     {
-        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, marker.Key!);
+        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, marker.Key);
         marker.WriteServerData(sequence, serverComponent);
     }
 
@@ -26,7 +26,7 @@ internal sealed class ServerComponentSerializer
         ServerComponentInvocationSequence invocationId,
         Type rootComponent,
         ParameterView parameters,
-        string key)
+        ComponentMarkerKey? key)
     {
         var sequence = invocationId.Next();
 

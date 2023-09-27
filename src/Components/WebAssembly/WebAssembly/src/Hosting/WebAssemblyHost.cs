@@ -221,7 +221,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             pendingRenders.Add(webRootComponentManager.AddRootComponentAsync(
                 operation.SsrComponentId,
                 componentType!,
-                operation.Marker!.Value.Key!,
+                operation.Marker?.Key,
                 parameters));
         }
     }
