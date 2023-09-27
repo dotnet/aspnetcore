@@ -796,6 +796,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
                             _ = webRootComponentManager.UpdateRootComponentAsync(
                                 operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
                                 operation.Descriptor.Key,
                                 operation.Descriptor.Parameters);
                             break;
