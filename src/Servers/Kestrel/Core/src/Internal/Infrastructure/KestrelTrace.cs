@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Http2FlowControlQueueOperationsExceeded(_http3Logger, connectionId, count);
         }
 
-        [LoggerMessage(56, LogLevel.Debug, @"Connection id ""{ConnectionId}"" configured maximum flow control queue size {Actual} is less than the maximum streams per connection {Expected}. Increasing configured value to {Expected}.", EventName = "Http2FlowControlQueueMaximumTooLow")]
+        [LoggerMessage(56, LogLevel.Debug, @"Connection id ""{ConnectionId}"" configured maximum flow control queue size {Actual} is less than double the maximum streams per connection {Expected}. Increasing configured value to {Expected}.", EventName = "Http2FlowControlQueueMaximumTooLow")]
         private static partial void Http2FlowControlQueueMaximumTooLow(ILogger logger, string connectionId, int expected, int actual);
 
         public void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual)

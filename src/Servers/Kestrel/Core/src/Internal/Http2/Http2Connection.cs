@@ -189,10 +189,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ? 4 * http2Limits.MaxStreamsPerConnection // 4 is a magic number to give us some padding above the expected maximum size
                 : (int)ConfiguredMaximumFlowControlQueueSize;
 
-            if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < http2Limits.MaxStreamsPerConnection)
+            var minimumMaximumFlowControlQueueSize = 2 * http2Limits.MaxStreamsPerConnection; // Double to match 7.0 and 8.0
+            if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < minimumMaximumFlowControlQueueSize)
             {
-                Log.Http2FlowControlQueueMaximumTooLow(context.ConnectionId, http2Limits.MaxStreamsPerConnection, _maximumFlowControlQueueSize);
-                _maximumFlowControlQueueSize = http2Limits.MaxStreamsPerConnection;
+                Log.Http2FlowControlQueueMaximumTooLow(context.ConnectionId, minimumMaximumFlowControlQueueSize, _maximumFlowControlQueueSize);
+                _maximumFlowControlQueueSize = minimumMaximumFlowControlQueueSize;
             }
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
