@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\BoundaryMarkerKey.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" />

@@ -12,7 +12,7 @@ internal struct ServerComponent
 {
     public ServerComponent(
         int sequence,
-        string key,
+        ComponentMarkerKey? key,
         string assemblyName,
         string typeName,
         IList<ComponentParameter> parametersDefinitions,
@@ -25,7 +25,7 @@ internal struct ServerComponent
     public int Sequence { get; set; }
 
     // A key that identifies the component instance.
-    public string Key { get; set; }
+    public ComponentMarkerKey? Key { get; set; }
 
     // The assembly name for the rendered component.
     public string AssemblyName { get; set; }

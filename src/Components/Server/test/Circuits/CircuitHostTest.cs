@@ -622,8 +622,8 @@ public class CircuitHostTest
     private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null, string componentKey = "")
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var key = new BoundaryMarkerKey(type.FullName.AsMemory(), "0".AsMemory(), componentKey.AsMemory());
-        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key.ToString());
+        var key = new ComponentMarkerKey(type.FullName, componentKey);
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key);
         serializer.SerializeInvocation(
             ref marker,
             _invocationSequence,

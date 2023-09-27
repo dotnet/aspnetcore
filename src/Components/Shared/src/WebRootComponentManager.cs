@@ -35,11 +35,11 @@ internal partial class WebAssemblyRenderer
         public async Task AddRootComponentAsync(
             int ssrComponentId,
             [DynamicallyAccessedMembers(Component)] Type componentType,
-            string key,
+            ComponentMarkerKey? key,
             WebRootComponentParameters parameters)
         {
 #if COMPONENTS_SERVER
-            if (_webRootComponents.Count + 1 > renderer._options.RootComponents.MaxInteractiveServerRootComponentCount)
+            if (_webRootComponents.Count + 1 > renderer._options.RootComponents.MaxJSRootComponents)
             {
                 throw new InvalidOperationException("Exceeded the maximum number of allowed server interactive root components.");
             }
@@ -57,7 +57,7 @@ internal partial class WebAssemblyRenderer
 
         public Task UpdateRootComponentAsync(
             int ssrComponentId,
-            string newKey,
+            ComponentMarkerKey? newKey,
             WebRootComponentParameters newParameters)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
@@ -86,8 +86,7 @@ internal partial class WebAssemblyRenderer
             [DynamicallyAccessedMembers(Component)]
             private readonly Type _componentType;
             private readonly string _ssrComponentIdString;
-            private readonly string _key;
-            private readonly bool _canSupplyNewParameters;
+            private readonly ComponentMarkerKey _key;
 
             private WebRootComponentParameters _latestParameters;
             private int _interactiveComponentId;
@@ -96,52 +95,57 @@ internal partial class WebAssemblyRenderer
                 Renderer renderer,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 int ssrComponentId,
-                string key,
+                ComponentMarkerKey? key,
                 WebRootComponentParameters initialParameters)
             {
-                if (!BoundaryMarkerKey.TryParse(key.AsMemory(), out var boundaryMarkerKey))
+                if (!key.HasValue)
                 {
-                    throw new InvalidOperationException($"The key '{key}' had an invalid format.");
+                    throw new InvalidOperationException("An invalid component marker key was provided.");
                 }
 
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
                 var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
-                var canSupplyNewParameters = boundaryMarkerKey.HasComponentKey;
 
                 await renderer.RenderRootComponentAsync(interactiveComponentId, initialParameters.Parameters);
 
-                return new(componentType, ssrComponentIdString, key, canSupplyNewParameters, interactiveComponentId, initialParameters);
+                return new(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
             }
 
             private WebRootComponent(
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 string ssrComponentIdString,
-                string key,
-                bool canSupplyNewParameters,
+                ComponentMarkerKey key,
                 int interactiveComponentId,
                 in WebRootComponentParameters initialParameters)
             {
                 _componentType = componentType;
                 _ssrComponentIdString = ssrComponentIdString;
                 _key = key;
-                _canSupplyNewParameters = canSupplyNewParameters;
                 _interactiveComponentId = interactiveComponentId;
                 _latestParameters = initialParameters;
             }
 
             public Task UpdateAsync(
                 Renderer renderer,
-                string newKey,
+                ComponentMarkerKey? newKey,
                 WebRootComponentParameters newParameters)
             {
-                if (!string.Equals(newKey, _key, StringComparison.Ordinal))
+                if (!newKey.HasValue)
+                {
+                    throw new InvalidOperationException("An invalid component marker key was provided.");
+                }
+
+                if (!string.Equals(_key.LocationHash, newKey.Value.LocationHash, StringComparison.Ordinal) ||
+                    !string.Equals(_key.FormattedComponentKey, newKey.Value.FormattedComponentKey, StringComparison.Ordinal))
                 {
                     // The client should always supply updated parameters to a component with a matching key.
                     throw new InvalidOperationException("Cannot update components with mismatching keys.");
                 }
 
-                if (_canSupplyNewParameters)
+                if (!string.IsNullOrEmpty(_key.FormattedComponentKey))
                 {
+                    // We can supply new parameters if the key has a @key value, because that means the client
+                    // opted in to dynamic parameter updates.
                     _latestParameters = newParameters;
                     return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
                 }

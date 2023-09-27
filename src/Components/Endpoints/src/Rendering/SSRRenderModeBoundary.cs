@@ -29,7 +29,7 @@ internal class SSRRenderModeBoundary : IComponent
     private readonly bool _prerender;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
-    private string? _markerKey;
+    private ComponentMarkerKey? _markerKey;
 
     public IComponentRenderMode RenderMode { get; }
 
@@ -154,11 +154,11 @@ internal class SSRRenderModeBoundary : IComponent
         builder.CloseComponent();
     }
 
-    public ComponentMarker ToMarker(HttpContext httpContext, int sequence, object? key)
+    public ComponentMarker ToMarker(HttpContext httpContext, int sequence, object? componentKey)
     {
         // We expect that the '@key' and sequence number shouldn't change for a given component instance,
         // so we lazily compute the marker key once.
-        _markerKey ??= GenerateMarkerKey(sequence, key);
+        _markerKey ??= GenerateMarkerKey(sequence, componentKey);
 
         var parameters = _latestParameters is null
             ? ParameterView.Empty
@@ -190,18 +190,19 @@ internal class SSRRenderModeBoundary : IComponent
         return marker;
     }
 
-    private string GenerateMarkerKey(int sequence, object? key)
+    private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)
     {
         var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, ComputeComponentTypeNameHash);
         var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
-        var formattedComponentKey = (key as IFormattable)?.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty;
 
-        var boundaryMarkerKey = new BoundaryMarkerKey(
-            componentTypeNameHash.AsMemory(),
-            sequenceString.AsMemory(),
-            formattedComponentKey.AsMemory());
+        var locationHash = $"{componentTypeNameHash}:{sequenceString}";
+        var formattedComponentKey = (componentKey as IFormattable)?.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty;
 
-        return boundaryMarkerKey.ToString();
+        return new()
+        {
+            LocationHash = locationHash,
+            FormattedComponentKey = formattedComponentKey,
+        };
     }
 
     private static string ComputeComponentTypeNameHash(Type componentType)
