@@ -142,6 +142,149 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return true;
     }
 
+    public bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor? result)
+    {
+        result = default;
+
+        if (!TryDeserializeServerComponent(record, out var serverComponent))
+        {
+            return false;
+        }
+
+        // We're seeing a different invocation ID than we did the last time we processed a component.
+        // There are two possibilities:
+        // [1] A new invocation has started, in which case we should stop accepting components from the previous one.
+        // [2] The client is attempting to use an already-expired invocation ID. We should reject the component in
+        //     this case because we only want to accept components from the current invocation.
+        if (serverComponent.InvocationId != _currentInvocationId)
+        {
+            if (_expiredInvocationIds.Contains(serverComponent.InvocationId))
+            {
+                Log.ExpiredInvocationId(_logger, serverComponent.InvocationId.ToString("N"));
+                return false;
+            }
+
+            if (_currentInvocationId.HasValue)
+            {
+                _expiredInvocationIds.Add(_currentInvocationId.Value);
+            }
+
+            _currentInvocationId = serverComponent.InvocationId;
+            _seenSequenceNumbersForCurrentInvocation.Clear();
+        }
+
+        // We've already seen this sequence number for this invocation. We fail to avoid processing the same
+        // component twice.
+        if (_seenSequenceNumbersForCurrentInvocation.Contains(serverComponent.Sequence))
+        {
+            Log.ReusedDescriptorSequence(_logger, serverComponent.Sequence, serverComponent.InvocationId.ToString("N"));
+            return false;
+        }
+
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        {
+            return false;
+        }
+
+        _seenSequenceNumbersForCurrentInvocation.Add(serverComponent.Sequence);
+
+        var webRootComponentParameters = new WebRootComponentParameters(
+            parameters,
+            serverComponent.ParameterDefinitions.AsReadOnly(),
+            serverComponent.ParameterValues.AsReadOnly());
+
+        result = new(componentType, serverComponent.Key, webRootComponentParameters);
+        return true;
+    }
+
+    private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
+    {
+        parameters = default;
+        componentType = _rootComponentTypeCache
+            .GetRootComponent(serverComponent.AssemblyName, serverComponent.TypeName);
+
+        if (componentType == null)
+        {
+            Log.FailedToFindComponent(_logger, serverComponent.TypeName, serverComponent.AssemblyName);
+            return false;
+        }
+
+        if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParameterDefinitions, serverComponent.ParameterValues, out parameters))
+        {
+            // TryDeserializeParameters does appropriate logging.
+            return default;
+        }
+
+        return true;
+    }
+
+    private bool TryDeserializeServerComponent(ComponentMarker record, out ServerComponent result)
+    {
+        result = default;
+
+        if (record.Type is not (ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType))
+        {
+            Log.InvalidMarkerType(_logger, record.Type);
+            return false;
+        }
+
+        if (record.Descriptor == null)
+        {
+            Log.MissingMarkerDescriptor(_logger);
+            return false;
+        }
+
+        string unprotected;
+        try
+        {
+            var payload = Convert.FromBase64String(record.Descriptor);
+            var unprotectedBytes = _dataProtector.Unprotect(payload);
+            unprotected = Encoding.UTF8.GetString(unprotectedBytes);
+        }
+        catch (Exception e)
+        {
+            Log.FailedToUnprotectDescriptor(_logger, e);
+            result = default;
+            return false;
+        }
+
+        try
+        {
+            result = JsonSerializer.Deserialize<ServerComponent>(
+                unprotected,
+                ServerComponentSerializationSettings.JsonSerializationOptions);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.FailedToDeserializeDescriptor(_logger, e);
+            result = default;
+            return false;
+        }
+    }
+
+    private (ComponentDescriptor, ServerComponent) DeserializeComponentDescriptor(ComponentMarker record)
+    {
+        if (!TryDeserializeServerComponent(record, out var serverComponent))
+        {
+            return default;
+        }
+
+        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
+        {
+            return default;
+        }
+
+        var componentDescriptor = new ComponentDescriptor
+        {
+            ComponentType = componentType,
+            Parameters = parameters,
+            Sequence = serverComponent.Sequence,
+        };
+
+        return (componentDescriptor, serverComponent);
+    }
+
     public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out CircuitRootComponentOperation[]? operations)
     {
         int[]? seenComponentIdsStorage = null;
@@ -206,149 +349,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                 ArrayPool<int>.Shared.Return(seenComponentIdsStorage);
             }
         }
-    }
-
-    public bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor? result)
-    {
-        result = default;
-
-        if (!TryDeserializeServerComponent(record, out var serverComponent))
-        {
-            return false;
-        }
-
-        // We're seeing a different invocation ID than we did the last time we processed a component.
-        // There are two possibilities:
-        // [1] A new invocation has started, in which case we should stop accepting components from the previous one.
-        // [2] The client is attempting to use an already-expired invocation ID. We should reject the component in
-        //     this case because we only want to accept components from the current invocation.
-        if (serverComponent.InvocationId != _currentInvocationId)
-        {
-            if (_expiredInvocationIds.Contains(serverComponent.InvocationId))
-            {
-                Log.ExpiredInvocationId(_logger, serverComponent.InvocationId.ToString("N"));
-                return false;
-            }
-
-            if (_currentInvocationId.HasValue)
-            {
-                _expiredInvocationIds.Add(_currentInvocationId.Value);
-            }
-
-            _currentInvocationId = serverComponent.InvocationId;
-            _seenSequenceNumbersForCurrentInvocation.Clear();
-        }
-
-        // We've already seen this sequence number for this invocation. We fail to avoid processing the same
-        // component twice.
-        if (_seenSequenceNumbersForCurrentInvocation.Contains(serverComponent.Sequence))
-        {
-            Log.ReusedDescriptorSequence(_logger, serverComponent.Sequence, serverComponent.InvocationId.ToString("N"));
-            return false;
-        }
-
-        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
-        {
-            return false;
-        }
-
-        _seenSequenceNumbersForCurrentInvocation.Add(serverComponent.Sequence);
-
-        var webRootComponentParameters = new WebRootComponentParameters(
-            parameters,
-            serverComponent.ParameterDefinitions.AsReadOnly(),
-            serverComponent.ParameterValues.AsReadOnly());
-
-        result = new(componentType, serverComponent.Key, webRootComponentParameters);
-        return true;
-    }
-
-    private (ComponentDescriptor, ServerComponent) DeserializeComponentDescriptor(ComponentMarker record)
-    {
-        if (!TryDeserializeServerComponent(record, out var serverComponent))
-        {
-            return default;
-        }
-
-        if (!TryDeserializeComponentTypeAndParameters(serverComponent, out var componentType, out var parameters))
-        {
-            return default;
-        }
-
-        var componentDescriptor = new ComponentDescriptor
-        {
-            ComponentType = componentType,
-            Parameters = parameters,
-            Sequence = serverComponent.Sequence,
-        };
-
-        return (componentDescriptor, serverComponent);
-    }
-
-    private bool TryDeserializeServerComponent(ComponentMarker record, out ServerComponent result)
-    {
-        result = default;
-
-        if (record.Type is not (ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType))
-        {
-            Log.InvalidMarkerType(_logger, record.Type);
-            return false;
-        }
-
-        if (record.Descriptor == null)
-        {
-            Log.MissingMarkerDescriptor(_logger);
-            return false;
-        }
-
-        string unprotected;
-        try
-        {
-            var payload = Convert.FromBase64String(record.Descriptor);
-            var unprotectedBytes = _dataProtector.Unprotect(payload);
-            unprotected = Encoding.UTF8.GetString(unprotectedBytes);
-        }
-        catch (Exception e)
-        {
-            Log.FailedToUnprotectDescriptor(_logger, e);
-            result = default;
-            return false;
-        }
-
-        try
-        {
-            result = JsonSerializer.Deserialize<ServerComponent>(
-                unprotected,
-                ServerComponentSerializationSettings.JsonSerializationOptions);
-            return true;
-        }
-        catch (Exception e)
-        {
-            Log.FailedToDeserializeDescriptor(_logger, e);
-            result = default;
-            return false;
-        }
-    }
-
-    private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
-    {
-        parameters = default;
-        componentType = _rootComponentTypeCache
-            .GetRootComponent(serverComponent.AssemblyName, serverComponent.TypeName);
-
-        if (componentType == null)
-        {
-            Log.FailedToFindComponent(_logger, serverComponent.TypeName, serverComponent.AssemblyName);
-            return false;
-        }
-
-        if (!_parametersDeserializer.TryDeserializeParameters(serverComponent.ParameterDefinitions, serverComponent.ParameterValues, out parameters))
-        {
-            // TryDeserializeParameters does appropriate logging.
-            return default;
-        }
-
-        return true;
     }
 
     private static partial class Log
