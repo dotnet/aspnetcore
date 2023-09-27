@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Http3GoAwayStreamId(_http3Logger, connectionId, goAwayStreamId);
         }
 
-        [LoggerMessage(54, LogLevel.Debug, @"Connection id ""{ConnectionId}"" aborted since at least ""{Count}"" ENHANCE_YOUR_CALM responses were required per second.", EventName = "Http2TooManyEnhanceYourCalms")]
+        [LoggerMessage(54, LogLevel.Debug, @"Connection id ""{ConnectionId}"" aborted since at least {Count} ENHANCE_YOUR_CALM responses were recorded per second.", EventName = "Http2TooManyEnhanceYourCalms")]
         private static partial void Http2TooManyEnhanceYourCalms(ILogger logger, string connectionId, int count);
 
         public void Http2TooManyEnhanceYourCalms(string connectionId, int count)
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Http2TooManyEnhanceYourCalms(_http2Logger, connectionId, count);
         }
 
-        [LoggerMessage(55, LogLevel.Debug, @"Connection id ""{ConnectionId}"" exceeded the output flow control maximum queue size of ""{Count}"".", EventName = "Http2FlowControlQueueOperationsExceeded")]
+        [LoggerMessage(55, LogLevel.Debug, @"Connection id ""{ConnectionId}"" exceeded the output flow control maximum queue size of {Count}.", EventName = "Http2FlowControlQueueOperationsExceeded")]
         private static partial void Http2FlowControlQueueOperationsExceeded(ILogger logger, string connectionId, int count);
 
         public void Http2FlowControlQueueOperationsExceeded(string connectionId, int count)
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             Http2FlowControlQueueOperationsExceeded(_http3Logger, connectionId, count);
         }
 
-        [LoggerMessage(56, LogLevel.Debug, @"Connection id ""{ConnectionId}"" configured maximum flow control queue size ""{Actual}"" is less than the maximum streams per connection ""{Expected}"" - increasing to match.", EventName = "Http2FlowControlQueueMaximumTooLow")]
+        [LoggerMessage(56, LogLevel.Debug, @"Connection id ""{ConnectionId}"" configured maximum flow control queue size {Actual} is less than the maximum streams per connection {Expected}. Increasing configured value to {Expected}.", EventName = "Http2FlowControlQueueMaximumTooLow")]
         private static partial void Http2FlowControlQueueMaximumTooLow(ILogger logger, string connectionId, int expected, int actual);
 
         public void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual)
