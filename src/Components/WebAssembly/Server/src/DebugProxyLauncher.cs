@@ -95,7 +95,7 @@ internal static class DebugProxyLauncher
         }
         finally
         {
-            ctr?.Dispose();
+            ctr.Dispose();
         }
     }
 
