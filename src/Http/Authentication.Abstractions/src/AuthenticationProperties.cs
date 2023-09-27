@@ -142,6 +142,7 @@ public class AuthenticationProperties
             Items.Remove(key);
         }
     }
+
     /// <summary>
     /// Get a parameter from the <see cref="Parameters"/> collection.
     /// </summary>
