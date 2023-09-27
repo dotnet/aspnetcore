@@ -46,13 +46,13 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private const int MaxStreamPoolSize = 100;
     private const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
 
-    private const string EnhanceYourCalmMaximumCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.EnhanceYourCalmCount";
+    private const string MaximumEnhanceYourCalmCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxEnhanceYourCalmCount";
 
-    private static readonly int _enhanceYourCalmMaximumCount = GetEnhanceYourCalmMaximumCount();
+    private static readonly int _enhanceYourCalmMaximumCount = GetMaximumEnhanceYourCalmCount();
 
-    private static int GetEnhanceYourCalmMaximumCount()
+    private static int GetMaximumEnhanceYourCalmCount()
     {
-        var data = AppContext.GetData(EnhanceYourCalmMaximumCountProperty);
+        var data = AppContext.GetData(MaximumEnhanceYourCalmCountProperty);
         if (data is int count)
         {
             return count;
@@ -1290,6 +1290,8 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     void IRequestProcessor.Tick(DateTimeOffset now)
     {
         Input.CancelPendingRead();
+        // We count EYCs over a window of a given length to avoid flagging short-lived bursts.
+        // At the end of each window, reset the count.
         if (IsEnhanceYourCalmEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
         {
             Interlocked.Exchange(ref _enhanceYourCalmCount, 0);
