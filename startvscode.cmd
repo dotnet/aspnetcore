@@ -14,7 +14,7 @@ SET DOTNET_MULTILEVEL_LOOKUP=0
 SET PATH=%DOTNET_ROOT%;%PATH%
 
 :: Sets TFW for Visual Studio Code usage
-SET TARGET=net8.0
+SET TARGET=net9.0
 
 SET folder=%~1
 

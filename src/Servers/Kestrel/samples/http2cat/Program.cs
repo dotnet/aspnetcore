@@ -28,7 +28,8 @@ public class Program
 
     internal static async Task RunTestCase(Http2Utilities h2Connection)
     {
-        await h2Connection.InitializeConnectionAsync();
+        // Kestrel sends a fourth setting, SETTINGS_ENABLE_CONNECT_PROTOCOL
+        await h2Connection.InitializeConnectionAsync(expectedSettingsCount: 4);
 
         h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 

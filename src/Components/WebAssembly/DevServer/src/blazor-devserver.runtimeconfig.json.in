@@ -1,6 +1,6 @@
 {
   "runtimeOptions": {
-    "tfm": "net8.0",
+    "tfm": "net9.0",
     "framework": {
       "name": "Microsoft.AspNetCore.App",
       "version": "${SharedFxVersion}"
