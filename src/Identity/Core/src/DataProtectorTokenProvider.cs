@@ -185,7 +185,9 @@ public class DataProtectorTokenProvider<TUser> : IUserTwoFactorTokenProvider<TUs
     /// </returns>
     /// <remarks>This method will always return false for instances of <see cref="DataProtectorTokenProvider{TUser}"/>.</remarks>
     public virtual Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TUser> manager, TUser user)
-        => Task.FromResult(false);
+    {
+        return Task.FromResult(false);
+    }
 }
 
 /// <summary>
