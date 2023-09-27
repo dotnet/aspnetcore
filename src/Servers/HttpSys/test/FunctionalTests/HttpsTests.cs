@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class HttpsTests
+public class HttpsTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate("eku.client.pfx");
 
@@ -30,7 +30,7 @@ public class HttpsTests
         using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
         {
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -45,7 +45,7 @@ public class HttpsTests
             byte[] body = Encoding.UTF8.GetBytes("Hello World");
             httpContext.Response.ContentLength = body.Length;
             return httpContext.Response.Body.WriteAsync(body, 0, body.Length);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal("Hello World", response);
@@ -62,7 +62,7 @@ public class HttpsTests
             var body = Encoding.UTF8.GetBytes("Hello World");
             httpContext.Response.ContentLength = body.Length;
             await httpContext.Response.Body.WriteAsync(body, 0, body.Length);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -143,7 +143,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -159,7 +159,7 @@ public class HttpsTests
             var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
             return httpContext.Response.WriteAsJsonAsync(tlsFeature);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             var result = System.Text.Json.JsonDocument.Parse(response).RootElement;
@@ -227,7 +227,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -257,7 +257,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);

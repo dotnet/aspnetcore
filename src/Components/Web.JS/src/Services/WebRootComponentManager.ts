@@ -37,7 +37,7 @@ type RootComponentInfo = {
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
   interactiveComponentId?: number;
-}
+};
 
 export class WebRootComponentManager implements DescriptorHandler, RootComponentManager<never> {
   private readonly _rootComponents = new Set<RootComponentInfo>();
@@ -193,7 +193,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private circuitMayHaveNoRootComponents() {
-    const isCircuitInUse = this.hasAnyExistingOrPendingServerComponents();
+    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto');
     if (isCircuitInUse) {
       // Clear the timeout because we know the circuit is in use.
       clearTimeout(this._circuitInactivityTimeoutId);
@@ -208,31 +208,38 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // Start a new timeout to dispose the circuit unless it starts getting used.
     this._circuitInactivityTimeoutId = setTimeout(() => {
-      if (!this.hasAnyExistingOrPendingServerComponents()) {
+      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto')) {
         disposeCircuit();
         this._circuitInactivityTimeoutId = undefined;
       }
     }, this._circuitInactivityTimeoutMs) as unknown as number;
   }
 
-  private hasAnyExistingOrPendingServerComponents(): boolean {
-    // If there are active Blazor Server components on the page, we shouldn't dispose the circuit.
-    const renderer = getRendererer(WebRendererId.Server);
-    if (renderer && renderer.getRootComponentCount() > 0) {
+  private rendererHasComponents(rendererId: WebRendererId): boolean {
+    const renderer = getRendererer(rendererId);
+    return renderer !== undefined && renderer.getRootComponentCount() > 0;
+  }
+
+  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
+    if (this.rendererHasComponents(rendererId)) {
       return true;
     }
 
-    // If we have SSR components that may become Blazor Server components in the future,
-    // we shouldn't dispose the circuit.
+    // We consider SSR'd components on the page that may get activated using the specified renderer.
     for (const { descriptor: { type }, assignedRendererId } of this._rootComponents) {
-      if (assignedRendererId === WebRendererId.Server) {
-        // The component has been assigned to use Blazor Server.
+      if (assignedRendererId === rendererId) {
+        // The component has been assigned to use the specified renderer.
         return true;
       }
 
-      if (assignedRendererId === undefined && (type === 'auto' || type === 'server')) {
-        // The component has not been assigned a renderer yet, so it's possible it might
-        // use Blazor Server.
+      if (assignedRendererId !== undefined) {
+        // The component has been assigned to use another renderer.
+        continue;
+      }
+
+      if (descriptorTypesToConsider.indexOf(type) !== -1) {
+        // The component has not been assigned a renderer yet, but it might get activated with the specified renderer
+        // if it doesn't get removed from the page.
         return true;
       }
     }
@@ -298,9 +305,20 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
-    // If the WebAssembly runtime has loaded, we will always use WebAssembly
-    // for auto components. Otherwise, we'll wait to activate root components
-    // until we determine whether the WebAssembly runtime can be loaded quickly.
+    // If WebAssembly components exist or may exist soon, use WebAssembly.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, 'webassembly')) {
+      return 'webassembly';
+    }
+
+    // If Server components exist or may exist soon, use WebAssembly.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server')) {
+      return 'server';
+    }
+
+    // If no interactive components are on the page, we use WebAssembly
+    // if the WebAssembly runtime has loaded. Otherwise, we'll wait to activate
+    // root components until we determine whether the WebAssembly runtime can be
+    // loaded quickly.
     if (hasLoadedWebAssemblyPlatform()) {
       return 'webassembly';
     }

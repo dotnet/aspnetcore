@@ -20,7 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class ServerTests
+public class ServerTests : LoggedTest
 {
     [ConditionalFact]
     public async Task Server_200OK_Success()
@@ -29,7 +29,7 @@ public class ServerTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 return Task.FromResult(0);
-            }))
+            }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -63,7 +63,7 @@ public class ServerTests
         {
             options.RequestQueueName = queueName;
             options.RequestQueueMode = queueMode;
-        }))
+        }, LoggerFactory))
         {
             var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
             {
@@ -101,7 +101,7 @@ public class ServerTests
         }, options =>
         {
             options.RequestQueueName = queueName;
-        }))
+        }, LoggerFactory))
         {
             var psi = new ProcessStartInfo("netsh", "http show servicestate view=requestq")
             {
@@ -122,7 +122,7 @@ public class ServerTests
             {
                 httpContext.Response.ContentLength = 11;
                 return httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal("Hello World", response);
@@ -139,7 +139,7 @@ public class ServerTests
                 Assert.Equal("Hello World", input);
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -156,7 +156,7 @@ public class ServerTests
                 received.SetResult();
                 httpContext.Response.ContentLength = 11;
                 return httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -178,7 +178,7 @@ public class ServerTests
             await stopped.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             httpContext.Response.ContentLength = 11;
             await httpContext.Response.WriteAsync("Hello World");
-        }))
+        }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -199,7 +199,7 @@ public class ServerTests
             await shutdown.Task.TimeoutAfter(TimeSpan.FromSeconds(15));
             httpContext.Response.ContentLength = 11;
             await httpContext.Response.WriteAsync("Hello World");
-        }))
+        }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -216,7 +216,7 @@ public class ServerTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
             throw new InvalidOperationException();
-        }))
+        }, LoggerFactory))
         {
             Task<string> requestTask = SendRequestAsync(address);
             var ex = await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
@@ -236,7 +236,7 @@ public class ServerTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
             throw new BadHttpRequestException("Something happened", StatusCodes.Status418ImATeapot);
-        }))
+        }, LoggerFactory))
         {
             Task<string> requestTask = SendRequestAsync(address);
             var ex = await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
@@ -267,7 +267,7 @@ public class ServerTests
             {
                 await tcs.Task;
             }
-        }))
+        }, LoggerFactory))
         {
             List<Task> requestTasks = new List<Task>();
             for (int i = 0; i < requestLimit; i++)
@@ -297,7 +297,7 @@ public class ServerTests
             await aborted.Task.TimeoutAfter(interval);
             await canceled.Task.TimeoutAfter(interval);
             Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-        }))
+        }, LoggerFactory))
         {
             // Note: System.Net.Sockets does not RST the connection by default, it just FINs.
             // Http.Sys's disconnect notice requires a RST.
@@ -330,7 +330,7 @@ public class ServerTests
             httpContext.Abort();
             await canceled.Task.TimeoutAfter(interval);
             Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-        }))
+        }, LoggerFactory))
         {
             using (var client = await SendHungRequestAsync("GET", address))
             {
@@ -345,9 +345,9 @@ public class ServerTests
     {
         // This is just to get a dynamic port
         string address;
-        using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
+        using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0), LoggerFactory)) { }
 
-        var server = Utilities.CreatePump();
+        var server = Utilities.CreatePump(LoggerFactory);
         server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
         server.Listener.Options.RequestQueueLimit = 1001;
 
@@ -367,7 +367,7 @@ public class ServerTests
             Assert.Null(options.MaxConnections);
             options.MaxConnections = 3;
             options.Http503Verbosity = Http503VerbosityLevel.Limited;
-        }, httpContext => Task.FromResult(0)))
+        }, httpContext => Task.FromResult(0), LoggerFactory))
         {
             using (var client1 = await SendHungRequestAsync("GET", address))
             using (var client2 = await SendHungRequestAsync("GET", address))
@@ -389,7 +389,7 @@ public class ServerTests
     [ConditionalFact]
     public void Server_SetConnectionLimitArgumentValidation_Success()
     {
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             Assert.Null(server.Listener.Options.MaxConnections);
             Assert.Throws<ArgumentOutOfRangeException>(() => server.Listener.Options.MaxConnections = -2);
@@ -406,7 +406,7 @@ public class ServerTests
         {
             Assert.Null(options.MaxConnections);
             options.MaxConnections = -1; // infinite
-        }, httpContext => Task.FromResult(0)))
+        }, httpContext => Task.FromResult(0), LoggerFactory))
         {
             using (var client1 = await SendHungRequestAsync("GET", address))
             using (var client2 = await SendHungRequestAsync("GET", address))
@@ -431,7 +431,7 @@ public class ServerTests
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -465,7 +465,7 @@ public class ServerTests
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -502,7 +502,7 @@ public class ServerTests
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -539,7 +539,7 @@ public class ServerTests
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -578,7 +578,7 @@ public class ServerTests
                 await run.Task.TimeoutAfter(TimeSpan.FromSeconds(15));
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.WriteAsync("Hello World");
-            }))
+            }, LoggerFactory))
         {
             responseTask = SendRequestAsync(address);
             await received.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
@@ -597,7 +597,7 @@ public class ServerTests
     [ConditionalFact]
     public async Task Server_StopAsyncCalledWithNoRequests_Success()
     {
-        using (var server = Utilities.CreateHttpServer(out _, httpContext => Task.CompletedTask))
+        using (var server = Utilities.CreateHttpServer(out _, httpContext => Task.CompletedTask, LoggerFactory))
         {
             await server.StopAsync(default(CancellationToken)).TimeoutAfter(TimeSpan.FromSeconds(10));
         }
@@ -612,12 +612,12 @@ public class ServerTests
         using var server = Utilities.CreateHttpServer(out var address, httpContext => Task.CompletedTask, options =>
         {
             options.RequestQueueName = queueName;
-        });
+        }, LoggerFactory);
         using var attachedServer = Utilities.CreatePump(options =>
         {
             options.RequestQueueName = queueName;
             options.RequestQueueMode = queueMode;
-        });
+        }, LoggerFactory);
         await attachedServer.StartAsync(new DummyApplication(context => Task.CompletedTask), default);
         var addressesFeature = attachedServer.Features.Get<IServerAddressesFeature>();
         Assert.Empty(addressesFeature.Addresses);
@@ -636,7 +636,7 @@ public class ServerTests
             options =>
             {
                 options.UnsafePreferInlineScheduling = true;
-            });
+            }, LoggerFactory);
 
         string response = await SendRequestAsync(address);
         Assert.Equal("Hello World", response);

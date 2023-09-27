@@ -26,6 +26,5 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)Reroute.cs" LinkBase="Shared"/>
   </ItemGroup>
 </Project>

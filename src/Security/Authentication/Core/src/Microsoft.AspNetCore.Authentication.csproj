@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)Reroute.cs" />
   </ItemGroup>
 
   <ItemGroup>
