@@ -33,6 +33,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
+        private const string MaximumEnhanceYourCalmCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxEnhanceYourCalmCount";
+        private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
+
+        private static readonly int _enhanceYourCalmMaximumCount = GetMaximumEnhanceYourCalmCount();
+
+        private static int GetMaximumEnhanceYourCalmCount()
+        {
+            var data = AppContext.GetData(MaximumEnhanceYourCalmCountProperty);
+            if (data is int count)
+            {
+                return count;
+            }
+            if (data is string countStr && int.TryParse(countStr, out var parsed))
+            {
+                return parsed;
+            }
+
+            return 20; // Empirically derived
+        }
+
+        // Accumulate _enhanceYourCalmCount over the course of EnhanceYourCalmTickWindowCount ticks.
+        // This should make bursts less likely to trigger disconnects.
+        private const int EnhanceYourCalmTickWindowCount = 5;
+
+        private static bool IsEnhanceYourCalmEnabled => _enhanceYourCalmMaximumCount > 0;
+
+        private static readonly int? ConfiguredMaximumFlowControlQueueSize = GetConfiguredMaximumFlowControlQueueSize();
+
+        private static int? GetConfiguredMaximumFlowControlQueueSize()
+        {
+            var data = AppContext.GetData(MaximumFlowControlQueueSizeProperty);
+
+            if (data is int count)
+            {
+                return count;
+            }
+
+            if (data is string countStr && int.TryParse(countStr, out var parsed))
+            {
+                return parsed;
+            }
+
+            return null;
+        }
+
+        private readonly int _maximumFlowControlQueueSize;
+
+        private bool IsMaximumFlowControlQueueSizeEnabled => _maximumFlowControlQueueSize > 0;
+
         private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
         private readonly Pipe _input;
@@ -40,7 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly int _minAllocBufferSize;
         private readonly HPackDecoder _hpackDecoder;
         private readonly InputFlowControl _inputFlowControl;
-        private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
+        private readonly OutputFlowControl _outputFlowControl;
+        private readonly AwaitableProvider _outputFlowControlAwaitableProvider; // Keep our own reference so we can track queue size
 
         private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
         private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -58,6 +108,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private int _clientActiveStreamCount;
         private int _serverActiveStreamCount;
+
+        private int _enhanceYourCalmCount;
+        private int _tickCount;
 
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
@@ -87,6 +140,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
             _context.InitialExecutionContext = ExecutionContext.Capture();
+
+            _outputFlowControlAwaitableProvider = new MultipleAwaitableProvider();
+            _outputFlowControl = new OutputFlowControl(_outputFlowControlAwaitableProvider, Http2PeerSettings.DefaultInitialWindowSize);
 
             _frameWriter = new Http2FrameWriter(
                 context.Transport.Output,
@@ -128,6 +184,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
+
+            _maximumFlowControlQueueSize = ConfiguredMaximumFlowControlQueueSize is null
+                ? 4 * http2Limits.MaxStreamsPerConnection // 4 is a magic number to give us some padding above the expected maximum size
+                : (int)ConfiguredMaximumFlowControlQueueSize;
+
+            var minimumMaximumFlowControlQueueSize = 2 * http2Limits.MaxStreamsPerConnection; // Double to match 7.0 and 8.0
+            if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < minimumMaximumFlowControlQueueSize)
+            {
+                Log.Http2FlowControlQueueMaximumTooLow(context.ConnectionId, minimumMaximumFlowControlQueueSize, _maximumFlowControlQueueSize);
+                _maximumFlowControlQueueSize = minimumMaximumFlowControlQueueSize;
+            }
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
             StreamPool = new PooledStreamStack<Http2Stream>(Math.Min(InitialStreamPoolSize, http2Limits.MaxStreamsPerConnection));
@@ -352,13 +419,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                     }
 
-                    // Use the server _serverActiveStreamCount to drain all requests on the server side.
-                    // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
-                    // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
-                    while (_serverActiveStreamCount > 0)
+                    // For some reason, this loop doesn't terminate when we're trying to abort.
+                    // Since we're making a narrow fix for a patch, we'll bypass it in such scenarios.
+                    // TODO: This is probably a bug - something in here should probably detect aborted
+                    // connections and short-circuit.
+                    if (!(IsEnhanceYourCalmEnabled || IsMaximumFlowControlQueueSizeEnabled) || error is not Http2ConnectionErrorException)
                     {
-                        await _streamCompletionAwaitable;
-                        UpdateCompletedStreams();
+                        // Use the server _serverActiveStreamCount to drain all requests on the server side.
+                        // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
+                        // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
+                        while (_serverActiveStreamCount > 0)
+                        {
+                            await _streamCompletionAwaitable;
+                            UpdateCompletedStreams();
+                        }
                     }
 
                     while (StreamPool.TryPop(out var pooledStream))
@@ -1053,6 +1127,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMaxStreams, Http2ErrorCode.REFUSED_STREAM);
                 }
 
+                if (IsMaximumFlowControlQueueSizeEnabled && _outputFlowControlAwaitableProvider.ActiveCount > _maximumFlowControlQueueSize)
+                {
+                    Log.Http2FlowControlQueueOperationsExceeded(_context.ConnectionId, _maximumFlowControlQueueSize);
+
+                    // Now that we've logged a useful message, we can put vague text in the exception
+                    // messages in case they somehow make it back to the client (not expected)
+
+                    // This will close the socket - we want to do that right away
+                    Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
+
+                    // Throwing an exception as well will help us clean up on our end more quickly by (e.g.) skipping processing of already-buffered input
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ConnectionFaulted, Http2ErrorCode.INTERNAL_ERROR);
+                }
+
                 // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary counts get out of sync.
                 // The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
                 // Also, we care about the dictionary size for too much memory consumption.
@@ -1061,6 +1149,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Server is getting hit hard with connection resets.
                     // Tell client to calm down.
                     // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
+
+                    if (IsEnhanceYourCalmEnabled && Interlocked.Increment(ref _enhanceYourCalmCount) > EnhanceYourCalmTickWindowCount * _enhanceYourCalmMaximumCount)
+                    {
+                        Log.Http2TooManyEnhanceYourCalms(_context.ConnectionId, _enhanceYourCalmMaximumCount);
+
+                        // Now that we've logged a useful message, we can put vague text in the exception
+                        // messages in case they somehow make it back to the client (not expected)
+
+                        // This will close the socket - we want to do that right away
+                        Abort(new ConnectionAbortedException(CoreStrings.Http2ConnectionFaulted));
+                        // Throwing an exception as well will help us clean up on our end more quickly by (e.g.) skipping processing of already-buffered input
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ConnectionFaulted, Http2ErrorCode.ENHANCE_YOUR_CALM);
+                    }
+
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2TellClientToCalmDown, Http2ErrorCode.ENHANCE_YOUR_CALM);
                 }
             }
@@ -1123,6 +1225,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IRequestProcessor.Tick(DateTimeOffset now)
         {
             Input.CancelPendingRead();
+            // We count EYCs over a window of a given length to avoid flagging short-lived bursts.
+            // At the end of each window, reset the count.
+            if (IsEnhanceYourCalmEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
+            {
+                Interlocked.Exchange(ref _enhanceYourCalmCount, 0);
+            }
         }
 
         void IHttp2StreamLifetimeHandler.OnStreamCompleted(Http2Stream stream)
