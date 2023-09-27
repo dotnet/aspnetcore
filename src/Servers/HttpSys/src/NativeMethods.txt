@@ -39,9 +39,9 @@ HTTP_TIMEOUT_LIMIT_INFO
 HttpAddUrlToUrlGroup
 HTTPAPI_VERSION
 HttpCancelHttpRequest
-HttpCloseRequestQueue
 HttpCloseServerSession
 HttpCloseUrlGroup
+HttpCreateRequestQueue
 HttpCreateServerSession
 HttpCreateUrlGroup
 HttpDelegateRequestEx

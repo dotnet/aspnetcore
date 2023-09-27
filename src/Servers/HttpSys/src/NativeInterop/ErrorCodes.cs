@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-// CONSIDER: Make this an enum, requires changing a lot of types from uint to ErrorCodes.
+// Only the useful subset of WIN32_ERROR
 internal static class ErrorCodes
 {
     internal const uint ERROR_SUCCESS = 0;

@@ -31,10 +31,6 @@ internal static partial class HttpApi
     [LibraryImport(HTTPAPI, SetLastError = true)]
     internal static unsafe partial uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, Windows.Win32.Networking.HttpServer.HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
-    [SuppressMessage("LibraryImportGenerator", "SYSLIB1051:Specified type is not supported by source-generated P/Invokes", Justification = "The enum is handled by the runtime.")]
-    [LibraryImport(HTTPAPI, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
-    internal static partial uint HttpCreateRequestQueue(Windows.Win32.Networking.HttpServer.HTTPAPI_VERSION version, string? pName, IntPtr pSecurityAttributes, uint flags, out HttpRequestQueueV2Handle pReqQueueHandle);
-
     [LibraryImport(api_ms_win_core_io_LIB, SetLastError = true)]
     internal static partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 

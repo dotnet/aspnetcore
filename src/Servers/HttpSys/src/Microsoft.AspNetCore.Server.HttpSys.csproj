@@ -11,6 +11,7 @@
     <IsTrimmable>true</IsTrimmable>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
+    <!-- Ignore warnings about 'ref' vs 'in' in generated code. -->
     <NoWarn>$(NoWarn);CA1416;CS9195</NoWarn>
   </PropertyGroup>
 

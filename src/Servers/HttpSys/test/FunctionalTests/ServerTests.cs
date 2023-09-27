@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
+using Windows.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -43,10 +44,10 @@ public class ServerTests
         var queueName = Guid.NewGuid().ToString();
 
         // First create the queue.
-        var statusCode = HttpApi.HttpCreateRequestQueue(
+        var statusCode = PInvoke.HttpCreateRequestQueue(
                 HttpApi.Version,
                 queueName,
-                IntPtr.Zero,
+                default,
                 0,
                 out var requestQueueHandle);
 

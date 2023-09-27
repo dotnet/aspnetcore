@@ -42,10 +42,10 @@ internal sealed partial class RequestQueue
             }
         }
 
-        var statusCode = HttpApi.HttpCreateRequestQueue(
+        var statusCode = PInvoke.HttpCreateRequestQueue(
                 HttpApi.Version,
                 requestQueueName,
-                IntPtr.Zero,
+                default,
                 flags,
                 out var requestQueueHandle);
 
@@ -54,10 +54,10 @@ internal sealed partial class RequestQueue
             // Tried to create, but it already exists so attach to it instead.
             Created = false;
             flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
-            statusCode = HttpApi.HttpCreateRequestQueue(
+            statusCode = PInvoke.HttpCreateRequestQueue(
                     HttpApi.Version,
                     requestQueueName,
-                    IntPtr.Zero,
+                    default,
                     flags,
                     out requestQueueHandle);
         }
