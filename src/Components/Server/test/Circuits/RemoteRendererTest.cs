@@ -512,7 +512,7 @@ public class RemoteRendererTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            await webRootComponentManager.UpdateRootComponentAsync(1, key, WebRootComponentParameters.Empty);
+            await webRootComponentManager.UpdateRootComponentAsync(1, typeof(TestComponent), key, WebRootComponentParameters.Empty);
         });
 
         Assert.Equal($"No root component exists with SSR component ID 1.", ex.Message);
@@ -532,7 +532,7 @@ public class RemoteRendererTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            await webRootComponentManager.UpdateRootComponentAsync(0, new("1", null), WebRootComponentParameters.Empty);
+            await webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), new("1", null), WebRootComponentParameters.Empty);
         });
 
         Assert.Equal("Cannot update components with mismatching keys.", ex.Message);
@@ -551,7 +551,7 @@ public class RemoteRendererTest
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
             var parameters = new Dictionary<string, object> { ["Name"] = "value" };
-            webRootComponentManager.UpdateRootComponentAsync(0, key, CreateWebRootComponentParameters(parameters));
+            webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), key, CreateWebRootComponentParameters(parameters));
         });
 
         // Assert
@@ -570,7 +570,7 @@ public class RemoteRendererTest
         await renderer.Dispatcher.InvokeAsync(() =>
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
-            webRootComponentManager.UpdateRootComponentAsync(0, key, WebRootComponentParameters.Empty);
+            webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), key, WebRootComponentParameters.Empty);
         });
 
         // Assert
@@ -590,7 +590,7 @@ public class RemoteRendererTest
         {
             var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
             var parameters = new Dictionary<string, object> { ["Name"] = "value" };
-            webRootComponentManager.UpdateRootComponentAsync(0, key, CreateWebRootComponentParameters(parameters));
+            webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), key, CreateWebRootComponentParameters(parameters));
         });
 
         // Assert

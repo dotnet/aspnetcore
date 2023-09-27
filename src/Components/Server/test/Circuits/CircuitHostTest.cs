@@ -1,8 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -423,20 +424,9 @@ public class CircuitHostTest
         {
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         };
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Add,
-            SsrComponentId = 1,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent), parameters),
-        };
-        var descriptor = new WebRootComponentDescriptor(
-            componentType: typeof(DynamicallyAddedComponent),
-            key: operation.Marker.Value.Key,
-            parameters: CreateWebRootComponentParameters(parameters));
 
         // Act
-        await circuitHost.UpdateRootComponents(
-            [new(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -451,34 +441,48 @@ public class CircuitHostTest
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: GetRemoteRenderer(),
             serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
-        var expectedMessage = "Updated message";
         var componentKey = "mykey";
 
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, null, componentKey);
+
+        var expectedMessage = "Updated message";
         Dictionary<string, object> parameters = new()
         {
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         };
-        await AddComponent<DynamicallyAddedComponent>(circuitHost, parameters, componentKey);
-
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            SsrComponentId = 1,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
-            {
-                [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
-            }, componentKey),
-        };
-        var descriptor = new WebRootComponentDescriptor(
-            componentType: typeof(DynamicallyAddedComponent),
-            key: operation.Marker.Value.Key,
-            parameters: CreateWebRootComponentParameters(new Dictionary<string, object>()));
 
         // Act
-        await circuitHost.UpdateRootComponents([new(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None);
+        await UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters, componentKey);
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CanReplaceExistingRootComponent_WhenNoComponentKeyWasSpecified()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+
+        var expectedMessage = "Updated message";
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        };
+
+        // Act
+        await UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters);
+
+        // Assert
+        Assert.Throws<ArgumentException>(() =>
+            ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(1);
         var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
         Assert.Equal(expectedMessage, component.Message);
     }
@@ -490,38 +494,26 @@ public class CircuitHostTest
         var circuitHost = TestCircuitHost.Create(
             remoteRenderer: GetRemoteRenderer(),
             serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
-        var componentKey = "mykey";
 
         // Arrange
         var expectedMessage = "Existing message";
-        await AddComponent<DynamicallyAddedComponent>(circuitHost, new Dictionary<string, object>()
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, new Dictionary<string, object>()
         {
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         });
 
-        await AddComponent<TestComponent>(circuitHost, [], componentKey);
+        await AddComponentAsync<TestComponent>(circuitHost, 2, []);
 
         Dictionary<string, object> parameters = new()
         {
             [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
         };
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            SsrComponentId = 1,
-            Marker = CreateMarker(typeof(TestComponent) /* Note the incorrect component type */, parameters, componentKey),
-        };
-        var descriptor = new WebRootComponentDescriptor(
-            componentType: typeof(TestComponent),
-            parameters: CreateWebRootComponentParameters(parameters),
-            key: operation.Marker.Value.Key);
 
         // Act
-        var evt = Assert.Raises<UnhandledExceptionEventArgs>(
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
             handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
             handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
-            () => circuitHost.UpdateRootComponents(
-                [new(operation, descriptor)], null, CreateDeserializer(), CancellationToken.None));
+            () => UpdateComponentAsync<TestComponent /* Note the incorrect component type */>(circuitHost, 1, parameters));
 
         // Assert
         var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
@@ -530,6 +522,44 @@ public class CircuitHostTest
 
         Assert.NotNull(evt);
         var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Equal("Cannot update components with mismatching types.", exception.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenDescriptorKeyDoesNotMatchOriginalKey()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        // Arrange
+        var originalKey = "original_key";
+        var expectedMessage = "Existing message";
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, new Dictionary<string, object>()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        }, originalKey);
+
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
+        };
+
+        // Act
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
+            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
+            () => UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters, componentKey: "new_key"));
+
+        // Assert
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+
+        Assert.NotNull(evt);
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Equal("Cannot update components with mismatching keys.", exception.Message);
     }
 
     [Fact]
@@ -545,30 +575,24 @@ public class CircuitHostTest
         {
             [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
         };
-        await AddComponent<DynamicallyAddedComponent>(circuitHost, parameters);
-
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Remove,
-            SsrComponentId = 1,
-        };
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters);
 
         // Act
-        await circuitHost.UpdateRootComponents([new(operation, null)], null, CreateDeserializer(), CancellationToken.None);
+        await RemoveComponentAsync(circuitHost, 1);
 
         // Assert
         Assert.Throws<ArgumentException>(() =>
             ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
     }
 
-    private async Task AddComponent<TComponent>(CircuitHost circuitHost, Dictionary<string, object> parameters, string componentKey = "")
-    where TComponent : IComponent
+    private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+        where TComponent : IComponent
     {
         var addOperation = new RootComponentOperation
         {
             Type = RootComponentOperationType.Add,
-            SsrComponentId = 1,
-            Marker = CreateMarker(typeof(TComponent), parameters, componentKey),
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
         };
         var addDescriptor = new WebRootComponentDescriptor(
             componentType: typeof(TComponent),
@@ -578,6 +602,37 @@ public class CircuitHostTest
         // Add component
         await circuitHost.UpdateRootComponents(
             [new(addOperation, addDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+    }
+
+    private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+    {
+        var updateOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+        };
+        var updateDescriptor = new WebRootComponentDescriptor(
+            componentType: typeof(TComponent),
+            key: updateOperation.Marker.Value.Key,
+            parameters: CreateWebRootComponentParameters(parameters));
+
+        // Update component
+        await circuitHost.UpdateRootComponents(
+            [new(updateOperation, updateDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+    }
+
+    private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
+    {
+        var removeOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Remove,
+            SsrComponentId = ssrComponentId,
+        };
+
+        // Remove component
+        await circuitHost.UpdateRootComponents(
+            [new(removeOperation, null)], null, CreateDeserializer(), CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -619,10 +674,10 @@ public class CircuitHostTest
             .Verifiable();
     }
 
-    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null, string componentKey = "")
+    private ComponentMarker CreateMarker(Type type, string locationHash, Dictionary<string, object> parameters = null, string componentKey = "")
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var key = new ComponentMarkerKey(type.FullName, componentKey);
+        var key = new ComponentMarkerKey(locationHash, componentKey);
         var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key);
         serializer.SerializeInvocation(
             ref marker,
@@ -632,8 +687,13 @@ public class CircuitHostTest
         return marker;
     }
 
-    private static WebRootComponentParameters CreateWebRootComponentParameters(IDictionary<string, object> parameters)
+    private static WebRootComponentParameters CreateWebRootComponentParameters(IDictionary<string, object> parameters = null)
     {
+        if (parameters is null)
+        {
+            return WebRootComponentParameters.Empty;
+        }
+
         var parameterView = ParameterView.FromDictionary(parameters);
         var (parameterDefinitions, parameterValues) = ComponentParameter.FromParameterView(parameterView);
         for (var i = 0; i < parameterValues.Count; i++)

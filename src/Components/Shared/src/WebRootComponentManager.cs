@@ -57,11 +57,12 @@ internal partial class WebAssemblyRenderer
 
         public Task UpdateRootComponentAsync(
             int ssrComponentId,
+            [DynamicallyAccessedMembers(Component)] Type newComponentType,
             ComponentMarkerKey? newKey,
             WebRootComponentParameters newParameters)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
-            return component.UpdateAsync(renderer, newKey, newParameters);
+            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters);
         }
 
         public void RemoveRootComponent(int ssrComponentId)
@@ -127,9 +128,15 @@ internal partial class WebAssemblyRenderer
 
             public Task UpdateAsync(
                 Renderer renderer,
+                [DynamicallyAccessedMembers(Component)] Type newComponentType,
                 ComponentMarkerKey? newKey,
                 WebRootComponentParameters newParameters)
             {
+                if (_componentType != newComponentType)
+                {
+                    throw new InvalidOperationException("Cannot update components with mismatching types.");
+                }
+
                 if (!newKey.HasValue)
                 {
                     throw new InvalidOperationException("An invalid component marker key was provided.");
