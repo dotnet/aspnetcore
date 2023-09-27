@@ -896,6 +896,19 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
+    [Fact]
+    public void CanUseAntiforgeryTokenInWasm()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/antiforgery-wasm",
+            FormCssSelector = "form",
+            InputFieldId = "Value",
+            SuppressEnhancedNavigation = true,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
