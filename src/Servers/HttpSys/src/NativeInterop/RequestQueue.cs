@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
@@ -50,7 +49,7 @@ internal sealed partial class RequestQueue
                 flags,
                 out var requestQueueHandle);
 
-        if (_mode == RequestQueueMode.CreateOrAttach && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
+        if (_mode == RequestQueueMode.CreateOrAttach && statusCode == ErrorCodes.ERROR_ALREADY_EXISTS)
         {
             // Tried to create, but it already exists so attach to it instead.
             Created = false;
@@ -63,25 +62,25 @@ internal sealed partial class RequestQueue
                     out requestQueueHandle);
         }
 
-        if ((flags & PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING) != 0 && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+        if ((flags & PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING) != 0 && statusCode == ErrorCodes.ERROR_FILE_NOT_FOUND)
         {
             throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
         }
-        else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_NAME)
+        else if (statusCode == ErrorCodes.ERROR_INVALID_NAME)
         {
             throw new HttpSysException((int)statusCode, $"The given request queue name '{requestQueueName}' is invalid.");
         }
-        else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        else if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             throw new HttpSysException((int)statusCode);
         }
 
         // Disabling callbacks when IO operation completes synchronously (returns ErrorCodes.ERROR_SUCCESS)
         if (HttpSysListener.SkipIOCPCallbackOnSuccess &&
-            !UnsafeNclNativeMethods.SetFileCompletionNotificationModes(
+            !PInvoke.SetFileCompletionNotificationModes(
                 requestQueueHandle,
-                UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
-                UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipSetEventOnHandle))
+                (byte)(PInvoke.FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
+                PInvoke.FILE_SKIP_SET_EVENT_ON_HANDLE)))
         {
             requestQueueHandle.Dispose();
             throw new HttpSysException(Marshal.GetLastWin32Error());

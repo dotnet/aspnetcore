@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal static partial class HttpApi
 {
+    private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-0.dll";
     private const string HTTPAPI = "httpapi.dll";
 
     [LibraryImport(HTTPAPI, SetLastError = true)]
@@ -35,6 +36,9 @@ internal static partial class HttpApi
     [LibraryImport(HTTPAPI, SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     internal static partial uint HttpCreateRequestQueue(Windows.Win32.Networking.HttpServer.HTTPAPI_VERSION version, string? pName, IntPtr pSecurityAttributes, uint flags, out HttpRequestQueueV2Handle pReqQueueHandle);
 
+    [LibraryImport(api_ms_win_core_io_LIB, SetLastError = true)]
+    internal static partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
+
     internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped);
 
@@ -58,7 +62,7 @@ internal static partial class HttpApi
     {
         var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
 
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode == ErrorCodes.ERROR_SUCCESS)
         {
             Supported = true;
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);

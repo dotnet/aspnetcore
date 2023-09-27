@@ -3,11 +3,9 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
-using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -704,7 +702,7 @@ internal sealed partial class ResponseBody : Stream
             allocator.Dispose();
         }
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -774,7 +772,7 @@ internal sealed partial class ResponseBody : Stream
         ResponseStreamAsyncResult? asyncState = _lastWrite;
         if (asyncState != null && !asyncState.IsCompleted)
         {
-            UnsafeNclNativeMethods.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped!);
+            HttpApi.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped!);
         }
     }
 

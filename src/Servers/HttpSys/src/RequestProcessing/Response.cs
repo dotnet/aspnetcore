@@ -14,8 +14,6 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Networking.HttpServer;
 
-using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
-
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal sealed class Response

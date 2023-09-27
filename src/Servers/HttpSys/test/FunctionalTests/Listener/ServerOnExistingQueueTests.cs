@@ -247,7 +247,7 @@ public class ServerOnExistingQueueTests
                 0,
                 out requestQueueHandle);
 
-        Assert.True(statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+        Assert.True(statusCode == ErrorCodes.ERROR_SUCCESS);
 
         using var server = Utilities.CreateServer(options =>
         {

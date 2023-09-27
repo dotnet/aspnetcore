@@ -50,7 +50,7 @@ public class ServerTests
                 0,
                 out var requestQueueHandle);
 
-        Assert.True(statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+        Assert.True(statusCode == ErrorCodes.ERROR_SUCCESS);
 
         // Now attach to the existing one
         using (Utilities.CreateHttpServer(out var address, httpContext =>

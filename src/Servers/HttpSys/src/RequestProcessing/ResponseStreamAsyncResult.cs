@@ -234,7 +234,7 @@ internal sealed unsafe partial class ResponseStreamAsyncResult : IAsyncResult, I
         var logger = asyncResult._responseStream.RequestContext.Logger;
         try
         {
-            if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
+            if (errorCode != ErrorCodes.ERROR_SUCCESS && errorCode != ErrorCodes.ERROR_HANDLE_EOF)
             {
                 if (asyncResult._cancellationToken.IsCancellationRequested)
                 {

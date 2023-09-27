@@ -2,6 +2,9 @@
 // Listing specific types reduces the size of the final dll.
 // Uncomment to import all definitions during development.
 // Windows.Win32.Networking.HttpServer
+CloseHandle
+FILE_SKIP_COMPLETION_PORT_ON_SUCCESS
+FILE_SKIP_SET_EVENT_ON_HANDLE
 HTTP_AUTH_STATUS
 HTTP_BINDING_INFO
 HTTP_CACHE_POLICY
@@ -52,3 +55,4 @@ HttpSendResponseEntityBody
 HttpSetRequestQueueProperty
 HttpSetUrlGroupProperty
 HttpSetUrlGroupProperty
+SetFileCompletionNotificationModes

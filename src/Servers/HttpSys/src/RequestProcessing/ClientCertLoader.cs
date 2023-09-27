@@ -168,25 +168,25 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                     &bytesReceived,
                     NativeOverlapped!);
 
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
+            if (statusCode == ErrorCodes.ERROR_MORE_DATA)
             {
                 var pClientCertInfo = RequestBlob;
                 size = bytesReceived + pClientCertInfo->CertEncodedSize;
                 Reset(size);
                 retry = true;
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
+            else if (statusCode == ErrorCodes.ERROR_NOT_FOUND)
             {
                 // The client did not send a cert.
                 Complete(0, null);
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+            else if (statusCode == ErrorCodes.ERROR_SUCCESS &&
                 HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 IOCompleted(statusCode, bytesReceived);
             }
-            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            else if (statusCode != ErrorCodes.ERROR_SUCCESS &&
+                statusCode != ErrorCodes.ERROR_IO_PENDING)
             {
                 // Some other bad error, possible(?) return values are:
                 // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
@@ -227,7 +227,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         var requestContext = asyncResult.RequestContext;
         try
         {
-            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
+            if (errorCode == ErrorCodes.ERROR_MORE_DATA)
             {
                 // There is a bug that has existed in http.sys since w2k3.  Bytesreceived will only
                 // return the size of the initial cert structure.  To get the full size,
@@ -247,19 +247,19 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                         &bytesReceived,
                         asyncResult._overlapped!);
 
-                if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING ||
-                   (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && !HttpSysListener.SkipIOCPCallbackOnSuccess))
+                if (errorCode == ErrorCodes.ERROR_IO_PENDING ||
+                   (errorCode == ErrorCodes.ERROR_SUCCESS && !HttpSysListener.SkipIOCPCallbackOnSuccess))
                 {
                     return;
                 }
             }
 
-            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
+            if (errorCode == ErrorCodes.ERROR_NOT_FOUND)
             {
                 // The client did not send a cert.
                 asyncResult.Complete(0, null);
             }
-            else if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            else if (errorCode != ErrorCodes.ERROR_SUCCESS)
             {
                 asyncResult.Fail(new HttpSysException((int)errorCode));
             }

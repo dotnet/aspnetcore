@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Win32.SafeHandles;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -19,6 +18,6 @@ internal sealed class HttpRequestQueueV2Handle : SafeHandleZeroOrMinusOneIsInval
     protected override bool ReleaseHandle()
     {
         return PInvoke.HttpCloseRequestQueue((HANDLE)handle) ==
-                    UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS;
+                    ErrorCodes.ERROR_SUCCESS;
     }
 }

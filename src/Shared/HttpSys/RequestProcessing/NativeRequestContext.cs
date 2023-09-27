@@ -348,7 +348,7 @@ internal unsafe class NativeRequestContext : IDisposable
                     var identity = new WindowsIdentity(authInfo->AccessToken, GetAuthTypeFromRequest(authInfo->AuthType));
 
                     // Close the original
-                    UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(authInfo->AccessToken);
+                    PInvoke.CloseHandle(authInfo->AccessToken);
 
                     return new WindowsPrincipal(identity);
                 }

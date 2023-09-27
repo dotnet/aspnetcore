@@ -379,7 +379,7 @@ internal sealed partial class HttpSysListener : IDisposable
             &dataWritten,
             null,
             null);
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             // if we fail to send a 401 something's seriously wrong, abort the request
             PInvoke.HttpCancelHttpRequest(_requestQueue.Handle, requestId, default);

@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -36,7 +35,7 @@ internal sealed partial class UrlGroup : IDisposable
         _created = true;
         var statusCode = PInvoke.HttpCreateUrlGroup(_serverSession.Id.DangerousGetServerSessionId(), out var urlGroupId);
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             throw new HttpSysException((int)statusCode);
         }
@@ -92,7 +91,7 @@ internal sealed partial class UrlGroup : IDisposable
 
         var statusCode = PInvoke.HttpSetUrlGroupProperty(Id, property, info.ToPointer(), infosize);
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             var exception = new HttpSysException((int)statusCode);
             Log.SetUrlPropertyError(_logger, exception);
@@ -142,9 +141,9 @@ internal sealed partial class UrlGroup : IDisposable
         Log.RegisteringPrefix(_logger, uriPrefix);
         CheckDisposed();
         var statusCode = PInvoke.HttpAddUrlToUrlGroup(Id, uriPrefix, (ulong)contextId);
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
+            if (statusCode == ErrorCodes.ERROR_ALREADY_EXISTS)
             {
                 // If we didn't create the queue and the uriPrefix already exists, confirm it exists for the
                 // queue we attached to, if so we are all good, otherwise throw an already registered error.
@@ -153,7 +152,7 @@ internal sealed partial class UrlGroup : IDisposable
                     unsafe
                     {
                         var findUrlStatusCode = PInvoke.HttpFindUrlGroupId(uriPrefix, _requestQueue.Handle, out var _);
-                        if (findUrlStatusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                        if (findUrlStatusCode == ErrorCodes.ERROR_SUCCESS)
                         {
                             // Already registered for the desired queue, all good
                             return;
@@ -163,7 +162,7 @@ internal sealed partial class UrlGroup : IDisposable
 
                 throw new HttpSysException((int)statusCode, Resources.FormatException_PrefixAlreadyRegistered(uriPrefix));
             }
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
+            if (statusCode == ErrorCodes.ERROR_ACCESS_DENIED)
             {
                 throw new HttpSysException((int)statusCode, Resources.FormatException_AccessDenied(uriPrefix, Environment.UserDomainName + @"\" + Environment.UserName));
             }
@@ -195,7 +194,7 @@ internal sealed partial class UrlGroup : IDisposable
 
             var statusCode = PInvoke.HttpCloseUrlGroup(Id);
 
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            if (statusCode != ErrorCodes.ERROR_SUCCESS)
             {
                 Log.CloseUrlGroupError(_logger, statusCode);
             }

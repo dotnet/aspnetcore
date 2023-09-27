@@ -198,7 +198,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             // Either the connection has already dropped, or the last write is in progress.
             // The requestId becomes invalid as soon as the last Content-Length write starts.
             // The only way to cancel now is with CancelIoEx.
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID)
+            if (statusCode == ErrorCodes.ERROR_CONNECTION_INVALID)
             {
                 Response.CancelLastWrite();
             }
@@ -227,7 +227,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                     bytesReturned: null,
                     IntPtr.Zero);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+                if (statusCode == ErrorCodes.ERROR_SUCCESS)
                 {
                     return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
                 }
@@ -309,7 +309,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                                                            property);
         }
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             throw new HttpSysException((int)statusCode);
         }
