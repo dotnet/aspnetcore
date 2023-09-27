@@ -105,7 +105,7 @@ internal sealed class Http2FrameWriter
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
 
         _maximumFlowControlQueueSize = ConfiguredMaximumFlowControlQueueSize is null
-            ? 4 * maxStreamsPerConnection
+            ? 4 * maxStreamsPerConnection // 4 is a magic number to give us some padding above the expected maximum size
             : (int)ConfiguredMaximumFlowControlQueueSize;
 
         if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < maxStreamsPerConnection)
