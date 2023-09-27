@@ -36,9 +36,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private const string EnhanceYourCalmMaximumCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.EnhanceYourCalmCount";
         private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
 
-        private static readonly int _enhanceYourCalmMaximumCount = AppContext.GetData(EnhanceYourCalmMaximumCountProperty) is int eycMaxCount
-            ? eycMaxCount
-            : 10;
+        private static readonly int _enhanceYourCalmMaximumCount = GetEnhanceYourCalmMaximumCount();
+
+        private static int GetEnhanceYourCalmMaximumCount()
+        {
+            var data = AppContext.GetData(EnhanceYourCalmMaximumCountProperty);
+            if (data is int count)
+            {
+                return count;
+            }
+            if (data is string countStr && int.TryParse(countStr, out var parsed))
+            {
+                return parsed;
+            }
+
+            return 20; // Empirically derived
+        }
 
         // Accumulate _enhanceYourCalmCount over the course of EnhanceYourCalmTickWindowCount ticks.
         // This should make bursts less likely to trigger disconnects.
@@ -176,10 +189,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ? 4 * http2Limits.MaxStreamsPerConnection
                 : (int)ConfiguredMaximumFlowControlQueueSize;
 
-            if (_maximumFlowControlQueueSize < http2Limits.MaxStreamsPerConnection)
+            if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < http2Limits.MaxStreamsPerConnection)
             {
+                Log.Http2FlowControlQueueMaximumTooLow(context.ConnectionId, http2Limits.MaxStreamsPerConnection, _maximumFlowControlQueueSize);
                 _maximumFlowControlQueueSize = http2Limits.MaxStreamsPerConnection;
-                Log.LogTrace($"The configured maximum flow control queue size {ConfiguredMaximumFlowControlQueueSize} is less than the maximum streams per connection {http2Limits.MaxStreamsPerConnection} - increasing to match.");
             }
 
             // Start pool off at a smaller size if the max number of streams is less than the InitialStreamPoolSize
