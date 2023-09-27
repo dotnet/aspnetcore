@@ -48,9 +48,22 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     private const string EnhanceYourCalmMaximumCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.EnhanceYourCalmCount";
 
-    private static readonly int _enhanceYourCalmMaximumCount = AppContext.GetData(EnhanceYourCalmMaximumCountProperty) is int eycMaxCount
-        ? eycMaxCount
-        : 10;
+    private static readonly int _enhanceYourCalmMaximumCount = GetEnhanceYourCalmMaximumCount();
+
+    private static int GetEnhanceYourCalmMaximumCount()
+    {
+        var data = AppContext.GetData(EnhanceYourCalmMaximumCountProperty);
+        if (data is int count)
+        {
+            return count;
+        }
+        if (data is string countStr && int.TryParse(countStr, out var parsed))
+        {
+            return parsed;
+        }
+
+        return 20; // Empirically derived
+    }
 
     // Accumulate _enhanceYourCalmCount over the course of EnhanceYourCalmTickWindowCount ticks.
     // This should make bursts less likely to trigger disconnects.

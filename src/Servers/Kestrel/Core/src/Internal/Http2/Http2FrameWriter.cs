@@ -43,6 +43,8 @@ internal sealed class Http2FrameWriter
 
     private readonly int _maximumFlowControlQueueSize;
 
+    private bool IsMaximumFlowControlQueueSizeEnabled => _maximumFlowControlQueueSize > 0;
+
     private readonly object _writeLock = new object();
     private readonly Http2Frame _outgoingFrame;
     private readonly Http2HeadersEnumerator _headersEnumerator = new Http2HeadersEnumerator();
@@ -106,7 +108,7 @@ internal sealed class Http2FrameWriter
             ? 4 * maxStreamsPerConnection
             : (int)ConfiguredMaximumFlowControlQueueSize;
 
-        if (_maximumFlowControlQueueSize < maxStreamsPerConnection)
+        if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < maxStreamsPerConnection)
         {
             _log.Http2FlowControlQueueMaximumTooLow(_connectionContext.ConnectionId, maxStreamsPerConnection, _maximumFlowControlQueueSize);
             _maximumFlowControlQueueSize = maxStreamsPerConnection;
@@ -977,7 +979,7 @@ internal sealed class Http2FrameWriter
         _waitingForMoreConnectionWindow.Enqueue(producer);
         // This is re-entrant because abort will cause a final enqueue.
         // Easier to check for that condition than to make each enqueuer reason about what to call.
-        if (!_aborted && _maximumFlowControlQueueSize > 0 && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
+        if (!_aborted && IsMaximumFlowControlQueueSizeEnabled && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
         {
             _log.Http2FlowControlQueueOperationsExceeded(_connectionId, _maximumFlowControlQueueSize);
             _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
