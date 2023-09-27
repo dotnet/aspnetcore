@@ -252,6 +252,12 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http2FlowControlQueueOperationsExceeded(connectionId, count);
         }
 
+        public void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual)
+        {
+            _trace1.Http2FlowControlQueueMaximumTooLow(connectionId, expected, actual);
+            _trace2.Http2FlowControlQueueMaximumTooLow(connectionId, expected, actual);
+        }
+
         public void InvalidResponseHeaderRemoved()
         {
             _trace1.InvalidResponseHeaderRemoved();

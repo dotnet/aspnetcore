@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks
         public void Http2TooManyEnhanceYourCalms(string connectionId, int count) { }
         public void Http2MaxConcurrentStreamsReached(string connectionId) { }
         public void Http2FlowControlQueueOperationsExceeded(string connectionId, int count) { }
+        public void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual) { }
         public void InvalidResponseHeaderRemoved() { }
         public void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex) { }
         public void Http3ConnectionClosing(string connectionId) { }

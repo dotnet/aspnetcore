@@ -84,6 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void Http2FlowControlQueueOperationsExceeded(string connectionId, int count);
 
+        void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual);
+
         void InvalidResponseHeaderRemoved();
 
         void Http3ConnectionError(string connectionId, Http3ConnectionErrorException ex);
