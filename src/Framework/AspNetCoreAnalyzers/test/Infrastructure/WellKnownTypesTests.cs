@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
@@ -32,6 +33,49 @@ class Program
 
         // Assert
         Assert.Collection(diagnostics, d => Assert.Equal("TEST001", d.Id));
+    }
+
+    [Fact]
+    public async Task ResolveAllWellKnownTypes_ToleratesDuplicateTypeNames()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+class Program
+{
+    static void Main()
+    {
+    }
+}
+");
+        var referenceSource = """
+  namespace Microsoft.AspNetCore.Builder
+  {
+      public static class EndpointRouteBuilderExtensions
+      {
+      }
+  }
+  """;
+        // Act
+        var project = TestDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, source.Source);
+        Stream assemblyStream = GetInMemoryAssemblyStreamForCode(referenceSource, "ExternAssembly", project.MetadataReferences.ToArray());
+        project = project.AddMetadataReference(MetadataReference.CreateFromStream(assemblyStream));
+        var diagnostics = await Runner.GetDiagnosticsAsync(project);
+
+        // Assert
+        Assert.Collection(diagnostics, d => Assert.Equal("TEST001", d.Id));
+    }
+
+    private static Stream GetInMemoryAssemblyStreamForCode(string code, string assemblyName, params MetadataReference[] references)
+    {
+        var tree = CSharpSyntaxTree.ParseText(code);
+        var trees = ImmutableArray.Create(tree);
+        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var compilation = CSharpCompilation.Create(assemblyName, trees).WithOptions(options);
+        compilation = compilation.AddReferences(references);
+        var stream = new MemoryStream();
+        var emitResult = compilation.Emit(stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
     }
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
