@@ -782,26 +782,22 @@ internal partial class CircuitHost : IAsyncDisposable
                     switch (operation.Type)
                     {
                         case RootComponentOperationType.Add:
+                            var task = webRootComponentManager.AddRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Descriptor.Key,
+                                operation.Descriptor.Parameters);
+                            if (pendingTasks != null)
                             {
-                                var task = webRootComponentManager.AddRootComponentAsync(
-                                    operation.SsrComponentId,
-                                    operation.Descriptor.ComponentType,
-                                    operation.Descriptor.Key,
-                                    operation.Descriptor.Parameters);
-                                if (pendingTasks != null)
-                                {
-                                    pendingTasks[i] = task;
-                                }
+                                pendingTasks[i] = task;
                             }
                             break;
                         case RootComponentOperationType.Update:
-                            {
-                                // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                                _ = webRootComponentManager.UpdateRootComponentAsync(
-                                    operation.SsrComponentId,
-                                    operation.Descriptor.Key,
-                                    operation.Descriptor.Parameters);
-                            }
+                            // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                            _ = webRootComponentManager.UpdateRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.Key,
+                                operation.Descriptor.Parameters);
                             break;
                         case RootComponentOperationType.Remove:
                             webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
