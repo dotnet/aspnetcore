@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsAspNetCoreApp Condition="'$(DotNetBuildFromSource)' != 'true'">true</IsAspNetCoreApp>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -11,7 +11,6 @@
     <NativeAssetsTargetFramework>$(DefaultNetCoreTargetFramework)</NativeAssetsTargetFramework>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
 
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <!-- Ignore warnings about 'ref' vs 'in' in generated code. -->
@@ -51,7 +50,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="Microsoft.Windows.CsWin32">
+    <Reference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildFromSource)' != 'true'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </Reference>

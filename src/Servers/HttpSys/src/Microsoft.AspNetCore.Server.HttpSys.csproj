@@ -3,13 +3,12 @@
   <PropertyGroup>
     <Description>ASP.NET Core HTTP server that uses the Windows HTTP Server API.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsAspNetCoreApp Condition="'$(DotNetBuildFromSource)' != 'true'">true</IsAspNetCoreApp>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;weblistener;httpsys</PackageTags>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <!-- Ignore platform compatibility warnings for this project. We know this only works on windows.-->
     <!-- Ignore warnings about 'ref' vs 'in' in generated code. -->
     <NoWarn>$(NoWarn);CA1416;CS9195</NoWarn>
@@ -37,7 +36,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="Microsoft.Windows.CsWin32">
+    <Reference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildFromSource)' != 'true'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </Reference>
