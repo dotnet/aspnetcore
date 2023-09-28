@@ -474,7 +474,7 @@ describe('DomSync', () => {
     // has to be handled as a regular attribute, and 'checked' must be handled similarly
     // to 'value' on other inputs
 
-    const destination = makeExistingContent(`<input type='checkbox' value='first' />`);
+    const destination = makeExistingContent(`<input type='checkbox' value='first' checked />`);
     const newContent = makeNewContent(`<input type='checkbox' value='second' checked />`);
 
     const checkboxElem = destination.startExclusive.nextSibling as HTMLInputElement;
