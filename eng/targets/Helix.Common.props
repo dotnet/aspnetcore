@@ -4,7 +4,7 @@
     <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
     <HelixQueueAlpine316>(Alpine.316.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.16-helix-amd64</HelixQueueAlpine316>
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
-    <HelixQueueFedora34>(Fedora.34.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-34-helix</HelixQueueFedora34>
+    <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
     <HelixQueueMariner>(Mariner)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
     <HelixQueueArmDebian12>(Debian.12.Arm64.Open)ubuntu.2004.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-arm64v8</HelixQueueArmDebian12>
 
@@ -44,7 +44,7 @@
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine316)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueFedora34)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
 
