@@ -3,8 +3,6 @@
 
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Antiforgery.Internal;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -26,19 +24,6 @@ public static class AntiforgeryApplicationBuilderExtensions
         builder.VerifyAntiforgeryServicesAreRegistered();
 
         builder.Properties[AntiforgeryMiddlewareSetKey] = true;
-
-        // The anti-forgery middleware adds annotations to HttpContext.Items to indicate that it has run
-        // that will be validated by the EndpointsRoutingMiddleware later. To do this, we need to ensure
-        // that routing has run and set the endpoint feature on the HttpContext associated with the request.
-        if (builder.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
-        {
-            return builder.Use(next =>
-            {
-                var newNext = RerouteHelper.Reroute(builder, routeBuilder, next);
-                var antiforgery = builder.ApplicationServices.GetRequiredService<IAntiforgery>();
-                return new AntiforgeryMiddleware(antiforgery, newNext).Invoke;
-            });
-        }
         builder.UseMiddleware<AntiforgeryMiddleware>();
 
         return builder;
