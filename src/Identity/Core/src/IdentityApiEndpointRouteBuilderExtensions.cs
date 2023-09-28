@@ -429,7 +429,26 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         // We expect a single error code and description in the normal case.
         // This could be golfed with GroupBy and ToDictionary, but perf! :P
         Debug.Assert(!result.Succeeded);
-        var errorDictionary = AggregateDictionary(result.Errors.Select(error => (error.Code, error.Description)));
+        var errorDictionary = new Dictionary<string, string[]>(1);
+
+        foreach (var error in result.Errors)
+        {
+            string[] newDescriptions;
+
+            if (errorDictionary.TryGetValue(error.Code, out var descriptions))
+            {
+                newDescriptions = new string[descriptions.Length + 1];
+                Array.Copy(descriptions, newDescriptions, descriptions.Length);
+                newDescriptions[descriptions.Length] = error.Description;
+            }
+            else
+            {
+                newDescriptions = [error.Description];
+            }
+
+            errorDictionary[error.Code] = newDescriptions;
+        }
+
         return TypedResults.ValidationProblem(errorDictionary);
     }
 
@@ -440,32 +459,8 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         {
             Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
             IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
-            Claims = AggregateDictionary(claimsPrincipal.Claims.Select(claim => (claim.Type, claim.Value))),
+            Claims = claimsPrincipal.Claims.ToLookup(c => c.Type, c => c.Value).ToDictionary(g => g.Key, g => g.ToArray()),
         };
-    }
-
-    private static Dictionary<TKey, TValue[]> AggregateDictionary<TKey, TValue>(IEnumerable<(TKey, TValue)> pairs) where TKey : notnull
-    {
-        var dictionary = new Dictionary<TKey, TValue[]>(1);
-        foreach (var (key, value) in pairs)
-        {
-            TValue[] newDescriptions;
-
-            if (dictionary.TryGetValue(key, out var descriptions))
-            {
-                newDescriptions = new TValue[descriptions.Length + 1];
-                Array.Copy(descriptions, newDescriptions, descriptions.Length);
-                newDescriptions[descriptions.Length] = value;
-            }
-            else
-            {
-                newDescriptions = [value];
-            }
-
-            dictionary[key] = newDescriptions;
-        }
-
-        return dictionary;
     }
 
     // Wrap RouteGroupBuilder with a non-public type to avoid a potential future behavioral breaking change.
