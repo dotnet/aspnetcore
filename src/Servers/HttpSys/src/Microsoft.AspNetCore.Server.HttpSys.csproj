@@ -23,12 +23,16 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" LinkBase="ServerInfrastructure\StringUtilities.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\HttpCharacters.cs" LinkBase="ServerInfrastructure\HttpCharacters.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <Compile Remove="**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
