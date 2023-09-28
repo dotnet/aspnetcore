@@ -354,8 +354,10 @@ function ensureEditableValueSynchronized(destination: Element, value: any) {
   } else if (destination instanceof HTMLSelectElement && destination.selectedIndex !== value) {
     destination.selectedIndex = value as number;
   } else if (destination instanceof HTMLInputElement) {
-    if (destination.type === 'checkbox' && destination.checked !== value) {
-      destination.checked = value as boolean;
+    if (destination.type === 'checkbox') {
+      if (destination.checked !== value) {
+        destination.checked = value as boolean;
+      }
     } else if (destination.value !== value) {
       destination.value = value as string;
     }
