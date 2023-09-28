@@ -1,3 +1,2 @@
 // https://github.com/microsoft/cswin32
-httpapi.*
 Windows.Win32.Networking.HttpServer

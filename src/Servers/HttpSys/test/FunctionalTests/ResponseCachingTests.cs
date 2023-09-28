@@ -382,7 +382,7 @@ public class ResponseCachingTests
         }
     }
 
-    [ConditionalFact(Skip = "Fails locally? Windows version behavior change?")]
+    [ConditionalFact]
     public async Task Caching_SendFileWithFullContentLength_Cached()
     {
         var requestCount = 1;
