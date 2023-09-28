@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsAspNetCoreApp Condition="'$(DotNetBuildFromSource)' != 'true'">true</IsAspNetCoreApp>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

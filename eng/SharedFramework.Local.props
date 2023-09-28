@@ -55,9 +55,9 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Identity" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" Condition="'$(DotNetBuildFromSource)' != 'true'"/>
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" Condition="'$(DotNetBuildFromSource)' != 'true'"/>
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
