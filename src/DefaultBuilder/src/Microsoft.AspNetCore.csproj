@@ -10,6 +10,10 @@
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'" >
+    <DefineConstants>$(DefineConstants);BUILD_FROM_SOURCE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />

@@ -232,7 +232,9 @@ public static class WebHost
             });
 
         builder
+#if !BUILD_FROM_SOURCE
             .UseIIS()
+#endif
             .UseIISIntegration();
     }
 
