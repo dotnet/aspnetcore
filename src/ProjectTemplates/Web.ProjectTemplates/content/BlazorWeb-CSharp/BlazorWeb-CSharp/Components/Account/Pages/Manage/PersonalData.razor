@@ -1,10 +1,6 @@
 ﻿@page "/Account/Manage/PersonalData"
 
-@using System.Text.Json
-@using Microsoft.AspNetCore.Identity
-@using BlazorWeb_CSharp.Data
-
-@inject UserAccessor UserAccessor
+@inject IdentityUserAccessor UserAccessor
 
 <PageTitle>Personal Data</PageTitle>
 
@@ -17,19 +13,22 @@
         <p>
             <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
         </p>
-        <form id="download-data" action="/Account/Manage/DownloadPersonalData" method="post">
+        <form action="Account/Manage/DownloadPersonalData" method="post">
             <AntiforgeryToken />
             <button class="btn btn-primary" type="submit">Download</button>
         </form>
         <p>
-            <a id="delete" href="/Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
+            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
         </p>
     </div>
 </div>
 
 @code {
+    [CascadingParameter]
+    public required HttpContext HttpContext { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        _ = await UserAccessor.GetRequiredUserAsync();
+        _ = await UserAccessor.GetRequiredUserAsync(HttpContext);
     }
 }

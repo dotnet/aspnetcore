@@ -1,7 +1,4 @@
-﻿@*#if (IndividualLocalAuth)
-@using BlazorWeb_CSharp.Components.Account.Shared
-##endif*@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -41,9 +38,6 @@
     ##else
     <Routes @rendermode="@RenderMode.InteractiveWebAssembly" />
     ##endif*@
-    @*#if (IndividualLocalAuth)
-    <LogoutForm id="logout-form" />
-    ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
 
@@ -52,7 +46,8 @@
 #elseif (UseServer && UseWebAssembly)
 
 @code {
-    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter]
+    public required HttpContext HttpContext { get; set; }
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null

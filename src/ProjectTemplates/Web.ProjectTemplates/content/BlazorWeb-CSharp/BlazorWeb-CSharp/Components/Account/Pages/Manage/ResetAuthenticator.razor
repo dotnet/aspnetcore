@@ -2,11 +2,10 @@
 
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
-@using BlazorWeb_CSharp.Components.Account
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
-@inject UserAccessor UserAccessor
+@inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ResetAuthenticator> Logger
 
@@ -25,31 +24,29 @@
     </p>
 </div>
 <div>
-    <form id="reset-authenticator-form" @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
+    <form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
         <AntiforgeryToken />
-        <button id="reset-authenticator-button" class="btn btn-danger" type="submit">Reset authenticator key</button>
+        <button class="btn btn-danger" type="submit">Reset authenticator key</button>
     </form>
 </div>
 
 @code {
-    private ApplicationUser _user = default!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _user = await UserAccessor.GetRequiredUserAsync();
-    }
+    [CascadingParameter]
+    public required HttpContext HttpContext { get; set; }
 
     private async Task OnSubmitAsync()
     {
-        await UserManager.SetTwoFactorEnabledAsync(_user, false);
-        await UserManager.ResetAuthenticatorKeyAsync(_user);
-        var userId = await UserManager.GetUserIdAsync(_user);
-        Logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", _user.Id);
+        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        await UserManager.SetTwoFactorEnabledAsync(user, false);
+        await UserManager.ResetAuthenticatorKeyAsync(user);
+        var userId = await UserManager.GetUserIdAsync(user);
+        Logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", userId);
 
-        await SignInManager.RefreshSignInAsync(_user);
+        await SignInManager.RefreshSignInAsync(user);
 
         RedirectManager.RedirectToWithStatus(
-            "/Account/Manage/EnableAuthenticator",
-            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.");
+            "Account/Manage/EnableAuthenticator",
+            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.",
+            HttpContext);
     }
 }

@@ -10,23 +10,19 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        @for (var row = 0; row < RecoveryCodes.Length; row += 2)
+        @foreach (var recoveryCode in RecoveryCodes)
         {
-            <code class="recovery-code">@RecoveryCodes[row]</code>
-
-            <text>&nbsp;</text>
-
-            <code class="recovery-code">@RecoveryCodes[row + 1]</code>
-
-            <br />
+            <div>
+                <code class="recovery-code">@recoveryCode</code>
+            </div>
         }
     </div>
 </div>
 
 @code {
     [Parameter]
-    public string[] RecoveryCodes { get; set; } = default!;
+    public required string[] RecoveryCodes { get; set; }
 
     [Parameter]
-    public string StatusMessage { get; set; } = default!;
+    public required string StatusMessage { get; set; }
 }

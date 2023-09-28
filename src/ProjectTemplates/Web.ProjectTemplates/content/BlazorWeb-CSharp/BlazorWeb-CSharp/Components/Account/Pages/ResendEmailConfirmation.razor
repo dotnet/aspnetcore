@@ -7,10 +7,9 @@
 @using Microsoft.AspNetCore.Identity.UI.Services
 @using Microsoft.AspNetCore.WebUtilities
 @using BlazorWeb_CSharp.Data
-@using BlazorWeb_CSharp.Components.Account
 
 @inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender EmailSender
+@inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
@@ -19,14 +18,14 @@
 <h1>Resend email confirmation</h1>
 <h2>Enter your email.</h2>
 <hr />
-<StatusMessage Message="@_message" />
+<StatusMessage Message="@message" />
 <div class="row">
     <div class="col-md-4">
         <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" />
             <div class="form-floating mb-3">
-                <InputText id="email" @bind-Value="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
+                <InputText @bind-Value="Input.Email" class="form-control" aria-required="true" placeholder="name@example.com" />
                 <label for="email" class="form-label">Email</label>
                 <ValidationMessage For="() => Input.Email" class="text-danger" />
             </div>
@@ -36,22 +35,17 @@
 </div>
 
 @code {
-    private string? _message;
+    private string? message;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
-
-    protected override void OnInitialized()
-    {
-        Input ??= new();
-    }
+    private InputModel Input { get; set; } = new();
 
     private async Task OnValidSubmitAsync()
     {
         var user = await UserManager.FindByEmailAsync(Input.Email!);
         if (user is null)
         {
-            _message = "Verification email sent. Please check your email.";
+            message = "Verification email sent. Please check your email.";
             return;
         }
 
@@ -59,20 +53,17 @@
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            $"{NavigationManager.BaseUri}Account/ConfirmEmail",
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
-        await EmailSender.SendEmailAsync(
-            Input.Email!,
-            "Confirm your email",
-            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        _message = "Verification email sent. Please check your email.";
+        message = "Verification email sent. Please check your email.";
     }
 
     private sealed class InputModel
     {
         [Required]
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; } = "";
     }
 }

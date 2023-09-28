@@ -1,24 +1,38 @@
+using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using BlazorWeb_CSharp.Components.Account.Pages;
 using BlazorWeb_CSharp.Components.Account.Pages.Manage;
 using BlazorWeb_CSharp.Data;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
 
 internal static class IdentityComponentsEndpointRouteBuilderExtensions
 {
-    // These endpoints are required by the Identity Razor components defined in the /Components/Pages/Account directory of this project.
+    // These endpoints are required by the Identity Razor components defined in the /Components/Account/Pages directory of this project.
     public static IEndpointConventionBuilder MapAdditionalIdentityEndpoints(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var accountGroup = endpoints.MapGroup("/Account");
+
+        accountGroup.MapPost("/Logout", async (
+            ClaimsPrincipal user,
+            SignInManager<ApplicationUser> signInManager,
+            [FromForm] string returnUrl) =>
+        {
+            if (signInManager.IsSignedIn(user))
+            {
+                await signInManager.SignOutAsync();
+            }
+
+            return TypedResults.LocalRedirect($"~/{returnUrl}");
+        });
 
         accountGroup.MapPost("/PerformExternalLogin", (
             HttpContext context,
@@ -32,11 +46,11 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
             var redirectUrl = UriHelper.BuildRelative(
                 context.Request.PathBase,
-                $"/Account/ExternalLogin",
+                "/Account/ExternalLogin",
                 QueryString.Create(query));
 
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
-            return Results.Challenge(properties, [provider]);
+            return TypedResults.Challenge(properties, [provider]);
         });
 
         var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
@@ -51,11 +65,11 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
             var redirectUrl = UriHelper.BuildRelative(
                 context.Request.PathBase,
-                $"/Account/Manage/ExternalLogins",
+                "/Account/Manage/ExternalLogins",
                 QueryString.Create("Action", ExternalLogins.LinkLoginCallbackAction));
 
             var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, signInManager.UserManager.GetUserId(context.User));
-            return Results.Challenge(properties, [provider]);
+            return TypedResults.Challenge(properties, [provider]);
         });
 
         var loggerFactory = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>();
@@ -90,11 +104,11 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
                 personalData.Add($"{l.LoginProvider} external login provider key", l.ProviderKey);
             }
 
-            personalData.Add($"Authenticator Key", (await userManager.GetAuthenticatorKeyAsync(user))!);
+            personalData.Add("Authenticator Key", (await userManager.GetAuthenticatorKeyAsync(user))!);
             var fileBytes = JsonSerializer.SerializeToUtf8Bytes(personalData);
 
             context.Response.Headers.TryAdd("Content-Disposition", "attachment; filename=PersonalData.json");
-            return Results.File(fileBytes, contentType: "application/json", fileDownloadName: "PersonalData.json");
+            return TypedResults.File(fileBytes, contentType: "application/json", fileDownloadName: "PersonalData.json");
         });
 
         return accountGroup;

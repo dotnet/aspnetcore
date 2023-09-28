@@ -6,19 +6,18 @@
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
-@using BlazorWeb_CSharp.Components.Account
 
 @inject UserManager<ApplicationUser> UserManager
-@inject UserAccessor UserAccessor
+@inject IdentityUserAccessor UserAccessor
 @inject UrlEncoder UrlEncoder
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<EnableAuthenticator> Logger
 
 <PageTitle>Configure authenticator app</PageTitle>
 
-@if (_recoveryCodes is not null)
+@if (recoveryCodes is not null)
 {
-    <ShowRecoveryCodes RecoveryCodes="_recoveryCodes.ToArray()" StatusMessage="@_message" />
+    <ShowRecoveryCodes RecoveryCodes="recoveryCodes.ToArray()" StatusMessage="@message" />
 }
 else
 {
@@ -38,10 +37,10 @@ else
                 </p>
             </li>
             <li>
-                <p>Scan the QR Code or enter this key <kbd>@_sharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
+                <p>Scan the QR Code or enter this key <kbd>@sharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
                 <div class="alert alert-info">Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</a>.</div>
-                <div id="qrCode"></div>
-                <div id="qrCodeData" data-url="@_authenticatorUri"></div>
+                <div></div>
+                <div data-url="@authenticatorUri"></div>
             </li>
             <li>
                 <p>
@@ -50,10 +49,10 @@ else
                 </p>
                 <div class="row">
                     <div class="col-md-6">
-                        <EditForm id="send-code" Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                        <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
                             <DataAnnotationsValidator />
                             <div class="form-floating mb-3">
-                                <InputText id="code" @bind-Value="Input.Code" class="form-control" autocomplete="off" placeholder="Please enter the code." />
+                                <InputText @bind-Value="Input.Code" class="form-control" autocomplete="off" placeholder="Please enter the code." />
                                 <label for="code" class="control-label form-label">Verification Code</label>
                                 <ValidationMessage For="() => Input.Code" class="text-danger" />
                             </div>
@@ -70,53 +69,51 @@ else
 @code {
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
-    private ApplicationUser _user = default!;
-    private string? _sharedKey;
-    private string? _authenticatorUri;
+    private string? message;
+    private ApplicationUser user = default!;
+    private string? sharedKey;
+    private string? authenticatorUri;
+    private IEnumerable<string>? recoveryCodes;
 
-    private IEnumerable<string>? _recoveryCodes;
-    private string? _message;
+    [CascadingParameter]
+    public required HttpContext HttpContext { get; set; }
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
+    private InputModel Input { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Input ??= new();
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
 
-        _user = await UserAccessor.GetRequiredUserAsync();
-
-        await LoadSharedKeyAndQrCodeUriAsync(_user);
+        await LoadSharedKeyAndQrCodeUriAsync(user);
     }
 
     private async Task OnValidSubmitAsync()
     {
         // Strip spaces and hyphens
-        var verificationCode = Input.Code!.Replace(" ", string.Empty).Replace("-", string.Empty);
+        var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
         var is2faTokenValid = await UserManager.VerifyTwoFactorTokenAsync(
-            _user, UserManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+            user, UserManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
 
         if (!is2faTokenValid)
         {
-            await LoadSharedKeyAndQrCodeUriAsync(_user);
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: Verification code is invalid.");
-            return;
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Verification code is invalid.", HttpContext);
         }
 
-        await UserManager.SetTwoFactorEnabledAsync(_user, true);
-        var userId = await UserManager.GetUserIdAsync(_user);
+        await UserManager.SetTwoFactorEnabledAsync(user, true);
+        var userId = await UserManager.GetUserIdAsync(user);
         Logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
 
-        _message = "Your authenticator app has been verified.";
+        message = "Your authenticator app has been verified.";
 
-        if (await UserManager.CountRecoveryCodesAsync(_user) == 0)
+        if (await UserManager.CountRecoveryCodesAsync(user) == 0)
         {
-           _recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(_user, 10);
+            recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
         }
         else
         {
-            RedirectManager.RedirectToWithStatus("/Account/Manage/TwoFactorAuthentication", _message);
+            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, HttpContext);
         }
     }
 
@@ -130,10 +127,10 @@ else
             unformattedKey = await UserManager.GetAuthenticatorKeyAsync(user);
         }
 
-        _sharedKey = FormatKey(unformattedKey!);
+        sharedKey = FormatKey(unformattedKey!);
 
         var email = await UserManager.GetEmailAsync(user);
-        _authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
+        authenticatorUri = GenerateQrCodeUri(email!, unformattedKey!);
     }
 
     private string FormatKey(string unformattedKey)
@@ -169,6 +166,6 @@ else
         [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Text)]
         [Display(Name = "Verification Code")]
-        public string? Code { get; set; }
+        public string Code { get; set; } = "";
     }
 }

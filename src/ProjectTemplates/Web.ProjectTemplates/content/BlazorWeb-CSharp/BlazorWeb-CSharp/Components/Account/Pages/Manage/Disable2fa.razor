@@ -2,10 +2,9 @@
 
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
-@using BlazorWeb_CSharp.Components.Account
 
 @inject UserManager<ApplicationUser> UserManager
-@inject UserAccessor UserAccessor
+@inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<Disable2fa> Logger
 
@@ -20,7 +19,7 @@
     </p>
     <p>
         Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key
-        used in an authenticator app you should <a href="/Account/Manage/ResetAuthenticator">reset your authenticator keys.</a>
+        used in an authenticator app you should <a href="Account/Manage/ResetAuthenticator">reset your authenticator keys.</a>
     </p>
 </div>
 
@@ -32,37 +31,34 @@
 </div>
 
 @code {
-    private ApplicationUser _user = default!;
+    private ApplicationUser user = default!;
 
     [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    public required HttpContext HttpContext { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        _user = await UserAccessor.GetRequiredUserAsync();
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
 
-        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        if (HttpMethods.IsGet(HttpContext.Request.Method) && !await UserManager.GetTwoFactorEnabledAsync(user))
         {
-            if (!await UserManager.GetTwoFactorEnabledAsync(_user))
-            {
-                throw new InvalidOperationException($"Cannot disable 2FA for user as it's not currently enabled.");
-            }
-            return;
+            throw new InvalidOperationException("Cannot disable 2FA for user as it's not currently enabled.");
         }
     }
 
     private async Task OnSubmitAsync()
     {
-        var disable2faResult = await UserManager.SetTwoFactorEnabledAsync(_user, false);
+        var disable2faResult = await UserManager.SetTwoFactorEnabledAsync(user, false);
         if (!disable2faResult.Succeeded)
         {
-            throw new InvalidOperationException($"Unexpected error occurred disabling 2FA.");
+            throw new InvalidOperationException("Unexpected error occurred disabling 2FA.");
         }
 
-        var userId = await UserManager.GetUserIdAsync(_user);
+        var userId = await UserManager.GetUserIdAsync(user);
         Logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", userId);
         RedirectManager.RedirectToWithStatus(
-            "/Account/Manage/TwoFactorAuthentication",
-            "2fa has been disabled. You can reenable 2fa when you setup an authenticator app");
+            "Account/Manage/TwoFactorAuthentication",
+            "2fa has been disabled. You can reenable 2fa when you setup an authenticator app",
+            HttpContext);
     }
 }

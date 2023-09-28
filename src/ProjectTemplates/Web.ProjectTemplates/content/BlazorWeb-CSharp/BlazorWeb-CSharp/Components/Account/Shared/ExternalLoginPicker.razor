@@ -1,13 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
-@using BlazorWeb_CSharp.Components.Account.Pages
 @using BlazorWeb_CSharp.Data
-@using BlazorWeb_CSharp.Components.Account
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-@if ((_externalLogins?.Count ?? 0) == 0)
+@if ((externalLogins?.Count ?? 0) == 0)
 {
     <div>
         <p>
@@ -18,12 +16,12 @@
 }
 else
 {
-    <form id="external-account" class="form-horizontal" action="/Account/PerformExternalLogin" method="post">
+    <form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
         <div>
             <AntiforgeryToken />
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
             <p>
-                @foreach (var provider in _externalLogins!)
+                @foreach (var provider in externalLogins!)
                 {
                     <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
                 }
@@ -33,15 +31,13 @@ else
 }
 
 @code {
-    private IList<AuthenticationScheme>? _externalLogins;
+    private IList<AuthenticationScheme>? externalLogins;
 
     [SupplyParameterFromQuery]
-    private string ReturnUrl { get; set; } = default!;
+    private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        ReturnUrl ??= "/";
-
-        _externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
     }
 }

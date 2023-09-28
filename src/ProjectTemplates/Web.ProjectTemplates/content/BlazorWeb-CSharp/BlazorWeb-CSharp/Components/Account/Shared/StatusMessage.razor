@@ -1,29 +1,29 @@
-﻿@using BlazorWeb_CSharp.Components.Account
-
-@{
-    var message = Message ?? MessageFromCookie;
-
-    if (MessageFromCookie is not null)
-    {
-        HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
-    }
-}
-
-@if (!string.IsNullOrEmpty(message))
+﻿@if (!string.IsNullOrEmpty(DisplayMessage))
 {
-    var statusMessageClass = message.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        @message
+    var statusMessageClass = DisplayMessage.StartsWith("Error") ? "danger" : "success";
+    <div class="alert alert-@statusMessageClass" role="alert">
+        @DisplayMessage
     </div>
 }
 
 @code {
+    private string? messageFromCookie;
+
     [Parameter]
     public string? Message { get; set; }
 
     [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    public required HttpContext HttpContext { get; set; }
 
-    private string? MessageFromCookie => HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+    private string? DisplayMessage => Message ?? messageFromCookie;
+
+    protected override void OnInitialized()
+    {
+        messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
+
+        if (messageFromCookie is not null)
+        {
+            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
+        }
+    }
 }

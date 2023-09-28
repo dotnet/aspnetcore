@@ -3,13 +3,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace BlazorWeb_CSharp.Components.Account;
 
-internal sealed class IdentityRedirectManager(
-    NavigationManager navigationManager,
-    IHttpContextAccessor httpContextAccessor)
+internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
 {
     public const string StatusCookieName = "Identity.StatusMessage";
 
-    private static readonly CookieBuilder _statusCookieBuilder = new CookieBuilder
+    private static readonly CookieBuilder StatusCookieBuilder = new()
     {
         SameSite = SameSiteMode.Strict,
         HttpOnly = true,
@@ -18,20 +16,20 @@ internal sealed class IdentityRedirectManager(
     };
 
     [DoesNotReturn]
-    public void RedirectTo(string uri)
+    public void RedirectTo(string? uri)
     {
+        uri ??= "";
+
+        // Prevent open redirects.
         if (!Uri.IsWellFormedUriString(uri, UriKind.Relative))
         {
             uri = navigationManager.ToBaseRelativePath(uri);
         }
 
-        // This works because either:
-        // [1] NavigateTo() throws NavigationException, which is handled by the framework as a redirect.
-        // [2] NavigateTo() throws some other exception, which gets treated as a normal unhandled exception.
-        // [3] NavigateTo() does not throw an exception, meaning we're not rendering from an endpoint, so we throw
-        //     an InvalidOperationException to indicate that we can't redirect.
+        // On the server, NavigateTo throws NavigationException on the server which is handled by the framework as a redirect
+        // before the InvalidOperationException is thrown.
         navigationManager.NavigateTo(uri);
-        throw new InvalidOperationException($"Can only redirect when rendering from an endpoint.");
+        throw new InvalidOperationException($"{nameof(IdentityRedirectManager)} must be called from the server.");
     }
 
     [DoesNotReturn]
@@ -39,25 +37,20 @@ internal sealed class IdentityRedirectManager(
     {
         var uriWithoutQuery = navigationManager.ToAbsoluteUri(uri).GetLeftPart(UriPartial.Path);
         var newUri = navigationManager.GetUriWithQueryParameters(uriWithoutQuery, queryParameters);
-
         RedirectTo(newUri);
     }
 
     [DoesNotReturn]
-    public void RedirectToWithStatus(string uri, string message)
+    public void RedirectToWithStatus(string uri, string message, HttpContext context)
     {
-        var httpContext = httpContextAccessor.HttpContext ??
-            throw new InvalidOperationException($"{nameof(RedirectToWithStatus)} requires access to an {nameof(HttpContext)}.");
-        httpContext.Response.Cookies.Append(StatusCookieName, message, _statusCookieBuilder.Build(httpContext));
-
+        context.Response.Cookies.Append(StatusCookieName, message, StatusCookieBuilder.Build(context));
         RedirectTo(uri);
     }
 
     [DoesNotReturn]
-    public void RedirectToCurrentPage()
-        => RedirectTo(navigationManager.Uri);
+    public void RedirectToCurrentPage() => RedirectTo(navigationManager.Uri);
 
     [DoesNotReturn]
-    public void RedirectToCurrentPageWithStatus(string message)
-        => RedirectToWithStatus(navigationManager.Uri, message);
+    public void RedirectToCurrentPageWithStatus(string message, HttpContext context)
+        => RedirectToWithStatus(navigationManager.Uri, message, context);
 }

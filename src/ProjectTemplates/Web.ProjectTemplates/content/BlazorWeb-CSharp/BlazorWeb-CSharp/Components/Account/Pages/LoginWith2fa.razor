@@ -3,7 +3,6 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
-@using BlazorWeb_CSharp.Components.Account
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -14,7 +13,7 @@
 
 <h1>Two-factor authentication</h1>
 <hr />
-<StatusMessage Message="@_message" />
+<StatusMessage Message="@message" />
 <p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
 <div class="row">
     <div class="col-md-4">
@@ -24,13 +23,13 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" />
             <div class="form-floating mb-3">
-                <InputText id="two-factor-code" @bind-Value="Input.TwoFactorCode" class="form-control" autocomplete="off" />
+                <InputText @bind-Value="Input.TwoFactorCode" class="form-control" autocomplete="off" />
                 <label for="two-factor-code" class="form-label">Authenticator code</label>
                 <ValidationMessage For="() => Input.TwoFactorCode" class="text-danger" />
             </div>
             <div class="checkbox mb-3">
                 <label for="remember-machine" class="form-label">
-                    <InputCheckbox id="remember-machine" @bind-Value="Input.RememberMachine" />
+                    <InputCheckbox @bind-Value="Input.RememberMachine" />
                     Remember this machine
                 </label>
             </div>
@@ -42,15 +41,15 @@
 </div>
 <p>
     Don't have access to your authenticator device? You can
-    <a id="recovery-code-login" href="/Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">log in with a recovery code</a>.
+    <a href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">log in with a recovery code</a>.
 </p>
 
 @code {
-    private string? _message;
-    private ApplicationUser _user = default!;
+    private string? message;
+    private ApplicationUser user = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
+    private InputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
@@ -60,38 +59,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Input ??= new();
-        ReturnUrl ??= "/";
-
-        var user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
-        if (user is null)
-        {
-            throw new InvalidOperationException($"Unable to load two-factor authentication user.");
-        }
-
-        _user = user;
+        // Ensure the user has gone through the username & password screen first
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
+            throw new InvalidOperationException("Unable to load two-factor authentication user.");
     }
 
     private async Task OnValidSubmitAsync()
     {
         var authenticatorCode = Input.TwoFactorCode!.Replace(" ", string.Empty).Replace("-", string.Empty);
         var result = await SignInManager.TwoFactorAuthenticatorSignInAsync(authenticatorCode, RememberMe, Input.RememberMachine);
-        var userId = await UserManager.GetUserIdAsync(_user);
+        var userId = await UserManager.GetUserIdAsync(user);
 
         if (result.Succeeded)
         {
-            Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", _user.Id);
-            RedirectManager.RedirectTo(ReturnUrl ?? "/");
+            Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
+            RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User with ID '{UserId}' account locked out.", _user.Id);
-            RedirectManager.RedirectTo("/Account/Lockout");
+            Logger.LogWarning("User with ID '{UserId}' account locked out.", userId);
+            RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
-            Logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", _user.Id);
-            _message = "Error: Invalid authenticator code.";
+            Logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", userId);
+            message = "Error: Invalid authenticator code.";
         }
     }
 
