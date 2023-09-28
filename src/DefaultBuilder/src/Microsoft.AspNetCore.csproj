@@ -22,7 +22,7 @@
     <Reference Include="Microsoft.AspNetCore.HostFiltering" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" Condition="'$(DotNetBuildFromSource)' != 'true'"/>
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
