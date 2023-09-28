@@ -3,10 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Net.Quic;
 using System.Net.Security;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
@@ -19,13 +17,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.Telemetry.Testing.Metrics;
-using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
 
