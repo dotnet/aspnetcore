@@ -126,6 +126,11 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
       url.search = new URLSearchParams(formData as any).toString();
+
+      // For forms with method=get, we need to push a URL history entry equivalent to how it
+      // would be pushed for a native <form method=get> submission. This is also equivalent to
+      // how we push a URL history entry before starting enhanced page load on an <a> click.
+      history.pushState(null, /* ignored title */ '', url.toString());
     } else {
       fetchOptions.body = formData;
     }
@@ -209,6 +214,14 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       if (externalRedirectionUrl) {
         location.replace(externalRedirectionUrl);
         return;
+      }
+
+      // For non-GET requests, the destination has to be the same URL you're already on, or result in a redirection
+      // (post/redirect/get). You're not allowed to POST to a different URL without redirecting, because then back/forwards
+      // won't work - we can't recreate the "Resubmit form?" behavior.
+      // See https://github.com/dotnet/aspnetcore/issues/50945
+      if (!response.redirected && !isGetRequest && response.url !== location.href && isSuccessResponse) {
+          throw new Error(`Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`);
       }
 
       const responseContentType = response.headers.get('content-type');
