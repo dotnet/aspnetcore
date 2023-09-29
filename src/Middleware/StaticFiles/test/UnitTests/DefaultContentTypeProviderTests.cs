@@ -22,6 +22,14 @@ public class DefaultContentTypeProviderTests
     }
 
     [Fact]
+    public void KnownAnimationExtensionsReturnType()
+    {
+        var provider = new FileExtensionContentTypeProvider();
+        Assert.True(provider.TryGetContentType("known.glb", out var contentType));
+        Assert.Equal("model/gltf-binary", contentType);
+    }
+
+    [Fact]
     public void DoubleDottedExtensionsAreNotSupported()
     {
         var provider = new FileExtensionContentTypeProvider();
