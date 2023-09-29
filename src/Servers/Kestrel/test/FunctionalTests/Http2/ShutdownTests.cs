@@ -35,10 +35,15 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
 
     public ShutdownTests()
     {
-        Client = new HttpClient(new HttpClientHandler
+        var handler = new SocketsHttpHandler
         {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        })
+            // Pings are supposed to be off by default but they aren't.
+            // https://github.com/dotnet/runtime/issues/92840
+            // This can cause an unexpected ConnectionReset log instead of ConnectionReadFin which fails ConnectionClosedWithoutActiveRequestsOrGoAwayFIN.
+            KeepAlivePingDelay = TimeSpan.MaxValue
+        };
+        handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+        Client = new HttpClient(handler)
         {
             DefaultRequestVersion = new Version(2, 0),
         };
