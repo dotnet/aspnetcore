@@ -1,30 +1,18 @@
 /*#if (SampleContent)*/
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-a, .btn-link {
-    color: #0071c1;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
+:root {
+    --bl-blazor-brand-color1: #052767;
+    --bl-blazor-brand-color2: #3a0647;
+    --bl-blazor-brand-contrast-color: white;
+    --bl-error-ui-bg: black;
+    --bl-sidebar-gradient: linear-gradient(180deg, var(--bl-blazor-brand-color1) 0%, var(--bl-blazor-brand-color2) 70%);
+    --bl-nav-pills-link-active-bg: rgba(255,255,255,0.25);
+    --bl-nav-pills-link-hover-color-bg: rgba(255,255,255,0.1);
+    --bl-sidebar-navlink-color: white;
+    --bl-nav-pills-link-active-color: white;
+    --bl-nav-pills-link-hover-color: white;
 }
 
 /*#endif*/
-h1:focus {
-    outline: none;
-}
 
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
