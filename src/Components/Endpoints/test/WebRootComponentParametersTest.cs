@@ -99,6 +99,39 @@ public class WebRootComponentParametersTest
         Assert.True(result);
     }
 
+    [Fact]
+    public void WebRootComponentParameters_DefinitelyEquals_Throws_WhenComparingNonJsonElementParameterToJsonElement()
+    {
+        // Arrange
+        var parameters1 = CreateParametersWithNonJsonElements(new() { ["First"] = 123 });
+        var parameters2 = CreateParameters(new() { ["First"] = 456 });
+
+        // Act/assert
+        Assert.Throws<InvalidCastException>(() => parameters1.DefinitelyEquals(parameters2));
+    }
+
+    [Fact]
+    public void WebRootComponentParameters_DefinitelyEquals_Throws_WhenComparingJsonElementParameterToNonJsonElement()
+    {
+        // Arrange
+        var parameters1 = CreateParameters(new() { ["First"] = 123 });
+        var parameters2 = CreateParametersWithNonJsonElements(new() { ["First"] = 456 });
+
+        // Act/assert
+        Assert.Throws<InvalidCastException>(() => parameters1.DefinitelyEquals(parameters2));
+    }
+
+    [Fact]
+    public void WebRootComponentParameters_DefinitelyEquals_Throws_WhenComparingNonJsonElementParameters()
+    {
+        // Arrange
+        var parameters1 = CreateParametersWithNonJsonElements(new() { ["First"] = 123 });
+        var parameters2 = CreateParametersWithNonJsonElements(new() { ["First"] = 456 });
+
+        // Act/assert
+        Assert.Throws<InvalidCastException>(() => parameters1.DefinitelyEquals(parameters2));
+    }
+
     private static WebRootComponentParameters CreateParameters(Dictionary<string, object> parameters)
     {
         var parameterView = ParameterView.FromDictionary(parameters);
@@ -109,6 +142,13 @@ public class WebRootComponentParametersTest
             var jsonElement = JsonSerializer.SerializeToElement(parameterValues[i]);
             parameterValues[i] = jsonElement;
         }
+        return new(parameterView, parameterDefinitions.AsReadOnly(), parameterValues.AsReadOnly());
+    }
+
+    private static WebRootComponentParameters CreateParametersWithNonJsonElements(Dictionary<string, object> parameters)
+    {
+        var parameterView = ParameterView.FromDictionary(parameters);
+        var (parameterDefinitions, parameterValues) = ComponentParameter.FromParameterView(parameterView);
         return new(parameterView, parameterDefinitions.AsReadOnly(), parameterValues.AsReadOnly());
     }
 }
