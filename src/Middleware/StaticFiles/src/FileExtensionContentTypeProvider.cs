@@ -110,6 +110,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".flr", "x-world/x-vrml" },
                 { ".flv", "video/x-flv" },
                 { ".gif", "image/gif" },
+                { ".glb", "model/gltf-binary" },
                 { ".gtar", "application/x-gtar" },
                 { ".gz", "application/x-gzip" },
                 { ".h", "text/plain" },
