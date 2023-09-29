@@ -93,6 +93,12 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                     return result;
                 }
 
+                if (WellKnownConverters.Converters.TryGetValue(type, out var converter))
+                {
+                    result.Kind = FormDataTypeKind.Primitive;
+                    return result;
+                }
+
                 if (_dictionaryFactory.CanConvert(type, options))
                 {
                     Log.DictionaryType(_logger, type);
