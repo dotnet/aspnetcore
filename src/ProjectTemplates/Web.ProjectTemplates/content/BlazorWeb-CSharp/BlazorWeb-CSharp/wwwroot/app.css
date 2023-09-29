@@ -19,11 +19,11 @@
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 1px solid #e50000;
 }
 
 .validation-message {
-    color: red;
+    color: #e50000;
 }
 
 .blazor-error-boundary {

@@ -1,4 +1,75 @@
-﻿<button class="navbar-toggler force-darkmode" type="button" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"
+﻿@*#if (IndividualLocalAuth)
+@using BlazorWeb_CSharp.Components.Identity
+
+##endif*@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">BlazorWeb-CSharp</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+        @*#if (UseServer || UseWebAssembly) -->
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="bi bi-plus-square-fill" aria-hidden="true"></span> Counter
+            </NavLink>
+        </div>
+        ##endif*@
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="weather">
+                <span class="bi bi-list-nested" aria-hidden="true"></span> Weather
+            </NavLink>
+        </div>
+        @*#if (IndividualLocalAuth)
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="auth">
+                <span class="bi bi-lock" aria-hidden="true"></span> Auth Required
+            </NavLink>
+        </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Account/Manage">
+                        <span class="bi bi-person-fill" aria-hidden="true"></span> @context.User.Identity?.Name
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <LogoutForm id="logout-form" />
+                    <NavLink class="nav-link" href="#" onclick="document.getElementById('logout-form').submit(); return false;">
+                        <span class="bi bi-arrow-bar-left" aria-hidden="true"></span> Logout
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Account/Register">
+                        <span class="bi bi-person" aria-hidden="true"></span> Register
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Account/Login">
+                        <span class="bi bi-person-badge" aria-hidden="true"></span> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+        ##endif*@
+    </nav>
+</div>
+<button class="navbar-toggler force-darkmode" type="button" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"
         onclick="var menu = document.querySelector('#sidebarMenu'); menu.classList.toggle('hidden'); menu.ariaExpanded = menu.ariaExpanded !== 'true'; menu.querySelector('.nav-link').focus();">
     <span class="navbar-toggler-icon"></span>
 </button>

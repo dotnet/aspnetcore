@@ -721,6 +721,84 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void AutoRenderMode_UsesBlazorWebAssembly_WhenBothServerAndWebAssemblyComponentsExist()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorServer_WhenOnlyServerComponentsExist_EvenAfterWebAssemblyResourcesLoad()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        ForceWebAssemblyResourceCacheMiss();
+
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        // We start by adding a WebAssembly component to ensure the WebAssembly runtime
+        // will be cached after we refresh the page.
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+        Browser.DoesNotExist(By.Id("is-interactive-0"));
+
+        Browser.Navigate().Refresh();
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        // Verify that Auto mode will use Blazor Server, even though the WebAssembly runtime is cached
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorServer_AfterWebAssemblyComponentsNoLongerExist_ButServerComponentsDo()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+
+        // Remove all WebAssembly components
+        Browser.Click(By.Id("remove-counter-link-0"));
+        Browser.Click(By.Id("remove-counter-link-2"));
+
+        // Verify that Blazor Server gets used
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-3")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-3")).Text);
+    }
+
+    [Fact]
     public void Circuit_ShutsDown_WhenAllBlazorServerComponentsGetRemoved()
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");

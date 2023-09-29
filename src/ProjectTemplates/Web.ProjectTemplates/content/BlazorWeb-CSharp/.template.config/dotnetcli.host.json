@@ -21,6 +21,9 @@
     "IncludeSampleContent": {
       "isHidden": true
     },
+    "UseLocalDB": {
+      "longName": "use-local-db"
+    },
     "Framework": {
       "longName": "framework"
     },
@@ -51,5 +54,8 @@
       "longName": "use-program-main",
       "shortName": ""
     }
-  }
+  },
+  "usageExamples": [
+    "-int auto --auth individual --use-local-db"
+  ]
 }
