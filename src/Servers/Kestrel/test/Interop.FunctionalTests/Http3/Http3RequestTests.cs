@@ -1035,8 +1035,6 @@ public class Http3RequestTests : LoggedTest
             Logger.LogInformation("Client reading response.");
             var data = await responseStream.ReadAtLeastLengthAsync(TestData.Length).DefaultTimeout();
 
-            requestContent.CompleteStream();
-
             Logger.LogInformation("Client canceled request.");
             response.Dispose();
 
@@ -1134,8 +1132,6 @@ public class Http3RequestTests : LoggedTest
             await requestStream.FlushAsync().DefaultTimeout();
 
             await tcs.Task;
-
-            requestContent.CompleteStream();
 
             Logger.LogInformation("Client canceled request.");
             response.Dispose();
