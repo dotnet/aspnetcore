@@ -177,7 +177,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4822e3c3aa77eb82b2fb33c9321f923cf11ddde6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="6.0.23-servicing.23475.15">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="6.0.23-servicing.23479.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
@@ -269,7 +269,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="6.0.23-servicing.23475.15">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="6.0.23-servicing.23479.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
