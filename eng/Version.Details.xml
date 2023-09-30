@@ -401,9 +401,9 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>d669bb8deda7a1368a8fcfbcaade1a2ac4567340</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rtm.23478.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rtm.23479.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>37c98dd0a20f175931d31da889475496fc7dcbf8</Sha>
+      <Sha>b7ece241883466eed7208ddeaae60447519d875b</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
