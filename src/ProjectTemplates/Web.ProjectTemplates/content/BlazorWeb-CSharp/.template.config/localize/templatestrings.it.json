@@ -32,7 +32,7 @@
   "symbols/Empty/description": "Consente di configurare se omettere pagine di esempio e stile che mostrano modelli di utilizzo di base.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
-  "symbols/auth/description": "The type of authentication to use",
+  "symbols/auth/description": "Tipo di autenticazione da usare.",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified.",
   "symbols/AllInteractive/displayName": "_Enable rendering interattivo a livello globale in tutto il sito",
   "symbols/AllInteractive/description": "Configura se rendere interattiva ogni pagina applicando una modalità di rendering interattiva al livello superiore. Se false, le pagine useranno il rendering statico del server per impostazione predefinita e possono essere contrassegnate come interattive per pagina o per componente.",
