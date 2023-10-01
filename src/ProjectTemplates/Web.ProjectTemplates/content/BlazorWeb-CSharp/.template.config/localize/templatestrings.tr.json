@@ -32,7 +32,7 @@
   "symbols/Empty/description": "Temel kullanım düzenlerini gösteren örnek sayfaların ve stil oluşturma özelliklerinin atlanıp atlanmayacağını yapılandırır.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
-  "symbols/auth/description": "The type of authentication to use",
+  "symbols/auth/description": "Kullanılacak kimlik doğrulaması türü",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified.",
   "symbols/AllInteractive/displayName": "_Site genelinde etkileşimli işlemeyi genel olarak etkinleştirin",
   "symbols/AllInteractive/description": "En üst düzeyde etkileşimli bir işleme modu uygulayarak her sayfanın etkileşimli olup olmayacağını yapılandırır. False ise sayfalar varsayılan olarak statik sunucu işleme kullanır ve sayfa başına veya bileşen başına temelinde etkileşimli olarak işaretlenebilir.",
