@@ -32,7 +32,7 @@
   "symbols/Empty/description": "Nastavuje, jestli se mají vynechat ukázkové stránky a styly, které demonstrují základní vzory použití.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
-  "symbols/auth/description": "The type of authentication to use",
+  "symbols/auth/description": "Typ ověřování, který se má použít",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified.",
   "symbols/AllInteractive/displayName": "_Povolit interaktivní vykreslování globálně na celém webu",
   "symbols/AllInteractive/description": "Konfiguruje, jestli se má každá stránka nastavit jako interaktivní, a to použitím interaktivního režimu vykreslování na nejvyšší úrovni. Pokud se nastaví na false, stránky budou ve výchozím nastavení používat vykreslování statického serveru a dají se označit jako interaktivní pro jednotlivé stránky nebo komponenty.",

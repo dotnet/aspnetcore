@@ -32,7 +32,7 @@
   "symbols/Empty/description": "기본 사용 패턴을 보여주는 샘플 페이지 및 스타일을 생략할지 여부를 구성합니다.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
-  "symbols/auth/description": "The type of authentication to use",
+  "symbols/auth/description": "사용할 인증 유형",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified.",
   "symbols/AllInteractive/displayName": "_사이트 전체에서 전역적으로 인터랙티브 렌더링 활성화",
   "symbols/AllInteractive/description": "최상위 수준에서 대화형 렌더링 모드를 적용하여 모든 페이지를 대화형으로 설정할지 여부를 구성합니다. 만약 false이면 페이지는 기본적으로 정적 서버 렌더링을 사용하며 페이지별 또는 구성 요소별로 대화형으로 표시될 수 있습니다.",

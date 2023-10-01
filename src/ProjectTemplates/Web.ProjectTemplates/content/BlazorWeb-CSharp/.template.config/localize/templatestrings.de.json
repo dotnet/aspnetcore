@@ -32,7 +32,7 @@
   "symbols/Empty/description": "Konfiguriert, ob Beispielseiten und Formatierungen weggelassen werden sollen, die grundlegende Verwendungsmuster veranschaulichen.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
-  "symbols/auth/description": "The type of authentication to use",
+  "symbols/auth/description": "Der zu verwendende Authentifizierungstyp",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified.",
   "symbols/AllInteractive/displayName": "_Aktivieren des interaktiven Renderings global auf der gesamten Website",
   "symbols/AllInteractive/description": "Konfiguriert, ob jede Seite interaktiv werden soll, indem ein interaktiver Rendermodus auf der obersten Ebene angewendet wird. False gibt an, dass Seiten standardmäßig statisches Serverrendering verwenden und auf Seiten- oder Komponentenbasis als interaktiv markiert werden können.",
