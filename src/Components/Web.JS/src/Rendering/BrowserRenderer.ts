@@ -400,6 +400,28 @@ function parseMarkup(markup: string, isSvg: boolean) {
     return sharedSvgElemForParsing;
   } else {
     sharedTemplateElemForParsing.innerHTML = markup || ' ';
+
+    // Since this is a markup string, we want to honor the developer's intent to
+    // evaluate any scripts it may contain. Scripts parsed from an innerHTML assignment
+    // won't be executable by default (https://stackoverflow.com/questions/1197575/can-scripts-be-inserted-with-innerhtml)
+    // but that's inconsistent with anything constructed from a sequence like:
+    // - OpenElement("script")
+    // - AddContent(js) or AddMarkupContent(js)
+    // - CloseElement()
+    // It doesn't make sense to have such an inconsistency in Blazor's interactive
+    // renderer, and for back-compat with pre-.NET 8 code (when the Razor compiler always
+    // used OpenElement like above), as well as consistency with static SSR, we need to make it work.
+    sharedTemplateElemForParsing.content.querySelectorAll('script').forEach(oldScriptElem => {
+      const newScriptElem = document.createElement('script');
+      newScriptElem.textContent = oldScriptElem.textContent;
+
+      oldScriptElem.getAttributeNames().forEach(attribName => {
+        newScriptElem.setAttribute(attribName, oldScriptElem.getAttribute(attribName)!);
+      });
+
+      oldScriptElem.parentNode!.replaceChild(newScriptElem, oldScriptElem);
+    });
+
     return sharedTemplateElemForParsing.content;
   }
 }
