@@ -189,9 +189,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b20f704cc00f390e5560a137deb8f0e64e863e1d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23475.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23502.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>e04156dbe14f882a80d4499dbebd45ab156b6c3c</Sha>
+      <Sha>ed17956dbc31097b7ba6a66be086f4a70a97d84f</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.0.0-beta-23228-03">
