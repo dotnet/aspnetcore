@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -72,25 +71,6 @@ internal sealed class OutputCacheEntry : IDisposable
         _recycleBuffers = recycleBuffers;
     }
 
-    public void Dispose()
-    {
-        var headers = Headers;
-        var body = Body;
-        Headers = default;
-        Body = default;
-        Recycle(headers);
-        RecyclableReadOnlySequenceSegment.RecycleChain(body, _recycleBuffers);
-        // ^^ note that this only recycles the chain, not the actual buffers
-    }
-
-    private static void Recycle<T>(ReadOnlyMemory<T> value)
-    {
-        if (MemoryMarshal.TryGetArray<T>(value, out var segment) && segment.Array is { Length: > 0 })
-        {
-            ArrayPool<T>.Shared.Return(segment.Array);
-        }
-    }
-
     internal OutputCacheEntry CreateBodyFrom(IList<byte[]> segments) // mainly used from tests
     {
         // only expected in create path; don't reset/recycle existing
@@ -118,6 +98,7 @@ internal sealed class OutputCacheEntry : IDisposable
                 if (index == 0) // only ignored headers
                 {
                     ArrayPool<(string, StringValues)>.Shared.Return(arr);
+                    Headers = default;
                 }
                 else
                 {
@@ -142,4 +123,6 @@ internal sealed class OutputCacheEntry : IDisposable
 
     public ValueTask CopyToAsync(PipeWriter destination, CancellationToken cancellationToken)
         => RecyclableReadOnlySequenceSegment.CopyToAsync(Body, destination, cancellationToken);
+
+    public void Dispose() { } // intention here is to add recycling; this was removed late in NET8, but is retained as a callback
 }
