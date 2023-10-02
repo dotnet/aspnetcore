@@ -2209,6 +2209,7 @@
         "Components/Pages/Home.razor",
         "Components/Layout/MainLayout.razor",
         "Properties/launchSettings.json",
+        "wwwroot/icon-192.png",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
       ]
@@ -2257,6 +2258,7 @@
         "Properties/launchSettings.json",
         "wwwroot/appsettings.Development.json",
         "wwwroot/appsettings.json",
+        "wwwroot/icon-192.png",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
       ]
@@ -2303,6 +2305,7 @@
         "Components/Login/RedirectToLogin.razor",
         "Properties/launchSettings.json",
         "wwwroot/appsettings.json",
+        "wwwroot/icon-192.png",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
       ]
@@ -2349,6 +2352,7 @@
         "Components/Login/RedirectToLogin.razor",
         "Properties/launchSettings.json",
         "wwwroot/appsettings.json",
+        "wwwroot/icon-192.png",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
       ]
@@ -2391,6 +2395,8 @@
         "Components/Pages/Home.razor",
         "Components/Layout/MainLayout.razor",
         "Properties/launchSettings.json",
+        "wwwroot/icon-192.png",
+        "wwwroot/icon-512.png",
         "wwwroot/index.html",
         "wwwroot/manifest.webmanifest",
         "wwwroot/service-worker.js",
@@ -2430,6 +2436,7 @@
         "Components/_Imports.razor",
         "Components/Pages/Home.razor",
         "Components/Layout/MainLayout.razor",
+        "wwwroot/icon-192.png",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
       ]
