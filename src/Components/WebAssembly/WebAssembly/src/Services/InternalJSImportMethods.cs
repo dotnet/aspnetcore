@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -19,26 +18,10 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
         => GetPersistedStateCore();
 
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    public static async Task<RootComponentMapping[]> GetInitialComponentUpdate()
+    public static async Task<OperationDescriptor[]> GetInitialComponentUpdate()
     {
-        var components = await InternalJSImportMethods.GetInitialUpdateCore();
-        var operations = DefaultWebAssemblyJSRuntime.DeserializeOperations(components);
-        var mappings = new RootComponentMapping[operations.Length];
-
-        for (var i = 0; i < operations.Length; i++)
-        {
-            var (operation, component, parameters) = operations[i];
-            if (operation.Type != RootComponentOperationType.Add)
-            {
-                throw new InvalidOperationException("All initial operations must be additions.");
-            }
-            mappings[i] = new RootComponentMapping(
-                component!,
-                operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture),
-                parameters);
-        }
-
-        return mappings;
+        var components = await GetInitialUpdateCore();
+        return DefaultWebAssemblyJSRuntime.DeserializeOperations(components);
     }
 
     public string GetApplicationEnvironment()

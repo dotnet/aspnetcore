@@ -726,7 +726,7 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     internal Task UpdateRootComponents(
-        (RootComponentOperation, ComponentDescriptor?)[] operations,
+        CircuitRootComponentOperation[] operations,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -735,6 +735,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
+            var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
             var shouldClearStore = false;
             Task[]? pendingTasks = null;
             try
@@ -766,7 +767,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     for (var i = 0; i < operations.Length; i++)
                     {
                         var operation = operations[i];
-                        if (operation.Item1.Type != RootComponentOperationType.Add)
+                        if (operation.Type != RootComponentOperationType.Add)
                         {
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
@@ -775,32 +776,32 @@ internal partial class CircuitHost : IAsyncDisposable
                     pendingTasks = new Task[operations.Length];
                 }
 
-                for (var i = 0; i < operations.Length;i++)
+                for (var i = 0; i < operations.Length; i++)
                 {
-                    var (operation, descriptor) = operations[i];
+                    var operation = operations[i];
                     switch (operation.Type)
                     {
                         case RootComponentOperationType.Add:
-                            var task = Renderer.AddComponentAsync(descriptor.ComponentType, descriptor.Parameters, operation.SelectorId.Value.ToString(CultureInfo.InvariantCulture));
+                            var task = webRootComponentManager.AddRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Descriptor.Key,
+                                operation.Descriptor.Parameters);
                             if (pendingTasks != null)
                             {
                                 pendingTasks[i] = task;
                             }
                             break;
                         case RootComponentOperationType.Update:
-                            var componentType = Renderer.GetExistingComponentType(operation.ComponentId.Value);
-                            if (descriptor.ComponentType != componentType)
-                            {
-                                Log.InvalidComponentTypeForUpdate(_logger, message: "Component type mismatch.");
-                                throw new InvalidOperationException($"Incorrect type for descriptor '{descriptor.ComponentType.FullName}'");
-                            }
-
                             // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                            _ = Renderer.UpdateRootComponentAsync(operation.ComponentId.Value, descriptor.Parameters);
-
+                            _ = webRootComponentManager.UpdateRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Descriptor.Key,
+                                operation.Descriptor.Parameters);
                             break;
                         case RootComponentOperationType.Remove:
-                            Renderer.RemoveExistingRootComponent(operation.ComponentId.Value);
+                            webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                             break;
                     }
                 }

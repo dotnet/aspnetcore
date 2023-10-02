@@ -118,7 +118,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const connection = connectionBuilder.build();
 
-    connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector, componentId), componentId, false));
+    connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
@@ -246,7 +246,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return sendJSDataStream(this._connection!, data, streamId, chunkSize);
   }
 
-  public resolveElement(sequenceOrIdentifier: string, componentId: number): LogicalElement {
+  public resolveElement(sequenceOrIdentifier: string): LogicalElement {
     // It may be a root component added by JS
     const jsAddedComponentContainer = getAndRemovePendingRootComponentContainer(sequenceOrIdentifier);
     if (jsAddedComponentContainer) {
@@ -256,7 +256,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     // ... or it may be a root component added by .NET
     const parsedSequence = Number.parseInt(sequenceOrIdentifier);
     if (!Number.isNaN(parsedSequence)) {
-      const descriptor = this._componentManager.resolveRootComponent(parsedSequence, componentId);
+      const descriptor = this._componentManager.resolveRootComponent(parsedSequence);
       return toLogicalRootCommentElement(descriptor);
     }
 

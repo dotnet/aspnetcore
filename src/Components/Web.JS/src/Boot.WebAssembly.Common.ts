@@ -149,7 +149,7 @@ export async function startWebAssembly(components: RootComponentManager<WebAssem
     Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations);
 
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
-    const element = componentAttacher.resolveRegisteredElement(selector, componentId);
+    const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
     } else {

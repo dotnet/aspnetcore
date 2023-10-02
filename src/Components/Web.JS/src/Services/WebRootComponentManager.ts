@@ -12,39 +12,41 @@ import { RootComponentManager } from './RootComponentManager';
 import { Blazor } from '../GlobalExports';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
+import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { LogicalElement } from '../Rendering/LogicalElements';
 
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
 type RootComponentAddOperation = {
   type: 'add';
-  selectorId: number;
+  ssrComponentId: number;
   marker: ComponentMarker;
 };
 
 type RootComponentUpdateOperation = {
   type: 'update';
-  componentId: number;
+  ssrComponentId: number;
   marker: ComponentMarker;
 };
 
 type RootComponentRemoveOperation = {
   type: 'remove';
-  componentId: number;
+  ssrComponentId: number;
 };
 
 type RootComponentInfo = {
   descriptor: ComponentDescriptor;
+  ssrComponentId: number;
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
-  interactiveComponentId?: number;
 };
 
-export class WebRootComponentManager implements DescriptorHandler, RootComponentManager<never> {
-  private readonly _rootComponents = new Set<RootComponentInfo>();
+export class WebRootComponentManager implements DescriptorHandler, RootComponentManager</* InitialComponentsDescriptorType */ never> {
+  private readonly _rootComponentsBySsrComponentId = new Map<number, RootComponentInfo>();
 
-  private readonly _descriptors = new Set<ComponentDescriptor>();
+  private readonly _seenDescriptors = new Set<ComponentDescriptor>();
 
-  private readonly _pendingComponentsToResolve = new Map<number, RootComponentInfo>();
+  private _nextSsrComponentId = 1;
 
   private _didWebAssemblyFailToLoadQuickly = false;
 
@@ -84,7 +86,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   }
 
   public registerComponent(descriptor: ComponentDescriptor) {
-    if (this._descriptors.has(descriptor)) {
+    if (this._seenDescriptors.has(descriptor)) {
       return;
     }
 
@@ -96,13 +98,15 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       this.startLoadingWebAssemblyIfNotStarted();
     }
 
-    this._descriptors.add(descriptor);
-    this._rootComponents.add({ descriptor });
+    const ssrComponentId = this._nextSsrComponentId++;
+
+    this._seenDescriptors.add(descriptor);
+    this._rootComponentsBySsrComponentId.set(ssrComponentId, { descriptor, ssrComponentId });
   }
 
   private unregisterComponent(component: RootComponentInfo) {
-    this._descriptors.delete(component.descriptor);
-    this._rootComponents.delete(component);
+    this._seenDescriptors.delete(component.descriptor);
+    this._rootComponentsBySsrComponentId.delete(component.ssrComponentId);
   }
 
   private async startLoadingWebAssemblyIfNotStarted() {
@@ -188,7 +192,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // refreshRootComponents.
     setTimeout(() => {
       this._isComponentRefreshPending = false;
-      this.refreshRootComponents(this._rootComponents);
+      this.refreshRootComponents(this._rootComponentsBySsrComponentId.values());
     }, 0);
   }
 
@@ -226,7 +230,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
 
     // We consider SSR'd components on the page that may get activated using the specified renderer.
-    for (const { descriptor: { type }, assignedRendererId } of this._rootComponents) {
+    for (const { descriptor: { type }, assignedRendererId } of this._rootComponentsBySsrComponentId.values()) {
       if (assignedRendererId === rendererId) {
         // The component has been assigned to use the specified renderer.
         return true;
@@ -354,66 +358,51 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
           return null;
         }
 
+        // .NET may dispose and re-initialize the interactive component as a result of a future 'update' operation.
+        // This call prevents the component's content from being deleted from the DOM between the disposal
+        // and subsequent re-initialization.
+        setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, true);
+
         component.assignedRendererId = rendererId;
         component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
-        this._pendingComponentsToResolve.set(component.descriptor.uniqueId, component);
-        return { type: 'add', selectorId: component.descriptor.uniqueId, marker: descriptorToMarker(component.descriptor) };
-      }
+        return { type: 'add', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
+      } else {
+        // The component has already been added for interactivity.
+        if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
+          // The descriptor has not changed since the last update.
+          // Nothing to do.
+          return null;
+        }
 
-      if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
-        // The descriptor has not changed since the last update.
-        // Nothing to do.
+        // The descriptor has changed since it was last updated, so we'll update the component's parameters.
+        component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
+        return { type: 'update', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
+      }
+    } else {
+      // The descriptor was removed from the document.
+      this.unregisterComponent(component);
+
+      if (component.assignedRendererId === undefined) {
+        // The component was removed from the document before it was assigned to a renderer,
+        // so we don't have to notify .NET that anything has changed.
         return null;
       }
 
-      if (component.interactiveComponentId !== undefined) {
-        // The component has become interactive, so we'll update its parameters.
-        component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
-        return { type: 'update', componentId: component.interactiveComponentId, marker: descriptorToMarker(component.descriptor) };
-      }
+      // Since the component will be getting completedly diposed from .NET (rather than replaced by another component, which can
+      // happen as a result of an 'update' operation), we indicate that its content should no longer be preserved on disposal.
+      setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, false);
 
-      // We have started to add the component, but it has not become interactive yet.
-      // We'll wait until we have a component ID to work with before sending parameter
-      // updates.
-    } else {
-      this.unregisterComponent(component);
-      if (component.assignedRendererId !== undefined && component.interactiveComponentId !== undefined) {
-        const renderer = getRendererer(component.assignedRendererId);
-        renderer?.disposeComponent(component.interactiveComponentId);
-      }
-
-      if (component.interactiveComponentId !== undefined) {
-        // We have an interactive component for this marker, so we'll remove it.
-        return { type: 'remove', componentId: component.interactiveComponentId };
-      }
-
-      // If we make it here, that means we either:
-      // 1. Haven't started to make the component interactive, in which case we have no further action to take.
-      // 2. Have started to make the component interactive, but it hasn't become interactive yet. In this case,
-      //    we'll wait to remove the component until after we have a component ID to provide.
+      // This component was removed from the document and we've assigned a renderer ID,
+      // so we'll dispose it in .NET.
+      return { type: 'remove', ssrComponentId: component.ssrComponentId };
     }
-
-    return null;
   }
 
-  public resolveRootComponent(selectorId: number, componentId: number): ComponentDescriptor {
-    const component = this._pendingComponentsToResolve.get(selectorId);
+  public resolveRootComponent(ssrComponentId: number): ComponentDescriptor {
+    const component = this._rootComponentsBySsrComponentId.get(ssrComponentId);
     if (!component) {
-      throw new Error(`Could not resolve a root component for descriptor with ID '${selectorId}'.`);
+      throw new Error(`Could not resolve a root component with SSR component ID '${ssrComponentId}'.`);
     }
-
-    this._pendingComponentsToResolve.delete(selectorId);
-
-    if (component.interactiveComponentId !== undefined) {
-      throw new Error('Cannot resolve a root component for the same descriptor multiple times.');
-    }
-
-    component.interactiveComponentId = componentId;
-
-    // The descriptor may have changed since the last call to handleUpdatedRootComponentsCore().
-    // We'll update this single descriptor so that the component receives the most up-to-date parameters
-    // or gets removed if it no longer exists on the page.
-    this.refreshRootComponents([component]);
 
     return component.descriptor;
   }
