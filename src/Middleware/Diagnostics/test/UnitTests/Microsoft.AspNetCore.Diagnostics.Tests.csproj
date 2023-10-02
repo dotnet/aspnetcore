@@ -23,7 +23,7 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
-    <Reference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
   </ItemGroup>
