@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// An input component for editing date values.
-/// Supported types are <see cref="DateTime"/> and <see cref="DateTimeOffset"/>.
+/// Supported types are <see cref="DateTime"/>, <see cref="DateOnly"/> and <see cref="DateTimeOffset"/>.
 /// </summary>
 public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
 {
