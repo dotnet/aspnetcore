@@ -139,7 +139,7 @@
     <SystemIOHashingVersion>8.0.0-rtm.23478.17</SystemIOHashingVersion>
     <SystemRuntimeCachingVersion>8.0.0-rtm.23478.17</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-rtm.23473.1</MicrosoftExtensionsTelemetryTestingVersion>
+    <MicrosoftExtensionsDiagnosticsTestingVersion>8.0.0-rtm.23479.3</MicrosoftExtensionsDiagnosticsTestingVersion>
     <MicrosoftExtensionsTimeProviderTestingVersion>8.0.0-rtm.23479.3</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>8.0.0-rtm.23501.2</dotnetefVersion>
