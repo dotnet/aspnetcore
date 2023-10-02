@@ -3,11 +3,21 @@
     background-image: var(--bl-sidebar-gradient);
     overflow-x: hidden;
     overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-}
-
-    .sidebar.hidden {
+    
+    &.hidden {
         display: none; /* default to none, navbar-toggler can override this value */
     }
+    /* When the screen is wider than */
+    @media (width >= 641px) {
+        /* Never collapse the sidebar */
+        height: calc(100vh - 56px);
+        width: 250px;
+
+        &.hidden {
+            display: block;
+        }
+    }
+}
 
 .navbar-toggler {
     position: absolute;
@@ -23,12 +33,16 @@
     --bs-navbar-toggler-border-radius: var(--bs-border-radius);
     --bs-navbar-toggler-focus-width: 0.25rem;
     --bs-navbar-toggler-transition: box-shadow 0.15s ease-in-out;
-}
-
-    .navbar-toggler.force-darkmode {
+    
+    &.force-darkmode {
         --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         --bs-navbar-toggler-border-color: rgba(255,255,255, 0.15);
     }
+
+    @media (width >= 641px) {
+        display: none;
+    }
+}
 /* .nav-link */
 
 ::deep .nav-link {
@@ -58,23 +72,4 @@
     margin-right: 0.75rem;
     top: -1px;
     background-size: cover;
-}
-
-/*#endif*/
-
-/* When the screen is wider than */
-@media (width >= 641px) {
-    .navbar-toggler {
-        display: none;
-    }
-
-    .sidebar {
-        /* Never collapse the sidebar */
-        height: calc(100vh - 56px);
-        width: 250px;
-    }
-
-        .sidebar.hidden {
-            display: block;
-        }
 }

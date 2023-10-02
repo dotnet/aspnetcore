@@ -6,14 +6,12 @@
     align-items: center;
     margin: 0;
     background-color: var(--bl-blazor-brand-color1);
-}
 
-    .navbar-brand, .navbar-brand:hover, .navbar-brand:visited {
+    &, &:hover, &:visited {
         color: var(--bl-blazor-brand-contrast-color);
     }
 
-@media (width >= 641px) {
-    .navbar-brand {
+    @media (width >= 641px) {
         width: 250px;
         margin-right: 1rem;
     }
