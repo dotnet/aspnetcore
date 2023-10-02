@@ -66,6 +66,7 @@ internal sealed class OutputCacheEntry : IDisposable
     internal void SetBody(ReadOnlySequence<byte> value, bool recycleBuffers)
     {
         Body = value;
+        _ = recycleBuffers; // satisfy IDE0060
         // note that recycleBuffers is not stored currently, until OutputCacheEntry buffer recycling is re-implemented;
         // it indicates whether this instance "owns" the memory behind the segments, such that they can be recycled later if desired
     }
