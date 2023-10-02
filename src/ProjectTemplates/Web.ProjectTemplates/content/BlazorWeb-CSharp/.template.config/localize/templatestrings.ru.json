@@ -4,6 +4,7 @@
   "description": "Шаблон проекта для создания приложения Blazor, поддерживающего как отрисовку на стороне сервера, так и интерактивные возможности клиента. Этот шаблон можно использовать для веб-приложений с многофункциональными динамическими пользовательскими интерфейсами (UI).",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
+  "symbols/Framework/choices/net9.0/description": "Целевая net9.0",
   "symbols/UserSecretsId/description": "The ID to use for secrets (use with Individual auth).",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",

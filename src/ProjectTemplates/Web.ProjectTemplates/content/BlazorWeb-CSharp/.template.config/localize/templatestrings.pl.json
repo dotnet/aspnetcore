@@ -4,6 +4,7 @@
   "description": "Szablon projektu służący do tworzenia aplikacji internetowej platformy Blazor, która obsługuje renderowanie po stronie serwera i interakcyjność klienta. Ten szablon może być używany dla aplikacji internetowych z zaawansowanymi dynamicznymi interfejsami użytkownika.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net8.0/description": "Docelowa platforma net8.0",
+  "symbols/Framework/choices/net9.0/description": "Docelowa platforma net9.0",
   "symbols/UserSecretsId/description": "The ID to use for secrets (use with Individual auth).",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
