@@ -17,8 +17,6 @@ internal sealed class OutputCacheEntry : IDisposable
         StatusCode = statusCode;
     }
 
-    private bool _recycleBuffers; // does this instance own the memory behind the segments?
-
     public StringValues FindHeader(string key)
     {
         TryFindHeader(key, out var value);
@@ -68,7 +66,8 @@ internal sealed class OutputCacheEntry : IDisposable
     internal void SetBody(ReadOnlySequence<byte> value, bool recycleBuffers)
     {
         Body = value;
-        _recycleBuffers = recycleBuffers;
+        // note that recycleBuffers is not stored currently, until OutputCacheEntry buffer recycling is re-implemented;
+        // it indicates whether this instance "owns" the memory behind the segments, such that they can be recycled later if desired
     }
 
     internal OutputCacheEntry CreateBodyFrom(IList<byte[]> segments) // mainly used from tests
