@@ -12,8 +12,6 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   button: HTMLButtonElement;
 
-  addedToDom = false;
-
   reloadParagraph: HTMLParagraphElement;
 
   loader: HTMLDivElement;
@@ -84,9 +82,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     });
   }
 
-  show(): void {
-    if (!this.addedToDom) {
-      this.addedToDom = true;
+    show(): void {
+    if (!this.document.contains(this.modal)) {
       this.document.body.appendChild(this.modal);
     }
     this.modal.style.display = 'block';
