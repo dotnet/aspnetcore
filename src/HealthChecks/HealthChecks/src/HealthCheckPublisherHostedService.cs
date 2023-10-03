@@ -167,7 +167,7 @@ internal sealed partial class HealthCheckPublisherHostedService : IHostedService
         catch (Exception ex)
         {
             // This is an error, publishing failed.
-            Logger.HealthCheckPublisherProcessingEnd(_logger, duration.GetElapsedTime(), ex);
+            Logger.HealthCheckPublisherError(_logger, duration.GetElapsedTime(), ex);
         }
         finally
         {
