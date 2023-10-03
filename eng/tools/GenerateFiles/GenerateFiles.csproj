@@ -43,22 +43,22 @@
       Properties="$(_TemplateProperties)"
       OutputPath="$(BaseOutputPath)Directory.Build.targets" />
 
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.dotnet-dump.json.in" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-dump/dotnet-tools.json" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.dotnet-dump.json.in"
       Properties="$(_TemplateProperties)"
       OutputPath="$(ConfigDirectory)dotnet-dump/dotnet-tools.json" />
 
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.dotnet-serve.json.in" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-serve/dotnet-tools.json" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.dotnet-serve.json.in"
       Properties="$(_TemplateProperties)"
       OutputPath="$(ConfigDirectory)dotnet-serve/dotnet-tools.json" />
 
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.dotnet-ef.json.in" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-ef/dotnet-tools.json" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.dotnet-ef.json.in"
       Properties="$(_TemplateProperties)"
       OutputPath="$(ConfigDirectory)dotnet-ef/dotnet-tools.json" />
 
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.Microsoft.Playwright.CLI.json.in" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)Microsoft.Playwright.CLI/dotnet-tools.json" />
     <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.Microsoft.Playwright.CLI.json.in"
       Properties="$(_TemplateProperties)"
       OutputPath="$(ConfigDirectory)Microsoft.Playwright.CLI/dotnet-tools.json" />
