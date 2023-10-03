@@ -67,11 +67,12 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
 
         properties ??= new();
         properties.ExpiresUtc ??= utcNow + Options.BearerTokenExpiration;
+        var expiresIn = (long)(properties.ExpiresUtc.Value - utcNow).TotalSeconds;
 
         var response = new AccessTokenResponse
         {
             AccessToken = Options.BearerTokenProtector.Protect(CreateBearerTicket(user, properties)),
-            ExpiresIn = (long)Options.BearerTokenExpiration.TotalSeconds,
+            ExpiresIn = expiresIn,
             RefreshToken = Options.RefreshTokenProtector.Protect(CreateRefreshTicket(user, utcNow)),
         };
 
