@@ -39,7 +39,7 @@ internal sealed class DiagnosticsMetrics
     private void RequestExceptionCore(string exceptionName, ExceptionResult result, string? handler)
     {
         var tags = new TagList();
-        tags.Add("exception.type", exceptionName);
+        tags.Add("error.type", exceptionName);
         tags.Add("aspnetcore.diagnostics.exception.result", GetExceptionResult(result));
         if (handler != null)
         {
