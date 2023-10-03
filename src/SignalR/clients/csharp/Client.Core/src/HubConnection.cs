@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(connectionState, streamId, ReadChannelStream);
+        return CommonStreaming(connectionState, streamId, ReadChannelStream, tokenSource);
         }
 
         // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
@@ -760,11 +760,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream);
+        return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream, tokenSource);
         }
 
-        private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream)
+    private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream, CancellationTokenSource cts)
         {
+        // make sure we dispose the CTS created by StreamAsyncCore once streaming completes
+        using var _ = cts;
+
             Log.StartingStream(_logger, streamId);
             string? responseError = null;
             try
