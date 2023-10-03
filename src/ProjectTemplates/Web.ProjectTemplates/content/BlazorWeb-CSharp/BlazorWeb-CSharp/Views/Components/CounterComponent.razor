@@ -1,21 +1,19 @@
-﻿@page "/counter"
-@*#if (!InteractiveAtRoot) -->
+﻿@*#if (!InteractiveAtRoot) -->
 @attribute [RenderModeInteractiveServer]
 ##endif*@
 
-<PageTitle>Counter</PageTitle>
-
 <h1>Counter</h1>
 
-<p role="status">Current count: @currentCount</p>
+<p role="status">Current count: @CurrentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    private int currentCount = 0;
+    [Parameter]
+    public int CurrentCount { get; set; } = 0;
 
     private void IncrementCount()
     {
-        currentCount++;
+        CurrentCount++;
     }
 }

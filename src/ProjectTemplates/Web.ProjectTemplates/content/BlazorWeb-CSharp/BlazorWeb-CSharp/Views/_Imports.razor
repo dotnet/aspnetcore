@@ -1,17 +1,18 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
-@*#if (!NoAuth)
+@*#if (IndividualLocalAuth)
 @using Microsoft.AspNetCore.Components.Authorization
-#endif*@
+##endif*@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
-@using Microsoft.AspNetCore.Components.WebAssembly.Http
 @using Microsoft.JSInterop
-@using ComponentsWebAssembly_CSharp
-@using ComponentsWebAssembly_CSharp.Components
-@*#if (!NoAuth)
-@using ComponentsWebAssembly_CSharp.Components.Login
-#endif*@
-@using ComponentsWebAssembly_CSharp.Components.Layout
+@using BlazorWeb_CSharp
+@*#if (UseWebAssembly) -->
+@using BlazorWeb_CSharp.Client
+@using BlazorWeb_CSharp.Client.Views
+##endif*@
+@using BlazorWeb_CSharp.Views
+@using BlazorWeb_CSharp.Views.Components
+@using BlazorWeb_CSharp.Views.Layouts

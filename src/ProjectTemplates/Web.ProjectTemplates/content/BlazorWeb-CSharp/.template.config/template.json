@@ -66,9 +66,9 @@
         {
           "condition": "(UseWebAssembly && InteractiveAtRoot)",
           "rename": {
-            "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
-            "BlazorWeb-CSharp/Components/Pages/": "./BlazorWeb-CSharp.Client/Pages/",
-            "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
+            "BlazorWeb-CSharp/Views/Layouts/": "./BlazorWeb-CSharp.Client/Views/Layouts/",
+            "BlazorWeb-CSharp/Views/Pages/": "./BlazorWeb-CSharp.Client/Views/Pages/",
+            "BlazorWeb-CSharp/Views/Routes.razor": "./BlazorWeb-CSharp.Client/Views/Routes.razor"
           }
         },
         {
@@ -89,7 +89,7 @@
         {
           "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Counter.razor"
+            "BlazorWeb-CSharp/Views/Pages/Counter.razor"
           ]
         },
         {
@@ -101,27 +101,27 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Counter.*",
-            "BlazorWeb-CSharp/Components/Pages/Weather.*",
-            "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
+            "BlazorWeb-CSharp/Views/Pages/Counter.*",
+            "BlazorWeb-CSharp/Views/Pages/Weather.*",
+            "BlazorWeb-CSharp/Views/Layouts/NavMenu.*",
             "BlazorWeb-CSharp/wwwroot/bootstrap/**",
             "BlazorWeb-CSharp/wwwroot/favicon.*",
-            "BlazorWeb-CSharp.Client/Pages/**",
+            "BlazorWeb-CSharp.Client/Views/Pages/**",
             "BlazorWeb-CSharp.Client/wwwroot/**"
           ]
         },
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Identity/**",
-            "BlazorWeb-CSharp/Components/Layout/ManageLayout.razor",
-            "BlazorWeb-CSharp/Components/Layout/ManageNavMenu.razor",
-            "BlazorWeb-CSharp/Components/Pages/Account/**",
+            "BlazorWeb-CSharp/Views/Identity/**",
+            "BlazorWeb-CSharp/Views/Layouts/ManageLayout.razor",
+            "BlazorWeb-CSharp/Views/Layouts/ManageNavMenu.razor",
+            "BlazorWeb-CSharp/Views/Pages/Account/**",
             "BlazorWeb-CSharp/Data/**",
             "BlazorWeb-CSharp/Identity/**",
             "BlazorWeb-CSharp.Client/PersistentAuthenticationStateProvider.cs",
             "BlazorWeb-CSharp.Client/UserInfo.cs",
-            "BlazorWeb-CSharp.Client/Pages/Auth.razor"
+            "BlazorWeb-CSharp.Client/Views/Pages/Auth.razor"
           ]
         },
         {
@@ -133,7 +133,7 @@
         {
           "condition": "(!(IndividualLocalAuth && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Auth.razor"
+            "BlazorWeb-CSharp/Views/Pages/Auth.razor"
           ]
         },
         {

@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 #endif
 #if (UseWebAssembly && SampleContent)
-using BlazorWeb_CSharp.Client.Pages;
+using BlazorWeb_CSharp.Client.Views.Pages;
 #endif
-using BlazorWeb_CSharp.Components;
+using BlazorWeb_CSharp.Views;
 #if (IndividualLocalAuth)
 using BlazorWeb_CSharp.Data;
 #if (UseServer || UseWebAssembly)
