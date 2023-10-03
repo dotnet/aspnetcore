@@ -66,7 +66,6 @@ public class BearerTokenTests : SharedAuthenticationTests<BearerTokenOptions>
                     .UseTestServer()
                     .Configure(builder =>
                     {
-                        builder.UseAuthentication();
                         builder.Use(async (HttpContext context, RequestDelegate next) =>
                         {
                             if (context.Request.Path == new PathString("/signIn"))
