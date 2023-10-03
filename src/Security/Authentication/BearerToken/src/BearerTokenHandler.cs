@@ -66,7 +66,7 @@ internal sealed class BearerTokenHandler(IOptionsMonitor<BearerTokenOptions> opt
         var utcNow = TimeProvider.GetUtcNow();
 
         properties ??= new();
-        properties.ExpiresUtc = utcNow + Options.BearerTokenExpiration;
+        properties.ExpiresUtc ??= utcNow + Options.BearerTokenExpiration;
 
         var response = new AccessTokenResponse
         {
