@@ -28,7 +28,6 @@ internal sealed class ExceptionHandlerMiddlewareImpl
     private readonly DiagnosticListener _diagnosticListener;
     private readonly IExceptionHandler[] _exceptionHandlers;
     private readonly DiagnosticsMetrics _metrics;
-    private readonly IProblemDetailsService? _problemDetailsService;
 
     public ExceptionHandlerMiddlewareImpl(
         RequestDelegate next,
@@ -46,7 +45,6 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         _diagnosticListener = diagnosticListener;
         _exceptionHandlers = exceptionHandlers as IExceptionHandler[] ?? new List<IExceptionHandler>(exceptionHandlers).ToArray();
         _metrics = new DiagnosticsMetrics(meterFactory);
-        _problemDetailsService = problemDetailsService;
 
         if (_options.ExceptionHandler == null)
         {
@@ -180,27 +178,11 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 }
             }
 
-            if (!handled)
+            if (!handled && _options.ExceptionHandler is not null)
             {
-                if (_options.ExceptionHandler is not null)
-                {
-                    await _options.ExceptionHandler!(context);
-                }
-                else
-                {
-                    handled = await _problemDetailsService!.TryWriteAsync(new()
-                    {
-                        HttpContext = context,
-                        AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                        ProblemDetails = { Status = DefaultStatusCode },
-                        Exception = edi.SourceException,
-                    });
-                    if (handled)
-                    {
-                        handler = _problemDetailsService.GetType().FullName;
-                    }
-                }
+                await _options.ExceptionHandler(context);
             }
+
             // If the response has already started, assume exception handler was successful.
             if (context.Response.HasStarted || handled || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {

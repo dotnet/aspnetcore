@@ -12,6 +12,7 @@ public class StartupWithProblemDetails
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddProblemDetails();
+        services.AddProblemDetailsExceptionHandler();
     }
 
     public void Configure(IApplicationBuilder app)

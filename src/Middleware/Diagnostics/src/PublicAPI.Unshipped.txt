@@ -6,3 +6,4 @@ Microsoft.AspNetCore.Diagnostics.IExceptionHandler.TryHandleAsync(Microsoft.AspN
 Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.OriginalStatusCode.get -> int
 static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! errorHandlingPath, bool createScopeForErrors) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions.AddExceptionHandler<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions.AddProblemDetailsExceptionHandler(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

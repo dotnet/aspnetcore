@@ -23,6 +23,7 @@ public static class ExceptionHandlerServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
+        services.AddProblemDetailsExceptionHandler();
         return services.Configure(configureOptions);
     }
 
@@ -37,6 +38,7 @@ public static class ExceptionHandlerServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
+        services.AddProblemDetailsExceptionHandler();
         services.AddOptions<ExceptionHandlerOptions>().Configure(configureOptions);
         return services;
     }
@@ -51,5 +53,15 @@ public static class ExceptionHandlerServiceCollectionExtensions
     public static IServiceCollection AddExceptionHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services) where T : class, IExceptionHandler
     {
         return services.AddSingleton<IExceptionHandler, T>();
+    }
+
+    /// <summary>
+    /// Adds an `IExceptionHandler` implementation to services that uses the `IProblemDetails` service to produce responses.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
+    /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
+    public static IServiceCollection AddProblemDetailsExceptionHandler(this IServiceCollection services)
+    {
+        return services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
     }
 }

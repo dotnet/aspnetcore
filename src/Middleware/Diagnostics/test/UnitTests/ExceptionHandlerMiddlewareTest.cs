@@ -43,6 +43,7 @@ public class ExceptionHandlerMiddlewareTest
                         }
                     };
                 });
+                services.AddProblemDetailsExceptionHandler();
             })
             .ConfigureWebHost(webHostBuilder =>
             {
