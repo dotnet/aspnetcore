@@ -2141,18 +2141,27 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
-    public void CannotAddNullComponentRenderMode()
+    public void CanAddNullComponentRenderMode()
     {
         // Arrange
         var builder = new RenderTreeBuilder();
-        builder.OpenComponent<TestComponent>(0);
 
-        // Act/Assert
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-        {
-            builder.AddComponentRenderMode(null);
-        });
-        Assert.Equal("renderMode", ex.ParamName);
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentParameter(1, "param", 123);
+        builder.AddComponentRenderMode(null);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 3, 0);
+                Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+            },
+            frame => AssertFrame.Attribute(frame, "param", 123, 1),
+            frame => AssertFrame.ComponentRenderMode(frame, null));
     }
 
     [Fact]
