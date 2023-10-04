@@ -83,8 +83,9 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const currentUrl = location.href;
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-    performEnhancedPageLoad(absoluteInternalHref);
+    performEnhancedPageLoad(absoluteInternalHref, undefined, currentUrl);
   });
 }
 
@@ -139,7 +140,7 @@ function onDocumentSubmit(event: SubmitEvent) {
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit, currentUrl?: string) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -148,6 +149,15 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
   currentEnhancedNavigationAbortController = new AbortController();
+  if (currentUrl) {
+    currentEnhancedNavigationAbortController.signal.addEventListener('abort', () => {
+      // If the navigation was aborted, we need to revert the URL change
+      if (location.href === internalDestinationHref && location.href !== currentUrl) {
+        history.replaceState(null, /* ignored title */ '', currentUrl);
+      }
+    }, { once: true });
+  }
+
   const abortSignal = currentEnhancedNavigationAbortController.signal;
   const responsePromise = fetch(internalDestinationHref, Object.assign(<RequestInit>{
     signal: abortSignal,
@@ -369,7 +379,7 @@ function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean
 function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
   // For forms, they default *not* to being enhanced, and must be enabled explicitly on the form element itself (not an ancestor).
   const attributeValue = form.getAttribute('data-enhance');
-  return typeof(attributeValue) === 'string'
+  return typeof (attributeValue) === 'string'
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 

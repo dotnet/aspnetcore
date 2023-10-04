@@ -160,6 +160,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             return Results.Ok(value);
         });
 
+        endpoints.Map("/forms/endpoint-that-never-finishes-rendering", (HttpResponse response, CancellationToken token) =>
+        {
+            return Task.Delay(Timeout.Infinite, token);
+        });
+
         static Task PerformRedirection(HttpRequest request, HttpResponse response)
         {
             response.Redirect(request.Query["external"] == "true"

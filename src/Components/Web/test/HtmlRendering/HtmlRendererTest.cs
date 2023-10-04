@@ -1153,7 +1153,6 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
     public async Task RenderComponentAsync_DoesNotAddActionAttributeWithCurrentUrl_WhenActionIsExplicitlySpecified()
     {
         // Arrange
-        // Arrange
         var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
@@ -1175,7 +1174,6 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
     [Fact]
     public async Task RenderComponentAsync_DoesNotAddActionAttributeWithCurrentUrl_WhenNoNavigationManagerIsRegistered()
     {
-        // Arrange
         // Arrange
         var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
