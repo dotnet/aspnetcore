@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Identity.InMemory;
@@ -67,7 +68,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task CanCreateMeLoginAndCookieStopsWorkingAfterExpiration(bool testCore)
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var server = await CreateServer(services =>
         {
             services.ConfigureApplicationCookie(options =>
@@ -115,7 +116,7 @@ public class FunctionalTest
     [InlineData(false, false)]
     public async Task CanCreateMeLoginAndSecurityStampExtendsExpiration(bool rememberMe, bool testCore)
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var server = await CreateServer(services =>
         {
             services.AddSingleton<TimeProvider>(timeProvider);
@@ -164,7 +165,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task CanAccessOldPrincipalDuringSecurityStampReplacement(bool testCore)
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var server = await CreateServer(services =>
         {
             services.AddSingleton<TimeProvider>(timeProvider);
@@ -217,7 +218,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task TwoFactorRememberCookieVerification(bool testCore)
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");
@@ -246,7 +247,7 @@ public class FunctionalTest
     [InlineData(false)]
     public async Task TwoFactorRememberCookieClearedBySecurityStampChange(bool testCore)
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var server = await CreateServer(services => services.AddSingleton<TimeProvider>(timeProvider), testCore: testCore);
 
         var transaction1 = await SendAsync(server, "http://example.com/createMe");

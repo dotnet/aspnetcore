@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="Shared" />
     <Compile Include="$(SignalRSharedSourceRoot)EphemeralDataProtectionProvider.cs" LinkBase="Shared" />
   </ItemGroup>
 

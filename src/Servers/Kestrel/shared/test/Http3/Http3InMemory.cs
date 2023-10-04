@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using static System.IO.Pipelines.DuplexPipe;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
@@ -33,13 +35,13 @@ internal class Http3InMemory
     protected static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
     protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', 16 * 1024));
 
-    public Http3InMemory(ServiceContext serviceContext, MockTimeProvider mockTimeProvider, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
+    public Http3InMemory(ServiceContext serviceContext, FakeTimeProvider fakeTimeProvider, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
     {
         _serviceContext = serviceContext;
-        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler), mockTimeProvider);
+        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler), fakeTimeProvider);
         _timeoutControl.Debugger = new TestDebugger();
 
-        _mockTimeProvider = mockTimeProvider;
+        _fakeTimeProvider = fakeTimeProvider;
 
         _serverReceivedSettings = Channel.CreateUnbounded<KeyValuePair<Http3SettingType, long>>();
         Logger = loggerFactory.CreateLogger<Http3InMemory>();
@@ -69,7 +71,7 @@ internal class Http3InMemory
     }
 
     internal ServiceContext _serviceContext;
-    private MockTimeProvider _mockTimeProvider;
+    private FakeTimeProvider _fakeTimeProvider;
     internal HttpConnection _httpConnection;
     internal readonly TimeoutControl _timeoutControl;
     internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
@@ -199,7 +201,7 @@ internal class Http3InMemory
     {
         Logger.LogDebug("Advancing timeProvider {timeSpan}.", timeSpan);
 
-        var timeProvider = _mockTimeProvider;
+        var timeProvider = _fakeTimeProvider;
         var endTime = timeProvider.GetTimestamp(timeSpan);
 
         while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
@@ -208,14 +210,14 @@ internal class Http3InMemory
             _timeoutControl.Tick(timeProvider.GetTimestamp());
         }
 
-        timeProvider.AdvanceTo(endTime);
+        timeProvider.Advance(timeProvider.GetElapsedTime(timeProvider.GetTimestamp(), endTime));
         _timeoutControl.Tick(timeProvider.GetTimestamp());
     }
 
     public void TriggerTick(TimeSpan timeSpan = default)
     {
-        _mockTimeProvider.Advance(timeSpan);
-        var timestamp = _mockTimeProvider.GetTimestamp();
+        _fakeTimeProvider.Advance(timeSpan);
+        var timestamp = _fakeTimeProvider.GetTimestamp();
         Connection?.Tick(timestamp);
     }
 
