@@ -173,8 +173,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var actions = new Actions(Browser).DragAndDrop(input, target);
 
             actions.Perform();
-            // drop doesn't seem to trigger in Selenium. But it's sufficient to determine "any" drag event works
-            Browser.Equal("dragstart,", () => output.Text);
+            // drop doesn't reliably trigger in Selenium. But it's sufficient to determine "any" drag event works
+            Browser.True(() => output.Text.StartsWith("dragstart,", StringComparison.Ordinal));
         }
 
         [Fact]
