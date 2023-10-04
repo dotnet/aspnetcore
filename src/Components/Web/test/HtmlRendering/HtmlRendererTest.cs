@@ -1049,7 +1049,7 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form action=\"https://www.example.com/page\"></form>", result.ToHtmlString());
+            Assert.Equal("<form></form>", result.ToHtmlString());
         });
     }
 
@@ -1074,7 +1074,7 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form action=\"https://www.example.com/page\"><input type=\"hidden\" name=\"_handler\" value=\"some &lt;name&gt;\" /></form>", result.ToHtmlString());
+            Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"some &lt;name&gt;\" /></form>", result.ToHtmlString());
         });
     }
 
@@ -1102,7 +1102,95 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form action=\"https://www.example.com/page\"><input type=\"hidden\" name=\"_handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
+            Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithoutAttributes_WhenNoActionSpecified()
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.CloseElement();
+        })).AddScoped<NavigationManager, TestNavigationManager>());
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form action=\"https://www.example.com/page\"></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithAttributes_WhenNoActionSpecified()
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.AddAttribute(1, "method", "post");
+            rtb.CloseElement();
+        })).AddScoped<NavigationManager, TestNavigationManager>());
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form method=\"post\" action=\"https://www.example.com/page\"></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_DoesNotAddActionAttributeWithCurrentUrl_WhenActionIsExplicitlySpecified()
+    {
+        // Arrange
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.AddAttribute(1, "action", "https://example.com/explicit");
+            rtb.CloseElement();
+        })).AddScoped<NavigationManager, TestNavigationManager>());
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form action=\"https://example.com/explicit\"></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_DoesNotAddActionAttributeWithCurrentUrl_WhenNoNavigationManagerIsRegistered()
+    {
+        // Arrange
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.CloseElement();
+        })));
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form></form>", result.ToHtmlString());
         });
     }
 
@@ -1302,7 +1390,6 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
     private IServiceProvider GetServiceProvider(Action<IServiceCollection> configure = null)
     {
         var services = new ServiceCollection();
-        services.AddScoped<NavigationManager, TestNavigationManager>();
         configure?.Invoke(services);
         return services.BuildServiceProvider();
     }

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 public partial class StaticHtmlRenderer : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
-    private readonly NavigationManager _navigationManager;
+    private readonly NavigationManager? _navigationManager;
 
     /// <summary>
     /// Constructs an instance of <see cref="StaticHtmlRenderer"/>.
@@ -29,7 +29,7 @@ public partial class StaticHtmlRenderer : Renderer
     public StaticHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
-        _navigationManager = serviceProvider.GetRequiredService<NavigationManager>();
+        _navigationManager = serviceProvider.GetService<NavigationManager>();
     }
 
     /// <inheritdoc/>

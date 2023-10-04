@@ -283,6 +283,7 @@ public partial class StaticHtmlRenderer
 
         if (maxElements == 0)
         {
+            EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue: false);
             return position;
         }
 
@@ -344,7 +345,7 @@ public partial class StaticHtmlRenderer
 
         void EmitFormActionIfNotExplicit(TextWriter output, bool isForm, bool hasExplicitActionValue)
         {
-            if (isForm && !hasExplicitActionValue)
+            if (isForm && _navigationManager != null && !hasExplicitActionValue)
             {
                 output.Write(' ');
                 output.Write("action");

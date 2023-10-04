@@ -465,7 +465,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var formTarget = form.GetAttribute("action");
         var actionValue = form.GetDomAttribute("action");
         Assert.Equal(expectedTarget, formTarget);
-        Assert.Null(actionValue);
+        Assert.Equal(url, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
         name.SendKeys("John");
@@ -505,7 +505,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var formTarget = form.GetAttribute("action");
         var actionValue = form.GetDomAttribute("action");
         Assert.Equal(expectedTarget, formTarget);
-        Assert.Null(actionValue);
+        Assert.Equal(url, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model[Name]"]"""));
         name.SendKeys("John");
@@ -1017,7 +1017,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void HandleErrorsOutsideErrorBoundary_OnInitialRender(bool suppressEnhancedNavigation, bool enableStreaming)
     {
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
-        GoTo($"forms/error-outside-error-boundary{( enableStreaming ? "-streaming" : "" )}");
+        GoTo($"forms/error-outside-error-boundary{(enableStreaming ? "-streaming" : "")}");
 
         Browser.Exists(By.LinkText("Throw during initial render")).Click();
         AssertHasInternalServerError(suppressEnhancedNavigation);
