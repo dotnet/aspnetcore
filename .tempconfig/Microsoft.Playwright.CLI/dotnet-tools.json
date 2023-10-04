@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "Microsoft.Playwright.CLI": {
-      "version": "${MicrosoftPlaywrightCLIVersion}",
+      "version": "1.2.3",
       "commands": [
         "playwright"
       ]

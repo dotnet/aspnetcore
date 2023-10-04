@@ -5,7 +5,6 @@ obj/
 .dotnet/
 .nuget/
 .packages/
-.tempconfig/
 .tools/
 .vs/
 node_modules/

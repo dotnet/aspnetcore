@@ -2,10 +2,10 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "dotnet-ef": {
-      "version": "${DotnetEfVersion}",
+    "dotnet-serve": {
+      "version": "1.10.93",
       "commands": [
-        "dotnet-ef"
+        "dotnet-serve"
       ]
     }
   }
