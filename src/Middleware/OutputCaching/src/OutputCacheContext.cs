@@ -69,13 +69,6 @@ public sealed class OutputCacheContext
 
     internal OutputCacheEntry? CachedResponse { get; set; }
 
-    internal void ReleaseCachedResponse()
-    {
-        var tmp = CachedResponse;
-        CachedResponse = null;
-        tmp?.Dispose();
-    }
-
     internal bool ResponseStarted { get; set; }
 
     internal Stream OriginalResponseStream { get; set; } = default!;
