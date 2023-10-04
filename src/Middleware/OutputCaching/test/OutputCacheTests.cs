@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
+using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -935,6 +935,35 @@ public class OutputCacheTests
             await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
+
+    [Fact]
+    public async Task MiddlewareFaultsAreObserved()
+    {
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: _ => throw new SomeException());
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+
+            for (int i = 0; i < 10; i++)
+            {
+                await RunClient(server);
+            }
+        }
+
+        static async Task RunClient(TestServer server)
+        {
+            var client = server.CreateClient();
+            await Assert.ThrowsAsync<SomeException>(
+                () => client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "")));
+        }
+    }
+
+    sealed class SomeException : Exception { }
 
     [Fact]
     public async Task ServesCorrectlyUnderConcurrentLoad()
