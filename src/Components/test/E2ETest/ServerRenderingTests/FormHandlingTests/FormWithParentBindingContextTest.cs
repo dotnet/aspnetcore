@@ -909,6 +909,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         DispatchToFormCore(dispatchToForm);
     }
 
+    [Fact]
+    public void CanUseAntiforgeryTokenWithServerInteractivity()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/antiforgery-server-interactive",
+            FormCssSelector = "form",
+            InputFieldId = "value",
+            InputFieldValue = "stranger",
+            SuppressEnhancedNavigation = true,
+            Ready = "really-ready",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

@@ -8,7 +8,6 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -73,6 +72,19 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
+
+                endpoints.MapPost("/verify-antiforgery", (
+                    [FromForm] string value,
+                    [FromForm(Name = "__RequestVerificationToken")] string csrfToken) =>
+                {
+                    // We shouldn't get this far without a valid CSRF token, but we double check it's there.
+                    if (string.IsNullOrEmpty(csrfToken))
+                    {
+                        throw new Exception("Invalid POST to /verify-antiforgery!");
+                    }
+
+                    return TypedResults.Text($"<p id='pass'>Hello {value}!</p>", "text/html");
+                });
             });
         });
     }
