@@ -31,9 +31,9 @@
           Condition="'$(DotNetBuildFromSource)' != 'true' and Exists('$(AspnetTempConfigPath)')"
           BeforeTargets="Restore">
 
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-dump'))" />
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-serve'))" />
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-ef'))" />
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'Microsoft.Playwright.CLI'))" />
+    <Exec Command='"$(DotNetTool)" tool restore -v diag' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-dump'))" />
+    <Exec Command='"$(DotNetTool)" tool restore -v diag' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-serve'))" />
+    <Exec Command='"$(DotNetTool)" tool restore -v diag' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-ef'))" />
+    <Exec Command='"$(DotNetTool)" tool restore -v diag' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'Microsoft.Playwright.CLI'))" />
   </Target>
 </Project>
