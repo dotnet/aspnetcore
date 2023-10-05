@@ -367,6 +367,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
         return { type: 'add', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
       } else {
+        if (!isRendererAttached(component.assignedRendererId)) {
+          // The renderer for this descriptor is not attached, so we'll no-op.
+          // After the renderer attaches, we'll handle this descriptor again if
+          // it's still in the document.
+          return null;
+        }
+
         // The component has already been added for interactivity.
         if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
           // The descriptor has not changed since the last update.
@@ -379,14 +386,21 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         return { type: 'update', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
       }
     } else {
-      // The descriptor was removed from the document.
-      this.unregisterComponent(component);
-
       if (component.assignedRendererId === undefined) {
         // The component was removed from the document before it was assigned to a renderer,
         // so we don't have to notify .NET that anything has changed.
+        this.unregisterComponent(component);
         return null;
       }
+
+      if (!isRendererAttached(component.assignedRendererId)) {
+        // The renderer for this descriptor is not attached, so we'll no-op.
+        // After the renderer attaches, we'll handle this descriptor again if
+        // it's still in the document.
+        return null;
+      }
+
+      this.unregisterComponent(component);
 
       // Since the component will be getting completedly diposed from .NET (rather than replaced by another component, which can
       // happen as a result of an 'update' operation), we indicate that its content should no longer be preserved on disposal.
