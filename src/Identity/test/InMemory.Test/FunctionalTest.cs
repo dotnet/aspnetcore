@@ -22,7 +22,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Identity.InMemory;
 
-public class FunctionalTest
+public class FunctionalTest : LoggedTest
 {
     const string TestPassword = "[PLACEHOLDER]-1a";
 
@@ -272,7 +272,7 @@ public class FunctionalTest
         Assert.Equal(HttpStatusCode.OK, transaction5.Response.StatusCode);
 
         // Wait for validation interval
-        timeProvider.Advance(TimeSpan.FromMinutes(30));
+        timeProvider.Advance(TimeSpan.FromMinutes(30) + TimeSpan.FromMilliseconds(1));
 
         var transaction6 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
         Assert.Equal(HttpStatusCode.InternalServerError, transaction6.Response.StatusCode);
@@ -288,7 +288,7 @@ public class FunctionalTest
         return claim.Attribute("value").Value;
     }
 
-    private static async Task<TestServer> CreateServer(Action<IServiceCollection> configureServices = null, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, bool testCore = false)
+    private async Task<TestServer> CreateServer(Action<IServiceCollection> configureServices = null, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, bool testCore = false)
     {
         var host = new HostBuilder()
             .ConfigureWebHost(builder =>
@@ -392,6 +392,7 @@ public class FunctionalTest
                     services.AddSingleton<IUserStore<PocoUser>>(store);
                     services.AddSingleton<IRoleStore<PocoRole>>(store);
                     configureServices?.Invoke(services);
+                    AddTestLogging(services);
                 })
                 .UseTestServer())
             .Build();
