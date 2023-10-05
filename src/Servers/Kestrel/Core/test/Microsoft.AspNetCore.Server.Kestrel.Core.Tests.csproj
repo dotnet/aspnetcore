@@ -11,7 +11,6 @@
     <Compile Include="$(SharedSourceRoot)Buffers.Testing\*.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Http2\HPackHeaderWriter.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Http2\Http2HeadersEnumerator.cs" />
@@ -30,5 +29,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 </Project>

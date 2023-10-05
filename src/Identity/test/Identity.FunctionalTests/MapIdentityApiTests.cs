@@ -25,6 +25,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit.Sdk;
 
@@ -160,7 +161,7 @@ public class MapIdentityApiTests : LoggedTest
     [Fact]
     public async Task CanCustomizeBearerTokenExpiration()
     {
-        var clock = new MockTimeProvider();
+        var clock = new FakeTimeProvider();
         var expireTimeSpan = TimeSpan.FromSeconds(42);
 
         await using var app = await CreateAppAsync(services =>
@@ -320,7 +321,7 @@ public class MapIdentityApiTests : LoggedTest
     [Fact]
     public async Task CanCustomizeRefreshTokenExpiration()
     {
-        var clock = new MockTimeProvider();
+        var clock = new FakeTimeProvider();
         var expireTimeSpan = TimeSpan.FromHours(42);
 
         await using var app = await CreateAppAsync(services =>

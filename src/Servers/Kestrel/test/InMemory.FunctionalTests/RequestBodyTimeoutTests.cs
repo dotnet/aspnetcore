@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Xunit;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -72,7 +69,7 @@ public class RequestBodyTimeoutTests : LoggedTest
                 // Advance the timeProvider gracePeriod + TimeSpan.FromSeconds(1)
                 for (var i = 0; i < 6; i++)
                 {
-                    serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
+                    serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
                     serviceContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -97,7 +94,7 @@ public class RequestBodyTimeoutTests : LoggedTest
         serviceContext.InitializeHeartbeat();
 
         // Ensure there's still a constant date header value.
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var date = new DateHeaderValueManager(timeProvider);
         date.OnHeartbeat();
         serviceContext.DateHeaderValueManager = date;
@@ -188,7 +185,7 @@ public class RequestBodyTimeoutTests : LoggedTest
                 // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
                 for (var i = 0; i < 6; i++)
                 {
-                    serviceContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
+                    serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
                     serviceContext.ConnectionManager.OnHeartbeat();
                 }
 
