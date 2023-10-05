@@ -917,9 +917,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/antiforgery-server-interactive",
             FormCssSelector = "form",
             InputFieldId = "value",
-            InputFieldValue = "stranger",
             SuppressEnhancedNavigation = true,
-            Ready = "really-ready",
         };
         DispatchToFormCore(dispatchToForm);
     }

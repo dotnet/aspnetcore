@@ -72,19 +72,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
-
-                endpoints.MapPost("/verify-antiforgery", (
-                    [FromForm] string value,
-                    [FromForm(Name = "__RequestVerificationToken")] string csrfToken) =>
-                {
-                    // We shouldn't get this far without a valid CSRF token, but we double check it's there.
-                    if (string.IsNullOrEmpty(csrfToken))
-                    {
-                        throw new Exception("Invalid POST to /verify-antiforgery!");
-                    }
-
-                    return TypedResults.Text($"<p id='pass'>Hello {value}!</p>", "text/html");
-                });
             });
         });
     }
@@ -167,9 +154,18 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             await response.WriteAsync("<html><body><h1>This is a non-Blazor endpoint</h1><p>That's all</p></body></html>");
         });
 
-        endpoints.MapPost("api/antiforgery-form", ([FromForm] string value) =>
+        endpoints.MapPost("api/antiforgery-form", (
+            [FromForm] string value,
+            [FromForm(Name = "__RequestVerificationToken")] string? inFormCsrfToken,
+            [FromHeader(Name = "RequestVerificationToken")] string? inHeaderCsrfToken) =>
         {
-            return Results.Ok(value);
+            // We shouldn't get this far without a valid CSRF token, but we'll double check it's there.
+            if (string.IsNullOrEmpty(inFormCsrfToken) && string.IsNullOrEmpty(inHeaderCsrfToken))
+            {
+                throw new InvalidOperationException("Invalid POST to api/antiforgery-form!");
+            }
+
+            return TypedResults.Text($"<p id='pass'>Hello {value}!</p>", "text/html");
         });
 
         static Task PerformRedirection(HttpRequest request, HttpResponse response)
