@@ -82,7 +82,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     });
   }
 
-    show(): void {
+  show(): void {
     if (!this.document.contains(this.modal)) {
       this.document.body.appendChild(this.modal);
     }

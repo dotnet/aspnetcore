@@ -36,8 +36,8 @@ public class EndpointsServerReconnectionTest : ServerTestBase<BasicTestAppServer
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
 
         var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
+        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         Browser.Exists(By.Id("increment-0")).Click();
@@ -55,9 +55,9 @@ public class EndpointsServerReconnectionTest : ServerTestBase<BasicTestAppServer
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
 
         var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
         // Perform the first reconnect
+        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         Browser.Exists(By.Id("increment-0")).Click();
@@ -68,6 +68,7 @@ public class EndpointsServerReconnectionTest : ServerTestBase<BasicTestAppServer
         Browser.Equal("2", () => Browser.FindElement(By.Id("increment-amount-0")).Text);
 
         // Perform the second reconnect
+        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         Browser.Exists(By.Id("increment-0")).Click();
