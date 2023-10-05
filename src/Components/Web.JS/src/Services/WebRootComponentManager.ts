@@ -230,7 +230,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
 
     // We consider SSR'd components on the page that may get activated using the specified renderer.
-    for (const { descriptor: { type }, assignedRendererId } of this._rootComponentsBySsrComponentId.values()) {
+    for (const { descriptor: { type }, assignedRendererId } of this._rootComponents) {
       if (assignedRendererId === rendererId) {
         // The component has been assigned to use the specified renderer.
         return true;

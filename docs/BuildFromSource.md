@@ -120,7 +120,7 @@ The steps you follow next depend on your preferred development environment:
     code .
     ```
 
-    > :information_source: If you're using a different editor, replace `code` with your editor's equivalent launch command (for example, `vim`).
+    > :bulb: If you're using a different editor, replace `code` with your editor's equivalent launch command (for example, `vim`).
 
 1. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
