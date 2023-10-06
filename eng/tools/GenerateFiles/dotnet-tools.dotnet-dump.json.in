@@ -2,10 +2,10 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "dotnet-ef": {
-      "version": "8.0.0-rc.1.23419.6",
+    "dotnet-dump": {
+      "version": "${DotnetDumpVersion}",
       "commands": [
-        "dotnet-ef"
+        "dotnet-dump"
       ]
     }
   }

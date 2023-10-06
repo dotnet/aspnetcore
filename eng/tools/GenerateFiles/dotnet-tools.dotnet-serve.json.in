@@ -2,10 +2,10 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "dotnet-dump": {
-      "version": "6.0.322601",
+    "dotnet-serve": {
+      "version": "${DotnetServeVersion}",
       "commands": [
-        "dotnet-dump"
+        "dotnet-serve"
       ]
     }
   }
