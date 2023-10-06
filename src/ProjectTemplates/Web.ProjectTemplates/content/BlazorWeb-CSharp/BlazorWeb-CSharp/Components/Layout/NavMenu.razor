@@ -1,5 +1,5 @@
 ﻿@*#if (IndividualLocalAuth)
-@using BlazorWeb_CSharp.Components.Account.Shared
+@inject NavigationManager NavigationManager
 
 ##endif*@
 <div class="top-row ps-3 navbar navbar-dark">
@@ -47,10 +47,13 @@
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <LogoutForm id="logout-form" />
-                    <button type="submit" class="nav-link" form="logout-form">
-                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                    </button>
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <button type="submit" class="nav-link">
+                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                        </button>
+                    </form>
                 </div>
             </Authorized>
             <NotAuthorized>
@@ -69,3 +72,27 @@
         ##endif*@
     </nav>
 </div>
+@*#if (IndividualLocalAuth)
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
+##endif*@
+
