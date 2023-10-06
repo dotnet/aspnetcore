@@ -29,7 +29,7 @@
 
   <Target Name="RestoreAspnetRepoTools"
           Condition="'$(DotNetBuildFromSource)' != 'true' and Exists('$(AspnetTempConfigPath)')"
-          AfterTargets="GenerateDirectoryBuildFiles">
+          BeforeTargets="Restore">
 
     <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-dump'))" />
     <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-serve'))" />
