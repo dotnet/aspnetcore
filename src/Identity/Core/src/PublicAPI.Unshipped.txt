@@ -12,8 +12,6 @@ Microsoft.AspNetCore.Identity.Data.InfoRequest.NewPassword.init -> void
 Microsoft.AspNetCore.Identity.Data.InfoRequest.OldPassword.get -> string?
 Microsoft.AspNetCore.Identity.Data.InfoRequest.OldPassword.init -> void
 Microsoft.AspNetCore.Identity.Data.InfoResponse
-Microsoft.AspNetCore.Identity.Data.InfoResponse.Claims.get -> System.Collections.Generic.IDictionary<string!, string!>!
-Microsoft.AspNetCore.Identity.Data.InfoResponse.Claims.init -> void
 Microsoft.AspNetCore.Identity.Data.InfoResponse.Email.get -> string!
 Microsoft.AspNetCore.Identity.Data.InfoResponse.Email.init -> void
 Microsoft.AspNetCore.Identity.Data.InfoResponse.InfoResponse() -> void
