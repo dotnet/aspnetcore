@@ -318,8 +318,8 @@
       "type": "parameter",
       "datatype": "choice",
       "defaultValue": "Server",
-      "displayName": "_Interactivity type",
-      "description": "Chooses which hosting platform to use for interactive components",
+      "displayName": "_Interactive render mode",
+      "description": "Chooses which interactive render mode to use for interactive components",
       "choices": [
         {
           "choice": "None",
