@@ -10,10 +10,6 @@
     <PackageReference Include="Yarn.MSBuild" Version="1.22.10" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <AspnetTempConfigPath>$([MSBuild]::NormalizePath('$(RepoRoot)', '.tempconfig'))</AspnetTempConfigPath>
-  </PropertyGroup>
-
   <!-- Update the generated files when we restore projects. Skip in desktop msbuild due to VS 16.8 requirements. -->
   <Target Name="GenerateDirectoryBuildFiles"
       AfterTargets="Restore"
@@ -25,15 +21,5 @@
     <MSBuild Projects="$(RepoRoot)eng\tools\GenerateFiles\GenerateFiles.csproj"
         RemoveProperties="BaseIntermediateOutputPath;ExcludeRestorePackageImports"
         Targets="GenerateDirectoryBuildFiles" />
-  </Target>
-
-  <Target Name="RestoreAspnetRepoTools"
-          Condition="'$(DotNetBuildFromSource)' != 'true' and Exists('$(AspnetTempConfigPath)')"
-          BeforeTargets="Restore">
-
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-dump'))" />
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-serve'))" />
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'dotnet-ef'))" />
-    <Exec Command='"$(DotNetTool)" tool restore' WorkingDirectory="$([MSBuild]::NormalizePath('$(AspnetTempConfigPath)', 'Microsoft.Playwright.CLI'))" />
   </Target>
 </Project>

@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
 
-    <ConfigDirectory>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.tempconfig'))</ConfigDirectory>
+    <ConfigDirectory>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.config'))</ConfigDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,24 +43,9 @@
       Properties="$(_TemplateProperties)"
       OutputPath="$(BaseOutputPath)Directory.Build.targets" />
 
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.dotnet-dump.json.in" />
-    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.dotnet-dump.json.in"
+    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.json" />
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.json.in"
       Properties="$(_TemplateProperties)"
-      OutputPath="$(ConfigDirectory)dotnet-dump/dotnet-tools.json" />
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.dotnet-serve.json.in" />
-    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.dotnet-serve.json.in"
-      Properties="$(_TemplateProperties)"
-      OutputPath="$(ConfigDirectory)dotnet-serve/dotnet-tools.json" />
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.dotnet-ef.json.in" />
-    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.dotnet-ef.json.in"
-      Properties="$(_TemplateProperties)"
-      OutputPath="$(ConfigDirectory)dotnet-ef/dotnet-tools.json" />
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(ConfigDirectory)dotnet-tools.Microsoft.Playwright.CLI.json.in" />
-    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)dotnet-tools.Microsoft.Playwright.CLI.json.in"
-      Properties="$(_TemplateProperties)"
-      OutputPath="$(ConfigDirectory)Microsoft.Playwright.CLI/dotnet-tools.json" />
+      OutputPath="$(ConfigDirectory)dotnet-tools.json" />
   </Target>
 </Project>
