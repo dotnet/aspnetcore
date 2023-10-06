@@ -235,6 +235,20 @@ function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
 }
 
 function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode: Node) {
+  const isScriptNode = (node: Node): node is HTMLScriptElement => {
+    return nodeToInsert.nodeName.toLowerCase() === 'script';
+  }
+  if(isScriptNode(nodeToInsert)) {
+    const scriptNode = document.createElement('script');
+    scriptNode.innerHTML = nodeToInsert.innerHTML;
+    Array.from(nodeToInsert.attributes).forEach(attribute => {
+      scriptNode.setAttribute(
+        attribute.nodeName,
+        attribute.nodeValue as string,
+      );
+    });
+    nodeToInsert = scriptNode;
+  }
   if (isLogicalElement(parentNode)) {
     insertLogicalChildBefore(nodeToInsert, parentNode as unknown as LogicalElement, nextNode as unknown as LogicalElement);
   } else {
