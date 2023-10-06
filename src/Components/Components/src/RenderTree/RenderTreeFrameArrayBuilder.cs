@@ -135,7 +135,7 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
         };
     }
 
-    public void AppendComponentRenderMode(IComponentRenderMode? renderMode)
+    public void AppendComponentRenderMode(IComponentRenderMode renderMode)
     {
         if (_itemsInUse == _items.Length)
         {

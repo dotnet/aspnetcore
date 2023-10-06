@@ -684,6 +684,11 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
     public void AddComponentRenderMode(IComponentRenderMode? renderMode)
     {
+        if (renderMode is null)
+        {
+            return;
+        }
+
         // Note that a ComponentRenderMode frame is technically a child of the Component frame to which it applies,
         // hence the terminology of "adding" it rather than "setting" it. For performance reasons, the diffing system
         // will only look for ComponentRenderMode frames:

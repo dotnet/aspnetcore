@@ -2157,11 +2157,10 @@ public class RenderTreeBuilderTest
             builder.GetFrames().AsEnumerable(),
             frame =>
             {
-                AssertFrame.Component<TestComponent>(frame, 3, 0);
-                Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+                AssertFrame.Component<TestComponent>(frame, 2, 0);
+                Assert.False(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
             },
-            frame => AssertFrame.Attribute(frame, "param", 123, 1),
-            frame => AssertFrame.ComponentRenderMode(frame, null));
+            frame => AssertFrame.Attribute(frame, "param", 123, 1));
     }
 
     [Fact]
