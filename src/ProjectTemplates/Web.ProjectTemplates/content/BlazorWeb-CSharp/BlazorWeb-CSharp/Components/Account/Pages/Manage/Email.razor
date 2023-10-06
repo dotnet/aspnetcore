@@ -11,13 +11,12 @@
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Manage email</PageTitle>
 
 <h3>Manage email</h3>
 
-<StatusMessage />
+<StatusMessage Message="@message"/>
 <div class="row">
     <div class="col-md-6">
         <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
@@ -55,6 +54,7 @@
 </div>
 
 @code {
+    private string? message;
     private ApplicationUser user = default!;
     private string? email;
     private bool isEmailConfirmed;
@@ -78,7 +78,8 @@
     {
         if (Input.NewEmail is null || Input.NewEmail == email)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Your email is unchanged.", HttpContext);
+            message = "Your email is unchanged.";
+            return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
@@ -87,9 +88,10 @@
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["email"] = Input.NewEmail, ["code"] = code });
+
         await EmailSender.SendConfirmationLinkAsync(user, Input.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
 
-        RedirectManager.RedirectToCurrentPageWithStatus("Confirmation link to change email sent. Please check your email.", HttpContext);
+        message = "Confirmation link to change email sent. Please check your email.";
     }
 
     private async Task OnSendEmailVerificationAsync()
@@ -108,7 +110,7 @@
 
         await EmailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        RedirectManager.RedirectToCurrentPageWithStatus("Verification email sent. Please check your email.", HttpContext);
+        message = "Verification email sent. Please check your email.";
     }
 
     private sealed class InputModel

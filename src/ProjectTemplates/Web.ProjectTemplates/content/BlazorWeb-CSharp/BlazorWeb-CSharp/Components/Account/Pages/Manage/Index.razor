@@ -62,7 +62,7 @@
             var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
             if (!setPhoneResult.Succeeded)
             {
-                RedirectManager.RedirectToCurrentPageWithStatus("Unexpected error when trying to set phone number.", HttpContext);
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
             }
         }
 

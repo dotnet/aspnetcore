@@ -45,11 +45,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             SignInManager<ApplicationUser> signInManager,
             [FromForm] string returnUrl) =>
         {
-            if (signInManager.IsSignedIn(user))
-            {
-                await signInManager.SignOutAsync();
-            }
-
+            await signInManager.SignOutAsync();
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
 

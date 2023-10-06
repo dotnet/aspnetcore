@@ -21,7 +21,7 @@
 }
 else
 {
-    <StatusMessage />
+    <StatusMessage Message="@message" />
     <h3>Configure authenticator app</h3>
     <div>
         <p>To use an authenticator app go through the following steps:</p>
@@ -98,7 +98,8 @@ else
 
         if (!is2faTokenValid)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: Verification code is invalid.", HttpContext);
+            message = "Error: Verification code is invalid.";
+            return;
         }
 
         await UserManager.SetTwoFactorEnabledAsync(user, true);

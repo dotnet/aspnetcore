@@ -55,12 +55,7 @@
             <p>
                 @foreach (var provider in otherLogins)
                 {
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                        name="Provider"
-                        value="@provider.Name"
-                        title="Log in using your @provider.DisplayName account">
+                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
                         @provider.DisplayName
                     </button>
                 }
@@ -116,7 +111,7 @@
         var result = await UserManager.RemoveLoginAsync(user, LoginProvider!, ProviderKey!);
         if (!result.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("The external login was not removed.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: The external login was not removed.", HttpContext);
         }
 
         await SignInManager.RefreshSignInAsync(user);
@@ -129,13 +124,13 @@
         var info = await SignInManager.GetExternalLoginInfoAsync(userId);
         if (info is null)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Unexpected error occurred loading external login info.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not load external login info.", HttpContext);
         }
 
         var result = await UserManager.AddLoginAsync(user, info);
         if (!result.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("The external login was not added. External logins can only be associated with one account.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: The external login was not added. External logins can only be associated with one account.", HttpContext);
         }
 
         // Clear the existing external cookie to ensure a clean login process

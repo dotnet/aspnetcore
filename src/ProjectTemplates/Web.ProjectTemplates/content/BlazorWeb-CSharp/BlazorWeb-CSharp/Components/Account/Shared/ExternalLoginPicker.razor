@@ -5,7 +5,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-@if ((externalLogins?.Count ?? 0) == 0)
+@if (externalLogins.Length == 0)
 {
     <div>
         <p>
@@ -21,7 +21,7 @@ else
             <AntiforgeryToken />
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
             <p>
-                @foreach (var provider in externalLogins!)
+                @foreach (var provider in externalLogins)
                 {
                     <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
                 }
@@ -31,13 +31,13 @@ else
 }
 
 @code {
-    private IList<AuthenticationScheme>? externalLogins;
+    private AuthenticationScheme[] externalLogins = Array.Empty<AuthenticationScheme>();
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        externalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToArray();
     }
 }

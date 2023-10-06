@@ -47,10 +47,12 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
         RedirectTo(uri);
     }
 
+    private string CurrentPath => navigationManager.ToAbsoluteUri(navigationManager.Uri).GetLeftPart(UriPartial.Path);
+
     [DoesNotReturn]
-    public void RedirectToCurrentPage() => RedirectTo(navigationManager.Uri);
+    public void RedirectToCurrentPage() => RedirectTo(CurrentPath);
 
     [DoesNotReturn]
     public void RedirectToCurrentPageWithStatus(string message, HttpContext context)
-        => RedirectToWithStatus(navigationManager.Uri, message, context);
+        => RedirectToWithStatus(CurrentPath, message, context);
 }

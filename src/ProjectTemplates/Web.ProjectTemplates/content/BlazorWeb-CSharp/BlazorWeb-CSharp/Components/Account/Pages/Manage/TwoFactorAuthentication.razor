@@ -13,7 +13,7 @@
 
 <StatusMessage />
 <h3>Two-factor authentication (2FA)</h3>
-@if (consentFeature?.CanTrack ?? true)
+@if (canTrack)
 {
     if (is2faEnabled)
     {
@@ -71,7 +71,7 @@ else
 }
 
 @code {
-    private ITrackingConsentFeature? consentFeature;
+    private bool canTrack;
     private bool hasAuthenticator;
     private int recoveryCodesLeft;
     private bool is2faEnabled;
@@ -83,7 +83,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        consentFeature = HttpContext.Features.Get<ITrackingConsentFeature>();
+        canTrack = HttpContext.Features.Get<ITrackingConsentFeature>()?.CanTrack ?? true;
         hasAuthenticator = await UserManager.GetAuthenticatorKeyAsync(user) is not null;
         is2faEnabled = await UserManager.GetTwoFactorEnabledAsync(user);
         isMachineRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user);

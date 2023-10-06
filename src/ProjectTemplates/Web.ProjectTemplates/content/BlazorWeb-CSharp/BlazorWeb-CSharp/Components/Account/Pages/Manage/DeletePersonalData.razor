@@ -51,6 +51,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Input ??= new();
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         requirePassword = await UserManager.HasPasswordAsync(user);
     }
