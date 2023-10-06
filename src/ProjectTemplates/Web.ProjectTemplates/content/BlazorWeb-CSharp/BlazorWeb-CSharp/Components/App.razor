@@ -57,7 +57,7 @@
 
 @code {
     [CascadingParameter]
-    HttpContext required HttpContext { get; set; }
+    public required HttpContext HttpContext { get; set; }
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
@@ -67,7 +67,7 @@
 
 @code {
     [CascadingParameter]
-    HttpContext required HttpContext { get; set; }
+    public required HttpContext HttpContext { get; set; }
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
