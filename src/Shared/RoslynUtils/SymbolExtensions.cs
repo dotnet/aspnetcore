@@ -176,7 +176,18 @@ internal static class SymbolExtensions
     {
         return !parameterSymbol.HasExplicitDefaultValue
             ? "null"
-            : SymbolDisplay.FormatLiteral((parameterSymbol.ExplicitDefaultValue ?? "null").ToString(), parameterSymbol.ExplicitDefaultValue is string);
+            : InnerGetDefaultValueString(parameterSymbol.ExplicitDefaultValue);
+    }
+
+    private static string InnerGetDefaultValueString(object? defaultValue)
+    {
+        return defaultValue switch
+        {
+            string s => SymbolDisplay.FormatLiteral(s, true),
+            bool b => SymbolDisplay.FormatLiteral(b.ToString().ToLowerInvariant(), false),
+            null => "default",
+            _ => SymbolDisplay.FormatLiteral(defaultValue.ToString(), false)
+        };
     }
 
     public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? argumentValue)

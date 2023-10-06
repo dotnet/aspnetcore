@@ -148,4 +148,40 @@ app.MapGet("/", TestAction);
         Assert.Same(httpContext.Request, httpContext.Items["request"]);
         Assert.Same(httpContext.Response, httpContext.Items["response"]);
     }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesParametersWithDefaultValues()
+    {
+        var source = """
+static void TestAction(
+    HttpContext context,
+    string? type = default,
+    DateOnly? date = default,
+    bool ended = default,
+    System.Threading.CancellationToken cancellationToken = default,
+    Todo? todo = default)
+{
+    context.Items.Add("type", type);
+    context.Items.Add("date", date);
+    context.Items.Add("ended", ended);
+    context.Items.Add("cancellationToken", cancellationToken);
+    context.Items.Add("todo", todo);
+}
+app.MapPost("/", TestAction);
+""";
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.User = new ClaimsPrincipal();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(default(string), httpContext.Items["type"]);
+        Assert.Equal(default(DateOnly?), httpContext.Items["date"]);
+        Assert.Equal(default(bool), httpContext.Items["ended"]);
+        Assert.Equal(default(CancellationToken), httpContext.Items["cancellationToken"]);
+        Assert.Equal(default(Todo), httpContext.Items["todo"]);
+    }
 }
