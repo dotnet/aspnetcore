@@ -34,7 +34,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
   </ItemGroup>
 
