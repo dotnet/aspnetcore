@@ -285,28 +285,29 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return (componentDescriptor, serverComponent);
     }
 
-    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out CircuitRootComponentOperation[]? operations)
+    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out CircuitRootComponentOperationBatch? result)
     {
         int[]? seenComponentIdsStorage = null;
         try
         {
-            var result = JsonSerializer.Deserialize<RootComponentOperation[]>(
+            var batch = JsonSerializer.Deserialize<RootComponentOperationBatch>(
                 serializedComponentOperations,
                 ServerComponentSerializationSettings.JsonSerializationOptions);
+            var operations = batch.Operations;
 
-            operations = new CircuitRootComponentOperation[result.Length];
+            var circuitOperations = new CircuitRootComponentOperation[operations.Length];
 
-            Span<int> seenSsrComponentIds = result.Length <= 128
-                ? stackalloc int[result.Length]
-                : (seenComponentIdsStorage = ArrayPool<int>.Shared.Rent(result.Length)).AsSpan(0, result.Length);
+            Span<int> seenSsrComponentIds = operations.Length <= 128
+                ? stackalloc int[operations.Length]
+                : (seenComponentIdsStorage = ArrayPool<int>.Shared.Rent(operations.Length)).AsSpan(0, operations.Length);
             var currentSsrComponentIdIndex = 0;
-            for (var i = 0; i < result.Length; i++)
+            for (var i = 0; i < operations.Length; i++)
             {
-                var operation = result[i];
+                var operation = operations[i];
                 if (seenSsrComponentIds[0..currentSsrComponentIdIndex].Contains(operation.SsrComponentId))
                 {
                     Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Duplicate component ID.");
-                    operations = null;
+                    result = null;
                     return false;
                 }
 
@@ -314,32 +315,33 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
                 if (operation.Type == RootComponentOperationType.Remove)
                 {
-                    operations[i] = new(operation, null);
+                    circuitOperations[i] = new(operation, null);
                     continue;
                 }
 
                 if (operation.Marker == null)
                 {
                     Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
-                    operations = null;
+                    result = null;
                     return false;
                 }
 
                 if (!TryDeserializeWebRootComponentDescriptor(operation.Marker.Value, out var descriptor))
                 {
-                    operations = null;
+                    result = null;
                     return false;
                 }
 
-                operations[i] = new(operation, descriptor);
+                circuitOperations[i] = new(operation, descriptor);
             }
 
+            result = new(batch.BatchId, circuitOperations);
             return true;
         }
         catch (Exception ex)
         {
             Log.FailedToProcessRootComponentOperations(_logger, ex);
-            operations = null;
+            result = null;
             return false;
         }
         finally

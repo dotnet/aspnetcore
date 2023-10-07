@@ -601,7 +601,7 @@ public class CircuitHostTest
 
         // Add component
         await circuitHost.UpdateRootComponents(
-            [new(addOperation, addDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+            new(0, [new(addOperation, addDescriptor)]), null, CreateDeserializer(), CancellationToken.None);
     }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
@@ -619,7 +619,7 @@ public class CircuitHostTest
 
         // Update component
         await circuitHost.UpdateRootComponents(
-            [new(updateOperation, updateDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+            new(0, [new(updateOperation, updateDescriptor)]), null, CreateDeserializer(), CancellationToken.None);
     }
 
     private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
@@ -632,7 +632,7 @@ public class CircuitHostTest
 
         // Remove component
         await circuitHost.UpdateRootComponents(
-            [new(removeOperation, null)], null, CreateDeserializer(), CancellationToken.None);
+            new(0, [new(removeOperation, null)]), null, CreateDeserializer(), CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -857,7 +857,7 @@ public class CircuitHostTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out CircuitRootComponentOperation[] operationBatch)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out CircuitRootComponentOperationBatch operationBatch)
         {
             operationBatch = default;
             return true;

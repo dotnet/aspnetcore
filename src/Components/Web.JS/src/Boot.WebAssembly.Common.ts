@@ -165,6 +165,9 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   Blazor._internal.updateRootComponents = (operations: string) =>
     Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations);
 
+  Blazor._internal.endUpdateRootComponents = (batchId: number) =>
+    components.onAfterUpdateRootComponents?.(batchId);
+
   Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {

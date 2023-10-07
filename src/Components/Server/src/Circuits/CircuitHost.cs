@@ -726,7 +726,7 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     internal Task UpdateRootComponents(
-        CircuitRootComponentOperation[] operations,
+        CircuitRootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -737,6 +737,8 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
             var shouldClearStore = false;
+            var operations = operationBatch.Operations;
+            var batchId = operationBatch.BatchId;
             Task[]? pendingTasks = null;
             try
             {
@@ -810,6 +812,8 @@ internal partial class CircuitHost : IAsyncDisposable
                 {
                     await Task.WhenAll(pendingTasks);
                 }
+
+                await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
                 Log.UpdateRootComponentsSucceeded(_logger);
             }

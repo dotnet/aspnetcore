@@ -21,7 +21,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
-    public event Action<OperationDescriptor[]>? OnUpdateRootComponents;
+    public event Action<OperationDescriptorBatch>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
@@ -106,17 +106,17 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    internal static OperationDescriptor[] DeserializeOperations(string operationsJson)
+    internal static OperationDescriptorBatch DeserializeOperations(string operationsJson)
     {
-        var deserialized = JsonSerializer.Deserialize<RootComponentOperation[]>(
+        var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
             operationsJson,
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
 
-        var operations = new OperationDescriptor[deserialized.Length];
+        var operations = new OperationDescriptor[deserialized.Operations.Length];
 
-        for (var i = 0; i < deserialized.Length; i++)
+        for (var i = 0; i < deserialized.Operations.Length; i++)
         {
-            var operation = deserialized[i];
+            var operation = deserialized.Operations[i];
             if (operation.Type == RootComponentOperationType.Remove)
             {
                 operations[i] = new(operation, null, WebRootComponentParameters.Empty);
@@ -140,7 +140,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             operations[i] = new(operation, componentType, parameters);
         }
 
-        return operations;
+        return new(deserialized.BatchId, operations);
     }
 
     static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
@@ -168,6 +168,21 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
+    }
+}
+
+internal readonly struct OperationDescriptorBatch(
+    long batchId,
+    OperationDescriptor[] operations)
+{
+    public long BatchId { get; } = batchId;
+
+    public OperationDescriptor[] Operations { get; } = operations;
+
+    public void Deconstruct(out long batchId, out OperationDescriptor[] descriptors)
+    {
+        batchId = BatchId;
+        descriptors = Operations;
     }
 }
 

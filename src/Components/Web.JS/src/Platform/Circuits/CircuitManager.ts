@@ -151,6 +151,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterRenderBatch?.(WebRendererId.Server);
     });
 
+    connection.on('JS.EndUpdateRootComponents', (batchId: number) => {
+      this._componentManager.onAfterUpdateRootComponents?.(batchId);
+    });
+
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);

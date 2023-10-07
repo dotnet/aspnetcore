@@ -33,12 +33,12 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private void OnUpdateRootComponents(OperationDescriptor[] operations)
+    private void OnUpdateRootComponents(OperationDescriptorBatch batch)
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
-        for (var i = 0; i < operations.Length; i++)
+        for (var i = 0; i < batch.Operations.Length; i++)
         {
-            var (operation, componentType, parameters) = operations[i];
+            var (operation, componentType, parameters) = batch.Operations[i];
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
@@ -59,7 +59,14 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
+
+            NotifyEndUpdateRootComponents(batch.BatchId);
         }
+    }
+
+    public void NotifyEndUpdateRootComponents(long batchId)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
     }
 
     public override Dispatcher Dispatcher => NullDispatcher.Instance;
