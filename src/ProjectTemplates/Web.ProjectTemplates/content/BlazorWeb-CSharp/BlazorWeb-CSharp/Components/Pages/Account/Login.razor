@@ -21,6 +21,7 @@
         <section>
             <StatusMessage Message="@errorMessage" />
             <EditForm id="account" Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator />
                 <h2>Use a local account to log in.</h2>
                 <hr />
                 <ValidationSummary class="text-danger" />
