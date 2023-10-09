@@ -149,23 +149,38 @@ app.MapGet("/", TestAction);
         Assert.Same(httpContext.Response, httpContext.Items["response"]);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesParametersWithDefaultValues()
+    public static object[][] DefaultValues
     {
-        var source = """
+        get
+        {
+            return new[]
+            {
+                new object[] { "string?", "default", default(string) },
+                new object[] { "DateOnly?", "default", default(DateOnly?) },
+                new object[] { "bool", "default", default(bool) },
+                new object[] { "System.Threading.CancellationToken", "default", default(CancellationToken) },
+                new object[] { "Todo?", "default", default(Todo) },
+                new object[] { "bool", "true", true },
+                new object[] { "string", "\"test\"", "test" },
+                new object[] { "char", "\'a\'", 'a' },
+                new object[] { "int", "default", 0 },
+                new object[] { "int", "1234", 1234 },
+                new object[] { "double", "1.0", 1.0 },
+                new object[] { "float", "2.0f", 2.0f }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(DefaultValues))]
+    public async Task RequestDelegatePopulatesParametersWithDefaultValues(string type, string defaultValue, object expectedValue)
+    {
+        var source = $$"""
 static void TestAction(
     HttpContext context,
-    string? type = default,
-    DateOnly? date = default,
-    bool ended = default,
-    System.Threading.CancellationToken cancellationToken = default,
-    Todo? todo = default)
+    {{type}} parameterWithDefault = {{defaultValue}})
 {
-    context.Items.Add("type", type);
-    context.Items.Add("date", date);
-    context.Items.Add("ended", ended);
-    context.Items.Add("cancellationToken", cancellationToken);
-    context.Items.Add("todo", todo);
+    context.Items.Add("parameterWithDefault", parameterWithDefault);
 }
 app.MapPost("/", TestAction);
 """;
@@ -178,10 +193,6 @@ app.MapPost("/", TestAction);
 
         await endpoint.RequestDelegate(httpContext);
 
-        Assert.Equal(default(string), httpContext.Items["type"]);
-        Assert.Equal(default(DateOnly?), httpContext.Items["date"]);
-        Assert.Equal(default(bool), httpContext.Items["ended"]);
-        Assert.Equal(default(CancellationToken), httpContext.Items["cancellationToken"]);
-        Assert.Equal(default(Todo), httpContext.Items["todo"]);
+        Assert.Equal(expectedValue, httpContext.Items["parameterWithDefault"]);
     }
 }

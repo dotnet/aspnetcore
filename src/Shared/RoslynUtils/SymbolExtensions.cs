@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
@@ -184,9 +185,9 @@ internal static class SymbolExtensions
         return defaultValue switch
         {
             string s => SymbolDisplay.FormatLiteral(s, true),
-            bool b => SymbolDisplay.FormatLiteral(b.ToString().ToLowerInvariant(), false),
+            char c => SymbolDisplay.FormatLiteral(c, true),
             null => "default",
-            _ => SymbolDisplay.FormatLiteral(defaultValue.ToString(), false)
+            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false)
         };
     }
 
