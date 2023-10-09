@@ -11,8 +11,8 @@ namespace System.Net.Http.HPack
     {
         // HPack static huffman code. see: https://httpwg.org/specs/rfc7541.html#huffman.code
         // Stored into two tables to optimize its initialization and memory consumption.
-        private static ReadOnlySpan<uint> EncodingTableCodes => new uint[257]
-        {
+        private static ReadOnlySpan<uint> EncodingTableCodes => // 257
+        [
             0b11111111_11000000_00000000_00000000,
             0b11111111_11111111_10110000_00000000,
             0b11111111_11111111_11111110_00100000,
@@ -270,10 +270,10 @@ namespace System.Net.Http.HPack
             0b11111111_11111111_11111110_00000000,
             0b11111111_11111111_11111011_10000000,
             0b11111111_11111111_11111111_11111100,
-        };
+        ];
 
-        private static ReadOnlySpan<byte> EncodingTableBitLengths => new byte[257]
-        {
+        private static ReadOnlySpan<byte> EncodingTableBitLengths => // 257
+        [
             13,
             23,
             28,
@@ -531,7 +531,7 @@ namespace System.Net.Http.HPack
             27,
             26,
             30
-        };
+        ];
 
         private static readonly ushort[] s_decodingTree = GenerateDecodingLookupTree();
 
