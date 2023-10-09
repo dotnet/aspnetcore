@@ -32,7 +32,7 @@
 
 @code {
     [CascadingParameter]
-    public required HttpContext HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
 
     private async Task OnSubmitAsync()
     {

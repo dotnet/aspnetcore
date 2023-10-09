@@ -78,7 +78,7 @@ else
     private bool isMachineRemembered;
 
     [CascadingParameter]
-    public required HttpContext HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {

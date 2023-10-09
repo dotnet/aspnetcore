@@ -26,10 +26,10 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
             uri = navigationManager.ToBaseRelativePath(uri);
         }
 
-        // On the server, NavigateTo throws NavigationException on the server which is handled by the framework as a redirect
-        // before the InvalidOperationException is thrown.
+        // During static rendering, NavigateTo throws a NavigationException which is handled by the framework as a redirect.
+        // So as long as this is called from a statically rendered Identity component, the InvalidOperationException is never thrown.
         navigationManager.NavigateTo(uri);
-        throw new InvalidOperationException($"{nameof(IdentityRedirectManager)} must be called from the server.");
+        throw new InvalidOperationException($"{nameof(IdentityRedirectManager)} can only be used during static rendering.");
     }
 
     [DoesNotReturn]

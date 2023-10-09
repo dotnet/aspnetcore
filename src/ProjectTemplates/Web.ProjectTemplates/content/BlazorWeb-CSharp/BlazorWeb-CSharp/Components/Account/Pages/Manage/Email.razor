@@ -60,7 +60,7 @@
     private bool isEmailConfirmed;
 
     [CascadingParameter]
-    public required HttpContext HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = new();

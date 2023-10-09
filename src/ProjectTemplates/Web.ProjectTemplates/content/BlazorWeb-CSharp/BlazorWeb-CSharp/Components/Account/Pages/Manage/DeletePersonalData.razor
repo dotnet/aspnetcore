@@ -44,7 +44,7 @@
     private bool requirePassword;
 
     [CascadingParameter]
-    public required HttpContext HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();

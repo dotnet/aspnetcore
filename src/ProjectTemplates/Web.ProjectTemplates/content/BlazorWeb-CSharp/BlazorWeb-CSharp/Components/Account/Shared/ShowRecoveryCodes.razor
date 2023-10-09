@@ -21,8 +21,8 @@
 
 @code {
     [Parameter]
-    public required string[] RecoveryCodes { get; set; }
+    public string[] RecoveryCodes { get; set; } = Array.Empty<string>();
 
     [Parameter]
-    public required string StatusMessage { get; set; }
+    public string? StatusMessage { get; set; }
 }

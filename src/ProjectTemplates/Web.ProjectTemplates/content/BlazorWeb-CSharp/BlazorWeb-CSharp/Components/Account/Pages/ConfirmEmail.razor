@@ -17,7 +17,7 @@
     private string? statusMessage;
 
     [CascadingParameter]
-    public required HttpContext HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     private string? UserId { get; set; }

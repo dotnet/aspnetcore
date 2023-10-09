@@ -33,7 +33,7 @@ else
     private string? statusMessage;
 
     [CascadingParameter]
-    public required HttpContext HttpContext { get; set; }
+    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     public string? Email { get; set; }
