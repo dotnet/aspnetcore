@@ -47,4 +47,77 @@ public class HomeController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    public IActionResult Index3()
+    {
+        return View();
+    }
+
+    // Result: FormatException: Input string was not in a correct format.
+    [HttpPost("TestCrash")]
+    public IActionResult TestCrash(Dictionary<int, int> data)
+    {
+        return RedirectToAction("");
+    }
+
+    // Result: Works as expected
+    [HttpPost("TestWorks")]
+    public IActionResult TestWorks(List<int> data)
+    {
+        return RedirectToAction("Index");
+    }
+
+    // Result: Works as expected
+    [HttpPost("TestWorks2")]
+    public IActionResult TestWorks2(HashSet<int> data)
+    {
+        return RedirectToAction("Index");
+    }
+
+    // Result: Works as expected
+    [HttpPost("TestWorks3")]
+    public IActionResult TestWorks3(int[] data)
+    {
+        return RedirectToAction("Index");
+    }
+
+    // Result: FormatException: Input string was not in a correct format.
+    [HttpPost("TestCrash2")]
+    public IActionResult TestCrash2(Dictionary<long, string> data)
+    {
+        return RedirectToAction("");
+    }
+
+    // Result: Works as expected
+    [HttpPost("TestWorks4")]
+    public IActionResult TestWorks4(Dictionary<string, int> data)
+    {
+        return RedirectToAction("Index");
+    }
+}
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+
+    [HttpGet]
+    [Route("key")]
+    public IActionResult KeyTest([FromQuery] Dictionary<TestEnum, string> prop)
+    {
+        return Ok();
+    }
+
+    [HttpGet]
+    [Route("value")]
+    public IActionResult ValueTest([FromQuery] Dictionary<string, TestEnum> prop)
+    {
+        return Ok();
+    }
+}
+
+public enum TestEnum
+{
+    EnumVal1,
+    EnumVal2
 }

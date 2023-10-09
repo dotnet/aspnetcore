@@ -27,6 +27,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     public async Task MapAction_SingleSpecialTypeParam_StringReturn(string parameterType)
     {
         var (results, compilation) = await RunGeneratorAsync($"""
+/// <summary>This is a test.</summary>
 app.MapGet("/hello", ({parameterType} p) => p == null ? "null!" : "Hello world!");
 """);
         var endpoint = GetEndpointFromCompilation(compilation);

@@ -37,6 +37,26 @@ internal static class InvocationOperationExtensions
         return false;
     }
 
+    public static bool TryGetRouteHandlerPattern(this IInvocationOperation invocation, out SyntaxToken token)
+    {
+        IArgumentOperation? argumentOperation = null;
+        foreach (var argument in invocation.Arguments)
+        {
+            if (argument.Parameter?.Ordinal == 1)
+            {
+                argumentOperation = argument;
+            }
+        }
+        if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
+            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        {
+            token = default;
+            return false;
+        }
+        token = routePatternArgumentLiteralSyntax.Token;
+        return true;
+    }
+
     public static bool TryGetRouteHandlerMethod(this IInvocationOperation invocation, SemanticModel semanticModel, [NotNullWhen(true)] out IMethodSymbol? method)
     {
         method = null;

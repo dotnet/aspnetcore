@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
@@ -13,6 +14,8 @@ using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
+// using Microsoft.OpenApi;
+// using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -52,6 +55,33 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
         var endpoints = endpointsWithDiagnostics
             .Where(endpoint => endpoint.Diagnostics.Count == 0)
             .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
+
+        // var operations = endpoints.Select((endpoint, token) =>
+        // {
+        //     return new OpenApiOperation
+        //     {
+        //         Responses = new OpenApiResponses
+        //         {
+        //             ["200"] = GetOpenApiResponse(endpoint.Response)
+        //         }
+        //     };
+        //
+        //     static OpenApiResponse GetOpenApiResponse(EndpointResponse? endpointResponse)
+        //     {
+        //         return new OpenApiResponse
+        //         {
+        //             Content = new Dictionary<string, OpenApiMediaType>
+        //             {
+        //                 {
+        //                     "application/json", new OpenApiMediaType
+        //                     {
+        //                         Schema = new OpenApiSchema()
+        //                     }
+        //                 }
+        //             }
+        //         };
+        //     }
+        // });
 
         var interceptorDefinitions = endpoints
             .GroupWith((endpoint) => endpoint.Location, EndpointDelegateComparer.Instance)

@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <form method="post" asp-action="TestCrash" asp-controller="Home">
+        <input type="submit" name="submit" value="Crash" />
+    </form>
+
+    <br /><br />
+
+    <form method="post" asp-action="TestWorks" asp-controller="Home">
+        <input type="submit" name="submit" value="Works 1" />
+    </form>
+
+    <br /><br />
+
+    <form method="post" asp-action="TestWorks2" asp-controller="Home">
+        <input type="submit" name="submit" value="Works 2" />
+    </form>
+
+    <br /><br />
+
+    <form method="post" asp-action="TestWorks3" asp-controller="Home">
+        <input type="submit" name="submit" value="Works 3" />
+    </form>
+
+    <br /><br />
+
+    <form method="post" asp-action="TestCrash2" asp-controller="Home">
+        <input type="submit" name="submit" value="Crash 2" />
+    </form>
+
+    <br /><br />
+
+    <form method="post" asp-action="TestWorks4" asp-controller="Home">
+        <input type="submit" name="submit" value="Works 4" />
+    </form>
+
+    <br /><br />
+</div>

@@ -1,0 +1,33 @@
+{
+  "openapi": "3.0.1",
+  "info": { },
+  "paths": {
+    "\"/hello\"": {
+      "get": {
+        "summary": "This is a test",
+        "description": "",
+        "parameters": [
+          {
+            "name": "datetime",
+            "description": "Represents the current time.",
+            "style": "simple"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a string indicating that the month is valid."
+          },
+          "404": {
+            "description": "Not found is the month is in the first half of the year."
+          }
+        }
+      },
+      "post": {
+        "summary": "This is a another test",
+        "description": "",
+        "responses": { }
+      }
+    }
+  },
+  "components": { }
+}
