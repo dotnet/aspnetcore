@@ -59,9 +59,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
-
-            NotifyEndUpdateRootComponents(batch.BatchId);
         }
+
+        NotifyEndUpdateRootComponents(batch.BatchId);
     }
 
     public static void NotifyEndUpdateRootComponents(long batchId)
