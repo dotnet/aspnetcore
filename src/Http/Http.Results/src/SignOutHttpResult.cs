@@ -133,7 +133,7 @@ public sealed partial class SignOutHttpResult : IResult
 
         [LoggerMessage(1, LogLevel.Information,
             "Executing SignOutResult with authentication schemes ({Schemes}).",
-            EventName = "SignOutResultExecuting",
+            EventName = "SignOutResultExecuting2",
             SkipEnabledCheck = true)]
         private static partial void SignOutResultExecuting(ILogger logger, string[] schemes);
     }

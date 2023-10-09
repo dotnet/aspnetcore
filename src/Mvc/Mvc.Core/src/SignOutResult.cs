@@ -149,7 +149,7 @@ public partial class SignOutResult : ActionResult, IResult
         [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(SignOutResult)} with authentication scheme ({{Scheme}}).", EventName = "SignOutResultExecuting", SkipEnabledCheck = true)]
         private static partial void SignOutResultExecuting(ILogger logger, string scheme);
 
-        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(SignOutResult)} with authentication schemes ({{Schemes}}).", EventName = "SignOutResultExecuting", SkipEnabledCheck = true)]
+        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(SignOutResult)} with authentication schemes ({{Schemes}}).", EventName = "SignOutResultExecuting2", SkipEnabledCheck = true)]
         private static partial void SignOutResultExecuting(ILogger logger, string[] schemes);
     }
 }
