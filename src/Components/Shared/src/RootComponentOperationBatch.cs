@@ -7,5 +7,5 @@ internal sealed class RootComponentOperationBatch
 {
     public long BatchId { get; set; }
 
-    public RootComponentOperation[] Operations { get; set; }
+    public required RootComponentOperation[] Operations { get; set; }
 }

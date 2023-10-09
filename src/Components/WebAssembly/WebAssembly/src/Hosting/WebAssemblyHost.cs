@@ -226,6 +226,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 operation.Marker?.Key,
                 parameters));
         }
-        renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
+
+        WebAssemblyRenderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
     }
 }

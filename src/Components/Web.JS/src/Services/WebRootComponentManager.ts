@@ -414,9 +414,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       }
 
       if (!isRendererAttached(component.assignedRendererId)) {
-        // The renderer for this descriptor is not attached, so we'll no-op.
-        // After the renderer attaches, we'll handle this descriptor again if
-        // it's still in the document.
+        // The component was already assigned a renderer, but that renderer is no longer attached.
+        // After the renderer attaches, we'll handle the removal of this descriptor again.
         return null;
       }
 

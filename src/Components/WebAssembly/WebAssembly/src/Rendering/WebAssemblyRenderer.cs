@@ -64,7 +64,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
-    public void NotifyEndUpdateRootComponents(long batchId)
+    public static void NotifyEndUpdateRootComponents(long batchId)
     {
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
     }
