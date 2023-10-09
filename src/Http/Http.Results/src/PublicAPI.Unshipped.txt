@@ -6,7 +6,7 @@ Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult (forwarded, contained in M
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 *REMOVED*Microsoft.AspNetCore.Http.HttpResults.RedirectToRouteHttpResult.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
-Microsoft.AspNetCore.Http.HttpResults.SignOutHttpResult.AuthenticationScheme.get -> string!
+Microsoft.AspNetCore.Http.HttpResults.SignOutHttpResult.AuthenticationScheme.get -> string?
 static Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.Instance.get -> Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.AcceptedAtRoute<TValue>(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary? routeValues, TValue? value = default(TValue?)) -> Microsoft.AspNetCore.Http.IResult!
