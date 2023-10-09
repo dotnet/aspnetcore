@@ -30,3 +30,5 @@ virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created() -> Microsoft.AspNetCor
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.SignOut(string! authenticationScheme) -> Microsoft.AspNetCore.Mvc.SignOutResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.SignOut(string! authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Mvc.SignOutResult!

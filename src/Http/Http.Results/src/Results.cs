@@ -74,8 +74,17 @@ public static partial class Results
     /// <summary>
     /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
     /// </summary>
+    /// <param name="authenticationScheme">The authentication scheme to use for the sign-out operation.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    /// <param name="authenticationSchemes">The authentication scheme to use for the sign-out operation.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult SignOut(string authenticationScheme, AuthenticationProperties? properties = null)
+        => TypedResults.SignOut(authenticationScheme, properties);
+
+    /// <summary>
+    /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
+    /// </summary>
+    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+    /// <param name="authenticationSchemes">The authentication schemes to use for the sign-out operation.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult SignOut(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
         => TypedResults.SignOut(properties, authenticationSchemes);

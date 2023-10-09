@@ -22,8 +22,16 @@ public sealed partial class SignOutHttpResult : IResult
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
-    /// specified authentication schemes.
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the specified authentication scheme.
+    /// </summary>
+    /// <param name="authenticationScheme">The authentication scheme to use when signing out the user.</param>
+    internal SignOutHttpResult(string authenticationScheme)
+        : this(authenticationScheme, properties: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the specified authentication schemes.
     /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to use when signing out the user.</param>
     internal SignOutHttpResult(IList<string> authenticationSchemes)
@@ -35,31 +43,37 @@ public sealed partial class SignOutHttpResult : IResult
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationScheme">The authentication schemes to use when signing out the user.</param>
+    /// <param name="authenticationScheme">The authentication scheme to use when signing out the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
     internal SignOutHttpResult(string authenticationScheme, AuthenticationProperties? properties)
-        : this(new[] { authenticationScheme }, properties)
     {
+        ArgumentNullException.ThrowIfNullOrEmpty(authenticationScheme);
+
+        AuthenticationScheme = authenticationScheme;
+        Properties = properties;
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="SignOutHttpResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationSchemes">The authentication scheme to use when signing out the user.</param>
+    /// <param name="authenticationSchemes">The authentication schemes to use when signing out the user.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
     internal SignOutHttpResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
     {
-        ArgumentNullException.ThrowIfNull(authenticationSchemes);
-
         AuthenticationSchemes = authenticationSchemes.AsReadOnly();
         Properties = properties;
     }
 
     /// <summary>
+    /// Gets the authentication scheme that is challenged.
+    /// </summary>
+    public string? AuthenticationScheme { get; internal init; }
+
+    /// <summary>
     /// Gets the authentication schemes that are challenged.
     /// </summary>
-    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; }
+    public IReadOnlyList<string> AuthenticationSchemes { get; internal init; } = Array.Empty<string>();
 
     /// <summary>
     /// Gets the <see cref="AuthenticationProperties"/> used to perform the sign-out operation.
@@ -75,9 +89,13 @@ public sealed partial class SignOutHttpResult : IResult
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Result.SignOutResult");
 
-        Log.SignOutResultExecuting(logger, AuthenticationSchemes);
+        Log.SignOutResultExecuting(logger, AuthenticationScheme, AuthenticationSchemes);
 
-        if (AuthenticationSchemes.Count == 0)
+        if (!string.IsNullOrEmpty(AuthenticationScheme))
+        {
+            await httpContext.SignOutAsync(AuthenticationScheme, Properties);
+        }
+        else if (AuthenticationSchemes.Count == 0)
         {
             await httpContext.SignOutAsync(Properties);
         }
@@ -92,13 +110,26 @@ public sealed partial class SignOutHttpResult : IResult
 
     private static partial class Log
     {
-        public static void SignOutResultExecuting(ILogger logger, IReadOnlyList<string> authenticationSchemes)
+        public static void SignOutResultExecuting(ILogger logger, string? authenticationScheme, IReadOnlyList<string> authenticationSchemes)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                SignOutResultExecuting(logger, authenticationSchemes.ToArray());
+                if (!string.IsNullOrEmpty(authenticationScheme))
+                {
+                    SignOutResultExecuting(logger,  authenticationScheme);
+                }
+                else
+                {
+                    SignOutResultExecuting(logger, authenticationSchemes.ToArray());
+                }
             }
         }
+
+        [LoggerMessage(1, LogLevel.Information,
+            "Executing SignOutResult with authentication scheme ({Scheme}).",
+            EventName = "SignOutResultExecuting",
+            SkipEnabledCheck = true)]
+        private static partial void SignOutResultExecuting(ILogger logger, string scheme);
 
         [LoggerMessage(1, LogLevel.Information,
             "Executing SignOutResult with authentication schemes ({Schemes}).",

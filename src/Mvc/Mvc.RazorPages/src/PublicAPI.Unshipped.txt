@@ -1,1 +1,5 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Mvc.RazorPages.PageBase.SignOut(string! authenticationScheme) -> Microsoft.AspNetCore.Mvc.SignOutResult!
+virtual Microsoft.AspNetCore.Mvc.RazorPages.PageBase.SignOut(string! authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Mvc.SignOutResult!
+virtual Microsoft.AspNetCore.Mvc.RazorPages.PageModel.SignOut(string! authenticationScheme) -> Microsoft.AspNetCore.Mvc.SignOutResult!
+virtual Microsoft.AspNetCore.Mvc.RazorPages.PageModel.SignOut(string! authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> Microsoft.AspNetCore.Mvc.SignOutResult!

@@ -2459,6 +2459,25 @@ public abstract class ControllerBase
     /// <summary>
     /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.
     /// </summary>
+    /// <param name="authenticationScheme">The authentication scheme to use for the sign-out operation.</param>
+    /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+    [NonAction]
+    public virtual SignOutResult SignOut(string authenticationScheme)
+        => new SignOutResult(authenticationScheme);
+
+    /// <summary>
+    /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.
+    /// </summary>
+    /// <param name="authenticationScheme">The authentication scheme to use for the sign-out operation.</param>
+    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+    /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+    [NonAction]
+    public virtual SignOutResult SignOut(string authenticationScheme, AuthenticationProperties properties)
+        => new SignOutResult(authenticationScheme, properties);
+
+    /// <summary>
+    /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.
+    /// </summary>
     /// <param name="authenticationSchemes">The authentication schemes to use for the sign-out operation.</param>
     /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
     [NonAction]

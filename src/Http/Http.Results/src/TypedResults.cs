@@ -78,8 +78,17 @@ public static class TypedResults
     /// <summary>
     /// Creates a <see cref="SignOutHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
     /// </summary>
+    /// <param name="authenticationScheme">The authentication scheme to use for the sign-out operation.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
-    /// <param name="authenticationSchemes">The authentication scheme to use for the sign-out operation.</param>
+    /// <returns>The created <see cref="SignOutHttpResult"/> for the response.</returns>
+    public static SignOutHttpResult SignOut(string authenticationScheme, AuthenticationProperties? properties = null)
+        => new(authenticationScheme, properties);
+
+    /// <summary>
+    /// Creates a <see cref="SignOutHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, string?, AuthenticationProperties?)" />.
+    /// </summary>
+    /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+    /// <param name="authenticationSchemes">The authentication schemes to use for the sign-out operation.</param>
     /// <returns>The created <see cref="SignOutHttpResult"/> for the response.</returns>
     public static SignOutHttpResult SignOut(AuthenticationProperties? properties = null, IList<string>? authenticationSchemes = null)
         => new(authenticationSchemes ?? Array.Empty<string>(), properties);
