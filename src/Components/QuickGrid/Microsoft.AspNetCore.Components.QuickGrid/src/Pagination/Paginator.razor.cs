@@ -22,6 +22,10 @@ public partial class Paginator : IDisposable
     /// </summary>
     [Parameter] public RenderFragment? SummaryTemplate { get; set; }
 
+    /// <summary>
+    /// Optionally specifies the URLs for page links. If set, you must also add logic to receive the
+    /// updated page index from the URL and manually call <see cref="PaginationState.SetCurrentPageIndexAsync" />.
+    /// </summary>
     [Parameter] public Func<int, string>? PageUrl { get; set; }
 
     /// <summary>
