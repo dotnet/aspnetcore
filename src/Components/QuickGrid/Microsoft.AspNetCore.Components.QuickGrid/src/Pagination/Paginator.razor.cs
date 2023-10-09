@@ -22,6 +22,8 @@ public partial class Paginator : IDisposable
     /// </summary>
     [Parameter] public RenderFragment? SummaryTemplate { get; set; }
 
+    [Parameter] public Func<int, string>? PageUrl { get; set; }
+
     /// <summary>
     /// Constructs an instance of <see cref="Paginator" />.
     /// </summary>
@@ -39,8 +41,11 @@ public partial class Paginator : IDisposable
     private bool CanGoBack => State.CurrentPageIndex > 0;
     private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
 
+    private string? GetPageUrl(int? pageIndex)
+        => PageUrl is null || !pageIndex.HasValue ? null : PageUrl(pageIndex.Value);
+
     private Task GoToPageAsync(int pageIndex)
-        => State.SetCurrentPageIndexAsync(pageIndex);
+        => PageUrl is null ? State.SetCurrentPageIndexAsync(pageIndex) : Task.CompletedTask;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

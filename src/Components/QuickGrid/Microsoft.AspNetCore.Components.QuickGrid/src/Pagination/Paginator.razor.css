@@ -17,18 +17,19 @@ nav {
     align-items: center;
 }
 
-    nav button {
+    nav a {
         border: 0;
         background: none center center / 1rem no-repeat;
         width: 2rem;
         height: 2rem;
+        cursor: pointer;
     }
 
-    nav button[disabled] {
+    nav a[disabled] {
         opacity: 0.4;
     }
 
-    nav button:not([disabled]):hover {
+    nav a:not([disabled]):hover {
         background-color: #eee;
     }
 
