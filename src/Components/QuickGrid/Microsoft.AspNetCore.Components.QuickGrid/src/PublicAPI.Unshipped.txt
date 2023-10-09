@@ -85,6 +85,8 @@ Microsoft.AspNetCore.Components.QuickGrid.Paginator.State.get -> Microsoft.AspNe
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.State.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.SummaryTemplate.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.SummaryTemplate.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.PageUrl.get -> System.Func<int, string>?
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.PageUrl.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>
 Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Format.get -> string?
 Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Format.set -> void
