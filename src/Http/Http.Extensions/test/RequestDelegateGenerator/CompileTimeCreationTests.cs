@@ -556,4 +556,61 @@ app.MapPost("/todo1", (Todo todo1) => todo1.Id.ToString());
         Assert.Equal(new EventId(5, "ImplicitBodyNotProvided"), log2.EventId);
         Assert.Equal(@"Implicit body inferred for parameter ""todo1"" but no body was provided. Did you mean to use a Service instead?", log2.Message);
     }
+
+    [Fact]
+    public async Task SkipsMapGetWithIncorrectNamespaceAndAssembly()
+    {
+        var source = """
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+public static class TestMapActions
+{
+    public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+    {
+        app.ServiceProvider.Map(1, (string test) => "Hello world!");
+        app.ServiceProvider.MapPost(2, (string test) => "Hello world!");
+        return app;
+    }
+}
+
+public static class EndpointRouteBuilderExtensions
+{
+    public static IServiceProvider Map(this IServiceProvider app, int id, Delegate requestDelegate)
+    {
+        return app;
+    }
+}
+
+namespace Microsoft.AspNetCore.Builder
+{
+    public static class EndpointRouteBuilderExtensions
+    {
+        public static IServiceProvider MapPost(this IServiceProvider app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+    }
+}
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
+            out var diagnostics);
+        var generatorRunResult = driver.GetRunResult();
+
+        // Emits diagnostic and generates source for all endpoints
+        var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
+        Assert.Empty(GetStaticEndpoints(result, GeneratorSteps.EndpointModelStep));
+    }
 }
