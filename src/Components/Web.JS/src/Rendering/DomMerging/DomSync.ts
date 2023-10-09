@@ -235,12 +235,14 @@ function treatAsDeletion(nodeToDelete: Node, parentNode: Node) {
 }
 
 function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode: Node) {
-  const isScriptNode = (node: Node): node is HTMLScriptElement => {
-    return nodeToInsert.nodeName.toLowerCase() === 'script';
+  const isScriptModuleNode = (node: Node): node is HTMLScriptElement => {
+    return ((node: Node): node is HTMLScriptElement => {
+      return node.nodeName.toLowerCase() === 'script';
+    })(node) && node.hasAttribute('type') && node.getAttribute('type') === 'module';
   }
-  if(isScriptNode(nodeToInsert)) {
+
+  if(isScriptModuleNode(nodeToInsert)) {
     const scriptNode = document.createElement('script');
-    scriptNode.innerHTML = nodeToInsert.innerHTML;
     Array.from(nodeToInsert.attributes).forEach(attribute => {
       scriptNode.setAttribute(
         attribute.nodeName,
