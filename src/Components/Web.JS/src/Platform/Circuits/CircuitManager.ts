@@ -16,7 +16,7 @@ import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
 import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
-import { detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
+import { attachWebRendererInterop, detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
@@ -33,6 +33,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _dispatcher: DotNet.ICallDispatcher;
 
   private _connection?: HubConnection;
+
+  private _interopMethodsForReconnection?: DotNet.DotNetObject;
 
   private _circuitId?: string;
 
@@ -149,9 +151,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterRenderBatch?.(WebRendererId.Server);
     });
 
-    connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
+    connection.on('JS.EndUpdateRootComponents', (batchId: number) => {
+      this._componentManager.onAfterUpdateRootComponents?.(batchId);
+    });
 
-    connection.onclose(error => !this._disposed && !this._renderingFailed && this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error));
+    connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
+    connection.onclose(error => {
+      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+
+      if (!this._disposed && !this._renderingFailed) {
+        this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
+      }
+    });
     connection.on('JS.Error', error => {
       this._renderingFailed = true;
       this.unhandledError(error);
@@ -206,6 +217,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     this._connection = await this.startConnection();
+
+    if (this._interopMethodsForReconnection) {
+      attachWebRendererInterop(WebRendererId.Server, this._interopMethodsForReconnection);
+      this._interopMethodsForReconnection = undefined;
+    }
 
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
       return false;
@@ -325,7 +341,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
-
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
@@ -336,8 +351,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       method: 'POST',
       body: formData,
     });
-
-    detachWebRendererInterop(WebRendererId.Server);
 
     for (const handler of this._options.circuitHandlers) {
       if (handler.onCircuitClosed) {

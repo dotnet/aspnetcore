@@ -20,8 +20,8 @@ export function getRendererAttachedPromise(rendererId: number): Promise<void> | 
 export function attachWebRendererInterop(
   rendererId: number,
   interopMethods: DotNet.DotNetObject,
-  jsComponentParameters: JSComponentParametersByIdentifier,
-  jsComponentInitializers: JSComponentIdentifiersByInitializer,
+  jsComponentParameters?: JSComponentParametersByIdentifier,
+  jsComponentInitializers?: JSComponentIdentifiersByInitializer,
 ): void {
   if (interopMethodsByRenderer.has(rendererId)) {
     throw new Error(`Interop methods are already registered for renderer ${rendererId}`);
@@ -29,7 +29,7 @@ export function attachWebRendererInterop(
 
   interopMethodsByRenderer.set(rendererId, interopMethods);
 
-  if (Object.keys(jsComponentParameters).length > 0) {
+  if (jsComponentParameters && jsComponentInitializers && Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
     enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
   }
@@ -39,10 +39,14 @@ export function attachWebRendererInterop(
   invokeRendererAttachedListeners(rendererId);
 }
 
-export function detachWebRendererInterop(rendererId: number) {
-  if (!interopMethodsByRenderer.delete(rendererId)) {
+export function detachWebRendererInterop(rendererId: number): DotNet.DotNetObject {
+  const interopMethods = interopMethodsByRenderer.get(rendererId);
+  if (!interopMethods) {
     throw new Error(`Interop methods are not registered for renderer ${rendererId}`);
   }
+
+  interopMethodsByRenderer.delete(rendererId);
+  return interopMethods;
 }
 
 export function isRendererAttached(browserRendererId: number): boolean {
