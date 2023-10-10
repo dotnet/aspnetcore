@@ -186,8 +186,17 @@ internal static class SymbolExtensions
         {
             string s => SymbolDisplay.FormatLiteral(s, true),
             char c => SymbolDisplay.FormatLiteral(c, true),
+            bool b => b ? "true" : "false",
             null => "default",
-            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false)
+            float f when f is float.NegativeInfinity => "float.NegativeInfinity",
+            float f when f is float.PositiveInfinity => "float.PositiveInfinity",
+            float f when f is float.NaN => "float.NaN",
+            float f => $"{SymbolDisplay.FormatPrimitive(f, false, false)}F",
+            double d when d is double.NegativeInfinity => "double.NegativeInfinity",
+            double d when d is double.PositiveInfinity => "double.PositiveInfinity",
+            double d when d is double.NaN => "double.NaN",
+            decimal d => $"{SymbolDisplay.FormatPrimitive(d, false, false)}M",
+            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false),
         };
     }
 
