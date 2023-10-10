@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -56,6 +57,7 @@ internal partial class EndpointHtmlRenderer
         try
         {
             await writer.WriteAsync(_ssrFramingCommentMarkup);
+            await EmitInitializersIfNecessary(httpContext, writer);
             await writer.FlushAsync(); // Make sure the initial HTML was sent
             await untilTaskCompleted;
         }
@@ -72,6 +74,18 @@ internal partial class EndpointHtmlRenderer
             await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
             await _httpContext.Response.CompleteAsync();
             throw;
+        }
+    }
+
+    internal async Task EmitInitializersIfNecessary(HttpContext httpContext, TextWriter writer)
+    {
+        if (_options.JavaScriptInitializers != null &&
+            !IsProgressivelyEnhancedNavigation(httpContext.Request))
+        {
+            var initializersBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.JavaScriptInitializers));
+            await writer.WriteAsync("<!--Blazor-Web-Initializers:");
+            await writer.WriteAsync(initializersBase64);
+            await writer.WriteAsync("-->");
         }
     }
 

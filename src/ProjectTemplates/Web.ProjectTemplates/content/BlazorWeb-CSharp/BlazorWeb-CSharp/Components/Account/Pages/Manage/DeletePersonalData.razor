@@ -25,7 +25,7 @@
 <div>
     <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post">
         <DataAnnotationsValidator />
-        <ValidationSummary class="text-danger" />
+        <ValidationSummary class="text-danger" role="alert" />
         @if (requirePassword)
         {
             <div class="form-floating mb-3">

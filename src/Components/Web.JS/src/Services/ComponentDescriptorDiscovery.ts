@@ -14,20 +14,25 @@ export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 
 
 const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
+const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
 
 export function discoverServerPersistedState(node: Node): string | null | undefined {
-  return discoverPersistedState(node, blazorServerStateCommentRegularExpression);
+  return discoverBlazorComment(node, blazorServerStateCommentRegularExpression);
 }
 
 export function discoverWebAssemblyPersistedState(node: Node): string | null | undefined {
-  return discoverPersistedState(node, blazorWebAssemblyStateCommentRegularExpression);
+  return discoverBlazorComment(node, blazorWebAssemblyStateCommentRegularExpression);
 }
 
-function discoverPersistedState(node: Node, comment: RegExp): string | null | undefined {
+export function discoverWebInitializers(node: Node): string | null | undefined {
+  return discoverBlazorComment(node, blazorWebInitializerCommentRegularExpression, 'initializers');
+}
+
+function discoverBlazorComment(node: Node, comment: RegExp, captureName = 'state'): string | null | undefined {
   if (node.nodeType === Node.COMMENT_NODE) {
     const content = node.textContent || '';
     const parsedState = comment.exec(content);
-    const value = parsedState && parsedState.groups && parsedState.groups['state'];
+    const value = parsedState && parsedState.groups && parsedState.groups[captureName];
     if (value){
       node.parentNode?.removeChild(node);
     }
@@ -41,7 +46,7 @@ function discoverPersistedState(node: Node, comment: RegExp): string | null | un
   const nodes = node.childNodes;
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
-    const result = discoverPersistedState(candidate, comment);
+    const result = discoverBlazorComment(candidate, comment, captureName);
     if (result){
       return result;
     }

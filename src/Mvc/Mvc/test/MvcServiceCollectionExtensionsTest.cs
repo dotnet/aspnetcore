@@ -26,6 +26,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -675,6 +676,9 @@ public class MvcServiceCollectionExtensionsTest
         environment
             .Setup(e => e.ApplicationName)
             .Returns(typeof(MvcServiceCollectionExtensionsTest).Assembly.GetName().Name);
+
+        environment.Setup(e => e.WebRootFileProvider)
+            .Returns(new NullFileProvider());
 
         return environment.Object;
     }
