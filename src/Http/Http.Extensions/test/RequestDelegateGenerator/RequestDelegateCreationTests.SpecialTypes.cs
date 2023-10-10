@@ -245,4 +245,33 @@ app.MapPost("/", TestAction);
             Assert.Equal(expectedValue, httpContext.Items["parameterWithConst"]);
         }
     }
+
+    [Fact]
+    public async Task RequestDelegatePopulatesDecimalWithDefaultValuesAndCultureSet()
+    {
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
+        var source = $$"""
+  const decimal defaultConst = 3.15m;
+  static void TestAction(
+      HttpContext context,
+      decimal parameterWithDefault = 2.15m,
+      decimal parameterWithConst = defaultConst)
+  {
+      context.Items.Add("parameterWithDefault", parameterWithDefault);
+      context.Items.Add("parameterWithConst", parameterWithConst);
+  }
+  app.MapPost("/", TestAction);
+  """;
+
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.User = new ClaimsPrincipal();
+
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Equal(2.15m, httpContext.Items["parameterWithDefault"]);
+        Assert.Equal(3.15m, httpContext.Items["parameterWithConst"]);
+    }
 }
