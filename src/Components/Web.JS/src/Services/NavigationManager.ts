@@ -279,9 +279,9 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
 async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
   const uri = internalDestinationHref ?? location.href;
 
-  await Promise.all(Array.from(navigationCallbacks, ([rendererId, callbacks]) => {
+  await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
     if (isRendererAttached(rendererId)) {
-      callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+      await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
     }
   }));
 }
