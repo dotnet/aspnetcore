@@ -290,8 +290,10 @@ public class AspNetProcess : IDisposable
     }
 }
 
-public class Page
+public class Page(string url)
 {
-    public string Url { get; set; }
+    public Page() : this(null) { }
+
+    public string Url { get; set; } = url;
     public IEnumerable<string> Links { get; set; }
 }
