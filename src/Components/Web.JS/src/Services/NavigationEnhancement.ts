@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, notifyEnhancedNavigationListners } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -70,7 +70,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   }
 
-  performEnhancedPageLoad(absoluteInternalHref);
+  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
 function onDocumentClick(event: MouseEvent) {
@@ -84,7 +84,7 @@ function onDocumentClick(event: MouseEvent) {
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-    performEnhancedPageLoad(absoluteInternalHref);
+    performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
   });
 }
 
@@ -93,7 +93,7 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
-  performEnhancedPageLoad(location.href);
+  performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 
 function onDocumentSubmit(event: SubmitEvent) {
@@ -135,15 +135,18 @@ function onDocumentSubmit(event: SubmitEvent) {
       fetchOptions.body = formData;
     }
 
-    performEnhancedPageLoad(url.toString(), fetchOptions);
+    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
+
+  // Notify any interactive runtimes that an enhanced navigation is starting
+  notifyEnhancedNavigationListners(internalDestinationHref, interceptedLink);
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.

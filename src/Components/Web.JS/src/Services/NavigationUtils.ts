@@ -3,6 +3,7 @@
 
 let hasInteractiveRouterValue = false;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
+let enhancedNavigationListener: typeof notifyEnhancedNavigationListners | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -42,6 +43,14 @@ export function isWithinBaseUriSpace(href: string) {
 
   return href.startsWith(baseUriWithoutTrailingSlash)
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
+}
+
+export function attachEnhancedNavigationListener(listener: typeof enhancedNavigationListener) {
+  enhancedNavigationListener = listener;
+}
+
+export function notifyEnhancedNavigationListners(internalDestinationHref: string, interceptedLink: boolean) {
+  enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
 }
 
 export function hasProgrammaticEnhancedNavigationHandler(): boolean {

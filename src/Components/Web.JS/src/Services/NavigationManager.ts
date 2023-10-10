@@ -4,19 +4,26 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { WebRendererId } from '../Rendering/WebRendererId';
+import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
 let hasRegisteredNavigationEventListeners = false;
 let hasLocationChangingEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
 
-// Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
-let notifyLocationChangingCallback: ((callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
+const navigationCallbacks = new Map<WebRendererId, {
+  locationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
+  locationChanging(callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
+}>();
 
 let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
 let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | null = null;
+
+// TODO:
+// 1. Enforce that navigation interception gets enabled for only one interactive runtime
+// 2. Only invoke the 'location changing' event for the runtime that handles interactive routing, if it exists
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -32,11 +39,14 @@ export const internalFunctions = {
 };
 
 function listenForNavigationEvents(
+  rendererId: WebRendererId,
   locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
   locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
 ): void {
-  notifyLocationChangedCallback = locationChangedCallback;
-  notifyLocationChangingCallback = locationChangingCallback;
+  navigationCallbacks.set(rendererId, {
+    locationChanged: locationChangedCallback,
+    locationChanging: locationChangingCallback,
+  });
 
   if (hasRegisteredNavigationEventListeners) {
     return;
@@ -45,6 +55,10 @@ function listenForNavigationEvents(
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
+
+  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink) => {
+    notifyLocationChanged(interceptedLink, internalDestinationHref);
+  });
 }
 
 function setHasLocationChangingListeners(hasListeners: boolean) {
@@ -220,14 +234,19 @@ function notifyLocationChanging(uri: string, state: string | undefined, intercep
   return new Promise<boolean>(resolve => {
     ignorePendingNavigation();
 
-    if (!notifyLocationChangingCallback) {
+    if (navigationCallbacks.size === 0) {
       resolve(false);
       return;
     }
 
     currentLocationChangingCallId++;
     resolveCurrentNavigation = resolve;
-    notifyLocationChangingCallback(currentLocationChangingCallId, uri, state, intercepted);
+
+    for (const [rendererId, callbacks] of navigationCallbacks.entries()) {
+      if (isRendererAttached(rendererId)) {
+        callbacks.locationChanging(currentLocationChangingCallId, uri, state, intercepted);
+      }
+    }
   });
 }
 
@@ -261,10 +280,14 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
   await notifyLocationChanged(false);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean) {
-  if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, history.state?.userState, interceptedLink);
-  }
+async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
+  const uri = internalDestinationHref ?? location.href;
+
+  await Promise.all(Array.from(navigationCallbacks, ([rendererId, callbacks]) => {
+    if (isRendererAttached(rendererId)) {
+      callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+    }
+  }));
 }
 
 async function onPopState(state: PopStateEvent) {
