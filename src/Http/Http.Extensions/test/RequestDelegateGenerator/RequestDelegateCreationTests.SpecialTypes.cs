@@ -13,6 +13,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
@@ -247,9 +248,9 @@ app.MapPost("/", TestAction);
     }
 
     [Fact]
+    [UseCulture("fr-FR")]
     public async Task RequestDelegatePopulatesDecimalWithDefaultValuesAndCultureSet()
     {
-        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("fr-FR");
         var source = $$"""
   const decimal defaultConst = 3.15m;
   static void TestAction(
