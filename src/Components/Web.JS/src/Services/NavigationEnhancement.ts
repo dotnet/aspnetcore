@@ -230,8 +230,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
           // The only case where this is acceptable is when the last content URL, is the same as the URL for the form we posted to.
           isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
         } else {
-          // The url on the browser might be out of data, so push an entry to the stack to update the url in place.
-          history.pushState(null, '', currentContentUrl);
+          if (location.href !== currentContentUrl) {
+            // The url on the browser might be out of data, so push an entry to the stack to update the url in place.
+            history.pushState(null, '', currentContentUrl);
+          }
         }
       }
 
@@ -400,7 +402,7 @@ function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean
 function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
   // For forms, they default *not* to being enhanced, and must be enabled explicitly on the form element itself (not an ancestor).
   const attributeValue = form.getAttribute('data-enhance');
-  return typeof(attributeValue) === 'string'
+  return typeof (attributeValue) === 'string'
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 

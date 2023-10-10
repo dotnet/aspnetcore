@@ -163,7 +163,7 @@ public class HtmlRendererTest
         var expectedHtml = new[]
         {
             "<", "p", " ",
-                "another", "=", "\"", "another-configure", "\"", " ",
+                "another", "=", "\"", "another-value", "\"", " ",
                 "Class", "=", "\"", "test2", "\"", ">",
                 "Hello world!",
             "</", "p", ">"
@@ -172,7 +172,7 @@ public class HtmlRendererTest
         {
             rtb.OpenElement(0, "p");
             rtb.AddAttribute(1, "class", "test1");
-            rtb.AddAttribute(2, "another", "another-configure");
+            rtb.AddAttribute(2, "another", "another-value");
             rtb.AddMultipleAttributes(3, new Dictionary<string, object>() { { "Class", "test2" }, });
             rtb.AddContent(4, "Hello world!");
             rtb.CloseElement();
@@ -467,11 +467,11 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_RendersSelfClosingElement()
     {
         // Arrange
-        var expectedHtml = "<input configure=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
+        var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
         var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "input");
-            rtb.AddAttribute(1, "configure", "Hello <html>-encoded content!");
+            rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
             rtb.AddAttribute(2, "id", "Test");
             rtb.CloseElement();
         })));
@@ -514,11 +514,11 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_RendersSelfClosingElementBySkippingElementReferenceCapture()
     {
         // Arrange
-        var expectedHtml = "<input configure=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
+        var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
         var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "input");
-            rtb.AddAttribute(1, "configure", "Hello <html>-encoded content!");
+            rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
             rtb.AddAttribute(2, "id", "Test");
             rtb.AddElementReferenceCapture(3, inputReference => _ = inputReference);
             rtb.CloseElement();
@@ -642,14 +642,14 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] {
-                "<", "p", ">", "<", "input", " ", "configure", "=", "\"", "5", "\"", " />", "</", "p", ">" };
+                "<", "p", ">", "<", "input", " ", "value", "=", "\"", "5", "\"", " />", "</", "p", ">" };
 
         RenderFragment Content(ParameterView pc) => new RenderFragment((RenderTreeBuilder rtb) =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "input");
             rtb.AddAttribute(2, "change", pc.GetValueOrDefault<Action<ChangeEventArgs>>("update"));
-            rtb.AddAttribute(3, "configure", pc.GetValueOrDefault<int>("configure"));
+            rtb.AddAttribute(3, "value", pc.GetValueOrDefault<int>("value"));
             rtb.CloseElement();
             rtb.CloseElement();
         });
@@ -665,7 +665,7 @@ public class HtmlRendererTest
                 ParameterView.FromDictionary(new Dictionary<string, object>
                 {
                     { "update", change },
-                    { "configure", 5 }
+                    { "value", 5 }
                 }));
 
             // Assert

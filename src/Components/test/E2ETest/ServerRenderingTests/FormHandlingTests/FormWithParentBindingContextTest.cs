@@ -1124,6 +1124,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Exists(By.Id("send")).Click();
         Browser.Exists(By.Id("pass"));
         Browser.True(() => Browser.Url.EndsWith("forms/form-posted-while-enhanced-nav-in-progress", StringComparison.Ordinal));
+        Browser.Navigate().Back();
+        Browser.True(() => Browser.Url.EndsWith("forms/endpoint-that-never-finishes-rendering", StringComparison.Ordinal));
     }
 
     [Theory]
