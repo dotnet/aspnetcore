@@ -4,26 +4,25 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
 let hasRegisteredNavigationEventListeners = false;
-let hasLocationChangingEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
 
-const navigationCallbacks = new Map<WebRendererId, {
+type NavigationCallbacks = {
+  rendererId: WebRendererId;
+  hasLocationChangingEventListeners: boolean;
   locationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
   locationChanging(callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
-}>();
+};
+
+const navigationCallbacks = new Map<WebRendererId, NavigationCallbacks>();
 
 let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
 let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | null = null;
-
-// TODO:
-// 1. Enforce that navigation interception gets enabled for only one interactive runtime
-// 2. Only invoke the 'location changing' event for the runtime that handles interactive routing, if it exists
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -44,6 +43,8 @@ function listenForNavigationEvents(
   locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
 ): void {
   navigationCallbacks.set(rendererId, {
+    rendererId,
+    hasLocationChangingEventListeners: false,
     locationChanged: locationChangedCallback,
     locationChanging: locationChangingCallback,
   });
@@ -61,8 +62,12 @@ function listenForNavigationEvents(
   });
 }
 
-function setHasLocationChangingListeners(hasListeners: boolean) {
-  hasLocationChangingEventListeners = hasListeners;
+function setHasLocationChangingListeners(rendererId: WebRendererId, hasListeners: boolean) {
+  const callbacks = navigationCallbacks.get(rendererId);
+  if (!callbacks) {
+    throw new Error(`Renderer with ID '${rendererId}' is not listening for navigation events`);
+  }
+  callbacks.hasLocationChangingEventListeners = hasListeners;
 }
 
 export function scrollToElement(identifier: string): boolean {
@@ -176,8 +181,9 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
     return;
   }
 
-  if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
-    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
+  const callbacks = getInteractiveRouterNavigationCallbacks();
+  if (!skipLocationChangingCallback && callbacks?.hasLocationChangingEventListeners) {
+    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink, callbacks);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -230,23 +236,12 @@ function ignorePendingNavigation() {
   }
 }
 
-function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean): Promise<boolean> {
+function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean, callbacks: NavigationCallbacks): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     ignorePendingNavigation();
-
-    if (navigationCallbacks.size === 0) {
-      resolve(false);
-      return;
-    }
-
     currentLocationChangingCallId++;
     resolveCurrentNavigation = resolve;
-
-    for (const [rendererId, callbacks] of navigationCallbacks.entries()) {
-      if (isRendererAttached(rendererId)) {
-        callbacks.locationChanging(currentLocationChangingCallId, uri, state, intercepted);
-      }
-    }
+    callbacks.locationChanging(currentLocationChangingCallId, uri, state, intercepted);
   });
 }
 
@@ -260,7 +255,8 @@ function endLocationChanging(callId: number, shouldContinueNavigation: boolean) 
 async function onBrowserInitiatedPopState(state: PopStateEvent) {
   ignorePendingNavigation();
 
-  if (hasLocationChangingEventListeners) {
+  const callbacks = getInteractiveRouterNavigationCallbacks();
+  if (callbacks?.hasLocationChangingEventListeners) {
     const index = state.state?._index ?? 0;
     const userState = state.state?.userState;
     const delta = index - currentHistoryIndex;
@@ -269,7 +265,7 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
     // Temporarily revert the navigation until we confirm if the navigation should continue.
     await navigateHistoryWithoutPopStateCallback(-delta);
 
-    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false);
+    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false, callbacks);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -296,6 +292,15 @@ async function onPopState(state: PopStateEvent) {
   }
 
   currentHistoryIndex = history.state?._index ?? 0;
+}
+
+function getInteractiveRouterNavigationCallbacks(): NavigationCallbacks | undefined {
+  const interactiveRouterRendererId = getInteractiveRouterRendererId();
+  if (interactiveRouterRendererId === undefined) {
+    return undefined;
+  }
+
+  return navigationCallbacks.get(interactiveRouterRendererId);
 }
 
 function shouldUseClientSideRouting() {

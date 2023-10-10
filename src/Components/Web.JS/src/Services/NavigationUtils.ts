@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-let hasInteractiveRouterValue = false;
+import { WebRendererId } from '../Rendering/WebRendererId';
+
+let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
 let enhancedNavigationListener: typeof notifyEnhancedNavigationListners | undefined;
 
@@ -116,16 +118,24 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
 
 function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
   return !element
-  ? null
-  : element.tagName === tagName
-  ? element
-  : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
+    ? null
+    : element.tagName === tagName
+      ? element
+      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
 }
 
 export function hasInteractiveRouter(): boolean {
-  return hasInteractiveRouterValue;
+  return interactiveRouterRendererId !== undefined;
 }
 
-export function setHasInteractiveRouter() {
-  hasInteractiveRouterValue = true;
+export function getInteractiveRouterRendererId() : WebRendererId | undefined {
+  return interactiveRouterRendererId;
+}
+
+export function setHasInteractiveRouter(rendererId: WebRendererId) {
+  if (interactiveRouterRendererId !== undefined && interactiveRouterRendererId !== rendererId) {
+    throw new Error('Only one interactive runtime may enable navigation interception at a time.');
+  }
+
+  interactiveRouterRendererId = rendererId;
 }

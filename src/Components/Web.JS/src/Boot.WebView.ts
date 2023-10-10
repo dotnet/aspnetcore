@@ -33,7 +33,7 @@ async function boot(): Promise<void> {
 
   Blazor._internal.receiveWebViewDotNetDataStream = receiveWebViewDotNetDataStream;
 
-  navigationManagerFunctions.enableNavigationInterception();
+  navigationManagerFunctions.enableNavigationInterception(WebRendererId.WebView);
   navigationManagerFunctions.listenForNavigationEvents(WebRendererId.WebView, sendLocationChanged, sendLocationChanging);
 
   sendAttachPage(navigationManagerFunctions.getBaseURI(), navigationManagerFunctions.getLocationHref());

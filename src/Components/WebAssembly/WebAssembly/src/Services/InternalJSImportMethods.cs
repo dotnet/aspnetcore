@@ -27,8 +27,8 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
 
-    public void NavigationManager_EnableNavigationInterception()
-        => NavigationManager_EnableNavigationInterceptionCore();
+    public void NavigationManager_EnableNavigationInterception(int rendererId)
+        => NavigationManager_EnableNavigationInterceptionCore(rendererId);
 
     public void NavigationManager_ScrollToElement(string id)
         => NavigationManager_ScrollToElementCore(id);
@@ -39,8 +39,8 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string NavigationManager_GetBaseUri()
         => NavigationManager_GetBaseUriCore();
 
-    public void NavigationManager_SetHasLocationChangingListeners(bool value)
-        => NavigationManager_SetHasLocationChangingListenersCore(value);
+    public void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value)
+        => NavigationManager_SetHasLocationChangingListenersCore(rendererId, value);
 
     public int RegisteredComponents_GetRegisteredComponentsCount()
         => RegisteredComponents_GetRegisteredComponentsCountCore();
@@ -67,7 +67,7 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     private static partial string GetApplicationEnvironmentCore();
 
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
-    private static partial void NavigationManager_EnableNavigationInterceptionCore();
+    private static partial void NavigationManager_EnableNavigationInterceptionCore(int rendererId);
 
     [JSImport(BrowserNavigationManagerInterop.ScrollToElement, "blazor-internal")]
     private static partial void NavigationManager_ScrollToElementCore(string id);
@@ -79,7 +79,7 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     private static partial string NavigationManager_GetBaseUriCore();
 
     [JSImport(BrowserNavigationManagerInterop.SetHasLocationChangingListeners, "blazor-internal")]
-    private static partial void NavigationManager_SetHasLocationChangingListenersCore(bool value);
+    private static partial void NavigationManager_SetHasLocationChangingListenersCore(int rendererId, bool value);
 
     [JSImport(RegisteredComponentsInterop.GetRegisteredComponentsCount, "blazor-internal")]
     private static partial int RegisteredComponents_GetRegisteredComponentsCountCore();
