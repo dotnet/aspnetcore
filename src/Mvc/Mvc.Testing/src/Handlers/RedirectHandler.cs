@@ -31,7 +31,7 @@ public class RedirectHandler : DelegatingHandler
     /// equal or greater than 0.</param>
     public RedirectHandler(int maxRedirects)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRedirects);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxRedirects);
 
         MaxRedirects = maxRedirects;
     }
