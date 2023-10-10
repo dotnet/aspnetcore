@@ -558,36 +558,50 @@ app.MapPost("/todo1", (Todo todo1) => todo1.Id.ToString());
     }
 
     [Fact]
-    public async Task SkipsMapGetWithIncorrectNamespaceAndAssembly()
+    public async Task SkipsMapWithIncorrectNamespaceAndAssembly()
     {
         var source = """
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
-public static class TestMapActions
+namespace TestApp
 {
-    public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+    public static class TestMapActions
     {
-        app.ServiceProvider.Map(1, (string test) => "Hello world!");
-        app.ServiceProvider.MapPost(2, (string test) => "Hello world!");
-        return app;
+        public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+        {
+            app.ServiceProvider.Map(1, (string test) => "Hello world!");
+            app.ServiceProvider.MapPost(2, (string test) => "Hello world!");
+            app.Map(3, (string test) => "Hello world!");
+            app.MapPost(4, (string test) => "Hello world!");
+            return app;
+        }
+    }
+
+    public static class EndpointRouteBuilderExtensions
+    {
+        public static IServiceProvider Map(this IServiceProvider app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+
+        public static IEndpointRouteBuilder Map(this IEndpointRouteBuilder app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
     }
 }
-
-public static class EndpointRouteBuilderExtensions
-{
-    public static IServiceProvider Map(this IServiceProvider app, int id, Delegate requestDelegate)
-    {
-        return app;
-    }
-}
-
 namespace Microsoft.AspNetCore.Builder
 {
     public static class EndpointRouteBuilderExtensions
     {
         public static IServiceProvider MapPost(this IServiceProvider app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+
+        public static IEndpointRouteBuilder MapPost(this IEndpointRouteBuilder app, int id, Delegate requestDelegate)
         {
             return app;
         }
