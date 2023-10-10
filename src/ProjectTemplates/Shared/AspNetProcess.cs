@@ -43,9 +43,6 @@ public class AspNetProcess : IDisposable
         _output = output;
         _httpClient = new HttpClient(new HttpClientHandler()
         {
-            AllowAutoRedirect = true,
-            UseCookies = true,
-            CookieContainer = new CookieContainer(),
             ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => (certificate.Subject != "CN=localhost" && errors == SslPolicyErrors.None) || certificate?.Thumbprint == _developmentCertificate.CertificateThumbprint,
         })
         {
@@ -121,6 +118,14 @@ public class AspNetProcess : IDisposable
             {
                 await ContainsLinks(page);
             }
+        }
+    }
+
+    public async Task AssertPagesNotFound(IEnumerable<string> urls)
+    {
+        foreach (var url in urls)
+        {
+            await AssertNotFound(url);
         }
     }
 

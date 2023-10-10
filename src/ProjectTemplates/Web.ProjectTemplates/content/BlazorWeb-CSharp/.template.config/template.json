@@ -54,8 +54,6 @@
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
-            "BlazorWeb-CSharp/wwwroot/appsettings.json",
             "BlazorWeb-CSharp.Client/**",
             "*.sln"
           ],
@@ -68,11 +66,7 @@
           "rename": {
             "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
             "BlazorWeb-CSharp/Components/Pages/Home.razor": "./BlazorWeb-CSharp.Client/Pages/Home.razor",
-            "BlazorWeb-CSharp/Components/Pages/Home.razor.css": "./BlazorWeb-CSharp.Client/Pages/Home.razor.css",
             "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
-            "BlazorWeb-CSharp/Components/Pages/Weather.razor.css": "./BlazorWeb-CSharp.Client/Pages/Weather.razor.css",
-            "BlazorWeb-CSharp/Components/Pages/Counter.razor": "./BlazorWeb-CSharp.Client/Pages/Counter.razor",
-            "BlazorWeb-CSharp/Components/Pages/Counter.razor.css": "./BlazorWeb-CSharp.Client/Pages/Counter.razor.css",
             "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
           }
         },
@@ -106,6 +100,7 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Auth.*",
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",

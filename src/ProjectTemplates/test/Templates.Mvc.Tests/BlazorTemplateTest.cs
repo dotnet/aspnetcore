@@ -5,30 +5,31 @@ using Microsoft.AspNetCore.Testing;
 using Templates.Test.Helpers;
 using Xunit.Sdk;
 
-namespace Templates.Blazor.Tests;
-public class BlazorWebTemplateTest : LoggedTest
+namespace Templates.Mvc.Test;
+
+public class BlazorTemplateTest : LoggedTest
 {
-    public BlazorWebTemplateTest(ProjectFactoryFixture projectFactory)
+    public BlazorTemplateTest(ProjectFactoryFixture projectFactory)
     {
         ProjectFactory = projectFactory;
     }
 
     public ProjectFactoryFixture ProjectFactory { get; set; }
 
-    public static TheoryData<string[]> ArgsData() => new TheoryData<string[]>
-    {
-        new string[0],
-        new[] { ArgConstants.UseProgramMain },
-        new[] { ArgConstants.NoHttps },
-        new[] { ArgConstants.Empty },
-        new[] { ArgConstants.NoInteractivity },
-        new[] { ArgConstants.WebAssemblyInteractivity },
-        new[] { ArgConstants.AutoInteractivity },
-        new[] { ArgConstants.GlobalInteractivity },
-        new[] { ArgConstants.GlobalInteractivity, ArgConstants.WebAssemblyInteractivity },
-        new[] { ArgConstants.GlobalInteractivity, ArgConstants.AutoInteractivity },
-        new[] { ArgConstants.NoInteractivity, ArgConstants.UseProgramMain, ArgConstants.NoHttps, ArgConstants.Empty },
-    };
+    public static TheoryData<string[]> ArgsData() =>
+    [
+        [],
+        [ArgConstants.UseProgramMain],
+        [ArgConstants.NoHttps],
+        [ArgConstants.Empty],
+        [ArgConstants.NoInteractivity],
+        [ArgConstants.WebAssemblyInteractivity],
+        [ArgConstants.AutoInteractivity],
+        [ArgConstants.GlobalInteractivity],
+        [ArgConstants.GlobalInteractivity, ArgConstants.WebAssemblyInteractivity],
+        [ArgConstants.GlobalInteractivity, ArgConstants.AutoInteractivity],
+        [ArgConstants.NoInteractivity, ArgConstants.UseProgramMain, ArgConstants.NoHttps, ArgConstants.Empty],
+    ];
 
     [ConditionalTheory]
     [MemberData(nameof(ArgsData))]
@@ -92,15 +93,24 @@ public class BlazorWebTemplateTest : LoggedTest
         // later, while the opposite is not true.
         await project.RunDotNetPublishAsync();
         await project.RunDotNetBuildAsync();
-        var pages = GetExpectedPages(args);
+        var expectedPages = GetExpectedPages(args);
+        var unexpectedPages = GetUnxpectedPages(args);
 
-        Task VerifyProcessAsync(AspNetProcess process)
+        async Task VerifyProcessAsync(AspNetProcess process)
         {
             Assert.False(
                 process.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, process.Process));
 
-            return process.AssertPagesOk(pages);
+            await process.AssertPagesOk(expectedPages);
+            await process.AssertPagesNotFound(unexpectedPages);
+
+            if (args.Contains(ArgConstants.IndividualAuth) && !args.Contains(ArgConstants.Empty))
+            {
+                var response = await process.SendRequest(BlazorTemplatePages.Auth);
+                response.EnsureSuccessStatusCode();
+                Assert.Equal("/Account/Login?ReturnUrl=%2Fauth", response.RequestMessage.RequestUri.PathAndQuery);
+            }
         }
 
         using (var process = project.StartBuiltProjectAsync())
@@ -140,6 +150,27 @@ public class BlazorWebTemplateTest : LoggedTest
         yield return new(BlazorTemplatePages.Counter);
     }
 
+    private static IEnumerable<string> GetUnxpectedPages(string[] args)
+    {
+        if (!args.Contains(ArgConstants.IndividualAuth))
+        {
+            yield return BlazorTemplatePages.Auth;
+            yield return BlazorTemplatePages.LoginUrl;
+        }
+
+        if (args.Contains(ArgConstants.Empty))
+        {
+            yield return BlazorTemplatePages.Weather;
+            yield return BlazorTemplatePages.Counter;
+            yield return BlazorTemplatePages.Auth;
+        }
+
+        if (args.Contains(ArgConstants.NoInteractivity))
+        {
+            yield return BlazorTemplatePages.Counter;
+        }
+    }
+
     private Task<string> ReadProjectFileAsync(Project project)
     {
         var singleProjectPath = Path.Combine(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
@@ -172,6 +203,7 @@ public class BlazorWebTemplateTest : LoggedTest
         internal static readonly string Index = "";
         internal static readonly string Weather = "weather";
         internal static readonly string Counter = "counter";
+        internal static readonly string Auth = "auth";
         internal static readonly string LoginUrl = "Account/Login";
         internal static readonly string RegisterUrl = "Account/Register";
         internal static readonly string ForgotPassword = "Account/ForgotPassword";
