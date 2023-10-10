@@ -155,32 +155,78 @@ app.MapGet("/", TestAction);
         {
             return new[]
             {
-                new object[] { "string?", "default", default(string) },
-                new object[] { "DateOnly?", "default", default(DateOnly?) },
-                new object[] { "bool", "default", default(bool) },
-                new object[] { "System.Threading.CancellationToken", "default", default(CancellationToken) },
-                new object[] { "Todo?", "default", default(Todo) },
-                new object[] { "bool", "true", true },
-                new object[] { "string", "\"test\"", "test" },
-                new object[] { "char", "\'a\'", 'a' },
-                new object[] { "int", "default", 0 },
-                new object[] { "int", "1234", 1234 },
-                new object[] { "double", "1.0", 1.0 },
-                new object[] { "float", "2.0f", 2.0f }
+                new object[] { "string?", "default", default(string), true },
+                new object[] { "string", "\"test\"", "test", true },
+                new object[] { "string", "\"a\" + \"b\"", "ab", true },
+                new object[] { "DateOnly?", "default", default(DateOnly?), false },
+                new object[] { "bool", "default", default(bool), true },
+                new object[] { "bool", "false", false, true },
+                new object[] { "bool", "true", true, true},
+                new object[] { "System.Threading.CancellationToken", "default", default(CancellationToken), false },
+                new object[] { "Todo?", "default", default(Todo), false },
+                new object[] { "char", "\'a\'", 'a', true },
+                new object[] { "int", "default", 0, true },
+                new object[] { "int", "1234", 1234, true },
+                new object[] { "int", "1234 * 4", 1234 * 4, true },
+                new object[] { "double", "1.0", 1.0, true },
+                new object[] { "double", "double.NaN", double.NaN, true },
+                new object[] { "double", "double.PositiveInfinity", double.PositiveInfinity, true },
+                new object[] { "double", "double.NegativeInfinity", double.NegativeInfinity, true },
+                new object[] { "double", "double.E", double.E, true },
+                new object[] { "double", "double.Epsilon", double.Epsilon, true },
+                new object[] { "double", "double.NegativeZero", double.NegativeZero, true },
+                new object[] { "double", "double.MaxValue", double.MaxValue, true },
+                new object[] { "double", "double.MinValue", double.MinValue, true },
+                new object[] { "double", "double.Pi", double.Pi, true },
+                new object[] { "double", "double.Tau", double.Tau, true },
+                new object[] { "float", "float.NaN", float.NaN, true },
+                new object[] { "float", "float.PositiveInfinity", float.PositiveInfinity, true },
+                new object[] { "float", "float.NegativeInfinity", float.NegativeInfinity, true },
+                new object[] { "float", "float.E", float.E, true },
+                new object[] { "float", "float.Epsilon", float.Epsilon, true },
+                new object[] { "float", "float.NegativeZero", float.NegativeZero, true },
+                new object[] { "float", "float.MaxValue", float.MaxValue, true },
+                new object[] { "float", "float.MinValue", float.MinValue, true },
+                new object[] { "float", "float.Pi", float.Pi, true },
+                new object[] { "float", "float.Tau", float.Tau, true },
+                new object[] {"decimal", "decimal.MaxValue", decimal.MaxValue, true },
+                new object[] {"decimal", "decimal.MinusOne", decimal.MinusOne, true },
+                new object[] {"decimal", "decimal.MinValue", decimal.MinValue, true },
+                new object[] {"decimal", "decimal.One", decimal.One, true },
+                new object[] {"decimal", "decimal.Zero", decimal.Zero, true },
+                new object[] {"long", "long.MaxValue", long.MaxValue, true },
+                new object[] {"long", "long.MinValue", long.MinValue, true },
+                new object[] {"short", "short.MaxValue", short.MaxValue, true },
+                new object[] {"short", "short.MinValue", short.MinValue, true },
+                new object[] {"ulong", "ulong.MaxValue", ulong.MaxValue, true },
+                new object[] {"ulong", "ulong.MinValue", ulong.MinValue, true },
+                new object[] {"ushort", "ushort.MaxValue", ushort.MaxValue, true },
+                new object[] {"ushort", "ushort.MinValue", ushort.MinValue, true },
             };
         }
     }
 
     [Theory]
     [MemberData(nameof(DefaultValues))]
-    public async Task RequestDelegatePopulatesParametersWithDefaultValues(string type, string defaultValue, object expectedValue)
+    public async Task RequestDelegatePopulatesParametersWithDefaultValues(string type, string defaultValue, object expectedValue, bool declareConst)
     {
-        var source = $$"""
+        var source = declareConst ? $$"""
+const {{type}} defaultConst = {{defaultValue}};
 static void TestAction(
     HttpContext context,
-    {{type}} parameterWithDefault = {{defaultValue}})
+    {{type}} parameterWithDefault = {{defaultValue}},
+    {{type}} parameterWithConst = defaultConst)
 {
     context.Items.Add("parameterWithDefault", parameterWithDefault);
+    context.Items.Add("parameterWithConst", parameterWithConst);
+}
+app.MapPost("/", TestAction);
+""" :$$"""
+static void TestAction(
+   HttpContext context,
+   {{type}} parameterWithDefault = {{defaultValue}})
+{
+   context.Items.Add("parameterWithDefault", parameterWithDefault);
 }
 app.MapPost("/", TestAction);
 """;
@@ -194,5 +240,9 @@ app.MapPost("/", TestAction);
         await endpoint.RequestDelegate(httpContext);
 
         Assert.Equal(expectedValue, httpContext.Items["parameterWithDefault"]);
+        if (declareConst)
+        {
+            Assert.Equal(expectedValue, httpContext.Items["parameterWithConst"]);
+        }
     }
 }
