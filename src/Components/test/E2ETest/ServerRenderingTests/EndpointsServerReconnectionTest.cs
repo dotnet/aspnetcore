@@ -180,7 +180,7 @@ public class EndpointsServerReconnectionTest : ServerTestBase<BasicTestAppServer
     {
         javascript.ExecuteScript("""
             window.reconnectModal = arguments[0];
-            window.reconnectModal.parentNode.removeChild(window.reconnectModal);
+            window.reconnectModal.remove();
             """, reconnectModal);
     }
 

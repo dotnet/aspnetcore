@@ -95,7 +95,7 @@ internal struct ComponentEndMarker
     public string? PrerenderId { get; set; }
 }
 
-internal struct ComponentMarkerKey
+internal struct ComponentMarkerKey : IEquatable<ComponentMarkerKey>
 {
     public ComponentMarkerKey(string locationHash, string? formattedComponentKey)
         => (LocationHash, FormattedComponentKey) = (locationHash, formattedComponentKey);
@@ -112,4 +112,20 @@ internal struct ComponentMarkerKey
     // rendered in a list).
     // In addition, specifying a @key lets interactive components receive parameter updates dynamically.
     public string? FormattedComponentKey { get; set; }
+
+    public static bool operator ==(ComponentMarkerKey left, ComponentMarkerKey right)
+        => left.Equals(right);
+
+    public static bool operator !=(ComponentMarkerKey left, ComponentMarkerKey right)
+        => !(left == right);
+
+    public readonly bool Equals(ComponentMarkerKey other)
+        => string.Equals(LocationHash, other.LocationHash, StringComparison.Ordinal)
+        && string.Equals(FormattedComponentKey, other.FormattedComponentKey, StringComparison.Ordinal);
+
+    public override readonly bool Equals(object? obj)
+        => obj is ComponentMarkerKey other && Equals(other);
+
+    public override readonly int GetHashCode()
+        => HashCode.Combine(LocationHash, FormattedComponentKey);
 }

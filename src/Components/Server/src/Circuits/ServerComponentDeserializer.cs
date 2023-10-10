@@ -151,6 +151,12 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             return false;
         }
 
+        if (record.Key != serverComponent.Key)
+        {
+            Log.InvalidRootComponentKey(_logger);
+            return false;
+        }
+
         // We're seeing a different invocation ID than we did the last time we processed a component.
         // There are two possibilities:
         // [1] A new invocation has started, in which case we should stop accepting components from the previous one.
@@ -193,7 +199,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             serverComponent.ParameterDefinitions.AsReadOnly(),
             serverComponent.ParameterValues.AsReadOnly());
 
-        result = new(componentType, serverComponent.Key, webRootComponentParameters);
+        result = new(componentType, webRootComponentParameters);
         return true;
     }
 
@@ -285,17 +291,15 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return (componentDescriptor, serverComponent);
     }
 
-    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out CircuitRootComponentOperationBatch? result)
+    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out RootComponentOperationBatch? result)
     {
         int[]? seenComponentIdsStorage = null;
         try
         {
-            var batch = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+            result = JsonSerializer.Deserialize<RootComponentOperationBatch>(
                 serializedComponentOperations,
                 ServerComponentSerializationSettings.JsonSerializationOptions);
-            var operations = batch.Operations;
-
-            var circuitOperations = new CircuitRootComponentOperation[operations.Length];
+            var operations = result.Operations;
 
             Span<int> seenSsrComponentIds = operations.Length <= 128
                 ? stackalloc int[operations.Length]
@@ -315,7 +319,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
                 if (operation.Type == RootComponentOperationType.Remove)
                 {
-                    circuitOperations[i] = new(operation, null);
                     continue;
                 }
 
@@ -332,10 +335,9 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                     return false;
                 }
 
-                circuitOperations[i] = new(operation, descriptor);
+                operation.Descriptor = descriptor;
             }
 
-            result = new(batch.BatchId, circuitOperations);
             return true;
         }
         catch (Exception ex)
@@ -390,5 +392,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
 
         [LoggerMessage(12, LogLevel.Debug, "Failed to parse root component operations", EventName = nameof(FailedToProcessRootComponentOperations))]
         public static partial void FailedToProcessRootComponentOperations(ILogger logger, Exception exception);
+
+        [LoggerMessage(13, LogLevel.Debug, "The provided root component key was not valid.", EventName = nameof(InvalidRootComponentKey))]
+        public static partial void InvalidRootComponentKey(ILogger logger);
     }
 }

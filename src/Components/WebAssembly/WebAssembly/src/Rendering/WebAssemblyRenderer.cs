@@ -32,28 +32,28 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private void OnUpdateRootComponents(OperationDescriptorBatch batch)
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
         for (var i = 0; i < batch.Operations.Length; i++)
         {
-            var (operation, componentType, parameters) = batch.Operations[i];
+            var operation = batch.Operations[i];
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
                     _ = webRootComponentManager.AddRootComponentAsync(
                         operation.SsrComponentId,
-                        componentType!,
+                        operation.Descriptor!.ComponentType,
                         operation.Marker!.Value.Key!,
-                        parameters);
+                        operation.Descriptor!.Parameters);
                     break;
                 case RootComponentOperationType.Update:
                     _ = webRootComponentManager.UpdateRootComponentAsync(
                         operation.SsrComponentId,
-                        componentType!,
+                        operation.Descriptor!.ComponentType,
                         operation.Marker?.Key,
-                        parameters);
+                        operation.Descriptor!.Parameters);
                     break;
                 case RootComponentOperationType.Remove:
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);

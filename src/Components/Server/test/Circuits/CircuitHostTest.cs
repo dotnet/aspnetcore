@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.InteropServices.Marshalling;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -593,15 +592,14 @@ public class CircuitHostTest
             Type = RootComponentOperationType.Add,
             SsrComponentId = ssrComponentId,
             Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+            Descriptor = new(
+                componentType: typeof(TComponent),
+                parameters: CreateWebRootComponentParameters(parameters)),
         };
-        var addDescriptor = new WebRootComponentDescriptor(
-            componentType: typeof(TComponent),
-            key: addOperation.Marker.Value.Key,
-            parameters: CreateWebRootComponentParameters(parameters));
 
         // Add component
         await circuitHost.UpdateRootComponents(
-            new(0, [new(addOperation, addDescriptor)]), null, CreateDeserializer(), CancellationToken.None);
+            new() { Operations = [addOperation] }, null, CreateDeserializer(), CancellationToken.None);
     }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
@@ -611,15 +609,14 @@ public class CircuitHostTest
             Type = RootComponentOperationType.Update,
             SsrComponentId = ssrComponentId,
             Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+            Descriptor = new(
+                componentType: typeof(TComponent),
+                parameters: CreateWebRootComponentParameters(parameters)),
         };
-        var updateDescriptor = new WebRootComponentDescriptor(
-            componentType: typeof(TComponent),
-            key: updateOperation.Marker.Value.Key,
-            parameters: CreateWebRootComponentParameters(parameters));
 
         // Update component
         await circuitHost.UpdateRootComponents(
-            new(0, [new(updateOperation, updateDescriptor)]), null, CreateDeserializer(), CancellationToken.None);
+            new() { Operations = [updateOperation] }, null, CreateDeserializer(), CancellationToken.None);
     }
 
     private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
@@ -632,7 +629,7 @@ public class CircuitHostTest
 
         // Remove component
         await circuitHost.UpdateRootComponents(
-            new(0, [new(removeOperation, null)]), null, CreateDeserializer(), CancellationToken.None);
+            new() { Operations = [removeOperation] }, null, CreateDeserializer(), CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -857,7 +854,7 @@ public class CircuitHostTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out CircuitRootComponentOperationBatch operationBatch)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationBatch)
         {
             operationBatch = default;
             return true;

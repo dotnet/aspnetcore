@@ -18,7 +18,7 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
         => GetPersistedStateCore();
 
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    public static async Task<OperationDescriptorBatch> GetInitialComponentUpdate()
+    public static async Task<RootComponentOperationBatch> GetInitialComponentUpdate()
     {
         var components = await GetInitialUpdateCore();
         return DefaultWebAssemblyJSRuntime.DeserializeOperations(components);

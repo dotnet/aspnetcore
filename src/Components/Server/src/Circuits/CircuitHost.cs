@@ -726,7 +726,7 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     internal Task UpdateRootComponents(
-        CircuitRootComponentOperationBatch operationBatch,
+        RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -787,7 +787,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             var task = webRootComponentManager.AddRootComponentAsync(
                                 operation.SsrComponentId,
                                 operation.Descriptor.ComponentType,
-                                operation.Descriptor.Key,
+                                operation.Marker.Value.Key,
                                 operation.Descriptor.Parameters);
                             if (pendingTasks != null)
                             {
@@ -799,7 +799,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             _ = webRootComponentManager.UpdateRootComponentAsync(
                                 operation.SsrComponentId,
                                 operation.Descriptor.ComponentType,
-                                operation.Descriptor.Key,
+                                operation.Marker.Value.Key,
                                 operation.Descriptor.Parameters);
                             break;
                         case RootComponentOperationType.Remove:

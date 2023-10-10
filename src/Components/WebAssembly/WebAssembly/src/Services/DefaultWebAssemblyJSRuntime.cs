@@ -21,7 +21,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
-    public event Action<OperationDescriptorBatch>? OnUpdateRootComponents;
+    public event Action<RootComponentOperationBatch>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
@@ -106,20 +106,17 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    internal static OperationDescriptorBatch DeserializeOperations(string operationsJson)
+    internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
     {
         var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
             operationsJson,
             WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
-
-        var operations = new OperationDescriptor[deserialized.Operations.Length];
 
         for (var i = 0; i < deserialized.Operations.Length; i++)
         {
             var operation = deserialized.Operations[i];
             if (operation.Type == RootComponentOperationType.Remove)
             {
-                operations[i] = new(operation, null, WebRootComponentParameters.Empty);
                 continue;
             }
 
@@ -128,19 +125,13 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
                 throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
             }
 
-            Type? componentType = null;
-            if (operation.Type == RootComponentOperationType.Add ||
-                operation.Type == RootComponentOperationType.Update)
-            {
-                componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
+            var componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
-            }
-
             var parameters = DeserializeComponentParameters(operation.Marker.Value);
-            operations[i] = new(operation, componentType, parameters);
+            operation.Descriptor = new(componentType, parameters);
         }
 
-        return new(deserialized.BatchId, operations);
+        return deserialized;
     }
 
     static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
@@ -168,39 +159,5 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
-    }
-}
-
-internal readonly struct OperationDescriptorBatch(
-    long batchId,
-    OperationDescriptor[] operations)
-{
-    public long BatchId { get; } = batchId;
-
-    public OperationDescriptor[] Operations { get; } = operations;
-
-    public void Deconstruct(out long batchId, out OperationDescriptor[] descriptors)
-    {
-        batchId = BatchId;
-        descriptors = Operations;
-    }
-}
-
-internal readonly struct OperationDescriptor(
-    RootComponentOperation operation,
-    Type? componentType,
-    WebRootComponentParameters parameters)
-{
-    public RootComponentOperation Operation { get; } = operation;
-
-    public Type? ComponentType { get; } = componentType;
-
-    public WebRootComponentParameters Parameters { get; } = parameters;
-
-    public void Deconstruct(out RootComponentOperation operation, out Type? componentType, out WebRootComponentParameters parameters)
-    {
-        operation = Operation;
-        componentType = ComponentType;
-        parameters = Parameters;
     }
 }

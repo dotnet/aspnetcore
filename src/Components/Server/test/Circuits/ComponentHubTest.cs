@@ -170,7 +170,7 @@ public class ComponentHubTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out CircuitRootComponentOperationBatch operationsWithDescriptors)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationsWithDescriptors)
         {
             operationsWithDescriptors = default;
             return true;

@@ -152,7 +152,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
-            OperationDescriptorBatch? initialOperationBatch = default;
+            RootComponentOperationBatch? initialOperationBatch = null;
             if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
             {
                 // In Blazor web, we wait for the JS side to tell us about the components available
@@ -184,9 +184,9 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                             rootComponent.Selector));
                     }
 
-                    if (initialOperationBatch.HasValue)
+                    if (initialOperationBatch is not null)
                     {
-                        AddWebRootComponents(renderer, initialOperationBatch.Value, pendingRenders);
+                        AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
                     }
 
                     // Now we wait for all components to finish rendering.
@@ -207,14 +207,14 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private static void AddWebRootComponents(WebAssemblyRenderer renderer, OperationDescriptorBatch operationBatch, List<Task> pendingRenders)
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private static void AddWebRootComponents(WebAssemblyRenderer renderer, RootComponentOperationBatch operationBatch, List<Task> pendingRenders)
     {
         var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
         var operations = operationBatch.Operations;
         for (var i = 0; i < operations.Length; i++)
         {
-            var (operation, componentType, parameters) = operations[i];
+            var operation = operations[i];
             if (operation.Type != RootComponentOperationType.Add)
             {
                 throw new InvalidOperationException("All initial operations must be additions.");
@@ -222,9 +222,9 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             pendingRenders.Add(webRootComponentManager.AddRootComponentAsync(
                 operation.SsrComponentId,
-                componentType!,
+                operation.Descriptor!.ComponentType,
                 operation.Marker?.Key,
-                parameters));
+                operation.Descriptor!.Parameters));
         }
 
         WebAssemblyRenderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
