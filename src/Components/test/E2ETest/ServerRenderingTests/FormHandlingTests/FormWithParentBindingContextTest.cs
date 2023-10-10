@@ -1114,6 +1114,18 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void CanPostRedirectGet_OnGoingRequest()
+    {
+        GoTo($"forms/form-posted-while-enhanced-nav-in-progress");
+
+        Browser.Exists(By.Id("not-ending")).Click();
+        Browser.True(() => Browser.Url.EndsWith("forms/endpoint-that-never-finishes-rendering", StringComparison.Ordinal));
+        Browser.Exists(By.Id("send")).Click();
+        Browser.Exists(By.Id("pass"));
+        Browser.True(() => Browser.Url.EndsWith("forms/form-posted-while-enhanced-nav-in-progress", StringComparison.Ordinal));
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(false, true)]
