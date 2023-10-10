@@ -234,10 +234,28 @@ namespace Microsoft.AspNetCore.Testing
             _trace2.Http2FrameSending(connectionId, frame);
         }
 
+        public void Http2TooManyEnhanceYourCalms(string connectionId, int count)
+        {
+            _trace1.Http2TooManyEnhanceYourCalms(connectionId, count);
+            _trace2.Http2TooManyEnhanceYourCalms(connectionId, count);
+        }
+
         public void Http2MaxConcurrentStreamsReached(string connectionId)
         {
             _trace1.Http2MaxConcurrentStreamsReached(connectionId);
             _trace2.Http2MaxConcurrentStreamsReached(connectionId);
+        }
+
+        public void Http2FlowControlQueueOperationsExceeded(string connectionId, int count)
+        {
+            _trace1.Http2FlowControlQueueOperationsExceeded(connectionId, count);
+            _trace2.Http2FlowControlQueueOperationsExceeded(connectionId, count);
+        }
+
+        public void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual)
+        {
+            _trace1.Http2FlowControlQueueMaximumTooLow(connectionId, expected, actual);
+            _trace2.Http2FlowControlQueueMaximumTooLow(connectionId, expected, actual);
         }
 
         public void InvalidResponseHeaderRemoved()
