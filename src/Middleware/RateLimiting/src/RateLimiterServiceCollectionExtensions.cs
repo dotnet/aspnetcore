@@ -27,4 +27,18 @@ public static class RateLimiterServiceCollectionExtensions
         services.Configure(configureOptions);
         return services;
     }
+
+    /// <summary>
+    /// Add rate limiting services and configure the related options.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
+    /// <returns></returns>
+    public static IServiceCollection AddRateLimiter(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddMetrics();
+        services.AddSingleton<RateLimitingMetrics>();
+        return services;
+    }
 }
