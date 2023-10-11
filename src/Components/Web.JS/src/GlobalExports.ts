@@ -59,6 +59,7 @@ export interface IBlazor {
     getPersistedState?: () => string;
     getInitialComponentsUpdate?: () => Promise<string>;
     updateRootComponents?: (operations: string) => void;
+    endUpdateRootComponents?: (batchId: number) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number;

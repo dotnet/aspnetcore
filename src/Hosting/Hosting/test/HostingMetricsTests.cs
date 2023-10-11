@@ -97,11 +97,11 @@ public class HostingMetricsTests
             Assert.Equal(statusCode, (int)measurement.Tags["http.response.status_code"]);
             if (exceptionName == null)
             {
-                Assert.False(measurement.Tags.ContainsKey("exception.type"));
+                Assert.False(measurement.Tags.ContainsKey("error.type"));
             }
             else
             {
-                Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+                Assert.Equal(exceptionName, (string)measurement.Tags["error.type"]);
             }
             if (unhandledRequest ?? false)
             {

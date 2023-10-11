@@ -18,11 +18,11 @@
     ##elseif (IndividualLocalAuth)
     <HeadOutlet @rendermode="@RenderModeForPage" />
     ##elseif (UseServer && UseWebAssembly)
-    <HeadOutlet @rendermode="@RenderMode.InteractiveAuto" />
+    <HeadOutlet @rendermode="@InteractiveAuto" />
     ##elseif (UseServer)
-    <HeadOutlet @rendermode="@RenderMode.InteractiveServer" />
+    <HeadOutlet @rendermode="@InteractiveServer" />
     ##else
-    <HeadOutlet @rendermode="@RenderMode.InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="@InteractiveWebAssembly" />
     ##endif*@
 </head>
 
@@ -32,11 +32,11 @@
     ##elseif (IndividualLocalAuth)
     <Routes @rendermode="@RenderModeForPage" />
     ##elseif (UseServer && UseWebAssembly)
-    <Routes @rendermode="@RenderMode.InteractiveAuto" />
+    <Routes @rendermode="@InteractiveAuto" />
     ##elseif (UseServer)
-    <Routes @rendermode="@RenderMode.InteractiveServer" />
+    <Routes @rendermode="@InteractiveServer" />
     ##else
-    <Routes @rendermode="@RenderMode.InteractiveWebAssembly" />
+    <Routes @rendermode="@InteractiveWebAssembly" />
     ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
@@ -51,7 +51,7 @@
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
-        : RenderMode.InteractiveAuto;
+        : InteractiveAuto;
 }
 #elseif (UseServer)
 
@@ -61,7 +61,7 @@
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
-        : RenderMode.InteractiveServer;
+        : InteractiveServer;
 }
 #else
 
@@ -71,6 +71,6 @@
 
     IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
-        : RenderMode.InteractiveWebAssembly;
+        : InteractiveWebAssembly;
 }
 #endif*@

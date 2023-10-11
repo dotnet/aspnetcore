@@ -35,6 +35,10 @@ let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
 
+// This gets initialized to the current URL when we load.
+// After that, it gets updated every time we successfully complete a navigation.
+let currentContentUrl = location.href;
+
 export interface NavigationEnhancementCallbacks {
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
@@ -78,7 +82,7 @@ function onDocumentClick(event: MouseEvent) {
     return;
   }
 
-  if (event.target instanceof HTMLAnchorElement && !enhancedNavigationIsEnabledForLink(event.target)) {
+  if (event.target instanceof HTMLElement && !enhancedNavigationIsEnabledForElement(event.target)) {
     return;
   }
 
@@ -217,9 +221,24 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         return;
       }
 
-      if (!response.redirected && !isGetRequest && response.url !== location.href && isSuccessResponse) {
-        isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+      if (!response.redirected && !isGetRequest && isSuccessResponse) {
+        // If this is the result of a form post that didn't trigger a redirection.
+        if (!isForSamePath(response)) {
+          // In this case we don't want to push the currentContentUrl to the history stack because we don't know if this is a location
+          // we can navigate back to (as we don't know if the location supports GET) and we are not able to replicate the Resubmit form?
+          // browser behavior.
+          // The only case where this is acceptable is when the last content URL, is the same as the URL for the form we posted to.
+          isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+        } else {
+          if (location.href !== currentContentUrl) {
+            // The url on the browser might be out of data, so push an entry to the stack to update the url in place.
+            history.pushState(null, '', currentContentUrl);
+          }
+        }
       }
+
+      // Set the currentContentUrl to the location of the last completed navigation.
+      currentContentUrl = response.url;
 
       const responseContentType = response.headers.get('content-type');
       if (responseContentType?.startsWith('text/html') && initialContent) {
@@ -276,6 +295,20 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
     if (isNonRedirectedPostToADifferentUrlMessage) {
       throw new Error(isNonRedirectedPostToADifferentUrlMessage);
     }
+  }
+
+  function isForSamePath(response: Response) {
+    // We are trying to determine if the response URL is compatible with the last content URL that was successfully loaded on to
+    // the page.
+    // We are going to use the scheme, host, port and path to determine if they are compatible. We do not account for the query string
+    // as we want to allow for the query string to change. (Blazor doesn't use the query string for routing purposes).
+
+    const responseUrl = new URL(response.url);
+    const currentContentUrlParsed = new URL(currentContentUrl!);
+    return responseUrl.protocol === currentContentUrlParsed.protocol
+      && responseUrl.host === currentContentUrlParsed.host
+      && responseUrl.port === currentContentUrlParsed.port
+      && responseUrl.pathname === currentContentUrlParsed.pathname;
   }
 }
 
@@ -355,7 +388,7 @@ function splitStream(frameBoundaryMarker: string) {
   });
 }
 
-function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean {
+function enhancedNavigationIsEnabledForElement(element: HTMLElement): boolean {
   // For links, they default to being enhanced, but you can override at any ancestor level (both positively and negatively)
   const closestOverride = element.closest('[data-enhance-nav]');
   if (closestOverride) {
@@ -369,7 +402,7 @@ function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean
 function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
   // For forms, they default *not* to being enhanced, and must be enabled explicitly on the form element itself (not an ancestor).
   const attributeValue = form.getAttribute('data-enhance');
-  return typeof(attributeValue) === 'string'
+  return typeof (attributeValue) === 'string'
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 
