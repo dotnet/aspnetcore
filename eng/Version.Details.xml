@@ -392,9 +392,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>1d451c32dda2314c721adbf8829e1c0cd4e681ff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Telemetry.Testing" Version="9.0.0-alpha.1.23470.2">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-alpha.1.23508.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>1ade1d7aa719b4ff7b98118a3699fbd3c38c35fe</Sha>
+      <Sha>88f776e836534c3303aab30afdf9e43f54727a48</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-alpha.1.23508.1">
       <Uri>https://github.com/dotnet/extensions</Uri>

@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
+    <DefineConstants>$(DefineConstants);COMPONENTS_WEBASSEMBLY</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
@@ -40,6 +41,8 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentManager.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" Link="Prerendering/ComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="Prerendering/WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />

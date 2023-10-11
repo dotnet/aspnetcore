@@ -126,6 +126,11 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
       url.search = new URLSearchParams(formData as any).toString();
+
+      // For forms with method=get, we need to push a URL history entry equivalent to how it
+      // would be pushed for a native <form method=get> submission. This is also equivalent to
+      // how we push a URL history entry before starting enhanced page load on an <a> click.
+      history.pushState(null, /* ignored title */ '', url.toString());
     } else {
       fetchOptions.body = formData;
     }
@@ -153,6 +158,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       'accept': 'text/html;blazor-enhanced-nav=on',
     },
   }, fetchOptions));
+  let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
   await getResponsePartsWithFraming(responsePromise, abortSignal,
     (response, initialContent) => {
       const isGetRequest = !fetchOptions?.method || fetchOptions.method === 'get';
@@ -211,6 +217,10 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         return;
       }
 
+      if (!response.redirected && !isGetRequest && response.url !== location.href && isSuccessResponse) {
+        isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+      }
+
       const responseContentType = response.headers.get('content-type');
       if (responseContentType?.startsWith('text/html') && initialContent) {
         // For HTML responses, regardless of the status code, display it
@@ -256,6 +266,16 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
 
     performingEnhancedPageLoad = false;
     navigationEnhancementCallbacks.enhancedNavigationCompleted();
+
+    // For non-GET requests, the destination has to be the same URL you're already on, or result in a redirection
+    // (post/redirect/get). You're not allowed to POST to a different URL without redirecting, because then back/forwards
+    // won't work - we can't recreate the "Resubmit form?" behavior.
+    // See https://github.com/dotnet/aspnetcore/issues/50945
+    // The reason we delay throwing until after SSR completes is that SSR might include a redirection signal. If we get
+    // here without navigating away, it's an error.
+    if (isNonRedirectedPostToADifferentUrlMessage) {
+      throw new Error(isNonRedirectedPostToADifferentUrlMessage);
+    }
   }
 }
 
