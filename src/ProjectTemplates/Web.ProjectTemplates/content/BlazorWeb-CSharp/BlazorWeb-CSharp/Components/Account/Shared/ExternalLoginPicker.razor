@@ -31,7 +31,7 @@ else
 }
 
 @code {
-    private AuthenticationScheme[] externalLogins = Array.Empty<AuthenticationScheme>();
+    private AuthenticationScheme[] externalLogins = [];
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }

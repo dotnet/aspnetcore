@@ -252,7 +252,7 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "5500"
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -274,7 +274,7 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5001"
+      "replaces": "5501"
     },
     "iisHttpPort": {
       "type": "parameter",

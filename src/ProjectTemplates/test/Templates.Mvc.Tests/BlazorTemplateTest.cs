@@ -129,8 +129,8 @@ public class BlazorTemplateTest : LoggedTest
 
         if (args.Contains(ArgConstants.IndividualAuth))
         {
-            yield return new(BlazorTemplatePages.LoginUrl);
-            yield return new(BlazorTemplatePages.RegisterUrl);
+            yield return new(BlazorTemplatePages.Login);
+            yield return new(BlazorTemplatePages.Register);
             yield return new(BlazorTemplatePages.ForgotPassword);
             yield return new(BlazorTemplatePages.ResendEmailConfirmation);
         }
@@ -155,7 +155,7 @@ public class BlazorTemplateTest : LoggedTest
         if (!args.Contains(ArgConstants.IndividualAuth))
         {
             yield return BlazorTemplatePages.Auth;
-            yield return BlazorTemplatePages.LoginUrl;
+            yield return BlazorTemplatePages.Login;
         }
 
         if (args.Contains(ArgConstants.Empty))
@@ -200,13 +200,13 @@ public class BlazorTemplateTest : LoggedTest
 
     private class BlazorTemplatePages
     {
-        internal static readonly string Index = "";
-        internal static readonly string Weather = "weather";
-        internal static readonly string Counter = "counter";
-        internal static readonly string Auth = "auth";
-        internal static readonly string LoginUrl = "Account/Login";
-        internal static readonly string RegisterUrl = "Account/Register";
-        internal static readonly string ForgotPassword = "Account/ForgotPassword";
-        internal static readonly string ResendEmailConfirmation = "Account/ResendEmailConfirmation";
+        internal const string Index = "";
+        internal const string Weather = "weather";
+        internal const string Counter = "counter";
+        internal const string Auth = "auth";
+        internal const string Login = "Account/Login";
+        internal const string Register = "Account/Register";
+        internal const string ForgotPassword = "Account/ForgotPassword";
+        internal const string ResendEmailConfirmation = "Account/ResendEmailConfirmation";
     }
 }
