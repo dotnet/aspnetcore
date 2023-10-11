@@ -211,7 +211,10 @@ app.MapGet("/", TestAction);
     [MemberData(nameof(DefaultValues))]
     public async Task RequestDelegatePopulatesParametersWithDefaultValues(string type, string defaultValue, object expectedValue, bool declareConst)
     {
-        var source = declareConst ? $$"""
+        var source = string.Empty;
+        if (declareConst)
+        {
+            source = $$"""
 const {{type}} defaultConst = {{defaultValue}};
 static void TestAction(
     HttpContext context,
@@ -222,15 +225,20 @@ static void TestAction(
     context.Items.Add("parameterWithConst", parameterWithConst);
 }
 app.MapPost("/", TestAction);
-""" :$$"""
+""";
+        }
+        else
+        {
+            source = $$"""
 static void TestAction(
-   HttpContext context,
-   {{type}} parameterWithDefault = {{defaultValue}})
+HttpContext context,
+{{type}} parameterWithDefault = {{defaultValue}})
 {
-   context.Items.Add("parameterWithDefault", parameterWithDefault);
+context.Items.Add("parameterWithDefault", parameterWithDefault);
 }
 app.MapPost("/", TestAction);
 """;
+        }
 
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);

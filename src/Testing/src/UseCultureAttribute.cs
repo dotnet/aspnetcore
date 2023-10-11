@@ -4,6 +4,7 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using Xunit.Sdk;
+
 namespace Microsoft.AspNetCore.Testing;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
@@ -15,13 +16,16 @@ public sealed class UseCultureAttribute : BeforeAfterTestAttribute
         : this(culture, culture)
     {
     }
+
     public UseCultureAttribute(string culture, string uiCulture)
     {
         Culture = new CultureInfo(culture);
         UiCulture = new CultureInfo(uiCulture);
     }
+
     public CultureInfo Culture { get; }
     public CultureInfo UiCulture { get; }
+
     public override void Before(MethodInfo methodUnderTest)
     {
         _originalCulture = CultureInfo.CurrentCulture;
@@ -29,6 +33,7 @@ public sealed class UseCultureAttribute : BeforeAfterTestAttribute
         CultureInfo.CurrentCulture = Culture;
         CultureInfo.CurrentUICulture = UiCulture;
     }
+
     public override void After(MethodInfo methodUnderTest)
     {
         CultureInfo.CurrentCulture = _originalCulture;
