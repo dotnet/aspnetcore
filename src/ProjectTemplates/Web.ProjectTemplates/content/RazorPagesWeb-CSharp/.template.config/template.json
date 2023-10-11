@@ -6,7 +6,7 @@
     "MVC",
     "Razor Pages"
   ],
-  "name": "ASP.NET Core Web App",
+  "name": "ASP.NET Core Web App (Razor Pages)",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
