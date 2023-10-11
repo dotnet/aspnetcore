@@ -46,6 +46,13 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private const int MaxStreamPoolSize = 100;
     private readonly TimeSpan StreamPoolExpiry = TimeSpan.FromSeconds(5);
 
+    /// Increase this value to be more lenient (disconnect fewer clients).
+    /// A non-positive value will disable the limit.
+    /// The default value is 20, which was determined empirically using a toy attack client.
+    /// The count is measured across a (non-configurable) 5 tick (i.e. second) window:
+    /// if the count ever exceeds 5 * the limit, the connection is aborted.
+    /// Note that this means that the limit can kick in before 5 ticks have elapsed.
+    /// See <see cref="EnhanceYourCalmTickWindowCount"/>.
     private const string MaximumEnhanceYourCalmCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxEnhanceYourCalmCount";
 
     private static readonly int _enhanceYourCalmMaximumCount = GetMaximumEnhanceYourCalmCount();
@@ -69,7 +76,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     // This should make bursts less likely to trigger disconnects.
     private const int EnhanceYourCalmTickWindowCount = 5;
 
-    private static bool IsEnhanceYourCalmEnabled => _enhanceYourCalmMaximumCount > 0;
+    private static bool IsEnhanceYourCalmLimitEnabled => _enhanceYourCalmMaximumCount > 0;
 
     private readonly HttpConnectionContext _context;
     private readonly ConnectionMetricsContext _metricsContext;
@@ -395,7 +402,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 // Since we're making a narrow fix for a patch, we'll bypass it in such scenarios.
                 // TODO: This is probably a bug - something in here should probably detect aborted
                 // connections and short-circuit.
-                if (!IsEnhanceYourCalmEnabled || error is not Http2ConnectionErrorException)
+                if (!IsEnhanceYourCalmLimitEnabled || error is not Http2ConnectionErrorException)
                 {
                     // Use the server _serverActiveStreamCount to drain all requests on the server side.
                     // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
@@ -1212,7 +1219,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 // Tell client to calm down.
                 // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
 
-                if (IsEnhanceYourCalmEnabled && Interlocked.Increment(ref _enhanceYourCalmCount) > EnhanceYourCalmTickWindowCount * _enhanceYourCalmMaximumCount)
+                if (IsEnhanceYourCalmLimitEnabled && Interlocked.Increment(ref _enhanceYourCalmCount) > EnhanceYourCalmTickWindowCount * _enhanceYourCalmMaximumCount)
                 {
                     Log.Http2TooManyEnhanceYourCalms(_context.ConnectionId, _enhanceYourCalmMaximumCount);
 
@@ -1299,7 +1306,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Input.CancelPendingRead();
         // We count EYCs over a window of a given length to avoid flagging short-lived bursts.
         // At the end of each window, reset the count.
-        if (IsEnhanceYourCalmEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
+        if (IsEnhanceYourCalmLimitEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
         {
             Interlocked.Exchange(ref _enhanceYourCalmCount, 0);
         }
