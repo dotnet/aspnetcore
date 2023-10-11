@@ -93,7 +93,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var originalH1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => originalH1Elem.Text);
 
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (no enhanced nav)")).Click();
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("not-enhanced-nav-link")).Click();
 
         // Check we got there, but we did *not* retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);

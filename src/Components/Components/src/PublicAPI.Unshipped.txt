@@ -26,7 +26,6 @@ Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Excep
 *REMOVED*Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string! relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.Rendering.ComponentState.LogicalParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
 *REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object!>! routeValues) -> void
 *REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
