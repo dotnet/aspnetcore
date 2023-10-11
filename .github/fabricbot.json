@@ -1520,7 +1520,7 @@
             ]
           },
           {
-            "label": "area-web-frameworks",
+            "label": "area-mvc",
             "pathFilter": [
               "src/Mvc/Mvc.Abstractions/",
               "src/Mvc/Mvc.Analyzers/",
