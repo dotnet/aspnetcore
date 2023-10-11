@@ -28,7 +28,7 @@ Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relative
 Microsoft.AspNetCore.Components.Rendering.ComponentState.LogicalParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
 *REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteData(System.Type! pageType, System.Collections.Generic.IReadOnlyDictionary<string!, object!>! routeValues) -> void
 *REMOVED*Microsoft.AspNetCore.Components.RouteData.RouteValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddNamedEvent(string! eventType, string! assignedName) -> void
 Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags
 Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags.HasCallerSpecifiedRenderMode = 1 -> Microsoft.AspNetCore.Components.RenderTree.ComponentFrameFlags

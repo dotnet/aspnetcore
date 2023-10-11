@@ -15,6 +15,8 @@
     ##endif*@
     @*#if (!InteractiveAtRoot)
     <HeadOutlet />
+    ##elseif (IndividualLocalAuth)
+    <HeadOutlet @rendermode="@RenderModeForPage" />
     ##elseif (UseServer && UseWebAssembly)
     <HeadOutlet @rendermode="@InteractiveAuto" />
     ##elseif (UseServer)
@@ -27,7 +29,9 @@
 <body>
     @*#if (!InteractiveAtRoot)
     <Routes />
-    ##elseif (UseServer && UseWebAssembly) -->
+    ##elseif (IndividualLocalAuth)
+    <Routes @rendermode="@RenderModeForPage" />
+    ##elseif (UseServer && UseWebAssembly)
     <Routes @rendermode="@InteractiveAuto" />
     ##elseif (UseServer)
     <Routes @rendermode="@InteractiveServer" />
@@ -38,3 +42,35 @@
 </body>
 
 </html>
+@*#if (!InteractiveAtRoot || !IndividualLocalAuth)
+#elseif (UseServer && UseWebAssembly)
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : InteractiveAuto;
+}
+#elseif (UseServer)
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : InteractiveServer;
+}
+#else
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : InteractiveWebAssembly;
+}
+#endif*@

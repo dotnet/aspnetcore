@@ -16,7 +16,7 @@
 {
     @if (_succeeded)
     {
-        <p id="pass">Posting the value succeded.</p>
+        <p id="pass">Posting the value succeeded.</p>
     }
     else
     {
@@ -42,7 +42,7 @@ else
         if (OperatingSystem.IsBrowser())
         {
             var antiforgery = AntiforgeryState.GetAntiforgeryToken();
-            _token = antiforgery.Value;            
+            _token = antiforgery.Value;
         }
     }
 
