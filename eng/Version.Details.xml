@@ -396,7 +396,7 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>3e6ac0735cb62d4c8b63e131d956397a87ea26f7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-alpha.1.23508.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-alpha.1.23508.4">
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>88f776e836534c3303aab30afdf9e43f54727a48</Sha>
     </Dependency>
