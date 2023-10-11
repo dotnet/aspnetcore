@@ -22,8 +22,7 @@ public static class RateLimiterServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.AddMetrics();
-        services.AddSingleton<RateLimitingMetrics>();
+        services.AddRateLimiter();
         services.Configure(configureOptions);
         return services;
     }
