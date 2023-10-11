@@ -64,7 +64,7 @@
             Logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", userId);
             RedirectManager.RedirectTo(ReturnUrl);
         }
-        if (result.IsLockedOut)
+        else if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");

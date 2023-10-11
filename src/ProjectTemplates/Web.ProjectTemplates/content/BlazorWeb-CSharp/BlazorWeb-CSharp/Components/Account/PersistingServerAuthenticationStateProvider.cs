@@ -40,7 +40,7 @@ internal sealed class PersistingServerAuthenticationStateProvider : ServerAuthen
     {
         if (authenticationStateTask is null)
         {
-            throw new UnreachableException($"Authentication state not set in {nameof(RevalidatingServerAuthenticationStateProvider)}.{nameof(OnPersistingAsync)}().");
+            throw new UnreachableException($"Authentication state not set in {nameof(OnPersistingAsync)}().");
         }
 
         var authenticationState = await authenticationStateTask;
