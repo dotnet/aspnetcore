@@ -53,6 +53,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     /// if the count ever exceeds 5 * the limit, the connection is aborted.
     /// Note that this means that the limit can kick in before 5 ticks have elapsed.
     /// See <see cref="EnhanceYourCalmTickWindowCount"/>.
+    /// TODO (https://github.com/dotnet/aspnetcore/issues/51308): make this configurable.
     private const string MaximumEnhanceYourCalmCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxEnhanceYourCalmCount";
 
     private static readonly int _enhanceYourCalmMaximumCount = GetMaximumEnhanceYourCalmCount();
@@ -398,10 +399,8 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                     stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                 }
 
+                // TODO (https://github.com/dotnet/aspnetcore/issues/51307):
                 // For some reason, this loop doesn't terminate when we're trying to abort.
-                // Since we're making a narrow fix for a patch, we'll bypass it in such scenarios.
-                // TODO: This is probably a bug - something in here should probably detect aborted
-                // connections and short-circuit.
                 if (!IsEnhanceYourCalmLimitEnabled || error is not Http2ConnectionErrorException)
                 {
                     // Use the server _serverActiveStreamCount to drain all requests on the server side.

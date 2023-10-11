@@ -27,6 +27,7 @@ internal sealed class Http2FrameWriter
     /// That is, the default value is 800, unless <see cref="Http2Limits.MaxStreamsPerConnection"/> is modified.
     /// Choosing a value lower than the maximum number of tracked streams doesn't make sense,
     /// so such values will be adjusted upward.
+    /// TODO (https://github.com/dotnet/aspnetcore/issues/51309): eliminate this limit.
     private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
 
     private static readonly int? AppContextMaximumFlowControlQueueSize = GetAppContextMaximumFlowControlQueueSize();
