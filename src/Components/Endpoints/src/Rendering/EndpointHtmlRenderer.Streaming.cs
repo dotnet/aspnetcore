@@ -39,6 +39,11 @@ internal partial class EndpointHtmlRenderer
 
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
+        // Important: do not introduce any 'await' statements in this method above the point where we write
+        // the SSR framing markers, otherwise batches may be emitted before the framing makers, and then the
+        // response would be invalid. See the comment below indicating the point where we intentionally yield
+        // the sync context to allow SSR batches to begin being emitted.
+
         SetHttpContext(httpContext);
 
         if (_streamingUpdatesWriter is not null)
@@ -56,9 +61,11 @@ internal partial class EndpointHtmlRenderer
 
         try
         {
-            await writer.WriteAsync(_ssrFramingCommentMarkup);
-            await EmitInitializersIfNecessary(httpContext, writer);
-            await writer.FlushAsync(); // Make sure the initial HTML was sent
+            writer.Write(_ssrFramingCommentMarkup);
+            EmitInitializersIfNecessary(httpContext, writer);
+
+            // At this point we yield the sync context. SSR batches may then be emitted at any time.
+            await writer.FlushAsync(); 
             await untilTaskCompleted;
         }
         catch (NavigationException navigationException)
@@ -77,15 +84,15 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    internal async Task EmitInitializersIfNecessary(HttpContext httpContext, TextWriter writer)
+    internal void EmitInitializersIfNecessary(HttpContext httpContext, TextWriter writer)
     {
         if (_options.JavaScriptInitializers != null &&
             !IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var initializersBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.JavaScriptInitializers));
-            await writer.WriteAsync("<!--Blazor-Web-Initializers:");
-            await writer.WriteAsync(initializersBase64);
-            await writer.WriteAsync("-->");
+            writer.Write("<!--Blazor-Web-Initializers:");
+            writer.Write(initializersBase64);
+            writer.Write("-->");
         }
     }
 

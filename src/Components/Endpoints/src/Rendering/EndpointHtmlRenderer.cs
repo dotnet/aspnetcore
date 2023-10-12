@@ -139,6 +139,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (_streamingUpdatesWriter is { } writer)
         {
+            // Important: SendBatchAsStreamingUpdate *must* be invoked synchronously
+            // before any 'await' in this method. That's enforced by the compiler
+            // (the method has an 'in' parameter) but even if it wasn't, it would still
+            // be important, because the RenderBatch buffers may be overwritten as soon
+            // as we yield the sync context. The only alternative would be to clone the
+            // batch deeply, or serialize it synchronously (e.g., via RenderBatchWriter).
             SendBatchAsStreamingUpdate(renderBatch, writer);
             return FlushThenComplete(writer, base.UpdateDisplayAsync(renderBatch));
         }
