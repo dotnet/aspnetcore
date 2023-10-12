@@ -12,10 +12,10 @@ export class WebAssemblyComponentAttacher {
     this.componentManager = componentManager;
   }
 
-  public resolveRegisteredElement(id: string, componentId: number): LogicalElement | undefined {
+  public resolveRegisteredElement(id: string): LogicalElement | undefined {
     const parsedId = Number.parseInt(id);
     if (!Number.isNaN(parsedId)) {
-      const component = this.componentManager.resolveRootComponent(parsedId, componentId);
+      const component = this.componentManager.resolveRootComponent(parsedId);
       return toLogicalRootCommentElement(component);
     } else {
       return undefined;

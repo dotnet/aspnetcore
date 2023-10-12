@@ -127,7 +127,6 @@
             "wwwroot/css/bootstrap/**",
             "wwwroot/css/bootstrap-icons/**",
             "wwwroot/favicon.png",
-            "wwwroot/icon*.png",
             "wwwroot/sample-data/weather.json"
           ]
         }

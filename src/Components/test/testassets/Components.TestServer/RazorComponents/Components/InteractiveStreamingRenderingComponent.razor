@@ -37,17 +37,30 @@ else
     <p>
         When running this page manually, you can click the links normally and the page will refresh after each action.
     </p>
-    <a id="start-streaming-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: true)">Start streaming</a>
+    <a id="start-streaming-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: true, disableKeys: DisableKeys)">Start streaming</a>
 }
+
+<p>
+    @if (DisableKeys)
+    {
+        <a id="enable-keys-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: ShouldStream, disableKeys: false)">Use keys</a>
+    }
+    else
+    {
+        <a id="disable-keys-link" href="@GetEnhancedNavigationUrl(_state, shouldStream: ShouldStream, disableKeys: true)">Disable keys</a>
+    }
+</p>
 
 <div>
     @foreach (var counter in _state.Counters)
     {
         <hr />
 
+        object key = DisableKeys ? null : counter.Id;
+
         <Counter
             @rendermode="@GetRenderMode(counter.RenderModeId)"
-            @key="@counter.Id"
+            @key="@key"
             IdSuffix="@counter.Id.ToString()"
             IncrementAmount="counter.IncrementAmount"
             DisposeBrowserConsoleMessage="@($"Counter {counter.Id} was disposed")" />
@@ -82,7 +95,6 @@ else
 </div>
 
 @code {
-
     static Channel<ComponentState> StreamingStateChannel;
 
     ComponentState _state = new(ImmutableArray<CounterInfo>.Empty, NextCounterId: 0);
@@ -93,6 +105,9 @@ else
 
     [SupplyParameterFromQuery]
     public bool ShouldStream { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool DisableKeys { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,7 +157,7 @@ else
         }
         else
         {
-            var url = GetEnhancedNavigationUrl(state, shouldStream: false);
+            var url = GetEnhancedNavigationUrl(state, shouldStream: false, disableKeys: DisableKeys);
             return @<a id="@id" href="@url">@text</a>;
         }
     }
@@ -166,10 +181,13 @@ else
         return $"streaming-interactivity/update-state?state={stateJson}";
     }
 
-    private static string GetEnhancedNavigationUrl(ComponentState state, bool shouldStream)
+    private static string GetEnhancedNavigationUrl(ComponentState state, bool shouldStream, bool disableKeys)
     {
         var stateJson = GetEscapedStateJson(state);
-        return $"streaming-interactivity?{nameof(InitialState)}={stateJson}&{nameof(ShouldStream)}={shouldStream}";
+        return "streaming-interactivity" +
+            $"?{nameof(InitialState)}={stateJson}" +
+            $"&{nameof(ShouldStream)}={shouldStream}" +
+            $"&{nameof(DisableKeys)}={disableKeys}";
     }
 
     private static IComponentRenderMode GetRenderMode(RenderModeId renderMode)

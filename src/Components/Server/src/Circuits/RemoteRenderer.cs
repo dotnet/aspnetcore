@@ -70,12 +70,6 @@ internal partial class RemoteRenderer : WebRenderer
         _ = CaptureAsyncExceptions(attachComponentTask);
     }
 
-    internal Task UpdateRootComponentAsync(int componentId, ParameterView initialParameters) =>
-        RenderRootComponentAsync(componentId, initialParameters);
-
-    internal void RemoveExistingRootComponent(int componentId) =>
-        RemoveRootComponent(componentId);
-
     internal Type GetExistingComponentType(int componentId) =>
         GetComponentState(componentId).Component.GetType();
 

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -36,19 +35,28 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
     private void OnUpdateRootComponents(OperationDescriptor[] operations)
     {
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
         for (var i = 0; i < operations.Length; i++)
         {
             var (operation, componentType, parameters) = operations[i];
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    _ = AddComponentAsync(componentType!, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
+                        componentType!,
+                        operation.Marker!.Value.Key!,
+                        parameters);
                     break;
                 case RootComponentOperationType.Update:
-                    _ = RenderRootComponentAsync(operation.ComponentId!.Value, parameters);
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.SsrComponentId,
+                        componentType!,
+                        operation.Marker?.Key,
+                        parameters);
                     break;
                 case RootComponentOperationType.Remove:
-                    RemoveRootComponent(operation.ComponentId!.Value);
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
         }
