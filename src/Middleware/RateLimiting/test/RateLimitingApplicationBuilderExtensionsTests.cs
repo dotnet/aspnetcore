@@ -63,7 +63,7 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
     }
 
     [Fact]
-    public void UseRateLimiter_DoNotThrowWithoutOptions()
+    public async Task UseRateLimiter_DoNotThrowWithoutOptions()
     {
         var services = new ServiceCollection();
         services.AddRateLimiter();
@@ -72,9 +72,12 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
         var appBuilder = new ApplicationBuilder(serviceProvider);
 
         // Act
-        appBuilder.UseRateLimiter(options);
+        appBuilder.UseRateLimiter();
         var app = appBuilder.Build();
         var context = new DefaultHttpContext();
-        Assert.DoesNotThrow(() => app.Invoke(context));
+        var exception = await Record.ExceptionAsync(() => app.Invoke(context));
+
+        // Assert
+        Assert.Null(exception);
     }
 }
