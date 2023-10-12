@@ -100,22 +100,10 @@ Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.Interactive
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.InteractiveWebAssemblyRenderMode(bool prerender) -> void
 Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.Prerender.get -> bool
 Microsoft.AspNetCore.Components.Web.RenderMode
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveAutoAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveAutoAttribute.RenderModeInteractiveAutoAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveAutoAttribute.RenderModeInteractiveAutoAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveServerAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveServerAttribute.RenderModeInteractiveServerAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveServerAttribute.RenderModeInteractiveServerAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveWebAssemblyAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveWebAssemblyAttribute.RenderModeInteractiveWebAssemblyAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeInteractiveWebAssemblyAttribute.RenderModeInteractiveWebAssemblyAttribute(bool prerender) -> void
 override Microsoft.AspNetCore.Components.Forms.Editor<T>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.Web.RenderModeInteractiveAutoAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-override Microsoft.AspNetCore.Components.Web.RenderModeInteractiveServerAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-override Microsoft.AspNetCore.Components.Web.RenderModeInteractiveWebAssemblyAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 static Microsoft.AspNetCore.Components.Forms.Mapping.SupplyParameterFromFormServiceCollectionExtensions.AddSupplyValueFromFormProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveAuto.get -> Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode!
 static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer.get -> Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode!

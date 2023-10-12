@@ -726,7 +726,7 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     internal Task UpdateRootComponents(
-        CircuitRootComponentOperation[] operations,
+        RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
         IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
@@ -737,6 +737,8 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
             var shouldClearStore = false;
+            var operations = operationBatch.Operations;
+            var batchId = operationBatch.BatchId;
             Task[]? pendingTasks = null;
             try
             {
@@ -785,7 +787,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             var task = webRootComponentManager.AddRootComponentAsync(
                                 operation.SsrComponentId,
                                 operation.Descriptor.ComponentType,
-                                operation.Descriptor.Key,
+                                operation.Marker.Value.Key,
                                 operation.Descriptor.Parameters);
                             if (pendingTasks != null)
                             {
@@ -797,7 +799,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             _ = webRootComponentManager.UpdateRootComponentAsync(
                                 operation.SsrComponentId,
                                 operation.Descriptor.ComponentType,
-                                operation.Descriptor.Key,
+                                operation.Marker.Value.Key,
                                 operation.Descriptor.Parameters);
                             break;
                         case RootComponentOperationType.Remove:
@@ -810,6 +812,8 @@ internal partial class CircuitHost : IAsyncDisposable
                 {
                     await Task.WhenAll(pendingTasks);
                 }
+
+                await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
                 Log.UpdateRootComponentsSucceeded(_logger);
             }

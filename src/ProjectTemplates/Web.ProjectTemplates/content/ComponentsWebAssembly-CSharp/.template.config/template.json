@@ -72,13 +72,13 @@
         {
           "condition": "(NoAuth)",
           "rename": {
-            "Components/Layout/MainLayout.NoAuth.razor": "Components/Layout/MainLayout.razor"
+            "Layout/MainLayout.NoAuth.razor": "Layout/MainLayout.razor"
           },
           "exclude": [
-            "Components/Pages/Authentication.razor",
-            "Components/Login/LoginDisplay.razor",
-            "Components/Layout/MainLayout.Auth.razor",
-            "Components/Login/RedirectToLogin.razor",
+            "Pages/Authentication.razor",
+            "Layout/LoginDisplay.razor",
+            "Layout/MainLayout.Auth.razor",
+            "Layout/RedirectToLogin.razor",
             "wwwroot/appsettings.Development.json",
             "wwwroot/appsettings.json"
           ]
@@ -86,29 +86,29 @@
         {
           "condition": "(!NoAuth)",
           "rename": {
-            "Components/Layout/MainLayout.Auth.razor": "Components/Layout/MainLayout.razor"
+            "Layout/MainLayout.Auth.razor": "Layout/MainLayout.razor"
           },
           "exclude": [
-            "Components/Layout/MainLayout.NoAuth.razor"
+            "Layout/MainLayout.NoAuth.razor"
           ]
         },
         {
           "condition": "(!GenerateApi)",
           "rename": {
-            "Components/Layout/NavMenu.NoApi.razor": "Components/Layout/NavMenu.razor"
+            "Layout/NavMenu.NoApi.razor": "Layout/NavMenu.razor"
           },
           "exclude": [
-            "Components/Pages/CallWebApi.razor",
-            "Components/Layout/NavMenu.CallsWebApi.razor"
+            "Pages/CallWebApi.razor",
+            "Layout/NavMenu.CallsWebApi.razor"
           ]
         },
         {
           "condition": "(GenerateApi)",
           "rename": {
-            "Components/Layout/NavMenu.CallsWebApi.razor": "Components/Layout/NavMenu.razor"
+            "Layout/NavMenu.CallsWebApi.razor": "Layout/NavMenu.razor"
           },
           "exclude": [
-            "Components/Layout/NavMenu.NoApi.razor"
+            "Layout/NavMenu.NoApi.razor"
           ]
         },
         {
@@ -120,10 +120,10 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
-            "Components/Pages/Counter.*",
-            "Components/Pages/Weather.*",
-            "Components/Layout/MainLayout.razor.css",
-            "Components/Layout/NavMenu.*",
+            "Pages/Counter.*",
+            "Pages/Weather.*",
+            "Layout/MainLayout.razor.css",
+            "Layout/NavMenu.*",
             "wwwroot/css/bootstrap/**",
             "wwwroot/css/bootstrap-icons/**",
             "wwwroot/favicon.png",

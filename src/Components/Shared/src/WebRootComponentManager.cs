@@ -50,9 +50,10 @@ internal partial class WebAssemblyRenderer
                 throw new InvalidOperationException($"A root component with SSR component ID {ssrComponentId} already exists.");
             }
 
-            var component = await WebRootComponent.CreateAndRenderAsync(renderer, componentType, ssrComponentId, key, parameters);
-
+            var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
             _webRootComponents.Add(ssrComponentId, component);
+
+            await component.RenderAsync(renderer);
         }
 
         public Task UpdateRootComponentAsync(
@@ -92,7 +93,7 @@ internal partial class WebAssemblyRenderer
             private WebRootComponentParameters _latestParameters;
             private int _interactiveComponentId;
 
-            public static async Task<WebRootComponent> CreateAndRenderAsync(
+            public static WebRootComponent Create(
                 Renderer renderer,
                 [DynamicallyAccessedMembers(Component)] Type componentType,
                 int ssrComponentId,
@@ -106,8 +107,6 @@ internal partial class WebAssemblyRenderer
 
                 var ssrComponentIdString = ssrComponentId.ToString(CultureInfo.InvariantCulture);
                 var interactiveComponentId = renderer.AddRootComponent(componentType, ssrComponentIdString);
-
-                await renderer.RenderRootComponentAsync(interactiveComponentId, initialParameters.Parameters);
 
                 return new(componentType, ssrComponentIdString, key.Value, interactiveComponentId, initialParameters);
             }
@@ -154,7 +153,7 @@ internal partial class WebAssemblyRenderer
                     // We can supply new parameters if the key has a @key value, because that means the client
                     // opted in to dynamic parameter updates.
                     _latestParameters = newParameters;
-                    return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                    return RenderAsync(renderer);
                 }
                 else
                 {
@@ -172,10 +171,13 @@ internal partial class WebAssemblyRenderer
                         renderer.RemoveRootComponent(_interactiveComponentId);
                         _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
                         _latestParameters = newParameters;
-                        return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+                        return RenderAsync(renderer);
                     }
                 }
             }
+
+            public Task RenderAsync(Renderer renderer)
+                => renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
 
             public void Remove(Renderer renderer)
             {

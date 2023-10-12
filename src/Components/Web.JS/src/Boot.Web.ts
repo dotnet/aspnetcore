@@ -20,6 +20,11 @@ import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
 import { JSEventRegistry } from './Services/JSEventRegistry';
+import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
+import { ConsoleLogger } from './Platform/Logging/Loggers';
+import { LogLevel } from './Platform/Logging/Logger';
+import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
+import { JSInitializer } from './JSInitializers/JSInitializers';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -30,7 +35,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   }
 
   started = true;
-
+  options = options || {};
+  options.logLevel ??= LogLevel.Error;
   Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
 
   // Defined here to avoid inadvertently imported enhanced navigation
@@ -40,9 +46,6 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
       performProgrammaticEnhancedNavigation(location.href, true);
     }
   };
-
-  setCircuitOptions(options?.circuit);
-  setWebAssemblyOptions(options?.webAssembly);
 
   rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
   const jsEventRegistry = JSEventRegistry.create(Blazor);
@@ -68,17 +71,40 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   // If stream rendering is used, this helps to ensure that only the final set of interactive
   // components produced by the stream render actually get activated for interactivity.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded);
+    document.addEventListener('DOMContentLoaded', onInitialDomContentLoaded.bind(null, options));
   } else {
-    onInitialDomContentLoaded();
+    onInitialDomContentLoaded(options);
   }
 
   return Promise.resolve();
 }
 
-function onInitialDomContentLoaded() {
+function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
+
+  // Retrieve and start invoking the initializers.
+  // Blazor server options get defaults that are configured before we invoke the initializers
+  // so we do the same here.
+  const initialCircuitOptions = resolveOptions(options?.circuit || {});
+  options.circuit = initialCircuitOptions;
+  const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
+  const initializersPromise = fetchAndInvokeInitializers(options, logger);
+  setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
+  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options?.webAssembly || {}));
+
   registerAllComponentDescriptors(document);
   rootComponentManager.onDocumentUpdated();
+
+  callAfterStartedCallbacks(initializersPromise);
+}
+
+async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {
+  await initializers;
+  return options;
+}
+
+async function callAfterStartedCallbacks(initializersPromise: Promise<JSInitializer>): Promise<void> {
+  const initializers = await initializersPromise;
+  await initializers.invokeAfterStartedCallbacks(Blazor);
 }
 
 Blazor.start = boot;

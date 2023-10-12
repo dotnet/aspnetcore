@@ -188,7 +188,7 @@ internal sealed class OpenApiGenerator
 
         if (eligibileAnnotations.Count == 0)
         {
-            GenerateDefaultResponses(eligibileAnnotations, responseType);
+            GenerateDefaultResponses(eligibileAnnotations, responseType!);
         }
 
         foreach (var annotation in eligibileAnnotations)

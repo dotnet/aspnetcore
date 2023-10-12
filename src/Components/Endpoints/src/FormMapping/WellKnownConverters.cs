@@ -46,6 +46,7 @@ internal static class WellKnownConverters
             { typeof(IFormFileCollection), new FileConverter<IFormFileCollection>() },
             { typeof(IFormFile), new FileConverter<IFormFile>() },
             { typeof(IReadOnlyList<IFormFile>), new FileConverter<IReadOnlyList<IFormFile>>() },
+            { typeof(Uri), new UriFormDataConverter() },
 #if COMPONENTS
             { typeof(IBrowserFile), new FileConverter<IBrowserFile>() },
             { typeof(IReadOnlyList<IBrowserFile>), new FileConverter<IReadOnlyList<IBrowserFile>>() }

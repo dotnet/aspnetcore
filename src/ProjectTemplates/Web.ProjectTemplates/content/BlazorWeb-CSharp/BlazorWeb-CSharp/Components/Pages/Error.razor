@@ -25,7 +25,8 @@
 </p>
 
 @code{
-    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
 
     public string? RequestId { get; set; }
     public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);

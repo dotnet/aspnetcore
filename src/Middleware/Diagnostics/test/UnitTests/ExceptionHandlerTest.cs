@@ -962,7 +962,7 @@ public class ExceptionHandlerTest
             {
                 Assert.True(m.Value > 0);
                 Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
-                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
             });
     }
 }

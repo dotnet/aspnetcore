@@ -54,8 +54,6 @@
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
-            "BlazorWeb-CSharp/wwwroot/appsettings.json",
             "BlazorWeb-CSharp.Client/**",
             "*.sln"
           ],
@@ -67,7 +65,8 @@
           "condition": "(UseWebAssembly && InteractiveAtRoot)",
           "rename": {
             "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
-            "BlazorWeb-CSharp/Components/Pages/": "./BlazorWeb-CSharp.Client/Pages/",
+            "BlazorWeb-CSharp/Components/Pages/Home.razor": "./BlazorWeb-CSharp.Client/Pages/Home.razor",
+            "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
             "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
           }
         },
@@ -101,6 +100,7 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Auth.*",
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
@@ -113,12 +113,8 @@
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Identity/**",
-            "BlazorWeb-CSharp/Components/Layout/ManageLayout.razor",
-            "BlazorWeb-CSharp/Components/Layout/ManageNavMenu.razor",
-            "BlazorWeb-CSharp/Components/Pages/Account/**",
+            "BlazorWeb-CSharp/Components/Account/**",
             "BlazorWeb-CSharp/Data/**",
-            "BlazorWeb-CSharp/Identity/**",
             "BlazorWeb-CSharp.Client/PersistentAuthenticationStateProvider.cs",
             "BlazorWeb-CSharp.Client/UserInfo.cs",
             "BlazorWeb-CSharp.Client/Pages/Auth.razor"
@@ -127,7 +123,7 @@
         {
           "condition": "(!(IndividualLocalAuth && !UseLocalDB))",
           "exclude": [
-            "BlazorWeb-CSharp/app.db"
+            "BlazorWeb-CSharp/Data/app.db"
           ]
         },
         {
@@ -139,19 +135,19 @@
         {
           "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Identity/PersistingRevalidatingAuthenticationStateProvider.cs"
+            "BlazorWeb-CSharp/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Identity/IdentityRevalidatingAuthenticationStateProvider.cs"
+            "BlazorWeb-CSharp/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Identity/PersistingServerAuthenticationStateProvider.cs"
+            "BlazorWeb-CSharp/Components/Account/PersistingServerAuthenticationStateProvider.cs"
           ]
         },
         {
@@ -189,6 +185,12 @@
           "exclude": [
             "BlazorWeb-CSharp/Data/SqlServer/**"
           ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Components/Account/Shared/RedirectToLogin.razor": "BlazorWeb-CSharp.Client/RedirectToLogin.razor"
+          }
         }
       ]
     }
@@ -250,7 +252,7 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "5500"
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -272,7 +274,7 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5001"
+      "replaces": "5501"
     },
     "iisHttpPort": {
       "type": "parameter",
@@ -318,8 +320,8 @@
       "type": "parameter",
       "datatype": "choice",
       "defaultValue": "Server",
-      "displayName": "_Interactivity type",
-      "description": "Chooses which hosting platform to use for interactive components",
+      "displayName": "_Interactive render mode",
+      "description": "Chooses which interactive render mode to use for interactive components",
       "choices": [
         {
           "choice": "None",
@@ -349,7 +351,7 @@
       "defaultValue": "InteractivePerPage",
       "displayName": "_Interactivity location",
       "description": "Chooses which components will have interactive rendering enabled",
-      "isEnabled": "(InteractivityPlatform != \"None\" && auth == \"None\")",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
       "choices": [
         {
           "choice": "InteractivePerPage",
@@ -413,7 +415,7 @@
     "AllInteractive": {
       "type": "parameter",
       "datatype": "bool",
-      "isEnabled": "(InteractivityPlatform != \"None\" && auth == \"None\")",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
       "defaultValue": "false",
       "displayName": "_Enable interactive rendering globally throughout the site",
       "description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis."
