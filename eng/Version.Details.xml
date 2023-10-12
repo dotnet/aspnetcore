@@ -9,37 +9,37 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="dotnet-ef" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rtm.23512.5">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="8.0.0-rtm.23512.13">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>33a597dcf7215756321f9aa84d70fb2a759815f3</Sha>
+      <Sha>1d29890953a5b66818d9bee16d41799ff963b687</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-rtm.23511.16">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -397,13 +397,13 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>1d451c32dda2314c721adbf8829e1c0cd4e681ff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="8.0.0-rtm.23510.3">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="8.0.0-rtm.23511.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>b271fee0e6035d99ce19714b9579736172260758</Sha>
+      <Sha>fbe530f75bd8cdc484a6d9badd6a90461c8aac64</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rtm.23510.3">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0-rtm.23511.3">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>b271fee0e6035d99ce19714b9579736172260758</Sha>
+      <Sha>fbe530f75bd8cdc484a6d9badd6a90461c8aac64</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
