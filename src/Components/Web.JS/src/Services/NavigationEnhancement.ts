@@ -162,7 +162,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     headers: {
       // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
       // enhanced nav as a MIME type parameter
-      'accept': 'text/html;blazor-enhanced-nav=on',
+      'accept': 'text/html; blazor-enhanced-nav=on',
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
