@@ -7,7 +7,7 @@
 @if (Mode == "server" || Mode == "server-and-wasm")
 {
     <h2>Server</h2>
-    <TestContentPackage.ComponentWithLocationChanged Id="server" @rendermode="@RenderMode.InteractiveServer" />
+    <TestContentPackage.ComponentWithLocationChanged Id="server" @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
 }
 
 <br/>
@@ -15,7 +15,7 @@
 @if (Mode == "wasm" || Mode == "server-and-wasm")
 {
     <h2>WebAssembly</h2>
-    <TestContentPackage.ComponentWithLocationChanged Id="wasm" @rendermode="@RenderMode.InteractiveWebAssembly" />
+    <TestContentPackage.ComponentWithLocationChanged Id="wasm" @rendermode="@(new InteractiveWebAssemblyRenderMode(prerender: false))" />
 }
 
 @code {
