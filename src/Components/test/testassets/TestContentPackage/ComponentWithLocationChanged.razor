@@ -8,6 +8,8 @@
 
 <p>Current URL: <span id="nav-uri-@Id">@Navigation.Uri</span></p>
 
+<p>Query: <span id="query-@Id">@Query</span></p>
+
 <p>LocationChanged: <span id="location-changed-count-@Id">@_locationChangedCount</span></p>
 
 <p>LocationChanging: <span id="location-changing-count-@Id">@_locationChangingCount</span></p>
@@ -20,6 +22,8 @@
 
     [Parameter]
     public string Id { get; set; }
+
+    [SupplyParameterFromQuery] public int? Query { get; set; }
 
     protected override void OnInitialized()
     {

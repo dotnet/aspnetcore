@@ -481,6 +481,44 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]
+    public void SupplyParameterFromQueryGetsUpdatedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupplyParameterFromQueryGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
     public void LocationChangingEventGetsInvokedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
     {
         Navigate($"{ServerPathBase}/nav");
