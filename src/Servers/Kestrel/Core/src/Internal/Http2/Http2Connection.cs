@@ -62,10 +62,14 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private static int GetMaximumEnhanceYourCalmCount()
     {
         var data = AppContext.GetData(MaximumEnhanceYourCalmCountProperty);
+
+        // Programmatically-configured values are usually ints
         if (data is int count)
         {
             return count;
         }
+
+        // msbuild-configured values are usually strings
         if (data is string countStr && int.TryParse(countStr, out var parsed))
         {
             return parsed;

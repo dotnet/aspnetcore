@@ -1681,7 +1681,6 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task AbortConnectionAfterTooManyEnhanceYourCalms()
     {
-        _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 999999; // Make sure we don't actually hit this limit
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await InitializeConnectionAsync(_ => Task.FromException(new InvalidOperationException("No requests should be processed")));
 

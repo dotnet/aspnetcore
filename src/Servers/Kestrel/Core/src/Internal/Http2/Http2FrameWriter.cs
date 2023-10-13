@@ -36,11 +36,13 @@ internal sealed class Http2FrameWriter
     {
         var data = AppContext.GetData(MaximumFlowControlQueueSizeProperty);
 
+        // Programmatically-configured values are usually ints
         if (data is int count)
         {
             return count;
         }
 
+        // msbuild-configured values are usually strings
         if (data is string countStr && int.TryParse(countStr, out var parsed))
         {
             return parsed;
