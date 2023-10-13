@@ -85,6 +85,21 @@ internal sealed partial class KestrelTrace : ILogger
         Http2Log.Http2UnexpectedConnectionQueueError(_http2Logger, connectionId, ex);
     }
 
+    public void Http2TooManyEnhanceYourCalms(string connectionId, int count)
+    {
+        Http2Log.Http2TooManyEnhanceYourCalms(_http2Logger, connectionId, count);
+    }
+
+    public void Http2FlowControlQueueOperationsExceeded(string connectionId, int count)
+    {
+        Http2Log.Http2FlowControlQueueOperationsExceeded(_http2Logger, connectionId, count);
+    }
+
+    public void Http2FlowControlQueueMaximumTooLow(string connectionId, int expected, int actual)
+    {
+        Http2Log.Http2FlowControlQueueMaximumTooLow(_http2Logger, connectionId, expected, actual);
+    }
+
     private static partial class Http2Log
     {
         [LoggerMessage(29, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.", EventName = "Http2ConnectionError")]
@@ -130,5 +145,14 @@ internal sealed partial class KestrelTrace : ILogger
         public static partial void Http2UnexpectedConnectionQueueError(ILogger logger, string connectionId, Exception ex);
 
         // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)
+
+        [LoggerMessage(64, LogLevel.Debug, @"Connection id ""{ConnectionId}"" aborted since at least {Count} ENHANCE_YOUR_CALM responses were recorded per second.", EventName = "Http2TooManyEnhanceYourCalms")]
+        public static partial void Http2TooManyEnhanceYourCalms(ILogger logger, string connectionId, int count);
+
+        [LoggerMessage(65, LogLevel.Debug, @"Connection id ""{ConnectionId}"" exceeded the output flow control maximum queue size of {Count}.", EventName = "Http2FlowControlQueueOperationsExceeded")]
+        public static partial void Http2FlowControlQueueOperationsExceeded(ILogger logger, string connectionId, int count);
+
+        [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"" configured maximum flow control queue size {Actual} is less than the maximum streams per connection {Expected}. Increasing configured value to {Expected}.", EventName = "Http2FlowControlQueueMaximumTooLow")]
+        public static partial void Http2FlowControlQueueMaximumTooLow(ILogger logger, string connectionId, int expected, int actual);
     }
 }
