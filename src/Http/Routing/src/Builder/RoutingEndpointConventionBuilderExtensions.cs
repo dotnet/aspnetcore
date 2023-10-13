@@ -159,7 +159,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.WithMetadata(AntiforgeryMetadata.ValidationNotRequired);
+        builder.Finally(builder => builder.Metadata.Add(AntiforgeryMetadata.ValidationNotRequired));
         return builder;
     }
 
