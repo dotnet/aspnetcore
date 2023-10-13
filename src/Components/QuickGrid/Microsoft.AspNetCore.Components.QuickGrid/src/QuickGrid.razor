@@ -10,7 +10,7 @@
         @{ FinishCollectingColumns(); }
         <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
-        <table class="@GridClass()" theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions">
+        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions" @attributes="AdditionalAttributes" class="@GridClass()">
             <thead>
                 <tr>
                     @_renderColumnHeaders
@@ -39,7 +39,7 @@
     private void RenderNonVirtualizedRows(RenderTreeBuilder __builder)
     {
         var initialRowIndex = 2; // aria-rowindex is 1-based, plus the first row is the header
-        var rowIndex = initialRowIndex; 
+        var rowIndex = initialRowIndex;
         foreach (var item in _currentNonVirtualizedViewItems)
         {
             RenderRow(__builder, rowIndex++, item);

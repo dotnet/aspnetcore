@@ -3,12 +3,12 @@
 
 <h2>Default form with bound parameter</h2>
 
-<ActionForm OnSubmit="() => _submitted = true">
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
     <input type="text" name="Parameter" value="@(_attemptedParameterValue ?? Parameter.ToString())" />
     <input type="text" name="OtherParameter" value="@(_attemptedOtherValue ?? OtherParameter.ToString())" />
-    <AntiforgeryToken />
     <input id="send" type="submit" value="Send" />
-</ActionForm>
+    <AntiforgeryToken />
+</form>
 
 @if (_submitted)
 {
@@ -38,7 +38,7 @@
     [SupplyParameterFromForm] public int Parameter { get; set; } = 0;
     [SupplyParameterFromForm] public bool OtherParameter { get; set; } = false;
 
-    [CascadingParameter] public ModelBindingContext Context { get; set; }
+    [CascadingParameter] public FormMappingContext Context { get; set; }
 
     protected override void OnInitialized()
     {

@@ -15,7 +15,7 @@ internal class TestTransportFactory : ITransportFactory
         _transport = transport;
     }
 
-    public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useAck)
+    public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
     {
         return _transport;
     }

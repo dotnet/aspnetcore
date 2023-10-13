@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using System.Security.Claims;
+using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
 
@@ -21,12 +25,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents()
-            .AddServerComponents()
-            .AddWebAssemblyComponents(options =>
-            {
-                options.PathPrefix = "/WasmMinimal";
-            });
+        services.AddRazorComponents(options =>
+        {
+            options.MaxFormMappingErrorCount = 10;
+            options.MaxFormMappingRecursionDepth = 5;
+            options.MaxFormMappingCollectionSize = 100;
+        })
+            .AddInteractiveWebAssemblyComponents()
+            .AddInteractiveServerComponents();
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
@@ -46,17 +52,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
+            if (!env.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Error", createScopeForErrors: true);
+            }
+
             app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
+            app.UseAntiforgery();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
-                    .AddServerRenderMode()
-                    .AddWebAssemblyRenderMode();
+                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
+                    .AddInteractiveServerRenderMode()
+                    .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
                 StreamingRenderingForm.MapEndpoints(endpoints);
+                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
                 MapEnhancedNavigationEndpoints(endpoints);
             });
@@ -113,5 +127,45 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             response.ContentType = "text/html";
             await response.WriteAsync("<h1>404</h1><p>Sorry, there's nothing here! This is a custom server-generated 404 message.</p>");
         });
+
+        // Used when testing that enhanced nav includes "Accept: text/html"
+        endpoints.Map("/nav/list-headers", async (HttpRequest request, HttpResponse response) =>
+        {
+            // We have to accept enanced nav explicitly since the test is checking what headers are sent for enhanced nav requests
+            // Otherwise, the client will retry as a non-enhanced-nav request and the UI won't show the enhanced nav headers
+            response.Headers.Add("blazor-enhanced-nav", "allow");
+
+            response.ContentType = "text/html";
+            await response.WriteAsync("<ul id='all-headers'>");
+            foreach (var header in request.Headers)
+            {
+                await response.WriteAsync($"<li>{HttpUtility.HtmlEncode(header.Key)}: {HttpUtility.HtmlEncode(header.Value)}</li>");
+            }
+            await response.WriteAsync("</ul>");
+        });
+
+        // Used in the redirection to non-Blazor endpoints tests
+        endpoints.MapGet("redirect/nonblazor/get", PerformRedirection);
+        endpoints.MapPost("redirect/nonblazor/post", PerformRedirection);
+
+        // Used when testing enhanced navigation to non-Blazor endpoints
+        endpoints.Map("/nav/non-blazor-html-response", async (HttpResponse response) =>
+        {
+            response.ContentType = "text/html";
+            await response.WriteAsync("<html><body><h1>This is a non-Blazor endpoint</h1><p>That's all</p></body></html>");
+        });
+
+        endpoints.MapPost("api/antiforgery-form", ([FromForm] string value) =>
+        {
+            return Results.Ok(value);
+        });
+
+        static Task PerformRedirection(HttpRequest request, HttpResponse response)
+        {
+            response.Redirect(request.Query["external"] == "true"
+                ? "https://microsoft.com"
+                : $"{request.PathBase}/nav/scroll-to-hash#some-content");
+            return Task.CompletedTask;
+        }
     }
 }

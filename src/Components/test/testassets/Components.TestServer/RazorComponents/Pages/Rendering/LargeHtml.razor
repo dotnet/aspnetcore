@@ -1,0 +1,10 @@
+﻿@page "/large-html-server"
+
+<h1>WebAssembly with pre-rendering</h1>
+<LargeComponent Id="webassembly-prerender" @rendermode="@(new InteractiveWebAssemblyRenderMode(true))" />
+
+<h1>Server with pre-rendering</h1>
+<LargeComponent Id="server-no-prerender" @rendermode="@(new InteractiveServerRenderMode(false))" />
+
+<h1>Server without pre-rendering</h1>
+<LargeComponent Id="server-prerender" @rendermode="@(new InteractiveServerRenderMode(true))" />

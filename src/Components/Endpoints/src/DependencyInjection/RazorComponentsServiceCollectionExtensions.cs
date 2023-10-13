@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
@@ -27,21 +28,27 @@ public static class RazorComponentsServiceCollectionExtensions
     /// Registers services required for server-side rendering of Razor Components.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <returns>A builder for configuring the Razor Components endpoints.</returns>
-    [RequiresUnreferencedCode("Razor Components does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
-    public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services)
+    /// <param name="configure">An <see cref="Action{RazorComponentOptions}"/> to configure the provided <see cref="RazorComponentsServiceOptions"/>.</param>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further configure the Razor component services.</returns>
+    [RequiresUnreferencedCode("Razor Components does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    public static IRazorComponentsBuilder AddRazorComponents(this IServiceCollection services, Action<RazorComponentsServiceOptions>? configure = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         // Dependencies
+        services.AddLogging();
         services.AddAntiforgery();
 
         services.TryAddSingleton<RazorComponentsMarkerService>();
 
-        // Results
-        services.TryAddSingleton<RazorComponentResultExecutor>();
-
         // Endpoints
         services.TryAddSingleton<RazorComponentEndpointDataSourceFactory>();
         services.TryAddSingleton<RazorComponentEndpointFactory>();
+        if (MetadataUpdater.IsSupported)
+        {
+            services.TryAddSingleton<HotReloadService>();
+        }
+        services.TryAddScoped<IRazorComponentEndpointInvoker, RazorComponentEndpointInvoker>();
 
         // Common services required for components server side rendering
         services.TryAddSingleton<ServerComponentSerializer>(services => new ServerComponentSerializer(services.GetRequiredService<IDataProtectionProvider>()));
@@ -55,26 +62,29 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<ComponentStatePersistenceManager>();
         services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RazorComponentsEndpointsOptions>, RazorComponentsEndpointsDetailedErrorsConfiguration>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
+        services.AddSupplyValueFromQueryProvider();
+        services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
 
         // Form handling
-        services.TryAddScoped<FormDataProvider, HttpContextFormDataProvider>();
-        services.TryAddScoped<IFormValueSupplier, DefaultFormValuesSupplier>();
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>());
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<CascadingModelBindingProvider, CascadingFormModelBindingProvider>());
+        services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.TryAddScoped<HttpContextFormDataProvider>();
+        services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
+
+        if (configure != null)
+        {
+            services.Configure(configure);
+        }
+
         return new DefaultRazorComponentsBuilder(services);
     }
 
-    private sealed class DefaultRazorComponentsBuilder : IRazorComponentsBuilder
+    private sealed class DefaultRazorComponentsBuilder(IServiceCollection services) : IRazorComponentsBuilder
     {
-        public DefaultRazorComponentsBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
-
-        public IServiceCollection Services { get; }
+        public IServiceCollection Services { get; } = services;
     }
 }

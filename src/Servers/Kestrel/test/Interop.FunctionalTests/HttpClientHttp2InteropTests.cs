@@ -600,7 +600,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         var url = host.MakeUrl(scheme);
         using var client = CreateClient();
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(url)).DefaultTimeout();
-        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.Message);
+        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8). (HttpProtocolError)", exception?.InnerException?.Message);
         await host.StopAsync().DefaultTimeout();
     }
 
@@ -629,7 +629,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         response.EnsureSuccessStatusCode();
         receivedHeaders.SetResult();
         var exception = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync()).DefaultTimeout();
-        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8).", exception?.InnerException?.Message);
+        Assert.Equal("The HTTP/2 server reset the stream. HTTP/2 error code 'CANCEL' (0x8). (HttpProtocolError)", exception?.InnerException?.Message);
         await host.StopAsync().DefaultTimeout();
     }
 

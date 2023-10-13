@@ -31,12 +31,13 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         _meter = meterFactory.Create(MeterName);
 
         _connectionDuration = _meter.CreateHistogram<double>(
-            "signalr-http-transport-connection-duration",
+            "signalr.server.connection.duration",
             unit: "s",
             description: "The duration of connections on the server.");
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
-            "signalr-http-transport-current-connections",
+            "signalr.server.active_connections",
+            unit: "{connection}",
             description: "Number of connections that are currently active on the server.");
     }
 
@@ -46,8 +47,8 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         {
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
             _connectionDuration.Record(duration.TotalSeconds,
-                new KeyValuePair<string, object?>("status", status.ToString()),
-                new KeyValuePair<string, object?>("transport", transportType.ToString()));
+                new KeyValuePair<string, object?>("signalr.connection.status", ResolveStopStatus(status)),
+                new KeyValuePair<string, object?>("signalr.transport", ResolveTransportType(transportType)));
         }
     }
 
@@ -58,7 +59,7 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         // Tags must match transport end.
         if (metricsContext.CurrentConnectionsCounterEnabled)
         {
-            _currentConnectionsCounter.Add(1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+            _currentConnectionsCounter.Add(1, new KeyValuePair<string, object?>("signalr.transport", ResolveTransportType(transportType)));
         }
     }
 
@@ -70,9 +71,31 @@ internal sealed class HttpConnectionsMetrics : IDisposable
             // If the transport type is none then the transport was never started for this connection.
             if (transportType != HttpTransportType.None)
             {
-                _currentConnectionsCounter.Add(-1, new KeyValuePair<string, object?>("transport", transportType.ToString()));
+                _currentConnectionsCounter.Add(-1, new KeyValuePair<string, object?>("signalr.transport", ResolveTransportType(transportType)));
             }
         }
+    }
+
+    private static string ResolveTransportType(HttpTransportType transportType)
+    {
+        return transportType switch
+        {
+            HttpTransportType.ServerSentEvents => "server_sent_events",
+            HttpTransportType.LongPolling => "long_polling",
+            HttpTransportType.WebSockets => "web_sockets",
+            _ => throw new InvalidOperationException("Unexpected value: " + transportType)
+        };
+    }
+
+    private static string ResolveStopStatus(HttpConnectionStopStatus connectionStopStatus)
+    {
+        return connectionStopStatus switch
+        {
+            HttpConnectionStopStatus.NormalClosure => "normal_closure",
+            HttpConnectionStopStatus.Timeout => "timeout",
+            HttpConnectionStopStatus.AppShutdown => "app_shutdown",
+            _ => throw new InvalidOperationException("Unexpected value: " + connectionStopStatus)
+        };
     }
 
     public void Dispose()

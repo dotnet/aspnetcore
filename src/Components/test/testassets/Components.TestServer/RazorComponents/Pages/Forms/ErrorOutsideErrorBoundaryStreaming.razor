@@ -1,0 +1,9 @@
+﻿@page "/forms/error-outside-error-boundary-streaming"
+@attribute [StreamRendering]
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Error outside error boundary (streaming)</h3>
+
+<p>Demonstrates what happens with an unhandled exception during form post handling.</p>
+
+<ComponentThatThrows />

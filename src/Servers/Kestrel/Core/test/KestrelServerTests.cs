@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 
@@ -710,7 +712,7 @@ public class KestrelServerTests
     [Fact]
     public void StartingServerInitializesHeartbeat()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var testContext = new TestServiceContext
         {
             ServerOptions =
@@ -720,7 +722,7 @@ public class KestrelServerTests
                         new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     }
                 },
-            MockTimeProvider = timeProvider,
+            FakeTimeProvider = timeProvider,
             TimeProvider = timeProvider,
             DateHeaderValueManager = new DateHeaderValueManager(timeProvider)
         };
@@ -738,11 +740,11 @@ public class KestrelServerTests
 
             // Ensure KestrelServer is started at a different time than when it was constructed, since we're
             // verifying the heartbeat is initialized during KestrelServer.StartAsync().
-            testContext.MockTimeProvider.Advance(TimeSpan.FromDays(1));
+            testContext.FakeTimeProvider.Advance(TimeSpan.FromDays(1));
 
             StartDummyApplication(server);
 
-            Assert.Equal(HeaderUtilities.FormatDate(testContext.MockTimeProvider.GetUtcNow()),
+            Assert.Equal(HeaderUtilities.FormatDate(testContext.FakeTimeProvider.GetUtcNow()),
                          testContext.DateHeaderValueManager.GetDateHeaderValues().String);
         }
     }
@@ -760,6 +762,7 @@ public class KestrelServerTests
         TaskCompletionSource changeCallbackRegisteredTcs = null;
 
         var mockChangeToken = new Mock<IChangeToken>();
+        mockChangeToken.Setup(t => t.ActiveChangeCallbacks).Returns(true);
         mockChangeToken.Setup(t => t.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>())).Returns<Action<object>, object>((callback, state) =>
         {
             changeCallbackRegisteredTcs?.SetResult();
@@ -786,6 +789,7 @@ public class KestrelServerTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<ILogger<CertificatePathWatcher>>());
         serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
 
         var options = new KestrelServerOptions

@@ -42,7 +42,7 @@ public sealed class AcceptsMetadata : IAcceptsMetadata
     /// </summary>
     public bool IsOptional { get; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(ContentTypes), ContentTypes, nameof(RequestType), RequestType, nameof(IsOptional), IsOptional, includeNullValues: false, prefix: "Accepts");

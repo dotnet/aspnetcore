@@ -816,7 +816,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
         using var batchBuilder = new RenderBatchBuilder();
 
         // Act
-        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames(), newTree.GetNamedEvents());
+        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
 
         // Assert: We're going to dispose the old component and render the new one
         Assert.Equal(new[] { 0 }, batchBuilder.ComponentDisposalQueue);
@@ -1627,7 +1627,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
         var originalFakeComponentInstance = oldTree.GetFrames().Array[2].Component;
         var originalFakeComponent2Instance = oldTree.GetFrames().Array[3].Component;
 
@@ -1713,7 +1713,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTree = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames());
         var originalComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
 
         // Act
@@ -1763,7 +1763,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
         var originalComponentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
         Assert.Equal(1, originalComponentInstance.SetParametersCallCount);
 
@@ -1793,7 +1793,7 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTreeBuilder = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTreeBuilder.GetFrames(), oldTree.GetFrames());
         var componentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
         Assert.Equal(1, componentInstance.SetParametersCallCount);
 
@@ -1819,13 +1819,13 @@ public class RenderTreeDiffBuilderTest : IDisposable
 
         using var batchBuilder = new RenderBatchBuilder();
         using var renderTree = new RenderTreeBuilder();
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames(), oldTree.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, renderTree.GetFrames(), oldTree.GetFrames());
 
         // Act/Assert
         // Note that we track NonDisposableComponent was disposed even though it's not IDisposable,
         // because it's up to the upstream renderer to decide what "disposing" a component means
         Assert.Empty(batchBuilder.ComponentDisposalQueue);
-        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames(), newTree.GetNamedEvents());
+        RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
         Assert.Equal(new[] { 0, 1 }, batchBuilder.ComponentDisposalQueue);
     }
 
@@ -2211,24 +2211,199 @@ public class RenderTreeDiffBuilderTest : IDisposable
             entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
     }
 
+    [Fact]
+    public void RecognizesNamedEventBeingAdded()
+    {
+        oldTree.OpenElement(0, "existing");
+        oldTree.AddAttribute(1, "attr1", "unrelated val1");
+        oldTree.CloseElement();
+
+        newTree.OpenElement(0, "existing");
+        newTree.AddAttribute(1, "attr1", "unrelated val1");
+        newTree.AddNamedEvent("someevent1", "added to existing element");
+        newTree.CloseElement();
+        newTree.OpenElement(2, "new element");
+        newTree.AddNamedEvent("someevent2", "added with new element");
+        newTree.CloseElement();
+
+        // Act
+        var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(componentId: 123);
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
+                Assert.Equal(0, entry.ReferenceFrameIndex);
+                Assert.Equal("new element", referenceFrames[entry.ReferenceFrameIndex].ElementName);
+            });
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 2, "someevent1", "added to existing element"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 4, "someevent2", "added with new element"));
+    }
+
+    [Fact]
+    public void RecognizesNamedEventBeingRemoved()
+    {
+        oldTree.OpenElement(0, "retaining");
+        oldTree.AddAttribute(1, "attr1", "unrelated val1");
+        oldTree.AddNamedEvent("someevent1", "removing from retained element");
+        oldTree.CloseElement();
+        oldTree.OpenElement(2, "removing");
+        oldTree.AddNamedEvent("someevent2", "removed because element was removed");
+        oldTree.CloseElement();
+
+        newTree.OpenElement(0, "retaining");
+        newTree.AddAttribute(1, "attr1", "unrelated val1");
+        newTree.CloseElement();
+
+        // Act
+        var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(componentId: 123);
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 2, "someevent1", "removing from retained element"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 4, "someevent2", "removed because element was removed"));
+    }
+
+    [Fact]
+    public void RecognizesNamedEventBeingMoved()
+    {
+        oldTree.OpenElement(0, "elem");
+        oldTree.AddNamedEvent("eventname", "assigned name");
+        oldTree.CloseElement();
+
+        newTree.OpenElement(0, "elem");
+        newTree.AddAttribute(1, "attr1", "unrelated val1");
+        newTree.AddNamedEvent("eventname", "assigned name");
+        newTree.CloseElement();
+
+        // Act
+        var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(componentId: 123);
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
+                Assert.Equal(0, entry.ReferenceFrameIndex);
+                Assert.Equal("attr1", referenceFrames[entry.ReferenceFrameIndex].AttributeName);
+            });
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 1, "eventname", "assigned name"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 2, "eventname", "assigned name"));
+    }
+
+    [Fact]
+    public void RecognizesNamedEventChangingAssignedName()
+    {
+        oldTree.OpenElement(0, "elem");
+        oldTree.AddNamedEvent("eventname1", "original name");
+        oldTree.AddNamedEvent("eventname2", "will be left unchanged");
+        oldTree.CloseElement();
+
+        newTree.OpenElement(0, "elem");
+        newTree.AddNamedEvent("eventname1", "changed name");
+        newTree.AddNamedEvent("eventname2", "will be left unchanged");
+        newTree.CloseElement();
+
+        // Act
+        var (result, referenceFrames, batch) = GetSingleUpdatedComponentWithBatch(componentId: 123);
+
+        // Assert
+        Assert.Empty(result.Edits);
+        Assert.Collection(batch.NamedEventChanges.Value.AsEnumerable(),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Removed, 123, 1, "eventname1", "original name"),
+            entry => AssertNamedEventChange(entry, NamedEventChangeType.Added, 123, 1, "eventname1", "changed name"));
+    }
+
+    [Fact]
+    public void CanAddNewAttributeAtArrayBuilderSizeBoundary()
+    {
+        // Represents https://github.com/dotnet/aspnetcore/issues/49192
+
+        // Arrange: old and new trees go exactly up to the array builder capacity
+        oldTree.OpenElement(0, "elem");
+        for (var i = 0; oldTree.GetFrames().Count < oldTree.GetFrames().Array.Length; i++)
+        {
+            oldTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+        newTree.OpenElement(0, "elem");
+        for (var i = 0; newTree.GetFrames().Count < newTree.GetFrames().Array.Length; i++)
+        {
+            newTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+
+        // ... then the new tree gets one more attribute that crosses the builder size boundary, forcing buffer expansion
+        newTree.AddAttribute(1, $"myattribute_final", "value");
+
+        // Act
+        oldTree.CloseElement();
+        newTree.CloseElement();
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
+                Assert.Equal(0, entry.ReferenceFrameIndex);
+                AssertFrame.Attribute(referenceFrames[0], "myattribute_final", "value", 1);
+            });
+    }
+
+    [Fact]
+    public void CanRemoveOldAttributeAtArrayBuilderSizeBoundary()
+    {
+        // Arrange: old and new trees go exactly up to the array builder capacity
+        oldTree.OpenElement(0, "elem");
+        for (var i = 0; oldTree.GetFrames().Count < oldTree.GetFrames().Array.Length; i++)
+        {
+            oldTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+        newTree.OpenElement(0, "elem");
+        for (var i = 0; newTree.GetFrames().Count < newTree.GetFrames().Array.Length; i++)
+        {
+            newTree.AddAttribute(1, $"myattribute_{i}", "value");
+        }
+
+        // ... then the old tree gets one more attribute that crosses the builder size boundary, forcing buffer expansion
+        oldTree.AddAttribute(1, $"myattribute_final", "value");
+
+        // Act
+        oldTree.CloseElement();
+        newTree.CloseElement();
+        var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+        // Assert
+        Assert.Collection(result.Edits,
+            entry =>
+            {
+                AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
+                Assert.Equal("myattribute_final", entry.RemovedAttributeName);
+            });
+    }
+
     private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)
     {
         var result = GetSingleUpdatedComponentWithBatch(initializeFromFrames);
         return (result.Item1, result.Item2);
     }
 
-    private (RenderTreeDiff, RenderTreeFrame[], RenderBatch) GetSingleUpdatedComponentWithBatch(bool initializeFromFrames = false)
+    private (RenderTreeDiff, RenderTreeFrame[], RenderBatch) GetSingleUpdatedComponentWithBatch(bool initializeFromFrames = false, int componentId = 0)
     {
-        var batch = GetRenderedBatch(initializeFromFrames);
+        var batch = GetRenderedBatch(initializeFromFrames, componentId);
         var diffsInBatch = batch.UpdatedComponents;
         Assert.Equal(1, diffsInBatch.Count);
         return (diffsInBatch.Array[0], batch.ReferenceFrames.AsEnumerable().ToArray(), batch);
     }
 
-    private RenderBatch GetRenderedBatch(bool initializeFromFrames = false)
-        => GetRenderedBatch(oldTree, newTree, initializeFromFrames);
+    private RenderBatch GetRenderedBatch(bool initializeFromFrames = false, int componentId = 0)
+        => GetRenderedBatch(oldTree, newTree, initializeFromFrames, componentId);
 
-    private RenderBatch GetRenderedBatch(RenderTreeBuilder from, RenderTreeBuilder to, bool initializeFromFrames)
+    private RenderBatch GetRenderedBatch(RenderTreeBuilder from, RenderTreeBuilder to, bool initializeFromFrames, int componentId = 0)
     {
         if (initializeFromFrames)
         {
@@ -2238,14 +2413,14 @@ public class RenderTreeDiffBuilderTest : IDisposable
             var emptyFrames = renderTreeBuilder.GetFrames();
             var oldFrames = from.GetFrames();
 
-            RenderTreeDiffBuilder.ComputeDiff(renderer, initializeBatchBuilder, 0, emptyFrames, oldFrames, from.GetNamedEvents());
+            RenderTreeDiffBuilder.ComputeDiff(renderer, initializeBatchBuilder, 0, emptyFrames, oldFrames);
         }
 
         batchBuilder?.Dispose();
         // This gets disposed as part of the test type's Dispose
         batchBuilder = new RenderBatchBuilder();
 
-        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, from.GetFrames(), to.GetFrames(), to.GetNamedEvents());
+        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, componentId, from.GetFrames(), to.GetFrames());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         return batchBuilder.ToBatch();
     }
@@ -2372,5 +2547,20 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(RenderTreeEditType.PermutationListEntry, edit.Type);
         Assert.Equal(fromSiblingIndex, edit.SiblingIndex);
         Assert.Equal(toSiblingIndex, edit.MoveToSiblingIndex);
+    }
+
+    private static void AssertNamedEventChange(
+        NamedEventChange namedEvent,
+        NamedEventChangeType type,
+        int componentId,
+        int frameIndex,
+        string eventType,
+        string assignedName)
+    {
+        Assert.Equal(type, namedEvent.ChangeType);
+        Assert.Equal(componentId, namedEvent.ComponentId);
+        Assert.Equal(frameIndex, namedEvent.FrameIndex);
+        Assert.Equal(eventType, namedEvent.EventType);
+        Assert.Equal(assignedName, namedEvent.AssignedName);
     }
 }

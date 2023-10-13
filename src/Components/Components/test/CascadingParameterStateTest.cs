@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Binding;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Moq;
@@ -17,7 +16,7 @@ public class CascadingParameterStateTest
         var componentState = CreateComponentState(new ComponentWithNoParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(componentState);
+        var result = CascadingParameterState.FindCascadingParameters(componentState, out _);
 
         // Assert
         Assert.Empty(result);
@@ -30,7 +29,7 @@ public class CascadingParameterStateTest
         var componentState = CreateComponentState(new ComponentWithNoCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(componentState);
+        var result = CascadingParameterState.FindCascadingParameters(componentState, out _);
 
         // Assert
         Assert.Empty(result);
@@ -43,7 +42,7 @@ public class CascadingParameterStateTest
         var componentState = CreateComponentState(new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(componentState);
+        var result = CascadingParameterState.FindCascadingParameters(componentState, out _);
 
         // Assert
         Assert.Empty(result);
@@ -60,7 +59,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -77,7 +76,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -99,7 +98,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -125,7 +124,7 @@ public class CascadingParameterStateTest
             new ComponentWithInheritedCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -150,7 +149,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<CascadingValueTypeBaseClass>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -169,7 +168,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<ICascadingValueTypeDerivedClassInterface>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -188,7 +187,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<CascadingValueTypeDerivedClass>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -203,7 +202,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<CascadingValueTypeBaseClass>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -222,7 +221,7 @@ public class CascadingParameterStateTest
             new ComponentWithGenericCascadingParam<ValueType1>());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -237,7 +236,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -252,7 +251,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -267,7 +266,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -282,7 +281,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Empty(result);
@@ -297,7 +296,7 @@ public class CascadingParameterStateTest
             new ComponentWithNamedCascadingParam());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result, match =>
@@ -319,7 +318,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -345,7 +344,7 @@ public class CascadingParameterStateTest
             new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        var result = CascadingParameterState.FindCascadingParameters(states.Last(), out _);
 
         // Assert
         Assert.Collection(result.OrderBy(x => x.ParameterInfo.PropertyName),
@@ -358,63 +357,47 @@ public class CascadingParameterStateTest
     }
 
     [Fact]
-    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues()
+    public void FindCascadingParameters_WithoutSingleDelivery()
     {
+        // Even though ComponentWithCascadingParams itself declares a [SupplyParameterAsSingleDelivery],
+        // none of the suppliers match it, so we'll get hasSingleDeliveryParameters = false
+
         // Arrange
-        var provider = new TestCascadingFormModelBindingProvider
-        {
-            FormName = "",
-            CurrentValue = "some value",
-        };
-        var cascadingModelBinder = new CascadingModelBinder
-        {
-            ModelBindingProviders = new[] { provider },
-            Navigation = Mock.Of<NavigationManager>(),
-            Name = ""
-        };
-
-        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
-
         var states = CreateAncestry(
-            cascadingModelBinder,
-            new FormParametersComponent());
+            CreateCascadingValueComponent(new ValueType1()),
+            new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        _ = CascadingParameterState.FindCascadingParameters(states.Last(), out var hasSingleDeliveryParameters);
 
         // Assert
-        var supplier = Assert.Single(result);
-        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
+        Assert.False(hasSingleDeliveryParameters);
     }
 
     [Fact]
-    public void FindCascadingParameters_HandlesSupplyParameterFromFormValues_WithName()
+    public void FindCascadingParameters_WithSingleDelivery()
     {
         // Arrange
-        var provider = new TestCascadingFormModelBindingProvider
-        {
-            FormName = "some-name",
-            CurrentValue = "some value",
-        };
-        var cascadingModelBinder = new CascadingModelBinder
-        {
-            ModelBindingProviders = new[] { provider },
-            Navigation = new TestNavigationManager(),
-            Name = "some-name"
-        };
-
-        cascadingModelBinder.UpdateBindingInformation("https://localhost/");
-
         var states = CreateAncestry(
-            cascadingModelBinder,
-            new FormParametersComponentWithName());
+            CreateCascadingValueComponent(new ValueType1()),
+            new SupplyParameterWithSingleDeliveryComponent(isFixed: true),
+            new ComponentWithCascadingParams());
 
         // Act
-        var result = CascadingParameterState.FindCascadingParameters(states.Last());
+        _ = CascadingParameterState.FindCascadingParameters(states.Last(), out var hasSingleDeliveryParameters);
 
         // Assert
-        var supplier = Assert.Single(result);
-        Assert.Equal(cascadingModelBinder, supplier.ValueSupplier);
+        Assert.True(hasSingleDeliveryParameters);
+    }
+
+    [Fact]
+    public void FindCascadingParameters_DisallowsSingleDeliveryWhenIsFixedIsFalse()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => CreateAncestry(
+            new SupplyParameterWithSingleDeliveryComponent(isFixed: false),
+            new ComponentWithCascadingParams()));
+
+        Assert.StartsWith($"'{typeof(SupplyParameterWithSingleDeliveryAttribute)}' is flagged with SingleDelivery", ex.Message);
     }
 
     static ComponentState[] CreateAncestry(params IComponent[] components)
@@ -461,16 +444,6 @@ public class CascadingParameterStateTest
     {
     }
 
-    class FormParametersComponent : TestComponentBase
-    {
-        [SupplyParameterFromForm] public string FormParameter { get; set; }
-    }
-
-    class FormParametersComponentWithName : TestComponentBase
-    {
-        [SupplyParameterFromForm(Handler = "some-name")] public string FormParameter { get; set; }
-    }
-
     class ComponentWithNoCascadingParams : TestComponentBase
     {
         [Parameter] public bool SomeRegularParameter { get; set; }
@@ -481,6 +454,8 @@ public class CascadingParameterStateTest
         [Parameter] public bool RegularParam { get; set; }
         [CascadingParameter] internal ValueType1 CascadingParam1 { get; set; }
         [CascadingParameter] internal ValueType2 CascadingParam2 { get; set; }
+
+        [SupplyParameterWithSingleDelivery] internal ValueType3 SingleDeliveryCascadingParam { get; set; }
     }
 
     class ComponentWithInheritedCascadingParams : ComponentWithCascadingParams
@@ -497,6 +472,28 @@ public class CascadingParameterStateTest
     {
         [CascadingParameter(Name = "MatchOnName")]
         internal ValueType1 SomeLocalName { get; set; }
+    }
+
+    class SupplyParameterWithSingleDeliveryAttribute : CascadingParameterAttributeBase
+    {
+        internal override bool SingleDelivery => true;
+    }
+
+    class SupplyParameterWithSingleDeliveryComponent(bool isFixed) : ComponentBase, ICascadingValueSupplier
+    {
+        public bool IsFixed => isFixed;
+
+        public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
+            => parameterInfo.Attribute is SupplyParameterWithSingleDeliveryAttribute;
+
+        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+            => throw new NotImplementedException();
+
+        public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+            => throw new NotImplementedException();
+
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
+            => throw new NotImplementedException();
     }
 
     class TestComponentBase : IComponent
@@ -516,27 +513,6 @@ public class CascadingParameterStateTest
     class CascadingValueTypeDerivedClass : CascadingValueTypeBaseClass, ICascadingValueTypeDerivedClassInterface { }
     interface ICascadingValueTypeDerivedClassInterface { }
 
-    private class TestCascadingFormModelBindingProvider : CascadingModelBindingProvider
-    {
-        public required string FormName { get; init; }
-
-        public required string CurrentValue { get; init; }
-
-        protected internal override bool AreValuesFixed => true;
-
-        protected internal override bool CanSupplyValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
-            => string.Equals(bindingContext.Name, FormName, StringComparison.Ordinal);
-
-        protected internal override object GetCurrentValue(ModelBindingContext bindingContext, in CascadingParameterInfo parameterInfo)
-            => CurrentValue;
-
-        protected internal override bool SupportsCascadingParameterAttributeType(Type attributeType)
-            => attributeType == typeof(SupplyParameterFromFormAttribute);
-
-        protected internal override bool SupportsParameterType(Type parameterType)
-            => parameterType == typeof(string);
-    }
-
     class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
@@ -544,20 +520,4 @@ public class CascadingParameterStateTest
             Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
         }
     }
-}
-
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromFormAttribute : CascadingParameterAttributeBase
-{
-    /// <summary>
-    /// Gets or sets the name for the parameter. The name is used to match
-    /// the form data and decide whether or not the value needs to be bound.
-    /// </summary>
-    public override string Name { get; set; }
-
-    /// <summary>
-    /// Gets or sets the name for the handler. The name is used to match
-    /// the form data and decide whether or not the value needs to be bound.
-    /// </summary>
-    public string Handler { get; set; }
 }

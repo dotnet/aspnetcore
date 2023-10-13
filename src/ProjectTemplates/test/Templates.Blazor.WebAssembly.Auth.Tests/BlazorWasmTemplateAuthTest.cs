@@ -95,57 +95,31 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataIndividualB2C))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataIndividualB2C))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_NoHttps_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrg))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrg))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47933")]
     public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
-
-    private static void UpdatePublishedSettings(Project serverProject)
-    {
-        // Hijack here the config file to use the development key during publish.
-        var appSettings = JObject.Parse(File.ReadAllText(Path.Combine(serverProject.TemplateOutputDir, "appsettings.json")));
-        var appSettingsDevelopment = JObject.Parse(File.ReadAllText(Path.Combine(serverProject.TemplateOutputDir, "appsettings.Development.json")));
-        ((JObject)appSettings["IdentityServer"]).Merge(appSettingsDevelopment["IdentityServer"]);
-        ((JObject)appSettings["IdentityServer"]).Merge(new
-        {
-            IdentityServer = new
-            {
-                Key = new
-                {
-                    FilePath = "./tempkey.json"
-                }
-            }
-        });
-        var testAppSettings = appSettings.ToString();
-        File.WriteAllText(Path.Combine(serverProject.TemplatePublishDir, "appsettings.json"), testAppSettings);
-    }
 }

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Antiforgery.Infrastructure;
-
 namespace Microsoft.AspNetCore.Antiforgery;
 
 /// <summary>
@@ -19,5 +17,5 @@ public class RequireAntiforgeryTokenAttribute(bool required = true) : Attribute,
     /// Defaults to <see langword="true"/>; <see langword="false"/> indicates that
     /// the validation check for the antiforgery token can be avoided.
     /// </remarks>
-    public bool Required { get; } = required;
+    public bool RequiresValidation { get; } = required;
 }

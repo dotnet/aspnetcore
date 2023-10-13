@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -19,6 +18,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -38,10 +38,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 {
     private readonly IServiceProvider _services;
     private Task? _servicesInitializedTask;
-
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
-    private string? _formHandler;
-    private NamedEvent _capturedNamedEvent;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -54,6 +51,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         _services = serviceProvider;
     }
+
+    internal HttpContext? HttpContext => _httpContext;
 
     private void SetHttpContext(HttpContext httpContext)
     {
@@ -69,7 +68,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal static async Task InitializeStandardComponentServicesAsync(
         HttpContext httpContext,
-        Type? componentType = null,
+        [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
         IFormCollection? form = null)
     {
@@ -82,11 +81,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
         }
 
-        if (handler != null &&
-            form != null &&
-            httpContext.RequestServices.GetRequiredService<FormDataProvider>() is IHostEnvironmentFormDataProvider formData)
+        if (handler != null && form != null)
         {
-            formData.SetFormData(handler, new FormCollectionReadOnlyDictionary(form));
+            httpContext.RequestServices.GetRequiredService<HttpContextFormDataProvider>()
+                .SetFormData(handler, new FormCollectionReadOnlyDictionary(form), form.Files);
         }
 
         if (httpContext.RequestServices.GetService<AntiforgeryStateProvider>() is EndpointAntiforgeryStateProvider antiforgery)
@@ -104,95 +102,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
             routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
-        }
-    }
-
-    internal void SetFormHandlerName(string name)
-    {
-        _formHandler = name;
-    }
-
-    protected override bool ShouldTrackNamedEventHandlers() => _formHandler != null;
-
-    protected override void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventNameId)
-    {
-        if (_formHandler == null || !string.Equals(eventNameId, _formHandler, StringComparison.Ordinal))
-        {
-            // We only track event names when we are deciding how to dispatch an event and when the event
-            // matches the identifier for the event we are trying to dispatch.
-            return;
-        }
-
-        if (_capturedNamedEvent.EventNameId == null)
-        {
-            // This is the first time we see the event being tracked, we capture it.
-            _capturedNamedEvent = new(eventHandlerId, componentId, eventNameId);
-            return;
-        }
-
-        if (_capturedNamedEvent.ComponentId != componentId)
-        {
-            // At this point we have already seen this event once. Once a component instance defines a named
-            // event, that component is the owner of that event name until we dispatch the event.
-            // Dispatching the event happens after we've achieved quiesce.
-            // * No two separate components can define an event with the same name identifier.
-            // * No other component can define the same named event even if the existing registration
-            //   is no longer part of the set of rendered components.
-            //   * This gives customers a clear an easy rule about how forms need to be rendered when you
-            //     want to support handling POST requests.
-            //   * Note that this only affects receiving POST request, it does not impact interactive components
-            //     and it does not impact prerendering components.
-            try
+            if (httpContext.GetEndpoint() is RouteEndpoint endpoint)
             {
-                // Two components are trying to simultaneously define the same name.
-                var state = GetComponentState(_capturedNamedEvent.ComponentId);
-                throw new InvalidOperationException(
-                    $@"Two different components are trying to define the same named event '{eventNameId}':
-'{GenerateComponentPath(state)}'
-'{GenerateComponentPath(GetComponentState(componentId))}'");
-            }
-            catch (ArgumentException)
-            {
-                // The component that originally defined the name was disposed.
-                throw new InvalidOperationException(
-                    $"The named event '{eventNameId}' was already defined earlier by a component with id '{_capturedNamedEvent.ComponentId}' but this " +
-                    $"component was removed before receiving the dispatched event.");
+                routingStateProvider.RouteData.Template = endpoint.RoutePattern.RawText;
             }
         }
-    }
-
-    internal bool HasCapturedEvent() => _capturedNamedEvent != default;
-
-    internal Task DispatchCapturedEvent()
-    {
-        if (_capturedNamedEvent == default)
-        {
-            throw new InvalidOperationException($"No named event handler was captured for '{_formHandler}'.");
-        }
-
-        // We no longer need to track the form handler, as we already captured the event.
-        _formHandler = null;
-        return DispatchEventAsync(_capturedNamedEvent.EventHandlerId, null, EventArgs.Empty, quiesce: true);
-    }
-
-    private static string GenerateComponentPath(ComponentState state)
-    {
-        // We are generating a path from the root component with component type names like:
-        // App > Router > RouteView > LayoutView > Index > PartA
-        // App > Router > RouteView > LayoutView > MainLayout > NavigationMenu
-        // To help developers identify when they have multiple forms with the same handler.
-        Stack<string> stack = new();
-
-        for (var current = state; current != null; current = current.ParentComponentState)
-        {
-            stack.Push(GetName(current));
-        }
-
-        var builder = new StringBuilder();
-        builder.AppendJoin(" > ", stack);
-        return builder.ToString();
-
-        static string GetName(ComponentState current) => current.Component.GetType().Name;
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
@@ -218,6 +132,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
+        UpdateNamedSubmitEvents(in renderBatch);
+
         if (_streamingUpdatesWriter is { } writer)
         {
             SendBatchAsStreamingUpdate(renderBatch, writer);
@@ -255,8 +171,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
     }
-
-    private record struct NamedEvent(ulong EventHandlerId, int ComponentId, string EventNameId);
 
     private sealed class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
     {

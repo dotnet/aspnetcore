@@ -98,6 +98,99 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         Assert.NotNull(listener.AfterAction?.HttpContext);
     }
 
+    [Fact]
+    public async Task InvokeAction_ResourceFilter_WritesDiagnostic_Not_ShortCircuited()
+    {
+        // Arrange
+        var actionDescriptor = new ControllerActionDescriptor()
+        {
+            FilterDescriptors = new List<FilterDescriptor>(),
+            Parameters = new List<ParameterDescriptor>(),
+            BoundProperties = new List<ParameterDescriptor>(),
+        };
+
+        actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod));
+        actionDescriptor.ControllerTypeInfo = typeof(TestController).GetTypeInfo();
+
+        var listener = new TestDiagnosticListener();        
+        var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+        resourceFilter
+            .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+            .Returns<ResourceExecutingContext, ResourceExecutionDelegate>(async (c, next) =>
+            {
+                await next();
+            })
+            .Verifiable();
+
+        var invoker = CreateInvoker(
+            new IFilterMetadata[] { resourceFilter.Object },
+            actionDescriptor,
+            controller: new TestController(),
+            diagnosticListener: listener);
+
+        // Act
+        await invoker.InvokeAsync();
+
+        // Assert
+        resourceFilter.Verify(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()), Times.Once);
+        Assert.NotNull(listener.BeforeResource?.ActionDescriptor);
+        Assert.NotNull(listener.BeforeResource?.ExecutingContext);
+        Assert.NotNull(listener.BeforeResource?.Filter);
+        Assert.NotNull(listener.AfterResource?.ActionDescriptor);
+        Assert.NotNull(listener.AfterResource?.ExecutedContext);
+        Assert.NotNull(listener.AfterResource?.Filter);
+    }
+
+    [Fact]
+    public async Task InvokeAction_ResourceFilter_WritesDiagnostic_ShortCircuited()
+    {
+        // Arrange
+        var actionDescriptor = new ControllerActionDescriptor()
+        {
+            FilterDescriptors = new List<FilterDescriptor>(),
+            Parameters = new List<ParameterDescriptor>(),
+            BoundProperties = new List<ParameterDescriptor>(),
+        };
+
+        var expected = new Mock<IActionResult>(MockBehavior.Strict);
+        expected
+            .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+            .Returns(Task.FromResult(true))
+            .Verifiable();
+
+        actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod));
+        actionDescriptor.ControllerTypeInfo = typeof(TestController).GetTypeInfo();
+
+        var listener = new TestDiagnosticListener();        
+        var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+        resourceFilter
+            .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+            .Returns<ResourceExecutingContext, ResourceExecutionDelegate>((c, next) =>
+            {
+                c.Result = expected.Object;
+                return Task.FromResult(true);
+            })
+            .Verifiable();
+
+        var invoker = CreateInvoker(
+            new IFilterMetadata[] { resourceFilter.Object },
+            actionDescriptor,
+            controller: new TestController(),
+            diagnosticListener: listener);
+
+        // Act
+        await invoker.InvokeAsync();
+
+        // Assert
+        resourceFilter.Verify(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()), Times.Once());
+        Assert.NotNull(listener.BeforeResource?.ActionDescriptor);
+        Assert.NotNull(listener.BeforeResource?.ExecutingContext);
+        Assert.NotNull(listener.BeforeResource?.Filter);
+        Assert.NotNull(listener.AfterResource?.ActionDescriptor);
+        Assert.NotNull(listener.AfterResource?.ExecutedContext);
+        Assert.NotNull(listener.AfterResource?.Filter);
+    }
+
     #endregion
 
     #region Controller Context

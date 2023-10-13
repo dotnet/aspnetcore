@@ -164,4 +164,10 @@ internal static partial class LoggingExtensions
     [LoggerMessage(55, LogLevel.Error, "The remote signout request was ignored because the 'iss' parameter didn't match " +
                          "the expected value, which may indicate an unsolicited logout.", EventName = "RemoteSignOutIssuerInvalid")]
     public static partial void RemoteSignOutIssuerInvalid(this ILogger logger);
+
+    [LoggerMessage(56, LogLevel.Error, "Unable to validate the 'id_token', no suitable TokenHandler was found for: '{IdToken}'.", EventName = "UnableToValidateIdTokenFromHandler")]
+    public static partial void UnableToValidateIdTokenFromHandler(this ILogger logger, string idToken);
+
+    [LoggerMessage(57, LogLevel.Error, "The Validated Security Token must be of type JsonWebToken, but instead its type is: '{SecurityTokenType}.'", EventName = "InvalidSecurityTokenTypeFromHandler")]
+    public static partial void InvalidSecurityTokenTypeFromHandler(this ILogger logger, Type? securityTokenType);
 }

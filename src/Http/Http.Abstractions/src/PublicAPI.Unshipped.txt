@@ -1,6 +1,8 @@
 #nullable enable
 const Microsoft.AspNetCore.Http.StatusCodes.Status499ClientClosedRequest = 499 -> int
 *REMOVED*Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object![]! arguments) -> void
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryMetadata.RequiresValidation.get -> bool
 Microsoft.AspNetCore.Http.DefaultEndpointFilterInvocationContext.DefaultEndpointFilterInvocationContext(Microsoft.AspNetCore.Http.HttpContext! httpContext, params object?[]! arguments) -> void
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult
 Microsoft.AspNetCore.Http.HttpResults.EmptyHttpResult.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
@@ -11,6 +13,22 @@ Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.AcceptsMetadata(string![]! co
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.AcceptsMetadata.RequestType.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.FormMappingOptionsMetadata(int? maxCollectionSize = null, int? maxRecursionDepth = null, int? maxKeySize = null) -> void
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.MaxCollectionSize.get -> int?
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.MaxKeySize.get -> int?
+Microsoft.AspNetCore.Http.Metadata.FormMappingOptionsMetadata.MaxRecursionDepth.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.BufferBody.get -> bool?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.BufferBodyLengthLimit.get -> long?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.KeyLengthLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MemoryBufferThreshold.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartBodyLengthLimit.get -> long?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartBoundaryLengthLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartHeadersCountLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.MultipartHeadersLengthLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.ValueCountLimit.get -> int?
+Microsoft.AspNetCore.Http.Metadata.IFormOptionsMetadata.ValueLengthLimit.get -> int?
 Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata
 Microsoft.AspNetCore.Http.Metadata.IRouteDiagnosticsMetadata.Route.get -> string!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.Exception.get -> System.Exception?

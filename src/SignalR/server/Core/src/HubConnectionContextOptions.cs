@@ -34,4 +34,9 @@ public class HubConnectionContextOptions
     /// Gets or sets the maximum parallel hub method invocations.
     /// </summary>
     public int MaximumParallelInvocations { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the maximum bytes to buffer per connection when using stateful reconnect.
+    /// </summary>
+    internal long StatefulReconnectBufferSize { get; set; } = 100_000;
 }

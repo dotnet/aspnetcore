@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core-Web-API",
-  "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit einem Beispielcontroller für einen RESTful HTTP-Dienst. Diese Vorlage kann auch für ASP.NET Core-MVC-Ansichten und -Controller verwendet werden.",
+  "description": "Eine Projektvorlage zum Erstellen einer RESTful-Web-API mit ASP.NET Core-Controllern oder minimalen APIs mit optionaler Unterstützung für OpenAPI und Authentifizierung.",
   "symbols/auth/choices/None/description": "Keine Authentifizierung",
   "symbols/auth/choices/IndividualB2C/description": "Individuelle Authentifizierung mit Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Organisationsauthentifizierung für einen einzelnen Mandanten",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn IndividualB2C, SingleOrg oder MultiOrg nicht für --auth verwendet werden.",
   "symbols/UseLocalDB/description": "Ob LocalDB anstelle von SQLite verwendet werden soll. Diese Option gilt nur, wenn --auth Individual oder --auth IndividualB2C angegeben ist.",
   "symbols/UseMinimalAPIs/description": "Ob minimale APIs anstelle von Controllern verwendet werden sollen.",
+  "symbols/UseControllers/description": "Gibt an, ob Controller anstelle von minimalen APIs verwendet werden sollen. Diese Option überschreibt den durch \"--minimal\" angegebenen Wert.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",

@@ -4,7 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { handleClickForNavigationInterception, hasInteractiveRouter, isWithinBaseUriSpace, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 
 let hasRegisteredNavigationEventListeners = false;
 let hasLocationChangingEventListeners = false;
@@ -25,6 +25,7 @@ export const internalFunctions = {
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
+  refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
   scrollToElement,
@@ -93,6 +94,14 @@ function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boo
   scrollToElement(identifier);
 }
 
+function refresh(forceReload: boolean): void {
+  if (!forceReload && hasProgrammaticEnhancedNavigationHandler()) {
+    performProgrammaticEnhancedNavigation(location.href, /* replace */ true);
+  } else {
+    location.reload();
+  }
+}
+
 // For back-compat, we need to accept multiple overloads
 export function navigateTo(uri: string, options: NavigationOptions): void;
 export function navigateTo(uri: string, forceLoad: boolean): void;
@@ -116,7 +125,11 @@ function navigateToCore(uri: string, options: NavigationOptions, skipLocationCha
   const absoluteUri = toAbsoluteUri(uri);
 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+    if (shouldUseClientSideRouting()) {
+      performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+    } else {
+      performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+    }
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -255,11 +268,15 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback) {
+  if (popStateCallback && shouldUseClientSideRouting()) {
     await popStateCallback(state);
   }
 
   currentHistoryIndex = history.state?._index ?? 0;
+}
+
+function shouldUseClientSideRouting() {
+  return hasInteractiveRouter() || !hasProgrammaticEnhancedNavigationHandler();
 }
 
 // Keep in sync with Components/src/NavigationOptions.cs

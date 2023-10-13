@@ -107,6 +107,6 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(66, LogLevel.Debug, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": The request was aborted by the client.", EventName = "RequestAborted")]
         public static partial void RequestAbortedException(ILogger logger, string connectionId, string traceIdentifier);
 
-        // Highest shared ID is 66. New consecutive IDs start at 67
+        // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)
     }
 }

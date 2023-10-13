@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -121,6 +123,99 @@ public static class RoutingEndpointConventionBuilderExtensions
     public static TBuilder WithGroupName<TBuilder>(this TBuilder builder, string endpointGroupName) where TBuilder : IEndpointConventionBuilder
     {
         builder.WithMetadata(new EndpointGroupNameAttribute(endpointGroupName));
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the <see cref="RouteEndpointBuilder.Order"/> to the provided <paramref name="order"/> for all
+    /// builders created by <paramref name="builder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="order">The order assigned to the endpoint.</param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+    public static TBuilder WithOrder<TBuilder>(this TBuilder builder, int order) where TBuilder : IEndpointConventionBuilder
+    {
+        builder.Add(builder =>
+        {
+            if (builder is RouteEndpointBuilder routeEndpointBuilder)
+            {
+                routeEndpointBuilder.Order = order;
+            }
+            else
+            {
+                throw new InvalidOperationException("This endpoint does not support Order.");
+            }
+        });
+        return builder;
+    }
+
+    /// <summary>
+    /// Disables anti-forgery token validation for all endpoints produced on
+    /// the target <see cref="IEndpointConventionBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+    public static TBuilder DisableAntiforgery<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Finally(builder => builder.Metadata.Add(AntiforgeryMetadata.ValidationNotRequired));
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures <see cref="FormMappingOptionsMetadata"/> for all endpoints produced
+    /// on the target <see cref="IEndpointConventionBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>>.</param>
+    /// <param name="maxRecursionDepth">The maximum depth allowed when recursively mapping form data. Defaults to 64.</param>
+    /// <param name="maxKeySize">The maximum size of the buffer used to read form data keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/></param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+    public static TBuilder WithFormMappingOptions<TBuilder>(
+        this TBuilder builder,
+        int? maxCollectionSize = null,
+        int? maxRecursionDepth = null,
+        int? maxKeySize = null) where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.WithMetadata(new FormMappingOptionsMetadata(maxCollectionSize, maxRecursionDepth, maxKeySize));
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures <see cref="FormOptionsMetadata"/> for all endpoints produced
+    /// on the target <see cref="IEndpointConventionBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="bufferBody">Enables full request body buffering. Defaults to false.</param>
+    /// <param name="memoryBufferThreshold">Configures how many bytes of the body will be buffered in memory. Defaults to 65,536 bytes, which is approximately 64KB.</param>
+    /// <param name="bufferBodyLengthLimit">Limit for the total number of bytes that will be buffered. Defaults to 128MB.</param>
+    /// <param name="valueCountLimit">Limit for the number of form entries to allow. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>.</param>
+    /// <param name="keyLengthLimit">Limit on the length of individual keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/>.</param>
+    /// <param name="valueLengthLimit">Limit on the length of individual form values. Defaults to <see cref="FormReader.DefaultValueLengthLimit"/>.</param>
+    /// <param name="multipartBoundaryLengthLimit">Limit for the length of the boundary identifier. Defaults to 128 bytes.</param>
+    /// <param name="multipartHeadersCountLimit">Limit for the number of headers to allow in each multipart section. Defaults to <see cref="MultipartReader.DefaultHeadersCountLimit"/>.</param>
+    /// <param name="multipartHeadersLengthLimit">Limit for the total length of the header keys and values in each multipart section. Defaults to <see cref="MultipartReader.DefaultHeadersLengthLimit"/>.</param>
+    /// <param name="multipartBodyLengthLimit">Limit for the length of each multipart body. Defaults to 134,217,728 bytes, which is approximately 128MB.</param>
+    /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+    public static TBuilder WithFormOptions<TBuilder>(
+        this TBuilder builder,
+        bool? bufferBody = null,
+        int? memoryBufferThreshold = null,
+        long? bufferBodyLengthLimit = null,
+        int? valueCountLimit = null,
+        int? keyLengthLimit = null,
+        int? valueLengthLimit = null,
+        int? multipartBoundaryLengthLimit = null,
+        int? multipartHeadersCountLimit = null,
+        int? multipartHeadersLengthLimit = null,
+        long? multipartBodyLengthLimit = null) where TBuilder : IEndpointConventionBuilder
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.WithMetadata(new FormOptionsMetadata(bufferBody, memoryBufferThreshold, bufferBodyLengthLimit, valueCountLimit, keyLengthLimit, valueLengthLimit, multipartBoundaryLengthLimit, multipartHeadersCountLimit, multipartHeadersLengthLimit, multipartBodyLengthLimit));
         return builder;
     }
 }

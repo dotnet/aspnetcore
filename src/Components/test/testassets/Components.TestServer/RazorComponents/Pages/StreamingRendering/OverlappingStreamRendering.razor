@@ -1,0 +1,29 @@
+﻿@page "/overlapping-streaming"
+@attribute [StreamRendering]
+<h3>Overlapping Streaming Rendering</h3>
+
+<p>
+    This test causes renders to occur while preceding ones are still being flushed to the response stream,
+    so that we can verify the response is still well-formed.
+</p>
+
+<div id="content-to-verify">@for(var i = 0; i < Count.GetValueOrDefault(10000); i++)
+{
+    <span>@i: @message</span>@Environment.NewLine
+}</div>
+
+@code {
+    string message = "Initial";
+
+    [SupplyParameterFromQuery]
+    public int? Count { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Because the initial render is so large, and the subsequent update happens so quickly,
+        // the system will be forced process more content while a flush is in progress. Prior to
+        // fixing RazorComponentEndpointInvoker, this would always produce corrupted output.
+        await Task.Yield();
+        message = "Modified";
+    }
+}

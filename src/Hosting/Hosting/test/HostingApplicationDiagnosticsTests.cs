@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;
@@ -53,10 +53,10 @@ public class HostingApplicationDiagnosticsTests
         var hostingApplication1 = CreateApplication(out var features1, eventSource: hostingEventSource, meterFactory: testMeterFactory1);
         var hostingApplication2 = CreateApplication(out var features2, eventSource: hostingEventSource, meterFactory: testMeterFactory2);
 
-        using var currentRequestsRecorder1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http-server-current-requests");
-        using var currentRequestsRecorder2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http-server-current-requests");
-        using var requestDurationRecorder1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http-server-request-duration");
-        using var requestDurationRecorder2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http-server-request-duration");
+        using var activeRequestsCollector1 = new MetricCollector<long>(testMeterFactory1, HostingMetrics.MeterName, "http.server.active_requests");
+        using var activeRequestsCollector2 = new MetricCollector<long>(testMeterFactory2, HostingMetrics.MeterName, "http.server.active_requests");
+        using var requestDurationCollector1 = new MetricCollector<double>(testMeterFactory1, HostingMetrics.MeterName, "http.server.request.duration");
+        using var requestDurationCollector2 = new MetricCollector<double>(testMeterFactory2, HostingMetrics.MeterName, "http.server.request.duration");
 
         // Act/Assert 1
         var context1 = hostingApplication1.CreateContext(features1);
@@ -75,15 +75,15 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
         Assert.Equal(0, await failedRequestValues.FirstOrDefault(v => v == 0));
 
-        Assert.Collection(currentRequestsRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(currentRequestsRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector2.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(requestDurationRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector1.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0));
-        Assert.Collection(requestDurationRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0));
 
         // Act/Assert 2
@@ -106,22 +106,72 @@ public class HostingApplicationDiagnosticsTests
         Assert.Equal(0, await currentRequestValues.FirstOrDefault(v => v == 0));
         Assert.Equal(2, await failedRequestValues.FirstOrDefault(v => v == 2));
 
-        Assert.Collection(currentRequestsRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector1.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(currentRequestsRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(activeRequestsCollector2.GetMeasurementSnapshot(),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value),
             m => Assert.Equal(1, m.Value),
             m => Assert.Equal(-1, m.Value));
-        Assert.Collection(requestDurationRecorder1.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector1.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
-        Assert.Collection(requestDurationRecorder2.GetMeasurementSnapshot(),
+        Assert.Collection(requestDurationCollector2.GetMeasurementSnapshot(),
             m => Assert.True(m.Value > 0),
             m => Assert.True(m.Value > 0));
+    }
+
+    [Fact]
+    public void EventCountersEnabled()
+    {
+        // Arrange
+        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
+
+        var eventListener = new TestCounterListener(new[]
+        {
+            "requests-per-second",
+            "total-requests",
+            "current-requests",
+            "failed-requests"
+        });
+
+        eventListener.EnableEvents(hostingEventSource, EventLevel.Informational, EventKeywords.None,
+            new Dictionary<string, string>
+            {
+                { "EventCounterIntervalSec", "1" }
+            });
+
+        var testMeterFactory = new TestMeterFactory();
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory);
+        var context = hostingApplication.CreateContext(features);
+
+        // Assert
+        Assert.True(context.EventLogEnabled);
+        Assert.False(context.MetricsEnabled);
+    }
+
+    [Fact]
+    public void MetricsEnabled()
+    {
+        // Arrange
+        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
+
+        var testMeterFactory = new TestMeterFactory();
+        using var activeRequestsCollector = new MetricCollector<long>(testMeterFactory, HostingMetrics.MeterName, "http.server.active_requests");
+        using var requestDurationCollector = new MetricCollector<double>(testMeterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory);
+        var context = hostingApplication.CreateContext(features);
+
+        // Assert
+        Assert.True(context.MetricsEnabled);
+        Assert.False(context.EventLogEnabled);
     }
 
     [Fact]

@@ -48,6 +48,25 @@ public static class ExceptionHandlerExtensions
     }
 
     /// <summary>
+    /// Adds a middleware to the pipeline that will catch exceptions, log them, reset the request path, and re-execute the request.
+    /// The request will not be re-executed if the response has already started.
+    /// </summary>
+    /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+    /// <param name="errorHandlingPath">The <see cref="string"/> path to the endpoint that will handle the exception.</param>
+    /// <param name="createScopeForErrors">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath, bool createScopeForErrors)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        return app.UseExceptionHandler(new ExceptionHandlerOptions
+        {
+            ExceptionHandlingPath = new PathString(errorHandlingPath),
+            CreateScopeForErrors = createScopeForErrors
+        });
+    }
+
+    /// <summary>
     /// Adds a middleware to the pipeline that will catch exceptions, log them, and re-execute the request in an alternate pipeline.
     /// The request will not be re-executed if the response has already started.
     /// </summary>

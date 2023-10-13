@@ -987,5 +987,26 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
     }
 
-    private readonly record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
+    public readonly struct DfaBuilderWorkerWorkItem
+    {
+        public RouteEndpoint Endpoint { get; }
+
+        public int PrecedenceDigit { get; }
+
+        public List<DfaNode> Parents { get; }
+
+        public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
+        {
+            Endpoint = endpoint;
+            PrecedenceDigit = precedenceDigit;
+            Parents = parents;
+        }
+
+        public void Deconstruct(out RouteEndpoint endpoint, out int precedenceDigit, out List<DfaNode> parents)
+        {
+            endpoint = Endpoint;
+            precedenceDigit = PrecedenceDigit;
+            parents = Parents;
+        }
+    }
 }

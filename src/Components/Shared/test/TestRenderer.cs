@@ -30,21 +30,7 @@ public class TestRenderer : Renderer
         Dispatcher = Dispatcher.CreateDefault();
     }
 
-    protected internal override void TrackNamedEventId(ulong eventHandlerId, int componentId, string eventName)
-    {
-        OnNamedEvent?.Invoke((eventHandlerId, componentId, eventName));
-    }
-
-    protected internal override bool ShouldTrackNamedEventHandlers()
-    {
-        return TrackNamedEventHandlers;
-    }
-
     public override Dispatcher Dispatcher { get; }
-
-    public bool TrackNamedEventHandlers { get; set; }
-
-    public Action<(ulong eventHandlerId, int componentId, string eventName)> OnNamedEvent { get; set; }
 
     public Action OnExceptionHandled { get; set; }
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -285,5 +286,44 @@ public class BindingInfoTest
         // Assert
         Assert.NotNull(bindingInfo);
         Assert.Equal(EmptyBodyBehavior.Default, bindingInfo.EmptyBodyBehavior);
+    }
+
+    [Fact]
+    public void GetBindingInfo_WithFromKeyedServicesAttribute()
+    {
+        // Arrange
+        var key = new object();
+        var attributes = new object[]
+        {
+                new FromKeyedServicesAttribute(key),
+        };
+        var modelType = typeof(Guid);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Same(BindingSource.Services, bindingInfo.BindingSource);
+        Assert.Same(key, bindingInfo.ServiceKey);
+    }
+
+    [Fact]
+    public void GetBindingInfo_ThrowsWhenWithFromKeyedServicesAttributeAndIFromServiceMetadata()
+    {
+        // Arrange
+        var attributes = new object[]
+        {
+                new FromKeyedServicesAttribute(new object()),
+                new FromServicesAttribute()
+        };
+        var modelType = typeof(Guid);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act and Assert
+        Assert.Throws<NotSupportedException>(() => BindingInfo.GetBindingInfo(attributes, modelMetadata));
     }
 }

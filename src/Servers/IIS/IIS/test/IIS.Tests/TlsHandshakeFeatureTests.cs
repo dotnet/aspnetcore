@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 public class TlsHandshakeFeatureTests : StrictTestServerTests
 {
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49306")]
     public async Task SetsTlsHandshakeFeatureForHttps()
     {
         ITlsHandshakeFeature tlsHandshakeFeature = null;

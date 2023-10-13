@@ -1,7 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Reflection;
+using System.Runtime.InteropServices.Marshalling;
+using System.Text.Json;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +19,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 public class CircuitHostTest
 {
+    private readonly IDataProtectionProvider _ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
+    private readonly ServerComponentInvocationSequence _invocationSequence = new();
+
     [Fact]
     public async Task DisposeAsync_DisposesResources()
     {
@@ -251,7 +259,7 @@ public class CircuitHostTest
             .Returns(tcs.Task)
             .Verifiable();
 
-        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object });
+        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object }, descriptors: [new ComponentDescriptor() ]);
         circuitHost.UnhandledException += (sender, errorInfo) =>
         {
             Assert.Same(circuitHost, sender);
@@ -404,6 +412,239 @@ public class CircuitHostTest
         Assert.True(wasHandlerFuncInvoked);
     }
 
+    [Fact]
+    public async Task UpdateRootComponents_CanAddNewRootComponent()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var expectedMessage = "Hello, world!";
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        };
+
+        // Act
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters);
+
+        // Assert
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CanUpdateExistingRootComponent()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var componentKey = "mykey";
+
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, null, componentKey);
+
+        var expectedMessage = "Updated message";
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        };
+
+        // Act
+        await UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters, componentKey);
+
+        // Assert
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CanReplaceExistingRootComponent_WhenNoComponentKeyWasSpecified()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1);
+
+        var expectedMessage = "Updated message";
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        };
+
+        // Act
+        await UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters);
+
+        // Assert
+        Assert.Throws<ArgumentException>(() =>
+            ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(1);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenDescriptorComponentTypeDoesNotMatchRootComponentType()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        // Arrange
+        var expectedMessage = "Existing message";
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, new Dictionary<string, object>()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        });
+
+        await AddComponentAsync<TestComponent>(circuitHost, 2, []);
+
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
+        };
+
+        // Act
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
+            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
+            () => UpdateComponentAsync<TestComponent /* Note the incorrect component type */>(circuitHost, 1, parameters));
+
+        // Assert
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+
+        Assert.NotNull(evt);
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Equal("Cannot update components with mismatching types.", exception.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenDescriptorKeyDoesNotMatchOriginalKey()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+
+        // Arrange
+        var originalKey = "original_key";
+        var expectedMessage = "Existing message";
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, new Dictionary<string, object>()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        }, originalKey);
+
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
+        };
+
+        // Act
+        var evt = await Assert.RaisesAsync<UnhandledExceptionEventArgs>(
+            handler => circuitHost.UnhandledException += new UnhandledExceptionEventHandler(handler),
+            handler => circuitHost.UnhandledException -= new UnhandledExceptionEventHandler(handler),
+            () => UpdateComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters, componentKey: "new_key"));
+
+        // Assert
+        var componentState = ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0);
+        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
+        Assert.Equal(expectedMessage, component.Message);
+
+        Assert.NotNull(evt);
+        var exception = Assert.IsType<InvalidOperationException>(evt.Arguments.ExceptionObject);
+        Assert.Equal("Cannot update components with mismatching keys.", exception.Message);
+    }
+
+    [Fact]
+    public async Task UpdateRootComponents_CanRemoveExistingRootComponent()
+    {
+        // Arrange
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: GetRemoteRenderer(),
+            serviceScope: new ServiceCollection().BuildServiceProvider().CreateAsyncScope());
+        var expectedMessage = "Updated message";
+
+        Dictionary<string, object> parameters = new()
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
+        };
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, parameters);
+
+        // Act
+        await RemoveComponentAsync(circuitHost, 1);
+
+        // Assert
+        Assert.Throws<ArgumentException>(() =>
+            ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
+    }
+
+    private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+        where TComponent : IComponent
+    {
+        var addOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Add,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+        };
+        var addDescriptor = new WebRootComponentDescriptor(
+            componentType: typeof(TComponent),
+            key: addOperation.Marker.Value.Key,
+            parameters: CreateWebRootComponentParameters(parameters));
+
+        // Add component
+        await circuitHost.UpdateRootComponents(
+            [new(addOperation, addDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+    }
+
+    private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
+    {
+        var updateOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            SsrComponentId = ssrComponentId,
+            Marker = CreateMarker(typeof(TComponent), ssrComponentId.ToString(CultureInfo.InvariantCulture), parameters, componentKey),
+        };
+        var updateDescriptor = new WebRootComponentDescriptor(
+            componentType: typeof(TComponent),
+            key: updateOperation.Marker.Value.Key,
+            parameters: CreateWebRootComponentParameters(parameters));
+
+        // Update component
+        await circuitHost.UpdateRootComponents(
+            [new(updateOperation, updateDescriptor)], null, CreateDeserializer(), CancellationToken.None);
+    }
+
+    private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
+    {
+        var removeOperation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Remove,
+            SsrComponentId = ssrComponentId,
+        };
+
+        // Remove component
+        await circuitHost.UpdateRootComponents(
+            [new(removeOperation, null)], null, CreateDeserializer(), CancellationToken.None);
+    }
+
+    private ProtectedPrerenderComponentApplicationStore CreateStore()
+    {
+        return new ProtectedPrerenderComponentApplicationStore(_ephemeralDataProtectionProvider);
+    }
+
+    private ServerComponentDeserializer CreateDeserializer()
+    {
+        return new ServerComponentDeserializer(_ephemeralDataProtectionProvider, NullLogger<ServerComponentDeserializer>.Instance, new RootComponentTypeCache(), new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
+    }
+
     private static TestRemoteRenderer GetRemoteRenderer()
     {
         var serviceCollection = new ServiceCollection();
@@ -433,6 +674,40 @@ public class CircuitHostTest
             .Verifiable();
     }
 
+    private ComponentMarker CreateMarker(Type type, string locationHash, Dictionary<string, object> parameters = null, string componentKey = "")
+    {
+        var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
+        var key = new ComponentMarkerKey(locationHash, componentKey);
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key);
+        serializer.SerializeInvocation(
+            ref marker,
+            _invocationSequence,
+            type,
+            parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
+        return marker;
+    }
+
+    private static WebRootComponentParameters CreateWebRootComponentParameters(IDictionary<string, object> parameters = null)
+    {
+        if (parameters is null)
+        {
+            return WebRootComponentParameters.Empty;
+        }
+
+        var parameterView = ParameterView.FromDictionary(parameters);
+        var (parameterDefinitions, parameterValues) = ComponentParameter.FromParameterView(parameterView);
+        for (var i = 0; i < parameterValues.Count; i++)
+        {
+            // WebRootComponentParameters expects serialized parameter values to be JsonElements.
+            var jsonElement = JsonSerializer.SerializeToElement(parameterValues[i]);
+            parameterValues[i] = jsonElement;
+        }
+        return new WebRootComponentParameters(
+            parameterView,
+            parameterDefinitions.AsReadOnly(),
+            parameterValues.AsReadOnly());
+    }
+
     private class TestRemoteRenderer : RemoteRenderer
     {
         public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
@@ -441,11 +716,15 @@ public class CircuitHostTest
                   NullLoggerFactory.Instance,
                   new CircuitOptions(),
                   new CircuitClientProxy(client, "connection"),
+                  new TestServerComponentDeserializer(),
                   NullLogger.Instance,
                   CreateJSRuntime(new CircuitOptions()),
                   new CircuitJSComponentInterop(new CircuitOptions()))
         {
         }
+
+        public ComponentState GetTestComponentState(int id)
+            => base.GetComponentState(id);
 
         protected override void Dispose(bool disposing)
         {
@@ -567,6 +846,100 @@ public class CircuitHostTest
                 ExceptionDuringDisposeAsync = ex;
                 throw;
             }
+        }
+    }
+
+    private class TestServerComponentDeserializer : IServerComponentDeserializer
+    {
+        public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, out List<ComponentDescriptor> descriptors)
+        {
+            descriptors = default;
+            return true;
+        }
+
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out CircuitRootComponentOperation[] operationBatch)
+        {
+            operationBatch = default;
+            return true;
+        }
+    }
+
+    private class DynamicallyAddedComponent : IComponent, IDisposable
+    {
+        private readonly TaskCompletionSource _disposeTcs = new();
+        private RenderHandle _renderHandle;
+
+        [Parameter]
+        public string Message { get; set; } = "Default message";
+
+        private void Render(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, Message);
+        }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            if (parameters.TryGetValue<string>(nameof(Message), out var message))
+            {
+                Message = message;
+            }
+
+            TriggerRender();
+            return Task.CompletedTask;
+        }
+
+        public void TriggerRender()
+        {
+            var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(Render));
+            Assert.True(task.IsCompletedSuccessfully);
+        }
+
+        public Task WaitForDisposeAsync()
+            => _disposeTcs.Task;
+
+        public void Dispose()
+        {
+            _disposeTcs.SetResult();
+        }
+    }
+
+    private class TestComponent() : IComponent, IHandleAfterRender
+    {
+        private RenderHandle _renderHandle;
+        private readonly RenderFragment _renderFragment = (builder) =>
+        {
+            builder.OpenElement(0, "my element");
+            builder.AddContent(1, "some text");
+            builder.CloseElement();
+        };
+
+        public TestComponent(RenderFragment renderFragment) : this() => _renderFragment = renderFragment;
+
+        public Action OnAfterRenderComplete { get; set; }
+
+        public void Attach(RenderHandle renderHandle) => _renderHandle = renderHandle;
+
+        public Task OnAfterRenderAsync()
+        {
+            OnAfterRenderComplete?.Invoke();
+            return Task.CompletedTask;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            TriggerRender();
+            return Task.CompletedTask;
+        }
+
+        public void TriggerRender()
+        {
+            var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
+            Assert.True(task.IsCompletedSuccessfully);
         }
     }
 }

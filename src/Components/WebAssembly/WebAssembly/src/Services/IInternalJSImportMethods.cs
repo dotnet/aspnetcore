@@ -21,13 +21,11 @@ internal interface IInternalJSImportMethods
 
     int RegisteredComponents_GetRegisteredComponentsCount();
 
-    int RegisteredComponents_GetId(int index);
+    string RegisteredComponents_GetAssembly(int index);
 
-    string RegisteredComponents_GetAssembly(int id);
+    string RegisteredComponents_GetTypeName(int index);
 
-    string RegisteredComponents_GetTypeName(int id);
+    string RegisteredComponents_GetParameterDefinitions(int index);
 
-    string RegisteredComponents_GetParameterDefinitions(int id);
-
-    string RegisteredComponents_GetParameterValues(int id);
+    string RegisteredComponents_GetParameterValues(int index);
 }

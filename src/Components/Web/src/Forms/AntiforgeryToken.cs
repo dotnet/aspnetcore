@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -14,12 +15,12 @@ public class AntiforgeryToken : IComponent
     private bool _hasRendered;
     private AntiforgeryRequestToken? _requestToken;
 
-    [Inject] AntiforgeryStateProvider Antiforgery { get; set; } = default!;
+    [Inject] IServiceProvider Services { get; set; } = default!;
 
     void IComponent.Attach(RenderHandle renderHandle)
     {
         _handle = renderHandle;
-        _requestToken = Antiforgery.GetAntiforgeryToken();
+        _requestToken = Services.GetService<AntiforgeryStateProvider>()?.GetAntiforgeryToken();
     }
 
     Task IComponent.SetParametersAsync(ParameterView parameters)
@@ -27,7 +28,10 @@ public class AntiforgeryToken : IComponent
         if (!_hasRendered)
         {
             _hasRendered = true;
-            _handle.Render(RenderField);
+            if (_requestToken != null)
+            {
+                _handle.Render(RenderField);
+            }
         }
 
         return Task.CompletedTask;
@@ -35,13 +39,10 @@ public class AntiforgeryToken : IComponent
 
     private void RenderField(RenderTreeBuilder builder)
     {
-        if (_requestToken != null)
-        {
-            builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "type", "hidden");
-            builder.AddAttribute(2, "name", _requestToken.FormFieldName);
-            builder.AddAttribute(3, "value", _requestToken.Value);
-            builder.CloseElement();
-        }
+        builder.OpenElement(0, "input");
+        builder.AddAttribute(1, "type", "hidden");
+        builder.AddAttribute(2, "name", _requestToken!.FormFieldName);
+        builder.AddAttribute(3, "value", _requestToken.Value);
+        builder.CloseElement();
     }
 }

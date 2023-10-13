@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 /// </summary>
 public sealed partial class LazyAssemblyLoader
 {
-    private HashSet<string>? _loadedAssemblyCache;
-
     /// <summary>
     /// Initializes a new instance of <see cref="LazyAssemblyLoader"/>.
     /// </summary>
@@ -68,67 +66,42 @@ public sealed partial class LazyAssemblyLoader
 
     [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
     [SupportedOSPlatform("browser")]
-    private async Task<IEnumerable<Assembly>> LoadAssembliesInClientAsync(IEnumerable<string> assembliesToLoad)
+    private static async Task<IEnumerable<Assembly>> LoadAssembliesInClientAsync(IEnumerable<string> assembliesToLoad)
     {
-        if (_loadedAssemblyCache is null)
-        {
-            var loadedAssemblyCache = new HashSet<string>(StringComparer.Ordinal);
-            var appDomainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (var i = 0; i < appDomainAssemblies.Length; i++)
-            {
-                var assembly = appDomainAssemblies[i];
-                loadedAssemblyCache.Add(assembly.GetName().Name + ".dll");
-            }
-
-            _loadedAssemblyCache = loadedAssemblyCache;
-        }
-
-        // Check to see if the assembly has already been loaded and avoids reloading it if so.
-        // Note: in the future, as an extra precaution, we can call `Assembly.Load` and check
-        // to see if it throws FileNotFound to ensure that an assembly hasn't been loaded
-        // between when the cache of loaded assemblies was instantiated in the constructor
-        // and the invocation of this method.
-        var newAssembliesToLoad = new List<string>();
-        foreach (var assemblyToLoad in assembliesToLoad)
-        {
-            if (!_loadedAssemblyCache.Contains(assemblyToLoad))
-            {
-                newAssembliesToLoad.Add(assemblyToLoad);
-            }
-        }
-
-        if (newAssembliesToLoad.Count == 0)
-        {
-            return Array.Empty<Assembly>();
-        }
-
+        var newAssembliesToLoad = assembliesToLoad.ToList();
         var loadedAssemblies = new List<Assembly>();
-        var pendingLoads = newAssembliesToLoad.Select(assemblyToLoad => LoadAssembly(assemblyToLoad, loadedAssemblies));
+        var pendingLoads = newAssembliesToLoad.Select(LazyAssemblyLoaderInterop.LoadLazyAssembly);
 
-        await Task.WhenAll(pendingLoads);
+        var loadedStatus = await Task.WhenAll(pendingLoads);
+        int i = 0;
+
+        List<Assembly>? allAssemblies = null;
+        foreach (var loaded in loadedStatus)
+        {
+            if (loaded)
+            {
+                if (allAssemblies == null)
+                {
+                    allAssemblies = AssemblyLoadContext.Default.Assemblies.ToList();
+                }
+
+                var assemblyName = Path.GetFileNameWithoutExtension(newAssembliesToLoad[i]);
+                var assembly = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(a => a.GetName().Name == assemblyName);
+                if (assembly != null)
+                {
+                    loadedAssemblies.Add(assembly);
+                }
+            }
+
+            i++;
+        }
+
         return loadedAssemblies;
-    }
-
-    [RequiresUnreferencedCode("Types and members the loaded assemblies depend on might be removed")]
-    [SupportedOSPlatform("browser")]
-    private async Task LoadAssembly(string assemblyToLoad, List<Assembly> loadedAssemblies)
-    {
-        using var files = await LazyAssemblyLoaderInterop.LoadLazyAssembly(assemblyToLoad);
-
-        var dllBytes = files.GetPropertyAsByteArray("dll")!;
-        var pdbBytes = files.GetPropertyAsByteArray("pdb");
-        Assembly loadedAssembly = pdbBytes == null
-                    ? AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(dllBytes))
-                    : AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(dllBytes), new MemoryStream(pdbBytes));
-
-        loadedAssemblies.Add(loadedAssembly);
-        _loadedAssemblyCache!.Add(assemblyToLoad);
-
     }
 
     private partial class LazyAssemblyLoaderInterop
     {
-        [JSImport("Blazor._internal.loadLazyAssembly", "blazor-internal")]
-        public static partial Task<JSObject> LoadLazyAssembly(string assemblyToLoad);
+        [JSImport("INTERNAL.loadLazyAssembly")]
+        public static partial Task<bool> LoadLazyAssembly(string assemblyToLoad);
     }
 }

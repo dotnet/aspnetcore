@@ -20,7 +20,6 @@ internal class EndpointResponse
     public bool HasNoResponse { get; set; }
     public bool IsIResult { get; set; }
     public bool IsSerializable { get; set; }
-    public bool IsAnonymousType { get; set; }
     public bool IsEndpointMetadataProvider { get; set; }
     private WellKnownTypes WellKnownTypes { get; init; }
 
@@ -34,7 +33,6 @@ internal class EndpointResponse
         IsIResult = GetIsIResult();
         IsSerializable = GetIsSerializable();
         ContentType = GetContentType();
-        IsAnonymousType = method.ReturnType.IsAnonymousType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(ResponseType, wellKnownTypes);
     }
 

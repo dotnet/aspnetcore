@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -63,6 +64,7 @@ public abstract class PageBase : RazorPageBase
     /// <summary>
     /// Gets or sets the <see cref="IModelMetadataProvider"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IModelMetadataProvider MetadataProvider
     {
         get

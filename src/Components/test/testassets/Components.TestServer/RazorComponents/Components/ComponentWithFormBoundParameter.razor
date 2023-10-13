@@ -1,9 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Components.Forms
 
-<EditForm FormHandlerName="named-form-handler" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" >
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="named-form-handler">
+    <AntiforgeryToken />
     <InputText @bind-Value="Parameter" />
     <input id="send" type="submit" value="Send" />
-</EditForm>
+</form>
 
 @if (_submitted)
 {
@@ -13,5 +14,5 @@
 @code{
     bool _submitted = false;
 
-    [SupplyParameterFromForm(Handler = "named-form-handler")] public string Parameter { get; set; } = "";
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public string Parameter { get; set; } = "";
 }

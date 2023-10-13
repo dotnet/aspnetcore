@@ -87,22 +87,13 @@ public class RouteView : IComponent
 
     private void RenderPageWithParameters(RenderTreeBuilder builder)
     {
-        builder.OpenComponent<CascadingModelBinder>(0);
-        builder.AddComponentParameter(1, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)RenderPageWithContext);
-        builder.CloseComponent();
+        builder.OpenComponent(0, RouteData.PageType);
 
-        RenderFragment RenderPageWithContext(ModelBindingContext context) => RenderPageCore;
-
-        void RenderPageCore(RenderTreeBuilder builder)
+        foreach (var kvp in RouteData.RouteValues)
         {
-            builder.OpenComponent(0, RouteData.PageType);
-
-            foreach (var kvp in RouteData.RouteValues)
-            {
-                builder.AddComponentParameter(1, kvp.Key, kvp.Value);
-            }
-
-            builder.CloseComponent();
+            builder.AddComponentParameter(1, kvp.Key, kvp.Value);
         }
+
+        builder.CloseComponent();
     }
 }

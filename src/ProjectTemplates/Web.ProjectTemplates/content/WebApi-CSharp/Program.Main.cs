@@ -51,11 +51,11 @@ public class Program
             .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
         #endif
         #endif
-        #if (UseMinimalAPIs)
+        #if (UsingMinimalAPIs)
         builder.Services.AddAuthorization();
         #endif
 
-        #if (UseControllers)
+        #if (UsingControllers)
         builder.Services.AddControllers();
         #endif
         #if (EnableOpenAPI)
@@ -92,7 +92,7 @@ public class Program
 
         app.UseAuthorization();
 
-        #if (UseMinimalAPIs)
+        #if (UsingMinimalAPIs)
         #if (OrganizationalAuth || IndividualB2CAuth)
         var scopeRequiredByApi = app.Configuration["AzureAd:Scopes"] ?? "";
         #endif
@@ -178,7 +178,7 @@ public class Program
         });
         #endif
         #endif
-        #if (UseControllers)
+        #if (UsingControllers)
 
         app.MapControllers();
         #endif

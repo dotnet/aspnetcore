@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,15 +15,16 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    private const string _progressivelyEnhancedNavRequestHeaderName = "blazor-enhanced-nav";
     private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
+    private bool _isHandlingErrors;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
     {
-        if (httpContext.Request.Headers.ContainsKey(_progressivelyEnhancedNavRequestHeaderName))
+        _isHandlingErrors = isErrorHandler;
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
@@ -59,7 +61,7 @@ internal partial class EndpointHtmlRenderer
         }
         catch (NavigationException navigationException)
         {
-            HandleNavigationAfterResponseStarted(writer, navigationException.Location);
+            HandleNavigationAfterResponseStarted(writer, httpContext, navigationException.Location);
         }
         catch (Exception ex)
         {
@@ -118,10 +120,22 @@ internal partial class EndpointHtmlRenderer
             }
 
             // Now process the list, skipping any we've already visited in an earlier iteration
+            var isEnhancedNavigation = IsProgressivelyEnhancedNavigation(_httpContext.Request);
             for (var i = 0; i < componentIdsInDepthOrder.Length; i++)
             {
                 var componentId = componentIdsInDepthOrder[i].ComponentId;
                 if (_visitedComponentIdsInCurrentStreamingBatch.Contains(componentId))
+                {
+                    continue;
+                }
+
+                // Of the components that updated, we want to emit the roots of all the streaming subtrees, and not
+                // any non-streaming ancestors. There's no point emitting non-streaming ancestor content since there
+                // are no markers in the document to receive it. Also we don't want to call WriteComponentHtml for
+                // nonstreaming ancestors, as that would make us skip over their descendants who may in fact be the
+                // roots of streaming subtrees.
+                var componentState = (EndpointComponentState)GetComponentState(componentId);
+                if (!componentState.StreamRendering)
                 {
                     continue;
                 }
@@ -132,7 +146,7 @@ internal partial class EndpointHtmlRenderer
                 // as it is being written out.
                 writer.Write($"<template blazor-component-id=\"");
                 writer.Write(componentId);
-                writer.Write("\">");
+                writer.Write(isEnhancedNavigation ? "\" enhanced-nav=\"true\">" : "\">");
 
                 // We don't need boundary markers at the top-level since the info is on the <template> anyway.
                 WriteComponentHtml(componentId, writer, allowBoundaryMarkers: false);
@@ -140,7 +154,7 @@ internal partial class EndpointHtmlRenderer
                 writer.Write("</template>");
             }
 
-            writer.Write("</blazor-ssr>");
+            writer.Write("<blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
             writer.Write(_ssrFramingCommentMarkup);
         }
     }
@@ -164,7 +178,7 @@ internal partial class EndpointHtmlRenderer
         // We already started the response so we have no choice but to return a 200 with HTML and will
         // have to communicate the error information within that
         var env = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsEndpointsOptions>>();
+        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
         var showDetailedErrors = env.IsDevelopment() || options.Value.DetailedErrors;
         var message = showDetailedErrors
             ? exception.ToString()
@@ -172,50 +186,61 @@ internal partial class EndpointHtmlRenderer
 
         writer.Write("<blazor-ssr><template type=\"error\">");
         writer.Write(HtmlEncoder.Default.Encode(message));
-        writer.Write("</template></blazor-ssr>");
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
-    private static void HandleNavigationAfterResponseStarted(TextWriter writer, string destinationUrl)
+    private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
-        writer.Write("<blazor-ssr><template type=\"redirection\">");
-        writer.Write(HtmlEncoder.Default.Encode(destinationUrl));
-        writer.Write("</template></blazor-ssr>");
+        writer.Write("<blazor-ssr><template type=\"redirection\"");
+
+        if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        {
+            writer.Write(" from=\"form-post\"");
+        }
+
+        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        {
+            writer.Write(" enhanced=\"true\"");
+        }
+
+        writer.Write(">");
+        writer.Write(HtmlEncoder.Default.Encode(OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationUrl)));
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
     protected override void WriteComponentHtml(int componentId, TextWriter output)
         => WriteComponentHtml(componentId, output, allowBoundaryMarkers: true);
 
-    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers)
+    protected override void RenderChildComponent(TextWriter output, ref RenderTreeFrame componentFrame)
+    {
+        var componentId = componentFrame.ComponentId;
+        var sequenceAndKey = new SequenceAndKey(componentFrame.Sequence, componentFrame.ComponentKey);
+        WriteComponentHtml(componentId, output, allowBoundaryMarkers: true, sequenceAndKey);
+    }
+
+    private void WriteComponentHtml(int componentId, TextWriter output, bool allowBoundaryMarkers, SequenceAndKey sequenceAndKey = default)
     {
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
 
-        // TODO: It's not clear that we actually want to emit the interactive component markers using this
-        // HTML-comment syntax that we've used historically, plus we likely want some way to coalesce both
-        // marker types into a single thing for auto mode (the code below emits both separately for auto).
-        // It may be better to use a custom element like <blazor-component ...>[prerendered]<blazor-component>
-        // so it's easier for the JS code to react automatically whenever this gets inserted or updated during
-        // streaming SSR or progressively-enhanced navigation.
+        ComponentEndMarker? endMarkerOrNull = default;
 
-        var (serverMarker, webAssemblyMarker) = componentState.Component is SSRRenderModeBoundary boundary
-            ? boundary.ToMarkers(_httpContext)
-            : default;
-
-        if (serverMarker.HasValue)
+        if (componentState.Component is SSRRenderModeBoundary boundary)
         {
-            if (!_httpContext.Response.HasStarted)
+            var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
+            endMarkerOrNull = marker.ToEndMarker();
+
+            if (!_httpContext.Response.HasStarted && marker.Type is ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType)
             {
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
-            ServerComponentSerializer.AppendPreamble(output, serverMarker.Value);
-        }
-
-        if (webAssemblyMarker.HasValue)
-        {
-            WebAssemblyComponentSerializer.AppendPreamble(output, webAssemblyMarker.Value);
+            var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
+            output.Write("<!--Blazor:");
+            output.Write(serializedStartRecord);
+            output.Write("-->");
         }
 
         if (renderBoundaryMarkers)
@@ -234,16 +259,45 @@ internal partial class EndpointHtmlRenderer
             output.Write("-->");
         }
 
-        if (webAssemblyMarker.HasValue && webAssemblyMarker.Value.PrerenderId is not null)
+        if (endMarkerOrNull is { } endMarker)
         {
-            WebAssemblyComponentSerializer.AppendEpilogue(output, webAssemblyMarker.Value);
-        }
-
-        if (serverMarker.HasValue && serverMarker.Value.PrerenderId is not null)
-        {
-            ServerComponentSerializer.AppendEpilogue(output, serverMarker.Value);
+            var serializedEndRecord = JsonSerializer.Serialize(endMarker, ServerComponentSerializationSettings.JsonSerializationOptions);
+            output.Write("<!--Blazor:");
+            output.Write(serializedEndRecord);
+            output.Write("-->");
         }
     }
 
-    private readonly record struct ComponentIdAndDepth(int ComponentId, int Depth);
+    private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+    {
+        // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
+        var accept = request.Headers.Accept;
+        return accept.Count == 1 && string.Equals(accept[0]!, "text/html;blazor-enhanced-nav=on", StringComparison.Ordinal);
+    }
+
+    private readonly struct ComponentIdAndDepth
+    {
+        public int ComponentId { get; }
+
+        public int Depth { get; }
+
+        public ComponentIdAndDepth(int componentId, int depth)
+        {
+            ComponentId = componentId;
+            Depth = depth;
+        }
+    }
+
+    private readonly struct SequenceAndKey
+    {
+        public int Sequence { get; }
+
+        public object? Key { get; }
+
+        public SequenceAndKey(int sequence, object? key)
+        {
+            Sequence = sequence;
+            Key = key;
+        }
+    }
 }

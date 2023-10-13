@@ -57,7 +57,7 @@ public class RequestHeaderBenchmarks
         var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         var remainingMemory = SetUnknownHeaders(nativeMemory, ref requestStructure, GenerateUnknownHeaders(unknowHeaderCount));
         SetHostHeader(remainingMemory, ref requestStructure);
-        MemoryMarshal.Write(nativeMemory, ref requestStructure);
+        MemoryMarshal.Write(nativeMemory, in requestStructure);
 
         var requestHeaders = new RequestHeaders(nativeContext);
         nativeContext.ReleasePins();
@@ -112,7 +112,7 @@ public class RequestHeaderBenchmarks
                 }
                 dataDestination = dataDestination.Slice(nameLength);
             }
-            MemoryMarshal.Write(unknownHeaderStructureDestination, ref unknownHeaderStructure);
+            MemoryMarshal.Write(unknownHeaderStructureDestination, in unknownHeaderStructure);
             unknownHeaderStructureDestination = unknownHeaderStructureDestination.Slice(unknownHeadersSize);
         }
         return dataDestination;

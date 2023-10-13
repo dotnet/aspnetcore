@@ -65,6 +65,7 @@ public class AuthorizationAppBuilderExtensionsTests
     {
         var services = new ServiceCollection();
 
+        services.AddRouting();
         services.AddAuthorization();
         services.AddLogging();
         services.AddSingleton(authenticationService);

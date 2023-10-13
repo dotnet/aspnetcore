@@ -48,20 +48,20 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     /// <summary>
     /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
     /// </summary>
-    /// <param name="valueFactory">A callback that produces the initial value when first required.</param>
+    /// <param name="initialValueFactory">A callback that produces the initial value when first required.</param>
     /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
-    public CascadingValueSource(Func<TValue> valueFactory, bool isFixed) : this(isFixed)
+    public CascadingValueSource(Func<TValue> initialValueFactory, bool isFixed) : this(isFixed)
     {
-        _initialValueFactory = valueFactory;
+        _initialValueFactory = initialValueFactory;
     }
 
     /// <summary>
     /// Constructs an instance of <see cref="CascadingValueSource{TValue}"/>.
     /// </summary>
     /// <param name="name">A name for the cascading value. If set, <see cref="CascadingParameterAttribute"/> can be configured to match based on this name.</param>
-    /// <param name="valueFactory">A callback that produces the initial value when first required.</param>
+    /// <param name="initialValueFactory">A callback that produces the initial value when first required.</param>
     /// <param name="isFixed">A flag to indicate whether the value is fixed. If false, all receipients will subscribe for update notifications, which you can issue by calling <see cref="NotifyChangedAsync()"/>. These subscriptions come at a performance cost, so if the value will not change, set <paramref name="isFixed"/> to true.</param>
-    public CascadingValueSource(string name, Func<TValue> valueFactory, bool isFixed) : this(valueFactory, isFixed)
+    public CascadingValueSource(string name, Func<TValue> initialValueFactory, bool isFixed) : this(initialValueFactory, isFixed)
     {
         ArgumentNullException.ThrowIfNull(name);
         _name = name;

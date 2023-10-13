@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Služba ASP.NET Core gRPC",
-  "description": "Šablona projektu pro vytvoření služby gRPC ASP.NET Core",
+  "description": "Šablona projektu pro vytvoření služby gRPC pomocí ASP.NET Core s volitelnou podporou publikování jako native AOT.",
   "symbols/Framework/description": "Cílová architektura pro projekt",
   "symbols/Framework/choices/net8.0/description": "Cílový net8.0",
   "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",

@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)EphemeralDataProtectionProvider.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TestCertificates.cs" Link="TestCertificates.cs" />
     <Content Include="$(SignalRSharedSourceRoot)*.pfx" LinkBase="TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

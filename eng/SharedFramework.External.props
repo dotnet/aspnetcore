@@ -21,6 +21,7 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration"                           Version="$(MicrosoftExtensionsConfigurationVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics.Abstractions"                Version="$(MicrosoftExtensionsDiagnosticsAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Diagnostics"                             Version="$(MicrosoftExtensionsDiagnosticsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.FileProviders.Composite"                 Version="$(MicrosoftExtensionsFileProvidersCompositeVersion)" />

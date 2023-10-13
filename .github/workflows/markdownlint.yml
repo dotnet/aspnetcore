@@ -3,13 +3,10 @@ name: Markdownlint
 permissions:
   contents: read
 
+# run even on changes without markdown changes, so that we can
+# make it in GitHub a required check for PR's
 on:
   pull_request:
-    paths:
-      - "**/*.md"
-      - ".markdownlint.json"
-      - ".github/workflows/markdownlint.yml"
-      - ".github/workflows/markdownlint-problem-matcher.json"
 
 jobs:
   lint:
@@ -17,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Run Markdownlint

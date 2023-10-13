@@ -2,11 +2,11 @@
 
 <h2>Form that binds guid</h2>
 
-<ActionForm FormHandlerName="bind-guid" OnSubmit="() => _submitted = true">
+<form data-enhance name="bind-guid" method="post" @onsubmit="() => _submitted = true" @formname="bind-guid">
     <input type="text" name="Id" value="@(_attemptedValue ?? Id.ToString())" />
     <input id="send-guid" type="submit" value="Send" />
     <AntiforgeryToken />
-</ActionForm>
+</form>
 
 @if (_submitted)
 {
@@ -31,9 +31,9 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm(Handler = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
+    [SupplyParameterFromForm(FormName = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
 
-    [CascadingParameter] public ModelBindingContext Context { get; set; }
+    [CascadingParameter] public FormMappingContext Context { get; set; }
 
     protected override void OnInitialized()
     {

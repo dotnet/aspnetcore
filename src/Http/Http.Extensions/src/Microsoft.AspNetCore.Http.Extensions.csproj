@@ -24,15 +24,17 @@
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared" />
-    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\Binding\**\*.cs" LinkBase="SharedFormBinding" />
-    <EmbeddedResource Include="$(RepoRoot)src\Components\Endpoints\src\Binding\**\*.resx" LinkBase="SharedFormBinding">
-      <ClassName>Microsoft.AspNetCore.Components.Endpoints.Binding.FormDataResources</ClassName>
+    <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.cs" LinkBase="SharedFormMapping" />
+    <EmbeddedResource Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.resx" LinkBase="SharedFormMapping">
+      <ClassName>Microsoft.AspNetCore.Components.Endpoints.FormMapping.FormDataResources</ClassName>
       <Language>CSharp</Language>
     </EmbeddedResource>
-    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="SharedFormBinding" />
+    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="SharedFormMapping" />
     <!-- Exclude Blazor-specific form binding suppliers. -->
-    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\DefaultFormValuesSupplier.cs" LinkBase="SharedFormBinding" />
-    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\Binding\HttpContextFormDataProvider.cs" LinkBase="SharedFormBinding" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormValueMapper.cs" LinkBase="SharedFormMapping" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormDataProvider.cs" LinkBase="SharedFormMapping" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\BrowserFileFromFormFile.cs" LinkBase="SharedFormMapping" />
   </ItemGroup>
 
   <ItemGroup>

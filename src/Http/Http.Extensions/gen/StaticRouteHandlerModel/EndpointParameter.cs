@@ -23,6 +23,7 @@ internal class EndpointParameter
     {
         Ordinal = parameter.Ordinal;
         IsOptional = parameter.IsOptional();
+        HasDefaultValue = parameter.HasExplicitDefaultValue;
         DefaultValue = parameter.GetDefaultValueString();
         ProcessEndpointParameterSource(endpoint, parameter, parameter.GetAttributes(), wellKnownTypes);
     }
@@ -32,6 +33,7 @@ internal class EndpointParameter
         Ordinal = parameter?.Ordinal ?? 0;
         IsProperty = true;
         IsOptional = property.IsOptional() || parameter?.IsOptional() == true;
+        HasDefaultValue = parameter?.HasExplicitDefaultValue ?? false;
         DefaultValue = parameter?.GetDefaultValueString() ?? "null";
         // Coalesce attributes on the property and attributes on the matching parameter
         var attributeBuilder = ImmutableArray.CreateBuilder<AttributeData>();
@@ -59,7 +61,7 @@ internal class EndpointParameter
         ElementType = elementType;
         IsEndpointMetadataProvider = ImplementsIEndpointMetadataProvider(typeSymbol, wellKnownTypes);
         IsEndpointParameterMetadataProvider = ImplementsIEndpointParameterMetadataProvider(typeSymbol, wellKnownTypes);
-        endpoint.EmitterContext.HasEndpointParameterMetadataProvider = IsEndpointParameterMetadataProvider;
+        endpoint.EmitterContext.HasEndpointParameterMetadataProvider |= IsEndpointParameterMetadataProvider;
         endpoint.EmitterContext.HasEndpointMetadataProvider |= IsEndpointMetadataProvider;
     }
 
@@ -136,6 +138,17 @@ internal class EndpointParameter
         else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
+            if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+            {
+                var location = endpoint.Operation.Syntax.GetLocation();
+                endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.KeyedAndNotKeyedServiceAttributesNotSupported, location));
+            }
+        }
+        else if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+        {
+            Source = EndpointParameterSource.KeyedService;
+            var constructorArgument = keyedServicesAttribute.ConstructorArguments.FirstOrDefault();
+            KeyedServiceKey = SymbolDisplay.FormatPrimitive(constructorArgument.Value!, true, true);
         }
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
@@ -251,12 +264,14 @@ internal class EndpointParameter
     public bool IsOptional { get; set; }
     public bool IsArray { get; set; }
     public string DefaultValue { get; set; } = "null";
+    public bool HasDefaultValue { get; set; }
     [MemberNotNullWhen(true, nameof(PropertyAsParameterInfoConstruction))]
     public bool IsProperty { get; set; }
     public EndpointParameterSource Source { get; set; }
     public string? PropertyAsParameterInfoConstruction { get; set; }
     public IEnumerable<EndpointParameter>? EndpointParameters { get; set; }
     public bool IsFormFile { get; set; }
+    public string? KeyedServiceKey { get; set; }
 
     // Only used for SpecialType parameters that need
     // to be resolved by a specific WellKnownType
@@ -610,17 +625,23 @@ internal class EndpointParameter
         other.SymbolName == SymbolName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
-        SymbolEqualityComparer.Default.Equals(other.Type, Type);
+        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
+        other.KeyedServiceKey == KeyedServiceKey;
 
     public bool SignatureEquals(object obj) =>
         obj is EndpointParameter other &&
-        SymbolEqualityComparer.Default.Equals(other.Type, Type);
+        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
+        // The name of the parameter matters when we are querying for a specific parameter using
+        // an indexer, like `context.Request.RouteValues["id"]` or `context.Request.Query["id"]`
+        // and when generating log messages for required bodies or services.
+        other.SymbolName == SymbolName &&
+        other.KeyedServiceKey == KeyedServiceKey;
 
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
         hashCode.Add(SymbolName);
-        hashCode.Add(Type, SymbolEqualityComparer.Default);
+        hashCode.Add(Type, SymbolEqualityComparer.IncludeNullability);
         return hashCode.ToHashCode();
     }
 }

@@ -47,8 +47,26 @@ public class WebApplicationTests
 
     private static WebApplicationBuilder CreateBuilder() => WebApplication.CreateBuilder();
     private static WebApplicationBuilder CreateSlimBuilder() => WebApplication.CreateSlimBuilder();
+    private static WebApplicationBuilder CreateEmptyBuilder()
+    {
+        var builder = WebApplication.CreateEmptyBuilder(new());
+        // CreateEmptyBuilder doesn't register an IServer or Routing.
+        builder.Services.AddRoutingCore();
+        builder.WebHost.UseKestrelCore();
+        return builder;
+    }
 
     public static IEnumerable<object[]> CreateBuilderFuncs
+    {
+        get
+        {
+            yield return new[] { (CreateBuilderFunc)CreateBuilder };
+            yield return new[] { (CreateBuilderFunc)CreateSlimBuilder };
+            yield return new[] { (CreateBuilderFunc)CreateEmptyBuilder };
+        }
+    }
+
+    public static IEnumerable<object[]> CreateNonEmptyBuilderFuncs
     {
         get
         {
@@ -59,8 +77,26 @@ public class WebApplicationTests
 
     private static WebApplicationBuilder CreateBuilderArgs(string[] args) => WebApplication.CreateBuilder(args);
     private static WebApplicationBuilder CreateSlimBuilderArgs(string[] args) => WebApplication.CreateSlimBuilder(args);
+    private static WebApplicationBuilder CreateEmptyBuilderArgs(string[] args)
+    {
+        var builder = WebApplication.CreateEmptyBuilder(new() { Args = args });
+        // CreateEmptyBuilder doesn't register an IServer or Routing.
+        builder.Services.AddRoutingCore();
+        builder.WebHost.UseKestrelCore();
+        return builder;
+    }
 
     public static IEnumerable<object[]> CreateBuilderArgsFuncs
+    {
+        get
+        {
+            yield return new[] { (CreateBuilderArgsFunc)CreateBuilderArgs };
+            yield return new[] { (CreateBuilderArgsFunc)CreateSlimBuilderArgs };
+            yield return new[] { (CreateBuilderArgsFunc)CreateEmptyBuilderArgs };
+        }
+    }
+
+    public static IEnumerable<object[]> CreateNonEmptyBuilderArgsFuncs
     {
         get
         {
@@ -71,8 +107,26 @@ public class WebApplicationTests
 
     private static WebApplicationBuilder CreateBuilderOptions(WebApplicationOptions options) => WebApplication.CreateBuilder(options);
     private static WebApplicationBuilder CreateSlimBuilderOptions(WebApplicationOptions options) => WebApplication.CreateSlimBuilder(options);
+    private static WebApplicationBuilder CreateEmptyBuilderOptions(WebApplicationOptions options)
+    {
+        var builder = WebApplication.CreateEmptyBuilder(options);
+        // CreateEmptyBuilder doesn't register an IServer or Routing.
+        builder.Services.AddRoutingCore();
+        builder.WebHost.UseKestrelCore();
+        return builder;
+    }
 
     public static IEnumerable<object[]> CreateBuilderOptionsFuncs
+    {
+        get
+        {
+            yield return new[] { (CreateBuilderOptionsFunc)CreateBuilderOptions };
+            yield return new[] { (CreateBuilderOptionsFunc)CreateSlimBuilderOptions };
+            yield return new[] { (CreateBuilderOptionsFunc)CreateEmptyBuilderOptions };
+        }
+    }
+
+    public static IEnumerable<object[]> CreateNonEmptyBuilderOptionsFuncs
     {
         get
         {
@@ -85,6 +139,13 @@ public class WebApplicationTests
         => new WebApplicationBuilder(options, configureDefaults);
     private static WebApplicationBuilder WebApplicationSlimBuilderConstructor(WebApplicationOptions options, Action<IHostBuilder> configureDefaults)
         => new WebApplicationBuilder(options, slim: true, configureDefaults);
+    private static WebApplicationBuilder WebApplicationEmptyBuilderConstructor(WebApplicationOptions options, Action<IHostBuilder> configureDefaults)
+    {
+        var builder = new WebApplicationBuilder(options, slim: false, empty: true, configureDefaults);
+        // CreateEmptyBuilder doesn't register an IServer.
+        builder.WebHost.UseKestrelCore();
+        return builder;
+    }
 
     public static IEnumerable<object[]> WebApplicationBuilderConstructorFuncs
     {
@@ -92,6 +153,7 @@ public class WebApplicationTests
         {
             yield return new[] { (WebApplicationBuilderConstructorFunc)WebApplicationBuilderConstructor };
             yield return new[] { (WebApplicationBuilderConstructorFunc)WebApplicationSlimBuilderConstructor };
+            yield return new[] { (WebApplicationBuilderConstructorFunc)WebApplicationEmptyBuilderConstructor };
         }
     }
 
@@ -426,6 +488,7 @@ public class WebApplicationTests
             {
                 yield return new object[] { webRoot, (CreateBuilderOptionsFunc)CreateBuilderOptions };
                 yield return new object[] { webRoot, (CreateBuilderOptionsFunc)CreateSlimBuilderOptions };
+                yield return new object[] { webRoot, (CreateBuilderOptionsFunc)CreateEmptyBuilderOptions };
             }
         }
     }
@@ -496,6 +559,7 @@ public class WebApplicationTests
             {
                 yield return new object[] { webRoot, (CreateBuilderOptionsFunc)CreateBuilderOptions };
                 yield return new object[] { webRoot, (CreateBuilderOptionsFunc)CreateSlimBuilderOptions };
+                yield return new object[] { webRoot, (CreateBuilderOptionsFunc)CreateEmptyBuilderOptions };
             }
         }
     }
@@ -538,6 +602,7 @@ public class WebApplicationTests
             {
                 yield return new object[] { path, (CreateBuilderOptionsFunc)CreateBuilderOptions };
                 yield return new object[] { path, (CreateBuilderOptionsFunc)CreateSlimBuilderOptions };
+                yield return new object[] { path, (CreateBuilderOptionsFunc)CreateEmptyBuilderOptions };
             }
         }
     }
@@ -617,6 +682,7 @@ public class WebApplicationTests
     {
         get
         {
+            // Note: CreateEmptyBuilder doesn't enable appsettings.json configuration by default
             yield return new object[] { (CreateBuilderOptionsFunc)CreateBuilderOptions, true };
             yield return new object[] { (CreateBuilderOptionsFunc)CreateBuilderOptions, false };
             yield return new object[] { (CreateBuilderOptionsFunc)CreateSlimBuilderOptions, true };
@@ -649,6 +715,22 @@ public class WebApplicationTests
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EmptyWebApplicationBuilderDoesNotEnableAppSettingsConfiguration(bool isDevelopment)
+    {
+        var options = new WebApplicationOptions
+        {
+            EnvironmentName = isDevelopment ? Environments.Development : Environments.Production
+        };
+
+        var webApplication = CreateEmptyBuilderOptions(options).Build();
+
+        var config = Assert.IsType<ConfigurationManager>(webApplication.Configuration);
+        Assert.DoesNotContain(config.Sources, source => source is JsonConfigurationSource jsonSource);
+    }
+
+    [Theory]
     [MemberData(nameof(CreateBuilderOptionsFuncs))]
     public void WebApplicationBuilderSettingInvalidApplicationDoesNotThrowWhenAssemblyLoadForUserSecretsFail(CreateBuilderOptionsFunc createBuilder)
     {
@@ -666,7 +748,7 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderOptionsFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderOptionsFuncs))] // empty builder doesn't enable UserSecrets
     public void WebApplicationBuilderEnablesUserSecretsInDevelopment(CreateBuilderOptionsFunc createBuilder)
     {
         var options = new WebApplicationOptions
@@ -679,6 +761,22 @@ public class WebApplicationTests
 
         var config = Assert.IsType<ConfigurationManager>(webApplication.Configuration);
         Assert.Contains(config.Sources, source => source is JsonConfigurationSource jsonSource && jsonSource.Path == "secrets.json");
+    }
+
+    [Fact]
+    public void EmptyWebApplicationBuilderDoesNotEnableUserSecretsInDevelopment()
+    {
+        var options = new WebApplicationOptions
+        {
+            ApplicationName = typeof(WebApplicationTests).Assembly.GetName().Name,
+            EnvironmentName = Environments.Development
+        };
+
+        var webApplication = CreateEmptyBuilderOptions(options).Build();
+
+        var config = Assert.IsType<ConfigurationManager>(webApplication.Configuration);
+        // empty builder doesn't contain any Json sources (user secrets or otherwise) by default
+        Assert.DoesNotContain(config.Sources, source => source is JsonConfigurationSource jsonSource);
     }
 
     [Theory]
@@ -922,7 +1020,8 @@ public class WebApplicationTests
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
             var args = new[] { "--one=command_line_one" };
-            foreach (object[] data in CreateBuilderArgsFuncs)
+            // empty builder doesn't enable environment variable configuration by default
+            foreach (object[] data in CreateNonEmptyBuilderArgsFuncs)
             {
                 var createBuilder = (CreateBuilderArgsFunc)data[0];
                 var builder = createBuilder(args);
@@ -1249,7 +1348,7 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderFuncs))] // empty builder doesn't enable HostFiltering
     public async Task WebApplicationConfiguration_HostFilterOptionsAreReloadable(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
@@ -1335,7 +1434,7 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderFuncs))] // empty builder doesn't enable ForwardedHeaders
     public async Task WebApplicationConfiguration_EnablesForwardedHeadersFromConfig(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
@@ -1646,17 +1745,17 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderFuncs))]
     public async Task WebApplicationBuilder_OnlyAddsDefaultServicesOnce(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
 
-        // IWebHostEnvironment is added by ConfigureDefaults
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
         // IWebHostEnvironment is added by ConfigureWebHostDefaults
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
         Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
 
         await using var app = builder.Build();
 
@@ -1666,8 +1765,22 @@ public class WebApplicationTests
         Assert.Single(app.Services.GetRequiredService<IEnumerable<IServer>>());
     }
 
+    [Fact]
+    public void EmptyWebApplicationBuilder_OnlyContainsMinimalServices()
+    {
+        var builder = WebApplication.CreateEmptyBuilder(new());
+
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IConfigureOptions<LoggerFactoryOptions>)));
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IOptionsChangeTokenSource<HostFilteringOptions>)));
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IServer)));
+        Assert.Empty(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(EndpointDataSource)));
+
+        // These services are still necessary
+        Assert.Single(builder.Services.Where(descriptor => descriptor.ServiceType == typeof(IWebHostEnvironment)));
+    }
+
     [Theory]
-    [MemberData(nameof(CreateBuilderArgsFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderArgsFuncs))] // empty builder doesn't enable DI validation
     public void WebApplicationBuilder_EnablesServiceScopeValidationByDefaultInDevelopment(CreateBuilderArgsFunc createBuilder)
     {
         // The environment cannot be reconfigured after the builder is created currently.
@@ -1679,6 +1792,19 @@ public class WebApplicationTests
         // This currently throws an AggregateException, but any Exception from Build() is enough to make this test pass.
         // If this is throwing for any reason other than service scope validation, we'll likely see it in other tests.
         Assert.ThrowsAny<Exception>(() => builder.Build());
+    }
+
+    [Fact]
+    public void EmptyWebApplicationBuilder_DoesNotEnableServiceScopeValidationByDefaultInDevelopment()
+    {
+        // The environment cannot be reconfigured after the builder is created currently.
+        var builder = CreateEmptyBuilderArgs(new[] { "--environment", "Development" });
+
+        builder.Services.AddScoped<Service>();
+        builder.Services.AddSingleton<Service2>();
+
+        // This shouldn't throw at all since DI validation is not enabled
+        Assert.NotNull(builder.Build());
     }
 
     [Theory]
@@ -1895,7 +2021,7 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderOptionsFuncs))]
+    [MemberData(nameof(CreateNonEmptyBuilderOptionsFuncs))] // empty builder doesn't enable the DeveloperExceptionPage
     public async Task DeveloperExceptionPageIsOnByDefaultInDevelopment(CreateBuilderOptionsFunc createBuilder)
     {
         var builder = createBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
@@ -1939,6 +2065,18 @@ public class WebApplicationTests
     public async Task DeveloperExceptionPageIsNotOnInProduction(CreateBuilderOptionsFunc createBuilder)
     {
         var builder = createBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Production });
+        await DeveloperExceptionPageIsNotOn(builder);
+    }
+
+    [Fact]
+    public async Task DeveloperExceptionPageIsNotOnInDevelopmentWithEmptyBuilder()
+    {
+        var builder = CreateEmptyBuilderOptions(new WebApplicationOptions() { EnvironmentName = Environments.Development });
+        await DeveloperExceptionPageIsNotOn(builder);
+    }
+
+    private async Task DeveloperExceptionPageIsNotOn(WebApplicationBuilder builder)
+    {
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
 
@@ -1989,8 +2127,8 @@ public class WebApplicationTests
     }
 
     [Theory]
-    [MemberData(nameof(CreateBuilderOptionsFuncs))]
-    public async Task DeveloperExceptionPageWritesBadRequestDetailsToResponseByDefaltInDevelopment(CreateBuilderOptionsFunc createBuilder)
+    [MemberData(nameof(CreateNonEmptyBuilderOptionsFuncs))] // empty builder doesn't enable the DeveloperExceptionPage
+    public async Task DeveloperExceptionPageWritesBadRequestDetailsToResponseByDefaultInDevelopment(CreateBuilderOptionsFunc createBuilder)
     {
         var builder = createBuilder(new WebApplicationOptions() { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -2610,7 +2748,7 @@ public class WebApplicationTests
             m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
-            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddlewareInternal", m),
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
     }

@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
@@ -11,29 +12,24 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 /// An implementation of <see cref="IUrlHelper"/> that uses <see cref="LinkGenerator"/> to build URLs
 /// for ASP.NET MVC within an application.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(EndpointRoutingUrlHelperDebugView))]
 internal sealed class EndpointRoutingUrlHelper : UrlHelperBase
 {
-    private readonly ILogger<EndpointRoutingUrlHelper> _logger;
+    private readonly EndpointDataSource _endpointDataSource;
     private readonly LinkGenerator _linkGenerator;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EndpointRoutingUrlHelper"/> class using the specified
-    /// <paramref name="actionContext"/>.
-    /// </summary>
-    /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> for the current request.</param>
-    /// <param name="linkGenerator">The <see cref="LinkGenerator"/> used to generate the link.</param>
-    /// <param name="logger">The <see cref="ILogger"/>.</param>
     public EndpointRoutingUrlHelper(
         ActionContext actionContext,
         LinkGenerator linkGenerator,
-        ILogger<EndpointRoutingUrlHelper> logger)
+        EndpointDataSource endpointDataSource)
         : base(actionContext)
     {
         ArgumentNullException.ThrowIfNull(linkGenerator);
-        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(endpointDataSource);
 
         _linkGenerator = linkGenerator;
-        _logger = logger;
+        _endpointDataSource = endpointDataSource;
     }
 
     /// <inheritdoc />
@@ -88,5 +84,15 @@ internal sealed class EndpointRoutingUrlHelper : UrlHelperBase
             routeContext.Values,
             fragment: routeContext.Fragment == null ? FragmentString.Empty : new FragmentString("#" + routeContext.Fragment));
         return GenerateUrl(routeContext.Protocol, routeContext.Host, path);
+    }
+
+    private string DebuggerToString() => $"Endpoints = {_endpointDataSource.Endpoints.Count}";
+
+    private sealed class EndpointRoutingUrlHelperDebugView(EndpointRoutingUrlHelper helper)
+    {
+        private readonly EndpointRoutingUrlHelper _helper = helper;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public Endpoint[] Items => _helper._endpointDataSource.Endpoints.ToArray();
     }
 }

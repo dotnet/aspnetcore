@@ -14,11 +14,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class ResponseSendFileTests
+public class ResponseSendFileTests : LoggedTest
 {
     private readonly string AbsoluteFilePath;
     private readonly string RelativeFilePath;
@@ -48,7 +49,7 @@ public class ResponseSendFileTests
                 appThrew.SetResult(true);
                 throw;
             }
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -64,7 +65,7 @@ public class ResponseSendFileTests
         {
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -83,7 +84,7 @@ public class ResponseSendFileTests
         {
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -102,7 +103,7 @@ public class ResponseSendFileTests
         {
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -122,7 +123,7 @@ public class ResponseSendFileTests
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -141,7 +142,7 @@ public class ResponseSendFileTests
         {
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -163,7 +164,7 @@ public class ResponseSendFileTests
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
                 sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
             completed = true;
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();
@@ -182,7 +183,7 @@ public class ResponseSendFileTests
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
                 sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
             completed = true;
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();
@@ -198,7 +199,7 @@ public class ResponseSendFileTests
         {
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -218,7 +219,7 @@ public class ResponseSendFileTests
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString(CultureInfo.InvariantCulture);
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -239,7 +240,7 @@ public class ResponseSendFileTests
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             httpContext.Response.Headers["Content-lenGth"] = "10";
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -260,7 +261,7 @@ public class ResponseSendFileTests
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             httpContext.Response.Headers["Content-lenGth"] = "0";
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -287,7 +288,7 @@ public class ResponseSendFileTests
             }, httpContext);
             var sendFile = httpContext.Features.Get<IHttpResponseBodyFeature>();
             return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -313,7 +314,7 @@ public class ResponseSendFileTests
                 await httpContext.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
                 Assert.True(httpContext.Response.HasStarted);
                 await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10, CancellationToken.None);
-            }))
+            }, LoggerFactory))
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
@@ -337,7 +338,7 @@ public class ResponseSendFileTests
             // First write sends headers
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -355,7 +356,7 @@ public class ResponseSendFileTests
             // First write sends headers
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
             await httpContext.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -384,7 +385,7 @@ public class ResponseSendFileTests
             }
 
             return Task.CompletedTask;
-        }, options => options.ThrowWriteExceptions = true))
+        }, options => options.ThrowWriteExceptions = true, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
             await testComplete.Task.DefaultTimeout();
@@ -412,7 +413,7 @@ public class ResponseSendFileTests
             }
 
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
             await testComplete.Task.DefaultTimeout();
@@ -439,7 +440,7 @@ public class ResponseSendFileTests
             {
                 testComplete.SetException(ex);
             }
-        }, options => options.ThrowWriteExceptions = true))
+        }, options => options.ThrowWriteExceptions = true, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
             await testComplete.Task.DefaultTimeout();
@@ -466,7 +467,7 @@ public class ResponseSendFileTests
             {
                 testComplete.SetException(ex);
             }
-        }))
+        }, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
             await testComplete.Task.DefaultTimeout();
@@ -511,7 +512,7 @@ public class ResponseSendFileTests
                 testComplete.SetException(ex);
             }
 
-        }, options => options.ThrowWriteExceptions = true))
+        }, options => options.ThrowWriteExceptions = true, LoggerFactory))
         {
             var cts = new CancellationTokenSource();
             var responseTask = SendRequestAsync(address, cts.Token);
@@ -554,7 +555,7 @@ public class ResponseSendFileTests
                 testComplete.SetException(ex);
             }
 
-        }))
+        }, LoggerFactory))
         {
             var cts = new CancellationTokenSource();
             var responseTask = SendRequestAsync(address, cts.Token);
@@ -605,7 +606,7 @@ public class ResponseSendFileTests
             {
                 testComplete.SetException(ex);
             }
-        }, options => options.ThrowWriteExceptions = true))
+        }, options => options.ThrowWriteExceptions = true, LoggerFactory))
         {
             using (var client = new HttpClient())
             {
@@ -654,7 +655,7 @@ public class ResponseSendFileTests
             {
                 testComplete.SetException(ex);
             }
-        }))
+        }, LoggerFactory))
         {
             using (var client = new HttpClient())
             {

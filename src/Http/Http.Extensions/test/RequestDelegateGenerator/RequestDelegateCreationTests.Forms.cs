@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Castle.Core.Internal;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
@@ -46,6 +47,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
 
         Assert.NotNull(acceptsMetadata);
         Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -80,6 +82,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
 
         Assert.NotNull(acceptsMetadata);
         Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -109,6 +112,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         var fileArgument = Assert.IsAssignableFrom<IFormFile>(httpContext.Items["formFiles"]);
         Assert.Equal("file.txt", fileArgument!.FileName);
         Assert.Equal("file", fileArgument.Name);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -146,6 +150,7 @@ app.MapPost("/", (IFormFile? file, HttpContext httpContext) =>
         var fileArgument = Assert.IsAssignableFrom<IFormFile>(httpContext.Items["formFiles"]);
         Assert.Equal("file.txt", fileArgument!.FileName);
         Assert.Equal("file", fileArgument.Name);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -188,6 +193,7 @@ app.MapPost("/", (IFormFile file1, IFormFile file2, HttpContext httpContext) =>
         var file2Argument = Assert.IsAssignableFrom<IFormFile>(httpContext.Items["file2"]);
         Assert.Equal("file2.txt", file2Argument!.FileName);
         Assert.Equal("file2", file2Argument.Name);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -230,6 +236,7 @@ app.MapPost("/", (IFormFile? file1, IFormFile? file2, HttpContext httpContext) =
 
         Assert.NotNull(acceptsMetadata);
         Assert.Equal(new[] { "multipart/form-data" }, acceptsMetadata.ContentTypes);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -259,6 +266,7 @@ app.MapPost("/", (IFormFile? file1, IFormFile? file2, HttpContext httpContext) =
         var fileArgument = Assert.IsAssignableFrom<IFormFile>(httpContext.Items["formFiles"]);
         Assert.Equal("file.txt", fileArgument!.FileName);
         Assert.Equal("my_file", fileArgument.Name);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Fact]
@@ -298,6 +306,7 @@ app.MapPost("/", (IFormFile? file, TraceIdentifier traceId, HttpContext httpCont
 
         var traceIdArgument = Assert.IsType<TraceIdentifier>(httpContext.Items["traceId"]);
         Assert.Equal("my-trace-id", traceIdArgument.Id);
+        Assert.NotNull(endpoint.Metadata.OfType<IAntiforgeryMetadata>().SingleOrDefault());
     }
 
     [Theory]

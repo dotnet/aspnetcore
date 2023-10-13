@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// Represents a property in a <see cref="PageApplicationModel"/>.
 /// </summary>
-[DebuggerDisplay("PagePropertyModel: Name={PropertyName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {PropertyName}")]
 public class PagePropertyModel : ParameterModelBase, ICommonModel
 {
     /// <summary>

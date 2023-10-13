@@ -1,6 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Immutable;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 namespace Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 
@@ -18,7 +24,8 @@ internal static class RequestDelegateGeneratorSources
 #nullable enable
 """;
 
-    public static string GeneratedCodeAttribute => $@"[System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")]";
+    public static string GeneratedCodeConstructor => $@"System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(RequestDelegateGeneratorSources).Assembly.FullName}"", ""{typeof(RequestDelegateGeneratorSources).Assembly.GetName().Version}"")";
+    public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
 
     public static string ContentTypeConstantsType => $$"""
     {{GeneratedCodeAttribute}}
@@ -181,7 +188,7 @@ internal static class RequestDelegateGeneratorSources
 """;
 
     public static string ResolveJsonBodyOrServiceMethod => """
-        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonOptions jsonOptions, IServiceProviderIsService? serviceProviderIsService = null)
+        private static Func<HttpContext, bool, ValueTask<(bool, T?)>> ResolveJsonBodyOrService<T>(LogOrThrowExceptionHelper logOrThrowExceptionHelper, string parameterTypeName, string parameterName, JsonSerializerOptions jsonSerializerOptions, IServiceProviderIsService? serviceProviderIsService = null)
         {
             if (serviceProviderIsService is not null)
             {
@@ -190,7 +197,7 @@ internal static class RequestDelegateGeneratorSources
                     return static (httpContext, isOptional) => new ValueTask<(bool, T?)>((true, httpContext.RequestServices.GetService<T>()));
                 }
             }
-            var jsonTypeInfo = (JsonTypeInfo<T>)jsonOptions.SerializerOptions.GetTypeInfo(typeof(T));
+            var jsonTypeInfo = (JsonTypeInfo<T>)jsonSerializerOptions.GetTypeInfo(typeof(T));
             return (httpContext, isOptional) => TryResolveBodyAsync<T>(httpContext, logOrThrowExceptionHelper, isOptional, parameterTypeName, parameterName, jsonTypeInfo, isInferred: true);
         }
 """;
@@ -381,14 +388,20 @@ internal static class RequestDelegateGeneratorSources
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+            var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
 
-            if (attributes == null || attributes is { Length: 0 })
+            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
             {
-                attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+                return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
             }
 
-            return attributes;
+            var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+
+            var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
+            Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+            Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+            return mergedAttributes;
         }
 
         public override object[] GetCustomAttributes(bool inherit)
@@ -436,25 +449,32 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string GetGeneratedRouteBuilderExtensionsSource(string genericThunks, string thunks, string endpoints, string helperMethods, string helperTypes) => $$"""
-{{SourceHeader}}
-
-namespace Microsoft.AspNetCore.Builder
+    public static string AntiforgeryMetadataType = """
+file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
 {
-    {{GeneratedCodeAttribute}}
-    internal sealed class SourceKey
-    {
-        public string Path { get; init; }
-        public int Line { get; init; }
+    public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
 
-        public SourceKey(string path, int line)
-        {
-            Path = path;
-            Line = line;
-        }
+    public AntiforgeryMetadata(bool requiresValidation)
+    {
+        RequiresValidation = requiresValidation;
     }
 
-{{GetEndpoints(endpoints)}}
+    public bool RequiresValidation { get; }
+}
+""";
+    public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
+{{SourceHeader}}
+
+namespace System.Runtime.CompilerServices
+{
+    {{GeneratedCodeAttribute}}
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : Attribute
+    {
+        public InterceptsLocationAttribute(string filePath, int line, int column)
+        {
+        }
+    }
 }
 
 namespace Microsoft.AspNetCore.Http.Generated
@@ -468,10 +488,12 @@ namespace Microsoft.AspNetCore.Http.Generated
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text.Json;
     using System.Text.Json.Serialization.Metadata;
     using System.Threading.Tasks;
     using System.IO;
+    using Microsoft.AspNetCore.Antiforgery;
     using Microsoft.AspNetCore.Routing;
     using Microsoft.AspNetCore.Routing.Patterns;
     using Microsoft.AspNetCore.Builder;
@@ -490,8 +512,25 @@ namespace Microsoft.AspNetCore.Http.Generated
     {{GeneratedCodeAttribute}}
     file static class GeneratedRouteBuilderExtensionsCore
     {
-{{GetGenericThunks(genericThunks)}}
-{{GetThunks(thunks)}}
+        private static readonly JsonOptions FallbackJsonOptions = new();
+        {{GetVerbs(verbs)}}
+        {{endpoints}}
+
+        internal static RouteHandlerBuilder MapCore(
+            this IEndpointRouteBuilder routes,
+            string pattern,
+            Delegate handler,
+            IEnumerable<string>? httpMethods,
+            MetadataPopulator populateMetadata,
+            RequestDelegateFactoryFunc createRequestDelegate)
+        {
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+        }
+
+        private static T Cast<T>(Delegate d, T _) where T : Delegate
+        {
+            return (T)d;
+        }
 
         private static EndpointFilterDelegate BuildFilterDelegate(EndpointFilterDelegate filteredInvocation, EndpointBuilder builder, MethodInfo mi)
         {
@@ -554,63 +593,17 @@ namespace Microsoft.AspNetCore.Http.Generated
 {{LogOrThrowExceptionHelperClass}}
 }
 """;
-    private static string GetGenericThunks(string genericThunks) => genericThunks != string.Empty ? $$"""
-        private static class GenericThunks<T>
-        {
-            public static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-            {
-                {{genericThunks}}
-            };
-        }
 
-        internal static RouteHandlerBuilder MapCore<T>(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string> httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = GenericThunks<T>.map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetThunks(string thunks) => thunks != string.Empty ? $$"""
-        private static readonly Dictionary<(string, int), (MetadataPopulator, RequestDelegateFactoryFunc)> map = new()
-        {
-{{thunks}}
-        };
-
-        internal static RouteHandlerBuilder MapCore(
-            this IEndpointRouteBuilder routes,
-            string pattern,
-            Delegate handler,
-            IEnumerable<string>? httpMethods,
-            string filePath,
-            int lineNumber)
-        {
-            var (populateMetadata, createRequestDelegate) = map[(filePath, lineNumber)];
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
-        }
-""" : string.Empty;
-
-    private static string GetEndpoints(string endpoints) => endpoints != string.Empty ? $$"""
-    // This class needs to be internal so that the compiled application
-    // has access to the strongly-typed endpoint definitions that are
-    // generated by the compiler so that they will be favored by
-    // overload resolution and opt the runtime in to the code generated
-    // implementation produced here.
-    {{GeneratedCodeAttribute}}
-    internal static class GenerateRouteBuilderEndpoints
+    public static string GetVerbs(ImmutableHashSet<string> verbs)
     {
-        private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
-        private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
-        private static readonly string[] PutVerb = new[]  { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
-        private static readonly string[] DeleteVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Delete };
-        private static readonly string[] PatchVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Patch };
+        using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
+        using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
 
-        {{endpoints}}
+        foreach (string verb in verbs.OrderBy(p => p, StringComparer.Ordinal))
+        {
+            codeWriter.WriteLine($$"""private static readonly string[] {{verb}}Verb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.{{verb}} };""");
+        }
+
+        return stringWriter.ToString();
     }
-""" : string.Empty;
 }

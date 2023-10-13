@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -12,8 +15,13 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
+        if (_isHandlingErrors)
+        {
+            // Ignore the render mode boundary in error scenarios.
+            return componentActivator.CreateInstance(componentType);
+        }
         var closestRenderModeBoundary = parentComponentId.HasValue
             ? GetClosestRenderModeBoundary(parentComponentId.Value)
             : null;
@@ -27,37 +35,62 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(componentType, renderMode);
+            return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
+    }
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)
+    {
+        var componentState = GetComponentState(component);
+        var ssrRenderBoundary = GetClosestRenderModeBoundary(componentState);
+
+        if (ssrRenderBoundary is null)
+        {
+            return null;
+        }
+
+        return ssrRenderBoundary.RenderMode;
     }
 
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)
     {
         var componentState = GetComponentState(componentId);
+        return GetClosestRenderModeBoundary(componentState);
+    }
+
+    private static SSRRenderModeBoundary? GetClosestRenderModeBoundary(ComponentState componentState)
+    {
+        var currentComponentState = componentState;
+
         do
         {
-            if (componentState.Component is SSRRenderModeBoundary boundary)
+            if (currentComponentState.Component is SSRRenderModeBoundary boundary)
             {
                 return boundary;
             }
 
-            componentState = componentState.ParentComponentState;
+            currentComponentState = currentComponentState.ParentComponentState;
         }
-        while (componentState is not null);
+        while (currentComponentState is not null);
 
         return null;
     }
 
+    public static void MarkAsAllowingEnhancedNavigation(HttpContext context)
+    {
+        context.Response.Headers.Add("blazor-enhanced-nav", "allow");
+    }
+
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode prerenderMode,
         ParameterView parameters)
         => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
 
     public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode? prerenderMode,
         ParameterView parameters,
         bool waitForQuiescence)
@@ -82,7 +115,7 @@ internal partial class EndpointHtmlRenderer
         {
             var rootComponent = prerenderMode is null
                 ? InstantiateComponent(componentType)
-                : new SSRRenderModeBoundary(componentType, prerenderMode);
+                : new SSRRenderModeBoundary(_httpContext, componentType, prerenderMode);
             var htmlRootComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(rootComponent, parameters));
             var result = new PrerenderedComponentHtmlContent(Dispatcher, htmlRootComponent);
 
@@ -98,7 +131,7 @@ internal partial class EndpointHtmlRenderer
 
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
-        Type rootComponentType,
+        [DynamicallyAccessedMembers(Component)] Type rootComponentType,
         ParameterView parameters,
         bool waitForQuiescence)
     {
@@ -133,7 +166,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
+    public static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
     {
         if (httpContext.Response.HasStarted)
         {
@@ -147,13 +180,15 @@ internal partial class EndpointHtmlRenderer
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
         }
-        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location) && httpContext.Request.Headers.ContainsKey("blazor-enhanced-nav"))
+        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location)
+            && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
-            // It's unsafe to do a 301/302/etc to an external destination when this was requested via fetch, because
-            // assuming it doesn't expose CORS headers, we won't be allowed to follow the redirection nor will
-            // we even find out what the destination URL would have been. But since it's our own JS code making this
-            // fetch request, we can have a custom protocol for describing the URL we wanted to redirect to.
-            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location", navigationException.Location);
+            // For progressively-enhanced nav, we prefer to use opaque redirections for external URLs rather than
+            // forcing the request to be retried, since that allows post-redirect-get to work, plus avoids a
+            // duplicated request. The client can't rely on receiving this header, though, since non-Blazor endpoints
+            // wouldn't return it.
+            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location",
+                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, navigationException.Location));
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
         else

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -87,6 +88,7 @@ public abstract class ControllerBase
     /// <summary>
     /// Gets or sets the <see cref="IModelMetadataProvider"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IModelMetadataProvider MetadataProvider
     {
         get
@@ -109,6 +111,7 @@ public abstract class ControllerBase
     /// <summary>
     /// Gets or sets the <see cref="IModelBinderFactory"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IModelBinderFactory ModelBinderFactory
     {
         get
@@ -131,6 +134,7 @@ public abstract class ControllerBase
     /// <summary>
     /// Gets or sets the <see cref="IUrlHelper"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IUrlHelper Url
     {
         get
@@ -154,6 +158,7 @@ public abstract class ControllerBase
     /// <summary>
     /// Gets or sets the <see cref="IObjectModelValidator"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IObjectModelValidator ObjectValidator
     {
         get
@@ -176,6 +181,7 @@ public abstract class ControllerBase
     /// <summary>
     /// Gets or sets the <see cref="ProblemDetailsFactory"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public ProblemDetailsFactory ProblemDetailsFactory
     {
         get
@@ -215,7 +221,7 @@ public abstract class ControllerBase
         => new StatusCodeResult(statusCode);
 
     /// <summary>
-    /// Creates a <see cref="ObjectResult"/> object by specifying a <paramref name="statusCode"/> and <paramref name="value"/>
+    /// Creates an <see cref="ObjectResult"/> object by specifying a <paramref name="statusCode"/> and <paramref name="value"/>
     /// </summary>
     /// <param name="statusCode">The status code to set on the response.</param>
     /// <param name="value">The value to set on the <see cref="ObjectResult"/>.</param>
@@ -296,7 +302,7 @@ public abstract class ControllerBase
         => new NoContentResult();
 
     /// <summary>
-    /// Creates a <see cref="OkResult"/> object that produces an empty <see cref="StatusCodes.Status200OK"/> response.
+    /// Creates an <see cref="OkResult"/> object that produces an empty <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
     /// <returns>The created <see cref="OkResult"/> for the response.</returns>
     [NonAction]
@@ -304,7 +310,7 @@ public abstract class ControllerBase
         => new OkResult();
 
     /// <summary>
-    /// Creates an <see cref="OkObjectResult"/> object that produces an <see cref="StatusCodes.Status200OK"/> response.
+    /// Creates an <see cref="OkObjectResult"/> object that produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
     /// <param name="value">The content value to format in the entity body.</param>
     /// <returns>The created <see cref="OkObjectResult"/> for the response.</returns>
@@ -1727,7 +1733,7 @@ public abstract class ControllerBase
     #endregion
 
     /// <summary>
-    /// Creates an <see cref="UnauthorizedResult"/> that produces an <see cref="StatusCodes.Status401Unauthorized"/> response.
+    /// Creates an <see cref="UnauthorizedResult"/> that produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
     /// </summary>
     /// <returns>The created <see cref="UnauthorizedResult"/> for the response.</returns>
     [NonAction]
@@ -1743,7 +1749,7 @@ public abstract class ControllerBase
         => new UnauthorizedObjectResult(value);
 
     /// <summary>
-    /// Creates an <see cref="NotFoundResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
+    /// Creates a <see cref="NotFoundResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
     /// </summary>
     /// <returns>The created <see cref="NotFoundResult"/> for the response.</returns>
     [NonAction]
@@ -1751,7 +1757,7 @@ public abstract class ControllerBase
         => new NotFoundResult();
 
     /// <summary>
-    /// Creates an <see cref="NotFoundObjectResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
+    /// Creates a <see cref="NotFoundObjectResult"/> that produces a <see cref="StatusCodes.Status404NotFound"/> response.
     /// </summary>
     /// <returns>The created <see cref="NotFoundObjectResult"/> for the response.</returns>
     [NonAction]
@@ -1759,7 +1765,7 @@ public abstract class ControllerBase
         => new NotFoundObjectResult(value);
 
     /// <summary>
-    /// Creates an <see cref="BadRequestResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// Creates a <see cref="BadRequestResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
     /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>
     [NonAction]
@@ -1767,7 +1773,7 @@ public abstract class ControllerBase
         => new BadRequestResult();
 
     /// <summary>
-    /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// Creates a <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
     /// <param name="error">An error object to be returned to the client.</param>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
@@ -1776,7 +1782,7 @@ public abstract class ControllerBase
         => new BadRequestObjectResult(error);
 
     /// <summary>
-    /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// Creates a <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
     /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
@@ -1819,7 +1825,7 @@ public abstract class ControllerBase
     }
 
     /// <summary>
-    /// Creates an <see cref="ConflictResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
+    /// Creates a <see cref="ConflictResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
     /// </summary>
     /// <returns>The created <see cref="ConflictResult"/> for the response.</returns>
     [NonAction]
@@ -1827,7 +1833,7 @@ public abstract class ControllerBase
         => new ConflictResult();
 
     /// <summary>
-    /// Creates an <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
+    /// Creates a <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
     /// </summary>
     /// <param name="error">Contains errors to be returned to the client.</param>
     /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
@@ -1836,7 +1842,7 @@ public abstract class ControllerBase
         => new ConflictObjectResult(error);
 
     /// <summary>
-    /// Creates an <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
+    /// Creates a <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
     /// </summary>
     /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
     /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
@@ -1892,7 +1898,7 @@ public abstract class ControllerBase
     }
 
     /// <summary>
-    /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// Creates a <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
     /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
     [NonAction]
@@ -2089,7 +2095,7 @@ public abstract class ControllerBase
         => new CreatedAtRouteResult(routeName, routeValues, value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
     [NonAction]
@@ -2097,7 +2103,7 @@ public abstract class ControllerBase
         => new AcceptedResult();
 
     /// <summary>
-    /// Creates a <see cref="AcceptedResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="value">The optional content value to format in the entity body; may be null.</param>
     /// <returns>The created <see cref="AcceptedResult"/> for the response.</returns>
@@ -2106,7 +2112,7 @@ public abstract class ControllerBase
         => new AcceptedResult(location: null, value: value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="uri">The optional URI with the location at which the status of requested content can be monitored.
     /// May be null.</param>
@@ -2120,7 +2126,7 @@ public abstract class ControllerBase
     }
 
     /// <summary>
-    /// Creates a <see cref="AcceptedResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="uri">The optional URI with the location at which the status of requested content can be monitored.
     /// May be null.</param>
@@ -2130,7 +2136,7 @@ public abstract class ControllerBase
         => new AcceptedResult(location: uri, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="uri">The URI with the location at which the status of requested content can be monitored.</param>
     /// <param name="value">The optional content value to format in the entity body; may be null.</param>
@@ -2140,7 +2146,7 @@ public abstract class ControllerBase
         => new AcceptedResult(uri, value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="uri">The URI with the location at which the status of requested content can be monitored.</param>
     /// <param name="value">The optional content value to format in the entity body; may be null.</param>
@@ -2154,7 +2160,7 @@ public abstract class ControllerBase
     }
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtActionResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtActionResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="actionName">The name of the action to use for generating the URL.</param>
     /// <returns>The created <see cref="AcceptedAtActionResult"/> for the response.</returns>
@@ -2163,7 +2169,7 @@ public abstract class ControllerBase
         => AcceptedAtAction(actionName, routeValues: null, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtActionResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtActionResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="actionName">The name of the action to use for generating the URL.</param>
     /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
@@ -2173,7 +2179,7 @@ public abstract class ControllerBase
         => AcceptedAtAction(actionName, controllerName, routeValues: null, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtActionResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtActionResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="actionName">The name of the action to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the entity body; may be null.</param>
@@ -2183,7 +2189,7 @@ public abstract class ControllerBase
         => AcceptedAtAction(actionName, routeValues: null, value: value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtActionResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtActionResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="actionName">The name of the action to use for generating the URL.</param>
     /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
@@ -2194,7 +2200,7 @@ public abstract class ControllerBase
         => AcceptedAtAction(actionName, controllerName, routeValues, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtActionResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtActionResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="actionName">The name of the action to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
@@ -2205,7 +2211,7 @@ public abstract class ControllerBase
         => AcceptedAtAction(actionName, controllerName: null, routeValues: routeValues, value: value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtActionResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtActionResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="actionName">The name of the action to use for generating the URL.</param>
     /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
@@ -2221,7 +2227,7 @@ public abstract class ControllerBase
         => new AcceptedAtActionResult(actionName, controllerName, routeValues, value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtRouteResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtRouteResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
@@ -2230,7 +2236,7 @@ public abstract class ControllerBase
         => AcceptedAtRoute(routeName: null, routeValues: routeValues, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtRouteResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtRouteResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <returns>The created <see cref="AcceptedAtRouteResult"/> for the response.</returns>
@@ -2239,7 +2245,7 @@ public abstract class ControllerBase
         => AcceptedAtRoute(routeName, routeValues: null, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtRouteResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtRouteResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     ///<param name="routeValues">The route data to use for generating the URL.</param>
@@ -2249,7 +2255,7 @@ public abstract class ControllerBase
         => AcceptedAtRoute(routeName, routeValues, value: null);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtRouteResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtRouteResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="routeValues">The route data to use for generating the URL.</param>
     /// <param name="value">The optional content value to format in the entity body; may be null.</param>
@@ -2259,7 +2265,7 @@ public abstract class ControllerBase
         => AcceptedAtRoute(routeName: null, routeValues: routeValues, value: value);
 
     /// <summary>
-    /// Creates a <see cref="AcceptedAtRouteResult"/> object that produces an <see cref="StatusCodes.Status202Accepted"/> response.
+    /// Creates an <see cref="AcceptedAtRouteResult"/> object that produces a <see cref="StatusCodes.Status202Accepted"/> response.
     /// </summary>
     /// <param name="routeName">The name of the route to use for generating the URL.</param>
     /// <param name="routeValues">The route data to use for generating the URL.</param>

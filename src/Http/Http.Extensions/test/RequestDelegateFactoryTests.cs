@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -2902,6 +2903,44 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
     }
 #nullable enable
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void RequestDelegateFactory_WhenJsonIsReflectionEnabledByDefaultFalse()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var @delegate = (string task) => new Todo();
+
+            // IsReflectionEnabledByDefault defaults to `false` when `PublishTrimmed=true`. For these scenarios, we
+            // expect users to configure JSON source generation as instructed in the `NotSupportedException` message.
+            var exception = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(@delegate));
+            Assert.Contains("Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+Todo", exception.Message);
+            Assert.Contains("JsonSerializableAttribute", exception.Message);
+        }, options);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void RequestDelegateFactory_WhenJsonIsReflectionEnabledByDefaultTrue()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var @delegate = (string task) => new Todo();
+
+            // Assert
+            var exception = Record.Exception(() => RequestDelegateFactory.Create(@delegate));
+            Assert.Null(exception);
+        }, options);
+    }
 
     private DefaultHttpContext CreateHttpContext()
     {

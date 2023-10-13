@@ -300,7 +300,7 @@ internal sealed class KestrelServerImpl : IServer
 
             if (Options.ConfigurationLoader?.ReloadOnChange == true && (!_serverAddresses.PreferHostingUrls || _serverAddresses.InternalCollection.Count == 0))
             {
-                reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
+                reloadToken = Options.ConfigurationLoader.GetReloadToken();
             }
 
             Options.ConfigurationLoader?.LoadInternal();
@@ -340,7 +340,7 @@ internal sealed class KestrelServerImpl : IServer
 
             Debug.Assert(Options.ConfigurationLoader != null, "Rebind can only happen when there is a ConfigurationLoader.");
 
-            reloadToken = Options.ConfigurationLoader.Configuration.GetReloadToken();
+            reloadToken = Options.ConfigurationLoader.GetReloadToken();
             var (endpointsToStop, endpointsToStart) = Options.ConfigurationLoader.Reload();
 
             Trace.LogDebug("Config reload token fired. Checking for changes...");

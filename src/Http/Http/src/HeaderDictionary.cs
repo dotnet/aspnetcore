@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents a wrapper for RequestHeaders and ResponseHeaders.
 /// </summary>
 [DebuggerTypeProxy(typeof(HeaderDictionaryDebugView))]
-[DebuggerDisplay("Count = {Count}")]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 public class HeaderDictionary : IHeaderDictionary
 {
     private static readonly string[] EmptyKeys = Array.Empty<string>();
@@ -378,6 +378,16 @@ public class HeaderDictionary : IHeaderDictionary
     private static void ThrowKeyNotFoundException()
     {
         throw new KeyNotFoundException();
+    }
+
+    internal string DebuggerToString()
+    {
+        var debugText = $"Count = {Count}";
+        if (IsReadOnly)
+        {
+            debugText += ", IsReadOnly = true";
+        }
+        return debugText;
     }
 
     /// <summary>

@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "用於建立 ASP.NET Core 應用程式的專案範本，附有 RESTful HTTP 服務的控制器範例。此範本也可用於 ASP.NET Core MVC 的檢視及控制器。",
+  "description": "此專案範本可用於使用 ASP.NET Core 控制器或最小 API 建立 RESTful Web API，並可選擇性地支援 OpenAPI 和驗證。",
   "symbols/auth/choices/None/description": "沒有驗證",
   "symbols/auth/choices/IndividualB2C/description": "具有 Azure AD B2C 的個別驗證",
   "symbols/auth/choices/SingleOrg/description": "單一租用戶的組織驗證",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "是否要關閉 HTTPS。只有當 IndividualB2C、SingleOrg 或 MultiOrg 未用於 --auth 時，才適用此選項。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而非 SQLite。只有在已指定 --auth Individual 或 --auth IndividualB2C 時，才適用此選項。",
   "symbols/UseMinimalAPIs/description": "是否要使用最小 API 而不是控制器。",
+  "symbols/UseControllers/description": "是否要使用控制器，而不是最小 API。此選項會覆寫由 --minimal 指定的值。",
   "symbols/Framework/description": "專案的目標 Framework。",
   "symbols/Framework/choices/net8.0/description": "目標 net8.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",

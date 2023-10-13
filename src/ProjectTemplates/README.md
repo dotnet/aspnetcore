@@ -33,8 +33,6 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 1. After installation define a new environment variable named `JAVA_HOME` pointing to the root of the latest JDK installation (for Windows it will be something like `c:\Program Files\Java\jdk-12`).
 1. Add the `%JAVA_HOME%\bin` directory to the `PATH` environment variable
 
-Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj contains the Single Page Application templates, including Angular, React. **This is brought in by a submodule from the dotnet/spa-templates repo.**
-
 To build the ProjectTemplates, use one of:
 
 1. Run `eng\build.cmd -all -pack -configuration Release` in the repository root to build and pack all of the repo, including template projects.
@@ -56,7 +54,7 @@ Then, use one of:
 1. To test specific templates, use the `Run-[Template]-Locally.ps1` scripts in the script folder.
     - These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
 1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.
-    - `dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
+    - `dotnet new -i Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
     - `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
 1. Install the templates to an existing Visual Studio installation.
     1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`

@@ -89,7 +89,7 @@ public class HttpConnectionFactory : IConnectionFactory
             DefaultTransferFormat = options.DefaultTransferFormat,
             ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
             TransportMaxBufferSize = options.TransportMaxBufferSize,
-            UseAcks = options.UseAcks,
+            UseStatefulReconnect = options.UseStatefulReconnect,
         };
 
         if (!OperatingSystem.IsBrowser())

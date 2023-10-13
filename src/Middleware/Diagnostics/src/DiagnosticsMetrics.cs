@@ -22,7 +22,8 @@ internal sealed class DiagnosticsMetrics
         _meter = meterFactory.Create(MeterName);
 
         _handlerExceptionCounter = _meter.CreateCounter<long>(
-           "diagnostics-handler-exception",
+            "aspnetcore.diagnostics.exceptions",
+            unit: "{exception}",
             description: "Number of exceptions caught by exception handling middleware.");
     }
 
@@ -38,13 +39,30 @@ internal sealed class DiagnosticsMetrics
     private void RequestExceptionCore(string exceptionName, ExceptionResult result, string? handler)
     {
         var tags = new TagList();
-        tags.Add("exception-name", exceptionName);
-        tags.Add("result", result.ToString());
+        tags.Add("exception.type", exceptionName);
+        tags.Add("aspnetcore.diagnostics.exception.result", GetExceptionResult(result));
         if (handler != null)
         {
-            tags.Add("handler", handler);
+            tags.Add("aspnetcore.diagnostics.handler.type", handler);
         }
         _handlerExceptionCounter.Add(1, tags);
+    }
+
+    private static string GetExceptionResult(ExceptionResult result)
+    {
+        switch (result)
+        {
+            case ExceptionResult.Skipped:
+                return "skipped";
+            case ExceptionResult.Handled:
+                return "handled";
+            case ExceptionResult.Unhandled:
+                return "unhandled";
+            case ExceptionResult.Aborted:
+                return "aborted";
+            default:
+                throw new InvalidOperationException("Unexpected value: " + result);
+        }
     }
 }
 

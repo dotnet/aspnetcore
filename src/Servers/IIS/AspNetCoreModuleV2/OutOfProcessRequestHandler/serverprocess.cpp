@@ -7,11 +7,6 @@
 #include "EventLog.h"
 #include "file_utility.h"
 #include "exceptions.h"
-//#include <share.h>
-
-//extern BOOL g_fNsiApiNotSupported;
-
-#define STARTUP_TIME_LIMIT_INCREMENT_IN_MILLISECONDS 5000
 
 HRESULT
 SERVER_PROCESS::Initialize(
@@ -19,7 +14,7 @@ SERVER_PROCESS::Initialize(
     STRU                 *pszProcessExePath,
     STRU                 *pszArguments,
     DWORD                 dwStartupTimeLimitInMS,
-    DWORD                 dwShtudownTimeLimitInMS,
+    DWORD                 dwShutdownTimeLimitInMS,
     BOOL                  fWindowsAuthEnabled,
     BOOL                  fBasicAuthEnabled,
     BOOL                  fAnonymousAuthEnabled,
@@ -34,11 +29,9 @@ SERVER_PROCESS::Initialize(
     STRU                  *pszHttpsPort
 )
 {
-    HRESULT hr = S_OK;
-
     m_pProcessManager = pProcessManager;
     m_dwStartupTimeLimitInMS = dwStartupTimeLimitInMS;
-    m_dwShutdownTimeLimitInMS = dwShtudownTimeLimitInMS;
+    m_dwShutdownTimeLimitInMS = dwShutdownTimeLimitInMS;
     m_fStdoutLogEnabled = fStdoutLogEnabled;
     m_fWebSocketSupported = fWebSocketSupported;
     m_fWindowsAuthEnabled = fWindowsAuthEnabled;
@@ -48,6 +41,7 @@ SERVER_PROCESS::Initialize(
     m_pProcessManager->ReferenceProcessManager();
     m_fDebuggerAttached = FALSE;
 
+    HRESULT hr;
     if (FAILED_LOG(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
         FAILED_LOG(hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
         FAILED_LOG(hr = m_struPhysicalPath.Copy(*pszAppPhysicalPath))||
@@ -57,49 +51,44 @@ SERVER_PROCESS::Initialize(
         FAILED_LOG(hr = m_struHttpsPort.Copy(*pszHttpsPort)) ||
         FAILED_LOG(hr = SetupJobObject()))
     {
-        goto Finished;
+        return hr;
     }
 
     m_pEnvironmentVarTable = pEnvironmentVariables;
 
-Finished:
-    return hr;
+    return S_OK;
 }
 
 HRESULT
 SERVER_PROCESS::SetupJobObject(VOID)
 {
-    HRESULT                                 hr = S_OK;
-    JOBOBJECT_EXTENDED_LIMIT_INFORMATION    jobInfo = { 0 };
-
-    if (m_hJobObject == NULL)
+    if (m_hJobObject != nullptr)
     {
-        m_hJobObject = CreateJobObject(NULL,   // LPSECURITY_ATTRIBUTES
-            NULL); // LPCTSTR lpName
-#pragma warning( disable : 4312)
-        // 0xdeadbeef is used by Antares
-        if (m_hJobObject == NULL || m_hJobObject == (HANDLE)0xdeadbeef)
-        {
-            m_hJobObject = NULL;
-            // ignore job object creation error.
-        }
-#pragma warning( error : 4312)
-        if (m_hJobObject != NULL)
-        {
-            jobInfo.BasicLimitInformation.LimitFlags =
-                JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-
-            if (!SetInformationJobObject(m_hJobObject,
-                JobObjectExtendedLimitInformation,
-                &jobInfo,
-                sizeof jobInfo))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-            }
-        }
+        return S_OK;
     }
 
-    return hr;
+    m_hJobObject = CreateJobObject(nullptr /* lpJobAttributes */, nullptr /* lpName */);
+
+    // 0xdeadbeef is used by Antares
+    constexpr size_t magicAntaresNumber = 0xdeadbeef;
+    if (m_hJobObject == nullptr || m_hJobObject == reinterpret_cast<HANDLE>(magicAntaresNumber))
+    {
+        m_hJobObject = nullptr;
+
+        // ignore job object creation error.
+        return S_OK;
+    }
+
+    // Created a job object successfully. Set the job object limit.
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobInfo = { 0 };
+    jobInfo.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+
+    if (!SetInformationJobObject(m_hJobObject, JobObjectExtendedLimitInformation, &jobInfo, sizeof jobInfo))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    return S_OK;
 }
 
 HRESULT
@@ -109,41 +98,34 @@ SERVER_PROCESS::GetRandomPort
     DWORD  dwExcludedPort = 0
 )
 {
-    HRESULT hr = S_OK;
-    BOOL    fPortInUse = FALSE;
-    DWORD   dwActualProcessId = 0;
+    DBG_ASSERT(pdwPickedPort);
 
     std::uniform_int_distribution<> dist(MIN_PORT_RANDOM, MAX_PORT);
 
-    if (g_fNsiApiNotSupported)
+    BOOL fPortInUse;
+    DWORD dwActualProcessId; // Ignored, but required for the function call.
+    constexpr int maxRetries = 10;
+    for (int retry = 0; retry < maxRetries; ++retry)
     {
-        //
-        // the default value for optional parameter dwExcludedPort is 0 which is reserved
-        // a random number between MIN_PORT_RANDOM and MAX_PORT
-        //
-        while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
-    }
-    else
-    {
-        DWORD cRetry = 0;
         do
         {
-            //
-            // ignore dwActualProcessId because here we are
-            // determing whether the randomly generated port is
-            // in use by any other process.
-            //
-            while ((*pdwPickedPort = dist(m_randomGenerator)) == dwExcludedPort);
-            hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
-        } while (fPortInUse && ++cRetry < MAX_RETRY);
+            *pdwPickedPort = dist(m_randomGenerator);
+        } while (*pdwPickedPort == dwExcludedPort); // Keep generating until a valid port is found.
 
-        if (cRetry >= MAX_RETRY)
+        HRESULT hr = CheckIfServerIsUp(*pdwPickedPort, &dwActualProcessId, &fPortInUse);
+        if (FAILED(hr))
         {
-            hr = HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
+            return hr;
+        }
+
+        if (!fPortInUse)
+        {
+            return S_OK; // Port found and is not in use, success!
         }
     }
 
-    return hr;
+    // All retries failed, return error.
+    return HRESULT_FROM_WIN32(ERROR_PORT_NOT_SET);
 }
 
 HRESULT
@@ -234,40 +216,32 @@ Finished:
 
 HRESULT
 SERVER_PROCESS::SetupAppPath(
-    ENVIRONMENT_VAR_HASH*    pEnvironmentVarTable
+    ENVIRONMENT_VAR_HASH* pEnvironmentVarTable
 )
 {
-    HRESULT      hr = S_OK;
-    ENVIRONMENT_VAR_ENTRY*  pEntry = NULL;
-
+    ENVIRONMENT_VAR_ENTRY*  pEntry = nullptr;
     pEnvironmentVarTable->FindKey(ASPNETCORE_APP_PATH_ENV_STR, &pEntry);
-    if (pEntry != NULL)
+    if (pEntry != nullptr)
     {
         // user should not set this environment variable in configuration
         pEnvironmentVarTable->DeleteKey(ASPNETCORE_APP_PATH_ENV_STR);
         pEntry->Dereference();
-        pEntry = NULL;
+        pEntry = nullptr;
     }
 
     pEntry = new ENVIRONMENT_VAR_ENTRY();
-    if (pEntry == NULL)
+    if (pEntry == nullptr)
     {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
+        return E_OUTOFMEMORY;
     }
 
-    if (FAILED_LOG(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())) ||
-        FAILED_LOG(hr = pEnvironmentVarTable->InsertRecord(pEntry)))
+    HRESULT hr = S_OK;
+    if (SUCCEEDED_LOG(hr = pEntry->Initialize(ASPNETCORE_APP_PATH_ENV_STR, m_struAppVirtualPath.QueryStr())))
     {
-        goto Finished;
+        LOG_IF_FAILED(hr = pEnvironmentVarTable->InsertRecord(pEntry));
     }
 
-Finished:
-    if (pEntry != NULL)
-    {
-        pEntry->Dereference();
-        pEntry = NULL;
-    }
+    pEntry->Dereference();
     return hr;
 }
 
@@ -579,71 +553,68 @@ SERVER_PROCESS::PostStartCheck(
         fDebuggerAttached = FALSE;
     }
 
-    if (!g_fNsiApiNotSupported)
+    //
+    // NsiAPI(GetExtendedTcpTable) is supported. we should check whether processIds match
+    //
+    if (dwActualProcessId == m_dwProcessId)
     {
-        //
-        // NsiAPI(GetExtendedTcpTable) is supported. we should check whether processIds matche
-        //
-        if (dwActualProcessId == m_dwProcessId)
+        m_dwListeningProcessId = m_dwProcessId;
+        fProcessMatch = TRUE;
+    }
+
+    if (!fProcessMatch)
+    {
+        // could be the scenario that backend creates child process
+        if (FAILED_LOG(hr = GetChildProcessHandles()))
         {
-            m_dwListeningProcessId = m_dwProcessId;
-            fProcessMatch = TRUE;
-        }
-
-        if (!fProcessMatch)
-        {
-            // could be the scenario that backend creates child process
-            if (FAILED_LOG(hr = GetChildProcessHandles()))
-            {
-                goto Finished;
-            }
-
-            for (DWORD i = 0; i < m_cChildProcess; ++i)
-            {
-                // a child process listen on the assigned port
-                if (dwActualProcessId == m_dwChildProcessIds[i])
-                {
-                    m_dwListeningProcessId = m_dwChildProcessIds[i];
-                    fProcessMatch = TRUE;
-
-                    if (m_hChildProcessHandles[i] != NULL)
-                    {
-                        if (fDebuggerAttached == FALSE &&
-                            CheckRemoteDebuggerPresent(m_hChildProcessHandles[i], &fDebuggerAttached) == 0)
-                        {
-                            // some error occurred  - assume debugger is not attached;
-                            fDebuggerAttached = FALSE;
-                        }
-
-                        if (FAILED_LOG(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
-                            m_hChildProcessHandles[i])))
-                        {
-                            goto Finished;
-                        }
-                        iChildProcessIndex = i;
-                    }
-                    break;
-                }
-            }
-        }
-
-        if(!fProcessMatch)
-        {
-            //
-            // process that we created is not listening
-            // on the port we specified.
-            //
-            fReady = FALSE;
-            hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
-            strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_struPhysicalPath.QueryStr(),
-                m_struCommandLine.QueryStr(),
-                m_dwPort,
-                hr);
             goto Finished;
         }
+
+        for (DWORD i = 0; i < m_cChildProcess; ++i)
+        {
+            // a child process listen on the assigned port
+            if (dwActualProcessId == m_dwChildProcessIds[i])
+            {
+                m_dwListeningProcessId = m_dwChildProcessIds[i];
+                fProcessMatch = TRUE;
+
+                if (m_hChildProcessHandles[i] != NULL)
+                {
+                    if (fDebuggerAttached == FALSE &&
+                        CheckRemoteDebuggerPresent(m_hChildProcessHandles[i], &fDebuggerAttached) == 0)
+                    {
+                        // some error occurred  - assume debugger is not attached;
+                        fDebuggerAttached = FALSE;
+                    }
+
+                    if (FAILED_LOG(hr = RegisterProcessWait(&m_hChildProcessWaitHandles[i],
+                        m_hChildProcessHandles[i])))
+                    {
+                        goto Finished;
+                    }
+                    iChildProcessIndex = i;
+                }
+                break;
+            }
+        }
+    }
+
+    if (!fProcessMatch)
+    {
+        //
+        // process that we created is not listening
+        // on the port we specified.
+        //
+        fReady = FALSE;
+        hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
+        strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_struPhysicalPath.QueryStr(),
+            m_struCommandLine.QueryStr(),
+            m_dwPort,
+            hr);
+        goto Finished;
     }
 
     if (!fReady)
@@ -709,12 +680,9 @@ SERVER_PROCESS::PostStartCheck(
         }
     }
 
-    if (!g_fNsiApiNotSupported)
-    {
-        m_hListeningProcessHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
-                                                FALSE,
-                                                m_dwListeningProcessId);
-    }
+    m_hListeningProcessHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
+                                            FALSE,
+                                            m_dwListeningProcessId);
 
     //
     // mark server process as Ready
@@ -1086,7 +1054,7 @@ SERVER_PROCESS::SetupStdHandles(
         goto Finished;
     }
 
-    hr = FILE_UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
+    hr = FILE_UTILITY::EnsureDirectoryPathExists(struPath.QueryStr());
     if (FAILED_LOG(hr))
     {
         goto Finished;
@@ -1200,7 +1168,6 @@ SERVER_PROCESS::CheckIfServerIsUp(
     MIB_TCPROW_OWNER_PID   *pOwner = NULL;
     DWORD                   dwSize = 1000; // Initial size for pTCPInfo buffer
     int                     iResult = 0;
-    SOCKADDR_IN             sockAddr;
     SOCKET                  socketCheck = INVALID_SOCKET;
 
     DBG_ASSERT(pfReady);
@@ -1212,93 +1179,48 @@ SERVER_PROCESS::CheckIfServerIsUp(
     //
     *pdwProcessId = 0;
 
-    if (!g_fNsiApiNotSupported)
+    while (dwResult == ERROR_INSUFFICIENT_BUFFER)
     {
-        while (dwResult == ERROR_INSUFFICIENT_BUFFER)
+        // Increase the buffer size with additional space, MIB_TCPROW 20 bytes
+        // New entries may be added by other processes before calling GetExtendedTcpTable
+        dwSize += 200;
+
+        if (pTCPInfo != NULL)
         {
-            // Increase the buffer size with additional space, MIB_TCPROW 20 bytes
-            // New entries may be added by other processes before calling GetExtendedTcpTable
-            dwSize += 200;
-
-            if (pTCPInfo != NULL)
-            {
-                HeapFree(GetProcessHeap(), 0, pTCPInfo);
-            }
-
-            pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
-            if (pTCPInfo == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
-
-            dwResult = GetExtendedTcpTable(pTCPInfo,
-                &dwSize,
-                FALSE,
-                AF_INET,
-                TCP_TABLE_OWNER_PID_LISTENER,
-                0);
-
-            if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
-            {
-                hr = HRESULT_FROM_WIN32(dwResult);
-                goto Finished;
-            }
+            HeapFree(GetProcessHeap(), 0, pTCPInfo);
         }
 
-        // iterate pTcpInfo struct to find PID/PORT entry
-        for (DWORD dwLoop = 0; dwLoop < pTCPInfo->dwNumEntries; dwLoop++)
+        pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
+        if (pTCPInfo == NULL)
         {
-            pOwner = &pTCPInfo->table[dwLoop];
-            if (ntohs((USHORT)pOwner->dwLocalPort) == dwPort)
-            {
-                *pdwProcessId = pOwner->dwOwningPid;
-                *pfReady = TRUE;
-                break;
-            }
+            hr = E_OUTOFMEMORY;
+            goto Finished;
+        }
+
+        dwResult = GetExtendedTcpTable(pTCPInfo,
+            &dwSize,
+            FALSE,
+            AF_INET,
+            TCP_TABLE_OWNER_PID_LISTENER,
+            0);
+
+        if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
+        {
+            hr = HRESULT_FROM_WIN32(dwResult);
+            goto Finished;
         }
     }
-    else
+
+    // iterate pTcpInfo struct to find PID/PORT entry
+    for (DWORD dwLoop = 0; dwLoop < pTCPInfo->dwNumEntries; dwLoop++)
     {
-        //
-        // We have to open socket to ping the service
-        //
-        socketCheck = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-        if (socketCheck == INVALID_SOCKET)
+        pOwner = &pTCPInfo->table[dwLoop];
+        if (ntohs((USHORT)pOwner->dwLocalPort) == dwPort)
         {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            goto Finished;
+            *pdwProcessId = pOwner->dwOwningPid;
+            *pfReady = TRUE;
+            break;
         }
-
-        sockAddr.sin_family = AF_INET;
-        if (!inet_pton(AF_INET, LOCALHOST, &(sockAddr.sin_addr)))
-        {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            goto Finished;
-        }
-
-        //sockAddr.sin_addr.s_addr = inet_addr( LOCALHOST );
-        sockAddr.sin_port = htons((u_short)dwPort);
-
-        //
-        // Connect to server.
-        // if connection fails, socket is not closed, we reuse the same socket
-        // while retrying
-        //
-        iResult = connect(socketCheck, (SOCKADDR *)&sockAddr, sizeof(sockAddr));
-        if (iResult == SOCKET_ERROR)
-        {
-            hr = HRESULT_FROM_WIN32(WSAGetLastError());
-            if (hr == HRESULT_FROM_WIN32(WSAECONNREFUSED))
-            {
-                // WSAECONNREFUSED means no application listen on the given port.
-                // This is not a failure. Reset the hresult to S_OK and return fReady to false
-                hr = S_OK;
-            }
-            goto Finished;
-        }
-        *pfReady = TRUE;
     }
 
 Finished:

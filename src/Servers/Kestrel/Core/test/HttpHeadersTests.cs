@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -297,5 +298,13 @@ public class HttpHeadersTests
         Assert.False(headers.TryGetValue("Content-Length", out value));
         Assert.Null(httpHeaders.ContentLength);
         Assert.False(httpHeaders.ContentLength.HasValue);
+    }
+
+    [Fact]
+    public void KeysCompareShouldBeCaseInsensitive()
+    {
+        var httpHeaders = (IHeaderDictionary)new HttpRequestHeaders();
+        httpHeaders["Cache-Control"] = "no-cache";
+        Assert.True(httpHeaders.Keys.Contains("cache-control"));
     }
 }

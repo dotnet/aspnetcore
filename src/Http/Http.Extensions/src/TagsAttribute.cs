@@ -33,7 +33,7 @@ public sealed class TagsAttribute : Attribute, ITagsMetadata
     /// </summary>
     public IReadOnlyList<string> Tags { get; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(Tags), Tags);

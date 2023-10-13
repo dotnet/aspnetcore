@@ -425,13 +425,29 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
         return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions)!;
     }
 
-    private sealed record BrowserTab
-    (
-        string Id,
-        string Type,
-        string Url,
-        string Title,
-        string DevtoolsFrontendUrl,
-        string WebSocketDebuggerUrl
-    );
+    private sealed class BrowserTab
+    {
+        public string Id { get; }
+        public string Type { get; }
+        public string Url { get; }
+        public string Title { get; }
+        public string DevtoolsFrontendUrl { get; }
+        public string WebSocketDebuggerUrl { get; }
+
+        public BrowserTab(
+            string id,
+            string type,
+            string url,
+            string title,
+            string devtoolsFrontendUrl,
+            string webSocketDebuggerUrl)
+        {
+            Id = id;
+            Type = type;
+            Url = url;
+            Title = title;
+            DevtoolsFrontendUrl = devtoolsFrontendUrl;
+            WebSocketDebuggerUrl = webSocketDebuggerUrl;
+        }
+    }
 }

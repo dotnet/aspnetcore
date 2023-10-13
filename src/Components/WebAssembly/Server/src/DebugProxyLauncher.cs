@@ -38,6 +38,20 @@ internal static class DebugProxyLauncher
         }
     }
 
+    private static string GetIgnoreProxyForLocalAddress()
+    {
+        var noProxyEnvVar = Environment.GetEnvironmentVariable("NO_PROXY");
+        if (noProxyEnvVar is not null)
+        {
+            if (noProxyEnvVar.Equals("localhost") || noProxyEnvVar.Equals("127.0.0.1"))
+            {
+                return "--IgnoreProxyForLocalAddress True";
+            }
+            Console.WriteLine($"Invalid value for NO_PROXY: {noProxyEnvVar} (Expected values: \"localhost\" or \"127.0.0.1\")");
+        }
+        return "";
+    }
+
     private static async Task<string> LaunchAndGetUrl(IServiceProvider serviceProvider, string devToolsHost, bool isFirefox)
     {
         var tcs = new TaskCompletionSource<string>();
@@ -46,17 +60,19 @@ internal static class DebugProxyLauncher
         var executablePath = LocateDebugProxyExecutable(environment);
         var muxerPath = DotNetMuxer.MuxerPathOrDefault();
         var ownerPid = Environment.ProcessId;
-
+        var ignoreProxyForLocalAddress = GetIgnoreProxyForLocalAddress();
         var processStartInfo = new ProcessStartInfo
         {
             FileName = muxerPath,
-            Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001",
+            Arguments = $"exec \"{executablePath}\" --OwnerPid {ownerPid} --DevToolsUrl {devToolsHost} --IsFirefoxDebugging {isFirefox} --FirefoxProxyPort 6001 {ignoreProxyForLocalAddress}",
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
         RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
+        using var cts = new CancellationTokenSource(DebugProxyLaunchTimeout);
+        var ctr = default(CancellationTokenRegistration);
         var debugProxyProcess = Process.Start(processStartInfo);
         if (debugProxyProcess is null)
         {
@@ -67,13 +83,20 @@ internal static class DebugProxyLauncher
             PassThroughConsoleOutput(debugProxyProcess);
             CompleteTaskWhenServerIsReady(debugProxyProcess, isFirefox, tcs);
 
-            new CancellationTokenSource(DebugProxyLaunchTimeout).Token.Register(() =>
+            ctr = cts.Token.Register(() =>
             {
                 tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
             });
         }
 
-        return await tcs.Task;
+        try
+        {
+            return await tcs.Task;
+        }
+        finally
+        {
+            ctr.Dispose();
+        }
     }
 
     private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string?> environment)

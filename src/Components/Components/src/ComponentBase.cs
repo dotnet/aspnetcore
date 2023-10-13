@@ -124,7 +124,12 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         => true;
 
     /// <summary>
-    /// Method invoked after each time the component has been rendered.
+    /// Method invoked after each time the component has rendered interactively and the UI has finished
+    /// updating (for example, after elements have been added to the browser DOM). Any <see cref="ElementReference" />
+    /// fields will be populated by the time this runs.
+    ///
+    /// This method is not invoked during prerendering or server-side rendering, because those processes
+    /// are not attached to any live browser DOM and are already complete before the DOM is updated.
     /// </summary>
     /// <param name="firstRender">
     /// Set to <c>true</c> if this is the first time <see cref="OnAfterRender(bool)"/> has been invoked
@@ -141,9 +146,15 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
-    /// Method invoked after each time the component has been rendered. Note that the component does
-    /// not automatically re-render after the completion of any returned <see cref="Task"/>, because
-    /// that would cause an infinite render loop.
+    /// Method invoked after each time the component has been rendered interactively and the UI has finished
+    /// updating (for example, after elements have been added to the browser DOM). Any <see cref="ElementReference" />
+    /// fields will be populated by the time this runs.
+    ///
+    /// This method is not invoked during prerendering or server-side rendering, because those processes
+    /// are not attached to any live browser DOM and are already complete before the DOM is updated.
+    ///
+    /// Note that the component does not automatically re-render after the completion of any returned <see cref="Task"/>,
+    /// because that would cause an infinite render loop.
     /// </summary>
     /// <param name="firstRender">
     /// Set to <c>true</c> if this is the first time <see cref="OnAfterRender(bool)"/> has been invoked

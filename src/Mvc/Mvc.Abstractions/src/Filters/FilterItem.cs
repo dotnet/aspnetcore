@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// inspect <see cref="FilterProviderContext.Results"/> and set <see cref="Filter"/> and
 /// <see cref="IsReusable"/> as appropriate.
 /// </summary>
-[DebuggerDisplay("FilterItem: {Filter}")]
+[DebuggerDisplay("Filter = {Filter}")]
 public class FilterItem
 {
     /// <summary>

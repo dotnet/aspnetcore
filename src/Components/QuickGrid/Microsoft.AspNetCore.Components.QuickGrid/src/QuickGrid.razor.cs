@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -89,6 +90,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// that displays and updates the supplied <see cref="PaginationState"/> instance.
     /// </summary>
     [Parameter] public PaginationState? Pagination { get; set; }
+
+    /// <summary>
+    /// Gets or sets a collection of additional attributes that will be applied to the created element.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -387,7 +393,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         : ColumnClass(column);
 
     private string GridClass()
-        => $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+    {
+        var gridClass = $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+        return AttributeUtilities.CombineClassNames(AdditionalAttributes, gridClass) ?? string.Empty;
+    }
 
     private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
     {

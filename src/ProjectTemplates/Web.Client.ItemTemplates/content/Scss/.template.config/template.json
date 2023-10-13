@@ -6,8 +6,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "SCSS is a language that compiles into CSS",
   "groupIdentity": "Microsoft.DotNet.Web.ClientItems.Scss",
-  "precedence": "9800",
-  "identity": "Microsoft.DotNet.Web.ClientItems.Scss.8.0",
+  "precedence": "9900",
+  "identity": "Microsoft.DotNet.Web.ClientItems.Scss.9.0",
   "shortName": "scss",
   "sourceName": "styleSheet1",
   "tags": {

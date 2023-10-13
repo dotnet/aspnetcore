@@ -88,16 +88,6 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
     }
 
     [Fact]
-    public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
-    {
-        // Try adding a second without removing the first
-        app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
-        app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
-
-        AssertGlobalErrorState(true);
-    }
-
-    [Fact]
     public void CanUpdateParameters()
     {
         // Create the initial component

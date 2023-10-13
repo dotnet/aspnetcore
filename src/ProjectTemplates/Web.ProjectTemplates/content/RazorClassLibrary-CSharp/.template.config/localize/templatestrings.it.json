@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Libreria di classi Razor",
-  "description": "Progetto per la creazione di una libreria di classi Razor destinata a .NET Standard",
+  "description": "Progetto per la creazione di una libreria di classi Razor destinata a .NET",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",

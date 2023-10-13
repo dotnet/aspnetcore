@@ -9,10 +9,10 @@
 #include <EventLog.h>
 
 FILE_WATCHER::FILE_WATCHER() :
-    m_hCompletionPort(NULL),
-    m_hChangeNotificationThread(NULL),
-    m_fThreadExit(FALSE),
-    m_fShadowCopyEnabled(FALSE),
+    m_hCompletionPort(nullptr),
+    m_hChangeNotificationThread(nullptr),
+    m_fThreadExit(false),
+    m_fShadowCopyEnabled(false),
     m_copied(false)
 {
     m_pDoneCopyEvent = CreateEvent(
@@ -20,44 +20,68 @@ FILE_WATCHER::FILE_WATCHER() :
         TRUE,     // manual reset event
         FALSE,    // not set
         nullptr); // name
+
+    m_pShutdownEvent = CreateEvent(
+        nullptr,  // default security attributes
+        TRUE,     // manual reset event
+        FALSE,    // not set
+        nullptr); // name
+
+    // Use of TerminateThread for the file watcher thread was eliminated in favor of an event-based
+    // approach. Out of an abundance of caution, we are temporarily adding an environment variable
+    // to allow falling back to TerminateThread usage. If all goes well, this will be removed in a
+    // future release.
+    m_fRudeThreadTermination = false;
+    auto enableThreadTerminationValue = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_FILE_WATCHER_THREAD_TERMINATION");
+    if (enableThreadTerminationValue.has_value())
+    {
+        m_fRudeThreadTermination = (enableThreadTerminationValue.value() == L"1");
+    }
 }
 
 FILE_WATCHER::~FILE_WATCHER()
 {
     StopMonitor();
-    WaitForMonitor(20); // wait for 1 second total
+    WaitForWatcherThreadExit();
 }
 
-void FILE_WATCHER::WaitForMonitor(DWORD dwRetryCounter)
+void FILE_WATCHER::WaitForWatcherThreadExit()
 {
-    if (m_hChangeNotificationThread != NULL)
+    if (m_hChangeNotificationThread == nullptr)
     {
-        DWORD dwExitCode = STILL_ACTIVE;
+        return;
+    }
 
-        while (!m_fThreadExit && dwRetryCounter > 0)
+    if (m_fRudeThreadTermination)
+    {
+        // This is the old behavior, which is now opt-in using an environment variable. Wait for
+        // the thread to exit, but if it doesn't exit soon enough, terminate it.
+        const int totalWaitTimeMs = 10000;
+        const int waitIntervalMs = 50;
+        const int iterations = totalWaitTimeMs / waitIntervalMs;
+        for (int i = 0; i < iterations && !m_fThreadExit; i++)
         {
-            if (GetExitCodeThread(m_hChangeNotificationThread, &dwExitCode))
+            // Check if the thread has exited.
+            DWORD result = WaitForSingleObject(m_hChangeNotificationThread, waitIntervalMs);
+            if (result == WAIT_OBJECT_0)
             {
-                if (dwExitCode == STILL_ACTIVE)
-                {
-                    // the file watcher thread will set m_fThreadExit before exit
-                    WaitForSingleObject(m_hChangeNotificationThread, 50);
-                }
+                // The thread has exited.
+                m_fThreadExit = true;
+                break;
             }
-            else
-            {
-                // fail to get thread status
-                // call terminitethread
-                TerminateThread(m_hChangeNotificationThread, 1);
-                m_fThreadExit = TRUE;
-            }
-            dwRetryCounter--;
         }
 
         if (!m_fThreadExit)
         {
+            LOG_INFO(L"File watcher thread did not exit. Forcing termination.");
             TerminateThread(m_hChangeNotificationThread, 1);
         }
+    }
+    else
+    {
+        // Wait for the thread to exit.
+        LOG_INFO(L"Waiting for file watcher thread to exit.");
+        WaitForSingleObject(m_hChangeNotificationThread, INFINITE);
     }
 }
 
@@ -74,18 +98,18 @@ FILE_WATCHER::Create(
     m_fShadowCopyEnabled = !shadowCopyPath.empty();
     m_shutdownTimeout = shutdownTimeout;
 
-    RETURN_LAST_ERROR_IF_NULL(m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0));
+    RETURN_LAST_ERROR_IF_NULL(m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0));
 
-    RETURN_LAST_ERROR_IF_NULL(m_hChangeNotificationThread = CreateThread(NULL,
+    RETURN_LAST_ERROR_IF_NULL(m_hChangeNotificationThread = CreateThread(nullptr,
         0,
         (LPTHREAD_START_ROUTINE)ChangeNotificationThread,
         this,
         0,
         NULL));
 
-    if (pszDirectoryToMonitor == NULL ||
-        pszFileNameToMonitor == NULL ||
-        pApplication == NULL)
+    if (pszDirectoryToMonitor == nullptr ||
+        pszFileNameToMonitor == nullptr ||
+        pApplication == nullptr)
     {
         DBG_ASSERT(FALSE);
         return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
@@ -107,7 +131,7 @@ FILE_WATCHER::Create(
         _strDirectoryName.QueryStr(),
         FILE_LIST_DIRECTORY,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL,
+        nullptr,
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
         NULL);
@@ -146,36 +170,41 @@ Win32 error
 
 --*/
 {
-    FILE_WATCHER* pFileMonitor;
-    BOOL                 fSuccess = FALSE;
-    DWORD                cbCompletion = 0;
-    OVERLAPPED* pOverlapped = NULL;
-    DWORD                dwErrorStatus;
-    ULONG_PTR            completionKey;
-
+    FILE_WATCHER* pFileMonitor = (FILE_WATCHER*)pvArg;
+    
     LOG_INFO(L"Starting file watcher thread");
-    pFileMonitor = (FILE_WATCHER*)pvArg;
-    DBG_ASSERT(pFileMonitor != NULL);
+    DBG_ASSERT(pFileMonitor != nullptr);
 
-    while (TRUE)
+    HANDLE events[2] = { pFileMonitor->m_hCompletionPort, pFileMonitor->m_pShutdownEvent };
+
+    DWORD dwEvent = 0;
+    while (true)
     {
-        fSuccess = GetQueuedCompletionStatus(
+        // Wait for either a change notification or a shutdown event.
+        dwEvent = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE, INFINITE) - WAIT_OBJECT_0;
+
+        if (dwEvent == 1)
+        {
+            // Shutdown event.
+            break;
+        }
+
+        DWORD       cbCompletion = 0;
+        OVERLAPPED* pOverlapped = nullptr;
+        ULONG_PTR   completionKey;
+
+        BOOL success = GetQueuedCompletionStatus(
             pFileMonitor->m_hCompletionPort,
             &cbCompletion,
             &completionKey,
             &pOverlapped,
             INFINITE);
 
-        DBG_ASSERT(fSuccess);
-        dwErrorStatus = fSuccess ? ERROR_SUCCESS : GetLastError();
+        DBG_ASSERT(success);
+        (void)success;
 
-        if (completionKey == FILE_WATCHER_SHUTDOWN_KEY)
-        {
-            break;
-        }
-
-        DBG_ASSERT(pOverlapped != NULL);
-        if (pOverlapped != NULL)
+        DBG_ASSERT(pOverlapped != nullptr);
+        if (pOverlapped != nullptr)
         {
             pFileMonitor->HandleChangeCompletion(cbCompletion);
 
@@ -187,11 +216,9 @@ Win32 error
                 pFileMonitor->Monitor();
             }
         }
-        pOverlapped = NULL;
-        cbCompletion = 0;
     }
 
-    pFileMonitor->m_fThreadExit = TRUE;
+    pFileMonitor->m_fThreadExit = true;
 
     if (pFileMonitor->m_fShadowCopyEnabled)
     {
@@ -204,7 +231,6 @@ Win32 error
 
     ExitThread(0);
 }
-
 
 HRESULT
 FILE_WATCHER::HandleChangeCompletion(
@@ -247,7 +273,7 @@ HRESULT
     //
     // There could be a FCN overflow
     // Let assume the file got changed instead of checking files
-    // Othersie we have to cache the file info
+    // Otherwise we have to cache the file info
     //
     if (cbCompletion == 0)
     {
@@ -256,9 +282,9 @@ HRESULT
     else
     {
         auto pNotificationInfo = (FILE_NOTIFY_INFORMATION*)_buffDirectoryChanges.QueryPtr();
-        DBG_ASSERT(pNotificationInfo != NULL);
+        DBG_ASSERT(pNotificationInfo != nullptr);
 
-        while (pNotificationInfo != NULL)
+        while (pNotificationInfo != nullptr)
         {
             //
             // check whether the monitored file got changed
@@ -276,11 +302,15 @@ HRESULT
             //
             // Look for changes to dlls when shadow copying is enabled.
             //
-            std::wstring notification(pNotificationInfo->FileName, pNotificationInfo->FileNameLength / sizeof(WCHAR));
-            std::filesystem::path notificationPath(notification);
-            if (m_fShadowCopyEnabled && notificationPath.extension().compare(L".dll") == 0)
+
+            if (m_fShadowCopyEnabled)
             {
-                fDllChanged = TRUE;
+                std::wstring notification(pNotificationInfo->FileName, pNotificationInfo->FileNameLength / sizeof(WCHAR));
+                std::filesystem::path notificationPath(notification);
+                if (notificationPath.extension().compare(L".dll") == 0)
+                {
+                    fDllChanged = TRUE;
+                }
             }
 
             //
@@ -288,7 +318,7 @@ HRESULT
             //
             if (pNotificationInfo->NextEntryOffset == 0)
             {
-                pNotificationInfo = NULL;
+                pNotificationInfo = nullptr;
             }
             else
             {
@@ -326,8 +356,8 @@ FILE_WATCHER::TimerCallback(
     _In_ PTP_TIMER Timer
 )
 {
-    Instance;
-    Timer;
+    UNREFERENCED_PARAMETER(Instance);
+    UNREFERENCED_PARAMETER(Timer);
     CopyAndShutdown((FILE_WATCHER*)Context);
 }
 
@@ -342,7 +372,7 @@ DWORD WINAPI FILE_WATCHER::CopyAndShutdown(FILE_WATCHER* watcher)
 
     watcher->m_copied = true;
 
-    LOG_INFO(L"Starting copy on shutdown in filewatcher, creating directory.");
+    LOG_INFO(L"Starting copy on shutdown in file watcher, creating directory.");
 
     auto directoryNameInt = 0;
     auto currentShadowCopyDirectory = std::filesystem::path(watcher->m_shadowCopyPath);
@@ -402,9 +432,7 @@ FILE_WATCHER::RunNotificationCallback(
 HRESULT
 FILE_WATCHER::Monitor(VOID)
 {
-    HRESULT hr = S_OK;
     DWORD   cbRead;
-
     ZeroMemory(&_overlapped, sizeof(_overlapped));
 
     RETURN_LAST_ERROR_IF(!ReadDirectoryChangesW(_hDirectory,
@@ -414,7 +442,7 @@ FILE_WATCHER::Monitor(VOID)
         FILE_NOTIFY_VALID_MASK & ~FILE_NOTIFY_CHANGE_LAST_ACCESS,
         &cbRead,
         &_overlapped,
-        NULL));
+        nullptr));
 
     // Check if file exist because ReadDirectoryChangesW would not fire events for existing files
     if (GetFileAttributes(_strFullName.QueryStr()) != INVALID_FILE_ATTRIBUTES)
@@ -422,7 +450,7 @@ FILE_WATCHER::Monitor(VOID)
         PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, &_overlapped);
     }
 
-    return hr;
+    return S_OK;
 }
 
 VOID
@@ -440,9 +468,9 @@ FILE_WATCHER::StopMonitor()
 
     LOG_INFO(L"Stopping file watching.");
 
-    // signal the file watch thread to exit
-    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
-    WaitForMonitor(200);
+    // Signal the file watcher thread to exit
+    SetEvent(m_pShutdownEvent);
+    WaitForWatcherThreadExit();
 
     if (m_fShadowCopyEnabled)
     {

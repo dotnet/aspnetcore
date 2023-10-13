@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "API Web ASP.NET Core",
-  "description": "Modello di progetto per la creazione di un'applicazione ASP.NET Core con un controller di esempio per un servizio HTTP RESTful. È possibile usare questo modello anche per i controller e le viste di ASP.NET Core MVC.",
+  "description": "Modello di progetto per la creazione di un'API Web RESTful tramite controller ASP.NET Core o API minime, con supporto facoltativo per OpenAPI e l'autenticazione.",
   "symbols/auth/choices/None/description": "Nessuna autenticazione",
   "symbols/auth/choices/IndividualB2C/description": "Autenticazione singola con Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Autenticazione organizzativa per un singolo tenant",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se IndividualB2C, SingleOrg o MultiOrg non vengono usati per --auth.",
   "symbols/UseLocalDB/description": "Indica se usare LocalDB invece di SQLite. Questa opzione si applica solo se è specificato --auth Individual o --auth IndividualB2C.",
   "symbols/UseMinimalAPIs/description": "Indica se usare API minime anziché controller.",
+  "symbols/UseControllers/description": "Indica se usare i controller anziché le API minime. Questa opzione sostituisce il valore specificato da --minimal.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
   "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",

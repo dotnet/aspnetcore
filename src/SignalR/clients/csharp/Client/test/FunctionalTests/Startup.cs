@@ -5,13 +5,16 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -21,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
 public class Startup
 {
-    private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+    private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
     private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
     public void ConfigureServices(IServiceCollection services)
@@ -44,6 +47,7 @@ public class Startup
             });
         });
 
+        services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -57,11 +61,15 @@ public class Startup
                             IssuerSigningKey = SecurityKey
                         };
                 });
-        services.AddAuthentication(NegotiateDefaults.AuthenticationScheme).AddNegotiate();
 
         // Since tests run in parallel, it's possible multiple servers will startup,
-        // we use an ephemeral key provider to avoid filesystem contention issues
+        // we use an ephemeral key provider and repository to avoid filesystem contention issues
         services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+        services.Configure<KeyManagementOptions>(options =>
+        {
+            options.XmlRepository = new EphemeralXmlRepository();
+        });
     }
 
     public void Configure(IApplicationBuilder app)
@@ -85,7 +93,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<TestHub>("/default", o => o.AllowAcks = true);
+            endpoints.MapHub<TestHub>("/default", o => o.AllowStatefulReconnects = true);
             endpoints.MapHub<DynamicTestHub>("/dynamic");
             endpoints.MapHub<TestHubT>("/hubT");
             endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
@@ -106,9 +114,9 @@ public class Startup
                 options.MinimumProtocolVersion = -1;
             });
 
-            endpoints.MapGet("/generateJwtToken", context =>
+            endpoints.MapGet("/generateJwtToken/{name?}", (HttpContext context, string name) =>
             {
-                return context.Response.WriteAsync(GenerateJwtToken());
+                return context.Response.WriteAsync(GenerateJwtToken(name ?? "testuser"));
             });
 
             endpoints.Map("/redirect/{*anything}", context =>
@@ -122,9 +130,9 @@ public class Startup
         });
     }
 
-    private string GenerateJwtToken()
+    private string GenerateJwtToken(string name = "testuser")
     {
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, "testuser") };
+        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, name) };
         var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.Now.AddSeconds(5), signingCredentials: credentials);
         return JwtTokenHandler.WriteToken(token);

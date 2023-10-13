@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -15,6 +16,13 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     public string GetPersistedState()
         => GetPersistedStateCore();
+
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    public static async Task<OperationDescriptor[]> GetInitialComponentUpdate()
+    {
+        var components = await GetInitialUpdateCore();
+        return DefaultWebAssemblyJSRuntime.DeserializeOperations(components);
+    }
 
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
@@ -37,9 +45,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public int RegisteredComponents_GetRegisteredComponentsCount()
         => RegisteredComponents_GetRegisteredComponentsCountCore();
 
-    public int RegisteredComponents_GetId(int index)
-        => RegisteredComponents_GetIdCore(index);
-
     public string RegisteredComponents_GetAssembly(int id)
         => RegisteredComponents_GetAssemblyCore(id);
 
@@ -54,6 +59,9 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport("Blazor._internal.getPersistedState", "blazor-internal")]
     private static partial string GetPersistedStateCore();
+
+    [JSImport("Blazor._internal.getInitialComponentsUpdate", "blazor-internal")]
+    private static partial Task<string> GetInitialUpdateCore();
 
     [JSImport("Blazor._internal.getApplicationEnvironment", "blazor-internal")]
     private static partial string GetApplicationEnvironmentCore();
@@ -75,9 +83,6 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport(RegisteredComponentsInterop.GetRegisteredComponentsCount, "blazor-internal")]
     private static partial int RegisteredComponents_GetRegisteredComponentsCountCore();
-
-    [JSImport(RegisteredComponentsInterop.GetId, "blazor-internal")]
-    private static partial int RegisteredComponents_GetIdCore(int index);
 
     [JSImport(RegisteredComponentsInterop.GetAssembly, "blazor-internal")]
     private static partial string RegisteredComponents_GetAssemblyCore(int id);

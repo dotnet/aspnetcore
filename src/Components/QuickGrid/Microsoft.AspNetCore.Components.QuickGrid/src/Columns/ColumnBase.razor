@@ -19,12 +19,12 @@
         {
             @if (ColumnOptions is not null && (Align != Align.Right && Align != Align.End))
             {
-                <button class="col-options-button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+                <button class="col-options-button" type="button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
             {
-                <button class="col-title" @onclick="@(() => Grid.SortByColumnAsync(this))">
+                <button class="col-title" type="button" @onclick="@(() => Grid.SortByColumnAsync(this))">
                     <div class="col-title-text">@Title</div>
                     <div class="sort-indicator" aria-hidden="true"></div>
                 </button>
@@ -38,7 +38,7 @@
 
             @if (ColumnOptions is not null && (Align == Align.Right || Align == Align.End))
             {
-                <button class="col-options-button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+                <button class="col-options-button" type="button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
             }
         }
     }

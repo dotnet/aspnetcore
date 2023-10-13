@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "用于创建包含 RESTful HTTP 服务示例控制器的 ASP.NET Core 应用程序的项目模板。此模板还可以用于 ASP.NET Core MVC 视图和控制器。",
+  "description": "用于使用 ASP.NET Core 控制器或最小 API 创建 RESTful Web API 的项目模板，可选择支持 OpenAPI 和身份验证。",
   "symbols/auth/choices/None/description": "无身份验证",
   "symbols/auth/choices/IndividualB2C/description": "使用 Azure AD B2C 进行个人身份验证",
   "symbols/auth/choices/SingleOrg/description": "单个租户的组织身份验证",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/UseMinimalAPIs/description": "是否使用最小 API 而不是控制器。",
+  "symbols/UseControllers/description": "是否使用控制器而不是最小 API。此选项替代指定的值，即“最小”。",
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/choices/net8.0/description": "目标 net8.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",

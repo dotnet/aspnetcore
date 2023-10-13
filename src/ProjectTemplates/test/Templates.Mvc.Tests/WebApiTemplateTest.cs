@@ -37,84 +37,81 @@ public class WebApiTemplateTest : LoggedTest
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseMinimalApis })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseControllers })]
     [InlineData("IndividualB2C", new [] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData("IndividualB2C", null)]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseMinimalApis, ArgConstants.NoHttps })]
+    [InlineData("IndividualB2C", new[] { ArgConstants.NoHttps })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseControllers, ArgConstants.NoHttps })]
     [InlineData("IndividualB2C", new [] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_NoHttps_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain })]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers })]
     [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData("IndividualB2C", null)]
     [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.NoHttps })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.NoHttps })]
     [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
+    [InlineData("IndividualB2C", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_ProgramMain_NoHttps_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseMinimalApis })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseControllers })]
     [InlineData("SingleOrg", new [] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new [] { ArgConstants.CallsGraph })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseControllers, ArgConstants.CallsGraph })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData("SingleOrg", null)]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseMinimalApis, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseControllers, ArgConstants.NoHttps })]
     [InlineData("SingleOrg", new [] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     [InlineData("SingleOrg", new [] { ArgConstants.CallsGraph, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseMinimalApis, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseControllers, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_NoHttps_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers })]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CallsGraph })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CallsGraph })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [ConditionalTheory]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.NoHttps })]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite, ArgConstants.NoHttps })]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
-    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
+    [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CallsGraph, ArgConstants.NoHttps })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_NoHttps_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
     [Fact]
     public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
     [Fact]
-    public Task WebApiTemplateNoHttpsFSharp() => WebApiTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps } );
+    public Task WebApiTemplateNoHttpsFSharp() => WebApiTemplateCore(languageOverride: "F#", args: new[] { ArgConstants.NoHttps });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
@@ -134,19 +131,19 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseMinimalApis });
+    public Task WebApiTemplateControllersCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseControllers });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateMinimalApisNoHttpsCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseMinimalApis, ArgConstants.NoHttps });
+    public Task WebApiTemplateControllersNoHttpsCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseControllers, ArgConstants.NoHttps });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis });
+    public Task WebApiTemplateProgramMainControllersCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseControllers });
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public Task WebApiTemplateProgramMainMinimalApisNoHttpsCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.NoHttps });
+    public Task WebApiTemplateProgramMainControllersNoHttpsCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.NoHttps });
 
     [ConditionalTheory]
     [InlineData(false, false)]
@@ -154,16 +151,16 @@ public class WebApiTemplateTest : LoggedTest
     [InlineData(true, true)]
     [InlineData(true, false)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain, bool useMinimalApis)
+    public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain, bool useControllers)
     {
         var project = await FactoryFixture.CreateProject(Output);
 
         var args = useProgramMain
-            ? useMinimalApis
-                ? new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi }
+            ? useControllers
+                ? new[] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.NoOpenApi }
                 : new[] { ArgConstants.UseProgramMain, ArgConstants.NoOpenApi }
-            : useMinimalApis
-                ? new[] { ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi }
+            : useControllers
+                ? new[] { ArgConstants.UseControllers, ArgConstants.NoOpenApi }
                 : new[] { ArgConstants.NoOpenApi };
         await project.RunDotNetNewAsync("webapi", args: args);
 
@@ -183,16 +180,16 @@ public class WebApiTemplateTest : LoggedTest
     [InlineData(true, true)]
     [InlineData(true, false)]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task WebApiTemplateCSharpNoHttps_WithoutOpenAPI(bool useProgramMain, bool useMinimalApis)
+    public async Task WebApiTemplateCSharpNoHttps_WithoutOpenAPI(bool useProgramMain, bool useControllers)
     {
         var project = await FactoryFixture.CreateProject(Output);
 
         var args = useProgramMain
-            ? useMinimalApis
-                ? new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi, ArgConstants.NoHttps }
+            ? useControllers
+                ? new[] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.NoOpenApi, ArgConstants.NoHttps }
                 : new[] { ArgConstants.UseProgramMain, ArgConstants.NoOpenApi, ArgConstants.NoHttps }
-            : useMinimalApis
-                ? new[] { ArgConstants.UseMinimalApis, ArgConstants.NoOpenApi, ArgConstants.NoHttps }
+            : useControllers
+                ? new[] { ArgConstants.UseControllers, ArgConstants.NoOpenApi, ArgConstants.NoHttps }
                 : new[] { ArgConstants.NoOpenApi, ArgConstants.NoHttps };
         await project.RunDotNetNewAsync("webapi", args: args);
 

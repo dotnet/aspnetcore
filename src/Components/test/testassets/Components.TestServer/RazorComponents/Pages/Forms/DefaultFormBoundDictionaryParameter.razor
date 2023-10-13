@@ -3,7 +3,7 @@
 
 <h2>Default form with dictionary bound parameter</h2>
 
-<EditForm Model="Model" method="POST" OnValidSubmit="DisplayCustomer">
+<EditForm Enhance Model="Model" method="POST" OnValidSubmit="DisplayCustomer" FormName="someform">
     <ValidationSummary />
     <div>
         <label for="Model.Name">
@@ -41,7 +41,7 @@
 
     [SupplyParameterFromForm] public Dictionary<string, string> Model { get; set; }
 
-    [CascadingParameter] public ModelBindingContext Context { get; set; }
+    [CascadingParameter] public FormMappingContext Context { get; set; }
 
     protected override void OnInitialized() => Model ??= new Dictionary<string, string>()
     {

@@ -35,7 +35,7 @@ public static class SignalRDependencyInjectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
-    [RequiresUnreferencedCode("SignalR does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("SignalR does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static ISignalRServerBuilder AddSignalR(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -55,7 +55,7 @@ public static class SignalRDependencyInjectionExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="configure">An <see cref="Action{HubOptions}"/> to configure the provided <see cref="HubOptions"/>.</param>
     /// <returns>An <see cref="ISignalRServerBuilder"/> that can be used to further configure the SignalR services.</returns>
-    [RequiresUnreferencedCode("SignalR does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("SignalR does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static ISignalRServerBuilder AddSignalR(this IServiceCollection services, Action<HubOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);

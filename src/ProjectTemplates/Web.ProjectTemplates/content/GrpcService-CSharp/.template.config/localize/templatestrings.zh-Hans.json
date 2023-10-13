@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC 服务",
-  "description": "用于创建 gRPC ASP.NET Core 服务的项目模板。",
+  "description": "用于使用 ASP.NET Core 创建 gRPC 服务的项目模板，可选择支持发布为 native AOT。",
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/choices/net8.0/description": "目标 net8.0",
   "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",

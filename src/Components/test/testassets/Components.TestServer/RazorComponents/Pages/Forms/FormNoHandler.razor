@@ -1,0 +1,8 @@
+﻿@page "/forms/no-handler"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Form with no handler</h2>
+
+<EditForm Enhance Model="@this" OnValidSubmit="() => {}">
+    <input id="send" type="submit" value="Send" />
+</EditForm>

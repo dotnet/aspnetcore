@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core-gRPC-Dienst",
-  "description": "Eine Projektvorlage für das Erstellen eines gRPC-ASP.NET Core-Diensts.",
+  "description": "Eine Projektvorlage zum Erstellen eines gRPC-Diensts mit ASP.NET Core, mit optionaler Unterstützung für die Veröffentlichung als native AOT.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
   "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",

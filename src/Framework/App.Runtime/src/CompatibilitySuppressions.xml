@@ -3,10 +3,6 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>PKV0001</DiagnosticId>
-    <Target>net7.0</Target>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>PKV0001</DiagnosticId>
-    <Target>net8.0</Target>
+    <Target>net9.0</Target>
   </Suppression>
 </Suppressions>

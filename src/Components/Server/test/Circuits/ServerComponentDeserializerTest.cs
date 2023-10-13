@@ -12,7 +12,7 @@ public class ServerComponentDeserializerTest
 {
     private readonly IDataProtectionProvider _ephemeralDataProtectionProvider;
     private readonly ITimeLimitedDataProtector _protector;
-    private readonly ServerComponentInvocationSequence _invocationSequence = new ServerComponentInvocationSequence();
+    private ServerComponentInvocationSequence _invocationSequence = new();
 
     public ServerComponentDeserializerTest()
     {
@@ -303,9 +303,132 @@ public class ServerComponentDeserializerTest
         Assert.Empty(descriptors);
     }
 
+    [Fact]
+    public void TryDeserializeWebRootComponentDescriptor_CanParseSingleMarker()
+    {
+        // Arrange
+        var markers = CreateMarkers(typeof(TestComponent));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out var descriptor));
+        Assert.Equal(typeof(TestComponent).FullName, descriptor.ComponentType.FullName);
+    }
+
+    [Fact]
+    public void TryDeserializeWebRootComponentDescriptor_CanParseMultipleMarkersWithAndWithoutParameters()
+    {
+        // Arrange
+        var markers = CreateMarkers(
+            (typeof(TestComponent), new Dictionary<string, object> { ["First"] = "Value" }),
+            (typeof(TestComponent), null));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out var firstDescriptor));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[1], out var secondDescriptor));
+
+        Assert.Equal(typeof(TestComponent).FullName, firstDescriptor.ComponentType.FullName);
+        var firstParameters = firstDescriptor.Parameters.Parameters.ToDictionary();
+        Assert.Single(firstParameters);
+        Assert.Contains("First", firstParameters.Keys);
+        Assert.Equal("Value", firstParameters["First"]);
+
+        Assert.Equal(typeof(TestComponent).FullName, secondDescriptor.ComponentType.FullName);
+        Assert.Empty(secondDescriptor.Parameters.Parameters.ToDictionary());
+    }
+
+    [Fact]
+    public void TryDeserializeWebRootComponentDescriptor_AllowsParsingMarkersOutOfOrder()
+    {
+        // Arrange
+        var markers = CreateMarkers(typeof(TestComponent), typeof(TestComponent));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[1], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out _));
+    }
+
+    [Fact]
+    public void TryDeserializeWebRootComponentDescriptor_AllowsParsingMarkersFromMultipleInvocations()
+    {
+        // Arrange
+        var firstInvocationMarkers = CreateMarkers(typeof(TestComponent));
+        StartNewInvocation();
+        var secondInvocationMarkers = CreateMarkers(typeof(TestComponent));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(firstInvocationMarkers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(secondInvocationMarkers[0], out _));
+    }
+
+    [Fact]
+    public void TryDeserializeWebRootComponentDescriptor_DoesNotParseTheSameMarkerTwice()
+    {
+        // Arrange
+        var markers = CreateMarkers(typeof(TestComponent));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out _));
+        Assert.False(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(markers[0], out _));
+    }
+
+    [Fact]
+    public void TryDeserializeWebRootComponentDescriptor_DoesNotParseMarkerFromOldInvocation()
+    {
+        // Arrange
+        var firstInvocationMarkers = CreateMarkers(typeof(TestComponent), typeof(TestComponent));
+        StartNewInvocation();
+        var secondInvocationMarkers = CreateMarkers(typeof(TestComponent));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(firstInvocationMarkers[0], out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(secondInvocationMarkers[0], out _));
+        Assert.False(serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(firstInvocationMarkers[0], out _));
+    }
+
+    [Fact]
+    public void UpdateRootComponents_TryDeserializeRootComponentOperationsReturnsFalse_WhenSsrComponentIdIsRepeated()
+    {
+        // Arrange
+        var operation = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Update,
+            SsrComponentId = 1,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
+            {
+                ["Message"] = "Some other message",
+            }),
+        };
+
+        var other = new RootComponentOperation
+        {
+            Type = RootComponentOperationType.Remove,
+            SsrComponentId = 1,
+            Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
+        };
+
+        var operationsJson = JsonSerializer.Serialize(
+            new[] { operation, other },
+            ServerComponentSerializationSettings.JsonSerializationOptions);
+
+        var deserializer = CreateServerComponentDeserializer();
+
+        // Act
+        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
+
+        // Assert
+        Assert.False(result);
+        Assert.Null(parsed);
+    }
+
     private string SerializeComponent(string assembly, string type) =>
         JsonSerializer.Serialize(
-            new ServerComponent(0, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
+            new ServerComponent(0, null, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
             ServerComponentSerializationSettings.JsonSerializationOptions);
 
     private ServerComponentDeserializer CreateServerComponentDeserializer()
@@ -317,54 +440,81 @@ public class ServerComponentDeserializerTest
             new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 
-    private string SerializeMarkers(ServerComponentMarker[] markers) =>
+    private string SerializeMarkers(ComponentMarker[] markers) =>
         JsonSerializer.Serialize(markers, ServerComponentSerializationSettings.JsonSerializationOptions);
 
-    private ServerComponentMarker[] CreateMarkers(params Type[] types)
+    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var markers = new ServerComponentMarker[types.Length];
+        var key = new ComponentMarkerKey(type.FullName, null);
+        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key);
+        serializer.SerializeInvocation(
+            ref marker,
+            _invocationSequence,
+            type,
+            parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
+        return marker;
+    }
+
+    private ComponentMarker[] CreateMarkers(params Type[] types)
+    {
+        var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
+        var markers = new ComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(_invocationSequence, types[i], ParameterView.Empty, false);
+            markers[i] = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+            serializer.SerializeInvocation(ref markers[i], _invocationSequence, types[i], ParameterView.Empty);
         }
 
         return markers;
     }
 
-    private ServerComponentMarker[] CreateMarkers(params (Type, Dictionary<string, object>)[] types)
+    private ComponentMarker[] CreateMarkers(params (Type, Dictionary<string, object>)[] types)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var markers = new ServerComponentMarker[types.Length];
+        var markers = new ComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
             var (type, parameters) = types[i];
-            markers[i] = serializer.SerializeInvocation(
+            markers[i] = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+            serializer.SerializeInvocation(
+                ref markers[i],
                 _invocationSequence,
                 type,
-                parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters),
-                false);
+                parameters == null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
         }
 
         return markers;
     }
 
-    private ServerComponentMarker[] CreateMarkers(ServerComponentInvocationSequence sequence, params Type[] types)
+    private ComponentMarker[] CreateMarkers(ServerComponentInvocationSequence sequence, params Type[] types)
     {
         var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var markers = new ServerComponentMarker[types.Length];
+        var markers = new ComponentMarker[types.Length];
         for (var i = 0; i < types.Length; i++)
         {
-            markers[i] = serializer.SerializeInvocation(sequence, types[i], ParameterView.Empty, false);
+            markers[i] = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
+            serializer.SerializeInvocation(ref markers[i], sequence, types[i], ParameterView.Empty);
         }
 
         return markers;
+    }
+
+    private void StartNewInvocation()
+    {
+        _invocationSequence = new();
     }
 
     private class TestComponent : IComponent
     {
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
 
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class DynamicallyAddedComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
     }
 }

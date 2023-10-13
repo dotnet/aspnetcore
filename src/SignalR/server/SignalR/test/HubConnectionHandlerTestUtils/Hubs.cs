@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -1383,6 +1384,43 @@ public class ServicesHub : TestHub
         {
             await channelReader.ReadAsync();
         }
+    }
+}
+
+public class KeyedServicesHub : TestHub
+{
+    public int MultipleSameKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service1")] Service1 service2)
+    {
+        Assert.Same(service, service2);
+        return 445;
+    }
+
+    public int KeyedService([FromKeyedServices("service1")] Service1 service)
+    {
+        return 43;
+    }
+
+    public int KeyedServiceWithParam(int input, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 13 * input;
+    }
+
+    public int KeyedServiceNonKeyedService(Service2 service2, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 11;
+    }
+
+    public int MultipleKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service2")] Service1 service2)
+    {
+        Assert.NotEqual(service, service2);
+        return 45;
+    }
+}
+
+public class BadServicesHub : Hub
+{
+    public void BadMethod([FromKeyedServices("service1")] [FromService] Service1 service)
+    {
     }
 }
 

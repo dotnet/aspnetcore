@@ -2,9 +2,6 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
-      "src\\Identity\\ApiAuthorization.IdentityServer\\samples\\ApiAuthSample\\ApiAuthSample.csproj",
-      "src\\Identity\\ApiAuthorization.IdentityServer\\src\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj",
-      "src\\Identity\\ApiAuthorization.IdentityServer\\test\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj",
       "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
       "src\\Identity\\EntityFrameworkCore\\src\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj",
       "src\\Identity\\EntityFrameworkCore\\test\\EF.InMemory.Test\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj",

@@ -21,7 +21,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 public class RequestTests : LoggedTest
 {
     private const int _connectionStartedEventId = 1;
+    private const int _connectionReadFinEventId = 6;
     private const int _connectionResetEventId = 19;
     private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
@@ -233,6 +236,58 @@ public class RequestTests : LoggedTest
     }
 
     [Fact]
+    public async Task ConnectionClosedPriorToRequestIsLoggedAsDebug()
+    {
+        var connectionStarted = new SemaphoreSlim(0);
+        var connectionReadFin = new SemaphoreSlim(0);
+        var loggedHigherThanDebug = false;
+
+        TestSink.MessageLogged += context =>
+        {
+            if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
+                context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Connections" &&
+                context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
+            {
+                return;
+            }
+
+            if (context.EventId.Id == _connectionStartedEventId)
+            {
+                connectionStarted.Release();
+            }
+            else if (context.EventId.Id == _connectionReadFinEventId)
+            {
+                connectionReadFin.Release();
+            }
+
+            if (context.LogLevel > LogLevel.Debug)
+            {
+                loggedHigherThanDebug = true;
+            }
+        };
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                // Wait until connection is established
+                Assert.True(await connectionStarted.WaitAsync(TestConstants.DefaultTimeout));
+
+                connection.ShutdownSend();
+
+                // If the reset is correctly logged as Debug, the wait below should complete shortly.
+                // This check MUST come before disposing the server, otherwise there's a race where the RST
+                // is still in flight when the connection is aborted, leading to the reset never being received
+                // and therefore not logged.
+                Assert.True(await connectionReadFin.WaitAsync(TestConstants.DefaultTimeout));
+                await connection.ReceiveEnd();
+            }
+        }
+
+        Assert.False(loggedHigherThanDebug);
+    }
+
+    [Fact]
     public async Task ConnectionResetPriorToRequestIsLoggedAsDebug()
     {
         var connectionStarted = new SemaphoreSlim(0);
@@ -278,6 +333,65 @@ public class RequestTests : LoggedTest
             // is still in flight when the connection is aborted, leading to the reset never being received
             // and therefore not logged.
             Assert.True(await connectionReset.WaitAsync(TestConstants.DefaultTimeout));
+        }
+
+        Assert.False(loggedHigherThanDebug);
+    }
+
+    [Fact]
+    public async Task ConnectionClosedBetweenRequestsIsLoggedAsDebug()
+    {
+        var connectionReadFin = new SemaphoreSlim(0);
+        var loggedHigherThanDebug = false;
+
+        TestSink.MessageLogged += context =>
+        {
+            if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
+                context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
+            {
+                return;
+            }
+
+            if (context.LogLevel > LogLevel.Debug)
+            {
+                loggedHigherThanDebug = true;
+            }
+
+            if (context.EventId.Id == _connectionReadFinEventId)
+            {
+                connectionReadFin.Release();
+            }
+        };
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "GET / HTTP/1.1",
+                    "Host:",
+                    "",
+                    "");
+
+                // Make sure the response is fully received, so a write failure (e.g. EPIPE) doesn't cause
+                // a more critical log message.
+                await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    "Content-Length: 0",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "",
+                    "");
+
+                connection.ShutdownSend();
+
+                // If the reset is correctly logged as Debug, the wait below should complete shortly.
+                // This check MUST come before disposing the server, otherwise there's a race where the RST
+                // is still in flight when the connection is aborted, leading to the reset never being received
+                // and therefore not logged.
+                Assert.True(await connectionReadFin.WaitAsync(TestConstants.DefaultTimeout));
+
+                await connection.ReceiveEnd();
+            }
         }
 
         Assert.False(loggedHigherThanDebug);
@@ -341,10 +455,13 @@ public class RequestTests : LoggedTest
         Assert.False(loggedHigherThanDebug);
     }
 
-    [Fact]
-    public async Task ConnectionResetMidRequestIsLoggedAsDebug()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConnectionClosedOrResetMidRequestIsLoggedAsDebug(bool close)
     {
         var requestStarted = new SemaphoreSlim(0);
+        var connectionReadFin = new SemaphoreSlim(0);
         var connectionReset = new SemaphoreSlim(0);
         var connectionClosing = new SemaphoreSlim(0);
         var loggedHigherThanDebug = false;
@@ -360,6 +477,11 @@ public class RequestTests : LoggedTest
             if (context.LogLevel > LogLevel.Debug)
             {
                 loggedHigherThanDebug = true;
+            }
+
+            if (context.EventId.Id == _connectionReadFinEventId)
+            {
+                connectionReadFin.Release();
             }
 
             if (context.EventId.Id == _connectionResetEventId)
@@ -382,15 +504,23 @@ public class RequestTests : LoggedTest
                 // Wait until connection is established
                 Assert.True(await requestStarted.WaitAsync(TestConstants.DefaultTimeout), "request should have started");
 
-                connection.Reset();
-            }
+                if (close)
+                {
+                    connection.ShutdownSend();
+                    Assert.True(await connectionReadFin.WaitAsync(TestConstants.DefaultTimeout), "Connection close event should have been logged");
+                }
+                else
+                {
+                    connection.Reset();
 
-            // If the reset is correctly logged as Debug, the wait below should complete shortly.
-            // This check MUST come before disposing the server, otherwise there's a race where the RST
-            // is still in flight when the connection is aborted, leading to the reset never being received
-            // and therefore not logged.
-            Assert.True(await connectionReset.WaitAsync(TestConstants.DefaultTimeout), "Connection reset event should have been logged");
-            connectionClosing.Release();
+                    // If the reset is correctly logged as Debug, the wait below should complete shortly.
+                    // This check MUST come before disposing the server, otherwise there's a race where the RST
+                    // is still in flight when the connection is aborted, leading to the reset never being received
+                    // and therefore not logged.
+                    Assert.True(await connectionReset.WaitAsync(TestConstants.DefaultTimeout), "Connection reset event should have been logged");
+                }
+                connectionClosing.Release();
+            }
         }
 
         Assert.False(loggedHigherThanDebug, "Logged event should not have been higher than debug.");
@@ -534,14 +664,23 @@ public class RequestTests : LoggedTest
         Assert.Equal(beforeAbort.Value, afterAbort.Value);
     }
 
-    [Fact]
-    public async Task AbortingTheConnectionSendsFIN()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AbortingTheConnection(bool fin)
     {
         var builder = TransportSelector.GetHostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
-                    .UseKestrel()
+                    .UseSockets(options =>
+                    {
+                        options.FinOnError = fin;
+                    })
+                    .UseKestrel(o =>
+                    {
+                        o.FinOnError = fin;
+                    })
                     .UseUrls("http://127.0.0.1:0")
                     .Configure(app => app.Run(context =>
                     {
@@ -559,8 +698,15 @@ public class RequestTests : LoggedTest
             {
                 socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
                 socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n"));
-                int result = socket.Receive(new byte[32]);
-                Assert.Equal(0, result);
+                if (fin)
+                {
+                    int result = socket.Receive(new byte[32]);
+                    Assert.Equal(0, result);
+                }
+                else
+                {
+                    Assert.Throws<SocketException>(() => socket.Receive(new byte[32]));
+                }
             }
 
             await host.StopAsync();
@@ -770,16 +916,21 @@ public class RequestTests : LoggedTest
     }
 
     [Theory]
-    [MemberData(nameof(ConnectionMiddlewareDataName))]
-    public async Task ServerCanAbortConnectionAfterUnobservedClose(string listenOptionsName)
+    [InlineData("Loopback", true)]
+    [InlineData("Loopback", false)]
+    [InlineData("PassThrough", true)]
+    [InlineData("PassThrough", false)]
+    public async Task ServerCanAbortConnectionAfterUnobservedClose(string listenOptionsName, bool fin)
     {
         const int connectionPausedEventId = 4;
         const int connectionFinSentEventId = 7;
+        const int connectionRstSentEventId = 8;
         const int maxRequestBufferSize = 4096;
 
         var readCallbackUnwired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var clientClosedConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var serverClosedConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var serverFinConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var serverRstConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         TestSink.MessageLogged += context =>
@@ -795,7 +946,11 @@ public class RequestTests : LoggedTest
             }
             else if (context.EventId == connectionFinSentEventId)
             {
-                serverClosedConnection.SetResult();
+                serverFinConnection.SetResult();
+            }
+            else if (context.EventId == connectionRstSentEventId)
+            {
+                serverRstConnection.SetResult();
             }
         };
 
@@ -803,6 +958,7 @@ public class RequestTests : LoggedTest
         {
             ServerOptions =
             {
+                FinOnError = fin,
                 Limits =
                 {
                     MaxRequestBufferSize = maxRequestBufferSize,
@@ -820,10 +976,30 @@ public class RequestTests : LoggedTest
 
             context.Abort();
 
-            await serverClosedConnection.Task;
+            if (fin)
+            {
+                await serverFinConnection.Task.DefaultTimeout();
+            }
+            else
+            {
+                await serverRstConnection.Task.DefaultTimeout();
+            }
 
             appFuncCompleted.SetResult();
-        }, testContext, ConnectionMiddlewareData[listenOptionsName]()))
+        }, testContext, listen =>
+        {
+            if (listenOptionsName == "PassThrough")
+            {
+                listen.UsePassThrough();
+            }
+        },
+        services =>
+        {
+            services.Configure<SocketTransportOptions>(options =>
+            {
+                options.FinOnError = fin;
+            });
+        }))
         {
             using (var connection = server.CreateConnection())
             {
@@ -949,21 +1125,21 @@ public class RequestTests : LoggedTest
     private static async Task AssertStreamContains(Stream stream, string expectedSubstring)
     {
         var expectedBytes = Encoding.ASCII.GetBytes(expectedSubstring);
-        var exptectedLength = expectedBytes.Length;
-        var responseBuffer = new byte[exptectedLength];
+        var expectedLength = expectedBytes.Length;
+        var responseBuffer = new byte[expectedLength];
 
         var matchedChars = 0;
 
-        while (matchedChars < exptectedLength)
+        while (matchedChars < expectedLength)
         {
-            var count = await stream.ReadAsync(responseBuffer, 0, exptectedLength - matchedChars).DefaultTimeout();
+            var count = await stream.ReadAsync(responseBuffer, 0, expectedLength - matchedChars).DefaultTimeout();
 
             if (count == 0)
             {
                 Assert.True(false, "Stream completed without expected substring.");
             }
 
-            for (var i = 0; i < count && matchedChars < exptectedLength; i++)
+            for (var i = 0; i < count && matchedChars < expectedLength; i++)
             {
                 if (responseBuffer[i] == expectedBytes[matchedChars])
                 {

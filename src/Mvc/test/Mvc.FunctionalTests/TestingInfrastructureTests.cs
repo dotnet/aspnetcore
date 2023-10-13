@@ -110,6 +110,20 @@ public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<Ba
     }
 
     [Fact]
+    public async Task TestingInfrastructure_RedirectHandler_SupportsZeroMaxRedirects()
+    {
+        // Act
+        var request = new HttpRequestMessage(HttpMethod.Get, "Testing/RedirectHandler/Redirect303");
+        var client = Factory.CreateDefaultClient(
+            new RedirectHandler(0), new TestHandler());
+        var response = await client.SendAsync(request);
+
+        // Assert that we don't follow the redirect because MaxRedirects = 0
+        Assert.Equal(HttpStatusCode.SeeOther, response.StatusCode);
+        Assert.Equal("/Testing/Builder", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
     public async Task TestingInfrastructure_RedirectHandlerHandlesRelativeLocation()
     {
         // Act

@@ -1,0 +1,71 @@
+﻿@page "/forms/default-form-max-recursion-depth"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form hitting max collection limit</h2>
+
+<EditForm Enhance Model="Values" method="POST" OnValidSubmit="() => _submitted = true" FormName="someform">
+    <ValidationSummary />
+    <CustomNumberInput @bind-Value="Values.Head" />
+    @if (Values?.Tail != null)
+    {
+        <CustomNumberInput @bind-Value="Values.Tail.Head" />
+    }
+    @if (Values.Tail?.Tail != null)
+    {
+        <CustomNumberInput @bind-Value="Values.Tail.Tail.Head" />
+    }
+    @if (Values.Tail?.Tail?.Tail != null)
+    {
+        <CustomNumberInput @bind-Value="Values.Tail.Tail.Tail.Head" />
+    }
+    @if (Values.Tail?.Tail?.Tail?.Tail != null)
+    {
+        <CustomNumberInput @bind-Value="Values.Tail.Tail.Tail.Tail.Head" />
+    }
+    @if (Values.Tail?.Tail?.Tail?.Tail?.Tail != null)
+    {
+        <CustomNumberInput @bind-Value="Values.Tail.Tail.Tail.Tail.Tail.Head" />
+    }
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Hello @Values</p>
+}
+
+@code {
+    bool _submitted = false;
+
+    [SupplyParameterFromForm]
+    public RecursiveList Values { get; set; } = new RecursiveList
+        {
+            Head = 1,
+            Tail = new()
+            {
+                Head = 2,
+                Tail = new RecursiveList
+                {
+                    Head = 3,
+                    Tail = new RecursiveList
+                    {
+                        Head = 4,
+                        Tail = new RecursiveList
+                        {
+                            Head = 5,
+                            Tail = new RecursiveList
+                            {
+                                Head = 6
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+    public class RecursiveList
+    {
+        public int Head { get; set; }
+        public RecursiveList Tail { get; set; }
+    }
+}

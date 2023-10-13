@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -271,7 +272,7 @@ public class SecurityStampTest
     public async Task OnValidateIdentityDoesNotExtendExpirationWhenSlidingIsDisabled()
     {
         var user = new PocoUser("test");
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var httpContext = new Mock<HttpContext>();
         var userManager = MockHelpers.MockUserManager<PocoUser>();
         var identityOptions = new Mock<IOptions<IdentityOptions>>();

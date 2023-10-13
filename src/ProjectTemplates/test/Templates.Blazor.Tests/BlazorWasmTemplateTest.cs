@@ -212,93 +212,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
     }
 
-    [ConditionalTheory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
-    [InlineData(BrowserKind.Chromium)]
-    // LocalDB doesn't work on non Windows platforms
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB(BrowserKind browserKind)
-        => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, true);
-
-    // This test depends on BlazorWasmTemplate_CreateBuildPublish_IndividualAuthNoLocalDb running first
-    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
-    [InlineData(BrowserKind.Chromium)]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/30825", Queues = "All.OSX")]
-    public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB(BrowserKind browserKind)
-        => BlazorWasmHostedTemplate_IndividualAuth_Works(browserKind, false);
-
-    private async Task<Project> CreateBuildPublishIndividualAuthProject(bool useLocalDb)
-    {
-        // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
-        Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
-
-        var project = await CreateBuildPublishAsync(args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
-
-        var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-        var serverProjectFileContents = ReadFile(serverProject.TemplateOutputDir, $"{serverProject.ProjectName}.csproj");
-        if (!useLocalDb)
-        {
-            Assert.Contains(".db", serverProjectFileContents);
-        }
-
-        var appSettings = ReadFile(serverProject.TemplateOutputDir, "appsettings.json");
-        var element = JsonSerializer.Deserialize<JsonElement>(appSettings);
-        var clientsProperty = element.GetProperty("IdentityServer").EnumerateObject().Single().Value.EnumerateObject().Single();
-        var replacedSection = element.GetRawText().Replace(clientsProperty.Name, serverProject.ProjectName.Replace(".Server", ".Client"));
-        var appSettingsPath = Path.Combine(serverProject.TemplateOutputDir, "appsettings.json");
-        File.WriteAllText(appSettingsPath, replacedSection);
-
-        await serverProject.RunDotNetPublishAsync();
-
-        // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
-        // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
-        // later, while the opposite is not true.
-
-        await serverProject.RunDotNetBuildAsync();
-
-        await serverProject.RunDotNetEfCreateMigrationAsync("blazorwasm");
-        serverProject.AssertEmptyMigration("blazorwasm");
-
-        if (useLocalDb)
-        {
-            await serverProject.RunDotNetEfUpdateDatabaseAsync();
-        }
-
-        return project;
-    }
-
-    private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(BrowserKind browserKind, bool useLocalDb)
-    {
-        var project = await CreateBuildPublishIndividualAuthProject(useLocalDb: useLocalDb);
-
-        var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-        await BuildAndRunTest(project.ProjectName, serverProject, browserKind, usesAuth: true);
-
-        UpdatePublishedSettings(serverProject);
-
-        if (BrowserManager.IsAvailable(browserKind))
-        {
-            using var aspNetProcess = serverProject.StartPublishedProjectAsync();
-
-            Assert.False(
-                aspNetProcess.Process.HasExited,
-                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
-
-            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-
-            await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-            var page = await browser.NewPageAsync();
-            await aspNetProcess.VisitInBrowserAsync(page);
-            await TestBasicNavigation(project.ProjectName, page, usesAuth: true);
-            await page.CloseAsync();
-        }
-        else
-        {
-            EnsureBrowserAvailable(browserKind);
-        }
-    }
-
     public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
         {
             new TemplateInstance(
@@ -478,26 +391,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
         Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
         return File.ReadAllText(Path.Combine(basePath, path));
-    }
-
-    private static void UpdatePublishedSettings(Project serverProject)
-    {
-        // Hijack here the config file to use the development key during publish.
-        var appSettings = JObject.Parse(File.ReadAllText(Path.Combine(serverProject.TemplateOutputDir, "appsettings.json")));
-        var appSettingsDevelopment = JObject.Parse(File.ReadAllText(Path.Combine(serverProject.TemplateOutputDir, "appsettings.Development.json")));
-        ((JObject)appSettings["IdentityServer"]).Merge(appSettingsDevelopment["IdentityServer"]);
-        ((JObject)appSettings["IdentityServer"]).Merge(new
-        {
-            IdentityServer = new
-            {
-                Key = new
-                {
-                    FilePath = "./tempkey.json"
-                }
-            }
-        });
-        var testAppSettings = appSettings.ToString();
-        File.WriteAllText(Path.Combine(serverProject.TemplatePublishDir, "appsettings.json"), testAppSettings);
     }
 
     private (ProcessEx, string url) RunPublishedStandaloneBlazorProject(Project project)

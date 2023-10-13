@@ -1,7 +1,7 @@
 ﻿{
   "author": "Майкрософт",
   "name": "Веб-API ASP.NET Core",
-  "description": "Шаблон проекта для создания приложения ASP.NET Core с образцом контроллера для службы HTTP RESTful. Этот шаблон можно также использовать для представлений MVC и контроллеров ASP.NET Core.",
+  "description": "Шаблон проекта для создания веб-API на основе REST с помощью контроллеров ASP.NET Core или минимальных API с необязательной поддержкой OpenAPI и проверки подлинности.",
   "symbols/auth/choices/None/description": "Без проверки подлинности",
   "symbols/auth/choices/IndividualB2C/description": "Индивидуальная проверка подлинности в Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Проверка подлинности в организации для одного клиента",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "Следует ли отключить HTTPS. Этот параметр применяется, только если для --auth не используются IndividualB2C, SingleOrg или MultiOrg.",
   "symbols/UseLocalDB/description": "Следует ли использовать LocalDB вместо SQLite. Этот параметр применяется, только если указывается --auth Individual или --auth IndividualB2C.",
   "symbols/UseMinimalAPIs/description": "Следует ли использовать минимальные API вместо контроллеров.",
+  "symbols/UseControllers/description": "Следует ли использовать контроллеры вместо минимальных API? Этот параметр превышает значение, заданное минимальным параметром --minimal.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",

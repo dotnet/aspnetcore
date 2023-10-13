@@ -4,16 +4,23 @@
 #nullable enable
 
 using System.Diagnostics;
+#if !COMPONENTS
 using System.Linq;
+#endif
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template;
 
+#if !COMPONENTS
 /// <summary>
 /// Computes precedence for a route template.
 /// </summary>
 public static class RoutePrecedence
+#else
+internal static class RoutePrecedence
+#endif
 {
+#if !COMPONENTS
     /// <summary>
     ///  Compute the precedence for matching a provided url
     /// </summary>
@@ -45,6 +52,7 @@ public static class RoutePrecedence
 
         return precedence;
     }
+#endif
 
     // See description on ComputeInbound(RouteTemplate)
     internal static decimal ComputeInbound(RoutePattern routePattern)
@@ -66,6 +74,7 @@ public static class RoutePrecedence
         return precedence;
     }
 
+#if !COMPONENTS
     /// <summary>
     ///  Compute the precedence for generating a url.
     /// </summary>
@@ -97,6 +106,7 @@ public static class RoutePrecedence
 
         return precedence;
     }
+#endif
 
     // see description on ComputeOutbound(RouteTemplate)
     internal static decimal ComputeOutbound(RoutePattern routePattern)
@@ -129,6 +139,7 @@ public static class RoutePrecedence
         }
     }
 
+#if !COMPONENTS
     // Segments have the following order:
     // 5 - Literal segments
     // 4 - Multi-part segments && Constrained parameter segments
@@ -160,6 +171,7 @@ public static class RoutePrecedence
             return digit;
         }
     }
+#endif
 
     // See description on ComputeOutboundPrecedenceDigit(TemplateSegment segment)
     private static int ComputeOutboundPrecedenceDigit(RoutePatternPathSegment pathSegment)
@@ -193,6 +205,7 @@ public static class RoutePrecedence
         }
     }
 
+#if !COMPONENTS
     // Segments have the following order:
     // 1 - Literal segments
     // 2 - Constrained parameter segments / Multi-part segments
@@ -228,6 +241,7 @@ public static class RoutePrecedence
             return digit;
         }
     }
+#endif
 
     // see description on ComputeInboundPrecedenceDigit(TemplateSegment segment)
     //

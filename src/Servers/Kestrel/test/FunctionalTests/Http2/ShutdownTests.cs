@@ -35,13 +35,77 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
 
     public ShutdownTests()
     {
-        Client = new HttpClient(new HttpClientHandler
+        var handler = new SocketsHttpHandler
         {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        })
+            KeepAlivePingDelay = TimeSpan.MaxValue,
+        };
+        handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+        Client = new HttpClient(handler)
         {
             DefaultRequestVersion = new Version(2, 0),
         };
+    }
+
+    [ConditionalFact]
+    public async Task ConnectionClosedWithoutActiveRequestsOrGoAwayFIN()
+    {
+        var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readFin = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var writeFin = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += context =>
+        {
+
+            if (context.EventId.Name == "Http2ConnectionClosed")
+            {
+                connectionClosed.SetResult();
+            }
+            else if (context.EventId.Name == "ConnectionReadFin")
+            {
+                readFin.SetResult();
+            }
+            else if (context.EventId.Name == "ConnectionWriteFin")
+            {
+                writeFin.SetResult();
+            }
+        };
+
+        var testContext = new TestServiceContext(LoggerFactory);
+
+        testContext.InitializeHeartbeat();
+
+        await using (var server = new TestServer(context =>
+        {
+            return context.Response.WriteAsync("hello world " + context.Request.Protocol);
+        },
+        testContext,
+        kestrelOptions =>
+        {
+            kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
+            {
+                listenOptions.Protocols = HttpProtocols.Http2;
+                listenOptions.UseHttps(_x509Certificate2);
+            });
+        }))
+        {
+            // HttpClient sends PING frames even if you disable them so that it can dynamically adjust the HTTP/2 window size.
+            // It sends 4 PINGs to do this, and they sent after receiving data, so we send and receive 5 times to make sure the PINGs are done.
+            // https://github.com/dotnet/runtime/blob/a590cb4cfb9f1a66c043476695fd0e79835842eb/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2StreamWindowManager.cs#L165
+            // We care because responding with a PING ack when the client is disposing can cause a ConnectionReset log instead of ConnectionReadFin
+            // which would hang the test.
+            for (var i = 0; i < 5; i++)
+            {
+                var response = await Client.GetStringAsync($"https://localhost:{server.Port}/");
+                Assert.Equal("hello world HTTP/2", response);
+            }
+            Client.Dispose(); // Close the socket, no GoAway is sent.
+
+            await readFin.Task.DefaultTimeout();
+            await writeFin.Task.DefaultTimeout();
+            await connectionClosed.Task.DefaultTimeout();
+
+            await server.StopAsync();
+        }
     }
 
     [CollectDump]

@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API'si",
-  "description": "RESTful HTTP hizmetine ait örnek bir Denetleyici içeren bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu. Bu şablon aynı zamanda ASP.NET Core MVC Görünümleri ve Denetleyicileri için de kullanılabilir.",
+  "description": "OpenAPI ve kimlik doğrulaması için isteğe bağlı destek ile birlikte ASP.NET Core denetleyicilerini veya minimal API'leri kullanarak RESTful Web API'si oluşturmaya yönelik proje şablonu.",
   "symbols/auth/choices/None/description": "Kimlik doğrulaması yok",
   "symbols/auth/choices/IndividualB2C/description": "Azure AD B2C ile bireysel kimlik doğrulaması",
   "symbols/auth/choices/SingleOrg/description": "Tek bir kiracı için kuruluş kimlik doğrulaması",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca IndividualB2C, SingleOrg veya MultiOrg -- auth için kullanılmazsa geçerlidir.",
   "symbols/UseLocalDB/description": "SQLite yerine LocalDB'nin kullanılıp kullanılmayacağı. Bu seçenek yalnızca --auth Individual veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/UseMinimalAPIs/description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağı.",
+  "symbols/UseControllers/description": "Minimal API yerine denetleyicileri kullanma seçimi. Bu seçenek -- minimal tarafından belirtilen değeri geçersiz kılar.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",

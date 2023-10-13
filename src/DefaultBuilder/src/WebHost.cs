@@ -236,7 +236,7 @@ public static class WebHost
             .UseIISIntegration();
     }
 
-    internal static void ConfigureWebDefaultsCore(IWebHostBuilder builder)
+    internal static void ConfigureWebDefaultsSlim(IWebHostBuilder builder)
     {
         ConfigureWebDefaultsWorker(builder.UseKestrelCore().ConfigureKestrel(ConfigureKestrel), configureRouting: null);
     }

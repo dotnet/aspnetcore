@@ -7,23 +7,38 @@
       Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
-  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 6.0. -->
+  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 8.0. -->
   <ItemGroup>
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net6.0'))"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAppHostPack->Count())' != '0' AND
         !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownRuntimePack
-      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net6.0'))"
+      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownRuntimePack->Count())' != '0' AND
         !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net6.0'))"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownFrameworkReference->Count())' != '0' AND
         !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownILLinkPack
+      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownILLinkPack->Count())' != '0' AND
+        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownILCompilerPack
+      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownILCompilerPack->Count())' != '0' AND
+        !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownWebAssemblySdkPack
+      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
+        !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +52,7 @@
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
-    <PackageReference Include="Microsoft.Dotnet.ILCompiler"
+    <PackageReference Include="Microsoft.DotNet.ILCompiler"
       Condition=" '$(PublishAot)' == 'true' "
       Version="${MicrosoftNETCoreAppRuntimeVersion}" />
   </ItemGroup>

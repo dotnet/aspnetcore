@@ -1,3 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.get -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.ShouldUseFieldIdentifiers.set -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValid(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValid(System.Linq.Expressions.Expression<System.Func<object!>!>! accessor) -> bool

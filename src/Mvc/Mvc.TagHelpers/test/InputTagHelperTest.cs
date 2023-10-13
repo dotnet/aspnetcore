@@ -1319,6 +1319,69 @@ public class InputTagHelperTest
         Assert.Equal(expectedTagName, output.TagName);
     }
 
+    [Fact]
+    public async Task ProcessAsync_GenerateCheckBox_WithHiddenInputExpectedFormAttribute()
+    {
+        var propertyName = "-expression-";
+        var expectedTagName = "input";
+        var formName = "form-name";
+        var expectedEndOfFormContent = $"<input form=\"HtmlEncode[[{formName}]]\" name=\"HtmlEncode[[{propertyName}]]\" " +
+            "type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />";
+        var inputTypeName = "checkbox";
+        var expectedAttributes = new TagHelperAttributeList
+            {
+                { "name",  propertyName },
+                { "type", inputTypeName },
+                { "form", formName },
+                { "value", "true" },
+            };
+
+        var metadataProvider = new EmptyModelMetadataProvider();
+        var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+        var model = false;
+        var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(bool), model);
+        var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
+        var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
+        viewContext.FormContext.CanRenderAtEndOfForm = true;
+        viewContext.CheckBoxHiddenInputRenderMode = CheckBoxHiddenInputRenderMode.EndOfForm;
+
+        var tagHelper = new InputTagHelper(htmlGenerator)
+        {
+            For = modelExpression,
+            InputTypeName = inputTypeName,
+            Name = propertyName,
+            FormName = formName,
+            ViewContext = viewContext,
+        };
+
+        var attributes = new TagHelperAttributeList
+            {
+                { "name", propertyName },
+                { "type", inputTypeName },
+                { "form", formName}
+            };
+
+        var context = new TagHelperContext(attributes, new Dictionary<object, object>(), "test");
+        var output = new TagHelperOutput(
+            expectedTagName,
+            new TagHelperAttributeList(),
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+        {
+            TagMode = TagMode.SelfClosing,
+        };
+
+        // Act
+        await tagHelper.ProcessAsync(context, output);
+
+        // Assert
+        Assert.Equal(expectedAttributes, output.Attributes);
+        Assert.False(output.IsContentModified);
+        Assert.Equal(expectedTagName, output.TagName);
+
+        Assert.Equal(expectedEndOfFormContent, string.Join("", viewContext.FormContext.EndOfFormContent.Select(html => HtmlContentUtilities.HtmlContentToString(html))));
+        Assert.True(string.IsNullOrEmpty(HtmlContentUtilities.HtmlContentToString(output.PostElement)));
+    }
+
     [Theory]
     [InlineData(null, "password", null)]
     [InlineData(null, "Password", "not-null")]

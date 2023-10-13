@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Diagnostics.Runtime.Interop;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -191,8 +193,8 @@ public class ParsableTodo : IParsable<ParsableTodo>
         }
         else
         {
-        result = null!;
-        return false;
+            result = null!;
+            return false;
         }
     }
 }
@@ -690,7 +692,10 @@ public class AccessesServicesMetadataBinder : IEndpointMetadataProvider
 }
 
 public record MetadataService;
-public record ParameterListFromQuery(HttpContext HttpContext, [FromQuery] int Value);
+public record ParameterListFromQuery(HttpContext HttpContext,
+    [FromQuery] int Value,
+    [FromQuery(Name = "customQuery")] int CustomValue,
+    [property: FromQuery(Name = "anotherCustomQuery")] int? AnotherCustomValue = null);
 public record ParameterListFromRoute(HttpContext HttpContext, int Value);
 public record ParameterListFromHeader(HttpContext HttpContext, [FromHeader(Name = "X-Custom-Header")] int Value);
 public record ParametersListWithImplicitFromBody(HttpContext HttpContext, TodoStruct Todo);
@@ -705,6 +710,7 @@ public record ParametersListWithHttpContext(
 public record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
 
 public record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
+public record struct ParameterRecordStructWithJsonBodyOrService(TodoStruct Todo, TestService Service);
 
 #nullable enable
 public record ParameterListRecordWithoutPositionalParameters
@@ -1014,3 +1020,84 @@ public class TodoChild : Todo
     public string? Child { get; set; }
 }
 #nullable restore
+
+public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
+{
+    static TodoWithExplicitIParsable IParsable<TodoWithExplicitIParsable>.Parse(string s, IFormatProvider provider)
+    {
+        return new TodoWithExplicitIParsable();
+    }
+
+    static bool IParsable<TodoWithExplicitIParsable>.TryParse(string s, IFormatProvider provider, out TodoWithExplicitIParsable result)
+    {
+        result = new TodoWithExplicitIParsable();
+        return true;
+    }
+}
+
+#nullable enable
+public class BindableWithMismatchedNullability<T>
+{
+    public BindableWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableWithMismatchedNullability<T?>(default);
+    }
+}
+
+public struct BindableStructWithMismatchedNullability<T>
+{
+    public BindableStructWithMismatchedNullability(T? value)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; }
+
+    public static async ValueTask<BindableStructWithMismatchedNullability<T?>> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStructWithMismatchedNullability<T?>(default);
+    }
+}
+
+public class BindableClassWithNullReturn
+{
+    public static async ValueTask<BindableClassWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return null;
+    }
+}
+
+public struct BindableStructWithNullReturn
+{
+    public static async ValueTask<BindableStructWithNullReturn?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return null;
+    }
+}
+
+public struct BindableStruct
+{
+    public BindableStruct(string value)
+    {
+        Value = value;
+    }
+
+    public string Value { get; }
+
+    public static async ValueTask<BindableStruct> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    {
+        await Task.CompletedTask;
+        return new BindableStruct(httpContext.Request.Query["value"].ToString());
+    }
+}

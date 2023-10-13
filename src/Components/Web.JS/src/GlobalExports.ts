@@ -17,6 +17,8 @@ import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
+import { RuntimeAPI } from 'dotnet';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
@@ -28,16 +30,19 @@ import { WebStartOptions } from './Platform/WebStartOptions';
 // * Blazor._internal.{foo}: internal, platform-agnostic Blazor APIs
 // * Blazor.platform.{somePlatformName}.{foo}: public, platform-specific Blazor APIs (would be empty at first, so no initial breaking changes)
 // * Blazor.platform.{somePlatformName}.{_internal}.{foo}: internal, platform-specific Blazor APIs
-interface IBlazor {
+export interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
 
+  addEventListener?: typeof JSEventRegistry.prototype.addEventListener;
+  removeEventListener?: typeof JSEventRegistry.prototype.removeEventListener;
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
   defaultReconnectionHandler?: DefaultReconnectionHandler;
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>) | ((options?: Partial<WebStartOptions>) => Promise<void>);
   platform?: Platform;
   rootComponents: typeof RootComponentsFunctions;
+  runtime: RuntimeAPI,
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any;
@@ -52,10 +57,11 @@ interface IBlazor {
     endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
     receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
+    getInitialComponentsUpdate?: () => Promise<string>;
+    updateRootComponents?: (operations: string) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
       getRegisteredComponentsCount: () => number;
-      getId: (index) => number;
       getAssembly: (id) => string;
       getTypeName: (id) => string;
       getParameterDefinitions: (id) => string;
@@ -72,6 +78,7 @@ interface IBlazor {
     receiveWebAssemblyDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     attachWebRendererInterop?: typeof attachWebRendererInterop;
+    loadWebAssemblyQuicklyTimeout?: number;
 
     // JSExport APIs
     dotNetExports?: {
@@ -79,11 +86,13 @@ interface IBlazor {
       EndInvokeJS: (argsJson: string) => void;
       BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
+      UpdateRootComponentsCore: (operationsJson: string) => void;
     }
 
     // APIs invoked by hot reload
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void;
     getApplyUpdateCapabilities?: () => string;
+    hotReloadApplied?: () => void;
   }
 }
 
@@ -91,6 +100,7 @@ export const Blazor: IBlazor = {
   navigateTo,
   registerCustomEventType,
   rootComponents: RootComponentsFunctions,
+  runtime: {} as RuntimeAPI,
 
   _internal: {
     navigationManager: navigationManagerInternalFunctions,

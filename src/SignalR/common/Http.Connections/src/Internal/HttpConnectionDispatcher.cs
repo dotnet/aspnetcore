@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Authentication;
@@ -189,7 +188,7 @@ internal sealed partial class HttpConnectionDispatcher
                 return;
             }
 
-            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseAcks)
+            if (connection.TransportType != HttpTransportType.WebSockets || connection.UseStatefulReconnect)
             {
                 if (!await connection.CancelPreviousPoll(context))
                 {
@@ -201,15 +200,24 @@ internal sealed partial class HttpConnectionDispatcher
             // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
             var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            var reconnectTask = Task.CompletedTask;
+
             switch (transport)
             {
                 case HttpTransportType.None:
                     break;
                 case HttpTransportType.WebSockets:
+                    var isReconnect = connection.ApplicationTask is not null;
                     var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
                     if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
                     {
                         return;
+                    }
+
+                    if (connection.UseStatefulReconnect && isReconnect)
+                    {
+                        // Should call this after the transport has started, otherwise we'll be writing to a Pipe that isn't being read from
+                        reconnectTask = connection.NotifyOnReconnect?.Invoke(connection.Transport.Output) ?? Task.CompletedTask;
                     }
                     break;
                 case HttpTransportType.LongPolling:
@@ -225,6 +233,18 @@ internal sealed partial class HttpConnectionDispatcher
             }
 
             context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+
+            try
+            {
+                await reconnectTask;
+            }
+            catch (Exception ex)
+            {
+                // MessageBuffer shouldn't throw from the callback
+                // But users can technically add a callback, we don't want to trust them not to throw
+                Log.NotifyOnReconnectError(_logger, ex);
+            }
+
             var resultTask = await Task.WhenAny(connection.ApplicationTask!, connection.TransportTask!);
 
             try
@@ -275,8 +295,9 @@ internal sealed partial class HttpConnectionDispatcher
                 {
                     // If false then the transport was ungracefully closed, this can mean a temporary network disconnection
                     // We'll mark the connection as inactive and allow the connection to reconnect if that's the case.
-                    // TODO: If acks aren't enabled we can close the connection immediately (not LongPolling)
-                    if (await connection.TransportTask!)
+                    if (await connection.TransportTask!
+                        // If acks aren't enabled we can close the connection immediately (not LongPolling)
+                        || !connection.ClientReconnectExpected())
                     {
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: true, HttpConnectionStopStatus.NormalClosure);
                     }
@@ -335,18 +356,18 @@ internal sealed partial class HttpConnectionDispatcher
             Log.NegotiateProtocolVersionMismatch(_logger, 0);
         }
 
-        var useAck = false;
-        if (options.AllowAcks == true && context.Request.Query.TryGetValue("UseAck", out var useAckValue))
+        var useStatefulReconnect = false;
+        if (options.AllowStatefulReconnects == true && context.Request.Query.TryGetValue("UseStatefulReconnect", out var useStatefulReconnectValue))
         {
-            var useAckStringValue = useAckValue.ToString();
-            bool.TryParse(useAckStringValue, out useAck);
+            var useStatefulReconnectStringValue = useStatefulReconnectValue.ToString();
+            bool.TryParse(useStatefulReconnectStringValue, out useStatefulReconnect);
         }
 
         // Establish the connection
         HttpConnectionContext? connection = null;
         if (error == null)
         {
-            connection = CreateConnection(options, clientProtocolVersion, useAck);
+            connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
@@ -359,7 +380,8 @@ internal sealed partial class HttpConnectionDispatcher
         try
         {
             // Get the bytes for the connection id
-            WriteNegotiatePayload(writer, connection?.ConnectionId, connection?.ConnectionToken, context, options, clientProtocolVersion, error, useAck);
+            WriteNegotiatePayload(writer, connection?.ConnectionId, connection?.ConnectionToken, context, options,
+                clientProtocolVersion, error, useStatefulReconnect);
 
             Log.NegotiationRequest(_logger);
 
@@ -374,7 +396,7 @@ internal sealed partial class HttpConnectionDispatcher
     }
 
     private static void WriteNegotiatePayload(IBufferWriter<byte> writer, string? connectionId, string? connectionToken, HttpContext context, HttpConnectionDispatcherOptions options,
-        int clientProtocolVersion, string? error, bool useAck)
+        int clientProtocolVersion, string? error, bool useStatefulReconnect)
     {
         var response = new NegotiationResponse();
 
@@ -389,7 +411,7 @@ internal sealed partial class HttpConnectionDispatcher
         response.ConnectionId = connectionId;
         response.ConnectionToken = connectionToken;
         response.AvailableTransports = new List<AvailableTransport>();
-        response.UseAcking = useAck;
+        response.UseStatefulReconnect = useStatefulReconnect;
 
         if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
         {
@@ -548,29 +570,29 @@ internal sealed partial class HttpConnectionDispatcher
             return false;
         }
 
+        switch (connection.TrySetTransport(transportType, _metrics))
+        {
+            case HttpConnectionContext.SetTransportState.Success:
+                break;
+
+            case HttpConnectionContext.SetTransportState.AlreadyActive:
+                Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, context.TraceIdentifier);
+
+                // Reject the request with a 409 conflict
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                context.Response.ContentType = "text/plain";
+                return false;
+
+            case HttpConnectionContext.SetTransportState.CannotChange:
+                context.Response.ContentType = "text/plain";
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
+                await context.Response.WriteAsync("Cannot change transports mid-connection");
+                return false;
+        }
+
         // Set the IHttpConnectionFeature now that we can access it.
         connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
-
-        if (connection.TransportType == HttpTransportType.None)
-        {
-            if (HttpConnectionsEventSource.Log.IsEnabled() || connection.MetricsContext.ConnectionDurationEnabled)
-            {
-                connection.StartTimestamp = Stopwatch.GetTimestamp();
-            }
-
-            connection.TransportType = transportType;
-
-            HttpConnectionsEventSource.Log.ConnectionStart(connection.ConnectionId);
-            _metrics.ConnectionTransportStart(connection.MetricsContext, transportType);
-        }
-        else if (connection.TransportType != transportType)
-        {
-            context.Response.ContentType = "text/plain";
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
-            await context.Response.WriteAsync("Cannot change transports mid-connection");
-            return false;
-        }
 
         // Configure transport-specific features.
         if (transportType == HttpTransportType.LongPolling)
@@ -604,6 +626,17 @@ internal sealed partial class HttpConnectionDispatcher
         else
         {
             connection.HttpContext = context;
+        }
+
+        if (connection.User is not null)
+        {
+            var originalName = connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var newName = connection.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (originalName != newName)
+            {
+                // Log warning, different user
+                Log.UserNameChanged(_logger, originalName, newName);
+            }
         }
 
         // Setup the connection state from the http context
@@ -778,9 +811,9 @@ internal sealed partial class HttpConnectionDispatcher
         return connection;
     }
 
-    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useAck = false)
+    private HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int clientProtocolVersion = 0, bool useStatefulReconnect = false)
     {
-        return _manager.CreateConnection(options, clientProtocolVersion, useAck);
+        return _manager.CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
     }
 
     private static void AddNoCacheHeaders(HttpResponse response)

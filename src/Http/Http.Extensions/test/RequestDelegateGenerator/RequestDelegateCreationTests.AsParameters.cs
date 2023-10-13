@@ -40,11 +40,17 @@ app.MapGet("/{Value}", TestAction);
         // we should match the case here
         const string paramName = "Value";
         const int originalQueryParam = 42;
+        const string customParamName = "customQuery";
+        const int originalCustomQueryParam = 43;
+        const string anotherCustomParamName = "anotherCustomQuery";
+        const int originalAnotherCustomQueryParam = 44;
 
         var source = """
 static void TestAction([AsParameters] ParameterListFromQuery args)
 {
     args.HttpContext.Items.Add("input", args.Value);
+    args.HttpContext.Items.Add("customInput", args.CustomValue);
+    args.HttpContext.Items.Add("anotherCustomInput", args.AnotherCustomValue);
 }
 app.MapGet("/", TestAction);
 """;
@@ -53,7 +59,9 @@ app.MapGet("/", TestAction);
 
         var query = new QueryCollection(new Dictionary<string, StringValues>()
         {
-            [paramName] = originalQueryParam.ToString(NumberFormatInfo.InvariantInfo)
+            [paramName] = originalQueryParam.ToString(NumberFormatInfo.InvariantInfo),
+            [customParamName] = originalCustomQueryParam.ToString(NumberFormatInfo.InvariantInfo),
+            [anotherCustomParamName] = originalAnotherCustomQueryParam.ToString(NumberFormatInfo.InvariantInfo)
         });
 
         var httpContext = CreateHttpContext();
@@ -62,6 +70,8 @@ app.MapGet("/", TestAction);
         await endpoint.RequestDelegate(httpContext);
 
         Assert.Equal(originalQueryParam, httpContext.Items["input"]);
+        Assert.Equal(originalCustomQueryParam, httpContext.Items["customInput"]);
+        Assert.Equal(originalAnotherCustomQueryParam, httpContext.Items["anotherCustomInput"]);
     }
 
     [Fact]
@@ -237,10 +247,11 @@ static void parametersListWithMetadataType([AsParameters] ParametersListWithMeta
     args.HttpContext.Items.Add("value", args.Value);
 }
 app.MapGet("/parameterListWithDefaultValue/{value}", parameterListWithDefaultValue);
-app.MapGet("/parameterListRecordStruct/{value}", parameterListRecordStruct);
-app.MapGet("/parametersListWithHttpContext", parametersListWithHttpContext);
-app.MapPost("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
+app.MapPost("/parameterListRecordStruct/{value}", parameterListRecordStruct);
+app.MapPut("/parametersListWithHttpContext", parametersListWithHttpContext);
+app.MapPatch("/parametersListWithImplicitFromBody", ([AsParameters] ParametersListWithImplicitFromBody args) => args.Todo.Name ?? string.Empty);
 app.MapGet("/parametersListWithMetadataType", parametersListWithMetadataType);
+app.MapPost("/parameterRecordStructWithJsonBodyOrService", ([AsParameters] ParameterRecordStructWithJsonBodyOrService args) => args.Todo.Name ?? string.Empty);
 """);
 
         await VerifyAgainstBaselineUsingFile(compilation);

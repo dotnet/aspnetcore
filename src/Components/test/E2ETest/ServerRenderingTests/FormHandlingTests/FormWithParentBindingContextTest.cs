@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.Net.Http;
+using System.Text;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHand
 
 public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
+    private string _tempDirectory;
+
     public FormWithParentBindingContextTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
@@ -24,7 +27,12 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     public override Task InitializeAsync()
-        => InitializeAsync(BrowserFixture.StreamingContext);
+    {
+        _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_tempDirectory);
+
+        return InitializeAsync(BrowserFixture.StreamingContext);
+    }
 
     [Theory]
     [InlineData(true)]
@@ -35,24 +43,31 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void CanDispatchToTheDefaultFormWithBody(bool suppressEnhancedNavigation)
+    [Fact]
+    public void PlainFormIsNotEnhancedByDefault()
     {
         var dispatchToForm = new DispatchToForm(this)
         {
-            Url = "forms/default-form-with-body",
+            Url = $"forms/non-enhanced-plainform",
             FormCssSelector = "form",
-            InputFieldValue = "stranger",
-            ExpectedActionValue = null,
-            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+            FormIsEnhanced = false,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void EditFormIsNotEnhancedByDefault()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = $"forms/non-enhanced-editform",
+            FormCssSelector = "form",
+            FormIsEnhanced = false,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -66,7 +81,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-parameter",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
@@ -78,13 +92,57 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void DataAnnotationsWorkForForms(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-parameter-annotations",
+            FormCssSelector = "form",
+            InputFieldId = "Parameter.FirstName",
+            InputFieldCssSelector = "input[name='Parameter.FirstName']",
+            InputFieldValue = "John",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+            ErrorSelector = "ul.validation-errors li.validation-message",
+            AssertErrors = errors =>
+            {
+                var error = Assert.Single(errors);
+                Assert.Equal("Name is too long", error.Text);
+                Assert.Equal("John", Browser.FindElement(By.CssSelector("input[name='Parameter.FirstName']")).GetAttribute("value"));
+            },
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void DataContractAttributesWorkForForms(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-bound-parameter-annotations",
+            FormCssSelector = "form",
+            InputFieldId = "Parameter.FirstName",
+            InputFieldCssSelector = "input[name='Parameter.FirstName']",
+            InputFieldValue = "Jon",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        var text = Browser.Exists(By.Id("pass-id")).Text;
+        Assert.Equal("0", text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void MultipleParametersMultipleFormsDoNotConflict(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/multiple-forms-bound-parameter-no-conflicts",
             FormCssSelector = "form[name=bind-integer]",
-            ExpectedActionValue = "forms/multiple-forms-bound-parameter-no-conflicts?handler=bind-integer",
+            ExpectedHandlerValue = "bind-integer",
             InputFieldId = "Id",
             InputFieldCssSelector = "form[name=bind-integer] input[name=Id]",
             InputFieldValue = "abc",
@@ -110,7 +168,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/multiple-forms-bound-parameter-no-conflicts",
             FormCssSelector = "form[name=bind-guid]",
-            ExpectedActionValue = "forms/multiple-forms-bound-parameter-no-conflicts?handler=bind-guid",
+            ExpectedHandlerValue = "bind-guid",
             SubmitButtonId = "send-guid",
             UpdateFormAction = () =>
             {
@@ -137,7 +195,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-multiple-primitive-parameters",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name=Parameter]")).Clear();
@@ -163,7 +220,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-multiple-primitive-parameters-changed-names",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name=UpdatedParameter]")).Clear();
@@ -189,7 +245,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-multiple-primitive-parameters",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             UpdateFormAction = () =>
             {
                 Browser.Exists(By.CssSelector("input[name=Parameter]")).Clear();
@@ -227,7 +282,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/default-form-bound-primitive-parameter",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
@@ -254,13 +308,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -297,13 +345,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-multiple-components";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -362,13 +404,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-multiple-components";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -421,13 +457,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-complextype-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -467,13 +497,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-dictionary-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -510,13 +534,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-dictionary-parameter-errors";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -557,13 +575,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-collection-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -609,13 +621,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var url = "forms/default-form-bound-collection-parameter";
         var expectedTarget = GetExpectedTarget(this, null, url);
 
-        if (suppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
@@ -666,8 +672,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form-bound-primitive-parameter",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form-bound-primitive-parameter?handler=named-form-handler",
+            FormCssSelector = "form[name=my-bound-form]",
+            ExpectedHandlerValue = "named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "abc",
@@ -696,7 +702,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             Url = "forms/default-form-with-body-on-initialized",
             FormCssSelector = "form",
             InputFieldValue = "stranger",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -710,8 +715,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form?handler=named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -725,8 +730,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/named-form-bound-parameter",
-            FormCssSelector = "form[name=named-form-handler]",
-            ExpectedActionValue = "forms/named-form-bound-parameter?handler=named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
@@ -738,13 +743,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanDispatchToNamedFormInNestedContext(bool suppressEnhancedNavigation)
+    public void CanDispatchToNamedFormInMappingScope(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form",
-            FormCssSelector = "form[name=\"parent-context.named-form-handler\"]",
-            ExpectedActionValue = "forms/nested-named-form?handler=parent-context.named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "[parent-context]named-form-handler",
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -753,13 +758,13 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanBindFormValueFromNestedNamedFormWithBody(bool suppressEnhancedNavigation)
+    public void CanBindFormValueFromNamedFormInMappingScopeWithBody(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/nested-named-form-bound-parameter",
-            FormCssSelector = """form[name="parent-context.named-form-handler"]""",
-            ExpectedActionValue = "forms/nested-named-form-bound-parameter?handler=parent-context.named-form-handler",
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "[parent-context]named-form-handler",
             InputFieldId = "Parameter",
             InputFieldCssSelector = "input[name=Parameter]",
             InputFieldValue = "stranger",
@@ -777,7 +782,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/form-defined-inside-component",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -790,26 +794,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/ambiguous-forms",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
-            DispatchEvent = false
+            DispatchEvent = false,
+            ShouldCauseInternalServerError = false,
         };
         DispatchToFormCore(dispatchToForm);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void DispatchingToAmbiguousFormFails(bool suppressEnhancedNavigation)
+    [Fact]
+    public void CannotSubmitAmbiguousForms()
     {
         var dispatchToForm = new DispatchToForm(this)
         {
             Url = "forms/ambiguous-forms",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             DispatchEvent = true,
-            SubmitButtonId = "send-second",
             ShouldCauseInternalServerError = true,
-            SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -821,7 +820,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/async-rendered-form",
             FormCssSelector = "form",
-            ExpectedActionValue = null
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -833,22 +831,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/disappears-before-dispatching",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SubmitButtonId = "test-send",
-            ShouldCauseInternalServerError = true,
-        };
-        DispatchToFormCore(dispatchToForm);
-    }
-
-    [Fact]
-    public void ChangingComponentsToDispatchBeforeQuiesceDoesNotBind()
-    {
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/switching-components-does-not-bind",
-            FormCssSelector = "form",
-            ExpectedActionValue = null,
-            ShouldCauseInternalServerError = true,
+            ShouldCauseBadRequest = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -906,9 +890,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/no-antiforgery",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             ShouldCauseBadRequest = true,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CanUseAntiforgeryTokenInWasm()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/antiforgery-wasm",
+            FormCssSelector = "form",
+            InputFieldId = "Value",
+            SuppressEnhancedNavigation = true,
         };
         DispatchToFormCore(dispatchToForm);
     }
@@ -922,7 +918,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/disable-antiforgery-check",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
@@ -935,7 +930,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             Url = "forms/antiforgery-after-response-started",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
             SuppressEnhancedNavigation = true,
         };
         DispatchToFormCore(dispatchToForm);
@@ -944,16 +938,54 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void FormElementWithAntiforgery(bool suppressEnhancedNavigation)
+    public void FormNoHandlerReturnBadRequest(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
         {
-            Url = "forms/form-element-antiforgery",
+            Url = "forms/no-handler",
             FormCssSelector = "form",
-            ExpectedActionValue = null,
+            ShouldCauseBadRequest = true,
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUsePlainForm(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/plain-form",
+            DispatchEvent = false,
+            FormCssSelector = "form",
+            ExpectedHandlerValue = "my-form",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).SendKeys("StringViaExplicitPropertyName value");
+        Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).SendKeys("StringViaOverriddenName value");
+        Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).SendKeys("StringViaOverriddenNameUnmatched value");
+        Browser.Exists(By.CssSelector("#StringViaExpression input")).SendKeys("StringViaExpression value");
+        Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).SendKeys("StringViaExpressionWithHandler value");
+        Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).SendKeys("StringViaExpressionWithUnmatchedHandler value");
+        Browser.Exists(By.CssSelector("#PersonName input")).SendKeys("PersonName value");
+        Browser.Exists(By.CssSelector("#PersonAge input")).Clear(); // Remove the existing zero, otherwise we'll get 1230
+        Browser.Exists(By.CssSelector("#PersonAge input")).SendKeys("123");
+
+        Browser.Exists(By.Id("send")).Click();
+        Browser.Exists(By.Id("pass"));
+
+        Browser.Equal("StringViaExplicitPropertyName value", () => Browser.Exists(By.CssSelector("#StringViaExplicitPropertyName input")).GetAttribute("value"));
+        Browser.Equal("StringViaOverriddenName value", () => Browser.Exists(By.CssSelector("#StringViaOverriddenName input")).GetAttribute("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaOverriddenNameUnmatched input")).GetAttribute("value"));
+        Browser.Equal("StringViaExpression value", () => Browser.Exists(By.CssSelector("#StringViaExpression input")).GetAttribute("value"));
+        Browser.Equal("StringViaExpressionWithHandler value", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithHandler input")).GetAttribute("value"));
+        Browser.Equal(/* should not match */ "", () => Browser.Exists(By.CssSelector("#StringViaExpressionWithUnmatchedHandler input")).GetAttribute("value"));
+        Browser.Equal("PersonName value", () => Browser.Exists(By.CssSelector("#PersonName input")).GetAttribute("value"));
+        Browser.Equal("123", () => Browser.Exists(By.CssSelector("#PersonAge input")).GetAttribute("value"));
     }
 
     [Fact]
@@ -977,23 +1009,340 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Exists(By.Id("pass"));
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsOutsideErrorBoundary_OnInitialRender(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-outside-error-boundary{( enableStreaming ? "-streaming" : "" )}");
+
+        Browser.Exists(By.LinkText("Throw during initial render")).Click();
+        AssertHasInternalServerError(suppressEnhancedNavigation);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsOutsideErrorBoundary_SynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-outside-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-sync")).Click();
+        AssertHasInternalServerError(suppressEnhancedNavigation, enableStreaming);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsOutsideErrorBoundary_AsynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-outside-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-async")).Click();
+        AssertHasInternalServerError(suppressEnhancedNavigation, enableStreaming);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsInsideErrorBoundary_OnInitialRender(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-in-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.LinkText("Throw during initial render")).Click();
+
+        var errorBoundaryContent = Browser.Exists(By.Id("error-content"));
+        Assert.Contains("This is a deliberate error during initial render", errorBoundaryContent.Text);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsInsideErrorBoundary_SynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-in-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-sync")).Click();
+
+        var errorBoundaryContent = Browser.Exists(By.Id("error-content"));
+        Assert.Contains("This is a deliberate form-event synchronous error", errorBoundaryContent.Text);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void HandleErrorsInsideErrorBoundary_AsynchronouslyInSubmitEvent(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/error-in-error-boundary{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("throw-async")).Click();
+
+        var errorBoundaryContent = Browser.Exists(By.Id("error-content"));
+        Assert.Contains("This is a deliberate form-event asynchronous error", errorBoundaryContent.Text);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPostRedirectGet_Synchronous(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/post-redirect-get{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("sync-redirect")).Click();
+        Browser.Exists(By.Id("nav-home"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPostRedirectGet_Asynchronous(bool suppressEnhancedNavigation, bool enableStreaming)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/post-redirect-get{(enableStreaming ? "-streaming" : "")}");
+
+        Browser.Exists(By.Id("async-redirect")).Click();
+        Browser.Exists(By.Id("nav-home"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanMutateDataSuppliedFromForm(bool suppressEnhancedNavigation)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo($"forms/mutate-and-rerender");
+
+        Browser.Exists(By.Id("simple-value")).SendKeys("Abc");
+        Browser.Exists(By.Id("complex-value")).SendKeys("Def");
+        Browser.Equal("1", () => Browser.Exists(By.Id("render-count")).Text);
+
+        // Can perform a submit that mutates the data and rerenders the receiver
+        // Remember that the rendercount would be reset to zero since this is SSR, so
+        // receiving 2 here shows we did render twice on this cycle
+        Browser.Exists(By.Id("mutate-and-notify")).Click();
+        Browser.Equal("Abc Modified", () => Browser.Exists(By.Id("simple-value")).GetAttribute("value"));
+        Browser.Equal("Def Modified", () => Browser.Exists(By.Id("complex-value")).GetAttribute("value"));
+        Browser.Equal("2", () => Browser.Exists(By.Id("render-count")).Text);
+        Browser.Exists(By.Id("received-notification"));
+
+        // Can perform a submit that replaces the received object entirely
+        Browser.Exists(By.Id("clear-and-notify")).Click();
+        Browser.Equal("", () => Browser.Exists(By.Id("simple-value")).GetAttribute("value"));
+        Browser.Equal("", () => Browser.Exists(By.Id("complex-value")).GetAttribute("value"));
+        Browser.Equal("2", () => Browser.Exists(By.Id("render-count")).Text);
+        Browser.Exists(By.Id("received-notification"));
+    }
+
+    private void AssertHasInternalServerError(bool suppressedEnhancedNavigation, bool streaming = false)
+    {
+        if (streaming)
+        {
+            Browser.True(() => Browser.FindElement(By.TagName("html")).Text.Contains("There was an unhandled exception on the current request"));
+        }
+        else
+        {
+            // Displays the error page from the exception handler
+            Assert.Collection(
+                Browser.FindElements(By.CssSelector(".text-danger")),
+                item => Assert.Equal("Error.", item.Text),
+                item => Assert.Equal("An error occurred while processing your request.", item.Text));
+        }
+    }
+
+    [Fact]
+    public void PostingCollectionsThatExceedTheLimitFails()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-max-collection-limit",
+            FormCssSelector = "form",
+            AssertErrors = (errors) =>
+            {
+                var error = Assert.Single(errors);
+                Assert.Equal("The number of elements in the collection exceeded the maximum number of '100' elements allowed.", errors[0].Text);
+            },
+            ErrorSelector = "ul.validation-errors > li.validation-message",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void PostingMaxRecursionDepthExceedTheLimitFails()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-max-recursion-depth",
+            FormCssSelector = "form",
+            AssertErrors = (errors) =>
+            {
+                Assert.Collection(errors,
+                    err => Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Values.Tail.Tail.Tail.Tail.Head'.", errors[0].Text),
+                    err => Assert.Equal("The maximum recursion depth of '5' was exceeded for 'Values.Tail.Tail.Tail.Tail.Tail'.", errors[1].Text));
+            },
+            ErrorSelector = "ul.validation-errors > li.validation-message",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void PostingFormWithErrorsDoesNotExceedMaximumErrors()
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-max-collection-limit",
+            FormCssSelector = "form",
+            UpdateFormAction = () =>
+            {
+                var elements = Browser.FindElements(By.CssSelector("input[type='text']"));
+                for (var i = 0; i < elements.Count; i++)
+                {
+                    var element = elements[i];
+                    element.Clear();
+                    element.SendKeys("a");
+                }
+            },
+            AssertErrors = (errors) =>
+            {
+                Assert.Equal(10, errors.Count);
+            },
+            ErrorSelector = "ul.validation-errors > li.validation-message",
+        };
+        DispatchToFormCore(dispatchToForm);
+    }
+
+    [Fact]
+    public void CanBindToFormWithFiles()
+    {
+        var profilePicture = TempFile.Create(_tempDirectory, "txt", "This is a profile picture.");
+        var headerPhoto = TempFile.Create(_tempDirectory, "txt", "This is a header picture.");
+        var file1 = TempFile.Create(_tempDirectory, "txt", "This is file 1.");
+        var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
+        var file3 = TempFile.Create(_tempDirectory, "txt", "This is file 3.");
+        var file4 = TempFile.Create(_tempDirectory, "txt", "This is file 4.");
+        var file5 = TempFile.Create(_tempDirectory, "txt", "This is file 5.");
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/with-files",
+            FormCssSelector = "form",
+            FormIsEnhanced = false,
+            UpdateFormAction = () =>
+            {
+                Browser.Exists(By.CssSelector("input[name='Model.ProfilePicture']")).SendKeys(profilePicture.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Documents']")).SendKeys(file1.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Documents']")).SendKeys(file2.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Images']")).SendKeys(file3.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Images']")).SendKeys(file4.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.Images']")).SendKeys(file5.Path);
+                Browser.Exists(By.CssSelector("input[name='Model.HeaderPhoto']")).SendKeys(headerPhoto.Path);
+            }
+        };
+        DispatchToFormCore(dispatchToForm);
+
+        Assert.Equal($"Profile Picture: {profilePicture.Name}", Browser.Exists(By.Id("profile-picture")).Text);
+        Assert.Equal("Documents: 2", Browser.Exists(By.Id("documents")).Text);
+        Assert.Equal("Images: 3", Browser.Exists(By.Id("images")).Text);
+        Assert.Equal("Header Photo: Model.HeaderPhoto", Browser.Exists(By.Id("header-photo")).Text);
+        Assert.Equal("Total: 7", Browser.Exists(By.Id("form-collection")).Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanUseFormWithMethodGet(bool suppressEnhancedNavigation)
+    {
+        SuppressEnhancedNavigation(suppressEnhancedNavigation);
+        GoTo("forms/method-get");
+        Browser.Equal("Form with method=get", () => Browser.FindElement(By.TagName("h2")).Text);
+
+        // Validate initial state
+        var stringInput = Browser.FindElement(By.Id("mystring"));
+        var boolInput = Browser.FindElement(By.Id("mybool"));
+        Browser.Equal("Initial value", () => stringInput.GetDomProperty("value"));
+        Browser.Equal("False", () => boolInput.GetDomProperty("checked"));
+
+        // Edit and submit the form; check it worked
+        stringInput.Clear();
+        stringInput.SendKeys("Edited value");
+        boolInput.Click();
+        Browser.FindElement(By.Id("submit-get-form")).Click();
+        AssertUiState("Edited value", true);
+        Browser.Contains($"MyString=Edited+value", () => Browser.Url);
+        Browser.Contains($"MyBool=True", () => Browser.Url);
+
+        // Check 'back' correctly gets us to the previous state
+        Browser.Navigate().Back();
+        AssertUiState("Initial value", false);
+        Browser.False(() => Browser.Url.Contains("MyString"));
+        Browser.False(() => Browser.Url.Contains("MyBool"));
+
+        // Check 'forward' correctly recreates the edited state
+        Browser.Navigate().Forward();
+        AssertUiState("Edited value", true);
+        Browser.Contains($"MyString=Edited+value", () => Browser.Url);
+        Browser.Contains($"MyBool=True", () => Browser.Url);
+
+        void AssertUiState(string expectedStringValue, bool expectedBoolValue)
+        {
+            Browser.Equal(expectedStringValue, () => Browser.FindElement(By.Id("mystring-value")).Text);
+            Browser.Equal(expectedBoolValue.ToString(), () => Browser.FindElement(By.Id("mybool-value")).Text);
+
+            // If we're not suppressing, we'll keep referencing the same elements to show they were preserved
+            if (suppressEnhancedNavigation)
+            {
+                stringInput = Browser.FindElement(By.Id("mystring"));
+                boolInput = Browser.FindElement(By.Id("mybool"));
+            }
+
+            Browser.Equal(expectedStringValue, () => stringInput.GetDomProperty("value"));
+            Browser.Equal(expectedBoolValue.ToString(), () => boolInput.GetDomProperty("checked"));
+        }
+    }
+
     private void DispatchToFormCore(DispatchToForm dispatch)
     {
-        if (dispatch.SuppressEnhancedNavigation)
-        {
-            GoTo("");
-            Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
-        }
-
+        SuppressEnhancedNavigation(dispatch.SuppressEnhancedNavigation);
         GoTo(dispatch.Url);
+
+        if (!dispatch.DispatchEvent && dispatch.ShouldCauseInternalServerError)
+        {
+            // Chrome's built-in error UI for a 500 response when there's no response content
+            Browser.Exists(By.Id("main-frame-error"));
+            return;
+        }
 
         Browser.Exists(By.Id(dispatch.Ready));
         var form = Browser.Exists(By.CssSelector(dispatch.FormCssSelector));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(dispatch.ExpectedTarget, formTarget);
-        Assert.Equal(dispatch.ExpectedActionValue, actionValue);
+
+        if (dispatch.ExpectedHandlerValue != null)
+        {
+            var handlerInput = form.FindElement(By.CssSelector("input[type=hidden][name=_handler]"));
+            Assert.Equal(dispatch.ExpectedHandlerValue, handlerInput.GetAttribute("value"));
+        }
 
         if (!dispatch.DispatchEvent)
         {
@@ -1018,16 +1367,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
 
         if (dispatch.ShouldCauseInternalServerError)
         {
-            if (dispatch.SuppressEnhancedNavigation)
-            {
-                // Chrome's built-in error UI for a 500 response when there's no response content
-                Browser.Exists(By.Id("main-frame-error"));
-            }
-            else
-            {
-                // The UI generated by enhanced nav when there's no response content
-                Browser.Contains("Error: 500", () => Browser.Exists(By.TagName("html")).Text);
-            }
+            AssertHasInternalServerError(dispatch.SuppressEnhancedNavigation);
         }
         else if (dispatch.ShouldCauseBadRequest)
         {
@@ -1044,7 +1384,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
         else if (dispatch.ShouldCauseBindingErrors)
         {
-            var errors = Browser.FindElements(By.CssSelector("#errors > li"));
+            var errors = Browser.FindElements(By.CssSelector(dispatch.ErrorSelector));
             dispatch.AssertErrors(errors);
         }
         else
@@ -1058,14 +1398,22 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
                 }
             }
 
-            if (!dispatch.SuppressEnhancedNavigation)
+            if (!dispatch.FormIsEnhanced)
+            {
+                // Verify the same form element is *not* still in the page
+                Assert.Throws<StaleElementReferenceException>(() => form.GetAttribute("method"));
+            }
+            else if (!dispatch.SuppressEnhancedNavigation)
             {
                 // Verify the same form element is still in the page
                 // We wouldn't be allowed to read the attribute if the element is stale
-                Assert.Equal(dispatch.ExpectedTarget, form.GetAttribute("action"));
+                Assert.Equal("post", form.GetAttribute("method"));
             }
         }
     }
+
+    private void SuppressEnhancedNavigation(bool shouldSuppress)
+        => EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress);
 
     private record struct DispatchToForm()
     {
@@ -1079,10 +1427,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public string SubmitPassId = "pass";
         public string Ready = "ready";
         public string FormCssSelector;
-        public string ExpectedActionValue;
+        public string ExpectedHandlerValue;
         public string InputFieldValue;
-
-        public string ExpectedTarget => $"{Base}/{ExpectedActionValue ?? Url}";
 
         public bool DispatchEvent { get; internal set; } = true;
 
@@ -1095,6 +1441,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public bool SuppressEnhancedNavigation { get; internal set; }
         public Action UpdateFormAction { get; internal set; }
         public Action<ReadOnlyCollection<IWebElement>> AssertErrors { get; internal set; }
+        public string ErrorSelector { get; internal set; } = "#errors > li";
+        public bool FormIsEnhanced { get; internal set; } = true; // Default to true because that's the case for almost all test cases
     }
 
     private string GetExpectedTarget(FormWithParentBindingContextTest test, string expectedActionValue, string url)
@@ -1103,5 +1451,27 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     private void GoTo(string relativePath)
     {
         Navigate($"{ServerPathBase}/{relativePath}");
+    }
+
+    private struct TempFile
+    {
+        public string Name { get; }
+        public string Path { get; }
+        public byte[] Contents { get; }
+        public string Text => Encoding.ASCII.GetString(Contents);
+        private TempFile(string tempDirectory, string extension, byte[] contents)
+        {
+            Name = $"{Guid.NewGuid():N}.{extension}";
+            Path = System.IO.Path.Combine(tempDirectory, Name);
+            Contents = contents;
+        }
+        public static TempFile Create(string tempDirectory, string extension, byte[] contents)
+        {
+            var file = new TempFile(tempDirectory, extension, contents);
+            File.WriteAllBytes(file.Path, contents);
+            return file;
+        }
+        public static TempFile Create(string tempDirectory, string extension, string text)
+            => Create(tempDirectory, extension, Encoding.ASCII.GetBytes(text));
     }
 }

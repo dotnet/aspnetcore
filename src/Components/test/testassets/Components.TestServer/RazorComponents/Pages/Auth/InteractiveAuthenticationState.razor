@@ -1,5 +1,5 @@
 ﻿@page "/auth/interactive-authentication-state"
-@attribute [RenderModeServer]
+@attribute [RenderModeInteractiveServer]
 @inject NavigationManager Nav
 @using BasicTestApp.AuthTest
 
@@ -13,8 +13,8 @@
 
 <hr />
 
-<a href="@Nav.GetUriWithQueryParameter("username", "YourUsername")">Log in</a> |
-<a href="@Nav.GetUriWithQueryParameter("username", "")">Log out</a>
+<a href="@Nav.GetUriWithQueryParameter("username", "YourUsername")" onclick="location.reload()">Log in</a> |
+<a href="@Nav.GetUriWithQueryParameter("username", "")" onclick="location.reload()">Log out</a>
 
 @code {
     bool _interactive = false;

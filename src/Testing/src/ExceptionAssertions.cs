@@ -238,14 +238,12 @@ public static class ExceptionAssert
 
     private static Exception UnwrapException(Exception exception)
     {
-        var aggEx = exception as AggregateException;
-        return aggEx != null ? aggEx.GetBaseException() : exception;
+        return exception is AggregateException aggEx ? aggEx.GetBaseException() : exception;
     }
 
     private static TException VerifyException<TException>(Exception exception)
     {
-        var tie = exception as TargetInvocationException;
-        if (tie != null)
+        if (exception is TargetInvocationException tie)
         {
             exception = tie.InnerException;
         }

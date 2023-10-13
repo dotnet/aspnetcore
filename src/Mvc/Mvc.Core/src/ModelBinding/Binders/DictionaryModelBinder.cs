@@ -163,7 +163,17 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         {
             // Use InvariantCulture to convert the key since ExpressionHelper.GetExpressionText() would use
             // that culture when rendering a form.
-            var convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+            TKey? convertedKey;
+            try
+            {
+                convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+            }
+            catch (Exception ex)
+            {
+                bindingContext.Result = ModelBindingResult.Failed();
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex.Message);
+                return;
+            }
 
             using (bindingContext.EnterNestedScope(
                 modelMetadata: valueMetadata,
@@ -220,7 +230,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue?>)))
         {
             // Collection is a List<KeyValuePair<TKey, TValue>>, never already a Dictionary<TKey, TValue>.
-            return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return collection.ToDictionary();
         }
 
         return base.ConvertToCollectionType(targetType, collection);

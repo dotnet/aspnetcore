@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// Represents a handler in a <see cref="PageApplicationModel"/>.
 /// </summary>
-[DebuggerDisplay("PageHandlerModel: Name={" + nameof(PageHandlerModel.Name) + "}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {" + nameof(PageHandlerModel.Name) + "}")]
 public class PageHandlerModel : ICommonModel
 {
     /// <summary>

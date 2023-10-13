@@ -16,4 +16,5 @@ internal sealed class EmitterContext
     public bool HasEndpointMetadataProvider { get; set; }
     public bool HasEndpointParameterMetadataProvider { get; set; }
     public bool HasResponseMetadata { get; set; }
+    public string? HttpMethod { get; set; }
 }

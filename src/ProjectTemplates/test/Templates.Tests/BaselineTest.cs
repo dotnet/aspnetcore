@@ -89,9 +89,6 @@ public class BaselineTest : LoggedTest
             if (relativePath.EndsWith(".csproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".props", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
-                relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                 relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
@@ -103,7 +100,7 @@ public class BaselineTest : LoggedTest
             }
             Assert.Contains(relativePath, expectedFiles);
 
-            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal) && !relativePath.EndsWith("Extensions.cs", StringComparison.Ordinal))
             {
                 var namespaceDeclarationPrefix = "namespace ";
                 var namespaceDeclaration = File.ReadLines(file)

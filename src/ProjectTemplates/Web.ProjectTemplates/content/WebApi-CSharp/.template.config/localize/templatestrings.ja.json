@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "RESTful HTTP サービスのサンプル コントローラーで ASP.NET Core アプリケーションを作成するためのプロジェクト テンプレートです。このテンプレートは ASP.NET Core MVC のビューとコントローラーでも使用できます。",
+  "description": "ASP.NET Core コントローラーまたは最小限の API を使用して RESTful Web API を作成するプロジェクト テンプレート。OpenAPI と認証もオプションでサポートされます。",
   "symbols/auth/choices/None/description": "認証なし",
   "symbols/auth/choices/IndividualB2C/description": "Azure AD B2C を使用した個別の認証",
   "symbols/auth/choices/SingleOrg/description": "単一テナントの組織認証",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseLocalDB/description": "SQLite の代わりに LocalDB を使用するかどうか。このオプションは、--auth Individual または --auth IndividualB2C が指定されている場合にのみ適用されます。",
   "symbols/UseMinimalAPIs/description": "コントローラーの代わりに最小限の API を使用するかどうか。",
+  "symbols/UseControllers/description": "最小限の API ではなくコントローラーを使用するかどうかを指定します。このオプションは --minimal の指定値よりも優先されます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
   "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",

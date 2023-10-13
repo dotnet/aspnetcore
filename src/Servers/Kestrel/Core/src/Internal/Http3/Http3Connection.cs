@@ -595,7 +595,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         _streamLifetimeHandler.OnStreamCreated(stream);
         KestrelEventSource.Log.RequestQueuedStart(stream, AspNetCore.Http.HttpProtocol.Http3);
-        _context.ServiceContext.Metrics.RequestQueuedStart(MetricsContext, AspNetCore.Http.HttpProtocol.Http3);
+        _context.ServiceContext.Metrics.RequestQueuedStart(MetricsContext, KestrelMetrics.Http3);
 
         ThreadPool.UnsafeQueueUserWorkItem(stream, preferLocal: false);
     }

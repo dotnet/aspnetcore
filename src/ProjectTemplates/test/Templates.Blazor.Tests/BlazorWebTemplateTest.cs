@@ -69,7 +69,7 @@ public class BlazorWebTemplateTest : LoggedTest
             }
         };
 
-        if (args.Contains(ArgConstants.UseServer))
+        if (!args.Contains(ArgConstants.NoInteractivity))
         {
             pages.Add(new Page
             {
@@ -102,10 +102,10 @@ public class BlazorWebTemplateTest : LoggedTest
         new[] { ArgConstants.UseProgramMain },
         new[] { ArgConstants.NoHttps },
         new[] { ArgConstants.UseProgramMain, ArgConstants.NoHttps },
-        new[] { ArgConstants.UseServer },
-        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain },
-        new[] { ArgConstants.UseServer, ArgConstants.NoHttps },
-        new[] { ArgConstants.UseServer, ArgConstants.UseProgramMain, ArgConstants.NoHttps }
+        new[] { ArgConstants.NoInteractivity },
+        new[] { ArgConstants.NoInteractivity, ArgConstants.UseProgramMain },
+        new[] { ArgConstants.NoInteractivity, ArgConstants.NoHttps },
+        new[] { ArgConstants.NoInteractivity, ArgConstants.UseProgramMain, ArgConstants.NoHttps }
     };
 
     private string ReadFile(string basePath, string path)

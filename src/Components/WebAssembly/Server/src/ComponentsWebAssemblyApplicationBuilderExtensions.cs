@@ -29,7 +29,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
     /// Configures the application to serve Blazor WebAssembly framework files from the path <paramref name="pathPrefix"/>. This path must correspond to a referenced Blazor WebAssembly application project.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
-    /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
+    /// <param name="pathPrefix">The <see cref="Microsoft.AspNetCore.Http.PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
     /// <returns>The <see cref="IApplicationBuilder"/></returns>
     public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
     {

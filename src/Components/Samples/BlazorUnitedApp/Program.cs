@@ -25,8 +25,6 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-app.UseRouting();
-
 app.MapRazorComponents<App>();
 
 app.Run();

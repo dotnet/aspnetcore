@@ -22,7 +22,8 @@ public class JsonOptionsTest
             var options = new JsonOptions().JsonSerializerOptions;
 
             // Assert
-            Assert.Null(options.TypeInfoResolver);
+            Assert.NotNull(options.TypeInfoResolver);
+            Assert.IsAssignableFrom<IJsonTypeInfoResolver>(options.TypeInfoResolver);
         }, options);
     }
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ internal sealed partial class EndpointMiddleware
 {
     internal const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareWithEndpointInvoked";
     internal const string CorsMiddlewareInvokedKey = "__CorsMiddlewareWithEndpointInvoked";
+    internal const string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
 
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
@@ -46,6 +48,12 @@ internal sealed partial class EndpointMiddleware
                     !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
                 {
                     ThrowMissingCorsMiddlewareException(endpoint);
+                }
+
+                if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
+                    !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                {
+                    ThrowMissingAntiforgeryMiddlewareException(endpoint);
                 }
             }
 
@@ -107,6 +115,15 @@ internal sealed partial class EndpointMiddleware
             "but a middleware was not found that supports CORS." +
             Environment.NewLine +
             "Configure your application startup by adding app.UseCors() in the application startup code. If there are calls to app.UseRouting() and app.UseEndpoints(...), the call to app.UseCors() must go between them.");
+    }
+
+    private static void ThrowMissingAntiforgeryMiddlewareException(Endpoint endpoint)
+    {
+        throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains anti-forgery metadata, " +
+            "but a middleware was not found that supports anti-forgery." +
+            Environment.NewLine +
+            "Configure your application startup by adding app.UseAntiforgery() in the application startup code. If there are calls to app.UseRouting() and app.UseEndpoints(...), the call to app.UseAntiforgery() must go between them. " +
+            "Calls to app.UseAntiforgery() must be placed after calls to app.UseAuthentication() and app.UseAuthorization().");
     }
 
     private static partial class Log

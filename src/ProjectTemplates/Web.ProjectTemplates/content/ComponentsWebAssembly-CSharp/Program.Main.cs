@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using ComponentsWebAssembly_CSharp;
+using ComponentsWebAssembly_CSharp.Components;
 
 namespace ComponentsWebAssembly_CSharp;
 

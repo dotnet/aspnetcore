@@ -59,10 +59,12 @@ public class SqlServerCache : IDistributedCache
         }
         if (cacheOptions.DefaultSlidingExpiration <= TimeSpan.Zero)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(
                 nameof(cacheOptions.DefaultSlidingExpiration),
                 cacheOptions.DefaultSlidingExpiration,
                 "The sliding expiration value must be positive.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         _systemClock = cacheOptions.SystemClock ?? new SystemClock();

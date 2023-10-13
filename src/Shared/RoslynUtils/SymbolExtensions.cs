@@ -30,7 +30,7 @@ internal static class SymbolExtensions
         }
 
         // If it is nullable, unwrap it.
-        if (unwrapNullable && unwrappedTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+        if (unwrapNullable && unwrappedTypeSymbol?.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
         {
             unwrappedTypeSymbol = unwrappedTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
         }
@@ -63,14 +63,21 @@ internal static class SymbolExtensions
 
     public static bool HasAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType)
     {
+        return attributes.TryGetAttribute(attributeType, out _);
+    }
+
+    public static bool TryGetAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
         foreach (var attributeData in attributes)
         {
             if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
             {
+                matchedAttribute = attributeData;
                 return true;
             }
         }
 
+        matchedAttribute = null;
         return false;
     }
 

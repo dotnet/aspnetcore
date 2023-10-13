@@ -16,8 +16,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -540,8 +540,8 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
     {
         // Arrange
         var meterFactory = new TestMeterFactory();
-        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
-        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "diagnostics-handler-exception");
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
+        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
@@ -579,25 +579,25 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal(500, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
-                Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+                Assert.Equal(500, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
             });
         Assert.Collection(requestExceptionCollector.GetMeasurementSnapshot(),
-            m => AssertRequestException(m, "System.Exception", "Unhandled"));
+            m => AssertRequestException(m, "System.Exception", "unhandled"));
     }
 
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags["exception-name"]);
-        Assert.Equal(result, measurement.Tags["result"].ToString());
+        Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+        Assert.Equal(result, measurement.Tags["aspnetcore.diagnostics.exception.result"].ToString());
         if (handler == null)
         {
-            Assert.False(measurement.Tags.ContainsKey("handler"));
+            Assert.False(measurement.Tags.ContainsKey("aspnetcore.diagnostics.handler.type"));
         }
         else
         {
-            Assert.Equal(handler, (string)measurement.Tags["handler"]);
+            Assert.Equal(handler, (string)measurement.Tags["aspnetcore.diagnostics.handler.type"]);
         }
     }
 

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Web;
 using BasicTestApp.AuthTest;
+using BasicTestApp.PropertyInjection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -40,6 +41,9 @@ public class Program
 
         builder.Services.AddScoped<PreserveStateService>();
         builder.Services.AddTransient<FormsTest.ValidationComponentDI.SaladChef>();
+
+        builder.Services.AddKeyedSingleton("keyed-service-1", TestKeyedService.Create("value-1"));
+        builder.Services.AddKeyedSingleton(TestServiceKey.ServiceB, TestKeyedService.Create("value-2"));
 
         builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 

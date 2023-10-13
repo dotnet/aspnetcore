@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Servicio gRPC de ASP.NET Core",
-  "description": "Plantilla de proyecto para crear un servicio gRPC de ASP.NET Core.",
+  "description": "Una plantilla de proyecto para crear un servicio gRPC utilizando ASP.NET Core, con soporte opcional para publicar como native AOT.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/ExcludeLaunchSettings/description": "Indica si se va a excluir launchSettings.json de la plantilla generada.",

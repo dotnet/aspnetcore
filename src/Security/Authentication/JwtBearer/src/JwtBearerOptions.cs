@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,13 +16,22 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 public class JwtBearerOptions : AuthenticationSchemeOptions
 {
     private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+    private readonly JsonWebTokenHandler _defaultTokenHandler = new JsonWebTokenHandler
+    {
+        MapInboundClaims = JwtSecurityTokenHandler.DefaultMapInboundClaims
+    };
+
+    private bool _mapInboundClaims = JwtSecurityTokenHandler.DefaultMapInboundClaims;
 
     /// <summary>
     /// Initializes a new instance of <see cref="JwtBearerOptions"/>.
     /// </summary>
     public JwtBearerOptions()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
+#pragma warning restore CS0618 // Type or member is obsolete
+        TokenHandlers = new List<TokenHandler> { _defaultTokenHandler };
     }
 
     /// <summary>
@@ -103,7 +113,13 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// <summary>
     /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
     /// </summary>
+    [Obsolete("SecurityTokenValidators is no longer used by default. Use TokenHandlers instead. To continue using SecurityTokenValidators, set UseSecurityTokenValidators to true. See https://aka.ms/aspnetcore8/security-token-changes")]
     public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
+
+    /// <summary>
+    /// Gets the ordered list of <see cref="TokenHandler"/> used to validate access tokens.
+    /// </summary>
+    public IList<TokenHandler> TokenHandlers { get; private set; }
 
     /// <summary>
     /// Gets or sets the parameters used to validate identity tokens.
@@ -126,15 +142,20 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     public bool IncludeErrorDetails { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, which is used when determining
-    /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>.
+    /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, or <see cref="JsonWebTokenHandler"/> in TokenHandlers, which is used when determining
+    /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/> or a <see cref="JsonWebToken"/>.
     /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
     /// <para>The default value is true.</para>
     /// </summary>
     public bool MapInboundClaims
     {
-        get => _defaultHandler.MapInboundClaims;
-        set => _defaultHandler.MapInboundClaims = value;
+        get => _mapInboundClaims;
+        set
+        {
+            _mapInboundClaims = value;
+            _defaultHandler.MapInboundClaims = value;
+            _defaultTokenHandler.MapInboundClaims = value;
+        }
     }
 
     /// <summary>
@@ -152,4 +173,17 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.DefaultRefreshInterval" />.
     /// </value>
     public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
+
+    /// <summary>
+    /// Gets or sets whether <see cref="TokenHandlers"/> or <see cref="SecurityTokenValidators"/> will be used to validate the inbound token.
+    /// </summary>
+    /// <remarks>
+    /// The advantages of using TokenHandlers are:
+    /// <para>There is an Async model.</para>
+    /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
+    /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
+    /// SecurityTokenValidators can be used when <see cref="TokenValidatedContext.SecurityToken"/> needs a <see cref="JwtSecurityToken"/>.
+    /// When using TokenHandlers, <see cref="TokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/>. 
+    /// </remarks>
+    public bool UseSecurityTokenValidators { get; set; }
 }

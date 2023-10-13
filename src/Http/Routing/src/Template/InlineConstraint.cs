@@ -8,7 +8,11 @@ namespace Microsoft.AspNetCore.Routing.Template;
 /// <summary>
 /// The parsed representation of an inline constraint in a route parameter.
 /// </summary>
+#if !COMPONENTS
 public class InlineConstraint
+#else
+internal class InlineConstraint
+#endif
 {
     /// <summary>
     /// Creates a new instance of <see cref="InlineConstraint"/>.

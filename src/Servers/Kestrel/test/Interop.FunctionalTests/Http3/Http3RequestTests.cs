@@ -3,10 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Net.Quic;
 using System.Net.Security;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
@@ -20,11 +18,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
@@ -82,7 +80,7 @@ public class Http3RequestTests : LoggedTest
         {
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
-            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
             await host.StartAsync();
             var client = HttpHelpers.CreateClient();
@@ -105,9 +103,13 @@ public class Http3RequestTests : LoggedTest
                 m =>
                 {
                     Assert.True(m.Value > 0);
-                    Assert.Equal("Tls13", m.Tags["tls-protocol"]);
-                    Assert.Equal("HTTP/3", m.Tags["http-protocol"]);
-                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags["endpoint"]);
+                    Assert.Equal("ipv4", (string)m.Tags["network.type"]);
+                    Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
+                    Assert.Equal("3", (string)m.Tags["network.protocol.version"]);
+                    Assert.Equal("udp", (string)m.Tags["network.transport"]);
+                    Assert.Equal("127.0.0.1", (string)m.Tags["server.address"]);
+                    Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
+                    Assert.Equal("1.3", (string)m.Tags["tls.protocol.version"]);
                 });
 
             await host.StopAsync();
@@ -391,6 +393,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50833")]
     public async Task POST_ServerCompletesWithoutReadingRequestBody_ClientGetsResponse()
     {
         // Arrange
@@ -426,6 +429,8 @@ public class Http3RequestTests : LoggedTest
             await requestStream.WriteAsync(TestData).DefaultTimeout();
 
             var response = await responseTask.DefaultTimeout();
+
+            requestContent.CompleteStream();
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -695,6 +700,7 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50833")]
     public async Task POST_Expect100Continue_Get100Continue()
     {
         // Arrange
@@ -722,7 +728,7 @@ public class Http3RequestTests : LoggedTest
 
             // Act
             using var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromSeconds(1));
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
             var responseTask = client.SendAsync(request, cts.Token);
 
             var response = await responseTask.DefaultTimeout();
@@ -1055,6 +1061,7 @@ public class Http3RequestTests : LoggedTest
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50833")]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
     public async Task POST_Bidirectional_LargeData_Cancellation_Error(HttpProtocols protocol)

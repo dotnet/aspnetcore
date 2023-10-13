@@ -204,7 +204,14 @@ internal sealed class HttpsConnectionMiddleware
 
         if (context.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
         {
-            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls-protocol", sslStream.SslProtocol.ToString()));
+            if (KestrelMetrics.TryGetHandshakeProtocol(sslStream.SslProtocol, out var protocolName, out var protocolVersion))
+            {
+                if (protocolName != "tls")
+                {
+                    metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.name", protocolName));
+                }
+                metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", protocolVersion));
+            }
         }
 
         var originalTransport = context.Transport;

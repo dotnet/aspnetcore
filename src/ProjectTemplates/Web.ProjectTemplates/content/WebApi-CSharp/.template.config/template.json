@@ -3,14 +3,16 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "WebAPI"
+    "Web API",
+    "API",
+    "Service"
   ],
   "name": "ASP.NET Core Web API",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
+  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
   "groupIdentity": "Microsoft.Web.WebApi",
-  "precedence": "9800",
-  "identity": "Microsoft.Web.WebApi.CSharp.8.0",
+  "precedence": "9900",
+  "identity": "Microsoft.Web.WebApi.CSharp.9.0",
   "shortName": "webapi",
   "tags": {
     "language": "C#",
@@ -19,7 +21,6 @@
   "sourceName": "Company.WebApplication1",
   "preferNameDirectory": true,
   "guids": [
-    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
     "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
   ],
   "sources": [
@@ -55,19 +56,19 @@
           }
         },
         {
-          "condition": "(UseMinimalAPIs)",
+          "condition": "(UsingMinimalAPIs)",
           "exclude": [
             "Controllers/WeatherForecastController.cs"
           ]
         },
         {
-          "condition": "(UseMinimalAPIs && !UseProgramMain)",
+          "condition": "(UsingMinimalAPIs && !UseProgramMain)",
           "exclude": [
             "WeatherForecast.cs"
           ]
         },
         {
-          "condition": "(!UseProgramMain && UseMinimalAPIs && (NoAuth || WindowsAuth))",
+          "condition": "(!UseProgramMain && UsingMinimalAPIs && (NoAuth || WindowsAuth))",
           "exclude": [
             "Program.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
@@ -77,7 +78,7 @@
           }
         },
         {
-          "condition": "(!UseProgramMain && UseMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
+          "condition": "(!UseProgramMain && UsingMinimalAPIs && (IndividualAuth || OrganizationalAuth))",
           "exclude": [
             "Program.cs",
             "Program.MinimalAPIs.WindowsOrNoAuth.cs"
@@ -87,7 +88,7 @@
           }
         },
         {
-          "condition": "(UseControllers)",
+          "condition": "(UsingControllers)",
           "exclude": [
             "Program.MinimalAPIs.WindowsOrNoAuth.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
@@ -318,24 +319,18 @@
       "defaultValue": "false",
       "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
     },
-    "UseMinimalAPIs": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Whether to use minimal APIs instead of controllers."
-    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net9.0",
+          "description": "Target net9.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -392,16 +387,32 @@
       "type": "computed",
       "value": "(!DisableOpenAPI)"
     },
-    "UseControllers": {
-      "type": "computed",
-      "value": "(!UseMinimalAPIs)"
-    },
     "UseProgramMain": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "UseMinimalAPIs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to use minimal APIs instead of controllers."
+    },
+    "UseControllers": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal."
+    },
+    "UsingControllers": {
+      "type": "computed",
+      "value": "(UseControllers || !UseMinimalAPIs)"
+    },
+    "UsingMinimalAPIs": {
+      "type": "computed",
+      "value": "(!UsingControllers)"
     }
   },
   "primaryOutputs": [

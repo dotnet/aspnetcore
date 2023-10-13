@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC Hizmeti",
-  "description": "gRPC ASP.NET Core hizmeti oluşturmaya yönelik proje şablonu.",
+  "description": "Yerel AOT olarak yayımlamak için isteğe bağlı destek ile ASP.NET Core kullanarak gRPC hizmeti oluşturmaya yönelik proje şablonu.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
   "symbols/ExcludeLaunchSettings/description": "launchSettings.json öğesinin oluşturulan şablondan dışlanıp dışlanmayacağı.",

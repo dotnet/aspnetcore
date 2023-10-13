@@ -428,11 +428,11 @@ internal static class ServiceDescriptorHelpers
                 {
                     // A repeating field isn't a message type. The JSON parser will parse using the containing
                     // type to get the repeating collection.
-                    return new BodyDescriptorInfo(responseBodyDescriptor.ContainingType, responseBodyDescriptor, IsDescriptorRepeated: true, propertyInfo);
+                    return new BodyDescriptorInfo(responseBodyDescriptor.ContainingType, responseBodyDescriptor, isDescriptorRepeated: true, propertyInfo);
                 }
                 else
                 {
-                    return new BodyDescriptorInfo(responseBodyDescriptor.MessageType, responseBodyDescriptor, IsDescriptorRepeated: false, propertyInfo);
+                    return new BodyDescriptorInfo(responseBodyDescriptor.MessageType, responseBodyDescriptor, isDescriptorRepeated: false, propertyInfo);
                 }
             }
             else
@@ -444,7 +444,7 @@ internal static class ServiceDescriptorHelpers
                     requestParameter = methodInfo.GetParameters().SingleOrDefault(p => p.Name == "request");
                 }
 
-                return new BodyDescriptorInfo(methodDescriptor.InputType, FieldDescriptor: null, IsDescriptorRepeated: false, ParameterInfo: requestParameter);
+                return new BodyDescriptorInfo(methodDescriptor.InputType, fieldDescriptor: null, isDescriptorRepeated: false, parameterInfo: requestParameter);
             }
         }
 
@@ -562,12 +562,32 @@ internal static class ServiceDescriptorHelpers
         return false;
     }
 
-    public sealed record BodyDescriptorInfo(
-        MessageDescriptor Descriptor,
-        FieldDescriptor? FieldDescriptor,
-        bool IsDescriptorRepeated,
-        PropertyInfo? PropertyInfo = null,
-        ParameterInfo? ParameterInfo = null);
+    public sealed class BodyDescriptorInfo
+    {
+        public MessageDescriptor Descriptor { get; }
+
+        public FieldDescriptor? FieldDescriptor { get; }
+
+        public bool IsDescriptorRepeated { get; }
+
+        public PropertyInfo? PropertyInfo { get; }
+
+        public ParameterInfo? ParameterInfo { get; }
+
+        public BodyDescriptorInfo(
+            MessageDescriptor descriptor,
+            FieldDescriptor? fieldDescriptor,
+            bool isDescriptorRepeated,
+            PropertyInfo? propertyInfo = null,
+            ParameterInfo? parameterInfo = null)
+        {
+            Descriptor = descriptor;
+            FieldDescriptor = fieldDescriptor;
+            IsDescriptorRepeated = isDescriptorRepeated;
+            PropertyInfo = propertyInfo;
+            ParameterInfo = parameterInfo;
+        }
+    }
 
     public static string FormatUnderscoreName(string input, bool pascalCase, bool preservePeriod)
     {
@@ -626,7 +646,21 @@ internal static class ServiceDescriptorHelpers
     }
 }
 
-internal record RouteParameter(
-    List<FieldDescriptor> DescriptorsPath,
-    HttpRouteVariable RouteVariable,
-    string JsonPath);
+internal sealed class RouteParameter
+{
+    public List<FieldDescriptor> DescriptorsPath { get; }
+
+    public HttpRouteVariable RouteVariable { get; }
+
+    public string JsonPath { get; }
+
+    public RouteParameter(
+        List<FieldDescriptor> descriptorsPath,
+        HttpRouteVariable routeVariable,
+        string jsonPath)
+    {
+        DescriptorsPath = descriptorsPath;
+        RouteVariable = routeVariable;
+        JsonPath = jsonPath;
+    }
+}

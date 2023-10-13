@@ -138,7 +138,7 @@ public abstract class StreamBackedTestConnection : IDisposable
     public async Task WaitForConnectionClose()
     {
         var buffer = new byte[128];
-        var bytesTransferred = await _stream.ReadAsync(buffer, 0, 128).TimeoutAfter(Timeout);
+        var bytesTransferred = await _stream.ReadAsync(buffer, 0, 128).ContinueWith(t => t.IsFaulted ? 0 : t.Result).TimeoutAfter(Timeout);
 
         if (bytesTransferred > 0)
         {

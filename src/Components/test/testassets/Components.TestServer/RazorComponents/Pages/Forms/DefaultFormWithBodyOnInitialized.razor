@@ -3,28 +3,25 @@
 
 <h2>Default form with body on initialized</h2>
 
-<EditForm EditContext="_editContext" method="POST">
+<EditForm Enhance EditContext="_editContext" method="POST" FormName="someform">
     <input id="firstName" name="firstName" />
     <input id="send" type="submit" value="Send" />
 </EditForm>
 
 @if (_name != null)
 {
-    <p id="pass">Hello @(_name)!</p>
+    <p id="pass">Hello @_name!</p>
 }
 
 @code{
     protected override void OnInitialized()
     {
-        if (FormData.IsFormDataAvailable)
-        {
-            _name = FormData.Entries.GetValueOrDefault("firstName");
-        }
+        _name = FirstName;
     }
 
     string? _name = null;
 
-    [Inject] FormDataProvider FormData { get; set; }
+    [SupplyParameterFromForm] string? FirstName { get; set; }
 
     EditContext _editContext = new EditContext(new object());
 }

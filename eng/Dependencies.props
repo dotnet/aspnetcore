@@ -17,6 +17,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
     <LatestPackageReference Include="Microsoft.Bcl.HashCode" />
+    <LatestPackageReference Include="Microsoft.Bcl.TimeProvider" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
@@ -40,6 +41,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" />
     <LatestPackageReference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" />
@@ -61,7 +63,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
-    <LatestPackageReference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <LatestPackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
@@ -185,11 +188,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="AngleSharp" />
     <LatestPackageReference Include="BenchmarkDotNet" />
     <LatestPackageReference Include="CommandLineParser" />
-    <LatestPackageReference Include="Duende.IdentityServer" />
-    <LatestPackageReference Include="Duende.IdentityServer.AspNetIdentity" />
-    <LatestPackageReference Include="Duende.IdentityServer.EntityFramework" />
-    <LatestPackageReference Include="Duende.IdentityServer.EntityFramework.Storage" />
-    <LatestPackageReference Include="Duende.IdentityServer.Storage" />
     <LatestPackageReference Include="FSharp.Core" />
     <LatestPackageReference Include="Google.Api.CommonProtos" />
     <LatestPackageReference Include="Google.Protobuf" />

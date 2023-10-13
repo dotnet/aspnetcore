@@ -11,10 +11,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -917,7 +917,7 @@ public class ExceptionHandlerTest
     {
         // Arrange
         var meterFactory = new TestMeterFactory();
-        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http-server-request-duration");
+        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
 
         using var host = new HostBuilder()
             .ConfigureServices(s =>
@@ -961,8 +961,8 @@ public class ExceptionHandlerTest
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal(404, (int)m.Tags.ToArray().Single(t => t.Key == "status-code").Value);
-                Assert.Equal("System.Exception", (string)m.Tags.ToArray().Single(t => t.Key == "exception-name").Value);
+                Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
             });
     }
 }

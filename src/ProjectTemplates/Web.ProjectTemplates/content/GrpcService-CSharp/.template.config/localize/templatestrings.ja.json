@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC サービス",
-  "description": "gRPC ASP.NET Core サービスを作成するためのプロジェクト テンプレート。",
+  "description": "ASP.NET Core を使用して gRPC サービスを作成するプロジェクト テンプレート。native AOT としての公開もオプションでサポートされます。",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
   "symbols/Framework/choices/net8.0/description": "ターゲット net8.0",
   "symbols/ExcludeLaunchSettings/description": "生成されたテンプレートから launchSettings.json を除外するかどうか。",

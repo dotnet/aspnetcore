@@ -29,6 +29,37 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
+        DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(OperationDescriptor[] operations)
+    {
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
+        for (var i = 0; i < operations.Length; i++)
+        {
+            var (operation, componentType, parameters) = operations[i];
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
+                        componentType!,
+                        operation.Marker!.Value.Key!,
+                        parameters);
+                    break;
+                case RootComponentOperationType.Update:
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.SsrComponentId,
+                        componentType!,
+                        operation.Marker?.Key,
+                        parameters);
+                    break;
+                case RootComponentOperationType.Remove:
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                    break;
+            }
+        }
     }
 
     public override Dispatcher Dispatcher => NullDispatcher.Instance;
@@ -38,6 +69,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         var componentId = AddRootComponent(componentType, domElementSelector);
         return RenderRootComponentAsync(componentId, parameters);
     }
+
+    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
@@ -133,7 +166,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
         => renderMode switch
         {
-            WebAssemblyRenderMode or AutoRenderMode => componentActivator.CreateInstance(componentType),
+            InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
             _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
 

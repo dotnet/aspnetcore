@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Interop.FunctionalTests.Http2;
 
@@ -28,23 +28,36 @@ public class Http2RequestTests : LoggedTest
     {
         // Arrange
         var protocolTcs = new TaskCompletionSource<SslProtocols>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var builder = CreateHostBuilder(c =>
-        {
-            protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
-            return Task.CompletedTask;
-        }, protocol: HttpProtocols.Http2, plaintext: false);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
+                return Task.CompletedTask;
+            },
+            configureKestrel: o =>
+            {
+                // Test IPv6 endpoint with metrics.
+                o.Listen(IPAddress.IPv6Loopback, 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(TestResources.GetTestCertificate(), https =>
+                    {
+                        https.SslProtocols = SslProtocols.Tls12;
+                    });
+                });
+            });
 
         using (var host = builder.Build())
         {
             var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
 
-            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel-connection-duration");
+            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
 
             await host.StartAsync();
             var client = HttpHelpers.CreateClient();
 
             // Act
-            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://[::1]:{host.GetPort()}/");
             request1.Version = HttpVersion.Version20;
             request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
@@ -63,9 +76,13 @@ public class Http2RequestTests : LoggedTest
                 m =>
                 {
                     Assert.True(m.Value > 0);
-                    Assert.Equal(protocol.ToString(), m.Tags["tls-protocol"]);
-                    Assert.Equal("HTTP/2", m.Tags["http-protocol"]);
-                    Assert.Equal($"127.0.0.1:{host.GetPort()}", m.Tags["endpoint"]);
+                    Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
+                    Assert.Equal("2", (string)m.Tags["network.protocol.version"]);
+                    Assert.Equal("tcp", (string)m.Tags["network.transport"]);
+                    Assert.Equal("ipv6", (string)m.Tags["network.type"]);
+                    Assert.Equal("::1", (string)m.Tags["server.address"]);
+                    Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
+                    Assert.Equal("1.2", (string)m.Tags["tls.protocol.version"]);
                 });
 
             await host.StopAsync();

@@ -5,9 +5,9 @@
 
 <h2>Default form</h2>
 
-<ActionForm OnSubmit="() => _submitted = true" >
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
     <input id="send" type="submit" value="Send" />
-</ActionForm>
+</form>
 
 @if (_submitted)
 {

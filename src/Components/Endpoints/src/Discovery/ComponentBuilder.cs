@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 /// <summary>
 /// Represents a discovered component.
 /// </summary>
-public class ComponentBuilder : IEquatable<ComponentBuilder?>
+internal class ComponentBuilder : IEquatable<ComponentBuilder?>
 {
     /// <summary>
     /// Gets or sets the assembly name where this component comes from.

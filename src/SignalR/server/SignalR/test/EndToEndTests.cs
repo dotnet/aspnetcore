@@ -395,7 +395,6 @@ public class EndToEndTests : FunctionalTestBase
     [ConditionalFact]
     [WebSocketsSupportedCondition]
     [LogLevel(LogLevel.Trace)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48961")]
     public async Task UnauthorizedDirectWebSocketsConnectionDoesNotConnect()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -686,7 +685,7 @@ public class EndToEndTests : FunctionalTestBase
     {
         private ITransport _transport;
 
-        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useAck)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
         {
             if (_transport == null)
             {

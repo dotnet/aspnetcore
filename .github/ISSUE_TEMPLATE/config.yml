@@ -15,3 +15,6 @@ contact_links:
   - name: Issue with Roslyn compiler
     url:  https://github.com/dotnet/roslyn/issues/new/choose
     about: Please open issues relating to the Roslyn .NET compiler in dotnet/roslyn.
+  - name: Bug report or feature request for Visual Studio for Windows and Mac
+    url: https://learn.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022
+    about: Use Visual Studio's Report a Problem feature for issues and suggestions with Visual Studio tooling

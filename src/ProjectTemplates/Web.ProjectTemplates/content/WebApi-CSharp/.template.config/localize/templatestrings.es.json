@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "Una plantilla de proyecto para crear una aplicación ASP.NET Core con un controlador de ejemplo para un servicio RESTful HTTP. Esta plantilla también puede usarse para controladores y vistas de ASP.NET Core MVC.",
+  "description": "Una plantilla de proyecto para crear una API web RESTful utilizando controladores ASP.NET Core o API mínimas, con soporte opcional para OpenAPI y autenticación.",
   "symbols/auth/choices/None/description": "Sin autenticación",
   "symbols/auth/choices/IndividualB2C/description": "Autenticación individual con Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Autenticación organizacional para un único inquilino",
@@ -24,6 +24,7 @@
   "symbols/NoHttps/description": "Ya sea para desactivar HTTPS. Esta opción solo se aplica si no se utilizan IndividualB2C, SingleOrg o MultiOrg para --auth.",
   "symbols/UseLocalDB/description": "Indica si se va a usar LocalDB en lugar de SQLite. Esta opción solo se aplica si se especifica --auth Individual o --auth IndividualB2C.",
   "symbols/UseMinimalAPIs/description": "Indica si se deben usar API mínimas en lugar de controladores.",
+  "symbols/UseControllers/description": "Si utilizar controladores en lugar de API mínimas. Esta opción sustituye al valor especificado por --minimalista.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
   "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
