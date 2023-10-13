@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 #endif
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 #endif
 #if (UseWebAssembly && SampleContent)
@@ -12,10 +11,8 @@ using BlazorWeb_CSharp.Client.Pages;
 #endif
 using BlazorWeb_CSharp.Components;
 #if (IndividualLocalAuth)
+using BlazorWeb_CSharp.Components.Account;
 using BlazorWeb_CSharp.Data;
-#if (UseServer || UseWebAssembly)
-using BlazorWeb_CSharp.Identity;
-#endif
 #endif
 
 namespace BlazorWeb_CSharp;
@@ -43,7 +40,7 @@ public class Program
 
         #if (IndividualLocalAuth)
         builder.Services.AddCascadingAuthenticationState();
-        builder.Services.AddScoped<UserAccessor>();
+        builder.Services.AddScoped<IdentityUserAccessor>();
         builder.Services.AddScoped<IdentityRedirectManager>();
         #if (UseServer && UseWebAssembly)
         builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
@@ -58,7 +55,11 @@ public class Program
         #if (!UseServer)
         builder.Services.AddAuthorization();
         #endif
-        builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
+        builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
             .AddIdentityCookies();
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -75,16 +76,21 @@ public class Program
             .AddSignInManager()
             .AddDefaultTokenProviders();
 
-        builder.Services.AddSingleton<IEmailSender, NoOpEmailSender>();
+        builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
         #endif
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-#if (UseWebAssembly)
+#if (UseWebAssembly || IndividualLocalAuth)
         if (app.Environment.IsDevelopment())
         {
+#if (UseWebAssembly)
             app.UseWebAssemblyDebugging();
+#endif
+#if (IndividualLocalAuth)
+            app.UseMigrationsEndPoint();
+#endif
         }
         else
 #else

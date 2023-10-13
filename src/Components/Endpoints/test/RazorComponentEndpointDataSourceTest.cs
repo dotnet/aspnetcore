@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Endpoints.Tests;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -242,13 +243,13 @@ public class RazorComponentEndpointDataSourceTest
         return result;
     }
 
-    [RenderModeInteractiveServer]
+    [TestRenderMode<InteractiveServerRenderMode>]
     private class ServerComponent : ComponentBase { }
 
-    [RenderModeInteractiveAuto]
+    [TestRenderMode<InteractiveAutoRenderMode>]
     private class AutoComponent : ComponentBase { }
 
-    [RenderModeInteractiveWebAssembly]
+    [TestRenderMode<InteractiveWebAssemblyRenderMode>]
     private class WebAssemblyComponent : ComponentBase { }
 
     private class ServerEndpointProvider : RenderModeEndpointProvider

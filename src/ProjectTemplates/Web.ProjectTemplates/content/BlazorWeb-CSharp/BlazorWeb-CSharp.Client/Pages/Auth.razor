@@ -4,9 +4,9 @@
 
 @attribute [Authorize]
 @*#if (UseServer && !InteractiveAtRoot)
-@attribute [RenderModeInteractiveAuto]
+@rendermode InteractiveAuto
 ##elseif (!InteractiveAtRoot)
-@attribute [RenderModeInteractiveWebAssembly]
+@rendermode InteractiveWebAssembly
 ##endif*@
 
 <PageTitle>Auth</PageTitle>

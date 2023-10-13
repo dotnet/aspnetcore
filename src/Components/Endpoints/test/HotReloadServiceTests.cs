@@ -195,7 +195,7 @@ public class HotReloadServiceTests
 
     private class StaticComponent : ComponentBase { }
 
-    [RenderModeInteractiveServer]
+    [TestRenderMode<InteractiveServerRenderMode>]
     private class ServerComponent : ComponentBase { }
 
     private class MockEndpointProvider : RenderModeEndpointProvider
