@@ -30,3 +30,10 @@ virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created() -> Microsoft.AspNetCor
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
 Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther() -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther(string? actionName) -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther(string? actionName, object? routeValues) -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther(string? actionName, string? controllerName) -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther(string? actionName, string? controllerName, object? routeValues) -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther(string? actionName, string? controllerName, object? routeValues, string? fragment) -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectToActionOther(string? actionName, string? controllerName, string? fragment) -> Microsoft.AspNetCore.Mvc.RedirectToActionResult!

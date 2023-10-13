@@ -571,6 +571,123 @@ public abstract class ControllerBase
     }
 
     /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to an action with the same name as current one.
+    /// The 'controller' and 'action' names are retrieved from the ambient values of the current request.
+    /// </summary>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    /// <example>
+    /// A POST request to an action named "Product" updates a product and redirects to an action, also named
+    /// "Product", showing details of the updated product.
+    /// <code>
+    /// [HttpGet]
+    /// public IActionResult Product(int id)
+    /// {
+    ///     var product = RetrieveProduct(id);
+    ///     return View(product);
+    /// }
+    ///
+    /// [HttpPost]
+    /// public IActionResult Product(int id, Product product)
+    /// {
+    ///     UpdateProduct(product);
+    ///     return RedirectToActionOther();
+    /// }
+    /// </code>
+    /// </example>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther()
+        => RedirectToActionOther(actionName: null);
+
+    /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to the specified action using the <paramref name="actionName"/>.
+    /// </summary>
+    /// <param name="actionName">The name of the action.</param>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther(string? actionName)
+        => RedirectToActionOther(actionName, routeValues: null);
+
+    /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to the specified action using the
+    /// <paramref name="actionName"/> and <paramref name="routeValues"/>.
+    /// </summary>
+    /// <param name="actionName">The name of the action.</param>
+    /// <param name="routeValues">The parameters for a route.</param>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther(string? actionName, object? routeValues)
+        => RedirectToActionOther(actionName, controllerName: null, routeValues: routeValues);
+
+    /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to the specified action using the
+    /// <paramref name="actionName"/> and the <paramref name="controllerName"/>.
+    /// </summary>
+    /// <param name="actionName">The name of the action.</param>
+    /// <param name="controllerName">The name of the controller.</param>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther(string? actionName, string? controllerName)
+        => RedirectToActionOther(actionName, controllerName, routeValues: null);
+
+    /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to the specified action using the specified
+    /// <paramref name="actionName"/>, <paramref name="controllerName"/>, and <paramref name="routeValues"/>.
+    /// </summary>
+    /// <param name="actionName">The name of the action.</param>
+    /// <param name="controllerName">The name of the controller.</param>
+    /// <param name="routeValues">The parameters for a route.</param>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther(
+        string? actionName,
+        string? controllerName,
+        object? routeValues)
+        => RedirectToActionOther(actionName, controllerName, routeValues, fragment: null);
+
+    /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to the specified action using the specified
+    /// <paramref name="actionName"/>, <paramref name="controllerName"/>, and <paramref name="fragment"/>.
+    /// </summary>
+    /// <param name="actionName">The name of the action.</param>
+    /// <param name="controllerName">The name of the controller.</param>
+    /// <param name="fragment">The fragment to add to the URL.</param>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther(
+        string? actionName,
+        string? controllerName,
+        string? fragment)
+        => RedirectToActionOther(actionName, controllerName, routeValues: null, fragment: fragment);
+
+    /// <summary>
+    /// Redirects (<see cref="StatusCodes.Status303SeeOther"/>) to the specified action using the specified <paramref name="actionName"/>,
+    /// <paramref name="controllerName"/>, <paramref name="routeValues"/>, and <paramref name="fragment"/>.
+    /// </summary>
+    /// <param name="actionName">The name of the action.</param>
+    /// <param name="controllerName">The name of the controller.</param>
+    /// <param name="routeValues">The parameters for a route.</param>
+    /// <param name="fragment">The fragment to add to the URL.</param>
+    /// <returns>The created <see cref="RedirectToActionResult"/> for the response.</returns>
+    [NonAction]
+    public virtual RedirectToActionResult RedirectToActionOther(
+        string? actionName,
+        string? controllerName,
+        object? routeValues,
+        string? fragment)
+    {
+        return new RedirectToActionResult(
+            actionName: actionName,
+            controllerName: controllerName,
+            routeValues: routeValues,
+            permanent: false,
+            preserveMethod: false,
+            fragment: fragment)
+        {
+            UrlHelper = Url,
+        };
+    }
+
+    /// <summary>
     /// Redirects (<see cref="StatusCodes.Status307TemporaryRedirect"/>) to the specified action with
     /// <see cref="RedirectToActionResult.Permanent"/> set to false and <see cref="RedirectToActionResult.PreserveMethod"/>
     /// set to true, using the specified <paramref name="actionName"/>, <paramref name="controllerName"/>,
