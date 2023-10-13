@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -34,9 +35,9 @@ public static class ActualApiResponseMetadataFactory
                 localSymbolCache,
                 returnOperation);
 
-            if (responseMetadata is { } value)
+            if (responseMetadata.Length > 0)
             {
-                localActualResponseMetadata.Add(value);
+                localActualResponseMetadata.AddRange(responseMetadata);
             }
             else
             {
@@ -53,16 +54,17 @@ public static class ActualApiResponseMetadataFactory
         return allReturnStatementsReadable;
     }
 
-    internal static ActualApiResponseMetadata? InspectReturnOperation(
+    internal static ActualApiResponseMetadata[] InspectReturnOperation(
         in ApiControllerSymbolCache symbolCache,
-        IReturnOperation returnOperation)
+        IReturnOperation returnOperation,
+        ISwitchExpressionArmOperation? armOperation = null)
     {
-        var returnedValue = returnOperation.ReturnedValue;
+        var returnedValue = armOperation?.Value ?? returnOperation.ReturnedValue;
         var defaultStatusCodeAttributeSymbol = symbolCache.DefaultStatusCodeAttribute;
 
         if (returnedValue is null || returnedValue is IInvalidOperation)
         {
-            return null;
+            return Array.Empty<ActualApiResponseMetadata>();
         }
 
         // Covers conversion in the `IActionResult GetResult => NotFound()` case.
@@ -77,7 +79,10 @@ public static class ActualApiResponseMetadataFactory
         if (statementReturnType is not null && !symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
         {
             // Return expression is not an instance of IActionResult. Must be returning the "model".
-            return new ActualApiResponseMetadata(returnOperation, statementReturnType);
+            return new[]
+            {
+                new ActualApiResponseMetadata(returnOperation, statementReturnType)
+            };
         }
 
         var defaultStatusCodeAttribute = statementReturnType
@@ -94,6 +99,20 @@ public static class ActualApiResponseMetadataFactory
         }
 
         var statusCode = GetDefaultStatusCode(defaultStatusCodeAttribute);
+
+        if (returnedValue is ISwitchExpressionOperation switchExpression)
+        {
+            var metadata = new List<ActualApiResponseMetadata>();
+
+            for (var i = 0; i < switchExpression.Arms.Length; i++)
+            {
+                var arm = switchExpression.Arms[i];
+                var armMetadata = InspectReturnOperation(symbolCache, returnOperation, arm);
+                metadata.AddRange(armMetadata);
+            }
+
+            return metadata.ToArray();
+        }
 
         ITypeSymbol? returnType = null;
         switch (returnedValue)
@@ -128,10 +147,13 @@ public static class ActualApiResponseMetadataFactory
 
         if (statusCode == null)
         {
-            return null;
+            return Array.Empty<ActualApiResponseMetadata>();
         }
 
-        return new ActualApiResponseMetadata(returnOperation, statusCode.Value, returnType);
+        return new[]
+        {
+            new ActualApiResponseMetadata(returnOperation, statusCode.Value, returnType)
+        };
     }
 
     private static (int? statusCode, ITypeSymbol? returnType) InspectInitializers(
