@@ -200,6 +200,7 @@ internal sealed class OutputCacheMiddleware
         {
             // avoid recycling in unknown outcomes, especially re concurrent buffer access thru cancellation
             hasException = true;
+            throw;
         }
         finally
         {
