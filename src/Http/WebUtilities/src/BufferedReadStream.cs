@@ -385,24 +385,28 @@ public class BufferedReadStream : Stream
 
     private void ProcessLineChar(MemoryStream builder, int lengthLimit,  ref bool foundCR, ref bool foundCRLF)
     {
+        var writeCount = 0;
         while (_bufferCount > 0)
         {
             var b = _buffer[_bufferOffset];
-            builder.WriteByte(b);
             _bufferOffset++;
             _bufferCount--;
+            writeCount++;
             if (b == LF && foundCR)
             {
+                builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
                 foundCRLF = true;
                 return;
             }
             foundCR = b == CR;
 
-            if (builder.Length > lengthLimit)
+            if (writeCount > lengthLimit)
             {
                 throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
             }
         }
+
+        builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
     }
 
     private static string DecodeLine(MemoryStream builder, bool foundCRLF)
