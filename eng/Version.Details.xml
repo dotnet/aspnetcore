@@ -9,37 +9,37 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="7.0.13">
+    <Dependency Name="dotnet-ef" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="7.0.13">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-efcore</Uri>
-      <Sha>e3a58ca67dba627be605dc5e9b43b59f7c632d4f</Sha>
+      <Sha>c20ecc79b7df3657e186ac52e7fc050beea36c92</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -177,9 +177,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>d099f075e45d2aa6007a22b71b45a08758559f80</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.12-servicing.23463.5">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="7.0.12-servicing.23477.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="7.0.0-alpha.1.22505.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
@@ -256,7 +256,7 @@
     </Dependency>
     <Dependency Name="System.Threading.RateLimiting" Version="7.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>ecb34f85ec92e1b3c814edf7da83337e199e7f66</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="7.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -264,15 +264,15 @@
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -280,15 +280,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="7.0.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="7.0.12-servicing.23463.5">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="7.0.12-servicing.23477.20">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>3bcb9f24805914a1a73d9b4ef0c82b28ede106b4</Sha>
+      <Sha>4a824ef37caa51072221584c64cbf15455f406ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22423.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
@@ -302,22 +302,22 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>8587d13a2764c025277d628471984bae8e16427c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23408.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.23511.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3b8f3de4606c338f99e8ce85cfb6f960f6a428c8</Sha>
+      <Sha>acb831a5b31a3cc4a744a8944b6bd172e6969234</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="7.0.0-beta.23408.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="7.0.0-beta.23511.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3b8f3de4606c338f99e8ce85cfb6f960f6a428c8</Sha>
+      <Sha>acb831a5b31a3cc4a744a8944b6bd172e6969234</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="7.0.0-beta.23408.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="7.0.0-beta.23511.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3b8f3de4606c338f99e8ce85cfb6f960f6a428c8</Sha>
+      <Sha>acb831a5b31a3cc4a744a8944b6bd172e6969234</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.23408.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.23511.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3b8f3de4606c338f99e8ce85cfb6f960f6a428c8</Sha>
+      <Sha>acb831a5b31a3cc4a744a8944b6bd172e6969234</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
