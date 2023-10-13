@@ -105,7 +105,7 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
 
             foreach (var metadata in actualMetadata)
             {
-                if (metadata.StatusCode != 400)
+                if (!metadata.HasValue || metadata.Value.StatusCode != 400)
                 {
                     return;
                 }

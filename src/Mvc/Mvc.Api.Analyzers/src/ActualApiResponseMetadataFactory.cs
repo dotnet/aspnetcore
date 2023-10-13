@@ -35,13 +35,15 @@ public static class ActualApiResponseMetadataFactory
                 localSymbolCache,
                 returnOperation);
 
-            if (responseMetadata.Length > 0)
+            foreach (var metadata in responseMetadata)
             {
-                localActualResponseMetadata.AddRange(responseMetadata);
-            }
-            else
-            {
-                allReturnStatementsReadable = false;
+                if (!metadata.HasValue)
+                {
+                    allReturnStatementsReadable = false;
+                    continue;
+                }
+
+                localActualResponseMetadata.Add(metadata.Value);
             }
         }
 
@@ -54,7 +56,7 @@ public static class ActualApiResponseMetadataFactory
         return allReturnStatementsReadable;
     }
 
-    internal static ActualApiResponseMetadata[] InspectReturnOperation(
+    internal static ActualApiResponseMetadata?[] InspectReturnOperation(
         in ApiControllerSymbolCache symbolCache,
         IReturnOperation returnOperation,
         ISwitchExpressionArmOperation? armOperation = null)
@@ -64,7 +66,7 @@ public static class ActualApiResponseMetadataFactory
 
         if (returnedValue is null || returnedValue is IInvalidOperation)
         {
-            return Array.Empty<ActualApiResponseMetadata>();
+            return new ActualApiResponseMetadata?[] { null };
         }
 
         // Covers conversion in the `IActionResult GetResult => NotFound()` case.
@@ -79,7 +81,7 @@ public static class ActualApiResponseMetadataFactory
         if (statementReturnType is not null && !symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
         {
             // Return expression is not an instance of IActionResult. Must be returning the "model".
-            return new[]
+            return new ActualApiResponseMetadata?[]
             {
                 new ActualApiResponseMetadata(returnOperation, statementReturnType)
             };
@@ -102,7 +104,7 @@ public static class ActualApiResponseMetadataFactory
 
         if (returnedValue is ISwitchExpressionOperation switchExpression)
         {
-            var metadata = new List<ActualApiResponseMetadata>();
+            var metadata = new List<ActualApiResponseMetadata?>();
 
             for (var i = 0; i < switchExpression.Arms.Length; i++)
             {
@@ -147,10 +149,10 @@ public static class ActualApiResponseMetadataFactory
 
         if (statusCode == null)
         {
-            return Array.Empty<ActualApiResponseMetadata>();
+            return new ActualApiResponseMetadata?[] { null };
         }
 
-        return new[]
+        return new ActualApiResponseMetadata?[]
         {
             new ActualApiResponseMetadata(returnOperation, statusCode.Value, returnType)
         };
