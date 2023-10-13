@@ -425,7 +425,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]
-    public void LocationChangedEventGetsInvokedOnEnhancedNavigation_BothServerOrWebAssembly(string runtimeThatInvokedNavigation)
+    public void LocationChangedEventGetsInvokedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
@@ -462,7 +462,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [Theory]
     [InlineData("server")]
     [InlineData("wasm")]
-    public void NavigationManagedUriGetsUpdatedOnEnhancedNavigation_BothServerOrWebAssembly(string runtimeThatInvokedNavigation)
+    public void NavigationManagedUriGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
