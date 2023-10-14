@@ -82,7 +82,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Specifying text/html is to make the enhanced nav outcomes more similar to non-enhanced nav.
         // For example, the default error middleware will only serve the error page if this content type is requested.
         // The blazor-enhanced-nav parameter can be used to trigger arbitrary server-side behaviors.
-        Assert.Contains("accept: text/html;blazor-enhanced-nav=on", allHeaders);
+        Assert.Contains("accept: text/html; blazor-enhanced-nav=on", allHeaders);
     }
 
     [Fact]
