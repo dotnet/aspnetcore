@@ -1654,6 +1654,16 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public void MinimumMaxTrackedStreams()
+    {
+        _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+        CreateConnection();
+        // Kestrel always tracks at least 100 streams
+        Assert.Equal(100u, _connection.MaxTrackedStreams);
+        _connection.Abort(new ConnectionAbortedException());
+    }
+
+    [Fact]
     public Task Frame_MultipleStreams_RequestsNotFinished_LowMaxStreamsPerConnection_EnhanceYourCalmAfter100()
     {
         // Kestrel always tracks at least 100 streams
@@ -1666,6 +1676,59 @@ public class Http2ConnectionTests : Http2TestBase
     {
         // Kestrel tracks max streams per connection * 2
         return RequestUntilEnhanceYourCalm(maxStreamsPerConnection: 100, sentStreams: 201);
+    }
+
+    [Fact]
+    public async Task AbortConnectionAfterTooManyEnhanceYourCalms()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await InitializeConnectionAsync(_ => Task.FromException(new InvalidOperationException("No requests should be processed")));
+
+        // Reject *every* stream
+        _connection.SendEnhanceYourCalmOnStartStream = true;
+
+        var enhanceYourCalmMaximumCount = Http2Connection.EnhanceYourCalmTickWindowCount * Http2Connection.EnhanceYourCalmMaximumCount;
+        var streamId = 1;
+
+        // There's a burst of activity, but the limit isn't exceeded
+
+        for (var i = 0; i < enhanceYourCalmMaximumCount; i++)
+        {
+            await StartStreamAsync(streamId, _browserRequestHeaders, endStream: false);
+            await WaitForStreamErrorAsync(
+                expectedStreamId: streamId,
+                expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
+                expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
+            streamId += 2;
+        }
+
+        // The window expires
+
+        for (var i = 0; i < Http2Connection.EnhanceYourCalmTickWindowCount; i++)
+        {
+            TriggerTick();
+        }
+
+        // We have room for more streams
+
+        for (var i = 0; i < enhanceYourCalmMaximumCount; i++)
+        {
+            await StartStreamAsync(streamId, _browserRequestHeaders, endStream: false);
+            await WaitForStreamErrorAsync(
+                expectedStreamId: streamId,
+                expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
+                expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
+            streamId += 2;
+        }
+
+        // The last stream exceeds the limit
+
+        await StartStreamAsync(streamId, _browserRequestHeaders, endStream: false);
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: int.MaxValue,
+            expectedErrorCode: Http2ErrorCode.INTERNAL_ERROR,
+            expectedErrorMessage: CoreStrings.Http2ConnectionFaulted);
     }
 
     private async Task RequestUntilEnhanceYourCalm(int maxStreamsPerConnection, int sentStreams)
