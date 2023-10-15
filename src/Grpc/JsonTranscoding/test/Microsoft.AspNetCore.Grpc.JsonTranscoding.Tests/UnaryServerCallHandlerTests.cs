@@ -872,6 +872,75 @@ public class UnaryServerCallHandlerTests : LoggedTest
     }
 
     [Fact]
+    public async Task HandleCallAsync_RpcExceptionThrown_StatusDetailsReturned()
+    {
+        // Arrange
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            var debugInfo = new Google.Rpc.DebugInfo
+            {
+                Detail = "This is some debugging information"
+            };
+            var requestInfo = new Google.Rpc.RequestInfo
+            {
+                RequestId = "request-id"
+            };
+            var badRequest = new Google.Rpc.BadRequest
+            {
+                FieldViolations = { new Google.Rpc.BadRequest.Types.FieldViolation { Description = "Negative", Field = "speed" } }
+            };
+            var status = new Google.Rpc.Status
+            {
+                Code = 123,
+                Message = "This is a message",
+                Details =
+                {
+                    Any.Pack(debugInfo),
+                    Any.Pack(requestInfo),
+                    Any.Pack(badRequest)
+                }
+            };
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Bad request"),
+                new Metadata
+                {
+                    { "grpc-status-details-bin", status.ToByteArray() }
+                });
+        };
+
+        var unaryServerCallHandler = CreateCallHandler(invoker, jsonTranscodingOptions:new GrpcJsonTranscodingOptions()
+        {
+            TypeRegistry = TypeRegistry.FromMessages(
+                Google.Rpc.DebugInfo.Descriptor,
+                Google.Rpc.RequestInfo.Descriptor,
+                Google.Rpc.BadRequest.Descriptor)
+        });
+        var httpContext = TestHelpers.CreateHttpContext();
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.Equal(400, httpContext.Response.StatusCode);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var responseJson = JsonDocument.Parse(httpContext.Response.Body);
+        Assert.Equal(123, responseJson.RootElement.GetProperty("code").GetInt32());
+        Assert.Equal("This is a message", responseJson.RootElement.GetProperty("message").GetString());
+
+        var details = responseJson.RootElement.GetProperty("details").EnumerateArray().ToArray();
+        Assert.Equal(3, details.Length);
+
+        Assert.Equal("type.googleapis.com/google.rpc.DebugInfo", details[0].GetProperty("@type").GetString());
+        Assert.Equal("This is some debugging information", details[0].GetProperty("detail").GetString());
+
+        Assert.Equal("type.googleapis.com/google.rpc.RequestInfo", details[1].GetProperty("@type").GetString());
+        Assert.Equal("request-id", details[1].GetProperty("requestId").GetString());
+
+        Assert.Equal("type.googleapis.com/google.rpc.BadRequest", details[2].GetProperty("@type").GetString());
+        Assert.Equal(1, details[2].GetProperty("fieldViolations").GetArrayLength());
+    }
+
+    [Fact]
     public async Task HandleCallAsync_OtherExceptionThrown_StatusReturned()
     {
         // Arrange
