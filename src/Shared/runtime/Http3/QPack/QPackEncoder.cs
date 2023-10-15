@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http.HPack;
@@ -311,22 +312,20 @@ namespace System.Net.Http.QPack
         {
             Debug.Assert(buffer.Length >= s.Length);
 
-            for (int i = 0; i < s.Length; ++i)
+            OperationStatus status = Ascii.FromUtf16(s, buffer, out int bytesWritten);
+
+            if (status == OperationStatus.InvalidData)
             {
-                char ch = s[i];
-
-                if (ch > 127)
-                {
-                    throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
-                }
-
-                buffer[i] = (byte)ch;
+                throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
             }
+
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(bytesWritten == s.Length);
         }
 
         private static bool EncodeNameString(string s, Span<byte> buffer, out int length)
         {
-            const int toLowerMask = 0x20;
+            Debug.Assert(Ascii.IsValid(s));
 
             if (buffer.Length != 0)
             {
@@ -338,18 +337,9 @@ namespace System.Net.Http.QPack
 
                     if (buffer.Length >= s.Length)
                     {
-                        for (int i = 0; i < s.Length; ++i)
-                        {
-                            int ch = s[i];
-                            Debug.Assert(ch <= 127, "HttpHeaders prevents adding non-ASCII header names.");
-
-                            if ((uint)(ch - 'A') <= 'Z' - 'A')
-                            {
-                                ch |= toLowerMask;
-                            }
-
-                            buffer[i] = (byte)ch;
-                        }
+                        OperationStatus status = Ascii.ToLower(s, buffer, out int valueBytesWritten);
+                        Debug.Assert(status == OperationStatus.Done);
+                        Debug.Assert(valueBytesWritten == s.Length);
 
                         length = nameLength + s.Length;
                         return true;
