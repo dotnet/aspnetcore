@@ -881,14 +881,17 @@ public class UnaryServerCallHandlerTests : LoggedTest
             {
                 Detail = "This is some debugging information"
             };
+
             var requestInfo = new Google.Rpc.RequestInfo
             {
                 RequestId = "request-id"
             };
+
             var badRequest = new Google.Rpc.BadRequest
             {
                 FieldViolations = { new Google.Rpc.BadRequest.Types.FieldViolation { Description = "Negative", Field = "speed" } }
             };
+
             var status = new Google.Rpc.Status
             {
                 Code = 123,
@@ -900,6 +903,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
                     Any.Pack(badRequest)
                 }
             };
+
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Bad request"),
                 new Metadata
                 {
@@ -907,13 +911,15 @@ public class UnaryServerCallHandlerTests : LoggedTest
                 });
         };
 
-        var unaryServerCallHandler = CreateCallHandler(invoker, jsonTranscodingOptions:new GrpcJsonTranscodingOptions()
-        {
-            TypeRegistry = TypeRegistry.FromMessages(
-                Google.Rpc.DebugInfo.Descriptor,
-                Google.Rpc.RequestInfo.Descriptor,
-                Google.Rpc.BadRequest.Descriptor)
-        });
+        var unaryServerCallHandler = CreateCallHandler(invoker,
+            jsonTranscodingOptions: new GrpcJsonTranscodingOptions()
+            {
+                TypeRegistry = TypeRegistry.FromMessages(
+                    Google.Rpc.DebugInfo.Descriptor,
+                    Google.Rpc.RequestInfo.Descriptor,
+                    Google.Rpc.BadRequest.Descriptor)
+            });
+
         var httpContext = TestHelpers.CreateHttpContext();
 
         // Act
