@@ -82,7 +82,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Status status, JsonSerializerOptions options)
+    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Status status, Metadata? trailers, JsonSerializerOptions options)
     {
         if (!response.HasStarted)
         {
@@ -90,13 +90,25 @@ internal static class JsonRequestHelpers
             response.ContentType = MediaType.ReplaceEncoding("application/json", encoding);
         }
 
-        var e = new Google.Rpc.Status
+        var e = GetStatusDetails(trailers) ?? new Google.Rpc.Status
         {
             Message = status.Detail,
             Code = (int)status.StatusCode
         };
 
         await WriteResponseMessage(response, encoding, e, options, CancellationToken.None);
+
+        static Google.Rpc.Status? GetStatusDetails(Metadata? trailers)
+        {
+            const string GrpcStatusDetailsHeader = "grpc-status-details-bin";
+            var statusDetails = trailers?.Get(GrpcStatusDetailsHeader);
+            if (statusDetails != null && statusDetails.IsBinary)
+            {
+                return Google.Rpc.Status.Parser.ParseFrom(statusDetails.ValueBytes);
+            }
+
+            return null;
+        }
     }
 
     public static int MapStatusCodeToHttpStatus(StatusCode statusCode)

@@ -101,6 +101,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
     internal async Task ProcessHandlerErrorAsync(Exception ex, string method, bool isStreaming, JsonSerializerOptions options)
     {
         Status status;
+        Metadata? trailers;
         if (ex is RpcException rpcException)
         {
             // RpcException is thrown by client code to modify the status returned from the server.
@@ -109,6 +110,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
             GrpcServerLog.RpcConnectionError(Logger, rpcException.StatusCode, rpcException.Status.Detail, rpcException.Status.DebugException);
 
             status = rpcException.Status;
+            trailers = rpcException.Trailers;
         }
         else
         {
@@ -119,9 +121,10 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
             // Note that the exception given to status won't be returned to the client.
             // It is still useful to set in case an interceptor accesses the status on the server.
             status = new Status(StatusCode.Unknown, message, ex);
+            trailers = null;
         }
 
-        await JsonRequestHelpers.SendErrorResponse(HttpContext.Response, RequestEncoding, status, options);
+        await JsonRequestHelpers.SendErrorResponse(HttpContext.Response, RequestEncoding, status, trailers, options);
         if (isStreaming)
         {
             await HttpContext.Response.Body.WriteAsync(GrpcProtocolConstants.StreamingDelimiter);
