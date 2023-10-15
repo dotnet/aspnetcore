@@ -1,3 +1,5 @@
 #nullable enable
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.FormName.get -> string
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.FormName.set -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.FallbackTestPseudoElement.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.FallbackTestPseudoElement.set -> void

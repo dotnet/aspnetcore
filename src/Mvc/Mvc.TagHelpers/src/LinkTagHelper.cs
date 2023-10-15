@@ -29,12 +29,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 [HtmlTargetElement("link", Attributes = FallbackHrefExcludeAttributeName, TagStructure = TagStructure.WithoutEndTag)]
 [HtmlTargetElement("link", Attributes = FallbackTestClassAttributeName, TagStructure = TagStructure.WithoutEndTag)]
 [HtmlTargetElement("link", Attributes = FallbackTestPropertyAttributeName, TagStructure = TagStructure.WithoutEndTag)]
+[HtmlTargetElement("link", Attributes = FallbackTestPseudoElementAttributeName, TagStructure = TagStructure.WithoutEndTag)]
 [HtmlTargetElement("link", Attributes = FallbackTestValueAttributeName, TagStructure = TagStructure.WithoutEndTag)]
 [HtmlTargetElement("link", Attributes = AppendVersionAttributeName, TagStructure = TagStructure.WithoutEndTag)]
 public class LinkTagHelper : UrlResolutionTagHelper
 {
     private static readonly string FallbackJavaScriptResourceName =
         typeof(LinkTagHelper).Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
+    private static readonly string FallbackWithPseudoJavaScriptResourceName =
+        typeof(LinkTagHelper).Namespace + ".compiler.resources.LinkTagHelper_FallbackWithPseudoJavaScript.js";
 
     private const string HrefIncludeAttributeName = "asp-href-include";
     private const string HrefExcludeAttributeName = "asp-href-exclude";
@@ -44,6 +47,7 @@ public class LinkTagHelper : UrlResolutionTagHelper
     private const string FallbackHrefExcludeAttributeName = "asp-fallback-href-exclude";
     private const string FallbackTestClassAttributeName = "asp-fallback-test-class";
     private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
+    private const string FallbackTestPseudoElementAttributeName = "asp-fallback-test-pseudo-element";
     private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
     private const string AppendVersionAttributeName = "asp-append-version";
     private const string HrefAttributeName = "href";
@@ -198,6 +202,14 @@ public class LinkTagHelper : UrlResolutionTagHelper
     /// </summary>
     [HtmlAttributeName(FallbackTestPropertyAttributeName)]
     public string FallbackTestProperty { get; set; }
+
+    /// <summary>
+    /// The CSS pseudo-element name to use for the fallback test.
+    /// May be used in conjunction with <see cref="FallbackTestClass"/> and <see cref="FallbackTestValue"/>,
+    /// and either <see cref="FallbackHref"/> or <see cref="FallbackHrefInclude"/>.
+    /// </summary>
+    [HtmlAttributeName(FallbackTestPseudoElementAttributeName)]
+    public string FallbackTestPseudoElement { get; set; }
 
     /// <summary>
     /// The CSS property value to use for the fallback test.
@@ -358,9 +370,12 @@ public class LinkTagHelper : UrlResolutionTagHelper
         // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
         // indicating that the primary stylesheet failed to load.
         // GetEmbeddedJavaScript returns JavaScript to which we add '"{0}","{1}",{2});'
+        // or '"{0}","{1}",{2},{3});' depending an optional pseudo-element parameter.
+        var usePseudoElement = FallbackTestPseudoElement != null;
         builder
             .AppendHtml("<script>")
-            .AppendHtml(JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName))
+            .AppendHtml(JavaScriptResources.GetEmbeddedJavaScript(usePseudoElement ?
+                FallbackWithPseudoJavaScriptResourceName : FallbackJavaScriptResourceName))
             .AppendHtml("\"")
             .AppendHtml(JavaScriptEncoder.Encode(FallbackTestProperty))
             .AppendHtml("\",\"")
@@ -395,8 +410,15 @@ public class LinkTagHelper : UrlResolutionTagHelper
         stringBuilder.Clear();
         var encodedScriptTags = JavaScriptEncoder.Encode(scriptTags);
         builder.AppendHtml(encodedScriptTags);
-
-        builder.AppendHtml("\");</script>");
+        builder.AppendHtml("\"");
+        if (usePseudoElement)
+        {
+            builder
+                .AppendHtml(", \"")
+                .AppendHtml(JavaScriptEncoder.Encode(FallbackTestPseudoElement))
+                .AppendHtml("\"");
+        }
+        builder.AppendHtml(");</script>");
     }
 
     private bool HasStyleSheetLinkType(TagHelperAttributeList attributes)
