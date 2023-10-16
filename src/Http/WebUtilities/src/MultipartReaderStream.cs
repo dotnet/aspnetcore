@@ -329,4 +329,16 @@ internal sealed class MultipartReaderStream : Stream
         }
         return 0;
     }
+
+    public override void CopyTo(Stream destination, int bufferSize)
+    {
+        bufferSize = Math.Max(4096, bufferSize);
+        base.CopyTo(destination, bufferSize);
+    }
+
+    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    {
+        bufferSize = Math.Max(4096, bufferSize);
+        return base.CopyToAsync(destination, bufferSize, cancellationToken);
+    }
 }

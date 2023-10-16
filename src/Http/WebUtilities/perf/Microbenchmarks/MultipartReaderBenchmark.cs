@@ -19,6 +19,9 @@ public class MultipartReaderBenchmark
     [Params(1, 2, 3)]
     public int SectionCount { get; set; }
 
+    [Params(true, false)]
+    public bool LargePayload { get; set; }
+
     private string Boundary { get; set; }
 
     [GlobalSetup]
@@ -46,7 +49,7 @@ public class MultipartReaderBenchmark
                 data = $"--{Boundary}\r\n" +
 "Content-Disposition: form-data; name=\"text\"\r\n" +
 "\r\n" +
-"text default\r\n" +
+$"text default{new string('a', LargePayload ? 10000000 : 0)}\r\n" +
 $"--{Boundary}--\r\n"; ;
                 break;
             case 2:
@@ -58,7 +61,7 @@ $"--{Boundary}\r\n" +
 "Content-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\n" +
 "Content-Type: text/plain\r\n" +
 "\r\n" +
-"Content of a.txt.\r\n" +
+$"Content of a.txt.{new string('a', LargePayload ? 10000000 : 0)}\r\n" +
 "\r\n" +
 $"--{Boundary}--\r\n";
                 break;
@@ -71,7 +74,7 @@ $"--{Boundary}\r\n" +
 "Content-Disposition: form-data; name=\"file1\"; filename=\"a.txt\"\r\n" +
 "Content-Type: text/plain\r\n" +
 "\r\n" +
-"Content of a.txt\r\n" +
+$"Content of a.txt{new string('a', LargePayload ? 10000000 : 0)}\r\n" +
 "\r\n" +
 $"--{Boundary}\r\n" +
 "Content-Disposition: form-data; name=\"file2\"; filename=\"a.html\"\r\n" +
