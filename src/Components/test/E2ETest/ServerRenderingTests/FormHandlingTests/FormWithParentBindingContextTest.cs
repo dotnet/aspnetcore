@@ -306,18 +306,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanBindComplexTypeToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-complextype-parameter";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
         name.SendKeys("John");
@@ -334,7 +331,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -344,18 +341,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanBreakFormIntoMultipleComponents(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-complextype-multiple-components";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
         name.SendKeys("John");
@@ -394,7 +388,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -404,18 +398,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanBreakFormIntoMultipleComponentsDisplaysErrorsCorrectly(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-complextype-multiple-components";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
         name.SendKeys("John");
@@ -448,7 +439,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -458,18 +449,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanDisplayBindingErrorsComplexTypeToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-complextype-parameter";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model.Name"]"""));
         name.SendKeys("John");
@@ -489,7 +477,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -499,18 +487,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanBindDictionaryToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-dictionary-parameter";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model[Name]"]"""));
         name.SendKeys("John");
@@ -527,7 +512,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -537,18 +522,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanDisplayBindingErrorsDictionaryToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-dictionary-parameter-errors";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         var name = Browser.Exists(By.CssSelector("""input[name="Model[Name]"]"""));
         ((IJavaScriptExecutor)Browser).ExecuteScript("arguments[0].setAttribute('value', 'name')", name);
@@ -569,7 +551,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -579,18 +561,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanBindCollectionsToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-collection-parameter";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         for (var i = 0; i < 2; i++)
         {
@@ -616,7 +595,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -626,18 +605,15 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     public void CanDisplayBindingErrorsCollectionsToDefaultForm(bool suppressEnhancedNavigation)
     {
         var url = "forms/default-form-bound-collection-parameter";
-        var absoluteUrl = GetActionValue(this, url);
-        var expectedTarget = GetExpectedTarget(this, null, url);
+        var expectedAction = GetExpectedActionValue(this, url);
 
         SuppressEnhancedNavigation(suppressEnhancedNavigation);
         GoTo(url);
 
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var formTarget = form.GetAttribute("action");
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(expectedTarget, formTarget);
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         for (var i = 0; i < 2; i++)
         {
@@ -668,7 +644,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         {
             // Verify the same form element is still in the page
             // We wouldn't be allowed to read the attribute if the element is stale
-            Assert.Equal(expectedTarget, form.GetAttribute("action"));
+            Assert.NotEmpty(form.GetAttribute("action"));
         }
     }
 
@@ -850,11 +826,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     {
         const string url = "forms/streaming-rendering/CanPostFormsWithStreamingRendering";
         GoTo(url);
-        var absoluteUrl = GetActionValue(this, url);
+        var expectedAction = GetExpectedActionValue(this, url);
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         Browser.Click(By.Id("send"));
 
@@ -872,11 +848,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     {
         const string url = "forms/modify-http-context/ModifyHttpContext";
         GoTo(url);
-        var absoluteUrl = GetActionValue(this, url);
+        var expectedAction = GetExpectedActionValue(this, url);
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         Browser.Click(By.Id("send"));
 
@@ -1016,11 +992,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     {
         const string url = "forms/non-streaming-async-form-handler/CanHandleFormPostNonStreamingRenderingAsyncHandler";
         GoTo(url);
-        var absoluteUrl = GetActionValue(this, url);
+        var expectedAction = GetExpectedActionValue(this, url);
         Browser.Exists(By.Id("ready"));
         var form = Browser.Exists(By.CssSelector("form"));
-        var actionValue = form.GetDomAttribute("action");
-        Assert.Equal(absoluteUrl, actionValue);
+        var actionValue = ReadFormActionAttribute(form);
+        Assert.Equal(expectedAction, actionValue);
 
         Browser.Click(By.Id("send"));
 
@@ -1361,6 +1337,11 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         }
     }
 
+    // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
+    // to an absolute URL. We want to be able to assert about the attribute's literal value.
+    private string ReadFormActionAttribute(IWebElement form)
+        => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return arguments[0].getAttribute('action')", form);
+
     private void DispatchToFormCore(DispatchToForm dispatch)
     {
         SuppressEnhancedNavigation(dispatch.SuppressEnhancedNavigation);
@@ -1483,11 +1464,8 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         public bool FormIsEnhanced { get; internal set; } = true; // Default to true because that's the case for almost all test cases
     }
 
-    private string GetExpectedTarget(FormWithParentBindingContextTest test, string expectedActionValue, string url)
-        => $"{new Uri(test._serverFixture.RootUri, test.ServerPathBase)}/{expectedActionValue ?? url}";
-
-    private string GetActionValue(FormWithParentBindingContextTest test, string expectedActionValue)
-        => $"{new Uri(test._serverFixture.RootUri, test.ServerPathBase)}/{expectedActionValue}";
+    private string GetExpectedActionValue(FormWithParentBindingContextTest test, string expectedActionValue)
+        => $"{test.ServerPathBase}/{expectedActionValue}";
 
     private void GoTo(string relativePath)
     {
