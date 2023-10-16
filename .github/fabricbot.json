@@ -2888,6 +2888,12 @@
                 {
                   "name": "addedToMilestone",
                   "parameters": {
+                    "milestoneName": "8.0.x"
+                  }
+                },
+                {
+                  "name": "addedToMilestone",
+                  "parameters": {
                     "milestoneName": "7.0.x"
                   }
                 },
