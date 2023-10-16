@@ -6,7 +6,6 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
@@ -19,7 +18,6 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 public partial class StaticHtmlRenderer : Renderer
 {
     private static readonly Task CanceledRenderTask = Task.FromCanceled(new CancellationToken(canceled: true));
-    private readonly NavigationManager? _navigationManager;
 
     /// <summary>
     /// Constructs an instance of <see cref="StaticHtmlRenderer"/>.
@@ -29,7 +27,6 @@ public partial class StaticHtmlRenderer : Renderer
     public StaticHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
-        _navigationManager = serviceProvider.GetService<NavigationManager>();
     }
 
     /// <inheritdoc/>

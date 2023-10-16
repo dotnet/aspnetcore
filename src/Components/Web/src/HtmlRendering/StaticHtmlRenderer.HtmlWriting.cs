@@ -108,9 +108,8 @@ public partial class StaticHtmlRenderer
         output.Write(frame.ElementName);
         int afterElement;
         var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
-        var isForm = string.Equals(frame.ElementName, "form", StringComparison.OrdinalIgnoreCase);
         // We don't want to include value attribute of textarea element.
-        var afterAttributes = RenderAttributes(output, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, isForm: isForm, out var capturedValueAttribute);
+        var afterAttributes = RenderAttributes(output, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
         // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
@@ -276,18 +275,15 @@ public partial class StaticHtmlRenderer
         int position,
         int maxElements,
         bool includeValueAttribute,
-        bool isForm,
         out string? capturedValueAttribute)
     {
         capturedValueAttribute = null;
 
         if (maxElements == 0)
         {
-            EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue: false);
             return position;
         }
 
-        var hasExplicitActionValue = false;
         for (var i = 0; i < maxElements; i++)
         {
             var candidateIndex = position + i;
@@ -300,7 +296,6 @@ public partial class StaticHtmlRenderer
                     continue;
                 }
 
-                EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue);
                 return candidateIndex;
             }
 
@@ -312,12 +307,6 @@ public partial class StaticHtmlRenderer
                 {
                     continue;
                 }
-            }
-
-            if (isForm && frame.AttributeName.Equals("action", StringComparison.OrdinalIgnoreCase) &&
-                !string.IsNullOrEmpty(frame.AttributeValue as string))
-            {
-                hasExplicitActionValue = true;
             }
 
             switch (frame.AttributeValue)
@@ -339,22 +328,7 @@ public partial class StaticHtmlRenderer
             }
         }
 
-        EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue);
-
         return position + maxElements;
-
-        void EmitFormActionIfNotExplicit(TextWriter output, bool isForm, bool hasExplicitActionValue)
-        {
-            if (isForm && _navigationManager != null && !hasExplicitActionValue)
-            {
-                output.Write(' ');
-                output.Write("action");
-                output.Write('=');
-                output.Write('\"');
-                _htmlEncoder.Encode(output, _navigationManager.Uri);
-                output.Write('\"');
-            }
-        }
     }
 
     private int RenderChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)

@@ -118,7 +118,12 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     event.preventDefault();
 
-    const url = new URL(formElem.action);
+    // If the form has no action attribute, or an empty string, we do not want the default browser
+    // behavior of submitting to "current URL" because that would be wrong if there's still a pending
+    // enhanced nav in progress, e.g., after the user clicks "back" but before it loads. So in this
+    // case we manually supply the URL corresponding to the content on the screen, which will be the
+    // URL whose response rendered the form.
+    const url = new URL(formElem.getAttribute('action') || currentContentUrl);
     const fetchOptions: RequestInit = { method: formElem.method };
     const formData = new FormData(formElem);
 
