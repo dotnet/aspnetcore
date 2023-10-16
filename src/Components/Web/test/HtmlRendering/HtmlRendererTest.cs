@@ -1115,7 +1115,7 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
     [InlineData("https://example.com/", "https://example.com/a/b/c?q=1&p=hello%20there", "/a/b/c?q=1&p=hello%20there")]
     [InlineData("https://example.com/subdir/", "https://example.com/subdir", "/subdir")]
     [InlineData("https://example.com/subdir/", "https://example.com/subdir/", "/subdir/")]
-    [InlineData("https://example.com/a/b/", "https://example.com/a/b/c&q=1&p=2", "/a/b/c&q=1&p=2")]
+    [InlineData("https://example.com/a/b/", "https://example.com/a/b/c?q=1&p=2", "/a/b/c?q=1&p=2")]
     [InlineData("http://user:pass@xyz.example.com:1234/a/b/", "http://user:pass@xyz.example.com:1234/a/b/c&q=1&p=2", "/a/b/c&q=1&p=2")]
     public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithoutAttributes_WhenNoActionSpecified(
         string baseUrl, string currentUrl, string expectedAction)
