@@ -351,10 +351,27 @@ public partial class StaticHtmlRenderer
                 output.Write("action");
                 output.Write('=');
                 output.Write('\"');
-                _htmlEncoder.Encode(output, _navigationManager.Uri);
+                _htmlEncoder.Encode(output, GetRootRelativeUrlForFormAction(_navigationManager));
                 output.Write('\"');
             }
         }
+    }
+
+    private static string GetRootRelativeUrlForFormAction(NavigationManager navigationManager)
+    {
+        // We want a root-relative URL because:
+        // - if we used a base-relative one, then if currentUrl==baseHref, that would result
+        //   in an empty string, but forms have special handling for action="" (it means "submit
+        //   to the current URL, but that would be wrong if there's an uncommitted navigation in
+        //   flight, e.g., after the user clicking 'back' - it would go to whatever's now in the
+        //   address bar, ignoring where the form was rendered)
+        // - if we used an absolute URL, then it creates a significant extra pit of failure for
+        //   apps hosted behind a reverse proxy (e.g., container apps), because the server's view
+        //   of the absolute URL isn't usable outside the container
+        //   - of course, sites hosted behind URL rewriting that modifies the path will still be
+        //     wrong, but developers won't do that often as it makes things like <a href> really
+        //     difficult to get right. In that case, developers must emit an action attribute manually.
+        return new Uri(navigationManager.Uri, UriKind.Absolute).PathAndQuery;
     }
 
     private int RenderChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
