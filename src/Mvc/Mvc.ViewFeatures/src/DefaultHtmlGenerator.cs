@@ -1246,8 +1246,15 @@ public class DefaultHtmlGenerator : IHtmlGenerator
                     break;
                 }
 
+                var existingValue = tagBuilder.Attributes.GetValueOrDefault("value");
                 var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
                 attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
+
+                if (string.IsNullOrEmpty(attributeValue) && existingValue != null)
+                {
+                    break;
+                }
+
                 tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
 
                 break;

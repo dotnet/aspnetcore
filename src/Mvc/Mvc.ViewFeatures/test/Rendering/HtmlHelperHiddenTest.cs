@@ -271,10 +271,10 @@ public class HtmlHelperHiddenTest
     }
 
     [Fact]
-    public void HiddenNotInTemplate_DoesNotUseAttributeValue()
+    public void HiddenNotInTemplate_DoesUseAttributeValue()
     {
         // Arrange
-        var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
+        var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[attribute-value]]"" />";
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
 
         // Act
@@ -285,11 +285,11 @@ public class HtmlHelperHiddenTest
     }
 
     [Fact]
-    public void HiddenInTemplate_DoesNotUseAttributeValue()
+    public void HiddenInTemplate_DoesUseAttributeValue()
     {
         // Arrange
         var expected = @"<input id=""HtmlEncode[[Prefix_Property1]]"" name=""HtmlEncode[[Prefix.Property1]]"" " +
-            @"type=""HtmlEncode[[hidden]]"" value="""" />";
+            @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[attribute-value]]"" />";
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNonNullModel());
         helper.ViewData.TemplateInfo.HtmlFieldPrefix = "Prefix";
 
@@ -657,6 +657,25 @@ public class HtmlHelperHiddenTest
     }
 
     [Fact]
+    public void HiddenFor_IsNotIgnoring_HtmlAttributes_Value()
+    {
+        // Arrange
+        var currentlyExpected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
+        var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[bar]]"" />";
+
+        var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+        helper.ViewData.Model.Property1 = null;
+        helper.ViewData.ModelState.Clear();
+
+        // Act
+        var result = helper.HiddenFor(m => m.Property1, new { value = "bar" });
+
+        // Assert
+        Assert.NotEqual(currentlyExpected, HtmlContentUtilities.HtmlContentToString(result));
+        Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+    }
+
+    [Fact]
     public void HiddenForWithAttributesDictionaryAndNullModel_GeneratesExpectedValue()
     {
         // Arrange
@@ -868,10 +887,10 @@ public class HtmlHelperHiddenTest
     }
 
     [Fact]
-    public void HiddenFor_DoesNotUseAttributeValue()
+    public void HiddenFor_DoesUseAttributeValue()
     {
         // Arrange
-        var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value="""" />";
+        var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[AttrValue]]"" />";
         var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithNullModelAndNonNullViewData());
         var attributes = new Dictionary<string, object>
             {
