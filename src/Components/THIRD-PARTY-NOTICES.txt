@@ -398,7 +398,7 @@ THE SOFTWARE.
 =========================================
 
 
-%%License notice for Bootstrap v5.1.0
+%% License notice for Bootstrap v5.1.0
 =========================================
 The MIT License (MIT)
 
@@ -426,7 +426,7 @@ THE SOFTWARE.
 =========================================
 
 
-%%License notice for Bootstrap Icons v1.10.5
+%% License notice for Bootstrap Icons v1.10.5
 =========================================
 The MIT License (MIT)
 
