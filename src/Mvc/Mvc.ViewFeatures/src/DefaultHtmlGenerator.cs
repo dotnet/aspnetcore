@@ -1246,16 +1246,14 @@ public class DefaultHtmlGenerator : IHtmlGenerator
                     break;
                 }
 
-                var existingValue = tagBuilder.Attributes.GetValueOrDefault("value");
+                var hasValueInHtmlAttributes = tagBuilder.Attributes.ContainsKey("value");
                 var attributeValue = (string)GetModelStateValue(viewContext, fullName, typeof(string));
                 attributeValue ??= useViewData ? EvalString(viewContext, expression, format) : valueParameter;
 
-                if (string.IsNullOrEmpty(attributeValue) && existingValue != null)
+                if (!string.IsNullOrEmpty(attributeValue) || !hasValueInHtmlAttributes)
                 {
-                    break;
+                    tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
                 }
-
-                tagBuilder.MergeAttribute("value", attributeValue, replaceExisting: isExplicitValue);
 
                 break;
         }
