@@ -12,7 +12,7 @@
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
     <ValidateBaseline>true</ValidateBaseline>
-    <IdentityModelVersion>7.0.0</IdentityModelVersion>
+    <IdentityModelVersion>7.0.3</IdentityModelVersion>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
