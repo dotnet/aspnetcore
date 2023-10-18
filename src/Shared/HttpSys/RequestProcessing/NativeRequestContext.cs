@@ -555,12 +555,9 @@ internal unsafe class NativeRequestContext : IDisposable
 
         var info = new Dictionary<int, ReadOnlyMemory<byte>>(count);
 
-        long fixup = (byte*)nativeRequest - (byte*)baseAddress;
-        var pRequestInfo = (HttpApiTypes.HTTP_REQUEST_INFO*)((byte*)nativeRequest->pRequestInfo + fixup);
-
         for (var i = 0; i < count; i++)
         {
-            var requestInfo = pRequestInfo[i];
+            var requestInfo = nativeRequest->pRequestInfo[i];
             var offset = (long)requestInfo.pInfo - (long)baseAddress;
             info.Add(
                 (int)requestInfo.InfoType,
