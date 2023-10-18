@@ -44,7 +44,7 @@ public class ProblemResultTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_UsesDefaultsFromProblemDetailsServoce_ForProblemDetails()
+    public async Task ExecuteAsync_UsesDefaultsFromProblemDetailsService_ForProblemDetails()
     {
         // Arrange
         var details = new ProblemDetails();
@@ -232,7 +232,7 @@ public class ProblemResultTests
     [Fact]
     public void ProblemResult_Implements_IValueHttpResultOfT_Correctly()
     {
-        // Arrange 
+        // Arrange
         var value = new ProblemDetails();
 
         // Act & Assert

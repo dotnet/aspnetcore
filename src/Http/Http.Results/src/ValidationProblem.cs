@@ -49,21 +49,25 @@ public sealed class ValidationProblem : IResult, IEndpointMetadataProvider, ISta
     int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ValidationProblem));
+        var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
 
         HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        if (problemDetailsService is null || !await problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = ProblemDetails }))
+        {
+            await HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 value: ProblemDetails,
                 ContentType);
+        }
     }
 
     /// <inheritdoc/>
