@@ -39,7 +39,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     // For auto mode, we validate that the state is captured and restored for both server and wasm runtimes.
     // In each case, we validate that the state is available until the initial set of components first render reaches quiescence. Similar to how it works for Server and WebAssembly.
     // For server we validate that the state is provided every time a circuit is initialized.
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/50810")]
     [InlineData(true, typeof(InteractiveServerRenderMode), (string)null)]
     [InlineData(true, typeof(InteractiveServerRenderMode), "ServerStreaming")]
     [InlineData(true, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
