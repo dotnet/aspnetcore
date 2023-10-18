@@ -4,7 +4,6 @@
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -72,7 +71,7 @@ public class ValidationProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, SerializerOptions);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         Assert.Null(responseDetails.Type);
         Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
