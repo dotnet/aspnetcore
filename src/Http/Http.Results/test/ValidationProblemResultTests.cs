@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -172,7 +173,6 @@ public class ValidationProblemResultTests
 
     private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
-
 
     private static IServiceCollection CreateServiceCollection()
     {
