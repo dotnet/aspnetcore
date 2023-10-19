@@ -68,7 +68,7 @@ public class SeleniumStandaloneServer : IDisposable
         try
         {
             await _semaphore.WaitAsync();
-            if (Instance._process == null)
+            if (Instance._process == null || Instance._process.HasExited)
             {
                 // No process was started, meaning the instance wasn't initialized.
                 await InitializeInstance(output);
