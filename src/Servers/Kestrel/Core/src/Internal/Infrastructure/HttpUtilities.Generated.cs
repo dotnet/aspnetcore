@@ -22,20 +22,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
         private static readonly ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
 
-        private static readonly ulong _mask8Chars = GetMaskAsLong(new byte[]
-            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff});
+        private static readonly ulong _mask8Chars = GetMaskAsLong([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
 
-        private static readonly ulong _mask7Chars = GetMaskAsLong(new byte[]
-            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00});
+        private static readonly ulong _mask7Chars = GetMaskAsLong([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00]);
 
-        private static readonly ulong _mask6Chars = GetMaskAsLong(new byte[]
-            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00});
+        private static readonly ulong _mask6Chars = GetMaskAsLong([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00]);
 
-        private static readonly ulong _mask5Chars = GetMaskAsLong(new byte[]
-            {0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00});
+        private static readonly ulong _mask5Chars = GetMaskAsLong([0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00]);
 
-        private static readonly ulong _mask4Chars = GetMaskAsLong(new byte[]
-            {0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00});
+        private static readonly ulong _mask4Chars = GetMaskAsLong([0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00]);
 
         private static readonly Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods =
             new Tuple<ulong, ulong, HttpMethod, int>[17];
