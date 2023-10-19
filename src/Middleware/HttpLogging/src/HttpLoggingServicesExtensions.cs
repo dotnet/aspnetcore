@@ -20,6 +20,7 @@ public static class HttpLoggingServicesExtensions
     public static IServiceCollection AddHttpLogging(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        
         services.TryAddSingleton(ObjectPool.ObjectPool.Create<HttpLoggingInterceptorContext>());
         services.TryAddSingleton(TimeProvider.System);
         return services;
@@ -36,8 +37,7 @@ public static class HttpLoggingServicesExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.TryAddSingleton(ObjectPool.ObjectPool.Create<HttpLoggingInterceptorContext>());
-        services.TryAddSingleton(TimeProvider.System);
+        services.AddHttpLogging();
         services.Configure(configureOptions);
         return services;
     }
