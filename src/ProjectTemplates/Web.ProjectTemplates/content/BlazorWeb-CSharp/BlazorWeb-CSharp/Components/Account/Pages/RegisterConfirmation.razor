@@ -36,10 +36,10 @@ else
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromQuery]
-    public string? Email { get; set; }
+    private string? Email { get; set; }
 
     [SupplyParameterFromQuery]
-    public string? ReturnUrl { get; set; }
+    private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

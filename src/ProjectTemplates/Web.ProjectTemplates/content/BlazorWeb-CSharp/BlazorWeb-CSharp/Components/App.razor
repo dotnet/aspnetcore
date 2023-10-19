@@ -49,7 +49,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
         : InteractiveAuto;
 }
@@ -59,7 +59,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
         : InteractiveServer;
 }
@@ -69,7 +69,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
         ? null
         : InteractiveWebAssembly;
 }
