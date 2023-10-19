@@ -18,7 +18,12 @@ public static class HttpLoggingServicesExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
     /// <returns>The original service collection for chaining.</returns>
     public static IServiceCollection AddHttpLogging(this IServiceCollection services)
-    => services.AddHttpLogging(o => o = new HttpLoggingOptions());
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(ObjectPool.ObjectPool.Create<HttpLoggingInterceptorContext>());
+        services.TryAddSingleton(TimeProvider.System);
+        return services;
+    }
 
     /// <summary>
     /// Adds HTTP Logging services.
