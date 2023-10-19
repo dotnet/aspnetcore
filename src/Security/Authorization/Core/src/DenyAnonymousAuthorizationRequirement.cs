@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 /// <summary>
 /// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
 /// which requires the current user must be authenticated.
+/// Unlike what the name of the class implies, where you would expect failure if not authenticated, it instead succeeds if you are authenticated. 
 /// </summary>
 public class DenyAnonymousAuthorizationRequirement : AuthorizationHandler<DenyAnonymousAuthorizationRequirement>, IAuthorizationRequirement
 {
