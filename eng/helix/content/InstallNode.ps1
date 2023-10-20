@@ -46,6 +46,8 @@ function DownloadAnInstall {
     $hash = Get-FileHash nodejs.zip -Algorithm SHA256;
     if ($hash.Hash.ToLower() -ne $signature.ToLower()) {
         Write-Host "Hashes do not match, expected $signature, got $hash"
+        # Cleanup for next try
+        Remove-Item nodejs.zip;
         return $false;
     }else {
         $hashString = $hash.Hash.ToLower();
