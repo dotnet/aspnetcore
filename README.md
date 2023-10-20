@@ -44,7 +44,7 @@ These are some other repos for related projects:
 
 See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
 
-### Nightly builds
+## Nightly builds
 
 | Platform | Runtime (Installer) | Runtime (Binaries) | Hosting Bundle (Installer) |
 | :--------- | :----------: | :----------: | :----------: |
