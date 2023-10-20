@@ -47,7 +47,7 @@ See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
 ### Nightly builds
 
 | Platform | Runtime (Installer) | Runtime (Binaries) | Hosting Bundle (Installer) |
-| :--------- | :----------: | :----------: | :----------: | :----------: |
+| :--------- | :----------: | :----------: | :----------: |
 | **Windows x64** | [Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x64.exe) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x64.zip) | [Installer](aka.ms/dotnet/9.0/daily/dotnet-hosting-win.exe) |
 | **Windows x86** | [Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x86.exe) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x86.zip) | [Installer](aka.ms/dotnet/9.0/daily/dotnet-hosting-win.exe) |
 | **Windows arm64** | [Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-arm64.exe) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-arm64.zip) | [Installer](aka.ms/dotnet/9.0/daily/dotnet-hosting-win.exe) |
