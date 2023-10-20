@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
-internal class ProblemDetailsExceptionHandler(IProblemDetailsService? problemDetailsService = null) : IExceptionHandler
+internal sealed class ProblemDetailsExceptionHandler(IProblemDetailsService? problemDetailsService = null) : IExceptionHandler
 {
     private readonly IProblemDetailsService? _problemDetailsService = problemDetailsService;
 
