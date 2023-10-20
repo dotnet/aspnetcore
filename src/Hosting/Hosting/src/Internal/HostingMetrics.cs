@@ -24,12 +24,12 @@ internal sealed class HostingMetrics : IDisposable
         _activeRequestsCounter = _meter.CreateUpDownCounter<long>(
             "http.server.active_requests",
             unit: "{request}",
-            description: "Number of HTTP requests that are currently active on the server.");
+            description: "Number of active HTTP server requests.");
 
         _requestDuration = _meter.CreateHistogram<double>(
             "http.server.request.duration",
             unit: "s",
-            description: "Measures the duration of inbound HTTP requests.");
+            description: "Duration of HTTP server requests.");
     }
 
     // Note: Calling code checks whether counter is enabled.
@@ -54,7 +54,6 @@ internal sealed class HostingMetrics : IDisposable
 
         if (_requestDuration.Enabled)
         {
-            tags.Add("network.protocol.name", "http");
             if (TryGetHttpVersion(protocol, out var httpVersion))
             {
                 tags.Add("network.protocol.version", httpVersion);
