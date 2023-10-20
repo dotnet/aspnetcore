@@ -588,6 +588,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49974")]
     public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
     {
         const int chunkSize = 1024;

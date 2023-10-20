@@ -51,6 +51,8 @@ The steps you follow next depend on your preferred development environment:
 
 ## Visual Studio on Windows
 
+1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/). [Yarn](https://yarnpkg.com/) version 1.x will be installed automatically using `npm`, if you have already installed it with a version >= 2.x then you may have to uninstall it as it is not compatible with the aspnetcore build script.
+
 1. Before you open project in Visual Studio, install the required dependencies and set up the repo by running the `restore.cmd` script in the root of the repo:
 
     ```powershell

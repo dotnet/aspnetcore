@@ -3,7 +3,8 @@
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal enum HttpSysRequestHeader
+// With the byte a ROS<HttpSysRequestHeader> can be created that referes to assembly's static data segment.
+internal enum HttpSysRequestHeader : byte
 {
     CacheControl = 0,    // general-header [section 4.5]
     Connection = 1,    // general-header [section 4.5]
