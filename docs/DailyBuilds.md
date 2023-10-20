@@ -47,4 +47,4 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 
 ## Downloading daily builds of aspnetcore
 
-Links to out daily builds can be found [here](https://github.com/dotnet/aspnetcore/blob/main/README.md#nightly-builds).
+Links to our daily builds can be found [here](https://github.com/dotnet/aspnetcore/blob/main/README.md#nightly-builds).
