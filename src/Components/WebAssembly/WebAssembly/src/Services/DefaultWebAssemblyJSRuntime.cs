@@ -106,7 +106,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
-    [SuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "Types in that cache are components from the user assembly which are never trimmed.")]
     internal static OperationDescriptor[] DeserializeOperations(string operationsJson)
     {
         var deserialized = JsonSerializer.Deserialize<RootComponentOperation[]>(
@@ -118,18 +117,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         for (var i = 0; i < deserialized.Length; i++)
         {
             var operation = deserialized[i];
-            if (operation.Type == RootComponentOperationType.Remove ||
-                operation.Type == RootComponentOperationType.Update)
-            {
-                if (operation.ComponentId == null)
-                {
-                    throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.ComponentId)}' to be specified.");
-                }
-            }
-
             if (operation.Type == RootComponentOperationType.Remove)
             {
-                operations[i] = new(operation, null, ParameterView.Empty);
+                operations[i] = new(operation, null, WebRootComponentParameters.Empty);
                 continue;
             }
 
@@ -139,12 +129,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             }
 
             Type? componentType = null;
-            if (operation.Type == RootComponentOperationType.Add)
+            if (operation.Type == RootComponentOperationType.Add ||
+                operation.Type == RootComponentOperationType.Update)
             {
-                if (operation.SelectorId == null)
-                {
-                    throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.SelectorId)}' to be specified.");
-                }
                 componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
             }
@@ -156,14 +143,14 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         return operations;
     }
 
-    static ParameterView DeserializeComponentParameters(ComponentMarker marker)
+    static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
     {
         var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
         var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         var parameters = componentDeserializer.DeserializeParameters(definitions, values);
 
-        return parameters;
+        return new(parameters, definitions, values.AsReadOnly());
     }
 
     [JSExport]
@@ -184,25 +171,18 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     }
 }
 
-internal readonly struct OperationDescriptor
+internal readonly struct OperationDescriptor(
+    RootComponentOperation operation,
+    Type? componentType,
+    WebRootComponentParameters parameters)
 {
-    public OperationDescriptor(
-        RootComponentOperation operation,
-        Type? componentType,
-        ParameterView parameters)
-    {
-        Operation = operation;
-        ComponentType = componentType;
-        Parameters = parameters;
-    }
+    public RootComponentOperation Operation { get; } = operation;
 
-    public RootComponentOperation Operation { get; }
+    public Type? ComponentType { get; } = componentType;
 
-    public Type? ComponentType { get; }
+    public WebRootComponentParameters Parameters { get; } = parameters;
 
-    public ParameterView Parameters { get; }
-
-    public void Deconstruct(out RootComponentOperation operation, out Type? componentType, out ParameterView parameters)
+    public void Deconstruct(out RootComponentOperation operation, out Type? componentType, out WebRootComponentParameters parameters)
     {
         operation = Operation;
         componentType = ComponentType;

@@ -21,6 +21,7 @@
     {"testName": {"contains": "InjectedStartup_DefaultApplicationNameIsEntryAssembly"}},
     {"testName": {"contains": "CertificateChangedOnDisk"}},
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}},
+    {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},

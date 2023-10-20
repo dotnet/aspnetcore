@@ -9,11 +9,12 @@ import { attachToEventDelegator as attachNavigationManagerToEventDelegator } fro
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElement } = {};
+const elementsToClearOnRootComponentRender = new Set<LogicalElement>();
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 const interactiveRootComponentPropname = Symbol();
+const preserveContentOnDisposalPropname = Symbol();
 
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
@@ -47,7 +48,7 @@ export class BrowserRenderer {
     // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
     // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
     if (!appendContent) {
-      elementsToClearOnRootComponentRender[componentId] = element;
+      elementsToClearOnRootComponentRender.add(element);
     }
   }
 
@@ -58,15 +59,13 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
-    const rootElementToClear = elementsToClearOnRootComponentRender[componentId];
-    if (rootElementToClear) {
-      delete elementsToClearOnRootComponentRender[componentId];
-      emptyLogicalElement(rootElementToClear);
+    if (elementsToClearOnRootComponentRender.delete(element)) {
+      emptyLogicalElement(element);
 
-      if (rootElementToClear instanceof Comment) {
+      if (element instanceof Comment) {
         // We sanitize start comments by removing all the information from it now that we don't need it anymore
         // as it adds noise to the DOM.
-        rootElementToClear.textContent = '!';
+        element.textContent = '!';
       }
     }
 
@@ -88,7 +87,12 @@ export class BrowserRenderer {
       // component was added.
       const logicalElement = this.childComponentLocations[componentId];
       markAsInteractiveRootComponentElement(logicalElement, false);
-      emptyLogicalElement(logicalElement);
+
+      if (shouldPreserveContentOnInteractiveComponentDisposal(logicalElement)) {
+        elementsToClearOnRootComponentRender.add(logicalElement);
+      } else {
+        emptyLogicalElement(logicalElement);
+      }
     }
 
     delete this.childComponentLocations[componentId];
@@ -377,6 +381,14 @@ export function isInteractiveRootComponentElement(element: LogicalElement): bool
   return element[interactiveRootComponentPropname];
 }
 
+export function setShouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement, shouldPreserve: boolean) {
+  element[preserveContentOnDisposalPropname] = shouldPreserve;
+}
+
+function shouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement): boolean {
+  return element[preserveContentOnDisposalPropname] === true;
+}
+
 export interface ComponentDescriptor {
   start: Node;
   end: Node;
@@ -388,6 +400,28 @@ function parseMarkup(markup: string, isSvg: boolean) {
     return sharedSvgElemForParsing;
   } else {
     sharedTemplateElemForParsing.innerHTML = markup || ' ';
+
+    // Since this is a markup string, we want to honor the developer's intent to
+    // evaluate any scripts it may contain. Scripts parsed from an innerHTML assignment
+    // won't be executable by default (https://stackoverflow.com/questions/1197575/can-scripts-be-inserted-with-innerhtml)
+    // but that's inconsistent with anything constructed from a sequence like:
+    // - OpenElement("script")
+    // - AddContent(js) or AddMarkupContent(js)
+    // - CloseElement()
+    // It doesn't make sense to have such an inconsistency in Blazor's interactive
+    // renderer, and for back-compat with pre-.NET 8 code (when the Razor compiler always
+    // used OpenElement like above), as well as consistency with static SSR, we need to make it work.
+    sharedTemplateElemForParsing.content.querySelectorAll('script').forEach(oldScriptElem => {
+      const newScriptElem = document.createElement('script');
+      newScriptElem.textContent = oldScriptElem.textContent;
+
+      oldScriptElem.getAttributeNames().forEach(attribName => {
+        newScriptElem.setAttribute(attribName, oldScriptElem.getAttribute(attribName)!);
+      });
+
+      oldScriptElem.parentNode!.replaceChild(newScriptElem, oldScriptElem);
+    });
+
     return sharedTemplateElemForParsing.content;
   }
 }

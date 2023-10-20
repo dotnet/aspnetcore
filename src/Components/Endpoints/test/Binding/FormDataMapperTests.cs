@@ -188,6 +188,49 @@ public class FormDataMapperTests
         Assert.Null(result);
     }
 
+    [Theory]
+    [MemberData(nameof(UriTestData))]
+    public void CanDeserialize_Uri(string value, Uri expected)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { ["value"] = new StringValues(value) };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<Uri>(reader, options);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [MemberData(nameof(UriTestData))]
+    public void CanDeserialize_ComplexTypes_WithUriProperties(string value, Uri expected)
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>() { ["value.Slug"] = new StringValues(value) };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("value");
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<TypeWithUri>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expected, result.Slug);
+    }
+
+    public static TheoryData<string, Uri> UriTestData => new TheoryData<string, Uri>
+    {
+        { "http://www.example.com", new Uri("http://www.example.com") },
+        { "http://www.example.com/path", new Uri("http://www.example.com/path") },
+        { "http://www.example.com/path/", new Uri("http://www.example.com/path/") },
+        { "/path", new Uri("/path", UriKind.Relative) },
+    };
+
     [Fact]
     public void CanDeserialize_CustomParsableTypes()
     {
@@ -2185,6 +2228,11 @@ public class FormDataMapperTests
 
         return method.MakeGenericMethod(type).Invoke(null, new object[] { reader, options })!;
     }
+}
+
+internal class TypeWithUri
+{
+    public Uri Slug { get; set; }
 }
 
 internal class Point : IParsable<Point>, IEquatable<Point>

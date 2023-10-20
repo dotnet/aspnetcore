@@ -294,12 +294,17 @@ export function descriptorToMarker(descriptor: ComponentDescriptor): ComponentMa
   } as unknown as ComponentMarker;
 }
 
-export function canMergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor): boolean {
-  if (target.type !== source.type || target.key !== source.key) {
+function doKeysMatch(a: MarkerKey | undefined, b: MarkerKey | undefined) {
+  if (!a || !b) {
+    // Unspecified keys are never considered to be matching
     return false;
   }
 
-  return true;
+  return a.locationHash === b.locationHash && a.formattedComponentKey === b.formattedComponentKey;
+}
+
+export function canMergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor): boolean {
+  return target.type === source.type && doKeysMatch(target.key, source.key);
 }
 
 export function mergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor) {
@@ -354,7 +359,12 @@ type AutoComponentMarker = {
 type CommonMarkerData = {
   type: string;
   prerenderId?: string;
-  key?: string;
+  key?: MarkerKey;
+}
+
+type MarkerKey = {
+  locationHash: string;
+  formattedComponentKey?: string;
 }
 
 type ServerMarkerData = {
