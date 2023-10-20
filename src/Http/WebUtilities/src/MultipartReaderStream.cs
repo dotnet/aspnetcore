@@ -329,4 +329,19 @@ internal sealed class MultipartReaderStream : Stream
         }
         return 0;
     }
+
+    public override void CopyTo(Stream destination, int bufferSize)
+    {
+        bufferSize = Math.Max(4096, bufferSize);
+        base.CopyTo(destination, bufferSize);
+    }
+
+    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+    {
+        // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
+        // seekable *and* the length is 0 (it passes in a buffer size of 1).
+        // See https://github.com/dotnet/runtime/blob/222415c56c9ea73530444768c0e68413eb374f5d/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L164-L184
+        bufferSize = Math.Max(4096, bufferSize);
+        return base.CopyToAsync(destination, bufferSize, cancellationToken);
+    }
 }
