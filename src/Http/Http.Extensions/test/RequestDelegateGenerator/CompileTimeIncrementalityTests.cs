@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 
@@ -42,11 +43,16 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
         var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
-        Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
+        Assert.Collection(outputSteps,
+            // First source output for diagnostics is unchanged.
+            step => Assert.Equal(IncrementalStepRunReason.Unchanged, step.Reason),
+            // Second source output for generated code is changed.
+            step => Assert.Equal(IncrementalStepRunReason.Modified, step.Reason)
+        );
     }
 
     [Fact]
-    public async Task MapAction_ChangeBodyParamNullability_TriggersUpdate()
+    public async Task MapAction_ChangeBodyParamNullability_TriggersUpdate_ForSourceOnly()
     {
         var source = $"""app.MapGet("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)} todo) => TypedResults.Ok(todo));""";
         var updatedSource = $"""
@@ -58,8 +64,16 @@ app.MapGet("/", ([{typeof(FromBodyAttribute)}] {typeof(Todo)}? todo) => TypedRes
         var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
-        Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.New, value.Reason));
+        Assert.Collection(outputSteps,
+            // First source output for diagnostics is unchanged.
+            step => Assert.Equal(IncrementalStepRunReason.Unchanged, step.Reason),
+            // Second source output for generated code is changed.
+            step => Assert.Equal(IncrementalStepRunReason.Modified, step.Reason)
+        );
     }
 
-    private static IEnumerable<(object Value, IncrementalStepRunReason Reason)> GetRunStepOutputs(GeneratorRunResult? result) => result?.TrackedOutputSteps.SelectMany(step => step.Value).SelectMany(value => value.Outputs);
+    private static IEnumerable<(object Value, IncrementalStepRunReason Reason)> GetRunStepOutputs(GeneratorRunResult? result)
+        => result?.TrackedOutputSteps
+            .SelectMany(step => step.Value)
+            .SelectMany(value => value.Outputs);
 }
