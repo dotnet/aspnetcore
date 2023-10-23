@@ -994,15 +994,15 @@ export class HubConnection {
         if (nonblocking) {
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
-                    arguments: args,
                     target: methodName,
+                    arguments: args,
                     type: MessageType.Invocation,
                 };
             }
@@ -1012,17 +1012,17 @@ export class HubConnection {
 
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             }
@@ -1096,17 +1096,17 @@ export class HubConnection {
 
         if (streamIds.length !== 0) {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
                 streamIds,
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         } else {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         }
