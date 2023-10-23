@@ -164,7 +164,7 @@
     <MicrosoftDotNetBuildTasksTemplatingVersion>9.0.0-beta.23513.3</MicrosoftDotNetBuildTasksTemplatingVersion>
     <MicrosoftDotNetRemoteExecutorVersion>9.0.0-beta.23513.3</MicrosoftDotNetRemoteExecutorVersion>
     <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>9.0.0-alpha.1.23509.2</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>9.0.0-alpha.1.23518.2</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
     <!-- Packages from dotnet/source-build-reference-packages -->
     <MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>9.0.0-alpha.1.23519.2</MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>
     <!-- Packages from dotnet/symreader -->
