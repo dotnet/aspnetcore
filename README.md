@@ -55,8 +55,7 @@ This table includes links to download the latest builds of the ASP.NET Core Shar
 | **Windows arm64** | [Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-arm64.exe) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-arm64.zip) | [Installer](aka.ms/dotnet/9.0/daily/dotnet-hosting-win.exe) |
 | **macOS x64** | **N/A** | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-osx-x64.tar.gz) | **N/A** |
 | **macOS arm64** | **N/A** | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-osx-arm64.tar.gz) | **N/A** |
-| **Linux x64** | [Deb Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-x64.deb)
-[RPM Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-x64.rpm) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-linux-x64.tar.gz) | **N/A** |
+| **Linux x64** | [Deb Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-x64.deb) - [RPM Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-x64.rpm) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-linux-x64.tar.gz) | **N/A** |
 | **Linux arm** | **N/A** | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-linux-arm.tar.gz) | **N/A** |
 | **Linux arm64** | [RPM Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-aarch64.rpm) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-linux-arm64.tar.gz) | **N/A** |
 | **Linux-musl-x64** | **N/A** | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-linux-musl-x64.tar.gz) | **N/A** |
