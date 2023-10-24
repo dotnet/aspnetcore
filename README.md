@@ -46,9 +46,9 @@ See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
 
 ## Nightly builds
 
-This table includes links to download the latest builds of the ASP.NET Core Shared Framework (referred to here as the Runtime). Also included are links to download the Windows Hosting Bundle, which includes the ASP.NET Core Shared Framework, the .NET Runtime Shared Framework, and the ASP.NET Core Module (ANCM). You can download the latest .NET Runtime builds [here](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table), and the latest .NET SDK builds [here](https://github.com/dotnet/installer#table).
+This table includes links to download the latest builds of the ASP.NET Core Shared Framework. Also included are links to download the Windows Hosting Bundle, which includes the ASP.NET Core Shared Framework, the .NET Runtime Shared Framework, and the ASP.NET Core Module (ANCM). You can download the latest .NET Runtime builds [here](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table), and the latest .NET SDK builds [here](https://github.com/dotnet/installer#table).
 
-| Platform | Runtime (Installer) | Runtime (Binaries) | Hosting Bundle (Installer) |
+| Platform | Shared Framework (Installer) | Shared Framework (Binaries) | Hosting Bundle (Installer) |
 | :--------- | :----------: | :----------: | :----------: |
 | **Windows x64** | [Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x64.exe) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x64.zip) | [Installer](aka.ms/dotnet/9.0/daily/dotnet-hosting-win.exe) |
 | **Windows x86** | [Installer](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x86.exe) | [Binaries](aka.ms/dotnet/9.0/daily/aspnetcore-runtime-win-x86.zip) | [Installer](aka.ms/dotnet/9.0/daily/dotnet-hosting-win.exe) |
