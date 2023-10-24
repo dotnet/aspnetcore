@@ -74,7 +74,7 @@ internal static partial class HttpUtilities
         return BinaryPrimitives.ReadUInt32LittleEndian(bytes);
     }
 
-    private static ulong GetMaskAsLong(byte[] bytes)
+    private static ulong GetMaskAsLong(ReadOnlySpan<byte> bytes)
     {
         Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
 
@@ -258,7 +258,7 @@ internal static partial class HttpUtilities
             return HttpMethod.None;
         }
 
-        if (((uint)(value.Length - MinWordLength) <= (MaxWordLength - MinWordLength)))
+        if ((uint)(value.Length - MinWordLength) <= (MaxWordLength - MinWordLength))
         {
             var methodsLookup = Methods();
 
@@ -270,7 +270,7 @@ internal static partial class HttpUtilities
                 && WordListForPerfectHashOfMethods[index] == value
                 && index < (uint)methodsLookup.Length)
             {
-                return (HttpMethod)methodsLookup[(int)index];
+                return methodsLookup[(int)index];
             }
         }
 
@@ -279,9 +279,8 @@ internal static partial class HttpUtilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static uint PerfectHash(ReadOnlySpan<char> str)
         {
-            // This uses C#'s optimization to refer to static data of assembly, and doesn't allocate.
-            ReadOnlySpan<byte> associatedValues = new byte[]
-            {
+            ReadOnlySpan<byte> associatedValues =
+            [
                 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
                 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
                 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
@@ -308,32 +307,31 @@ internal static partial class HttpUtilities
                 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
                 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
                 13, 13, 13, 13, 13, 13
-            };
+            ];
 
             var c = MemoryMarshal.GetReference(str);
 
-            Debug.Assert(char.IsAscii(c), "Must already be valiated");
+            Debug.Assert(char.IsAscii(c), "Must already be validated");
 
             return (uint)str.Length + associatedValues[c];
         }
 
-        // This uses C#'s optimization to refer to static data of assembly, and doesn't allocate.
-        static ReadOnlySpan<byte> Methods() => new byte[]
-        {
-            (byte)HttpMethod.None,
-            (byte)HttpMethod.None,
-            (byte)HttpMethod.None,
-            (byte)HttpMethod.Get,
-            (byte)HttpMethod.Head,
-            (byte)HttpMethod.Trace,
-            (byte)HttpMethod.Delete,
-            (byte)HttpMethod.Options,
-            (byte)HttpMethod.Put,
-            (byte)HttpMethod.Post,
-            (byte)HttpMethod.Patch,
-            (byte)HttpMethod.None,
-            (byte)HttpMethod.Connect
-        };
+        static ReadOnlySpan<HttpMethod> Methods() =>
+        [
+            HttpMethod.None,
+            HttpMethod.None,
+            HttpMethod.None,
+            HttpMethod.Get,
+            HttpMethod.Head,
+            HttpMethod.Trace,
+            HttpMethod.Delete,
+            HttpMethod.Options,
+            HttpMethod.Put,
+            HttpMethod.Post,
+            HttpMethod.Patch,
+            HttpMethod.None,
+            HttpMethod.Connect
+        ];
     }
 
     private static readonly string[] WordListForPerfectHashOfMethods =

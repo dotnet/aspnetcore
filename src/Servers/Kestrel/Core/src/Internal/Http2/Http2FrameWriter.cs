@@ -17,22 +17,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 internal sealed class Http2FrameWriter
 {
     // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
-    // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
+    private static ReadOnlySpan<byte> ContinueBytes => [0x08, 0x03, (byte)'1', (byte)'0', (byte)'0'];
 
+    /// Increase this value to be more lenient (disconnect fewer clients).
+    /// A non-positive value will disable the limit.
+    /// In practice, the default size is 4 * the maximum number of tracked streams per connection,
+    /// which is double the maximum number of concurrent streams per connection, which is 100.
+    /// That is, the default value is 800, unless <see cref="Http2Limits.MaxStreamsPerConnection"/> is modified.
+    /// Choosing a value lower than the maximum number of tracked streams doesn't make sense,
+    /// so such values will be adjusted upward.
+    /// TODO (https://github.com/dotnet/aspnetcore/issues/51309): eliminate this limit.
     private const string MaximumFlowControlQueueSizeProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxConnectionFlowControlQueueSize";
 
-    private static readonly int? ConfiguredMaximumFlowControlQueueSize = GetConfiguredMaximumFlowControlQueueSize();
+    private static readonly int? AppContextMaximumFlowControlQueueSize = GetAppContextMaximumFlowControlQueueSize();
 
-    private static int? GetConfiguredMaximumFlowControlQueueSize()
+    private static int? GetAppContextMaximumFlowControlQueueSize()
     {
         var data = AppContext.GetData(MaximumFlowControlQueueSizeProperty);
 
+        // Programmatically-configured values are usually ints
         if (data is int count)
         {
             return count;
         }
 
+        // msbuild-configured values are usually strings
         if (data is string countStr && int.TryParse(countStr, out var parsed))
         {
             return parsed;
@@ -43,7 +52,7 @@ internal sealed class Http2FrameWriter
 
     private readonly int _maximumFlowControlQueueSize;
 
-    private bool IsMaximumFlowControlQueueSizeEnabled => _maximumFlowControlQueueSize > 0;
+    private bool IsFlowControlQueueLimitEnabled => _maximumFlowControlQueueSize > 0;
 
     private readonly object _writeLock = new object();
     private readonly Http2Frame _outgoingFrame;
@@ -104,11 +113,11 @@ internal sealed class Http2FrameWriter
 
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
 
-        _maximumFlowControlQueueSize = ConfiguredMaximumFlowControlQueueSize is null
+        _maximumFlowControlQueueSize = AppContextMaximumFlowControlQueueSize is null
             ? 4 * maxStreamsPerConnection // 4 is a magic number to give us some padding above the expected maximum size
-            : (int)ConfiguredMaximumFlowControlQueueSize;
+            : (int)AppContextMaximumFlowControlQueueSize;
 
-        if (IsMaximumFlowControlQueueSizeEnabled && _maximumFlowControlQueueSize < maxStreamsPerConnection)
+        if (IsFlowControlQueueLimitEnabled && _maximumFlowControlQueueSize < maxStreamsPerConnection)
         {
             _log.Http2FlowControlQueueMaximumTooLow(_connectionContext.ConnectionId, maxStreamsPerConnection, _maximumFlowControlQueueSize);
             _maximumFlowControlQueueSize = maxStreamsPerConnection;
@@ -117,7 +126,7 @@ internal sealed class Http2FrameWriter
         // This is bounded by the maximum number of concurrent Http2Streams per Http2Connection.
         // This isn't the same as SETTINGS_MAX_CONCURRENT_STREAMS, but typically double (with a floor of 100)
         // which is the max number of Http2Streams that can end up in the Http2Connection._streams dictionary.
-        // 
+        //
         // Setting a lower limit of SETTINGS_MAX_CONCURRENT_STREAMS might be sufficient because a stream shouldn't
         // be rescheduling itself after being completed or canceled, but we're going with the more conservative limit
         // in case there's some logic scheduling completed or canceled streams unnecessarily.
@@ -979,7 +988,7 @@ internal sealed class Http2FrameWriter
         _waitingForMoreConnectionWindow.Enqueue(producer);
         // This is re-entrant because abort will cause a final enqueue.
         // Easier to check for that condition than to make each enqueuer reason about what to call.
-        if (!_aborted && IsMaximumFlowControlQueueSizeEnabled && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
+        if (!_aborted && IsFlowControlQueueLimitEnabled && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
         {
             _log.Http2FlowControlQueueOperationsExceeded(_connectionId, _maximumFlowControlQueueSize);
             _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate.Test;
 
@@ -689,7 +690,7 @@ public class ClientCertificateAuthenticationTests
         const string Expected = "John Doe";
         var validationCount = 0;
         // The test certs are generated based off UtcNow.
-        var timeProvider = new MockTimeProvider(TimeProvider.System.GetUtcNow());
+        var timeProvider = new FakeTimeProvider(TimeProvider.System.GetUtcNow());
 
         using var host = await CreateHost(
             new CertificateAuthenticationOptions

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Quic;
 using System.Text;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
@@ -505,7 +505,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Arrange
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, timeProvider);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);

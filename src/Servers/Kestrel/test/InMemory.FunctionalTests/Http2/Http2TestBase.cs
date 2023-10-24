@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -17,13 +16,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit.Abstractions;
@@ -119,7 +118,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal readonly DynamicHPackEncoder _hpackEncoder;
     private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
-    private readonly MockTimeProvider _timeProvider = new();
+    private readonly FakeTimeProvider _timeProvider = new();
     internal readonly TimeoutControl _timeoutControl;
     protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
@@ -392,7 +391,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
             Scheduler = PipeScheduler.Inline,
-            MockTimeProvider = _timeProvider,
+            FakeTimeProvider = _timeProvider,
             TimeProvider = _timeProvider,
         };
 
@@ -1351,20 +1350,20 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     protected void TriggerTick(TimeSpan timeSpan)
     {
-        _serviceContext.MockTimeProvider.Advance(timeSpan);
+        _serviceContext.FakeTimeProvider.Advance(timeSpan);
         TriggerTick();
     }
 
     protected void TriggerTick()
     {
-        var timestamp = _serviceContext.MockTimeProvider.GetTimestamp();
+        var timestamp = _serviceContext.FakeTimeProvider.GetTimestamp();
         _timeoutControl.Tick(timestamp);
         ((IRequestProcessor)_connection)?.Tick(timestamp);
     }
 
     protected void AdvanceTime(TimeSpan timeSpan)
     {
-        var timeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
         var endTime = timeProvider.GetTimestamp(timeSpan);
 
         while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
@@ -1372,7 +1371,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             TriggerTick(Heartbeat.Interval);
         }
 
-        timeProvider.AdvanceTo(endTime);
+        timeProvider.Advance(timeProvider.GetElapsedTime(timeProvider.GetTimestamp(), endTime));
         TriggerTick();
     }
 

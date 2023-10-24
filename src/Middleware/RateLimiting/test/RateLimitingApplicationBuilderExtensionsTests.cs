@@ -61,4 +61,23 @@ public class RateLimitingApplicationBuilderExtensionsTests : LoggedTest
         app.Invoke(context);
         Assert.Equal(429, context.Response.StatusCode);
     }
+
+    [Fact]
+    public async Task UseRateLimiter_DoNotThrowWithoutOptions()
+    {
+        var services = new ServiceCollection();
+        services.AddRateLimiter();
+        services.AddLogging();
+        var serviceProvider = services.BuildServiceProvider();
+        var appBuilder = new ApplicationBuilder(serviceProvider);
+
+        // Act
+        appBuilder.UseRateLimiter();
+        var app = appBuilder.Build();
+        var context = new DefaultHttpContext();
+        var exception = await Record.ExceptionAsync(() => app.Invoke(context));
+
+        // Assert
+        Assert.Null(exception);
+    }
 }

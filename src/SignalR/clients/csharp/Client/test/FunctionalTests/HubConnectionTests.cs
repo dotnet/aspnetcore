@@ -2834,6 +2834,7 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/51361")]
     public async Task ServerWithOldProtocolVersionClientWithNewProtocolVersionWorksDoesNotAllowStatefulReconnect()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -2893,7 +2894,7 @@ public class HubConnectionTests : FunctionalTestBase
 
                 // In-progress send canceled when connection closes
                 var ex = await Assert.ThrowsAnyAsync<Exception>(() => resultTask);
-                Assert.True(ex is TaskCanceledException or WebSocketException);
+                Assert.True(ex is TaskCanceledException || ex is WebSocketException);
                 await closedTcs.Task;
 
                 Assert.Equal(HubConnectionState.Disconnected, connection.State);
