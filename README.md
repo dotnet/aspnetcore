@@ -46,7 +46,7 @@ See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
 
 ## Nightly builds
 
-This table includes links to download the latest builds of the ASP.NET Core Shared Framework. Also included are links to download the Windows Hosting Bundle, which includes the ASP.NET Core Shared Framework, the .NET Runtime Shared Framework, and the IIS plugin (ASP.NET Core Module). You can download the latest .NET Runtime builds [here](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table), and the latest .NET SDK builds [here](https://github.com/dotnet/installer#table). If you're unsure what you need then install the SDK, it has everything except the IIS plugin.
+This table includes links to download the latest builds of the ASP.NET Core Shared Framework. Also included are links to download the Windows Hosting Bundle, which includes the ASP.NET Core Shared Framework, the .NET Runtime Shared Framework, and the IIS plugin (ASP.NET Core Module). You can download the latest .NET Runtime builds [here](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table), and the latest .NET SDK builds [here](https://github.com/dotnet/installer#table). If you're unsure what you need then install the SDK; it has everything except the IIS plugin.
 
 | Platform | Shared Framework (Installer) | Shared Framework (Binaries) | Hosting Bundle (Installer) |
 | :--------- | :----------: | :----------: | :----------: |
