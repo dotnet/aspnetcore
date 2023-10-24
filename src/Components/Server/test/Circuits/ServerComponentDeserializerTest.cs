@@ -412,14 +412,11 @@ public class ServerComponentDeserializerTest
             Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
         };
 
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation, other },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
-
+        var batchJson = SerializeRootComponentOperationBatch(new() { Operations = [operation, other] });
         var deserializer = CreateServerComponentDeserializer();
 
         // Act
-        var result = deserializer.TryDeserializeRootComponentOperations(operationsJson, out var parsed);
+        var result = deserializer.TryDeserializeRootComponentOperations(batchJson, out var parsed);
 
         // Assert
         Assert.False(result);
@@ -430,6 +427,9 @@ public class ServerComponentDeserializerTest
         JsonSerializer.Serialize(
             new ServerComponent(0, null, assembly, type, Array.Empty<ComponentParameter>(), Array.Empty<object>(), Guid.NewGuid()),
             ServerComponentSerializationSettings.JsonSerializationOptions);
+
+    private string SerializeRootComponentOperationBatch(RootComponentOperationBatch batch)
+        => JsonSerializer.Serialize(batch, ServerComponentSerializationSettings.JsonSerializationOptions);
 
     private ServerComponentDeserializer CreateServerComponentDeserializer()
     {

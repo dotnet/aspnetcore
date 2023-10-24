@@ -273,7 +273,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
             AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null);
-            Assert.Equal("System.InvalidOperationException", (string)m.Tags["exception.type"]);
+            Assert.Equal("System.InvalidOperationException", (string)m.Tags["error.type"]);
         });
         Assert.Collection(activeConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
         Assert.Collection(queuedConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));

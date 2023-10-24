@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Identity.Data;
@@ -21,9 +19,4 @@ public sealed class InfoResponse
     /// Indicates whether or not the <see cref="Email"/> has been confirmed yet.
     /// </summary>
     public required bool IsEmailConfirmed { get; init; }
-
-    /// <summary>
-    /// The <see cref="ClaimsPrincipal.Claims"/> from the authenticated <see cref="HttpContext.User"/>.
-    /// </summary>
-    public required IDictionary<string, string> Claims { get; init; }
 }

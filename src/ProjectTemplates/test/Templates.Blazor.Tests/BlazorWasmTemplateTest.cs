@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
-using Newtonsoft.Json.Linq;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
 
@@ -23,7 +22,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
     public override string ProjectType { get; } = "blazorwasm";
 
-    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/47225")]
+    [Theory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/47225")]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
     {
@@ -316,7 +316,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         // Initially displays the home page
         await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
 
-        Assert.Equal("Index", (await page.TitleAsync()).Trim());
+        Assert.Equal("Home", (await page.TitleAsync()).Trim());
 
         // Can navigate to the counter page
         await Task.WhenAll(
@@ -372,11 +372,8 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
         if (!skipFetchData)
         {
-            // Can navigate to the 'fetch data' page
-            await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/fetchdata" }),
-                page.WaitForSelectorAsync("h1 >> text=Weather forecast"),
-                page.ClickAsync("text=Fetch data"));
+            await page.ClickAsync("a[href=weather]");
+            await page.WaitForSelectorAsync("h1 >> text=Weather");
 
             // Asynchronously loads and displays the table of weather forecasts
             await page.WaitForSelectorAsync("table>tbody>tr");

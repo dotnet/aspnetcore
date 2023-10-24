@@ -70,10 +70,10 @@ internal sealed class HostingMetrics : IDisposable
                 tags.Add("http.route", route);
             }
             // This exception is only present if there is an unhandled exception.
-            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add exception.type to custom tags.
+            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add error.type to custom tags.
             if (exception != null)
             {
-                tags.Add("exception.type", exception.GetType().FullName);
+                tags.Add("error.type", exception.GetType().FullName);
             }
             if (customTags != null)
             {

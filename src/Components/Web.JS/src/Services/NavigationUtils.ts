@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-let hasInteractiveRouterValue = false;
+import { WebRendererId } from '../Rendering/WebRendererId';
+
+let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
+let enhancedNavigationListener: typeof notifyEnhancedNavigationListners | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -42,6 +45,14 @@ export function isWithinBaseUriSpace(href: string) {
 
   return href.startsWith(baseUriWithoutTrailingSlash)
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
+}
+
+export function attachEnhancedNavigationListener(listener: typeof enhancedNavigationListener) {
+  enhancedNavigationListener = listener;
+}
+
+export function notifyEnhancedNavigationListners(internalDestinationHref: string, interceptedLink: boolean) {
+  enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
 }
 
 export function hasProgrammaticEnhancedNavigationHandler(): boolean {
@@ -107,16 +118,24 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
 
 function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
   return !element
-  ? null
-  : element.tagName === tagName
-  ? element
-  : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
+    ? null
+    : element.tagName === tagName
+      ? element
+      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
 }
 
 export function hasInteractiveRouter(): boolean {
-  return hasInteractiveRouterValue;
+  return interactiveRouterRendererId !== undefined;
 }
 
-export function setHasInteractiveRouter() {
-  hasInteractiveRouterValue = true;
+export function getInteractiveRouterRendererId() : WebRendererId | undefined {
+  return interactiveRouterRendererId;
+}
+
+export function setHasInteractiveRouter(rendererId: WebRendererId) {
+  if (interactiveRouterRendererId !== undefined && interactiveRouterRendererId !== rendererId) {
+    throw new Error('Only one interactive runtime may enable navigation interception at a time.');
+  }
+
+  interactiveRouterRendererId = rendererId;
 }

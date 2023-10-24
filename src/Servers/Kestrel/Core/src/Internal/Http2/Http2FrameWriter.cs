@@ -126,7 +126,7 @@ internal sealed class Http2FrameWriter
         // This is bounded by the maximum number of concurrent Http2Streams per Http2Connection.
         // This isn't the same as SETTINGS_MAX_CONCURRENT_STREAMS, but typically double (with a floor of 100)
         // which is the max number of Http2Streams that can end up in the Http2Connection._streams dictionary.
-        // 
+        //
         // Setting a lower limit of SETTINGS_MAX_CONCURRENT_STREAMS might be sufficient because a stream shouldn't
         // be rescheduling itself after being completed or canceled, but we're going with the more conservative limit
         // in case there's some logic scheduling completed or canceled streams unnecessarily.

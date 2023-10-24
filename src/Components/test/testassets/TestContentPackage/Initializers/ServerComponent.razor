@@ -1,0 +1,15 @@
+﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject NavigationManager NavigationManager
+<h3 id="server-component">ServerComponent</h3>
+
+<a id="remove-server-component" href="@_url">Remove server component (circuit will close)</a>
+
+@code{
+    private string _url;
+
+    protected override void OnInitialized()
+    {
+        _url = NavigationManager.GetUriWithQueryParameter("Server", false);
+        base.OnInitialized();
+    }
+}
