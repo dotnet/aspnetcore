@@ -9,6 +9,7 @@ import { startIpcReceiver } from './Platform/WebView/WebViewIpcReceiver';
 import { sendAttachPage, sendBeginInvokeDotNetFromJS, sendEndInvokeJSFromDotNet, sendByteArray, sendLocationChanged, sendLocationChanging } from './Platform/WebView/WebViewIpcSender';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.WebView';
 import { receiveDotNetDataStream } from './StreamingInterop';
+import { WebRendererId } from './Rendering/WebRendererId';
 
 let started = false;
 
@@ -32,8 +33,8 @@ async function boot(): Promise<void> {
 
   Blazor._internal.receiveWebViewDotNetDataStream = receiveWebViewDotNetDataStream;
 
-  navigationManagerFunctions.enableNavigationInterception();
-  navigationManagerFunctions.listenForNavigationEvents(sendLocationChanged, sendLocationChanging);
+  navigationManagerFunctions.enableNavigationInterception(WebRendererId.WebView);
+  navigationManagerFunctions.listenForNavigationEvents(WebRendererId.WebView, sendLocationChanged, sendLocationChanging);
 
   sendAttachPage(navigationManagerFunctions.getBaseURI(), navigationManagerFunctions.getLocationHref());
   await jsInitializer.invokeAfterStartedCallbacks(Blazor);

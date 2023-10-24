@@ -16,6 +16,7 @@ import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 import { MonoConfig } from 'dotnet';
 import { RootComponentManager } from './Services/RootComponentManager';
+import { WebRendererId } from './Rendering/WebRendererId';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
 let initializersPromise: Promise<void>;
@@ -127,7 +128,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
-  Blazor._internal.navigationManager.listenForNavigationEvents(async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+  Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await dispatcher.invokeDotNetStaticMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
       'NotifyLocationChanged',

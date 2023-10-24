@@ -1,11 +1,9 @@
 ﻿@page "/Account/Manage"
 
 @using System.ComponentModel.DataAnnotations
-@using System.Security.Claims
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
 
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor

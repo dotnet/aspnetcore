@@ -10,6 +10,7 @@ import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnect
 import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
+import { WebRendererId } from './Rendering/WebRendererId';
 
 let initializersPromise: Promise<void> | undefined;
 let appState: string;
@@ -74,7 +75,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
 
   // Configure navigation via SignalR
-  Blazor._internal.navigationManager.listenForNavigationEvents((uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+  Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.Server, (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return circuit.sendLocationChanged(uri, state, intercepted);
   }, (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     return circuit.sendLocationChanging(callId, uri, state, intercepted);
