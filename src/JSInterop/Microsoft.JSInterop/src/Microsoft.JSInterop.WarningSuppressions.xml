@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <linker>
   <assembly fullname="Microsoft.JSInterop, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
     <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
@@ -66,12 +66,6 @@
       <argument>IL2091</argument>
       <property name="Scope">member</property>
       <property name="Target">M:Microsoft.JSInterop.JSRuntimeExtensions.&lt;InvokeAsync&gt;d__4`1.MoveNext</property>
-    </attribute>
-    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
-      <argument>ILLink</argument>
-      <argument>IL2111</argument>
-      <property name="Scope">member</property>
-      <property name="Target">M:Microsoft.JSInterop.Infrastructure.DotNetDispatcher.GetCachedMethodInfo(Microsoft.JSInterop.Infrastructure.IDotNetObjectReference,System.String)</property>
     </attribute>
   </assembly>
 </linker>
