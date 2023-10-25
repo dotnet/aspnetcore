@@ -11,7 +11,7 @@
 
 ## Potential Design
 
-<!-- This secion is meant to be used for a high level design of what a solution should look like and/or what direction should be taken to solving this problem. -->
+<!-- This section is meant to be used for a high level design of what a solution should look like and/or what direction should be taken to solving this problem. -->
 
 ## Code References
 
