@@ -5,7 +5,7 @@
 - one of the `Complexity: ` labels is applied to the issue [Simple | Medium | Hard]
 -->
 
-## Issue Sumamry
+## Issue Summary
 
 <!-- This section will be filled in by the engineers assigned to this  -->
 
