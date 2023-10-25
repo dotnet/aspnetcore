@@ -15,7 +15,7 @@
 
 ## Code References
 
-<!-- Links to classes / methods which are critical to understand for building out this solution, as these are relevant and will be used by the solution -->
+<!-- Links to classes / methods which are critical to understand for building out this solution, as these are relevant and will be used by the solution, as well as existing test cases that exercise this code -->
 
 ## Relevant Documentation
 
