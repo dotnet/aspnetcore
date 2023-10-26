@@ -23,4 +23,4 @@
 
 ## Important Considerations
 
-<!-- List of additional questions the community member who will be handling this issue will need to consider when working on the solution -->
+<!-- List of additional and gotchas the community member who will be handling this issue will need to consider when working on the solution -->
