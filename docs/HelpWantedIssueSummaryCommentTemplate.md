@@ -23,7 +23,7 @@
 
 ## Important Considerations
 
-<!-- List of additional and gotchas the community member who will be handling this issue will need to consider when working on the solution -->
+<!-- List of additional gotchas the community member who will be handling this issue will need to consider when working on the solution -->
 
 ## Additional Notes
 - If the change you are going to make will include a **public API change** in the framework, then the change will need to go through our [API Review Process](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md). Please read this process to take any necessary steps, to avoid any potential delays down the road with accepting this change.
