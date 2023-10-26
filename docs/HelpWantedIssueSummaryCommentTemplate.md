@@ -1,8 +1,10 @@
 <!--
 
-**IMPORTANT**: As part of posting this comment, please make sure that:
-- the issue is properly labeled with both `area-` and `feature-` labels.
-- one of the `Complexity: ` labels is applied to the issue [Simple | Medium | Hard]
+**IMPORTANT**: As part of posting this comment, please make sure:
+- that the issue is properly labeled with both `area-` and `feature-` labels.
+- to apply one of the `Complexity: ` labels is applied to the issue [Simple | Medium | Hard]
+- for an issue which was marked with `Complexity: Simple` label, it may be a good fit for a first-time contributors to this repo.
+  If so, please also apply `good-first-issue` label.
 -->
 
 ## Issue Summary
@@ -28,4 +30,4 @@
 ## Additional Notes
 - If the change you are going to make will include a **public API change** in the framework, then the change will need to go through our [API Review Process](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md). Please read this process to take any necessary steps, to avoid any potential delays down the road with accepting this change.
 - If this is your first contribution to the repo, you may find it useful to learn [How to build the repo](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md)
-- Please note, that the changes will be considered for the vNext version of the framework by default. That is, after the change gets merged in main, it will be available only in the next preview release of the framework and will be shipped in the vNext GA release of the product.
+- Please note, that the changes will be considered for the vNext version of the framework by default. That is, after the change gets merged in main, it will be available only in the next preview release of the framework and will be shipped in the upcoming major release of the product.
