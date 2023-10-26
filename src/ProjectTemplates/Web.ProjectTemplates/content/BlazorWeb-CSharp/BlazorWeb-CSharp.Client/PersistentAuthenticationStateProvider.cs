@@ -12,16 +12,18 @@ namespace BlazorWeb_CSharp.Client;
 // This only provides a user name and email for display purposes. It does not actually include any tokens
 // that authenticate to the server when making subsequent requests. That works separately using a
 // cookie that will be included on HttpClient requests to the server.
-public class PersistentAuthenticationStateProvider(PersistentComponentState persistentState) : AuthenticationStateProvider
+internal class PersistentAuthenticationStateProvider : AuthenticationStateProvider
 {
-    private static readonly Task<AuthenticationState> unauthenticatedTask =
+    private static readonly Task<AuthenticationState> defaultUnauthenticatedTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    private readonly Task<AuthenticationState> authenticationStateTask = defaultUnauthenticatedTask;
+
+    public PersistentAuthenticationStateProvider(PersistentComponentState state)
     {
-        if (!persistentState.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) || userInfo is null)
+        if (!state.TryTakeFromJson<UserInfo>(nameof(UserInfo), out var userInfo) || userInfo is null)
         {
-            return unauthenticatedTask;
+            return;
         }
 
         Claim[] claims = [
@@ -29,8 +31,10 @@ public class PersistentAuthenticationStateProvider(PersistentComponentState pers
             new Claim(ClaimTypes.Name, userInfo.Email),
             new Claim(ClaimTypes.Email, userInfo.Email) ];
 
-        return Task.FromResult(
+        authenticationStateTask = Task.FromResult(
             new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims,
                 authenticationType: nameof(PersistentAuthenticationStateProvider)))));
     }
+
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() => authenticationStateTask;
 }

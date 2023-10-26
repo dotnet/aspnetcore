@@ -111,6 +111,12 @@
           ]
         },
         {
+          "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "*.sln"
+          ]
+        },
+        {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/**",

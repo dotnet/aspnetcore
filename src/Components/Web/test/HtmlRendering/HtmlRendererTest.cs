@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -1106,15 +1107,25 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
         });
     }
 
-    [Fact]
-    public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithoutAttributes_WhenNoActionSpecified()
+    [Theory]
+    [InlineData("https://example.com/", "https://example.com", "/")]
+    [InlineData("https://example.com/", "https://example.com/", "/")]
+    [InlineData("https://example.com/", "https://example.com/page", "/page")]
+    [InlineData("https://example.com/", "https://example.com/a/b/c", "/a/b/c")]
+    [InlineData("https://example.com/", "https://example.com/a/b/c?q=1&p=hello%20there", "/a/b/c?q=1&p=hello%20there")]
+    [InlineData("https://example.com/subdir/", "https://example.com/subdir", "/subdir")]
+    [InlineData("https://example.com/subdir/", "https://example.com/subdir/", "/subdir/")]
+    [InlineData("https://example.com/a/b/", "https://example.com/a/b/c?q=1&p=2", "/a/b/c?q=1&p=2")]
+    [InlineData("http://user:pass@xyz.example.com:1234/a/b/", "http://user:pass@xyz.example.com:1234/a/b/c&q=1&p=2", "/a/b/c&q=1&p=2")]
+    public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithoutAttributes_WhenNoActionSpecified(
+        string baseUrl, string currentUrl, string expectedAction)
     {
         // Arrange
         var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
             rtb.CloseElement();
-        })).AddScoped<NavigationManager, TestNavigationManager>());
+        })).AddScoped<NavigationManager>(_ => new TestNavigationManager(baseUrl, currentUrl)));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -1123,7 +1134,7 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form action=\"https://www.example.com/page\"></form>", result.ToHtmlString());
+            Assert.Equal($"<form action=\"{HttpUtility.HtmlAttributeEncode(expectedAction)}\"></form>", result.ToHtmlString());
         });
     }
 
@@ -1145,7 +1156,7 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
             var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
 
             // Assert
-            Assert.Equal("<form method=\"post\" action=\"https://www.example.com/page\"></form>", result.ToHtmlString());
+            Assert.Equal("<form method=\"post\" action=\"/page\"></form>", result.ToHtmlString());
         });
     }
 
@@ -1382,7 +1393,21 @@ And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/sc
 
     private class TestNavigationManager : NavigationManager
     {
-        protected override void EnsureInitialized() => Initialize("https://www.example.com/", "https://www.example.com/page");
+        private string _baseUrl;
+        private string _currentUrl;
+
+        public TestNavigationManager()
+            : this("https://www.example.com/", "https://www.example.com/page")
+        {
+        }
+
+        public TestNavigationManager(string baseUrl, string currentUrl)
+        {
+            _baseUrl = baseUrl;
+            _currentUrl = currentUrl;
+        }
+
+        protected override void EnsureInitialized() => Initialize(_baseUrl, _currentUrl);
     }
 
     private IServiceProvider GetServiceProvider(Action<IServiceCollection> configure = null)
