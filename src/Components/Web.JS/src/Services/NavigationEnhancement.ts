@@ -3,6 +3,7 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, notifyEnhancedNavigationListners } from './NavigationUtils';
+import { showErrorNotification } from '../BootErrors';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -357,6 +358,9 @@ async function getResponsePartsWithFraming(responsePromise: Promise<Response>, a
     if ((ex as Error).name === 'AbortError' && abortSignal.aborted) {
       // Not an error. This happens if a different navigation started before this one completed.
       return;
+    } else if ((ex as Error).name === 'TypeError' && !abortSignal.aborted) {
+      console.error(ex);
+      showErrorNotification();
     } else {
       throw ex;
     }
