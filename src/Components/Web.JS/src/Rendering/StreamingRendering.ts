@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { SsrStartOptions } from '../Platform/SsrStartOptions';
-import { NavigationEnhancementCallbacks, hasNeverStartedAnyEnhancedPageLoad, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
+import { NavigationEnhancementCallbacks, hasNeverStartedAnyEnhancedPageLoad, performEnhancedPageLoad } from '../Services/NavigationEnhancement';
 import { isWithinBaseUriSpace, toAbsoluteUri } from '../Services/NavigationUtils';
 import { synchronizeDomContent } from './DomMerging/DomSync';
+import { showErrorNotification } from '../BootErrors';
 
 let enableDomPreservation = true;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
@@ -71,8 +72,8 @@ class BlazorStreamingUpdate extends HTMLElement {
               }
               break;
             case 'error':
-              // This is kind of brutal but matches what happens without progressive enhancement
-              replaceDocumentWithPlainText(node.content.textContent || 'Error');
+              console.error(node.content.textContent);
+              showErrorNotification();
               break;
           }
         }
