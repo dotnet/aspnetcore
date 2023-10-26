@@ -29,5 +29,5 @@
 
 ## Additional Notes
 - If the change you are going to make will include a **public API change** in the framework, then the change will need to go through our [API Review Process](/docs/APIReviewProcess.md). Please read this process to take any necessary steps, to avoid any potential delays down the road with accepting this change.
-- If this is your first contribution to the repo, you may find it useful to learn [How to build the repo](https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md)
+- If this is your first contribution to the repo, you may find it useful to learn [How to build the repo](/docs/BuildFromSource.md)
 - Please note, that the changes will be considered for the vNext version of the framework by default. That is, after the change gets merged in main, it will be available only in the next preview release of the framework and will be shipped in the upcoming major release of the product.
