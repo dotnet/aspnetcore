@@ -82,7 +82,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Specifying text/html is to make the enhanced nav outcomes more similar to non-enhanced nav.
         // For example, the default error middleware will only serve the error page if this content type is requested.
         // The blazor-enhanced-nav parameter can be used to trigger arbitrary server-side behaviors.
-        Assert.Contains("accept: text/html;blazor-enhanced-nav=on", allHeaders);
+        Assert.Contains("accept: text/html; blazor-enhanced-nav=on", allHeaders);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var originalH1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => originalH1Elem.Text);
 
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (no enhanced nav)")).Click();
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("not-enhanced-nav-link")).Click();
 
         // Check we got there, but we did *not* retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
@@ -403,6 +403,155 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-Blazor HTML page")).Click();
         Browser.Equal("This is a non-Blazor endpoint", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.Equal("undefined", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is NOT loaded
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangedEventGetsInvokedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id($"location-changed-count-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id($"location-changed-count-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangedEventGetsInvokedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count-server")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+
+        // LocationChanged event gets invoked for both interactive runtimes
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void NavigationManagerUriGetsUpdatedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith($"/nav/location-changed/{renderMode}", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+
+        Assert.EndsWith($"/nav/location-changed/{renderMode}?query=1", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void NavigationManagerUriGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-server")).Text);
+        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+
+        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-server")).Text);
+        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupplyParameterFromQueryGetsUpdatedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupplyParameterFromQueryGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangingEventGetsInvokedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id($"location-changing-count-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangingEventGetsInvokedOnEnhancedNavigationOnlyForRuntimeThatInvokedNavigation(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changing-count-server")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changing-count-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+
+        // LocationChanging event gets invoked only for the interactive runtime that invoked navigation
+        var anotherRuntime = runtimeThatInvokedNavigation == "server" ? "wasm" : "server";
+        Browser.Equal("1", () => Browser.Exists(By.Id($"location-changing-count-{runtimeThatInvokedNavigation}")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{anotherRuntime}")).Text);
     }
 
     private void AssertEnhancedUpdateCountEquals(long count)

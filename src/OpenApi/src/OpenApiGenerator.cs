@@ -186,9 +186,9 @@ internal sealed class OpenApiGenerator
             eligibileAnnotations[statusCode] = (discoveredTypeAnnotation, discoveredContentTypeAnnotation);
         }
 
-        if (eligibileAnnotations.Count == 0)
+        if (responseType != null && eligibileAnnotations.Count == 0)
         {
-            GenerateDefaultResponses(eligibileAnnotations, responseType);
+            GenerateDefaultResponses(eligibileAnnotations, responseType!);
         }
 
         foreach (var annotation in eligibileAnnotations)

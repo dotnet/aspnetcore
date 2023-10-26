@@ -171,7 +171,7 @@ internal class EndpointParameter
             EndpointParameters = matchedProperties.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
             if (isDefaultConstructor == true)
             {
-                var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.LookupName} = {p.EmitHandlerArgument()}"));
+                var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.SymbolName} = {p.EmitHandlerArgument()}"));
                 AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {{ {parameterList} }}";
             }
             else

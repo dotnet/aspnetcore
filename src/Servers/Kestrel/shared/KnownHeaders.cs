@@ -858,10 +858,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal partial class {loop.ClassName} : IHeaderDictionary
     {{{(loop.Bytes != null ?
         $@"
-        private static ReadOnlySpan<byte> HeaderBytes => new byte[]
-        {{
-            {Each(loop.Bytes, b => $"{b},")}
-        }};"
+        private static ReadOnlySpan<byte> HeaderBytes => [{Each(loop.Bytes, b => $"{b},")}];"
         : "")}
         private HeaderReferences _headers;
 {Each(loop.Headers.Where(header => header.ExistenceCheck), header => $@"

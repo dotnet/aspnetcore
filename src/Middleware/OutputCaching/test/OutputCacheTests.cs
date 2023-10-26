@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -932,6 +933,100 @@ public class OutputCacheTests
             var subsequentResponse = await client.SendAsync(TestUtils.CreateRequest("HEAD", "?contentLength=10"));
 
             await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+        }
+    }
+
+    [Fact]
+    public async Task MiddlewareFaultsAreObserved()
+    {
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: _ => throw new SomeException());
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+
+            for (int i = 0; i < 10; i++)
+            {
+                await RunClient(server);
+            }
+        }
+
+        static async Task RunClient(TestServer server)
+        {
+            var client = server.CreateClient();
+            await Assert.ThrowsAsync<SomeException>(
+                () => client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "")));
+        }
+    }
+
+    sealed class SomeException : Exception { }
+
+    [Fact]
+    public async Task ServesCorrectlyUnderConcurrentLoad()
+    {
+        var builders = TestUtils.CreateBuildersWithOutputCaching();
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+
+            var guid = await RunClient(server, -1);
+
+            var clients = new Task<Guid>[1024];
+            for (int i = 0; i < clients.Length; i++)
+            {
+                clients[i] = Task.Run(() => RunClient(server, i));
+            }
+            await Task.WhenAll(clients);
+
+            // note already completed
+            for (int i = 0; i < clients.Length; i++)
+            {
+                Assert.Equal(guid, await clients[i]);
+            }
+        }
+
+        static async Task<Guid> RunClient(TestServer server, int id)
+        {
+            string s = null;
+            try
+            {
+                var client = server.CreateClient();
+                var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, ""));
+                var len = resp.Content.Headers.ContentLength;
+                s = await resp.Content.ReadAsStringAsync();
+
+                Assert.NotNull(len);
+                Guid value;
+                switch (len.Value)
+                {
+                    case 36:
+                        // usually we just write a guid
+                        Assert.True(Guid.TryParse(s, out value));
+                        break;
+                    case 98:
+                        // the file-based builder prepends extra data
+                        Assert.True(Guid.TryParse(s.Substring(s.Length - 36), out value));
+                        break;
+                    default:
+                        Assert.Fail($"Unexpected length: {len.Value}");
+                        value = Guid.NewGuid(); // not reached
+                        break;
+                }
+                return value;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Client {id} failed; payload '{s}', failure: {ex.Message}", ex);
+            }
         }
     }
 

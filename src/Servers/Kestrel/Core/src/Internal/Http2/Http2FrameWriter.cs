@@ -17,8 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 internal sealed class Http2FrameWriter
 {
     // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
-    // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
+    private static ReadOnlySpan<byte> ContinueBytes => [0x08, 0x03, (byte)'1', (byte)'0', (byte)'0'];
 
     /// Increase this value to be more lenient (disconnect fewer clients).
     /// A non-positive value will disable the limit.
@@ -127,7 +126,7 @@ internal sealed class Http2FrameWriter
         // This is bounded by the maximum number of concurrent Http2Streams per Http2Connection.
         // This isn't the same as SETTINGS_MAX_CONCURRENT_STREAMS, but typically double (with a floor of 100)
         // which is the max number of Http2Streams that can end up in the Http2Connection._streams dictionary.
-        // 
+        //
         // Setting a lower limit of SETTINGS_MAX_CONCURRENT_STREAMS might be sufficient because a stream shouldn't
         // be rescheduling itself after being completed or canceled, but we're going with the more conservative limit
         // in case there's some logic scheduling completed or canceled streams unnecessarily.
