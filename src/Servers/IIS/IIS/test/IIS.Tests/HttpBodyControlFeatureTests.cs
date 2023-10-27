@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;

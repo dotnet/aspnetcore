@@ -4,7 +4,7 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Microsoft.Extensions.Logging;
 using Xunit.Sdk;
 

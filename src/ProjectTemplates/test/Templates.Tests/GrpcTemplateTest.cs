@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;

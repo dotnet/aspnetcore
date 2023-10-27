@@ -4,9 +4,9 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
-[TestCaseOrderer("Microsoft.AspNetCore.Testing.AlphabeticalOrderer", "Microsoft.AspNetCore.Testing.Tests")]
+[TestCaseOrderer("Microsoft.AspNetCore.TestUtils.AlphabeticalOrderer", "Microsoft.AspNetCore.TestUtils.Tests")]
 public class ConditionalFactTest : IClassFixture<ConditionalFactTest.ConditionalFactAsserter>
 {
     public ConditionalFactTest(ConditionalFactAsserter collector)

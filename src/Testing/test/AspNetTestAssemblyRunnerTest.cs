@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 public class AspNetTestAssemblyRunnerTest
 {

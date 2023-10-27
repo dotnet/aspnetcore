@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;

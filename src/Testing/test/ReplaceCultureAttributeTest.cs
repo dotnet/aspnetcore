@@ -4,7 +4,7 @@
 using System.Globalization;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 public class RepalceCultureAttributeTest
 {

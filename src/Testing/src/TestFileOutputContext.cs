@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Shared;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 /// <summary>
 /// Provides access to file storage for the running test. Get access by

@@ -14,7 +14,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 /// <summary>
 /// Lightweight version of HttpClient implemented using Socket and SslStream.

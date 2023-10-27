@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 public class TestPathUtilitiesTest
 {

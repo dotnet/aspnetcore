@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;

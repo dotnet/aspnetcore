@@ -4,7 +4,7 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Win32;
 

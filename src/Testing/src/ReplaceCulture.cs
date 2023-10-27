@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Reflection;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 /// <summary>
 /// Replaces the current culture and UI culture for the test.

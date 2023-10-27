@@ -3,10 +3,10 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 public class DockerTests
 {

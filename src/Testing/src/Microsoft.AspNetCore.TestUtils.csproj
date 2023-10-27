@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Testing.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.TestUtils.Tests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cryptography.KeyDerivation;

@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;

@@ -4,7 +4,7 @@
 using System;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 /// <summary>
 /// Marks a test as "Quarantined" so that the build will sequester it and ignore failures.
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Testing;
 /// </item>
 /// </list>
 /// </example>
-[TraitDiscoverer("Microsoft.AspNetCore.Testing." + nameof(QuarantinedTestTraitDiscoverer), "Microsoft.AspNetCore.Testing")]
+[TraitDiscoverer("Microsoft.AspNetCore.TestUtils." + nameof(QuarantinedTestTraitDiscoverer), "Microsoft.AspNetCore.TestUtils")]
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
 public sealed class QuarantinedTestAttribute : Attribute, ITraitAttribute
 {

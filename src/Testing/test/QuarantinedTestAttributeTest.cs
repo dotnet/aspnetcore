@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.Tests;
+namespace Microsoft.AspNetCore.TestUtils.Tests;
 
 public class QuarantinedTestAttributeTest
 {

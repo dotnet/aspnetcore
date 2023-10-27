@@ -7,7 +7,7 @@ using Grpc.Core;
 using IntegrationTestsWebsite;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests;

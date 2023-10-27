@@ -101,13 +101,13 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.Supported</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.TestUtils.Selenium.Supported</_Parameter1>
         <_Parameter2>$(_SeleniumE2ETestsSupportedAttributeValue)</_Parameter2>
       </AssemblyAttribute>
 
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.SeleniumConfigPath</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.TestUtils.SeleniumConfigPath</_Parameter1>
         <_Parameter2>$(SeleniumConfigPath)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
@@ -118,7 +118,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.ProcessTracking</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.TestUtils.Selenium.ProcessTracking</_Parameter1>
         <_Parameter2>$(SeleniumProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
@@ -126,7 +126,7 @@
     <ItemGroup>
       <AssemblyAttribute
         Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.SauceConnect.ProcessTracking</_Parameter1>
+        <_Parameter1>Microsoft.AspNetCore.TestUtils.SauceConnect.ProcessTracking</_Parameter1>
         <_Parameter2>$(SauceConnectProcessTrackingFolder)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>

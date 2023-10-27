@@ -4,7 +4,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 

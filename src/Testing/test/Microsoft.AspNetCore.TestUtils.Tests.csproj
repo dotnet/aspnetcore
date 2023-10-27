@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.TestUtils" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
 

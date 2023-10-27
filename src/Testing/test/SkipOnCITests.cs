@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.Tests;
+namespace Microsoft.AspNetCore.TestUtils.Tests;
 
 public class SkipOnCITests
 {

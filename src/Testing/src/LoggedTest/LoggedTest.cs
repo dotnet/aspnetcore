@@ -5,7 +5,7 @@ using System.Reflection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 public class LoggedTest : LoggedTestBase
 {

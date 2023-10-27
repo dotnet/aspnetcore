@@ -89,7 +89,7 @@ public class SeleniumStandaloneServer : IDisposable
 
         var seleniumConfigPath = typeof(SeleniumStandaloneServer).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .FirstOrDefault(k => k.Key == "Microsoft.AspNetCore.Testing.SeleniumConfigPath")
+            .FirstOrDefault(k => k.Key == "Microsoft.AspNetCore.TestUtils.SeleniumConfigPath")
             ?.Value;
 
         if (seleniumConfigPath == null)
@@ -316,7 +316,7 @@ Captured output lines:
     private static string GetProcessTrackingFolder() =>
         typeof(SeleniumStandaloneServer).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "Microsoft.AspNetCore.Testing.Selenium.ProcessTracking").Value;
+            .Single(a => a.Key == "Microsoft.AspNetCore.TestUtils.Selenium.ProcessTracking").Value;
 
     public void Dispose()
     {

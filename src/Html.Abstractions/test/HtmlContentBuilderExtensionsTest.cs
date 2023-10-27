@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNetCore.Html.Test;

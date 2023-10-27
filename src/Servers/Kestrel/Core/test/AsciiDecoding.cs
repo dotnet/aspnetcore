@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.TestUtils;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;

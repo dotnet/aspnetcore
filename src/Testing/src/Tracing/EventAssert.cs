@@ -7,7 +7,7 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.Tracing;
+namespace Microsoft.AspNetCore.TestUtils.Tracing;
 
 public class EventAssert
 {

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 public class AssemblyFixtureAttribute : Attribute

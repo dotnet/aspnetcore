@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.TestUtils
 {
     public class TestContextTest : ITestMethodLifecycle
     {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Testing
     }
 }
 
-namespace Microsoft.AspNetCore.Testing.Tests
+namespace Microsoft.AspNetCore.TestUtils.Tests
 {
     public class TestContextNameShorteningTest : ITestMethodLifecycle
     {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
     }
 }
 
-namespace Microsoft.AspNetCore.Testing
+namespace Microsoft.AspNetCore.TestUtils
 {
     [ShortClassName]
     public class TestContextTestClassShortNameAttributeTest : ITestMethodLifecycle

@@ -6,7 +6,7 @@ using System.ComponentModel;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.TestUtils;
 
 // This is a workaround for https://github.com/xunit/xunit/issues/1782 - as such, this code is a copy-paste
 // from xUnit with the exception of fixing the bug.
