@@ -112,16 +112,16 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
     // legacy browsers that don't support it by falling back on the older logic, even
     // though it won't work properly with ShadowDOM. This can be removed in the next
     // major release.
-    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A' || 'a');
+    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A', 'a');
   }
 }
 
-function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
+function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string, optionalTagName?: string) {
   return !element
     ? null
-    : element.tagName === tagName
+    : element.tagName === tagName || (optionalTagName && element.tagName === optionalTagName)
       ? element
-      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
+      : findClosestAnchorAncestorLegacy(element.parentElement, tagName, optionalTagName);
 }
 
 export function hasInteractiveRouter(): boolean {
