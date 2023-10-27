@@ -102,7 +102,7 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
     // know what internal element was clicked.
     for (let i = 0; i < path.length; i++) {
       const candidate = path[i];
-      if (candidate instanceof Element && candidate.tagName === 'A') {
+      if (candidate instanceof Element && (candidate.tagName === 'A' || candidate.tagName === 'a')) {
         return candidate as HTMLAnchorElement;
       }
     }
@@ -112,7 +112,7 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
     // legacy browsers that don't support it by falling back on the older logic, even
     // though it won't work properly with ShadowDOM. This can be removed in the next
     // major release.
-    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A');
+    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A' || 'a');
   }
 }
 

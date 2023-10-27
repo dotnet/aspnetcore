@@ -98,7 +98,6 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Check we got there, but we did *not* retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
-
     }
 
     [Fact]
@@ -114,7 +113,36 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Check we got there, and it did retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.Equal("Other", originalH1Elem.Text);
+    }
 
+    [Fact]
+    public void EnhancedNavWorksInsideSVGElement()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("svg-nav-link")).Click();
+
+        // Check we got there, and it did retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("Other", originalH1Elem.Text);
+    }
+
+    [Fact]
+    public void EnhancedNavCanBeDisabledInSVGElement()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("svg-not-enhanced-nav-link")).Click();
+
+        // Check we got there, but we did *not* retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
     }
 
     [Fact]
