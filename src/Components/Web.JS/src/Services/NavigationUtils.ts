@@ -93,9 +93,7 @@ function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
 }
 
 function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
-  // _blazorDisableComposedPath is a temporary escape hatch in case any problems are discovered
-  // in this logic. It can be removed in a later release, and should not be considered supported API.
-  const path = !window['_blazorDisableComposedPath'] && event.composedPath && event.composedPath();
+  const path = event.composedPath && event.composedPath();
   if (path) {
     // This logic works with events that target elements within a shadow root,
     // as long as the shadow mode is 'open'. For closed shadows, we can't possibly
@@ -105,23 +103,9 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
       if (candidate instanceof HTMLAnchorElement || candidate instanceof SVGAElement) {
         return candidate as HTMLAnchorElement;
       }
-    }
-    return null;
-  } else {
-    // Since we're adding use of composedPath in a patch, retain compatibility with any
-    // legacy browsers that don't support it by falling back on the older logic, even
-    // though it won't work properly with ShadowDOM. This can be removed in the next
-    // major release.
-    return findClosestAnchorAncestorLegacy(event.target as Element | null);
-  }
-}
-
-function findClosestAnchorAncestorLegacy(element: Element | null) {
-  return !element
-    ? null
-    : element.tagName === 'A' || element.tagName === 'a'
-      ? element
-      : findClosestAnchorAncestorLegacy(element.parentElement);
+    } 
+  } 
+  return null;
 }
 
 export function hasInteractiveRouter(): boolean {
