@@ -2,7 +2,7 @@
 
 **IMPORTANT**: As part of posting this comment, please make sure:
 - that the issue is properly labeled with both `area-` and `feature-` labels.
-- to apply one of the `Complexity: ` labels is applied to the issue [Simple | Medium | Hard]
+- to apply one of the `Complexity: <value>` labels is applied to the issue [Simple | Medium | Hard]
 - for an issue which was marked with `Complexity: Simple` label, it may be a good fit for a first-time contributors to this repo.
   If so, please also apply `good-first-issue` label.
 -->
