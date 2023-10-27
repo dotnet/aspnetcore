@@ -102,7 +102,7 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
     // know what internal element was clicked.
     for (let i = 0; i < path.length; i++) {
       const candidate = path[i];
-      if (candidate instanceof Element && (candidate.tagName === 'A' || candidate.tagName === 'a')) {
+      if (candidate instanceof HTMLAnchorElement || candidate instanceof SVGAElement) {
         return candidate as HTMLAnchorElement;
       }
     }
