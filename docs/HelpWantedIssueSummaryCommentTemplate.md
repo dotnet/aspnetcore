@@ -7,6 +7,8 @@
   If so, please also apply `good-first-issue` label.
 -->
 
+# Help Wanted
+
 ## Issue Summary
 
 <!-- This section will be filled in by the engineers assigned to this  -->

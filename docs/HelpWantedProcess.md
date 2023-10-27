@@ -1,3 +1,5 @@
+# Help Wanted Process
+
 This document describes the process that the team uses for identifying candidate issues for community members to tackle.
 
 ## Process
