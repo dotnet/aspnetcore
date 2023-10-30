@@ -112,7 +112,7 @@ function InitializeDotNetCli {
   export DOTNET_MULTILEVEL_LOOKUP=0
 
   # Disable first run since we want to control all package sources
-  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+  export DOTNET_NOLOGO=1
 
   # Disable telemetry on CI
   if [[ $ci == true ]]; then
@@ -165,7 +165,7 @@ function InitializeDotNetCli {
   Write-PipelinePrependPath -path "$dotnet_root"
 
   Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
-  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
+  Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
