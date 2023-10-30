@@ -86,13 +86,13 @@ function eventHasSpecialKey(event: MouseEvent) {
   return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
 }
 
-function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
+function canProcessAnchor(anchorTarget: HTMLAnchorElement | SVGAElement) {
   const targetAttributeValue = anchorTarget.getAttribute('target');
   const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
   return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
 }
 
-function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
+function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | SVGAElement | null {
   const path = event.composedPath && event.composedPath();
   if (path) {
     // This logic works with events that target elements within a shadow root,
@@ -101,7 +101,7 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
     for (let i = 0; i < path.length; i++) {
       const candidate = path[i];
       if (candidate instanceof HTMLAnchorElement || candidate instanceof SVGAElement) {
-        return candidate as HTMLAnchorElement;
+        return candidate;
       }
     } 
   } 
