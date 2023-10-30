@@ -92,7 +92,7 @@ export class JSInitializer {
           // Skipping "adjustedPath" initializer.
           jsInitializer.logger?.log(
             LogLevel.Warning,
-            `Initializer '${adjustedPath}' will be ignored because multiple runtimes are available. use 'before(web|webAssembly|server)Start' and 'after(web|webAssembly|server)Started?' instead.)`
+            `Initializer '${adjustedPath}' will be ignored because multiple runtimes are available. Use 'before(Web|WebAssembly|Server)Start' and 'after(Web|WebAssembly|Server)Started' instead.`
           );
         } else if (runLegacyInitializers) {
           return runClassicInitializers(jsInitializer, beforeStart, afterStarted, initializerArguments);
