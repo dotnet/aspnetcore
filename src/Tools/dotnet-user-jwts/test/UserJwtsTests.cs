@@ -656,6 +656,21 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         Assert.Contains(Path.Combine(projectPath, project), _console.GetOutput());
     }
 
+    [Fact]
+    public void List_CanHandleRelativePathAsOption()
+    {
+        var projectPath = _fixture.CreateProject();
+        var targetPath = Path.GetRelativePath(Path.GetTempPath(), projectPath);
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        Directory.SetCurrentDirectory(Path.GetTempPath());
+
+        var app = new Program(_console);
+        app.Run(new[] { "list", "--project", targetPath });
+
+        Assert.DoesNotContain($"The project file '{targetPath}' does not exist.", _console.GetOutput());
+        Assert.Contains(Path.Combine(projectPath, project), _console.GetOutput());
+    }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     public void Create_CreatesFileWithUserOnlyUnixFileMode()
