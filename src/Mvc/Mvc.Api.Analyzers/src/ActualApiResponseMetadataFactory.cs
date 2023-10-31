@@ -66,7 +66,7 @@ public static class ActualApiResponseMetadataFactory
 
         if (returnedValue is null || returnedValue is IInvalidOperation)
         {
-            return new ActualApiResponseMetadata?[] { null };
+            return [null];
         }
 
         // Covers conversion in the `IActionResult GetResult => NotFound()` case.
@@ -81,10 +81,7 @@ public static class ActualApiResponseMetadataFactory
         if (statementReturnType is not null && !symbolCache.IActionResult.IsAssignableFrom(statementReturnType))
         {
             // Return expression is not an instance of IActionResult. Must be returning the "model".
-            return new ActualApiResponseMetadata?[]
-            {
-                new ActualApiResponseMetadata(returnOperation, statementReturnType)
-            };
+            return [new ActualApiResponseMetadata(returnOperation, statementReturnType)];
         }
 
         var defaultStatusCodeAttribute = statementReturnType
@@ -149,13 +146,10 @@ public static class ActualApiResponseMetadataFactory
 
         if (statusCode == null)
         {
-            return new ActualApiResponseMetadata?[] { null };
+            return [null];
         }
 
-        return new ActualApiResponseMetadata?[]
-        {
-            new ActualApiResponseMetadata(returnOperation, statusCode.Value, returnType)
-        };
+        return [new ActualApiResponseMetadata(returnOperation, statusCode.Value, returnType)];
     }
 
     private static (int? statusCode, ITypeSymbol? returnType) InspectInitializers(
