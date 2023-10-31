@@ -181,7 +181,7 @@ public class BrowserFixture : IAsyncLifetime
                 // replace the current selenium server instance and let a new instance take over for the
                 // remaining tests.
                 var driver = new ChromeDriver(
-                    ChromeDriverService.CreateDefaultService(),
+                    CreateChromeDriverService(output),
                     opts,
                     TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
 
@@ -201,6 +201,27 @@ public class BrowserFixture : IAsyncLifetime
         } while (attempt < maxAttempts);
 
         throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive", innerException);
+    }
+
+    private static ChromeDriverService CreateChromeDriverService(ITestOutputHelper output)
+    {
+        // In AzDO, the path to the system chromedriver is in an env var called CHROMEWEBDRIVER
+        // We want to use this because it should match the installed browser version
+        // If the env var is not set, then we fall back on allowing Selenium Manager to download
+        // and use an up-to-date chromedriver
+        var chromeDriverPathEnvVar = Environment.GetEnvironmentVariable("CHROMEWEBDRIVER");
+        if (!string.IsNullOrEmpty(chromeDriverPathEnvVar))
+        {
+            output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
+            return ChromeDriverService.CreateDefaultService(
+                Path.GetDirectoryName(chromeDriverPathEnvVar),
+                Path.GetFileName(chromeDriverPathEnvVar));
+        }
+        else
+        {
+            output.WriteLine($"Using default chromedriver from Selenium Manager");
+            return ChromeDriverService.CreateDefaultService();
+        }
     }
 
     private static string UserProfileDirectory(string context)
