@@ -3,80 +3,123 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.InspectReturnExpressionTests
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers.TestFiles.InspectReturnExpressionTestsForSwitchExpression
 {
     public class TestController : ControllerBase
     {
         public object InspectReturnExpression_ReturnsDefaultResponseMetadata_IfReturnedTypeIsNotActionResult()
         {
-            return new TestModel();
+            return true switch
+            {
+                _ => new TestModel()
+            };
         }
 
         public IActionResult InspectReturnExpression_ReturnsStatusCodeFromDefaultStatusCodeAttributeOnActionResult()
         {
-            return Unauthorized();
+            return true switch
+            {
+                _ => Unauthorized()
+            };
         }
 
         public IActionResult InspectReturnExpression_ReturnsStatusCodeFromStatusCodePropertyAssignment()
         {
-            return new ObjectResult(new object()) { StatusCode = 201 };
+            return true switch
+            {
+                _ => new ObjectResult(new object()) { StatusCode = 201 }
+            };
         }
 
         public IActionResult InspectReturnExpression_ReturnsStatusCodeFromConstructorAssignment()
         {
-            return new StatusCodeResult(204);
+            return true switch
+            {
+                _ => new StatusCodeResult(204)
+            };
         }
 
         public IActionResult InspectReturnExpression_ReturnsStatusCodeFromHelperMethod()
         {
-            return StatusCode(302);
+            return true switch
+            {
+                _ => StatusCode(302)
+            };
         }
 
         public IActionResult InspectReturnExpression_UsesExplicitlySpecifiedStatusCode_ForActionResultWithDefaultStatusCode()
         {
-            return new BadRequestObjectResult(new object())
+            return true switch
             {
-                StatusCode = StatusCodes.Status422UnprocessableEntity,
+                _ => new BadRequestObjectResult(new object())
+                {
+                    StatusCode = StatusCodes.Status422UnprocessableEntity,
+                }
             };
         }
 
         public IActionResult InspectReturnExpression_ReadsStatusCodeConstant()
         {
-            return StatusCode(StatusCodes.Status423Locked);
+            return true switch
+            {
+                _ => StatusCode(StatusCodes.Status423Locked)
+            };
         }
 
         public IActionResult InspectReturnExpression_DoesNotReadLocalFieldWithConstantValue()
         {
             var statusCode = StatusCodes.Status429TooManyRequests;
-            return StatusCode(statusCode);
+
+            return true switch
+            {
+                _ => StatusCode(statusCode)
+            };
         }
 
         public IActionResult InspectReturnExpression_FallsBackToDefaultStatusCode_WhenAppliedStatusCodeCannotBeRead()
         {
             var statusCode = StatusCodes.Status422UnprocessableEntity;
-            return new BadRequestObjectResult(new object()) { StatusCode = statusCode };
+
+            return true switch
+            {
+                _ => new BadRequestObjectResult(new object()) { StatusCode = statusCode }
+            };
         }
 
         public IActionResult InspectReturnExpression_SetsReturnType_WhenLiteralTypeIsSpecifiedInConstructor()
         {
-            return new BadRequestObjectResult(new TestModel());
+            return true switch
+            {
+                _ => new BadRequestObjectResult(new TestModel())
+            };
         }
 
         public IActionResult InspectReturnExpression_SetsReturnType_WhenLocalValueIsSpecifiedInConstructor()
         {
             var local = new TestModel();
-            return new BadRequestObjectResult(local);
+
+            return true switch
+            {
+                _ => new BadRequestObjectResult(local)
+            };
         }
 
         public IActionResult InspectReturnExpression_ReturnsNullReturnType_IfValueIsNotSpecified()
         {
-            return NotFound();
+            return true switch
+            {
+                _ => NotFound()
+            };
         }
 
         public ActionResult<TestModel> InspectReturnExpression_SetsReturnType_WhenValueIsReturned()
         {
             var local = new TestModel();
-            return local;
+
+            return true switch
+            {
+                _ => local
+            };
         }
     }
 

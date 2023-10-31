@@ -381,14 +381,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
     private async Task<ActualApiResponseMetadata?[]> RunInspectReturnStatementSyntax(ReturnOperationTestVariant variant = ReturnOperationTestVariant.Default, [CallerMemberName] string test = null)
     {
-        // Arrange
-        var compilation = await GetCompilation("InspectReturnExpressionTests");
+        var testClassName = GetTestClassName(variant);
+        var controllerTypeName = GetControllerTypeName(variant);
+
+        var compilation = await GetCompilation(testClassName);
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var controllerType = compilation.GetTypeByMetadataName(typeof(TestFiles.InspectReturnExpressionTests.TestController).FullName);
+        var controllerType = compilation.GetTypeByMetadataName(controllerTypeName);
         var syntaxTree = controllerType.DeclaringSyntaxReferences[0].SyntaxTree;
-
-        var testName = variant == ReturnOperationTestVariant.Default ? test : $"{test}_{variant}";
 
         var method = (IMethodSymbol)Assert.Single(controllerType.GetMembers(test));
         var methodSyntax = syntaxTree.GetRoot().FindNode(method.Locations[0].SourceSpan);
@@ -425,5 +425,25 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
         return project.GetCompilationAsync();
+    }
+
+    private string GetTestClassName(ReturnOperationTestVariant variant)
+    {
+        return variant switch
+        {
+            ReturnOperationTestVariant.SwitchExpression => "InspectReturnExpressionTestsForSwitchExpression",
+            _ => "InspectReturnExpressionTests",
+        };
+    }
+
+    private string GetControllerTypeName(ReturnOperationTestVariant variant)
+    {
+        var controllerType = variant switch
+        {
+            ReturnOperationTestVariant.SwitchExpression => typeof(TestFiles.InspectReturnExpressionTestsForSwitchExpression.TestController),
+            _ => typeof(TestFiles.InspectReturnExpressionTests.TestController),
+        };
+
+        return controllerType.FullName;
     }
 }
