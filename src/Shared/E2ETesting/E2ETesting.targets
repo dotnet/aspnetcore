@@ -42,21 +42,6 @@
     <Message Importance="High" Text="Ensuring JAVA is available" />
     <Exec Command="java -version" />
     <Message Importance="High" Text="JAVA is available on the PATH" />
-
-    <!-- package.json -->
-    <Error Condition="!Exists('$(_PackageJson)')" Text="Can't find $(_PackageJson)" />
-    <ReadLinesFromFile File="$(_PackageJson)">
-      <Output TaskParameter="Lines" ItemName="_PackageJsonLines" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup>
-      <_PackageJsonLinesContent>@(_PackageJsonLines)</_PackageJsonLinesContent>
-      <_PackageJsonSeleniumPackage>&quot;selenium-standalone&quot;: &quot;^7.1.0&quot;</_PackageJsonSeleniumPackage>
-    </PropertyGroup>
-
-    <Error
-      Condition="!$(_PackageJsonLinesContent.Contains ('$(_PackageJsonSeleniumPackage)'))"
-      Text="Can't find dependency $(_PackageJsonSeleniumPackage) in '$(_PackageJson)'" />
   </Target>
 
   <!-- Resolve content roots at build time -->
