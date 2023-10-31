@@ -213,9 +213,7 @@ public class BrowserFixture : IAsyncLifetime
         if (!string.IsNullOrEmpty(chromeDriverPathEnvVar))
         {
             output.WriteLine($"Using chromedriver at path {chromeDriverPathEnvVar}");
-            return ChromeDriverService.CreateDefaultService(
-                Path.GetDirectoryName(chromeDriverPathEnvVar),
-                Path.GetFileName(chromeDriverPathEnvVar));
+            return ChromeDriverService.CreateDefaultService(chromeDriverPathEnvVar);
         }
         else
         {
