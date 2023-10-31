@@ -157,7 +157,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     {
         try
         {
-            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value);
+            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, WebRendererId.Server, value);
         }
         catch (JSDisconnectedException)
         {

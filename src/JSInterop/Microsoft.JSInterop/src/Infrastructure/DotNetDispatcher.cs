@@ -388,7 +388,12 @@ public static class DotNetDispatcher
     private static (MethodInfo methodInfo, Type[] parameterTypes) GetCachedMethodInfo(IDotNetObjectReference objectReference, string methodIdentifier)
     {
         var type = objectReference.Value.GetType();
+
+        // Suppressed with "pragma warning disable" in addition to WarningSuppressions.xml so ILLink Roslyn Anayzer doesn't report the warning.
+#pragma warning disable IL2111 // Method with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
         var assemblyMethods = _cachedMethodsByType.GetOrAdd(type, ScanTypeForCallableMethods);
+#pragma warning restore IL2111 // Method with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
+
         if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
         {
             return result;

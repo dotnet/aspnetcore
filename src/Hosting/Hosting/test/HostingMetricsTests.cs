@@ -92,16 +92,15 @@ public class HostingMetricsTests
         static void AssertRequestDuration(CollectedMeasurement<double> measurement, string httpVersion, int statusCode, string exceptionName = null, bool? unhandledRequest = null)
         {
             Assert.True(measurement.Value > 0);
-            Assert.Equal("http", (string)measurement.Tags["network.protocol.name"]);
             Assert.Equal(httpVersion, (string)measurement.Tags["network.protocol.version"]);
             Assert.Equal(statusCode, (int)measurement.Tags["http.response.status_code"]);
             if (exceptionName == null)
             {
-                Assert.False(measurement.Tags.ContainsKey("exception.type"));
+                Assert.False(measurement.Tags.ContainsKey("error.type"));
             }
             else
             {
-                Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+                Assert.Equal(exceptionName, (string)measurement.Tags["error.type"]);
             }
             if (unhandledRequest ?? false)
             {

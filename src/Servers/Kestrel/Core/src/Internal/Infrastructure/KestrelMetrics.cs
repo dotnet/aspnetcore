@@ -116,7 +116,7 @@ internal sealed class KestrelMetrics
         {
             if (exception != null)
             {
-                tags.Add("exception.type", exception.GetType().FullName);
+                tags.Add("error.type", exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -298,7 +298,7 @@ internal sealed class KestrelMetrics
         }
         if (exception != null)
         {
-            tags.Add("exception.type", exception.GetType().FullName);
+            tags.Add("error.type", exception.GetType().FullName);
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);

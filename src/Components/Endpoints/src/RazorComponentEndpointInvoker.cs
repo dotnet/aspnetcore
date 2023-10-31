@@ -126,6 +126,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
+        else
+        {
+            _renderer.EmitInitializersIfNecessary(context, bufferWriter);
+        }
 
         // Emit comment containing state.
         if (!isErrorHandler)
