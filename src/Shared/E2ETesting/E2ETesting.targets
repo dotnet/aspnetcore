@@ -12,17 +12,6 @@
     </Content>
   </ItemGroup>
 
-  <!-- Ensuring that everything is ready before build -->
-  <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
-    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-
-    <Message Condition="'$(EnforceE2ETestPrerequisites)' != 'true'"
-      Importance="High"
-      Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result." />
-
-    <Yarn Command="install --mutex network --frozen-lockfile" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"/>
-  </Target>
-
   <Target
     Name="WarnSeleniumNotSupported"
     BeforeTargets="Build"
@@ -32,11 +21,7 @@
 
   <!-- Running prerequisites -->
 
-  <Target Name="EnsurePrerequisites" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" BeforeTargets="EnsureNodeJSRestored">
-    <PropertyGroup>
-      <_PackageJson>$(MSBuildProjectDirectory)\package.json</_PackageJson>
-    </PropertyGroup>
-
+  <Target Name="EnsurePrerequisites" Condition="'$(EnforceE2ETestPrerequisites)' == 'true'" BeforeTargets="Build">
     <!-- JAVA -->
     <!-- https://github.com/dotnet/aspnetcore-internal/issues/2555 -->
     <Message Importance="High" Text="Ensuring JAVA is available" />
@@ -88,12 +73,6 @@
         Include="System.Reflection.AssemblyMetadataAttribute">
         <_Parameter1>Microsoft.AspNetCore.Testing.Selenium.Supported</_Parameter1>
         <_Parameter2>$(_SeleniumE2ETestsSupportedAttributeValue)</_Parameter2>
-      </AssemblyAttribute>
-
-      <AssemblyAttribute
-        Include="System.Reflection.AssemblyMetadataAttribute">
-        <_Parameter1>Microsoft.AspNetCore.Testing.SeleniumConfigPath</_Parameter1>
-        <_Parameter2>$(SeleniumConfigPath)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
