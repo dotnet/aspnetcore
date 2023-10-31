@@ -44,7 +44,7 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
     {
         Navigate($"{ServerPathBase}/httpcontext");
         Browser.Equal("GET", () => Browser.FindElement(By.Id("request-method")).Text);
-        Browser.Equal("/httpcontext", () => Browser.FindElement(By.Id("request-path")).Text);
+        Browser.Equal("/httpcontext-FAIL-ON-PURPOSE", () => Browser.FindElement(By.Id("request-path")).Text);
 
         // We can't see the response status code using Selenium, so make a direct request
         var response = await new HttpClient().GetAsync(Browser.Url);
