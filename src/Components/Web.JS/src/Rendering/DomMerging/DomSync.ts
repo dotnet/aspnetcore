@@ -358,7 +358,7 @@ function ensureEditableValueSynchronized(destination: Element, value: any) {
       if (destination.checked !== value) {
         destination.checked = value as boolean;
       }
-    }  else if (destination.value !== value) {
+    } else if (destination.value !== value) {
       destination.value = value as string;
     }
   }
