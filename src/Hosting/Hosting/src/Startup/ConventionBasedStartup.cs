@@ -23,7 +23,7 @@ internal sealed class ConventionBasedStartup : IStartup
         {
             _methods.ConfigureDelegate(app);
         }
-        catch (Exception ex) when (ex is TargetInvocationException)
+        catch (TargetInvocationException ex)
         {
             ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
             throw;
@@ -36,7 +36,7 @@ internal sealed class ConventionBasedStartup : IStartup
         {
             return _methods.ConfigureServicesDelegate(services);
         }
-        catch (Exception ex) when (ex is TargetInvocationException)
+        catch (TargetInvocationException ex)
         {
             ExceptionDispatchInfo.Capture(ex.InnerException!).Throw();
             throw;
