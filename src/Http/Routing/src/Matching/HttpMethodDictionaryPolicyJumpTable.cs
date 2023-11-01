@@ -22,9 +22,9 @@ internal sealed class HttpMethodDictionaryPolicyJumpTable : PolicyJumpTable
         Dictionary<string, int>? corsPreflightDestinations)
     {
         _exitDestination = exitDestination;
-        _destinations = destinations?.ToFrozenDictionary();
+        _destinations = destinations?.ToFrozenDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
         _corsPreflightExitDestination = corsPreflightExitDestination;
-        _corsPreflightDestinations = corsPreflightDestinations?.ToFrozenDictionary();
+        _corsPreflightDestinations = corsPreflightDestinations?.ToFrozenDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
 
         _supportsCorsPreflight = _corsPreflightDestinations != null && _corsPreflightDestinations.Count > 0;
     }
