@@ -114,6 +114,59 @@ public class PersistentComponentState
         }
     }
 
+    /// <summary>
+    /// Serializes <paramref name="instance"/> as JSON and persists it under the given <paramref name="key"/>.
+    /// </summary>
+    /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="instance">The instance to persist.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    public void PersistAsJson<TValue>(string key, TValue instance, JsonTypeInfo<TValue> jsonTypeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+        if (!PersistingState)
+        {
+            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+        }
+
+        if (_currentState.ContainsKey(key))
+        {
+            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+        }
+
+        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, jsonTypeInfo));
+    }
+
+    /// <summary>
+    /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
+    /// instance of type <typeparamref name="TValue"/>.
+    /// When the key is present, the state is successfully returned via <paramref name="instance"/>
+    /// and removed from the <see cref="PersistentComponentState"/>.
+    /// </summary>
+    /// <param name="key">The key used to persist the instance.</param>
+    /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
+    /// <param name="instance">The persisted instance.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    public bool TryTakeFromJson<TValue>(string key, JsonTypeInfo<TValue> jsonTypeInfo, [MaybeNullWhen(false)] out TValue? instance)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(jsonTypeInfo);
+
+        if (TryTake(key, out var data))
+        {
+            var reader = new Utf8JsonReader(data);
+            instance = JsonSerializer.Deserialize<TValue>(ref reader, jsonTypeInfo)!;
+            return true;
+        }
+        else
+        {
+            instance = default;
+            return false;
+        }
+    }
+
     private bool TryTake(string key, out byte[]? value)
     {
         ArgumentNullException.ThrowIfNull(key);
