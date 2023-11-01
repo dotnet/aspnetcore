@@ -699,12 +699,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             isConsumed = ParseRequest(ref reader);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException) when (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
         {
-            if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
-            {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
-            }
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
             throw;
         }
 #pragma warning disable CS0618 // Type or member is obsolete
