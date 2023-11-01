@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
@@ -8,9 +9,9 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 internal sealed class HttpMethodDictionaryPolicyJumpTable : PolicyJumpTable
 {
     private readonly int _exitDestination;
-    private readonly Dictionary<string, int>? _destinations;
+    private readonly FrozenDictionary<string, int>? _destinations;
     private readonly int _corsPreflightExitDestination;
-    private readonly Dictionary<string, int>? _corsPreflightDestinations;
+    private readonly FrozenDictionary<string, int>? _corsPreflightDestinations;
 
     private readonly bool _supportsCorsPreflight;
 
@@ -21,9 +22,9 @@ internal sealed class HttpMethodDictionaryPolicyJumpTable : PolicyJumpTable
         Dictionary<string, int>? corsPreflightDestinations)
     {
         _exitDestination = exitDestination;
-        _destinations = destinations;
+        _destinations = destinations?.ToFrozenDictionary();
         _corsPreflightExitDestination = corsPreflightExitDestination;
-        _corsPreflightDestinations = corsPreflightDestinations;
+        _corsPreflightDestinations = corsPreflightDestinations?.ToFrozenDictionary();
 
         _supportsCorsPreflight = _corsPreflightDestinations != null && _corsPreflightDestinations.Count > 0;
     }
