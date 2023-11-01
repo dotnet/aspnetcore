@@ -140,7 +140,6 @@ function onDocumentSubmit(event: SubmitEvent) {
     }
 
     performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
-    formElem.reset();
   }
 }
 
