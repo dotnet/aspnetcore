@@ -231,9 +231,9 @@ Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collectio
 Microsoft.AspNetCore.Components.ParameterView.TryGetValue<TValue>(string! parameterName, out TValue result) -> bool
 Microsoft.AspNetCore.Components.PersistentComponentState
 Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson<TValue>(string! key, TValue instance) -> void
-Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson<TValue>(string! key, TValue? instance, JsonTypeInfo<TValue> jsonTypeInfo) -> void
+Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson<TValue>(string! key, TValue? instance, JsonTypeInfo<TValue>! jsonTypeInfo) -> void
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
-Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, JsonTypeInfo<TValue> jsonTypeInfo, out TValue? instance) -> bool
+Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, JsonTypeInfo<TValue>! jsonTypeInfo, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.Dispose() -> void
