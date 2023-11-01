@@ -1784,4 +1784,19 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             .FindElements(By.CssSelector("a.active"))
             .Select(x => x.Text));
     }
+
+    [Fact]
+    public void ClickOnAnchorInsideSVGElementGetsIntercepted()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Anchor inside SVG Element")).Click();
+
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count")).Text);
+
+        Browser.FindElement(By.Id("svg-link")).Click();
+
+        // If the click was intercepted then LocationChanged works
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count")).Text);
+    }
 }
