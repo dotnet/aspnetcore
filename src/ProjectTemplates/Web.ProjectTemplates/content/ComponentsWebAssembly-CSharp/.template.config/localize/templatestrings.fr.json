@@ -1,9 +1,12 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Application WebAssembly Blazor",
+  "name": "Application Blazor WebAssembly autonome",
   "description": "Modèle de projet permettant de créer une application Blazor qui s'exécute sur WebAssembly. Vous pouvez utiliser ce modèle pour les applications web ayant des IU (interfaces utilisateur) dynamiques riches.",
   "symbols/Framework/description": "Framework cible du projet.",
   "symbols/Framework/choices/net8.0/description": "Cible net8.0",
+  "symbols/IncludeSampleContent/displayName": "_Inclure des exemples de pages",
+  "symbols/IncludeSampleContent/description": "Configure s'il faut ajouter des exemples de pages et de style pour illustrer les modèles d'utilisation de base.",
+  "symbols/Empty/description": "Configure s'il faut omettre les exemples de pages et le style qui illustrent les modèles d'utilisation de base.",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/auth/choices/None/description": "Aucune authentification",
   "symbols/auth/choices/Individual/description": "Authentification individuelle",

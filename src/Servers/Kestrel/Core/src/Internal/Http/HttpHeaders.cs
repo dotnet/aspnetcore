@@ -115,7 +115,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
     bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
-    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToList();
+    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
 

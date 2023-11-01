@@ -1289,6 +1289,18 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
+    public void Refresh_FullyReloadsTheCurrentPage()
+    {
+        SetUrlViaPushState("/");
+
+        Browser.MountTestComponent<NavigationManagerComponent>();
+        Browser.FindElement(By.Id("programmatic-refresh")).Click();
+
+        // If the page fully reloads, the NavigationManagerComponent will no longer be mounted
+        Browser.DoesNotExist(By.Id("programmatic-refresh"));
+    }
+
+    [Fact]
     public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
         => PreventDefault_CanBlockNavigation("internal", "target");
 
@@ -1771,5 +1783,20 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal(linkTexts, () => Browser
             .FindElements(By.CssSelector("a.active"))
             .Select(x => x.Text));
+    }
+
+    [Fact]
+    public void ClickOnAnchorInsideSVGElementGetsIntercepted()
+    {
+        SetUrlViaPushState("/");
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("Anchor inside SVG Element")).Click();
+
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count")).Text);
+
+        Browser.FindElement(By.Id("svg-link")).Click();
+
+        // If the click was intercepted then LocationChanged works
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count")).Text);
     }
 }

@@ -81,22 +81,53 @@ internal sealed class HubMethodDescriptor
             }
             else if (p.CustomAttributes.Any())
             {
+                var markedParameter = false;
                 foreach (var attribute in p.GetCustomAttributes(true))
                 {
                     if (attribute is IFromServiceMetadata)
                     {
-                        return MarkServiceParameter(index);
+                        ThrowIfMarked(markedParameter);
+                        markedParameter = true;
+                        MarkServiceParameter(index);
                     }
                     else if (attribute is FromKeyedServicesAttribute keyedServicesAttribute)
                     {
-                        if (serviceProviderIsService is IServiceProviderIsKeyedService keyedServiceProvider &&
-                            keyedServiceProvider.IsKeyedService(GetServiceType(p.ParameterType), keyedServicesAttribute.Key))
+                        ThrowIfMarked(markedParameter);
+                        markedParameter = true;
+
+                        if (serviceProviderIsService is IServiceProviderIsKeyedService keyedServiceProvider)
                         {
-                            KeyedServiceKeys ??= new List<(int, object)>();
-                            KeyedServiceKeys.Add((index, keyedServicesAttribute.Key));
-                            return MarkServiceParameter(index);
+                            if (keyedServiceProvider.IsKeyedService(GetServiceType(p.ParameterType), keyedServicesAttribute.Key))
+                            {
+                                KeyedServiceKeys ??= new List<(int, object)>();
+                                KeyedServiceKeys.Add((index, keyedServicesAttribute.Key));
+                                MarkServiceParameter(index);
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException($"'{p.ParameterType}' is not in DI as a keyed service.");
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"This service provider doesn't support keyed services.");
                         }
                     }
+
+                    void ThrowIfMarked(bool marked)
+                    {
+                        if (marked)
+                        {
+                            throw new InvalidOperationException(
+                                $"{methodExecutor.MethodInfo.DeclaringType?.Name}.{methodExecutor.MethodInfo.Name}: The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
+                        }
+                    }
+                }
+
+                if (markedParameter)
+                {
+                    // If the parameter is marked because of being a service, we don't want to consider it for method parameters during deserialization
+                    return false;
                 }
             }
             else if (serviceProviderIsService?.IsService(GetServiceType(p.ParameterType)) == true)

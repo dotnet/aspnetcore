@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider
 Microsoft.AspNetCore.Components.Forms.AntiforgeryStateProvider.AntiforgeryStateProvider() -> void
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken
 Microsoft.AspNetCore.Components.Forms.AntiforgeryToken.AntiforgeryToken() -> void
+Microsoft.AspNetCore.Components.Forms.EditForm.Enhance.get -> bool
+Microsoft.AspNetCore.Components.Forms.EditForm.Enhance.set -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>
 Microsoft.AspNetCore.Components.Forms.Editor<T>.Editor() -> void
 Microsoft.AspNetCore.Components.Forms.Editor<T>.NameFor(System.Linq.Expressions.LambdaExpression! expression) -> string!
@@ -44,7 +46,6 @@ Microsoft.AspNetCore.Components.Forms.Mapping.FormMappingError.Path.get -> strin
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.AcceptFormName.get -> string?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.AcceptMappingScopeName.get -> string!
-Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.FormValueMappingContext(string! acceptMappingScopeName, string? acceptFormName, System.Type! valueType, string! parameterName) -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.MapErrorToContainer.get -> System.Action<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.MapErrorToContainer.set -> void
 Microsoft.AspNetCore.Components.Forms.Mapping.FormValueMappingContext.OnError.get -> System.Action<string!, System.FormattableString!, string?>?
@@ -63,13 +64,11 @@ Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.TryCreateScopeQualifiedEventName(int componentId, string! assignedEventName, out string? scopeQualifiedEventName) -> bool
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
-Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.get -> string?
-Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Handler.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.FormName.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.FormName.set -> void
 Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
-Microsoft.AspNetCore.Components.Web.AutoRenderMode
-Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void
-Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.AutoRenderMode.Prerender.get -> bool
 Microsoft.AspNetCore.Components.Web.HtmlRenderer
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
@@ -84,45 +83,33 @@ Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Typ
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ComponentId.get -> int
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.HtmlRootComponent() -> void
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.QuiescenceTask.get -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ToHtmlString() -> string!
 Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.WriteHtmlTo(System.IO.TextWriter! output) -> void
+Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode
+Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode.InteractiveAutoRenderMode() -> void
+Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode.InteractiveAutoRenderMode(bool prerender) -> void
+Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode.Prerender.get -> bool
+Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode
+Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode.InteractiveServerRenderMode() -> void
+Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode.InteractiveServerRenderMode(bool prerender) -> void
+Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode.Prerender.get -> bool
+Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode
+Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.InteractiveWebAssemblyRenderMode() -> void
+Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.InteractiveWebAssemblyRenderMode(bool prerender) -> void
+Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode.Prerender.get -> bool
 Microsoft.AspNetCore.Components.Web.RenderMode
-Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.RenderModeAutoAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.RenderModeAutoAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.RenderModeServerAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.RenderModeServerAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.RenderModeWebAssemblyAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.RenderModeWebAssemblyAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.ServerRenderMode
-Microsoft.AspNetCore.Components.Web.ServerRenderMode.Prerender.get -> bool
-Microsoft.AspNetCore.Components.Web.ServerRenderMode.ServerRenderMode() -> void
-Microsoft.AspNetCore.Components.Web.ServerRenderMode.ServerRenderMode(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.Prerender.get -> bool
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.WebAssemblyRenderMode() -> void
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.WebAssemblyRenderMode(bool prerender) -> void
 override Microsoft.AspNetCore.Components.Forms.Editor<T>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
 override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
-override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
-override Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-override Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-override Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 static Microsoft.AspNetCore.Components.Forms.Mapping.SupplyParameterFromFormServiceCollectionExtensions.AddSupplyValueFromFormProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.AspNetCore.Components.Web.RenderMode.Auto.get -> Microsoft.AspNetCore.Components.Web.AutoRenderMode!
-static Microsoft.AspNetCore.Components.Web.RenderMode.Server.get -> Microsoft.AspNetCore.Components.Web.ServerRenderMode!
-static Microsoft.AspNetCore.Components.Web.RenderMode.WebAssembly.get -> Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode!
+static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveAuto.get -> Microsoft.AspNetCore.Components.Web.InteractiveAutoRenderMode!
+static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer.get -> Microsoft.AspNetCore.Components.Web.InteractiveServerRenderMode!
+static Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveWebAssembly.get -> Microsoft.AspNetCore.Components.Web.InteractiveWebAssemblyRenderMode!
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.RenderChildComponent(System.IO.TextWriter! output, ref Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame componentFrame) -> void
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.GetWebRendererId() -> int
-virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.UpdateRootComponents(string! operationsJson) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.EmptyContent.set -> void

@@ -34,7 +34,7 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     protected abstract bool IsGeneratorEnabled { get; }
 
-    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsPreview", "") });
+    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsPreviewNamespaces", "Microsoft.AspNetCore.Http.Generated") });
     private static readonly Project _baseProject = CreateProject();
 
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
@@ -284,6 +284,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.DependencyInjection;
 
 public static class {{className}}
 {

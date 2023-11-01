@@ -6,18 +6,11 @@ namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 /// <summary>
 /// A context that tracks information about mapping a single value from form data.
 /// </summary>
-public class FormValueMappingContext
+public sealed class FormValueMappingContext
 {
     private bool _resultSet;
 
-    /// <summary>
-    /// Initializes a new instance of <see cref="FormValueMappingContext"/>.
-    /// </summary>
-    /// <param name="acceptMappingScopeName">The name of a <see cref="FormMappingScope"/>. Values will only be mapped if the incoming data corresponds to this scope name.</param>
-    /// <param name="acceptFormName">If set, indicates that the mapping should only receive values if the incoming form matches this name. If null, the mapping should receive data from any form in the mapping scope.</param>
-    /// <param name="valueType">The <see cref="Type"/> of the value to map.</param>
-    /// <param name="parameterName">The name of the parameter to map data to.</param>
-    public FormValueMappingContext(string acceptMappingScopeName, string? acceptFormName, Type valueType, string parameterName)
+    internal FormValueMappingContext(string acceptMappingScopeName, string? acceptFormName, Type valueType, string parameterName)
     {
         ArgumentNullException.ThrowIfNull(acceptMappingScopeName, nameof(acceptMappingScopeName));
         ArgumentNullException.ThrowIfNull(valueType, nameof(valueType));

@@ -7,21 +7,20 @@
     "WebAssembly",
     "PWA"
   ],
-  "name": "Blazor WebAssembly App",
+  "name": "Blazor WebAssembly Standalone App",
   "defaultName": "BlazorApp",
   "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm",
-  "precedence": "9800",
+  "precedence": "9900",
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA",
     "0AFFA7FD-4E37-4636-AB91-3753E746DB98",
-    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
     "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
   ],
-  "identity": "Microsoft.Web.Blazor.Wasm.CSharp.8.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
+  "identity": "Microsoft.Web.Blazor.Wasm.CSharp.9.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -38,7 +37,7 @@
         ".template.config/**"
       ],
       "copyOnly": [
-        "**/wwwroot/css/**"
+        "**/wwwroot/bootstrap/**"
       ],
       "modifiers": [
         {
@@ -73,13 +72,13 @@
         {
           "condition": "(NoAuth)",
           "rename": {
-            "Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+            "Layout/MainLayout.NoAuth.razor": "Layout/MainLayout.razor"
           },
           "exclude": [
             "Pages/Authentication.razor",
-            "Shared/LoginDisplay.*.razor",
-            "Shared/MainLayout.Auth.razor",
-            "Shared/RedirectToLogin.razor",
+            "Layout/LoginDisplay.razor",
+            "Layout/MainLayout.Auth.razor",
+            "Layout/RedirectToLogin.razor",
             "wwwroot/appsettings.Development.json",
             "wwwroot/appsettings.json"
           ]
@@ -87,53 +86,48 @@
         {
           "condition": "(!NoAuth)",
           "rename": {
-            "Shared/MainLayout.Auth.razor": "Shared/MainLayout.razor"
+            "Layout/MainLayout.Auth.razor": "Layout/MainLayout.razor"
           },
           "exclude": [
-            "Shared/MainLayout.NoAuth.razor"
-          ]
-        },
-        {
-          "condition": "(IndividualLocalAuth)",
-          "rename": {
-            "Shared/LoginDisplay.IndividualLocalAuth.razor": "Shared/LoginDisplay.razor"
-          },
-          "exclude": [
-            "Shared/LoginDisplay.IndividualMsalAuth.razor"
-          ]
-        },
-        {
-          "condition": "(IndividualB2CAuth || OrganizationalAuth)",
-          "rename": {
-            "Shared/LoginDisplay.IndividualMsalAuth.razor": "Shared/LoginDisplay.razor"
-          },
-          "exclude": [
-            "Shared/LoginDisplay.IndividualLocalAuth.razor"
+            "Layout/MainLayout.NoAuth.razor"
           ]
         },
         {
           "condition": "(!GenerateApi)",
           "rename": {
-            "Shared/NavMenu.NoApi.razor": "Shared/NavMenu.razor"
+            "Layout/NavMenu.NoApi.razor": "Layout/NavMenu.razor"
           },
           "exclude": [
             "Pages/CallWebApi.razor",
-            "Shared/NavMenu.CallsWebApi.razor"
+            "Layout/NavMenu.CallsWebApi.razor"
           ]
         },
         {
           "condition": "(GenerateApi)",
           "rename": {
-            "Shared/NavMenu.CallsWebApi.razor": "Shared/NavMenu.razor"
+            "Layout/NavMenu.CallsWebApi.razor": "Layout/NavMenu.razor"
           },
           "exclude": [
-            "Shared/NavMenu.NoApi.razor"
+            "Layout/NavMenu.NoApi.razor"
           ]
         },
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(!SampleContent)",
+          "exclude": [
+            "Pages/Counter.*",
+            "Pages/Weather.*",
+            "Layout/MainLayout.razor.css",
+            "Layout/NavMenu.*",
+            "wwwroot/css/bootstrap/**",
+            "wwwroot/css/bootstrap-icons/**",
+            "wwwroot/favicon.png",
+            "wwwroot/sample-data/weather.json"
           ]
         }
       ]
@@ -146,12 +140,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net9.0",
+          "description": "Target net9.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -387,6 +381,23 @@
     "IndividualB2CAuth": {
       "type": "computed",
       "value": "(auth == \"IndividualB2C\")"
+    },
+    "IncludeSampleContent": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "_Include sample pages",
+      "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
+    },
+    "Empty": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+    },
+    "SampleContent": {
+      "type": "computed",
+      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
     },
     "NoAuth": {
       "type": "computed",

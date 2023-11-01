@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
@@ -63,14 +64,21 @@ internal static class SymbolExtensions
 
     public static bool HasAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType)
     {
+        return attributes.TryGetAttribute(attributeType, out _);
+    }
+
+    public static bool TryGetAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
         foreach (var attributeData in attributes)
         {
             if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
             {
+                matchedAttribute = attributeData;
                 return true;
             }
         }
 
+        matchedAttribute = null;
         return false;
     }
 
@@ -169,7 +177,27 @@ internal static class SymbolExtensions
     {
         return !parameterSymbol.HasExplicitDefaultValue
             ? "null"
-            : SymbolDisplay.FormatLiteral((parameterSymbol.ExplicitDefaultValue ?? "null").ToString(), parameterSymbol.ExplicitDefaultValue is string);
+            : InnerGetDefaultValueString(parameterSymbol.ExplicitDefaultValue);
+    }
+
+    private static string InnerGetDefaultValueString(object? defaultValue)
+    {
+        return defaultValue switch
+        {
+            string s => SymbolDisplay.FormatLiteral(s, true),
+            char c => SymbolDisplay.FormatLiteral(c, true),
+            bool b => b ? "true" : "false",
+            null => "default",
+            float f when f is float.NegativeInfinity => "float.NegativeInfinity",
+            float f when f is float.PositiveInfinity => "float.PositiveInfinity",
+            float f when f is float.NaN => "float.NaN",
+            float f => $"{SymbolDisplay.FormatPrimitive(f, false, false)}F",
+            double d when d is double.NegativeInfinity => "double.NegativeInfinity",
+            double d when d is double.PositiveInfinity => "double.PositiveInfinity",
+            double d when d is double.NaN => "double.NaN",
+            decimal d => $"{SymbolDisplay.FormatPrimitive(d, false, false)}M",
+            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false),
+        };
     }
 
     public static bool TryGetNamedArgumentValue<T>(this AttributeData attribute, string argumentName, out T? argumentValue)

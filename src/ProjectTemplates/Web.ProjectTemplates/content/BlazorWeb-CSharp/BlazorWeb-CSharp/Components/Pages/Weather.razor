@@ -1,11 +1,13 @@
 ﻿@page "/weather"
-@attribute [StreamRendering(true)]
+@*#if (!InteractiveAtRoot) -->
+@attribute [StreamRendering]
+##endif*@
 
 <PageTitle>Weather</PageTitle>
 
 <h1>Weather</h1>
 
-<p>This component demonstrates showing data from the server.</p>
+<p>This component demonstrates showing data.</p>
 
 @if (forecasts == null)
 {
@@ -41,7 +43,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+@*#if (InteractiveAtRoot) -->
+        // Simulate asynchronous loading to demonstrate a loading indicator
+##else
         // Simulate asynchronous loading to demonstrate streaming rendering
+##endif*@
         await Task.Delay(500);
 
         var startDate = DateOnly.FromDateTime(DateTime.Now);

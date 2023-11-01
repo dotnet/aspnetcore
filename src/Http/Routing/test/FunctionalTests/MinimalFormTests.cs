@@ -292,6 +292,53 @@ public class MinimalFormTests
         Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
     }
 
+    [Fact]
+    public async Task MapPost_WithForm_WithoutAntiforgery_AndRouteGroup_WithoutMiddleware_Works()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(b =>
+                        {
+                            var group = b.MapGroup("/todo").DisableAntiforgery();
+                            group.MapPost("", ([FromForm] Todo todo) => todo);
+                        });
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddAntiforgery();
+            })
+            .Build();
+
+        using var server = host.GetTestServer();
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "todo");
+        var nameValueCollection = new List<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string,string>("name", "Test task"),
+            new KeyValuePair<string,string>("isComplete", "false"),
+            new KeyValuePair<string,string>("dueDate", DateTime.Today.AddDays(1).ToString(CultureInfo.InvariantCulture)),
+        };
+        request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+        var response = await client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        var body = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<Todo>(body, SerializerOptions);
+        Assert.Equal("Test task", result.Name);
+        Assert.False(result.IsCompleted);
+        Assert.Equal(DateTime.Today.AddDays(1), result.DueDate);
+    }
+
     public static IEnumerable<object[]> RequestDelegateData
     {
         get
@@ -498,9 +545,8 @@ public class MinimalFormTests
         };
         request.Content = new FormUrlEncodedContent(nameValueCollection);
 
-        var exception = await Record.ExceptionAsync(async () => await client.SendAsync(request));
-        Assert.NotNull(exception);
-        Assert.Contains("An error occurred while trying to map a value from form data.", exception.Message);
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

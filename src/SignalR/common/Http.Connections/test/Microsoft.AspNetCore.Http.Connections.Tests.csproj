@@ -27,7 +27,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
     <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

@@ -3,8 +3,8 @@
 
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -22,7 +22,7 @@ public class DateHeaderValueManagerTests
     [Fact]
     public void GetDateHeaderValue_ReturnsDateValueInRFC1123Format()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var now = timeProvider.GetUtcNow();
 
         var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);
@@ -34,7 +34,7 @@ public class DateHeaderValueManagerTests
     [Fact]
     public void GetDateHeaderValue_ReturnsCachedValueBetweenTimerTicks()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var now = timeProvider.GetUtcNow();
 
         var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);
@@ -48,14 +48,12 @@ public class DateHeaderValueManagerTests
             timeProvider.Advance(TimeSpan.FromSeconds(10));
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
         }
-
-        Assert.Equal(2, timeProvider.UtcNowCalled);
     }
 
     [Fact]
     public void GetDateHeaderValue_ReturnsUpdatedValueAfterHeartbeat()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var now = timeProvider.GetUtcNow();
         var future = now.AddSeconds(10);
 
@@ -73,19 +71,18 @@ public class DateHeaderValueManagerTests
             Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
 
             // Wait for the next heartbeat before verifying GetDateHeaderValues picks up new time.
-            timeProvider.AdvanceTo(future);
+            timeProvider.SetUtcNow(future);
 
             heartbeat.OnHeartbeat();
 
             Assert.Equal(future.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
-            Assert.Equal(4, timeProvider.UtcNowCalled);
         }
     }
 
     [Fact]
     public void GetDateHeaderValue_ReturnsLastDateValueAfterHeartbeatDisposed()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var now = timeProvider.GetUtcNow();
 
         var dateHeaderValueManager = new DateHeaderValueManager(timeProvider);

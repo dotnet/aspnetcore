@@ -68,7 +68,7 @@ public sealed class HttpLoggingOptions
     /// </summary>
     public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
-    internal HashSet<string> _internalResponseHeaders = new HashSet<string>(20, StringComparer.OrdinalIgnoreCase)
+    internal HashSet<string> _internalResponseHeaders = new HashSet<string>(19, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.AcceptRanges,
             HeaderNames.Age,
@@ -109,4 +109,10 @@ public sealed class HttpLoggingOptions
     /// Maximum response body size to log (in bytes). Defaults to 32 KB.
     /// </summary>
     public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
+
+    /// <summary>
+    /// Gets or sets if the middleware will combine the request, request body, response, response body,
+    /// and duration logs into a single log entry. The default is <see langword="false"/>.
+    /// </summary>
+    public bool CombineLogs { get; set; }
 }

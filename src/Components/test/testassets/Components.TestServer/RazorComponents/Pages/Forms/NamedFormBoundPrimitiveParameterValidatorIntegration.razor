@@ -4,7 +4,7 @@
 
 <h2>Named form with bound parameter</h2>
 
-<EditForm FormName="named-form-handler" Model="Model" method="POST" OnValidSubmit="() => _submitted = true">
+<EditForm Enhance FormName="named-form-handler" Model="Model" method="POST" OnValidSubmit="() => _submitted = true">
     <ValidationSummary />
 
     <CustomNumberInput @bind-Value="Model.Parameter" />
@@ -20,7 +20,7 @@
 @code {
     bool _submitted = false;
 
-    [SupplyParameterFromForm(Handler = "named-form-handler")] public DataModel Model { get; set; }
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public DataModel Model { get; set; }
 
     [CascadingParameter] public FormMappingContext Context { get; set; }
 

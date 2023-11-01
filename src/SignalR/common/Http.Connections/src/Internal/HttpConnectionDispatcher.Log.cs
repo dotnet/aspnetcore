@@ -64,5 +64,8 @@ internal sealed partial class HttpConnectionDispatcher
         {
             UserNameChangedInternal(logger, previousUserName ?? "(null)", currentUserName ?? "(null)");
         }
+
+        [LoggerMessage(18, LogLevel.Debug, "Exception from IStatefulReconnectFeature.NotifyOnReconnect callback.", EventName = "NotifyOnReconnectError")]
+        public static partial void NotifyOnReconnectError(ILogger logger, Exception ex);
     }
 }

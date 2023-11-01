@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -20,8 +21,7 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_ThrowsIfNotOnSyncContext()
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(_ => { }))
-            .BuildServiceProvider();
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(_ => { })));
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
 
         // Act
@@ -34,8 +34,7 @@ public class HtmlRendererTest
     public async Task HtmlContent_Write_ThrowsIfNotOnSyncContext()
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(_ => { }))
-            .BuildServiceProvider();
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(_ => { })));
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         var htmlContent = await htmlRenderer.Dispatcher.InvokeAsync(htmlRenderer.BeginRenderingComponent<TestComponent>);
 
@@ -48,11 +47,11 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_CanRenderEmptyElement()
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -70,12 +69,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "p", ">", "Hello world!", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddContent(1, "Hello world!");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -93,12 +92,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "p", ">", "&lt;Hello world!&gt;", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddContent(1, "<Hello world!>");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -116,12 +115,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "p", ">", "<span>Hello world!</span>", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddMarkupContent(1, "<span>Hello world!</span>");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -139,13 +138,13 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "p", " ", "class", "=", "\"", "lead", "\"", ">", "Hello world!", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddAttribute(1, "class", "lead");
             rtb.AddContent(2, "Hello world!");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -170,18 +169,15 @@ public class HtmlRendererTest
                 "Hello world!",
             "</", "p", ">"
         };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddAttribute(1, "class", "test1");
             rtb.AddAttribute(2, "another", "another-value");
-            rtb.AddMultipleAttributes(3, new Dictionary<string, object>()
-            {
-                    { "Class", "test2" }, // Matching is case-insensitive.
-            });
+            rtb.AddMultipleAttributes(3, new Dictionary<string, object>() { { "Class", "test2" }, });
             rtb.AddContent(4, "Hello world!");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -193,19 +189,19 @@ public class HtmlRendererTest
             AssertHtmlContentEquals(expectedHtml, result);
         });
     }
-    
+
     [Fact]
     public async Task RenderComponentAsync_HtmlEncodesAttributeValues()
     {
         // Arrange
         var expectedHtml = new[] { "<", "p", " ", "class", "=", "\"", "&lt;lead", "\"", ">", "Hello world!", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddAttribute(1, "class", "<lead");
             rtb.AddContent(2, "Hello world!");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -224,12 +220,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "input", " ", "disabled", " />" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "input");
             rtb.AddAttribute(1, "disabled", true);
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -247,12 +243,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "input", " />" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "input");
             rtb.AddAttribute(1, "disabled", false);
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -270,14 +266,14 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = new[] { "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "span");
             rtb.AddContent(2, "Hello world!");
             rtb.CloseElement();
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -299,7 +295,7 @@ public class HtmlRendererTest
             "<", "span", ">", "Bye Bye world!", "</", "span", ">",
             "</", "p", ">"
         };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "span");
@@ -309,7 +305,7 @@ public class HtmlRendererTest
             rtb.AddContent(4, "Bye Bye world!");
             rtb.CloseElement();
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -334,14 +330,13 @@ public class HtmlRendererTest
             "</select>" +
             @"<option value=""b"">unrelated option</option>" +
             "</p>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "select");
             rtb.AddAttribute(2, "unrelated-attribute-before", "a");
             rtb.AddAttribute(3, "value", "b");
             rtb.AddAttribute(4, "unrelated-attribute-after", "c");
-
             foreach (var optionValue in new[] { "a", "b", "c" })
             {
                 rtb.OpenElement(5, "option");
@@ -357,9 +352,8 @@ public class HtmlRendererTest
             rtb.AddAttribute(10, "value", "b");
             rtb.AddContent(11, "unrelated option");
             rtb.CloseElement(); // option
-
             rtb.CloseElement(); // p
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -377,14 +371,14 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<textarea rows=\"10\" cols=\"20\">Hello &lt;html&gt;-encoded content!</textarea>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "textarea");
             rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
             rtb.AddAttribute(2, "rows", "10");
             rtb.AddAttribute(3, "cols", "20");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -402,14 +396,14 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<textarea rows=\"10\" cols=\"20\">Hello &lt;html&gt;-encoded content!</textarea>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "textarea");
             rtb.AddAttribute(1, "rows", "10");
             rtb.AddAttribute(2, "cols", "20");
             rtb.AddContent(3, "Hello <html>-encoded content!");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -427,13 +421,13 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<textarea rows=\"10\" cols=\"20\"></textarea>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "textarea");
             rtb.AddAttribute(1, "rows", "10");
             rtb.AddAttribute(2, "cols", "20");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -451,13 +445,13 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<textarea>Hello World!</textarea>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "textarea");
             rtb.AddAttribute(1, "value", "Hello World!");
             rtb.AddContent(3, "Some content");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -475,13 +469,13 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "input");
             rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
             rtb.AddAttribute(2, "id", "Test");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -499,12 +493,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<meta>Something</meta>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "meta");
             rtb.AddContent(1, "Something");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -522,14 +516,14 @@ public class HtmlRendererTest
     {
         // Arrange
         var expectedHtml = "<input value=\"Hello &lt;html&gt;-encoded content!\" id=\"Test\" />";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "input");
             rtb.AddAttribute(1, "value", "Hello <html>-encoded content!");
             rtb.AddAttribute(2, "id", "Test");
             rtb.AddElementReferenceCapture(3, inputReference => _ = inputReference);
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -552,7 +546,7 @@ public class HtmlRendererTest
             @"<optgroup><option value=""beta"" selected>beta</option></optgroup>" +
             @"<optgroup><option value=""gamma"">gamma</option></optgroup>" +
             "</select>";
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "select");
             rtb.AddAttribute(1, "value", "beta");
@@ -568,7 +562,7 @@ public class HtmlRendererTest
             }
 
             rtb.CloseElement(); // select
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -589,7 +583,7 @@ public class HtmlRendererTest
                 "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">",
                 "<", "span", ">", "Child content!", "</", "span", ">"
             };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "span");
@@ -599,7 +593,7 @@ public class HtmlRendererTest
             rtb.OpenComponent(3, typeof(ChildComponent));
             rtb.AddAttribute(4, "Value", "Child content!");
             rtb.CloseComponent();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -620,7 +614,7 @@ public class HtmlRendererTest
                 "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">",
                 "<", "span", ">", "Child content!", "</", "span", ">"
             };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "span");
@@ -631,7 +625,7 @@ public class HtmlRendererTest
             rtb.AddAttribute(4, "Value", "Child content!");
             rtb.AddComponentReferenceCapture(5, cr => { });
             rtb.CloseComponent();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -661,9 +655,7 @@ public class HtmlRendererTest
             rtb.CloseElement();
         });
 
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton(new Func<ParameterView, RenderFragment>(Content))
-            .BuildServiceProvider();
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new Func<ParameterView, RenderFragment>(Content)));
         Action<ChangeEventArgs> change = (ChangeEventArgs changeArgs) => throw new InvalidOperationException();
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
@@ -688,16 +680,14 @@ public class HtmlRendererTest
         // Arrange
         var expectedHtml = new[] {
                 "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.OpenElement(1, "span");
-            rtb.AddContent(2,
-                // This internally creates a region frame.
-                rf => rf.AddContent(0, "Hello world!"));
+            rtb.AddContent(2, rf => rf.AddContent(0, "Hello world!"));
             rtb.CloseElement();
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -718,17 +708,15 @@ public class HtmlRendererTest
         {
             "<", "p", ">", "<", "span", ">", "Hello world!", "</", "span", ">", "</", "p", ">"
         };
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "p");
             rtb.AddElementReferenceCapture(1, er => { });
             rtb.OpenElement(2, "span");
-            rtb.AddContent(3,
-                // This internally creates a region frame.
-                rf => rf.AddContent(0, "Hello world!"));
+            rtb.AddContent(3, rf => rf.AddContent(0, "Hello world!"));
             rtb.CloseElement();
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -766,7 +754,7 @@ public class HtmlRendererTest
         // Arrange
         var expectedHtml = new[] {
                 "<", "p", ">", "20", "</", "p", ">" };
-        var serviceProvider = new ServiceCollection().AddSingleton<AsyncComponent>().BuildServiceProvider();
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton<AsyncComponent>());
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -792,7 +780,7 @@ public class HtmlRendererTest
                 "<", "p", ">", "80", "</", "p", ">"
             };
 
-        var serviceProvider = new ServiceCollection().AddSingleton<AsyncComponent>().BuildServiceProvider();
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton<AsyncComponent>());
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -847,12 +835,12 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_CanOutputToTextWriter()
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(builder =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(builder =>
         {
             builder.OpenElement(0, "p");
             builder.AddContent(1, "Hey!");
             builder.CloseElement();
-        })).BuildServiceProvider();
+        })));
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         using var ms = new MemoryStream();
         using var writer = new StreamWriter(ms, new UTF8Encoding(false));
@@ -875,10 +863,9 @@ public class HtmlRendererTest
     {
         // Arrange
         var completionTcs = new TaskCompletionSource();
-        var services = new ServiceCollection();
-        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task });
+        var services = GetServiceProvider(collection =>collection.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task }));
 
-        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+        var htmlRenderer = GetHtmlRenderer(services);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             // Act/Assert: state before quiescence
@@ -898,10 +885,9 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_ThrowsSync()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = new TaskCompletionSource().Task });
+        var services = GetServiceProvider(collection => collection.AddSingleton(new AsyncLoadingComponentCompletion { Task = new TaskCompletionSource().Task }));
 
-        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+        var htmlRenderer = GetHtmlRenderer(services);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             // Act/Assert
@@ -921,10 +907,9 @@ public class HtmlRendererTest
     {
         // Arrange
         var completionTcs = new TaskCompletionSource();
-        var services = new ServiceCollection();
-        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = Task.Delay(0) });
+        var services = GetServiceProvider(collection => collection.AddSingleton(new AsyncLoadingComponentCompletion { Task = Task.Delay(0) }));
 
-        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+        var htmlRenderer = GetHtmlRenderer(services);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             // Act/Assert
@@ -941,10 +926,9 @@ public class HtmlRendererTest
     public async Task BeginRenderingComponent_ThrowsSync()
     {
         // Arrange
-        var services = new ServiceCollection();
-        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = new TaskCompletionSource().Task });
+        var services = GetServiceProvider(collection => collection.AddSingleton(new AsyncLoadingComponentCompletion { Task = new TaskCompletionSource().Task }));
 
-        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+        var htmlRenderer = GetHtmlRenderer(services);
         await htmlRenderer.Dispatcher.InvokeAsync(() =>
         {
             // Act/Assert
@@ -964,10 +948,9 @@ public class HtmlRendererTest
     {
         // Arrange
         var completionTcs = new TaskCompletionSource();
-        var services = new ServiceCollection();
-        services.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task });
+        var services = GetServiceProvider(collection => collection.AddSingleton(new AsyncLoadingComponentCompletion { Task = completionTcs.Task }));
 
-        var htmlRenderer = GetHtmlRenderer(services.BuildServiceProvider());
+        var htmlRenderer = GetHtmlRenderer(services);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             // Act/Assert
@@ -986,15 +969,56 @@ public class HtmlRendererTest
     }
 
     [Fact]
+    public async Task RenderComponentAsync_CanRenderScriptTag_WithJavaScriptEncodedContent()
+    {
+        // This is equivalent to Razor markup similar to:
+        //
+        //     <script>
+        //         alert('Hello, @name!');
+        //     </script>
+        //     And now with HTML encoding: @name
+        //
+        // Currently some extra linebreaks are needed to work around a Razor compiler issue (otherwise
+        // everything is treated as content to be encoded) but once https://github.com/dotnet/razor/issues/9204
+        // is fixed, the above should be correct.
+
+        // Arrange
+        var name = "Person with special chars like ' \" </script>";
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "script");
+            rtb.AddMarkupContent(1, "\n    alert('Hello, ");
+            rtb.AddContent(2, name);
+            rtb.AddMarkupContent(3, "!');\n");
+            rtb.CloseElement();
+            rtb.AddMarkupContent(4, "\nAnd now with HTML encoding: ");
+            rtb.AddContent(5, name);
+        })));
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal(@"<script>
+    alert('Hello, Person with special chars like \u0027 \u0022 \u003C/script\u003E!');
+</script>
+And now with HTML encoding: Person with special chars like &#x27; &quot; &lt;/script&gt;".Replace("\r", ""), result.ToHtmlString());
+        });
+    }
+
+    [Fact]
     public async Task RenderComponentAsync_IgnoresNamedEvents()
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "div");
-            rtb.AddNamedEvent(1, "someevent", "somename");
+            rtb.AddNamedEvent("someevent", "somename");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -1012,12 +1036,12 @@ public class HtmlRendererTest
     {
         // Arrange
         var formValueMapper = new TestFormValueMapper();
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
-            rtb.AddNamedEvent(1, "onsubmit", "somename");
+            rtb.AddNamedEvent("onsubmit", "somename");
             rtb.CloseElement();
-        })).BuildServiceProvider();
+        })));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -1035,14 +1059,14 @@ public class HtmlRendererTest
     {
         // Arrange
         var formValueMapper = new TestFormValueMapper();
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenElement(0, "form");
-            rtb.AddNamedEvent(1, "onsubmit", "some <name>");
+            rtb.AddNamedEvent("onsubmit", "some <name>");
             rtb.CloseElement();
         }))
             .AddSingleton<ICascadingValueSupplier>(new SupplyParameterFromFormValueProvider(formValueMapper, ""))
-            .AddSingleton<IFormValueMapper>(formValueMapper).BuildServiceProvider();
+            .AddSingleton<IFormValueMapper>(formValueMapper));
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -1059,18 +1083,18 @@ public class HtmlRendererTest
     public async Task RenderComponentAsync_AddsHiddenInputForNamedSubmitEvents_InsideNamedFormMappingScope()
     {
         // Arrange
-        var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
         {
             rtb.OpenComponent<FormMappingScope>(0);
             rtb.AddComponentParameter(1, nameof(FormMappingScope.Name), "myscope");
             rtb.AddComponentParameter(1, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)(ctx => rtb =>
             {
                 rtb.OpenElement(0, "form");
-                rtb.AddNamedEvent(1, "onsubmit", "somename");
+                rtb.AddNamedEvent("onsubmit", "somename");
                 rtb.CloseElement();
             }));
             rtb.CloseComponent();
-        })).AddSingleton<IFormValueMapper, TestFormValueMapper>().BuildServiceProvider();
+        })).AddSingleton<IFormValueMapper, TestFormValueMapper>());
 
         var htmlRenderer = GetHtmlRenderer(serviceProvider);
         await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -1080,6 +1104,102 @@ public class HtmlRendererTest
 
             // Assert
             Assert.Equal("<form><input type=\"hidden\" name=\"_handler\" value=\"[myscope]somename\" /></form>", result.ToHtmlString());
+        });
+    }
+
+    [Theory]
+    [InlineData("https://example.com/", "https://example.com", "/")]
+    [InlineData("https://example.com/", "https://example.com/", "/")]
+    [InlineData("https://example.com/", "https://example.com/page", "/page")]
+    [InlineData("https://example.com/", "https://example.com/a/b/c", "/a/b/c")]
+    [InlineData("https://example.com/", "https://example.com/a/b/c?q=1&p=hello%20there", "/a/b/c?q=1&p=hello%20there")]
+    [InlineData("https://example.com/subdir/", "https://example.com/subdir", "/subdir")]
+    [InlineData("https://example.com/subdir/", "https://example.com/subdir/", "/subdir/")]
+    [InlineData("https://example.com/a/b/", "https://example.com/a/b/c?q=1&p=2", "/a/b/c?q=1&p=2")]
+    [InlineData("http://user:pass@xyz.example.com:1234/a/b/", "http://user:pass@xyz.example.com:1234/a/b/c&q=1&p=2", "/a/b/c&q=1&p=2")]
+    public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithoutAttributes_WhenNoActionSpecified(
+        string baseUrl, string currentUrl, string expectedAction)
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.CloseElement();
+        })).AddScoped<NavigationManager>(_ => new TestNavigationManager(baseUrl, currentUrl)));
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal($"<form action=\"{HttpUtility.HtmlAttributeEncode(expectedAction)}\"></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_AddsActionAttributeWithCurrentUrlToFormWithAttributes_WhenNoActionSpecified()
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.AddAttribute(1, "method", "post");
+            rtb.CloseElement();
+        })).AddScoped<NavigationManager, TestNavigationManager>());
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form method=\"post\" action=\"/page\"></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_DoesNotAddActionAttributeWithCurrentUrl_WhenActionIsExplicitlySpecified()
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.AddAttribute(1, "action", "https://example.com/explicit");
+            rtb.CloseElement();
+        })).AddScoped<NavigationManager, TestNavigationManager>());
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form action=\"https://example.com/explicit\"></form>", result.ToHtmlString());
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_DoesNotAddActionAttributeWithCurrentUrl_WhenNoNavigationManagerIsRegistered()
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider(collection => collection.AddSingleton(new RenderFragment(rtb =>
+        {
+            rtb.OpenElement(0, "form");
+            rtb.CloseElement();
+        })));
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+
+            // Assert
+            Assert.Equal("<form></form>", result.ToHtmlString());
         });
     }
 
@@ -1202,7 +1322,8 @@ public class HtmlRendererTest
         {
             status = "Loading...";
             await Completion.Task;
-            await Task.Yield(); // So that the test has to await the quiescence task to observe the final outcome
+            await Task.Yield();
+            // So that the test has to await the quiescence task to observe the final outcome
             status = "Finished loading";
         }
 
@@ -1253,6 +1374,7 @@ public class HtmlRendererTest
         {
             var services = new ServiceCollection();
             services.AddLogging();
+            services.AddScoped<NavigationManager, TestNavigationManager>();
 
             serviceProvider = services.BuildServiceProvider();
         }
@@ -1267,5 +1389,31 @@ public class HtmlRendererTest
 
         public void Map(FormValueMappingContext context)
             => throw new NotImplementedException();
+    }
+
+    private class TestNavigationManager : NavigationManager
+    {
+        private string _baseUrl;
+        private string _currentUrl;
+
+        public TestNavigationManager()
+            : this("https://www.example.com/", "https://www.example.com/page")
+        {
+        }
+
+        public TestNavigationManager(string baseUrl, string currentUrl)
+        {
+            _baseUrl = baseUrl;
+            _currentUrl = currentUrl;
+        }
+
+        protected override void EnsureInitialized() => Initialize(_baseUrl, _currentUrl);
+    }
+
+    private IServiceProvider GetServiceProvider(Action<IServiceCollection> configure = null)
+    {
+        var services = new ServiceCollection();
+        configure?.Invoke(services);
+        return services.BuildServiceProvider();
     }
 }

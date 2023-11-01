@@ -8,7 +8,7 @@ using TestServer;
 using Xunit.Abstractions;
 using Components.TestServer.RazorComponents;
 using OpenQA.Selenium;
-using System.Globalization;
+using OpenQA.Selenium.Support.Extensions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -71,78 +71,105 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void EnhancedNavRequestsIncludeExpectedHeaders()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("List headers")).Click();
+
+        var ul = Browser.Exists(By.Id("all-headers"));
+        var allHeaders = ul.FindElements(By.TagName("li")).Select(x => x.Text.ToLowerInvariant()).ToList();
+
+        // Specifying text/html is to make the enhanced nav outcomes more similar to non-enhanced nav.
+        // For example, the default error middleware will only serve the error page if this content type is requested.
+        // The blazor-enhanced-nav parameter can be used to trigger arbitrary server-side behaviors.
+        Assert.Contains("accept: text/html; blazor-enhanced-nav=on", allHeaders);
+    }
+
+    [Fact]
+    public void EnhancedNavCanBeDisabledHierarchically()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("not-enhanced-nav-link")).Click();
+
+        // Check we got there, but we did *not* retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+    }
+
+    [Fact]
+    public void EnhancedNavCanBeReenabledHierarchically()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (re-enabled enhanced nav)")).Click();
+
+        // Check we got there, and it did retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("Other", originalH1Elem.Text);
+    }
+
+    [Fact]
+    public void EnhancedNavWorksInsideSVGElement()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("svg-nav-link")).Click();
+
+        // Check we got there, and it did retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("Other", originalH1Elem.Text);
+    }
+
+    [Fact]
+    public void EnhancedNavCanBeDisabledInSVGElementContainingAnchor()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("svg-not-enhanced-nav-link")).Click();
+
+        // Check we got there, but we did *not* retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+    }
+
+    [Fact]
+    public void EnhancedNavCanBeDisabledInSVGElementInsideAnchor()
+    {
+        Navigate($"{ServerPathBase}/nav");
+
+        var originalH1Elem = Browser.Exists(By.TagName("h1"));
+        Browser.Equal("Hello", () => originalH1Elem.Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.Id("svg-in-anchor-not-enhanced-nav-link")).Click();
+
+        // Check we got there, but we did *not* retain the <h1> element
+        Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+    }
+
+    [Fact]
     public void ScrollsToHashWithContentAddedAsynchronously()
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Scroll to hash")).Click();
-        Assert.Equal(0, BrowserScrollY);
+        Assert.Equal(0, Browser.GetScrollY());
 
         var asyncContentHeader = Browser.Exists(By.Id("some-content"));
         Browser.Equal("Some content", () => asyncContentHeader.Text);
-        Browser.True(() => BrowserScrollY > 500);
-    }
-
-    [Fact]
-    public void CanFollowSynchronousRedirection()
-    {
-        Navigate($"{ServerPathBase}/nav");
-
-        var h1Elem = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Hello", () => h1Elem.Text);
-
-        // Click a link and show we redirected, preserving elements, and updating the URL
-        // Note that in this specific case we can't preserve the hash part of the URL, as it
-        // gets lost when the browser follows a 'fetch' redirection. If we decide it's important
-        // to support this later, we'd have to change the server not to do a real redirection
-        // here and instead use the same protocol it uses for external redirections.
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect")).Click();
-        Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
-
-        // See that 'back' takes you to the place from before the redirection
-        Browser.Navigate().Back();
-        Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav", Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowAsynchronousRedirectionWhileStreaming()
-    {
-        Navigate($"{ServerPathBase}/nav");
-
-        var h1Elem = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Hello", () => h1Elem.Text);
-
-        // Click a link and show we redirected, preserving elements, scrolling to hash, and updating the URL
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect while streaming")).Click();
-        Browser.Equal("Scroll to hash", () => h1Elem.Text);
-        Browser.True(() => BrowserScrollY > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
-
-        // See that 'back' takes you to the place from before the redirection
-        Browser.Navigate().Back();
-        Browser.Equal("Hello", () => h1Elem.Text);
-        Assert.EndsWith("/subdir/nav", Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowSynchronousExternalRedirection()
-    {
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
-    }
-
-    [Fact]
-    public void CanFollowAsynchronousExternalRedirectionWhileStreaming()
-    {
-        Navigate($"{ServerPathBase}/nav");
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-
-        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Redirect external while streaming")).Click();
-        Browser.Contains("microsoft.com", () => Browser.Url);
+        Browser.True(() => Browser.GetScrollY() > 500);
     }
 
     [Theory]
@@ -181,9 +208,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData("server")]
-    [InlineData("webassembly")]
-    public void CanPerformProgrammaticEnhancedRefresh(string renderMode)
+    [InlineData("server", "refresh-with-navigate-to")]
+    [InlineData("webassembly", "refresh-with-navigate-to")]
+    [InlineData("server", "refresh-with-refresh")]
+    [InlineData("webassembly", "refresh-with-refresh")]
+    public void CanPerformProgrammaticEnhancedRefresh(string renderMode, string refreshButtonId)
     {
         Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
@@ -199,7 +228,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => int.TryParse(renderIdElement.Text, out initialRenderId));
         Assert.NotEqual(-1, initialRenderId);
 
-        Browser.Exists(By.Id("perform-enhanced-refresh")).Click();
+        Browser.Exists(By.Id(refreshButtonId)).Click();
         Browser.True(() =>
         {
             if (IsElementStale(renderIdElement) || !int.TryParse(renderIdElement.Text, out var newRenderId))
@@ -235,7 +264,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
         Assert.NotEqual(-1, initialRenderId);
 
-        Browser.Exists(By.Id("perform-page-reload")).Click();
+        Browser.Exists(By.Id("reload-with-navigate-to")).Click();
         Browser.True(() => IsElementStale(initialRenderIdElement));
 
         var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
@@ -250,11 +279,326 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.EndsWith("/nav", Browser.Url);
     }
 
-    private long BrowserScrollY
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void RefreshCanFallBackOnFullPageReload(string renderMode)
     {
-        get => Convert.ToInt64(((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
-        set => ((IJavaScriptExecutor)Browser).ExecuteScript($"window.scrollTo(0, {value})");
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true, skipNavigation: true);
+        Browser.Navigate().Refresh();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element becomes stale
+        // across renders to ensure that a full page reload occurs.
+        var initialRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var initialRenderId = -1;
+        Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+
+        Browser.Exists(By.Id("refresh-with-refresh")).Click();
+        Browser.True(() => IsElementStale(initialRenderIdElement));
+
+        var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var finalRenderId = -1;
+        Browser.True(() => int.TryParse(finalRenderIdElement.Text, out finalRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+        Assert.True(finalRenderId > initialRenderId);
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
     }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("webassembly")]
+    public void RefreshWithForceReloadDoesFullPageReload(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
+        Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
+        
+        // Normally, you shouldn't store references to elements because they could become stale references
+        // after the page re-renders. However, we want to explicitly test that the element becomes stale
+        // across renders to ensure that a full page reload occurs.
+        var initialRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var initialRenderId = -1;
+        Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+
+        Browser.Exists(By.Id("reload-with-refresh")).Click();
+        Browser.True(() => IsElementStale(initialRenderIdElement));
+
+        var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
+        var finalRenderId = -1;
+        Browser.True(() => int.TryParse(finalRenderIdElement.Text, out finalRenderId));
+        Assert.NotEqual(-1, initialRenderId);
+        Assert.True(finalRenderId > initialRenderId);
+
+        // Ensure that the history stack was correctly updated
+        Browser.Navigate().Back();
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav", Browser.Url);
+    }
+
+    [Fact]
+    public void CanRegisterAndRemoveEnhancedPageUpdateCallback()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        Browser.Click(By.Id("stop-listening"));
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        void AssertEnhancedUpdateCountEquals(long count)
+            => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
+    }
+
+    [Fact]
+    public void ElementsWithDataPermanentAttribute_HavePreservedContent()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        Browser.Equal("Preserved content", () => Browser.Exists(By.Id("preserved-content")).Text);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        Browser.Equal("Preserved content", () => Browser.Exists(By.Id("preserved-content")).Text);
+    }
+
+    [Fact]
+    public void ElementsWithoutDataPermanentAttribute_DoNotHavePreservedContent()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        Browser.Equal("Non preserved content", () => Browser.Exists(By.Id("non-preserved-content")).Text);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        Browser.Equal("", () => Browser.Exists(By.Id("non-preserved-content")).Text);
+    }
+
+    [Fact]
+    public void EnhancedNavNotUsedForNonBlazorDestinations()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("object", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is loaded
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-Blazor HTML page")).Click();
+        Browser.Equal("This is a non-Blazor endpoint", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.Equal("undefined", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is NOT loaded
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangedEventGetsInvokedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id($"location-changed-count-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id($"location-changed-count-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangedEventGetsInvokedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count-server")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+
+        // LocationChanged event gets invoked for both interactive runtimes
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void NavigationManagerUriGetsUpdatedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith($"/nav/location-changed/{renderMode}", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+
+        Assert.EndsWith($"/nav/location-changed/{renderMode}?query=1", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void NavigationManagerUriGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-server")).Text);
+        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+
+        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-server")).Text);
+        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupplyParameterFromQueryGetsUpdatedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id($"query-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void SupplyParameterFromQueryGetsUpdatedOnEnhancedNavigation_BothServerAndWebAssembly(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("query-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-server")).Text);
+        Browser.Equal("2", () => Browser.Exists(By.Id("query-wasm")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangingEventGetsInvokedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{renderMode}")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id($"location-changing-count-{renderMode}")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void LocationChangingEventGetsInvokedOnEnhancedNavigationOnlyForRuntimeThatInvokedNavigation(string runtimeThatInvokedNavigation)
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
+        Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changing-count-server")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changing-count-wasm")).Text);
+
+        Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
+
+        // LocationChanging event gets invoked only for the interactive runtime that invoked navigation
+        var anotherRuntime = runtimeThatInvokedNavigation == "server" ? "wasm" : "server";
+        Browser.Equal("1", () => Browser.Exists(By.Id($"location-changing-count-{runtimeThatInvokedNavigation}")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{anotherRuntime}")).Text);
+    }
+
+    private void AssertEnhancedUpdateCountEquals(long count)
+        => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 
     private static bool IsElementStale(IWebElement element)
     {

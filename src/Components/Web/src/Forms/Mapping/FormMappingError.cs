@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms.Mapping;
 /// <summary>
 /// An error that occurred during the form mapping process.
 /// </summary>
-public class FormMappingError
+public sealed class FormMappingError
 {
     private static readonly char[] Separators = new char[] { '.', '[' };
     private readonly List<FormattableString> _errorMessages;

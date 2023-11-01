@@ -481,12 +481,35 @@ public partial class HubConnection : IAsyncDisposable
         var connection = await _connectionFactory.ConnectAsync(_endPoint, cancellationToken).ConfigureAwait(false);
         var startingConnectionState = new ConnectionState(connection, this);
 
+#pragma warning disable CA2252 // This API requires opting into preview features
+        var statefulReconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
+
         // From here on, if an error occurs we need to shut down the connection because
         // we still own it.
         try
         {
-            Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-            await HandshakeAsync(startingConnectionState, cancellationToken).ConfigureAwait(false);
+            var usedProtocolVersion = _protocol.Version;
+            if (statefulReconnectFeature is null && _protocol.IsVersionSupported(1))
+            {
+                // Stateful Reconnect starts with HubProtocol version 2, newer clients connecting to older servers will fail to connect due to
+                // the handshake only supporting version 1, so we will try to send version 1 during the handshake to keep old servers working
+                // if the client is not attempting to enable stateful reconnect and therefore does not require a newer HubProtocol.
+                usedProtocolVersion = 1;
+            }
+            else if (_protocol.Version < 2)
+            {
+                if (statefulReconnectFeature is not null)
+                {
+                    Log.DisablingReconnect(_logger, _protocol.Name, _protocol.Version);
+#pragma warning disable CA2252 // This API requires opting into preview features
+                    statefulReconnectFeature.DisableReconnect();
+#pragma warning restore CA2252 // This API requires opting into preview features
+                }
+            }
+
+            Log.HubProtocol(_logger, _protocol.Name, usedProtocolVersion);
+            await HandshakeAsync(startingConnectionState, usedProtocolVersion, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -579,6 +602,13 @@ public partial class HubConnection : IAsyncDisposable
                         TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnFaulted,
                         TaskScheduler.Default);
                 }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+                if (connectionState.Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                {
+                    feature.DisableReconnect();
+                }
+#pragma warning restore CA2252 // This API requires opting into preview features
             }
             else
             {
@@ -823,7 +853,7 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        return CommonStreaming(connectionState, streamId, ReadChannelStream);
+        return CommonStreaming(connectionState, streamId, ReadChannelStream, tokenSource);
     }
 
     // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
@@ -833,18 +863,21 @@ public partial class HubConnection : IAsyncDisposable
         {
             var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
 
-            await foreach (var streamValue in streamValues)
+            await foreach (var streamValue in streamValues.ConfigureAwait(false))
             {
                 await SendWithLock(connectionState, new StreamItemMessage(streamId, streamValue), tokenSource.Token).ConfigureAwait(false);
                 Log.SendingStreamItem(_logger, streamId);
             }
         }
 
-        return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream);
+        return CommonStreaming(connectionState, streamId, ReadAsyncEnumerableStream, tokenSource);
     }
 
-    private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream)
+    private async Task CommonStreaming(ConnectionState connectionState, string streamId, Func<Task> createAndConsumeStream, CancellationTokenSource cts)
     {
+        // make sure we dispose the CTS created by StreamAsyncCore once streaming completes
+        using var _ = cts;
+
         Log.StartingStream(_logger, streamId);
         string? responseError = null;
         try
@@ -976,7 +1009,7 @@ public partial class HubConnection : IAsyncDisposable
 
         if (connectionState.UsingAcks())
         {
-            await connectionState.WriteAsync(new SerializedHubMessage(hubMessage), cancellationToken).ConfigureAwait(false);
+            await connectionState.WriteAsync(hubMessage, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -1088,6 +1121,14 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     Log.ReceivedCloseWithError(_logger, close.Error);
                 }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+                if (connectionState.Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                {
+                    feature.DisableReconnect();
+                }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
                 return close;
             case PingMessage _:
                 Log.ReceivedPing(_logger);
@@ -1095,11 +1136,10 @@ public partial class HubConnection : IAsyncDisposable
                 break;
             case AckMessage ackMessage:
                 Log.ReceivedAckMessage(_logger, ackMessage.SequenceId);
-                connectionState.Ack(ackMessage);
+                await connectionState.AckAsync(ackMessage).ConfigureAwait(false);
                 break;
             case SequenceMessage sequenceMessage:
                 Log.ReceivedSequenceMessage(_logger, sequenceMessage.SequenceId);
-                connectionState.ResetSequence(sequenceMessage);
                 break;
             default:
                 throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");
@@ -1225,12 +1265,12 @@ public partial class HubConnection : IAsyncDisposable
         ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
-    private async Task HandshakeAsync(ConnectionState startingConnectionState, CancellationToken cancellationToken)
+    private async Task HandshakeAsync(ConnectionState startingConnectionState, int protocolVersion, CancellationToken cancellationToken)
     {
         // Send the Handshake request
         Log.SendingHubHandshake(_logger);
 
-        var handshakeRequest = new HandshakeRequestMessage(_protocol.Name, _protocol.Version);
+        var handshakeRequest = new HandshakeRequestMessage(_protocol.Name, protocolVersion);
         HandshakeProtocol.WriteRequestMessage(handshakeRequest, startingConnectionState.Connection.Transport.Output);
 
         var sendHandshakeResult = await startingConnectionState.Connection.Transport.Output.FlushAsync(CancellationToken.None).ConfigureAwait(false);
@@ -1900,14 +1940,16 @@ public partial class HubConnection : IAsyncDisposable
             _logger = _hubConnection._logger;
             _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
-            if (Connection.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
+#pragma warning disable CA2252 // This API requires opting into preview features
+            if (Connection.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
             {
                 _messageBuffer = new MessageBuffer(connection, hubConnection._protocol,
                     _hubConnection._serviceProvider.GetService<IOptions<HubConnectionOptions>>()?.Value.StatefulReconnectBufferSize
-                    ?? DefaultStatefulReconnectBufferSize);
+                        ?? DefaultStatefulReconnectBufferSize, _logger);
 
-                feature.NotifyOnReconnect = _messageBuffer.Resend;
+                feature.OnReconnected(_messageBuffer.ResendAsync);
             }
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
 
         public string GetNextId() => (++_nextInvocationId).ToString(CultureInfo.InvariantCulture);
@@ -2031,7 +2073,7 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        public ValueTask<FlushResult> WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> WriteAsync(HubMessage message, CancellationToken cancellationToken)
         {
             Debug.Assert(_messageBuffer is not null);
             return _messageBuffer.WriteAsync(message, cancellationToken);
@@ -2050,20 +2092,14 @@ public partial class HubConnection : IAsyncDisposable
             return true;
         }
 
-        public void Ack(AckMessage ackMessage)
+        public Task AckAsync(AckMessage ackMessage)
         {
             if (UsingAcks())
             {
-                _messageBuffer.Ack(ackMessage);
+                return _messageBuffer.AckAsync(ackMessage);
             }
-        }
 
-        public void ResetSequence(SequenceMessage sequenceMessage)
-        {
-            if (UsingAcks())
-            {
-                _messageBuffer.ResetSequence(sequenceMessage);
-            }
+            return Task.CompletedTask;
         }
 
         [MemberNotNullWhen(true, nameof(_messageBuffer))]

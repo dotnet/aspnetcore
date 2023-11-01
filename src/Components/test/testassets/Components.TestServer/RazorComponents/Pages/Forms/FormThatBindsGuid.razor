@@ -2,7 +2,7 @@
 
 <h2>Form that binds guid</h2>
 
-<form name="bind-guid" method="post" @onsubmit="() => _submitted = true" @formname="bind-guid">
+<form data-enhance name="bind-guid" method="post" @onsubmit="() => _submitted = true" @formname="bind-guid">
     <input type="text" name="Id" value="@(_attemptedValue ?? Id.ToString())" />
     <input id="send-guid" type="submit" value="Send" />
     <AntiforgeryToken />
@@ -31,7 +31,7 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm(Handler = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
+    [SupplyParameterFromForm(FormName = "bind-guid")] public Guid Id { get; set; } = Guid.NewGuid();
 
     [CascadingParameter] public FormMappingContext Context { get; set; }
 

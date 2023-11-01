@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
@@ -94,6 +95,57 @@ app.MapGet("/hello", (HttpContext context) => Task.CompletedTask);
         Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
 
         await VerifyAgainstBaselineUsingFile(updatedCompilation);
+    }
+
+    [Fact]
+    public async Task SupportsMapCallOnNewLine()
+    {
+        var source = """
+app
+     .MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions
+    .MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+    MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+   MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+
+
+MapGet("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+
+
+MapGet(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app.
+MapGet
+("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions.
+   MapGet
+(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+app
+.
+MapGet
+("/hello1/{id}", (int id) => $"Hello {id}!");
+EndpointRouteBuilderExtensions
+.
+   MapGet
+(app, "/hello2/{id}", (int id) => $"Hello {id}!");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        for (int i = 0; i < endpoints.Length; i++)
+        {
+            var httpContext = CreateHttpContext();
+            httpContext.Request.RouteValues["id"] = i.ToString(CultureInfo.InvariantCulture);
+            await endpoints[i].RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, $"Hello {i}!");
+        }
     }
 
     [Fact]
@@ -543,5 +595,76 @@ app.MapPost("/todo1", (Todo todo1) => todo1.Id.ToString());
         var httpContext = CreateHttpContext();
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, expectedBody: "null");
+    }
+
+    [Fact]
+    public async Task SkipsMapWithIncorrectNamespaceAndAssembly()
+    {
+        var source = """
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+namespace TestApp
+{
+    public static class TestMapActions
+    {
+        public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+        {
+            app.ServiceProvider.Map(1, (string test) => "Hello world!");
+            app.ServiceProvider.MapPost(2, (string test) => "Hello world!");
+            app.Map(3, (string test) => "Hello world!");
+            app.MapPost(4, (string test) => "Hello world!");
+            return app;
+        }
+    }
+
+    public static class EndpointRouteBuilderExtensions
+    {
+        public static IServiceProvider Map(this IServiceProvider app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+
+        public static IEndpointRouteBuilder Map(this IEndpointRouteBuilder app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+    }
+}
+namespace Microsoft.AspNetCore.Builder
+{
+    public static class EndpointRouteBuilderExtensions
+    {
+        public static IServiceProvider MapPost(this IServiceProvider app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+
+        public static IEndpointRouteBuilder MapPost(this IEndpointRouteBuilder app, int id, Delegate requestDelegate)
+        {
+            return app;
+        }
+    }
+}
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
+            out var diagnostics);
+        var generatorRunResult = driver.GetRunResult();
+
+        // Emits diagnostic and generates source for all endpoints
+        var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
+        Assert.Empty(GetStaticEndpoints(result, GeneratorSteps.EndpointModelStep));
     }
 }

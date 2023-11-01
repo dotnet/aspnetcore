@@ -21,7 +21,8 @@ public partial class StaticHtmlRenderer
         string.Empty,
         typeof(FormMappingContext));
 
-    private static readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
+    private static readonly TextEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
+    private TextEncoder _htmlEncoder = HtmlEncoder.Default;
     private string? _closestSelectValueAsString;
 
     /// <summary>
@@ -107,8 +108,9 @@ public partial class StaticHtmlRenderer
         output.Write(frame.ElementName);
         int afterElement;
         var isTextArea = string.Equals(frame.ElementName, "textarea", StringComparison.OrdinalIgnoreCase);
+        var isForm = string.Equals(frame.ElementName, "form", StringComparison.OrdinalIgnoreCase);
         // We don't want to include value attribute of textarea element.
-        var afterAttributes = RenderAttributes(output, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, out var capturedValueAttribute);
+        var afterAttributes = RenderAttributes(output, frames, position + 1, frame.ElementSubtreeLength - 1, !isTextArea, isForm: isForm, out var capturedValueAttribute);
 
         // When we see an <option> as a descendant of a <select>, and the option's "value" attribute matches the
         // "value" attribute on the <select>, then we auto-add the "selected" attribute to that option. This is
@@ -137,6 +139,10 @@ public partial class StaticHtmlRenderer
                 // So, if we captured a value attribute, use that instead of any child content
                 _htmlEncoder.Encode(output, capturedValueAttribute);
                 afterElement = position + frame.ElementSubtreeLength; // Skip descendants
+            }
+            else if (string.Equals(frame.ElementNameField, "script", StringComparison.OrdinalIgnoreCase))
+            {
+                afterElement = RenderScriptElementChildren(componentId, output, frames, afterAttributes, remainingElements);
             }
             else
             {
@@ -170,6 +176,25 @@ public partial class StaticHtmlRenderer
             }
             Debug.Assert(afterAttributes == position + frame.ElementSubtreeLength);
             return afterAttributes;
+        }
+    }
+
+    private int RenderScriptElementChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
+    {
+        // Inside a <script> context, AddContent calls should result in the text being
+        // JavaScript encoded rather than HTML encoded. It's not that we recommend inserting
+        // user-supplied content inside a <script> block, but that if someone does, we
+        // want the encoding style to match the context for correctness and safety. This is
+        // also consistent with .cshtml's treatment of <script>.
+        var originalEncoder = _htmlEncoder;
+        try
+        {
+            _htmlEncoder = _javaScriptEncoder;
+            return RenderChildren(componentId, output, frames, position, maxElements);
+        }
+        finally
+        {
+            _htmlEncoder = originalEncoder;
         }
     }
 
@@ -245,16 +270,24 @@ public partial class StaticHtmlRenderer
         return false;
     }
 
-    private static int RenderAttributes(
-        TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements, bool includeValueAttribute, out string? capturedValueAttribute)
+    private int RenderAttributes(
+        TextWriter output,
+        ArrayRange<RenderTreeFrame> frames,
+        int position,
+        int maxElements,
+        bool includeValueAttribute,
+        bool isForm,
+        out string? capturedValueAttribute)
     {
         capturedValueAttribute = null;
 
         if (maxElements == 0)
         {
+            EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue: false);
             return position;
         }
 
+        var hasExplicitActionValue = false;
         for (var i = 0; i < maxElements; i++)
         {
             var candidateIndex = position + i;
@@ -267,6 +300,7 @@ public partial class StaticHtmlRenderer
                     continue;
                 }
 
+                EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue);
                 return candidateIndex;
             }
 
@@ -278,6 +312,12 @@ public partial class StaticHtmlRenderer
                 {
                     continue;
                 }
+            }
+
+            if (isForm && frame.AttributeName.Equals("action", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrEmpty(frame.AttributeValue as string))
+            {
+                hasExplicitActionValue = true;
             }
 
             switch (frame.AttributeValue)
@@ -299,7 +339,39 @@ public partial class StaticHtmlRenderer
             }
         }
 
+        EmitFormActionIfNotExplicit(output, isForm, hasExplicitActionValue);
+
         return position + maxElements;
+
+        void EmitFormActionIfNotExplicit(TextWriter output, bool isForm, bool hasExplicitActionValue)
+        {
+            if (isForm && _navigationManager != null && !hasExplicitActionValue)
+            {
+                output.Write(' ');
+                output.Write("action");
+                output.Write('=');
+                output.Write('\"');
+                _htmlEncoder.Encode(output, GetRootRelativeUrlForFormAction(_navigationManager));
+                output.Write('\"');
+            }
+        }
+    }
+
+    private static string GetRootRelativeUrlForFormAction(NavigationManager navigationManager)
+    {
+        // We want a root-relative URL because:
+        // - if we used a base-relative one, then if currentUrl==baseHref, that would result
+        //   in an empty string, but forms have special handling for action="" (it means "submit
+        //   to the current URL, but that would be wrong if there's an uncommitted navigation in
+        //   flight, e.g., after the user clicking 'back' - it would go to whatever's now in the
+        //   address bar, ignoring where the form was rendered)
+        // - if we used an absolute URL, then it creates a significant extra pit of failure for
+        //   apps hosted behind a reverse proxy (e.g., container apps), because the server's view
+        //   of the absolute URL isn't usable outside the container
+        //   - of course, sites hosted behind URL rewriting that modifies the path will still be
+        //     wrong, but developers won't do that often as it makes things like <a href> really
+        //     difficult to get right. In that case, developers must emit an action attribute manually.
+        return new Uri(navigationManager.Uri, UriKind.Absolute).PathAndQuery;
     }
 
     private int RenderChildren(int componentId, TextWriter output, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)

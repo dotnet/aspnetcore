@@ -154,7 +154,7 @@ jobs:
       displayName: RichCodeNav Upload
       inputs:
         languages: ${{ coalesce(parameters.richCodeNavigationLanguage, 'csharp') }}
-        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'production') }}
+        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'internal') }}
         richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
         uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true

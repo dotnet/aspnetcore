@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -42,7 +38,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
@@ -71,7 +67,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                     await ReceiveResponse(connection, testContext);
 
                     // Max amount of time between requests that doesn't trigger a keep-alive timeout.
-                    testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval);
+                    testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
             }
@@ -105,7 +101,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                         "a",
                         "");
 
-                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -140,7 +136,7 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -170,7 +166,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.TransportConnection.WaitForReadTask;
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
@@ -205,7 +201,7 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 

@@ -313,7 +313,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
             {
                 Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken, useAck: false).ConfigureAwait(false);
+                await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken, useStatefulReconnect: false).ConfigureAwait(false);
             }
             else
             {
@@ -399,13 +399,13 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         if (negotiationResponse == null)
                         {
                             // Temporary until other transports work
-                            _httpConnectionOptions.UseAcks = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseAcks : false;
+                            _httpConnectionOptions.UseStatefulReconnect = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseStatefulReconnect : false;
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);
-                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken, negotiationResponse.UseAcking).ConfigureAwait(false);
+                        await StartTransport(connectUrl, transportType, transferFormat, cancellationToken, negotiationResponse.UseStatefulReconnect).ConfigureAwait(false);
                         break;
                     }
                 }
@@ -457,9 +457,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 uri = Utils.AppendQueryString(urlBuilder.Uri, $"negotiateVersion={_protocolVersionNumber}");
             }
 
-            if (_httpConnectionOptions.UseAcks)
+            if (_httpConnectionOptions.UseStatefulReconnect)
             {
-                uri = Utils.AppendQueryString(uri, "useAck=true");
+                uri = Utils.AppendQueryString(uri, "useStatefulReconnect=true");
             }
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
@@ -507,10 +507,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return Utils.AppendQueryString(url, $"id={connectionId}");
     }
 
-    private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken, bool useAck)
+    private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat,
+        CancellationToken cancellationToken, bool useStatefulReconnect)
     {
         // Construct the transport
-        var transport = _transportFactory.CreateTransport(transportType, useAck);
+        var transport = _transportFactory.CreateTransport(transportType, useStatefulReconnect);
 
         // Start the transport, giving it one end of the pipe
         try
@@ -531,9 +532,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         // We successfully started, set the transport properties (we don't want to set these until the transport is definitely running).
         _transport = transport;
 
-        if (useAck && _transport is IReconnectFeature reconnectFeature)
+        if (useStatefulReconnect && _transport is IStatefulReconnectFeature reconnectFeature)
         {
+#pragma warning disable CA2252 // This API requires opting into preview features
             Features.Set(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
         }
 
         Log.TransportStarted(_logger, transportType);

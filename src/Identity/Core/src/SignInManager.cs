@@ -84,7 +84,7 @@ public class SignInManager<TUser> where TUser : class
     /// <summary>
     /// The authentication scheme to sign in with. Defaults to <see cref="IdentityConstants.ApplicationScheme"/>.
     /// </summary>
-    public string PrimaryAuthenticationScheme { get; set; } = IdentityConstants.ApplicationScheme;
+    public string AuthenticationScheme { get; set; } = IdentityConstants.ApplicationScheme;
 
     /// <summary>
     /// The <see cref="HttpContext"/> used.
@@ -122,7 +122,7 @@ public class SignInManager<TUser> where TUser : class
     {
         ArgumentNullException.ThrowIfNull(principal);
         return principal.Identities != null &&
-            principal.Identities.Any(i => i.AuthenticationType == PrimaryAuthenticationScheme);
+            principal.Identities.Any(i => i.AuthenticationType == AuthenticationScheme);
     }
 
     /// <summary>
@@ -161,7 +161,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
-        var auth = await Context.AuthenticateAsync(PrimaryAuthenticationScheme);
+        var auth = await Context.AuthenticateAsync(AuthenticationScheme);
         IList<Claim> claims = Array.Empty<Claim>();
 
         var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
@@ -237,7 +237,7 @@ public class SignInManager<TUser> where TUser : class
         {
             userPrincipal.Identities.First().AddClaim(claim);
         }
-        await Context.SignInAsync(PrimaryAuthenticationScheme,
+        await Context.SignInAsync(AuthenticationScheme,
             userPrincipal,
             authenticationProperties ?? new AuthenticationProperties());
 
@@ -250,7 +250,7 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     public virtual async Task SignOutAsync()
     {
-        await Context.SignOutAsync(PrimaryAuthenticationScheme);
+        await Context.SignOutAsync(AuthenticationScheme);
 
         if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
         {
@@ -669,9 +669,9 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Gets a collection of <see cref="AuthenticationScheme"/>s for the known external login providers.
+    /// Gets a collection of <see cref="Authentication.AuthenticationScheme"/>s for the known external login providers.
     /// </summary>
-    /// <returns>A collection of <see cref="AuthenticationScheme"/>s for the known external login providers.</returns>
+    /// <returns>A collection of <see cref="Authentication.AuthenticationScheme"/>s for the known external login providers.</returns>
     public virtual async Task<IEnumerable<AuthenticationScheme>> GetExternalAuthenticationSchemesAsync()
     {
         var schemes = await _schemes.GetAllSchemesAsync();

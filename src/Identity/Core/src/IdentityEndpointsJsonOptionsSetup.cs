@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Identity.DTO;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity;

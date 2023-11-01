@@ -160,6 +160,33 @@ internal sealed partial class ComponentHub : Hub
         }
     }
 
+    public async Task UpdateRootComponents(string serializedComponentOperations, string applicationState)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        if (!_serverComponentSerializer.TryDeserializeRootComponentOperations(
+            serializedComponentOperations,
+            out var operations))
+        {
+            // There was an error, so kill the circuit.
+            await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+            await NotifyClientError(Clients.Caller, "The list of component operations is not valid.");
+            Context.Abort();
+
+            return;
+        }
+
+        var store = !string.IsNullOrEmpty(applicationState) ?
+            new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
+            new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+
+        _ = circuitHost.UpdateRootComponents(operations, store, _serverComponentSerializer, Context.ConnectionAborted);
+    }
+
     public async ValueTask<bool> ConnectCircuit(string circuitIdSecret)
     {
         // TryParseCircuitId will not throw.

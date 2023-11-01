@@ -153,7 +153,7 @@ public class WebHostFunctionalTests : LoggedTest
         var applicationName = "CreateDefaultBuilderApp";
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
         {
-            TargetFramework = "net8.0",
+            TargetFramework = "net9.0",
             HostingModel = HostingModel.InProcess
         };
 
@@ -208,7 +208,7 @@ public class WebHostFunctionalTests : LoggedTest
     {
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitectures.Current)
         {
-            TargetFramework = "net8.0",
+            TargetFramework = "net9.0",
         };
 
         if (setTestEnvVars)

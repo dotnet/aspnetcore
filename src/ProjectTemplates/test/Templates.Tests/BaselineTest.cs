@@ -100,7 +100,7 @@ public class BaselineTest : LoggedTest
             }
             Assert.Contains(relativePath, expectedFiles);
 
-            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal) && !relativePath.EndsWith("Extensions.cs", StringComparison.Ordinal))
             {
                 var namespaceDeclarationPrefix = "namespace ";
                 var namespaceDeclaration = File.ReadLines(file)

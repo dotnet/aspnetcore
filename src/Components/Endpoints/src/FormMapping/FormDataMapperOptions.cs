@@ -4,6 +4,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
@@ -14,48 +16,41 @@ internal sealed class FormDataMapperOptions
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    public FormDataMapperOptions()
-    {
-        _converters = new(WellKnownConverters.Converters);
-        _factories.Add(new ParsableConverterFactory());
-        _factories.Add(new EnumConverterFactory());
-        _factories.Add(new NullableConverterFactory());
-        _factories.Add(new DictionaryConverterFactory());
-        _factories.Add(new CollectionConverterFactory());
-        _factories.Add(new ComplexTypeConverterFactory(this));
-    }
-
-    // Not configurable for now, this is the max number of elements we will bind. This is important for
-    // security reasons, as we don't want to bind a huge collection and cause perf issues.
-    // Some examples of this are:
-    // Binding to collection using hashes, where the payload can be crafted to force the worst case on insertion
-    // which is O(n).
-    internal int MaxCollectionSize = FormReader.DefaultValueCountLimit;
-
-    // MVC uses 32, JSON uses 64. Let's stick to STJ default.
-    internal int MaxRecursionDepth = 64;
-
-    // This is normally 200 (similar to ModelStateDictionary.DefaultMaxAllowedErrors in MVC) 
-    internal int MaxErrorCount = 200;
-
-    internal int MaxKeyBufferSize = FormReader.DefaultKeyLengthLimit;
-
-    internal bool UseCurrentCulture;
-
-    // For testing purposes only.
-    internal List<IFormDataConverterFactory> Factories => _factories;
-
-    internal bool HasConverter(Type valueType) => _converters.ContainsKey(valueType);
-
-    internal bool IsSingleValueConverter(Type type)
-    {
-        return _converters.TryGetValue(type, out var converter) &&
-            converter is ISingleValueConverter;
+    public FormDataMapperOptions() : this(NullLoggerFactory.Instance)
+    {        
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal FormDataConverter<T> ResolveConverter<T>()
+    public FormDataMapperOptions(ILoggerFactory loggerFactory)
+    {
+        _converters = new(WellKnownConverters.Converters);
+        _factories.Add(new ParsableConverterFactory());
+        _factories.Add(new FileConverterFactory());
+        _factories.Add(new EnumConverterFactory());
+        _factories.Add(new NullableConverterFactory());
+        _factories.Add(new DictionaryConverterFactory());
+        _factories.Add(new CollectionConverterFactory());
+        _factories.Add(new ComplexTypeConverterFactory(this, loggerFactory));
+        Logger = loggerFactory.CreateLogger<FormDataMapperOptions>();
+    }
+
+    // For testing purposes only.
+    internal List<IFormDataConverterFactory> Factories => _factories;
+
+    internal ILogger Logger { get; }
+
+    internal int MaxCollectionSize { get; set; } = FormReader.DefaultValueCountLimit;
+
+    internal int MaxRecursionDepth { get; set; } = 64;
+
+    internal int MaxErrorCount { get; set; } = 200;
+
+    internal int MaxKeyBufferSize { get; set; } = FormReader.DefaultKeyLengthLimit;
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal FormDataConverter<T>? ResolveConverter<T>()
     {
         return (FormDataConverter<T>)_converters.GetOrAdd(typeof(T), CreateConverter, this);
     }

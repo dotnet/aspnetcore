@@ -41,7 +41,11 @@ export function startIpcReceiver(): void {
 
     'Navigate': navigationManagerFunctions.navigateTo,
 
-    'SetHasLocationChangingListeners': navigationManagerFunctions.setHasLocationChangingListeners,
+    'Refresh': navigationManagerFunctions.refresh,
+
+    'SetHasLocationChangingListeners': (hasListeners: boolean) => {
+      navigationManagerFunctions.setHasLocationChangingListeners(WebRendererId.WebView, hasListeners);
+    },
 
     'EndLocationChanging': navigationManagerFunctions.endLocationChanging,
   };

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -24,8 +25,9 @@ public class RemoteRendererTest
     // failures.
     private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
+    private const int MaxInteractiveServerRootComponentCount = 3;
+
     private readonly IDataProtectionProvider _ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
-    private readonly ServerComponentInvocationSequence _invocationSequence = new();
 
     [Fact]
     public void WritesAreBufferedWhenTheClientIsOffline()
@@ -427,236 +429,207 @@ public class RemoteRendererTest
     }
 
     [Fact]
-    public async Task UpdateRootComponents_CanAddNewRootComponent()
+    public async Task WebRootComponentManager_AddRootComponentAsync_Throws_IfMaxInteractiveServerComponentCountIsExceeded()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var expectedMessage = "Hello, world!";
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Add,
-            SelectorId = 1,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
-            {
-                [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
-            }),
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
-        var componentState = renderer.GetComponentState(0);
+        for (var i = 0; i < MaxInteractiveServerRootComponentCount; i++)
+        {
+            await AddWebRootComponentAsync(renderer, i);
+        }
 
         // Assert
-        var component = Assert.IsType<DynamicallyAddedComponent>(componentState.Component);
-        Assert.Equal(expectedMessage, component.Message);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => AddWebRootComponentAsync(renderer, MaxInteractiveServerRootComponentCount));
+
+        Assert.Equal("Exceeded the maximum number of allowed server interactive root components.", ex.Message);
     }
 
     [Fact]
-    public async Task UpdateRootComponents_DoesNotAddNewRootComponent_WhenSelectorIdIsMissing()
+    public async Task WebRootComponentManager_AddRootComponentAsync_Throws_IfDuplicateSsrComponentIdIsProvided()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Add,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent)),
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
-        renderer.UpdateRootComponents(operationsJson);
+        await AddWebRootComponentAsync(renderer, 0);
 
         // Assert
-        var ex = Assert.Throws<ArgumentException>(() => renderer.GetComponentState(0));
-        Assert.StartsWith("The renderer does not have a component with ID", ex.Message);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => AddWebRootComponentAsync(renderer, 0));
+
+        Assert.Equal("A root component with SSR component ID 0 already exists.", ex.Message);
     }
 
     [Fact]
-    public async Task UpdateRootComponents_Throws_WhenAddingComponentFromInvalidDescriptor()
+    public async Task WebRootComponentManager_AddRootComponentAsync_Throws_IfKeyIsInvalid()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var operation = new RootComponentOperation
+
+        // Act/assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            Type = RootComponentOperationType.Add,
-            SelectorId = 1,
-            Marker = new ComponentMarker()
-            {
-                Descriptor = "some random text",
-            },
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            await webRootComponentManager.AddRootComponentAsync(
+                0,
+                typeof(TestComponent),
+                default, // Invalid key
+                WebRootComponentParameters.Empty);
+        });
 
-        // Act
-        var task = renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
-
-        // Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await task);
-        Assert.StartsWith("Failed to deserialize a component descriptor when adding", ex.Message);
+        Assert.Equal("An invalid component marker key was provided.", ex.Message);
     }
 
     [Fact]
-    public async Task UpdateRootComponents_CanUpdateExistingRootComponent()
+    public async Task WebRootComponentManager_AddRootComponentAsync_CanAddAndRenderRootComponent()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var component = new DynamicallyAddedComponent()
-        {
-            Message = "Existing message",
-        };
-        var expectedMessage = "Updated message";
-        var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            ComponentId = componentId,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
-            {
-                [nameof(DynamicallyAddedComponent.Message)] = expectedMessage,
-            }),
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
+        await AddWebRootComponentAsync(renderer, 0);
 
         // Assert
-        Assert.Equal(expectedMessage, component.Message);
+        Assert.Single(renderer._unacknowledgedRenderBatches);
     }
 
     [Fact]
-    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenComponentIdIsMissing()
+    public async Task WebRootComponentManager_UpdateRootComponentAsync_Throws_IfSsrComponentIdIsInvalid()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var expectedMessage = "Existing message";
-        var component = new DynamicallyAddedComponent()
-        {
-            Message = expectedMessage,
-        };
-        var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            Marker = CreateMarker(typeof(DynamicallyAddedComponent), new()
-            {
-                [nameof(DynamicallyAddedComponent.Message)] = "Some other message",
-            }),
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
+        var key = await AddWebRootComponentAsync(renderer, 0);
 
         // Assert
-        Assert.Equal(expectedMessage, component.Message);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            await webRootComponentManager.UpdateRootComponentAsync(1, typeof(TestComponent), key, WebRootComponentParameters.Empty);
+        });
+
+        Assert.Equal($"No root component exists with SSR component ID 1.", ex.Message);
     }
 
     [Fact]
-    public async Task UpdateRootComponents_DoesNotUpdateExistingRootComponent_WhenDescriptorComponentTypeDoesNotMatchRootComponentType()
+    public async Task WebRootComponentManager_UpdateRootComponentAsync_Throws_IfKeyDoesNotMatch()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var expectedMessage = "Existing message";
-        var component1 = new DynamicallyAddedComponent()
-        {
-            Message = expectedMessage,
-        };
-        var component2 = new TestComponent();
-        var component1Id = renderer.AssignRootComponentId(component1);
-        var component2Id = renderer.AssignRootComponentId(component2);
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            ComponentId = component1Id,
-            Marker = CreateMarker(typeof(TestComponent) /* Note the incorrect component type */, new()
-            {
-                [nameof(DynamicallyAddedComponent.Message)] = "Updated message",
-            }),
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
+        await AddWebRootComponentAsync(renderer, 0);
 
         // Assert
-        Assert.Equal(expectedMessage, component1.Message);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            await webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), new("1", null), WebRootComponentParameters.Empty);
+        });
+
+        Assert.Equal("Cannot update components with mismatching keys.", ex.Message);
     }
 
     [Fact]
-    public async Task UpdateRootComponents_Throws_WhenUpdatingComponentFromInvalidDescriptor()
+    public async Task WebRootComponentManager_UpdateRootComponentAsync_Works_IfComponentKeyWasSupplied()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var component = new DynamicallyAddedComponent()
-        {
-            Message = "Existing message",
-        };
-        var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Update,
-            ComponentId = componentId,
-            Marker = new()
-            {
-                Descriptor = "some random text",
-            },
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        var task = renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
+        var key = await AddWebRootComponentAsync(renderer, 0, "mykey");
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            var parameters = new Dictionary<string, object> { ["Name"] = "value" };
+            webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), key, CreateWebRootComponentParameters(parameters));
+        });
 
         // Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await task);
-        Assert.StartsWith("Failed to deserialize a component descriptor when updating", ex.Message);
+        Assert.Equal(2, renderer._unacknowledgedRenderBatches.Count); // Initial render, re-render
     }
 
     [Fact]
-    public async Task UpdateRootComponents_CanRemoveExistingRootComponent()
+    public async Task WebRootComponentManager_UpdateRootComponentAsync_DoesNothing_IfNoComponentKeyWasSuppliedAndParametersDidNotChange()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
         var renderer = GetRemoteRenderer(serviceProvider);
-        var component = new DynamicallyAddedComponent();
-        var componentId = renderer.AssignRootComponentId(component);
-        var operation = new RootComponentOperation
-        {
-            Type = RootComponentOperationType.Remove,
-            ComponentId = componentId,
-        };
-        var operationsJson = JsonSerializer.Serialize(
-            new[] { operation },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
 
         // Act
-        await renderer.Dispatcher.InvokeAsync(() => renderer.UpdateRootComponents(operationsJson));
+        var key = await AddWebRootComponentAsync(renderer, 0);
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), key, WebRootComponentParameters.Empty);
+        });
 
         // Assert
-        await component.WaitForDisposeAsync().WaitAsync(Timeout); // Will timeout and throw if not disposed
+        Assert.Single(renderer._unacknowledgedRenderBatches);
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_UpdateRootComponentAsync_ReinitializesComponent_IfNoComponentKeyWasSuppliedAndParameterChanged()
+    {
+        // Arrange
+        var serviceProvider = CreateServiceProvider();
+        var renderer = GetRemoteRenderer(serviceProvider);
+
+        // Act
+        var key = await AddWebRootComponentAsync(renderer, 0);
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            var parameters = new Dictionary<string, object> { ["Name"] = "value" };
+            webRootComponentManager.UpdateRootComponentAsync(0, typeof(TestComponent), key, CreateWebRootComponentParameters(parameters));
+        });
+
+        // Assert
+        Assert.Equal(3, renderer._unacknowledgedRenderBatches.Count); // Initial render, dispose, and re-initialize
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_RemoveRootComponent_Throws_IfSsrComponentIdIsInvalid()
+    {
+        // Arrange
+        var serviceProvider = CreateServiceProvider();
+        var renderer = GetRemoteRenderer(serviceProvider);
+
+        // Act
+        var key = await AddWebRootComponentAsync(renderer, 0);
+
+        // Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => renderer.GetOrCreateWebRootComponentManager().RemoveRootComponent(1));
+
+        Assert.Equal($"No root component exists with SSR component ID 1.", ex.Message);
+    }
+
+    [Fact]
+    public async Task WebRootComponentManager_RemoveRootComponent_Works()
+    {
+        // Arrange
+        var serviceProvider = CreateServiceProvider();
+        var renderer = GetRemoteRenderer(serviceProvider);
+
+        // Act
+        var key = await AddWebRootComponentAsync(renderer, 0);
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            webRootComponentManager.RemoveRootComponent(0);
+        });
+
+        // Assert
+        Assert.Equal(2, renderer._unacknowledgedRenderBatches.Count); // Initial render, dispose
     }
 
     private IServiceProvider CreateServiceProvider()
@@ -679,22 +652,49 @@ public class RemoteRendererTest
         return new TestRemoteRenderer(
             serviceProvider,
             NullLoggerFactory.Instance,
-            new CircuitOptions(),
+            new CircuitOptions
+            {
+                RootComponents =
+                {
+                    MaxJSRootComponents = MaxInteractiveServerRootComponentCount
+                },
+            },
             circuitClient ?? new CircuitClientProxy(),
             serverComponentDeserializer,
             NullLogger.Instance);
     }
 
-    private ComponentMarker CreateMarker(Type type, Dictionary<string, object> parameters = null)
+    private static Task<ComponentMarkerKey> AddWebRootComponentAsync(RemoteRenderer renderer, int ssrComponentId, string componentKey = null)
+        => renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+            var componentMarkerKey = new ComponentMarkerKey()
+            {
+                LocationHash = ssrComponentId.ToString(CultureInfo.CurrentCulture),
+                FormattedComponentKey = componentKey,
+            };
+            await webRootComponentManager.AddRootComponentAsync(
+                ssrComponentId,
+                typeof(TestComponent),
+                componentMarkerKey,
+                WebRootComponentParameters.Empty);
+            return componentMarkerKey;
+        });
+
+    private static WebRootComponentParameters CreateWebRootComponentParameters(IDictionary<string, object> parameters)
     {
-        var serializer = new ServerComponentSerializer(_ephemeralDataProtectionProvider);
-        var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, null);
-        serializer.SerializeInvocation(
-            ref marker,
-            _invocationSequence,
-            type,
-            parameters is null ? ParameterView.Empty : ParameterView.FromDictionary(parameters));
-        return marker;
+        var parameterView = ParameterView.FromDictionary(parameters);
+        var (parameterDefinitions, parameterValues) = ComponentParameter.FromParameterView(parameterView);
+        for (var i = 0; i < parameterValues.Count; i++)
+        {
+            // WebRootComponentParameters expects serialized parameter values to be JsonElements.
+            var jsonElement = JsonSerializer.SerializeToElement(parameterValues[i]);
+            parameterValues[i] = jsonElement;
+        }
+        return new WebRootComponentParameters(
+            parameterView,
+            parameterDefinitions.AsReadOnly(),
+            parameterValues.AsReadOnly());
     }
 
     private class TestRemoteRenderer : RemoteRenderer
@@ -713,11 +713,6 @@ public class RemoteRendererTest
 
         protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
         {
-        }
-
-        public new void UpdateRootComponents(string operationsJson)
-        {
-            base.UpdateRootComponents(operationsJson);
         }
 
         public new ComponentState GetComponentState(int componentId)
@@ -809,50 +804,6 @@ public class RemoteRendererTest
         public void TriggerRender()
         {
             Component.TriggerRender();
-        }
-    }
-
-    private class DynamicallyAddedComponent : IComponent, IDisposable
-    {
-        private readonly TaskCompletionSource _disposeTcs = new();
-        private RenderHandle _renderHandle;
-
-        [Parameter]
-        public string Message { get; set; } = "Default message";
-
-        private void Render(RenderTreeBuilder builder)
-        {
-            builder.AddContent(0, Message);
-        }
-
-        public void Attach(RenderHandle renderHandle)
-        {
-            _renderHandle = renderHandle;
-        }
-
-        public Task SetParametersAsync(ParameterView parameters)
-        {
-            if (parameters.TryGetValue<string>(nameof(Message), out var message))
-            {
-                Message = message;
-            }
-
-            TriggerRender();
-            return Task.CompletedTask;
-        }
-
-        public void TriggerRender()
-        {
-            var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(Render));
-            Assert.True(task.IsCompletedSuccessfully);
-        }
-
-        public Task WaitForDisposeAsync()
-            => _disposeTcs.Task;
-
-        public void Dispose()
-        {
-            _disposeTcs.SetResult();
         }
     }
 }

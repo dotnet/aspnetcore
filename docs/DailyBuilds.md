@@ -44,3 +44,7 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 * *Enable source server support* in Visual should be enabled.
 * *Enable Just My Code* should be disabled
 * Under Symbols enable the *Microsoft Symbol Servers* setting.
+
+## Downloading daily builds of aspnetcore
+
+Links to our daily builds can be found [here](https://github.com/dotnet/aspnetcore/blob/main/README.md#nightly-builds).

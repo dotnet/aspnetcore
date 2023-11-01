@@ -105,7 +105,7 @@ while [[ $# > 0 ]]; do
     -binarylog|-bl)
       binary_log=true
       ;;
-    -excludeCIBinarylog|-nobl)
+    -excludecibinarylog|-nobl)
       exclude_ci_binary_log=true
       ;;
     -pipelineslog|-pl)

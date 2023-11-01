@@ -14,7 +14,6 @@
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Http2\HPackHeaderWriter.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Http2\Http2HeadersEnumerator.cs" />
@@ -38,7 +37,8 @@
     <Reference Include="System.Threading.Channels" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

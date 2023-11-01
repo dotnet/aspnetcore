@@ -12,13 +12,27 @@ export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 
   }
 }
 
-const blazorStateCommentRegularExpression = /^\s*Blazor-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
+const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
+const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
+const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
 
-export function discoverPersistedState(node: Node): string | null | undefined {
+export function discoverServerPersistedState(node: Node): string | null | undefined {
+  return discoverBlazorComment(node, blazorServerStateCommentRegularExpression);
+}
+
+export function discoverWebAssemblyPersistedState(node: Node): string | null | undefined {
+  return discoverBlazorComment(node, blazorWebAssemblyStateCommentRegularExpression);
+}
+
+export function discoverWebInitializers(node: Node): string | null | undefined {
+  return discoverBlazorComment(node, blazorWebInitializerCommentRegularExpression, 'initializers');
+}
+
+function discoverBlazorComment(node: Node, comment: RegExp, captureName = 'state'): string | null | undefined {
   if (node.nodeType === Node.COMMENT_NODE) {
     const content = node.textContent || '';
-    const parsedState = blazorStateCommentRegularExpression.exec(content);
-    const value = parsedState && parsedState.groups && parsedState.groups['state'];
+    const parsedState = comment.exec(content);
+    const value = parsedState && parsedState.groups && parsedState.groups[captureName];
     if (value){
       node.parentNode?.removeChild(node);
     }
@@ -32,7 +46,7 @@ export function discoverPersistedState(node: Node): string | null | undefined {
   const nodes = node.childNodes;
   for (let index = 0; index < nodes.length; index++) {
     const candidate = nodes[index];
-    const result = discoverPersistedState(candidate);
+    const result = discoverBlazorComment(candidate, comment, captureName);
     if (result){
       return result;
     }
@@ -285,12 +299,17 @@ export function descriptorToMarker(descriptor: ComponentDescriptor): ComponentMa
   } as unknown as ComponentMarker;
 }
 
-export function canMergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor): boolean {
-  if (target.type !== source.type || target.key !== source.key) {
+function doKeysMatch(a: MarkerKey | undefined, b: MarkerKey | undefined) {
+  if (!a || !b) {
+    // Unspecified keys are never considered to be matching
     return false;
   }
 
-  return true;
+  return a.locationHash === b.locationHash && a.formattedComponentKey === b.formattedComponentKey;
+}
+
+export function canMergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor): boolean {
+  return target.type === source.type && doKeysMatch(target.key, source.key);
 }
 
 export function mergeDescriptors(target: ComponentDescriptor, source: ComponentDescriptor) {
@@ -345,7 +364,12 @@ type AutoComponentMarker = {
 type CommonMarkerData = {
   type: string;
   prerenderId?: string;
-  key?: string;
+  key?: MarkerKey;
+}
+
+type MarkerKey = {
+  locationHash: string;
+  formattedComponentKey?: string;
 }
 
 type ServerMarkerData = {

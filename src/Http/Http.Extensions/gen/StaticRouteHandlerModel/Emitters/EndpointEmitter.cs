@@ -54,6 +54,9 @@ internal static class EndpointEmitter
                 case EndpointParameterSource.Service:
                     parameter.EmitServiceParameterPreparation(parameterPreparationBuilder);
                     break;
+                case EndpointParameterSource.KeyedService:
+                    parameter.EmitKeyedServiceParameterPreparation(parameterPreparationBuilder);
+                    break;
                 case EndpointParameterSource.AsParameters:
                     parameter.EmitAsParametersParameterPreparation(parameterPreparationBuilder, emitterContext);
                     break;

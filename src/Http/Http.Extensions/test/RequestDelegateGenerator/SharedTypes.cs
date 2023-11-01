@@ -692,9 +692,20 @@ public class AccessesServicesMetadataBinder : IEndpointMetadataProvider
 }
 
 public record MetadataService;
-public record ParameterListFromQuery(HttpContext HttpContext, [FromQuery] int Value);
+public record ParameterListFromQuery(HttpContext HttpContext,
+    [FromQuery] int Value,
+    [FromQuery(Name = "customQuery")] int CustomValue,
+    [property: FromQuery(Name = "anotherCustomQuery")] int? AnotherCustomValue = null);
 public record ParameterListFromRoute(HttpContext HttpContext, int Value);
 public record ParameterListFromHeader(HttpContext HttpContext, [FromHeader(Name = "X-Custom-Header")] int Value);
+
+public record ParameterListFromHeaderWithProperties
+{
+    public HttpContext HttpContext { get; set; }
+    [FromHeader(Name = "X-Custom-Header")]
+    public int Value { get; set; }
+}
+
 public record ParametersListWithImplicitFromBody(HttpContext HttpContext, TodoStruct Todo);
 public record struct TodoStruct(int Id, string Name, bool IsComplete, TodoStatus Status) : ITodo;
 public record ParametersListWithExplicitFromBody(HttpContext HttpContext, [FromBody] Todo Todo);
@@ -707,6 +718,7 @@ public record ParametersListWithHttpContext(
 public record struct ParameterListRecordStruct(HttpContext HttpContext, [FromRoute] int Value);
 
 public record ParameterListRecordClass(HttpContext HttpContext, [FromRoute] int Value);
+public record struct ParameterRecordStructWithJsonBodyOrService(TodoStruct Todo, TestService Service);
 
 #nullable enable
 public record ParameterListRecordWithoutPositionalParameters

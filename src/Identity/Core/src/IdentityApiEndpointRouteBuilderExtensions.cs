@@ -8,14 +8,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Authentication.BearerToken.DTO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.DTO;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -46,7 +44,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
         var timeProvider = endpoints.ServiceProvider.GetRequiredService<TimeProvider>();
         var bearerTokenOptions = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<BearerTokenOptions>>();
-        var emailSender = endpoints.ServiceProvider.GetRequiredService<IEmailSender>();
+        var emailSender = endpoints.ServiceProvider.GetRequiredService<IEmailSender<TUser>>();
         var linkGenerator = endpoints.ServiceProvider.GetRequiredService<LinkGenerator>();
 
         // We'll figure out a unique endpoint name based on the final route pattern during endpoint generation.
@@ -57,7 +55,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         // NOTE: We cannot inject UserManager<TUser> directly because the TUser generic parameter is currently unsupported by RDG.
         // https://github.com/dotnet/aspnetcore/issues/47338
         routeGroup.MapPost("/register", async Task<Results<Ok, ValidationProblem>>
-            ([FromBody] RegisterRequest registration, [FromServices] IServiceProvider sp) =>
+            ([FromBody] RegisterRequest registration, HttpContext context, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
 
@@ -85,7 +83,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return CreateValidationProblem(result);
             }
 
-            await SendConfirmationEmailAsync(user, userManager, email);
+            await SendConfirmationEmailAsync(user, userManager, context, email);
             return TypedResults.Ok();
         });
 
@@ -96,7 +94,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
             var useCookieScheme = (useCookies == true) || (useSessionCookies == true);
             var isPersistent = (useCookies == true) && (useSessionCookies != true);
-            signInManager.PrimaryAuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
+            signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
 
             var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, isPersistent, lockoutOnFailure: true);
 
@@ -190,11 +188,10 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var finalPattern = ((RouteEndpointBuilder)endpointBuilder).RoutePattern.RawText;
             confirmEmailEndpointName = $"{nameof(MapIdentityApi)}-{finalPattern}";
             endpointBuilder.Metadata.Add(new EndpointNameMetadata(confirmEmailEndpointName));
-            endpointBuilder.Metadata.Add(new RouteNameMetadata(confirmEmailEndpointName));
         });
 
         routeGroup.MapPost("/resendConfirmationEmail", async Task<Ok>
-            ([FromBody] ResendEmailRequest resendRequest, [FromServices] IServiceProvider sp) =>
+            ([FromBody] ResendConfirmationEmailRequest resendRequest, HttpContext context, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.FindByEmailAsync(resendRequest.Email) is not { } user)
@@ -202,7 +199,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.Ok();
             }
 
-            await SendConfirmationEmailAsync(user, userManager, resendRequest.Email);
+            await SendConfirmationEmailAsync(user, userManager, context, resendRequest.Email);
             return TypedResults.Ok();
         });
 
@@ -217,8 +214,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                await emailSender.SendEmailAsync(resetRequest.Email, "Reset your password",
-                    $"Reset your password using the following code: {HtmlEncoder.Default.Encode(code)}");
+                await emailSender.SendPasswordResetCodeAsync(user, resetRequest.Email, HtmlEncoder.Default.Encode(code));
             }
 
             // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
@@ -344,11 +340,11 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.NotFound();
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         });
 
         accountGroup.MapPost("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
-            (ClaimsPrincipal claimsPrincipal, [FromBody] InfoRequest infoRequest, [FromServices] IServiceProvider sp) =>
+            (ClaimsPrincipal claimsPrincipal, [FromBody] InfoRequest infoRequest, HttpContext context, [FromServices] IServiceProvider sp) =>
         {
             var userManager = sp.GetRequiredService<UserManager<TUser>>();
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
@@ -382,14 +378,14 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
                 if (email != infoRequest.NewEmail)
                 {
-                    await SendConfirmationEmailAsync(user, userManager, infoRequest.NewEmail, isChange: true);
+                    await SendConfirmationEmailAsync(user, userManager, context, infoRequest.NewEmail, isChange: true);
                 }
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         });
 
-        async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, string email, bool isChange = false)
+        async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, HttpContext context, string email, bool isChange = false)
         {
             if (confirmEmailEndpointName is null)
             {
@@ -414,11 +410,10 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 routeValues.Add("changedEmail", email);
             }
 
-            var confirmEmailUrl = linkGenerator.GetPathByName(confirmEmailEndpointName, routeValues)
+            var confirmEmailUrl = linkGenerator.GetUriByName(context, confirmEmailEndpointName, routeValues)
                 ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
 
-            await emailSender.SendEmailAsync(email, "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(confirmEmailUrl)}'>clicking here</a>.");
+            await emailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(confirmEmailUrl));
         }
 
         return new IdentityEndpointsConventionBuilder(routeGroup);
@@ -426,7 +421,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
     private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>
         TypedResults.ValidationProblem(new Dictionary<string, string[]> {
-            { errorCode, new[] { errorDescription } }
+            { errorCode, [errorDescription] }
         });
 
     private static ValidationProblem CreateValidationProblem(IdentityResult result)
@@ -448,7 +443,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             }
             else
             {
-                newDescriptions = new[] { error.Description };
+                newDescriptions = [error.Description];
             }
 
             errorDictionary[error.Code] = newDescriptions;
@@ -457,14 +452,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         return TypedResults.ValidationProblem(errorDictionary);
     }
 
-    private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, ClaimsPrincipal claimsPrincipal, UserManager<TUser> userManager)
+    private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
         where TUser : class
     {
         return new()
         {
             Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
             IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
-            Claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value),
         };
     }
 

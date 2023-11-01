@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 #pragma warning restore CA1852 // Seal internal types
 {
-    // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     private static ReadOnlySpan<byte> ContinueBytes => "HTTP/1.1 100 Continue\r\n\r\n"u8;
     private static ReadOnlySpan<byte> HttpVersion11Bytes => "HTTP/1.1 "u8;
     private static ReadOnlySpan<byte> EndHeadersBytes => "\r\n\r\n"u8;

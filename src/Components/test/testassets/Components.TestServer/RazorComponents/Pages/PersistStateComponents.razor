@@ -1,0 +1,33 @@
+﻿@page "/persist-state"
+@using Microsoft.AspNetCore.Components.Web
+
+<h1>Persist State Components</h1>
+
+@if (Server.GetValueOrDefault()) {
+    <strong>Server Persist State Component</strong>
+    <TestContentPackage.PersistStateComponent KeyName="server" @rendermode="@RenderMode.InteractiveServer" />
+    <hr />
+}
+
+@if (WebAssembly.GetValueOrDefault()) {
+    <strong>WebAssembly Persist State Component</strong>
+    <TestContentPackage.PersistStateComponent KeyName="wasm" @rendermode="@RenderMode.InteractiveWebAssembly" />
+    <hr />
+}
+
+@if (Auto.GetValueOrDefault()) {
+    <strong>Auto Persist State Component</strong>
+    <TestContentPackage.PersistStateComponent KeyName="auto" @rendermode="@RenderMode.InteractiveAuto" />
+    <hr />
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "server")]
+    public bool? Server { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "wasm")]
+    public bool? WebAssembly { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "auto")]
+    public bool? Auto { get; set; }
+}

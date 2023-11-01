@@ -10,19 +10,24 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
+    private readonly RootComponentTypeCache _rootComponentCache = new();
     internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     public ElementReferenceContext ElementReferenceContext { get; }
+
+    public event Action<RootComponentOperationBatch>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
+    [DynamicDependency(nameof(UpdateRootComponentsCore))]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
@@ -82,6 +87,61 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             // exceptions into a failure on the JS Promise object.
             DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
         });
+    }
+
+    [SupportedOSPlatform("browser")]
+    [JSExport]
+    public static void UpdateRootComponentsCore(string operationsJson)
+    {
+        try
+        {
+            var operations = DeserializeOperations(operationsJson);
+            Instance.OnUpdateRootComponents?.Invoke(operations);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deserializing root component operations: {ex}");
+        }
+    }
+
+    [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
+    internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
+    {
+        var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+            operationsJson,
+            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+
+        for (var i = 0; i < deserialized.Operations.Length; i++)
+        {
+            var operation = deserialized.Operations[i];
+            if (operation.Type == RootComponentOperationType.Remove)
+            {
+                continue;
+            }
+
+            if (operation.Marker == null)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
+            }
+
+            var componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
+                ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
+            var parameters = DeserializeComponentParameters(operation.Marker.Value);
+            operation.Descriptor = new(componentType, parameters);
+        }
+
+        return deserialized;
+    }
+
+    static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
+    {
+        var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
+        var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
+        var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
+        var parameters = componentDeserializer.DeserializeParameters(definitions, values);
+
+        return new(parameters, definitions, values.AsReadOnly());
     }
 
     [JSExport]

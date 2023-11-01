@@ -16,12 +16,13 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
 public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
 {
-    private readonly MockTimeProvider _timeProvider = new();
+    private readonly FakeTimeProvider _timeProvider = new();
 
     protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
     protected override Type HandlerType => typeof(CookieAuthenticationHandler);

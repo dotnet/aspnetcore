@@ -35,7 +35,7 @@ public class HttpUtilities
 
         var methodsInfo = httpMethods.Select(GetMethodStringAndUlongAndMaskLength).ToList();
 
-        var methodsInfoWithoutGet = methodsInfo.Where(m => m.HttpMethod != "Get".ToString()).ToList();
+        var methodsInfoWithoutGet = methodsInfo.Where(m => m.HttpMethod != "Get").ToList();
 
         var methodsAsciiStringAsLong = methodsInfo.Select(m => m.AsciiStringAsLong).ToArray();
 
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             var hexMaskString = HttpUtilitiesGeneratorHelpers.GeHexString(maskArray, "0x", ", ");
             var maskFieldName = GetMaskFieldName(maskBytesLength);
 
-            result.AppendFormat(CultureInfo.InvariantCulture, "        private static readonly ulong {0} = GetMaskAsLong(new byte[]\r\n            {{{1}}});", maskFieldName, hexMaskString);
+            result.AppendFormat(CultureInfo.InvariantCulture, """        private static readonly ulong {0} = GetMaskAsLong([{1}]);""", maskFieldName, hexMaskString);
             result.AppendLine();
             if (index < distinctLengths.Count - 1)
             {

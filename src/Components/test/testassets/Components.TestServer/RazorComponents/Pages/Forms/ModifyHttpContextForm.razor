@@ -1,5 +1,5 @@
 ﻿@page "/forms/modify-http-context/{OperationId}"
-@attribute [StreamRendering(true)]
+@attribute [StreamRendering]
 @inject AsyncOperationService AsyncOperation
 @inject NavigationManager Navigation
 @* This is not the recommended way to access the HttpContext in Blazor, this is just for test purposes *@
@@ -10,7 +10,7 @@
 
 <h2>Event handler sets cookie during form POST</h2>
 
-<EditForm EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
+<EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
     <input id="send" type="submit" value="Send" />
 </EditForm>
 

@@ -17,6 +17,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
     <LatestPackageReference Include="Microsoft.Bcl.HashCode" />
+    <LatestPackageReference Include="Microsoft.Bcl.TimeProvider" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
@@ -62,7 +63,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" />
-    <LatestPackageReference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <LatestPackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
@@ -184,6 +186,7 @@ and are generated based on the last package release.
 
   <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <LatestPackageReference Include="AngleSharp" />
+    <LatestPackageReference Include="Azure.Identity" />
     <LatestPackageReference Include="BenchmarkDotNet" />
     <LatestPackageReference Include="CommandLineParser" />
     <LatestPackageReference Include="FSharp.Core" />

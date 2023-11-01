@@ -9,7 +9,7 @@
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
   "symbols/NativeAot/displayName": "Włącz publikowanie _native AOT",
-  "symbols/NativeAot/description": "Określa, czy włączyć publikowanie projektu jako natywnego obiektu AOT.",
+  "symbols/NativeAot/description": "Określa, czy włączyć publikowanie projektu jako native AOT.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""
 }

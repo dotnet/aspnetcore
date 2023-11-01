@@ -138,6 +138,17 @@ internal class EndpointParameter
         else if (attributes.HasAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata)))
         {
             Source = EndpointParameterSource.Service;
+            if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+            {
+                var location = endpoint.Operation.Syntax.GetLocation();
+                endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.KeyedAndNotKeyedServiceAttributesNotSupported, location));
+            }
+        }
+        else if (attributes.TryGetAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute), out var keyedServicesAttribute))
+        {
+            Source = EndpointParameterSource.KeyedService;
+            var constructorArgument = keyedServicesAttribute.ConstructorArguments.FirstOrDefault();
+            KeyedServiceKey = SymbolDisplay.FormatPrimitive(constructorArgument.Value!, true, true);
         }
         else if (attributes.HasAttribute(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_AsParametersAttribute)))
         {
@@ -160,7 +171,7 @@ internal class EndpointParameter
             EndpointParameters = matchedProperties.Select(matchedParameter => new EndpointParameter(endpoint, matchedParameter.Property, matchedParameter.Parameter, wellKnownTypes));
             if (isDefaultConstructor == true)
             {
-                var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.LookupName} = {p.EmitHandlerArgument()}"));
+                var parameterList = string.Join(", ", EndpointParameters.Select(p => $"{p.SymbolName} = {p.EmitHandlerArgument()}"));
                 AssigningCode = $"new {namedTypeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {{ {parameterList} }}";
             }
             else
@@ -260,6 +271,7 @@ internal class EndpointParameter
     public string? PropertyAsParameterInfoConstruction { get; set; }
     public IEnumerable<EndpointParameter>? EndpointParameters { get; set; }
     public bool IsFormFile { get; set; }
+    public string? KeyedServiceKey { get; set; }
 
     // Only used for SpecialType parameters that need
     // to be resolved by a specific WellKnownType
@@ -613,7 +625,8 @@ internal class EndpointParameter
         other.SymbolName == SymbolName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
-        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type);
+        SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
+        other.KeyedServiceKey == KeyedServiceKey;
 
     public bool SignatureEquals(object obj) =>
         obj is EndpointParameter other &&
@@ -621,7 +634,8 @@ internal class EndpointParameter
         // The name of the parameter matters when we are querying for a specific parameter using
         // an indexer, like `context.Request.RouteValues["id"]` or `context.Request.Query["id"]`
         // and when generating log messages for required bodies or services.
-        other.SymbolName == SymbolName;
+        other.SymbolName == SymbolName &&
+        other.KeyedServiceKey == KeyedServiceKey;
 
     public override int GetHashCode()
     {

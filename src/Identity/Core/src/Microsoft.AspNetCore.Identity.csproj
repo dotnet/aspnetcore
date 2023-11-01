@@ -9,11 +9,11 @@
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
-    <Features>$(Features);InterceptorsPreview</Features>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)BearerToken\DTO\*.cs" LinkBase="DTO" />
+    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -47,6 +47,15 @@ public class EditForm : ComponentBase
     }
 
     /// <summary>
+    /// If enabled, form submission is performed without fully reloading the page. This is
+    /// equivalent to adding <code>data-enhance</code> to the form.
+    ///
+    /// This flag is only relevant in server-side rendering (SSR) scenarios. For interactive
+    /// rendering, the flag has no effect since there is no full-page reload on submit anyway.
+    /// </summary>
+    [Parameter] public bool Enhance { get; set; }
+
+    /// <summary>
     /// Specifies the top-level model object for the form. An edit context will
     /// be constructed for this model. If using this parameter, do not also supply
     /// a value for <see cref="EditContext"/>.
@@ -135,8 +144,13 @@ public class EditForm : ComponentBase
             builder.AddAttribute(2, "method", "post");
         }
 
-        builder.AddMultipleAttributes(3, AdditionalAttributes);
-        builder.AddAttribute(4, "onsubmit", _handleSubmitDelegate);
+        if (Enhance)
+        {
+            builder.AddAttribute(3, "data-enhance", "");
+        }
+
+        builder.AddMultipleAttributes(4, AdditionalAttributes);
+        builder.AddAttribute(5, "onsubmit", _handleSubmitDelegate);
 
         // In SSR cases, we register onsubmit as a named event and emit other child elements
         // to include the handler and antiforgery token in the post data
@@ -144,16 +158,16 @@ public class EditForm : ComponentBase
         {
             if (!string.IsNullOrEmpty(FormName))
             {
-                builder.AddNamedEvent(5, "onsubmit", FormName);
+                builder.AddNamedEvent("onsubmit", FormName);
             }
 
             RenderSSRFormHandlingChildren(builder, 6);
         }
 
         builder.OpenComponent<CascadingValue<EditContext>>(7);
-        builder.AddComponentParameter(8, "IsFixed", true);
-        builder.AddComponentParameter(9, "Value", _editContext);
-        builder.AddComponentParameter(10, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.AddComponentParameter(7, "IsFixed", true);
+        builder.AddComponentParameter(8, "Value", _editContext);
+        builder.AddComponentParameter(9, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
 
         builder.CloseElement();

@@ -167,6 +167,17 @@ public abstract class NavigationManager
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
 
     /// <summary>
+    /// Refreshes the current page via request to the server.
+    /// </summary>
+    /// <remarks>
+    /// If <paramref name="forceReload"/> is <c>true</c>, a full page reload will always be performed.
+    /// Otherwise, the response HTML may be merged with the document's existing HTML to preserve client-side state,
+    /// falling back on a full page reload if necessary.
+    /// </remarks>
+    public virtual void Refresh(bool forceReload = false)
+        => NavigateTo(Uri, forceLoad: true, replace: true);
+
+    /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
     /// Override <see cref="EnsureInitialized" /> and call this method to dynamically calculate these values.
     /// </summary>

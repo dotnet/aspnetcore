@@ -11,10 +11,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -962,7 +962,7 @@ public class ExceptionHandlerTest
             {
                 Assert.True(m.Value > 0);
                 Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
-                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
             });
     }
 }
