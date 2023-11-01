@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

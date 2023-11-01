@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore;
 

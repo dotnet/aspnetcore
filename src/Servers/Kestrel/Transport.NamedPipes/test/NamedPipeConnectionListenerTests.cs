@@ -3,7 +3,7 @@
 
 using System.IO.Pipes;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 

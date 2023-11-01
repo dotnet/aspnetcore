@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public static class TestPlatformHelper
 {

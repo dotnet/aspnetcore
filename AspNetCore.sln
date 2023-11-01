@@ -1264,8 +1264,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3CBC4802-E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerComparison.FunctionalTests", "src\Servers\test\FunctionalTests\ServerComparison.FunctionalTests.csproj", "{48E64014-B249-4644-8AEB-CDEE8ABA0DC2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.TestUtils.Tests", "src\Testing\test\Microsoft.AspNetCore.TestUtils.Tests.csproj", "{1542DC58-1836-4191-A9C5-51D1716D2543}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{6126DCE4-9692-4EE2-B240-C65743572995}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicTestApp", "src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj", "{46FB7E93-1294-4068-B80A-D4864F78277A}"
@@ -1778,9 +1776,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Output
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.OutputCaching.StackExchangeRedis", "src\Middleware\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\src\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj", "{F232B503-D412-45EE-8B31-EFD46B9FA302}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.TestUtils", "src\Testing\src\Microsoft.AspNetCore.TestUtils.csproj", "{B0A8E5D4-BC5A-448E-B222-431B6B2EB58E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.InternalTesting", "src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj", "{B0A8E5D4-BC5A-448E-B222-431B6B2EB58E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.TestUtils.Tests", "src\Testing\test\Microsoft.AspNetCore.TestUtils.Tests.csproj", "{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.InternalTesting.Tests", "src\Testing\test\Microsoft.AspNetCore.InternalTesting.Tests.csproj", "{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

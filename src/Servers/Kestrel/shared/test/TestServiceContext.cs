@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal class TestServiceContext : ServiceContext
 {

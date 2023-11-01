@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public static class TestApp
 {

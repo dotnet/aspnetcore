@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.CodeAnalysis.Completion;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class MockLogger : ILogger
 {

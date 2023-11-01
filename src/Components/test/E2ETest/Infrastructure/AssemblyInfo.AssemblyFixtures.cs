@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 [assembly: AssemblyFixture(typeof(SeleniumStandaloneServer))]
 [assembly: AssemblyFixture(typeof(SauceConnectServer))]

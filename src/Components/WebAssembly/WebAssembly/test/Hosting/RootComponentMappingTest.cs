@@ -3,7 +3,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

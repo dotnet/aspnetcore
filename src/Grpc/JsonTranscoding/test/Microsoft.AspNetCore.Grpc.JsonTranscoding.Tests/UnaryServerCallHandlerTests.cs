@@ -22,7 +22,7 @@ using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Transcoding;
 using Xunit.Abstractions;

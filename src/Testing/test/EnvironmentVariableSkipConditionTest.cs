@@ -4,7 +4,7 @@
 using System.Globalization;
 using Xunit;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class EnvironmentVariableSkipConditionTest
 {

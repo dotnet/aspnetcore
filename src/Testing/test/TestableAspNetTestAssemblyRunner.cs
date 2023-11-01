@@ -10,7 +10,7 @@ using Moq;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class TestableAspNetTestAssemblyRunner : AspNetTestAssemblyRunner
 {

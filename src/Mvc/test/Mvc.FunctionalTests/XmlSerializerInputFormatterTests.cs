@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 

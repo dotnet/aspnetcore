@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 // TODO: eventually want: public partial class Assert : Xunit.Assert
 public static class ExceptionAssert

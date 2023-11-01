@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

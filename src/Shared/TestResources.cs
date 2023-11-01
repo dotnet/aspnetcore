@@ -3,7 +3,7 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public static class TestResources
 {

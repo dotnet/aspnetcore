@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [Repeat]
 public class RepeatTest

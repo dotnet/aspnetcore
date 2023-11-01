@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [Obsolete("This API is obsolete and the pattern its usage encouraged should not be used anymore. See https://github.com/dotnet/extensions/issues/1697 for details.")]
 public class TestPathUtilities

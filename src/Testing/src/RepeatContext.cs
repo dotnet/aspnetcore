@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class RepeatContext
 {

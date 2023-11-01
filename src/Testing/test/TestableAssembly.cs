@@ -7,13 +7,13 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /* Creates a very simple dynamic assembly containing
  *
  * [Assembly: TestFramework(
- *     typeName: "Microsoft.AspNetCore.TestUtils.AspNetTestFramework",
- *     assemblyName: "Microsoft.AspNetCore.TestUtils")]
+ *     typeName: "Microsoft.AspNetCore.InternalTesting.AspNetTestFramework",
+ *     assemblyName: "Microsoft.AspNetCore.InternalTesting")]
  * [assembly: AssemblyFixture(typeof({fixtureType}))]
  * [assembly: TestOutputDirectory(
  *     preserveExistingLogsInOutput: "false",
@@ -53,7 +53,7 @@ public static class TestableAssembly
             .GetConstructor(new[] { typeof(string), typeof(string) });
         var frameworkBuilder = new CustomAttributeBuilder(
             frameworkConstructor,
-            new[] { "Microsoft.AspNetCore.TestUtils.AspNetTestFramework", "Microsoft.AspNetCore.TestUtils" });
+            new[] { "Microsoft.AspNetCore.InternalTesting.AspNetTestFramework", "Microsoft.AspNetCore.InternalTesting" });
 
         var fixtureConstructor = typeof(AssemblyFixtureAttribute).GetConstructor(new[] { typeof(Type) });
         var fixtureBuilder = new CustomAttributeBuilder(fixtureConstructor, new[] { fixtureType });

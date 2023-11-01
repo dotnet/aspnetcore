@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Options;
 using Moq;
 

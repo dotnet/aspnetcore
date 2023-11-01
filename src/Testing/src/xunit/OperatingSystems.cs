@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [Flags]
 public enum OperatingSystems

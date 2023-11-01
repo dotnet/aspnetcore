@@ -3,7 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;

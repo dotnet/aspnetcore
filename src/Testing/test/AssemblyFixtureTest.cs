@@ -3,11 +3,11 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 // We include a collection and assembly fixture to verify that they both still work.
 [Collection("MyCollection")]
-[TestCaseOrderer("Microsoft.AspNetCore.TestUtils.AlphabeticalOrderer", "Microsoft.AspNetCore.TestUtils.Tests")]
+[TestCaseOrderer("Microsoft.AspNetCore.InternalTesting.AlphabeticalOrderer", "Microsoft.AspNetCore.InternalTesting.Tests")]
 public class AssemblyFixtureTest
 {
     public AssemblyFixtureTest(

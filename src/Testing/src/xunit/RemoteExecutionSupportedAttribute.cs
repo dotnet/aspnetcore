@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.DotNet.RemoteExecutor;
 #endif
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
 public class RemoteExecutionSupportedAttribute : Attribute, ITestCondition

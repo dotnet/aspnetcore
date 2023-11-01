@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Runs a test multiple times to stress flaky tests that are believed to be fixed.

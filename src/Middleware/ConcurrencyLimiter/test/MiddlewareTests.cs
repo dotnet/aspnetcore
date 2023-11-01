@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests;
 

@@ -3,7 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests;
 

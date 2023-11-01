@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cryptography.Cng;

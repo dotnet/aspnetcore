@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 

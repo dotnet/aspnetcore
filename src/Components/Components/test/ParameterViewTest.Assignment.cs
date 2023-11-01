@@ -3,7 +3,7 @@
 
 using System.Collections;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Components;

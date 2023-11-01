@@ -3,7 +3,7 @@
 
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;

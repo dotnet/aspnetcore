@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Used to specify that <see cref="TestFileOutputContext.TestClassName"/> should used the

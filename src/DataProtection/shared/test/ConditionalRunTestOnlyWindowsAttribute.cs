@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Cryptography.Cng;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.DataProtection.Test.Shared;
 

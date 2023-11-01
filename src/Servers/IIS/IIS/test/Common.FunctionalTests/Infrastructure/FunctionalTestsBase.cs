@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.TestUtils;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting;

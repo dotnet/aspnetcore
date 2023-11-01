@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Microsoft.AspNetCore.TestUtils;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Summary description for TestConnection
