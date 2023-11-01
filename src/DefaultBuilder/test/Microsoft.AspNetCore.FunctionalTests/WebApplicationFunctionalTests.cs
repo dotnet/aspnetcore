@@ -153,7 +153,7 @@ public class WebApplicationFunctionalTests : LoggedTest
             // so we loop until success or a timeout.
             await configChangedTcs.Task.DefaultTimeout();
 
-            var timeoutTicks = Environment.TickCount64 + Testing.TaskExtensions.DefaultTimeoutDuration;
+            var timeoutTicks = Environment.TickCount64 + InternalTesting.TaskExtensions.DefaultTimeoutDuration;
             var logWritten = false;
 
             while (!logWritten && Environment.TickCount < timeoutTicks)
