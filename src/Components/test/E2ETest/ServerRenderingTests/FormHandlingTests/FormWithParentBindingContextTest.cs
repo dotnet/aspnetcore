@@ -1338,7 +1338,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    public void RadioButtonGetsResetInEnhancedForm()
+    public void RadioButtonGetsResetAfterSubmittingEnhancedForm()
     {
         GoTo("forms/form-with-radio-button");
 
