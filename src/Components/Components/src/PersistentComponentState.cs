@@ -121,7 +121,7 @@ public class PersistentComponentState
     /// <param name="key">The key to use to persist the state.</param>
     /// <param name="instance">The instance to persist.</param>
     /// <param name="jsonTypeInfo">Metadata about the type to convert.</param>
-    public void PersistAsJson<TValue>(string key, TValue instance, JsonTypeInfo<TValue> jsonTypeInfo)
+    public void PersistAsJson<TValue>(string key, TValue? instance, JsonTypeInfo<TValue> jsonTypeInfo)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(jsonTypeInfo);
@@ -136,7 +136,7 @@ public class PersistentComponentState
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
 
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, jsonTypeInfo));
+        _currentState.Add(key, instance is null ? "null"u8 : JsonSerializer.SerializeToUtf8Bytes(instance, jsonTypeInfo));
     }
 
     /// <summary>
