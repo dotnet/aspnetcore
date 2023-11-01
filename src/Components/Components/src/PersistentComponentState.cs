@@ -137,7 +137,7 @@ public class PersistentComponentState
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
 
-        _currentState.Add(key, instance is null ? "null"u8 : JsonSerializer.SerializeToUtf8Bytes(instance, jsonTypeInfo));
+        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance!, jsonTypeInfo));
     }
 
     /// <summary>
