@@ -486,7 +486,7 @@ describe('DomSync', () => {
   });
 
   test('should handle radio buttons with value attribute', () => {
-    // Checkboxes require even more special-case handling because their 'value' attribute
+    // Radio buttons require even more special-case handling because their 'value' attribute
     // has to be handled as a regular attribute, and 'checked' must be handled similarly
     // to 'value' on other inputs
 
