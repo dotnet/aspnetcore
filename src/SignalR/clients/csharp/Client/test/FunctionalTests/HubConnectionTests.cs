@@ -2316,7 +2316,7 @@ public class HubConnectionTests : FunctionalTestBase
     [MemberData(nameof(TransportTypes))]
     public async Task CanBlockOnAsyncOperationsWithOneAtATimeSynchronizationContext(HttpTransportType transportType)
     {
-        const int DefaultTimeout = Testing.TaskExtensions.DefaultTimeoutDuration;
+        const int DefaultTimeout = InternalTesting.TaskExtensions.DefaultTimeoutDuration;
 
         await using var server = await StartServer<Startup>();
         await using var connection = CreateHubConnection(server.Url, "/default", transportType, HubProtocols["json"], LoggerFactory);
