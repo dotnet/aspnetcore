@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -63,6 +64,19 @@ public sealed class AuthenticationManager
     /// </summary>
     public string? AuthenticationDisplayName { get; set; }
 
+    /// <summary>
+    /// If true, the Kerberos authentication credentials are cached. Kerberos or Negotiate
+    /// authentication must be enabled. The default is false.
+    /// </summary>
+    public bool EnableKerberosCredentialCaching { get; set; }
+
+    /// <summary>
+    /// If true, the server captures the caller's credentials and uses them for Kerberos
+    /// or Negotiate authentication. Kerberos or Negotiate authentication must be enabled.
+    /// The default is false.
+    /// </summary>
+    public bool CaptureCredential { get; set; }
+
     internal void SetUrlGroupSecurity(UrlGroup urlGroup)
     {
         Debug.Assert(_urlGroup == null, "SetUrlGroupSecurity called more than once.");
@@ -85,18 +99,39 @@ public sealed class AuthenticationManager
         {
             authInfo.AuthSchemes = (uint)_authSchemes;
 
+            authInfo.ExFlags = 0;
+
+            if (EnableKerberosCredentialCaching)
+            {
+                authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING;
+            }
+
+            if (CaptureCredential)
+            {
+                authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL;
+            }
+
             // TODO:
             // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching
-            // Kerberos auth sharing (off by default?) HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING
             // Mutual Auth - ReceiveMutualAuth
             // Digest domain and realm - HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
             // Basic realm - HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
 
+            HTTP_SERVER_PROPERTY property;
+            if (authInfo.ExFlags != 0)
+            {
+                // We need to modify extended fields such as ExFlags, set the extended auth property.
+                property = HTTP_SERVER_PROPERTY.HttpServerExtendedAuthenticationProperty;
+            }
+            else
+            {
+                // Otherwise set the regular auth property.
+                property = HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty;
+            }
+
             IntPtr infoptr = new IntPtr(&authInfo);
 
-            _urlGroup.SetProperty(
-                HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
-                infoptr, (uint)AuthInfoSize);
+            _urlGroup.SetProperty(property, infoptr, (uint)AuthInfoSize);
         }
     }
 
