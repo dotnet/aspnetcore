@@ -7,7 +7,7 @@ The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime
 | **area**                                                                                                                      | **owners**                                                                                    | **lead**                                                 | **notes**               |
 |-------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|----------------------------------------------------------|-------------------------|
 | **[area-blazor](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-blazor)**                     |                                                                                               | [@mkArtakMSFT](https://github.com/mkArtakMSFT)           |                         |
-| **[area-commandlinetools](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-commandlinetools)** | [@amcasey](https://github.com/amcasey) [@captainsafia](https://github.com/captainsafia)       | [@mkArtakMSFT](https://github.com/mkArtakMSFT)           | dev certs, user jwts, user secrets, dotnet watch ([@tmat](https://github.com/tmat)) |
+| **[area-commandlinetools](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-commandlinetools)** | [@amcasey](https://github.com/amcasey) [@captainsafia](https://github.com/captainsafia)       | [@adityamandaleeka](https://github.com/adityamandaleeka)           | dev certs, user jwts, user secrets, dotnet watch ([@tmat](https://github.com/tmat)) |
 | **[area-dataprotection](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-dataprotection)**     | [@amcasey](https://github.com/amcasey)                                                        | [@adityamandaleeka](https://github.com/adityamandaleeka) |                         |
 | **[area-efcore](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-efcore)**                     |                                                                                               | [@ajcvickers](https://github.com/ajcvickers)             | Home repo: https://github.com/dotnet/efcore/ |
 | **[area-grpc](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-grpc)**                         | [@JamesNK](https://github.com/JamesNK) [@mgravell](https://github.com/mgravell)               | [@adityamandaleeka](https://github.com/adityamandaleeka) | Home repo: https://github.com/grpc/grpc-dotnet/ |
@@ -17,7 +17,7 @@ The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime
 | **[area-infrastructure](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-infrastructure)**     | [@wtgodbe](https://github.com/wtgodbe)                                                        | [@mkArtakMSFT](https://github.com/mkArtakMSFT)           |                         |
 | **[area-middleware](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-middleware)**             | [@mitchdenny](https://github.com/mitchdenny)                                                  | [@adityamandaleeka](https://github.com/adityamandaleeka) |                         |
 | **[area-minimal](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-minimal)**                   | [@captainsafia](https://github.com/captainsafia) [@mitchdenny](https://github.com/mitchdenny) | [@adityamandaleeka](https://github.com/adityamandaleeka) |                         |
-| **[area-mvc](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-mvc)**                           | [@captainsafia](https://github.com/captainsafia)                                              | [@mkArtakMSFT](https://github.com/mkArtakMSFT)           |                         |
+| **[area-mvc](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-mvc)**                           | [@captainsafia](https://github.com/captainsafia)                                              | [@mkArtakMSFT](https://github.com/mkArtakMSFT)           | @mkArtakMSFT owns views, @adityamandaleeka owns the other parts                        |
 | **[area-networking](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-networking)**             | [@amcasey](https://github.com/amcasey)                                                        | [@adityamandaleeka](https://github.com/adityamandaleeka) |                         |
 | **[area-perf](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-perf)**                         | [@sebastienros](https://github.com/sebastienros)                                              |                                                          |                         |
 | **[area-razor.compiler](https://github.com/dotnet/aspnetcore/issues?q=is%3Aissue+is%3Aopen+label%3Aarea-razor.compiler)**     |                                                                                               |                                                          |                         |
@@ -32,6 +32,10 @@ The **dotnet/runtime** repo has [its own list](https://github.com/dotnet/runtime
 
 While not necessarily associated with a specific area, these community members have the power to assist with routing and labeling issues and pull requests, and are generally knowledgeable about how the repo works:
 
-| [@hishamco](https://github.com/hishamco) | [@Kahbazi](https://github.com/Kahbazi) | [@martincostello](https://github.com/martincostello) |
-|-|-|-|
-**[@david-acker](https://github.com/david-acker)** | **[@egil](https://github.com/egil)** | **[@gfoidl](https://github.com/gfoidl)** |
+- [@david-acker](https://github.com/david-acker)
+- [@egil](https://github.com/egil)
+- [@gfoidl](https://github.com/gfoidl)
+- [@hishamco](https://github.com/hishamco)
+- [@Kahbazi](https://github.com/Kahbazi)
+- [@marinasundstrom](https://github.com/marinasundstrom)
+- [@martincostello](https://github.com/martincostello)
