@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
