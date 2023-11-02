@@ -399,11 +399,11 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="8.0.0">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>38d7fb376f0a193508de0f0d1e06f9f181959714</Sha>
+      <Sha>ebafbeb77faadb25f449cd5f42d7a143c006bc6d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.0.0">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>38d7fb376f0a193508de0f0d1e06f9f181959714</Sha>
+      <Sha>ebafbeb77faadb25f449cd5f42d7a143c006bc6d</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
