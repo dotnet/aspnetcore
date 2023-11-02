@@ -181,7 +181,7 @@ internal sealed class MultipartReaderStream : Stream
             }
             else
             {
-                var length = _boundary.BoundaryBytes!.Length;
+                var length = _boundary.BoundaryBytes.Length;
 
                 return ReadBoundary(this, length);
             }
@@ -254,15 +254,15 @@ internal sealed class MultipartReaderStream : Stream
             // There is data before the boundary, we should return it to the user
             if (index != 0)
             {
-                // Sync, it's already buffered
                 var slice = buffer[..Math.Min(buffer.Length, index)];
 
+                // Sync, it's already buffered
                 var readAmount = _innerStream.Read(slice.Span);
                 return UpdatePosition(readAmount);
             }
             else
             {
-                var length = _boundary.BoundaryBytes!.Length;
+                var length = _boundary.BoundaryBytes.Length;
 
                 return await ReadBoundaryAsync(this, length, cancellationToken);
             }
@@ -277,14 +277,14 @@ internal sealed class MultipartReaderStream : Stream
             // We found a possible match, return any data before it.
             if (matchOffset > bufferedData.Offset)
             {
-                // Sync, it's already buffered
                 var slice = buffer[..Math.Min(buffer.Length, matchOffset - bufferedData.Offset)];
 
+                // Sync, it's already buffered
                 read = _innerStream.Read(slice.Span);
                 return UpdatePosition(read);
             }
 
-            var length = _boundary.BoundaryBytes!.Length;
+            var length = _boundary.BoundaryBytes.Length;
             Debug.Assert(matchCount == length);
 
             return await ReadBoundaryAsync(this, length, cancellationToken);
@@ -320,7 +320,7 @@ internal sealed class MultipartReaderStream : Stream
     // Does segment1 end with the start of matchBytes?
     // 1: AAAAABBB
     // 2:      BBBBB
-    private static bool SubMatch(ArraySegment<byte> segment1, Span<byte> matchBytes, out int matchOffset, out int matchCount)
+    private static bool SubMatch(ArraySegment<byte> segment1, ReadOnlySpan<byte> matchBytes, out int matchOffset, out int matchCount)
     {
         matchOffset = Math.Max(segment1.Offset, segment1.Offset + segment1.Count - matchBytes.Length);
         var segmentEnd = segment1.Offset + segment1.Count;
