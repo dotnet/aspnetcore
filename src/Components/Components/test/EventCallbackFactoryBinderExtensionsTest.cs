@@ -3,7 +3,7 @@
 
 using System.ComponentModel;
 using System.Globalization;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components;
 

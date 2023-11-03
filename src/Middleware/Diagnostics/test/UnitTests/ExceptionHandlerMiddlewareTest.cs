@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
@@ -318,7 +318,7 @@ public class ExceptionHandlerMiddlewareTest
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+        Assert.Equal(exceptionName, (string)measurement.Tags["error.type"]);
         Assert.Equal(result, measurement.Tags["aspnetcore.diagnostics.exception.result"].ToString());
         if (handler == null)
         {

@@ -71,6 +71,8 @@ internal static class DebugProxyLauncher
         };
         RemoveUnwantedEnvironmentVariables(processStartInfo.Environment);
 
+        using var cts = new CancellationTokenSource(DebugProxyLaunchTimeout);
+        var ctr = default(CancellationTokenRegistration);
         var debugProxyProcess = Process.Start(processStartInfo);
         if (debugProxyProcess is null)
         {
@@ -81,13 +83,20 @@ internal static class DebugProxyLauncher
             PassThroughConsoleOutput(debugProxyProcess);
             CompleteTaskWhenServerIsReady(debugProxyProcess, isFirefox, tcs);
 
-            new CancellationTokenSource(DebugProxyLaunchTimeout).Token.Register(() =>
+            ctr = cts.Token.Register(() =>
             {
                 tcs.TrySetException(new TimeoutException($"Failed to start the debug proxy within the timeout period of {DebugProxyLaunchTimeout.TotalSeconds} seconds."));
             });
         }
 
-        return await tcs.Task;
+        try
+        {
+            return await tcs.Task;
+        }
+        finally
+        {
+            ctr.Dispose();
+        }
     }
 
     private static void RemoveUnwantedEnvironmentVariables(IDictionary<string, string?> environment)

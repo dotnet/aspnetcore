@@ -5,7 +5,7 @@ using System;
 using System.Security.Cryptography;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal static class ExceptionAssert2
 {

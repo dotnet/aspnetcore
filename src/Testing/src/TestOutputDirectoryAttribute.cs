@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = true)]
 public class TestOutputDirectoryAttribute : Attribute

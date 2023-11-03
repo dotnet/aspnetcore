@@ -20,7 +20,8 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery, Persis
     {
         if (_context == null)
         {
-            return null;
+            // We're in an interactive context. Use the token persisted during static rendering.
+            return base.GetAntiforgeryToken();
         }
 
         // We already have a callback setup to generate the token when the response starts if needed.

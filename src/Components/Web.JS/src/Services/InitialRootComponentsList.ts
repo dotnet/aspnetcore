@@ -8,7 +8,7 @@ export class InitialRootComponentsList<ComponentDescriptorType extends Component
   constructor(public readonly initialComponents: ComponentDescriptorType[]) {
   }
 
-  resolveRootComponent(selectorId: number, _componentId: number): ComponentDescriptor {
-    return this.initialComponents[selectorId];
+  resolveRootComponent(ssrComponentId: number): ComponentDescriptor {
+    return this.initialComponents[ssrComponentId];
   }
 }

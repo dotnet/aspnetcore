@@ -24,9 +24,9 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         // don't have access to the request.
         _subscription = state.RegisterOnPersisting(() =>
         {
-            state.PersistAsJson(PersistenceKey, _currentToken);
+            state.PersistAsJson(PersistenceKey, GetAntiforgeryToken());
             return Task.CompletedTask;
-        }, new InteractiveAutoRenderMode());
+        }, RenderMode.InteractiveAuto);
 
         state.TryTakeFromJson(PersistenceKey, out _currentToken);
     }

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class MinimumOSVersionTest
 {

@@ -5,7 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -229,7 +229,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         {
             Browser.Click(By.Id(addCounterLinkIds[i]));
             Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
-            
+
             Browser.Click(By.Id($"increment-{i}"));
             Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
@@ -285,7 +285,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
             Browser.Equal($"{i + 1}", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
 
-        AssertBrowserLogDoesNotContainErrors();
+        AssertBrowserLogDoesNotContainErrors(entry => !entry.Message.Contains("Initializer"));
     }
 
     [Theory]
@@ -336,6 +336,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
 
         AssertBrowserLogDoesNotContainErrors();
+    }
+
+    private void EnableClassicInitializers(IWebDriver browser, bool skipNavigation)
+    {
+        if (!skipNavigation)
+        {
+            browser.Navigate().GoToUrl($"{new Uri(_serverFixture.RootUri, ServerPathBase)}/");
+        }
+        ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.setItem('enable-classic-initializers', 'true')");
     }
 
     [Theory]
@@ -393,6 +402,103 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
             Browser.Click(By.Id($"increment-{i}"));
             Browser.Equal("3", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        Browser.Click(By.Id("stop-streaming-link"));
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [MemberData(nameof(AddCounterLinkSequences))]
+    public void InteractiveRootComponents_GetReinitialized_WhenNoKeyIsProvided_AfterReceivingSsrParameterUpdates_FromEnhancedNavigation(string[] addCounterLinkIds)
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        Browser.Click(By.Id("disable-keys-link"));
+        Browser.Exists(By.Id("enable-keys-link"));
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id($"update-counter-link-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"increment-amount-{i}")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text); // Resets back to 0 because the parameter changed
+
+            // Ensure that interactivity still works, and the correct parameters have been supplied.
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
+            for (var j = 0; j < addCounterLinkIds.Length; j++)
+            {
+                if (j == i)
+                {
+                    continue;
+                }
+
+                // Ensure that other components didn't get reset; their parameters did not change.
+                Browser.NotEqual("0", () => Browser.FindElement(By.Id($"count-{j}")).Text);
+            }
+        }
+
+        AssertBrowserLogDoesNotContainErrors();
+    }
+
+    [Theory]
+    [MemberData(nameof(AddCounterLinkSequences))]
+    public void InteractiveRootComponents_GetReinitialized_WhenNoKeyIsProvided_AfterReceivingSsrParameterUpdates_FromStreamingRenderingUpdate(string[] addCounterLinkIds)
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+        Browser.Click(By.Id("disable-keys-link"));
+        Browser.Exists(By.Id("enable-keys-link"));
+
+        // Components don't become interactive during streaming rendering, so we need to
+        // add then via enhanced navigation first
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id(addCounterLinkIds[i]));
+            Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+        }
+
+        Browser.Click(By.Id("start-streaming-link"));
+        Browser.Equal("Streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        for (var i = 0; i < addCounterLinkIds.Length; i++)
+        {
+            Browser.Click(By.Id($"update-counter-link-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"increment-amount-{i}")).Text);
+            Browser.Equal("0", () => Browser.FindElement(By.Id($"count-{i}")).Text); // Resets back to 0 because the parameter changed
+
+            // Ensure that interactivity still works, and the correct parameters have been supplied.
+            // Note that while SSR'd components don't become interactive during stream rendering,
+            // this streaming update replaced an already-interactive component. To ensure that supplying
+            // unchanged parameters behaves the same way as supplying updated parameters, we
+            // check that the component is still interactive.
+            Browser.Click(By.Id($"increment-{i}"));
+            Browser.Equal("2", () => Browser.FindElement(By.Id($"count-{i}")).Text);
+
+            for (var j = 0; j < addCounterLinkIds.Length; j++)
+            {
+                if (j == i)
+                {
+                    continue;
+                }
+
+                // Ensure that other components didn't get reset; their parameters did not change.
+                Browser.NotEqual("0", () => Browser.FindElement(By.Id($"count-{j}")).Text);
+            }
         }
 
         Browser.Click(By.Id("stop-streaming-link"));
@@ -721,6 +827,84 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void AutoRenderMode_UsesBlazorWebAssembly_WhenBothServerAndWebAssemblyComponentsExist()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorServer_WhenOnlyServerComponentsExist_EvenAfterWebAssemblyResourcesLoad()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        ForceWebAssemblyResourceCacheMiss();
+
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        // We start by adding a WebAssembly component to ensure the WebAssembly runtime
+        // will be cached after we refresh the page.
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id($"remove-counter-link-0"));
+        Browser.DoesNotExist(By.Id("is-interactive-0"));
+
+        Browser.Navigate().Refresh();
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        // Verify that Auto mode will use Blazor Server, even though the WebAssembly runtime is cached
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+    }
+
+    [Fact]
+    public void AutoRenderMode_UsesBlazorServer_AfterWebAssemblyComponentsNoLongerExist_ButServerComponentsDo()
+    {
+        Navigate($"{ServerPathBase}/streaming-interactivity");
+        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
+
+        Browser.Click(By.Id(AddWebAssemblyPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
+
+        Browser.Click(By.Id(AddServerPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-1")).Text);
+
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-2")).Text);
+
+        // Remove all WebAssembly components
+        Browser.Click(By.Id("remove-counter-link-0"));
+        Browser.Click(By.Id("remove-counter-link-2"));
+
+        // Verify that Blazor Server gets used
+        Browser.Click(By.Id(AddAutoPrerenderedId));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-3")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-3")).Text);
+    }
+
+    [Fact]
     public void Circuit_ShutsDown_WhenAllBlazorServerComponentsGetRemoved()
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -986,9 +1170,13 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         return entries.Any(entry => entry.Message.Contains(message));
     }
 
-    private void AssertBrowserLogDoesNotContainErrors()
+    private void AssertBrowserLogDoesNotContainErrors(Func<LogEntry, bool> filter = null)
     {
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        if (filter != null)
+        {
+            entries = entries.Where(filter).ToArray().AsReadOnly();
+        }
         Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe);
     }
 

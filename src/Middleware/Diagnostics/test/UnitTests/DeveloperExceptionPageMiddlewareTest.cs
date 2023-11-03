@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
@@ -580,7 +580,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
             {
                 Assert.True(m.Value > 0);
                 Assert.Equal(500, (int)m.Tags["http.response.status_code"]);
-                Assert.Equal("System.Exception", (string)m.Tags["exception.type"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
             });
         Assert.Collection(requestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.Exception", "unhandled"));
@@ -589,7 +589,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+        Assert.Equal(exceptionName, (string)measurement.Tags["error.type"]);
         Assert.Equal(result, measurement.Tags["aspnetcore.diagnostics.exception.result"].ToString());
         if (handler == null)
         {

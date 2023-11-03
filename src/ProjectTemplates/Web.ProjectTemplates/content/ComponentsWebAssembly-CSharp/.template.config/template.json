@@ -17,7 +17,6 @@
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA",
     "0AFFA7FD-4E37-4636-AB91-3753E746DB98",
-    "09732173-2cef-46b7-83db-1334bcb079d3", // Tenant ID
     "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
   ],
   "identity": "Microsoft.Web.Blazor.Wasm.CSharp.9.0",
@@ -73,13 +72,13 @@
         {
           "condition": "(NoAuth)",
           "rename": {
-            "Components/Layout/MainLayout.NoAuth.razor": "Components/Layout/MainLayout.razor"
+            "Layout/MainLayout.NoAuth.razor": "Layout/MainLayout.razor"
           },
           "exclude": [
-            "Components/Pages/Authentication.razor",
-            "Components/Login/LoginDisplay.razor",
-            "Components/Layout/MainLayout.Auth.razor",
-            "Components/Login/RedirectToLogin.razor",
+            "Pages/Authentication.razor",
+            "Layout/LoginDisplay.razor",
+            "Layout/MainLayout.Auth.razor",
+            "Layout/RedirectToLogin.razor",
             "wwwroot/appsettings.Development.json",
             "wwwroot/appsettings.json"
           ]
@@ -87,29 +86,29 @@
         {
           "condition": "(!NoAuth)",
           "rename": {
-            "Components/Layout/MainLayout.Auth.razor": "Components/Layout/MainLayout.razor"
+            "Layout/MainLayout.Auth.razor": "Layout/MainLayout.razor"
           },
           "exclude": [
-            "Components/Layout/MainLayout.NoAuth.razor"
+            "Layout/MainLayout.NoAuth.razor"
           ]
         },
         {
           "condition": "(!GenerateApi)",
           "rename": {
-            "Components/Layout/NavMenu.NoApi.razor": "Components/Layout/NavMenu.razor"
+            "Layout/NavMenu.NoApi.razor": "Layout/NavMenu.razor"
           },
           "exclude": [
-            "Components/Pages/CallWebApi.razor",
-            "Components/Layout/NavMenu.CallsWebApi.razor"
+            "Pages/CallWebApi.razor",
+            "Layout/NavMenu.CallsWebApi.razor"
           ]
         },
         {
           "condition": "(GenerateApi)",
           "rename": {
-            "Components/Layout/NavMenu.CallsWebApi.razor": "Components/Layout/NavMenu.razor"
+            "Layout/NavMenu.CallsWebApi.razor": "Layout/NavMenu.razor"
           },
           "exclude": [
-            "Components/Layout/NavMenu.NoApi.razor"
+            "Layout/NavMenu.NoApi.razor"
           ]
         },
         {
@@ -121,14 +120,13 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
-            "Components/Pages/Counter.*",
-            "Components/Pages/Weather.*",
-            "Components/Layout/MainLayout.razor.css",
-            "Components/Layout/NavMenu.*",
+            "Pages/Counter.*",
+            "Pages/Weather.*",
+            "Layout/MainLayout.razor.css",
+            "Layout/NavMenu.*",
             "wwwroot/css/bootstrap/**",
             "wwwroot/css/bootstrap-icons/**",
             "wwwroot/favicon.png",
-            "wwwroot/icon*.png",
             "wwwroot/sample-data/weather.json"
           ]
         }

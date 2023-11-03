@@ -4,7 +4,7 @@
 using System;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
 using Templates.Test.Helpers;
 using Xunit;

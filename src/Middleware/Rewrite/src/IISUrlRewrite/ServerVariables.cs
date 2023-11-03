@@ -87,6 +87,9 @@ internal static class ServerVariables
             case "REQUEST_URI":
                 managedVariableThunk = () => new UrlSegment(uriMatchPart);
                 break;
+            case "SERVER_NAME":
+                managedVariableThunk = () => new ServerNameSegment();
+                break;
             default:
                 throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
         }

@@ -6,14 +6,14 @@ using System.Threading;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class MessagePumpTests
+public class MessagePumpTests : LoggedTest
 {
     [ConditionalFact]
     public void OverridingDirectConfigurationWithIServerAddressesFeatureSucceeds()
@@ -21,7 +21,7 @@ public class MessagePumpTests
         var serverAddress = "http://localhost:11001/";
         var overrideAddress = "http://localhost:11002/";
 
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
             serverAddressesFeature.Addresses.Add(overrideAddress);
@@ -43,7 +43,7 @@ public class MessagePumpTests
     {
         var serverAddress = "http://localhost:11002/";
 
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
             serverAddressesFeature.Addresses.Add(overrideAddress);
@@ -60,7 +60,7 @@ public class MessagePumpTests
     {
         var serverAddress = "http://localhost:11002/";
 
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
             serverAddressesFeature.PreferHostingUrls = true;
@@ -81,7 +81,7 @@ public class MessagePumpTests
     {
         var overrideAddress = "http://localhost:11002/";
 
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
             serverAddressesFeature.Addresses.Add(serverAddress);
@@ -98,7 +98,7 @@ public class MessagePumpTests
     {
         var serverAddress = "http://localhost:11001/";
 
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             var serverAddressesFeature = server.Features.Get<IServerAddressesFeature>();
             serverAddressesFeature.Addresses.Add(serverAddress);
@@ -112,7 +112,7 @@ public class MessagePumpTests
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/28993")]
     public void UseDefaultAddress_WhenNoServerAddressAndNoDirectConfiguration()
     {
-        using (var server = Utilities.CreatePump())
+        using (var server = Utilities.CreatePump(LoggerFactory))
         {
             server.StartAsync(new DummyApplication(), CancellationToken.None).Wait();
 

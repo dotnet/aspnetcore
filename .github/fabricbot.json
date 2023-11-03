@@ -1520,7 +1520,7 @@
             ]
           },
           {
-            "label": "area-web-frameworks",
+            "label": "area-mvc",
             "pathFilter": [
               "src/Mvc/Mvc.Abstractions/",
               "src/Mvc/Mvc.Analyzers/",
@@ -2888,6 +2888,12 @@
                 {
                   "name": "addedToMilestone",
                   "parameters": {
+                    "milestoneName": "8.0.x"
+                  }
+                },
+                {
+                  "name": "addedToMilestone",
+                  "parameters": {
                     "milestoneName": "7.0.x"
                   }
                 },
@@ -2920,6 +2926,59 @@
             "parameters": {
               "projectName": "Servicing",
               "columnName": "In Progress"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/8.0"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add release/8.0 targeting PRs to the servicing project",
+        "actions": [
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "8.0.x"
+            }
+          },
+          {
+            "name": "addToProject",
+            "parameters": {
+              "projectName": "Servicing",
+              "columnName": "In Progress"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.\nOtherwise, please add `tell-mode` label."
             }
           }
         ]
@@ -3236,7 +3295,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.23"
+              "milestoneName": "6.0.24"
             }
           }
         ]
@@ -3280,7 +3339,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.12"
+              "milestoneName": "7.0.13"
             }
           }
         ]

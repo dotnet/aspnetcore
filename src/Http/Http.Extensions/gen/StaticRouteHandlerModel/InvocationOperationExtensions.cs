@@ -27,6 +27,8 @@ internal static class InvocationOperationExtensions
     {
         invocationOperation = null;
         if (operation is IInvocationOperation targetOperation &&
+            targetOperation.TargetMethod.ContainingNamespace is { Name: "Builder", ContainingNamespace: { Name: "AspNetCore", ContainingNamespace: { Name: "Microsoft", ContainingNamespace.IsGlobalNamespace: true } } } &&
+            targetOperation.TargetMethod.ContainingAssembly.Name is "Microsoft.AspNetCore.Routing" &&
             targetOperation.TryGetRouteHandlerArgument(out var routeHandlerParameter) &&
             routeHandlerParameter is { Parameter.Type: {} delegateType } &&
             SymbolEqualityComparer.Default.Equals(delegateType, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Delegate)))

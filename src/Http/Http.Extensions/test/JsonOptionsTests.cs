@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Http.Extensions;

@@ -9,12 +9,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
-public class ResponseCachingTests
+public class ResponseCachingTests : LoggedTest
 {
     private readonly string _absoluteFilePath;
     private readonly long _fileLength;
@@ -36,7 +37,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -56,7 +57,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -77,7 +78,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -98,7 +99,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address, StatusCodes.Status304NotModified));
@@ -123,7 +124,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -143,7 +144,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -163,7 +164,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=" + int.MaxValue.ToString(CultureInfo.InvariantCulture);
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -183,7 +184,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, s-maxage=10";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -203,7 +204,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=0, s-maxage=10";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -224,7 +225,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -248,7 +249,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers[headerName] = "headerValue";
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -271,7 +272,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Expires"] = expiresValue;
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -291,7 +292,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -312,7 +313,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Expires"] = (DateTime.UtcNow - TimeSpan.FromSeconds(10)).ToString("r"); // In the past
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -333,7 +334,7 @@ public class ResponseCachingTests
             httpContext.Response.ContentLength = 10;
             httpContext.Response.Body.FlushAsync();
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -355,7 +356,7 @@ public class ResponseCachingTests
             await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             // Http.Sys will add this for us
             Assert.Null(httpContext.Response.ContentLength);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await SendRequestAsync(address));
@@ -374,7 +375,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString(CultureInfo.InvariantCulture);
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
             await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await GetFileAsync(address));
@@ -394,7 +395,7 @@ public class ResponseCachingTests
             httpContext.Response.Headers["Cache-Control"] = "public, max-age=30";
             httpContext.Response.ContentLength = _fileLength;
             await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
-        }))
+        }, LoggerFactory))
         {
             address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
             Assert.Equal("1", await GetFileAsync(address));
@@ -416,7 +417,7 @@ public class ResponseCachingTests
             httpContext.Response.StatusCode = status;
             httpContext.Response.ContentLength = 10;
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             // Http.Sys will cache almost any status code.
             for (int status = 200; status < 600; status++)

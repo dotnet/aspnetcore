@@ -4,17 +4,25 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
+// TODO: reinstate pooling
+// context: a last-minute bug was detected during net8 preparation that impacted
+// buffer reuse from output-cache (the only consumer of this type); the preferred
+// solution for this is understood, but is more "moving parts" than we're comfortable
+// touching in the last phase of net8, so to avoid risk, *temporarily*, the buffer
+// reuse is disabled; this is consistent with net7, which never used buffer recycling
+// in output-cache, so this is not a regression. The work to properly implement buffer
+// reuse in output-cache is in progress to be merged in net9 and hopefully backported
+// into a net8 service release.
 internal sealed class RecyclableReadOnlySequenceSegment : ReadOnlySequenceSegment<byte>
 {
     public int Length => Memory.Length;
     private RecyclableReadOnlySequenceSegment() { }
 
     public static RecyclableReadOnlySequenceSegment Create(int minimumLength, RecyclableReadOnlySequenceSegment? previous)
-        => Create(Rent(minimumLength), previous);
+        => Create(GetBuffer(minimumLength), previous);
 
     public static RecyclableReadOnlySequenceSegment Create(ReadOnlyMemory<byte> memory, RecyclableReadOnlySequenceSegment? previous)
     {
@@ -112,14 +120,16 @@ internal sealed class RecyclableReadOnlySequenceSegment : ReadOnlySequenceSegmen
         }
     }
 
-    private static byte[] Rent(int minimumLength)
-        => ArrayPool<byte>.Shared.Rent(minimumLength);
+    // TODO: reinstate ArrayPool<byte>.Shared usage.Rent(minimumLength);
+    private static byte[] GetBuffer(int minimumLength)
+        => new byte[minimumLength];
 
-    private static void Recycle(ReadOnlyMemory<byte> value)
+    private static void Recycle(ReadOnlyMemory<byte> _)
     {
-        if (MemoryMarshal.TryGetArray(value, out var segment) && segment.Offset == 0 && segment.Count != 0)
-        {
-            ArrayPool<byte>.Shared.Return(segment.Array!);
-        }
+        // TODO: reinstate buffer recycling
+        //if (MemoryMarshal.TryGetArray(value, out var segment) && segment.Offset == 0 && segment.Count != 0)
+        //{
+        //    ArrayPool<byte>.Shared.Return(segment.Array!);
+        //}
     }
 }

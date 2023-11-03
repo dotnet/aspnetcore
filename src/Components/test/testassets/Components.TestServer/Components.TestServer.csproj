@@ -14,6 +14,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
@@ -22,7 +23,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
@@ -37,7 +38,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Microsoft.AspNetCore.Testing.BasicTestApp.ContentRoot</_Parameter1>
+      <_Parameter1>Microsoft.AspNetCore.InternalTesting.BasicTestApp.ContentRoot</_Parameter1>
       <_Parameter2 Condition="'$(IsHelixJob)' != 'true'">$([MSBuild]::NormalizeDirectory('$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\BasicTestApp'))'))</_Parameter2>
       <_Parameter2 Condition="'$(IsHelixJob)' == 'true'">..\BasicTestApp</_Parameter2>
     </AssemblyAttribute>

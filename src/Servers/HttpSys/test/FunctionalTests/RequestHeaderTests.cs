@@ -7,13 +7,13 @@ using System.Net.Sockets;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class RequestHeaderTests
+public class RequestHeaderTests : LoggedTest
 {
     [ConditionalFact]
     public async Task RequestHeaders_ClientSendsDefaultHeaders_Success()
@@ -28,7 +28,7 @@ public class RequestHeaderTests
                 Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
                 Assert.True(StringValues.IsNullOrEmpty(requestHeaders["Accept"]));
                 return Task.FromResult(0);
-            }))
+            }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -50,7 +50,7 @@ public class RequestHeaderTests
             Assert.Single(requestHeaders["Spacer-Header"]);
             Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         var customValues = new string[] { "custom1, and custom2", "custom3" };
 
@@ -92,7 +92,7 @@ public class RequestHeaderTests
 
             Assert.True(requestHeaders.Contains(header));
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -111,7 +111,7 @@ public class RequestHeaderTests
             Assert.Equal("chunked", requestHeaders.TransferEncoding);
             Assert.True(request.HasEntityBody);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", "chunked" }
@@ -134,7 +134,7 @@ public class RequestHeaderTests
             Assert.Equal("gzip, chunked", requestHeaders.TransferEncoding);
             Assert.True(request.HasEntityBody);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", new string[] { "gzip", "chunked" } }
@@ -165,7 +165,7 @@ public class RequestHeaderTests
             Assert.Single(requestHeaders["X-Content-Length"]);
             Assert.Equal("1", requestHeaders["X-Content-Length"]);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", new string[] { "gzip", "chunked" } },
@@ -191,7 +191,7 @@ public class RequestHeaderTests
             Assert.Contains(requestHeaders[customHeader].First(), requestHeaders.Keys);
             Assert.Contains(HeaderNames.Host, requestHeaders.Keys);
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         foreach ((HttpSysRequestHeader Key, string Value) testRow in HeaderTestData())
         {
@@ -219,7 +219,7 @@ public class RequestHeaderTests
             Assert.Contains("X-UnknownHeader-2", requestHeaders.Keys);
             Assert.Contains(HeaderNames.Host, requestHeaders.Keys);
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         var headerDictionary = new Dictionary<string, string>
         {

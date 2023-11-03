@@ -182,11 +182,13 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
                 _abortReason?.Throw();
             }
         }
+#if DEBUG
         catch (Exception ex)
         {
             Debug.Fail($"Unexpected exception in {nameof(QuicConnectionContext)}.{nameof(AcceptAsync)}: {ex}");
             throw;
         }
+#endif
 
         // Return null for graceful closure or cancellation.
         return null;

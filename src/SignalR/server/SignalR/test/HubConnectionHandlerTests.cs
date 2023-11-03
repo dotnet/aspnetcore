@@ -19,11 +19,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -2736,7 +2737,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var interval = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new MockTimeProvider();
+            var timeProvider = new FakeTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.KeepAliveInterval = interval), LoggerFactory);
@@ -2798,7 +2799,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new MockTimeProvider();
+            var timeProvider = new FakeTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.ClientTimeoutInterval = timeout), LoggerFactory);
@@ -2834,7 +2835,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new MockTimeProvider();
+            var timeProvider = new FakeTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.ClientTimeoutInterval = timeout), LoggerFactory);
@@ -2861,7 +2862,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(100);
-            var timeProvider = new MockTimeProvider();
+            var timeProvider = new FakeTimeProvider();
             var state = new ConnectionLifetimeState();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
@@ -2897,7 +2898,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var timeout = TimeSpan.FromMilliseconds(300);
-            var timeProvider = new MockTimeProvider();
+            var timeProvider = new FakeTimeProvider();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.ClientTimeoutInterval = timeout), LoggerFactory);

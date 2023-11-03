@@ -50,7 +50,7 @@ Otherwise, you'll get a test error "Certificate error: Navigation blocked".
 
 Then, use one of:
 
-1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuilddeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
+1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuildDeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
 1. To test specific templates, use the `Run-[Template]-Locally.ps1` scripts in the script folder.
     - These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
 1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.

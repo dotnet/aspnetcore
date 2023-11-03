@@ -3,7 +3,7 @@
 
 using System;
 using System.Security.Principal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 

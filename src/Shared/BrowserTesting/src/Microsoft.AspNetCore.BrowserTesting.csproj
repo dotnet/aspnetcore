@@ -12,7 +12,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
     <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 

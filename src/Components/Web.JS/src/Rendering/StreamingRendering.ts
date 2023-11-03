@@ -60,7 +60,7 @@ class BlazorStreamingUpdate extends HTMLElement {
                   // The URL was already updated on the original link click. Replace so that 'back' goes to the pre-redirection location.
                   history.replaceState(null, '', destinationUrl);
                 }
-                performEnhancedPageLoad(destinationUrl);
+                performEnhancedPageLoad(destinationUrl, /* interceptedLink */ false);
               } else {
                 // Same reason for varying as above
                 if (isFormPost) {

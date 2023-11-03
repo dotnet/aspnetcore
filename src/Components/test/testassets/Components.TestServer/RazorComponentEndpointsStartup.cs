@@ -8,7 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
 
@@ -152,6 +152,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             response.ContentType = "text/html";
             await response.WriteAsync("<html><body><h1>This is a non-Blazor endpoint</h1><p>That's all</p></body></html>");
+        });
+
+        endpoints.MapPost("api/antiforgery-form", (
+            [FromForm] string value,
+            [FromForm(Name = "__RequestVerificationToken")] string? inFormCsrfToken,
+            [FromHeader(Name = "RequestVerificationToken")] string? inHeaderCsrfToken) =>
+        {
+            // We shouldn't get this far without a valid CSRF token, but we'll double check it's there.
+            if (string.IsNullOrEmpty(inFormCsrfToken) && string.IsNullOrEmpty(inHeaderCsrfToken))
+            {
+                throw new InvalidOperationException("Invalid POST to api/antiforgery-form!");
+            }
+
+            return TypedResults.Text($"<p id='pass'>Hello {value}!</p>", "text/html");
+        });
+
+        endpoints.Map("/forms/endpoint-that-never-finishes-rendering", (HttpResponse response, CancellationToken token) =>
+        {
+            return Task.Delay(Timeout.Infinite, token);
         });
 
         static Task PerformRedirection(HttpRequest request, HttpResponse response)

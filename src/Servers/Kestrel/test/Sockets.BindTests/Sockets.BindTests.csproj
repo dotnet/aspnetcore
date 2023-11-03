@@ -13,7 +13,6 @@
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestServiceContext.cs" Link="shared\TestServiceContext.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestConnection.cs" Link="shared\TestConnection.cs" />
-    <Compile Include="$(SharedSourceRoot)test\MockTimeProvider.cs" Link="shared\MockTimeProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLoggerLoggedTest.cs" Link="shared\TestApplicationErrorLoggerLoggedTest.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" Link="shared\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamBackedTestConnection.cs" Link="shared\StreamBackedTestConnection.cs" />
@@ -28,6 +27,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
 </Project>

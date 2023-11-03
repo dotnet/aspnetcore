@@ -44,7 +44,7 @@ export function attachRootComponentToElement(elementSelector: string, componentI
 
   // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
   // Only client-side Blazor supplies a browser renderer ID
-  attachRootComponentToLogicalElement(browserRendererId || 0, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
+  attachRootComponentToLogicalElement(browserRendererId, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
 export function getRendererer(browserRendererId: number): BrowserRenderer | undefined {

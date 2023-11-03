@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -19,33 +18,17 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
         => GetPersistedStateCore();
 
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    public static async Task<RootComponentMapping[]> GetInitialComponentUpdate()
+    public static async Task<RootComponentOperationBatch> GetInitialComponentUpdate()
     {
-        var components = await InternalJSImportMethods.GetInitialUpdateCore();
-        var operations = DefaultWebAssemblyJSRuntime.DeserializeOperations(components);
-        var mappings = new RootComponentMapping[operations.Length];
-
-        for (var i = 0; i < operations.Length; i++)
-        {
-            var (operation, component, parameters) = operations[i];
-            if (operation.Type != RootComponentOperationType.Add)
-            {
-                throw new InvalidOperationException("All initial operations must be additions.");
-            }
-            mappings[i] = new RootComponentMapping(
-                component!,
-                operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture),
-                parameters);
-        }
-
-        return mappings;
+        var components = await GetInitialUpdateCore();
+        return DefaultWebAssemblyJSRuntime.DeserializeOperations(components);
     }
 
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
 
-    public void NavigationManager_EnableNavigationInterception()
-        => NavigationManager_EnableNavigationInterceptionCore();
+    public void NavigationManager_EnableNavigationInterception(int rendererId)
+        => NavigationManager_EnableNavigationInterceptionCore(rendererId);
 
     public void NavigationManager_ScrollToElement(string id)
         => NavigationManager_ScrollToElementCore(id);
@@ -56,8 +39,8 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string NavigationManager_GetBaseUri()
         => NavigationManager_GetBaseUriCore();
 
-    public void NavigationManager_SetHasLocationChangingListeners(bool value)
-        => NavigationManager_SetHasLocationChangingListenersCore(value);
+    public void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value)
+        => NavigationManager_SetHasLocationChangingListenersCore(rendererId, value);
 
     public int RegisteredComponents_GetRegisteredComponentsCount()
         => RegisteredComponents_GetRegisteredComponentsCountCore();
@@ -84,7 +67,7 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     private static partial string GetApplicationEnvironmentCore();
 
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
-    private static partial void NavigationManager_EnableNavigationInterceptionCore();
+    private static partial void NavigationManager_EnableNavigationInterceptionCore(int rendererId);
 
     [JSImport(BrowserNavigationManagerInterop.ScrollToElement, "blazor-internal")]
     private static partial void NavigationManager_ScrollToElementCore(string id);
@@ -96,7 +79,7 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     private static partial string NavigationManager_GetBaseUriCore();
 
     [JSImport(BrowserNavigationManagerInterop.SetHasLocationChangingListeners, "blazor-internal")]
-    private static partial void NavigationManager_SetHasLocationChangingListenersCore(bool value);
+    private static partial void NavigationManager_SetHasLocationChangingListenersCore(int rendererId, bool value);
 
     [JSImport(RegisteredComponentsInterop.GetRegisteredComponentsCount, "blazor-internal")]
     private static partial int RegisteredComponents_GetRegisteredComponentsCountCore();

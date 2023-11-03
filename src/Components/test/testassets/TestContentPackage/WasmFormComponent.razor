@@ -1,0 +1,74 @@
+﻿@rendermode RenderMode.InteractiveWebAssembly
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http
+<h3>WasmFormComponent</h3>
+
+<form @formname="WasmForm" @onsubmit="SubmitForm">
+    <input id="Value" @bind="_value" name="Value" />
+    @if (OperatingSystem.IsBrowser())
+    {
+        <input id="send" type="submit" value="Send" />
+    }
+    <AntiforgeryToken />
+</form>
+
+@if (_posted)
+{
+    @if (_succeeded)
+    {
+        <p id="pass">Posting the value succeeded.</p>
+    }
+    else
+    {
+        <p>Posting the value failed.</p>
+    }
+}
+else
+{
+    <p>Antiforgery: @_token</p>
+}
+
+@code {
+    string _value;
+    string _token;
+    bool _succeeded;
+    bool _posted;
+
+    [Inject] public AntiforgeryStateProvider AntiforgeryState { get; set; }
+    [Inject] public NavigationManager Navigation { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            var antiforgery = AntiforgeryState.GetAntiforgeryToken();
+            _token = antiforgery.Value;
+        }
+    }
+
+    private async Task SubmitForm()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            var client = new HttpClient() { BaseAddress = new Uri(Navigation.BaseUri) };
+            var antiforgery = AntiforgeryState.GetAntiforgeryToken();
+            if (antiforgery != null)
+            {
+                _posted = true;
+                var request = new HttpRequestMessage(HttpMethod.Post, "api/antiforgery-form");
+                var content = new FormUrlEncodedContent(new KeyValuePair<string, string>[] { new ("Value", _value) });
+                request.Content = content;
+                request.Headers.Add("RequestVerificationToken", antiforgery.Value);
+                var response = await client.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    _succeeded = true;
+                }
+                else
+                {
+                    _succeeded = false;
+                }
+            }
+        }
+    }
+}

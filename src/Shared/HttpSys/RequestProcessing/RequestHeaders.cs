@@ -279,7 +279,7 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         int observedHeadersCount = 0;
         for (int i = 0; i < HeaderKeys.Length; i++)
         {
-            var header = (HttpSysRequestHeader)HeaderKeys[i];
+            var header = HeaderKeys[i];
             if (HasKnownHeader(header))
             {
                 observedHeaders[observedHeadersCount++] = GetHeaderKeyName(header);
@@ -293,7 +293,7 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         int observedHeadersCount = 0;
         for (int i = 0; i < HeaderKeys.Length; i++)
         {
-            var header = (HttpSysRequestHeader)HeaderKeys[i];
+            var header = HeaderKeys[i];
             if (HasKnownHeader(header))
             {
                 observedHeadersCount++;

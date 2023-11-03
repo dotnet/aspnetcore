@@ -29,7 +29,7 @@
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
     "eslint": "^8.16.0",
-    "eslint-plugin-jsdoc": "^39.3.2",
+    "eslint-plugin-jsdoc": "^44.2.3",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "rimraf": "^3.0.2",
     "typescript": "^4.2.2"

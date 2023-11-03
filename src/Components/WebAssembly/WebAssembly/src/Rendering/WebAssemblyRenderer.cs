@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -33,25 +32,41 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private void OnUpdateRootComponents(OperationDescriptor[] operations)
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
     {
-        for (var i = 0; i < operations.Length; i++)
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
+        for (var i = 0; i < batch.Operations.Length; i++)
         {
-            var (operation, componentType, parameters) = operations[i];
+            var operation = batch.Operations[i];
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
-                    _ = AddComponentAsync(componentType!, parameters, operation.SelectorId!.Value.ToString(CultureInfo.InvariantCulture));
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker!.Value.Key!,
+                        operation.Descriptor!.Parameters);
                     break;
                 case RootComponentOperationType.Update:
-                    _ = RenderRootComponentAsync(operation.ComponentId!.Value, parameters);
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker?.Key,
+                        operation.Descriptor!.Parameters);
                     break;
                 case RootComponentOperationType.Remove:
-                    RemoveRootComponent(operation.ComponentId!.Value);
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
         }
+
+        NotifyEndUpdateRootComponents(batch.BatchId);
+    }
+
+    public static void NotifyEndUpdateRootComponents(long batchId)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
     }
 
     public override Dispatcher Dispatcher => NullDispatcher.Instance;

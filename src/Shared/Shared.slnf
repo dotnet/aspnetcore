@@ -13,7 +13,7 @@
        "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj",
       "src\\Shared\\test\\Shared.Tests\\Microsoft.AspNetCore.Shared.Tests.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj"
     ]
   }
 }
