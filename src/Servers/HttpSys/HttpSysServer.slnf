@@ -2,6 +2,7 @@
   "solution": {
     "path": "..\\..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
       "src\\DataProtection\\DataProtection\\src\\Microsoft.AspNetCore.DataProtection.csproj",

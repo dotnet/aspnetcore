@@ -200,6 +200,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
+    <LatestPackageReference Include="Microsoft.Windows.CsWin32" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Mono.TextTemplating" />
     <LatestPackageReference Include="Moq" />

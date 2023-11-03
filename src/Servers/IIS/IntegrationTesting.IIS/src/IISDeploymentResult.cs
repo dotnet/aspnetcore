@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
-public class IISDeploymentResult : DeploymentResult
+public class IISDeploymentResult : DeploymentResult, IDisposable
 {
     public ILogger Logger { get; set; }
 
@@ -41,6 +41,11 @@ public class IISDeploymentResult : DeploymentResult
             BaseAddress = base.HttpClient.BaseAddress,
             Timeout = TimeSpan.FromSeconds(200),
         };
+    }
+
+    public void Dispose()
+    {
+        HttpClient.Dispose();
     }
 
     public new HttpClient HttpClient { get; set; }
