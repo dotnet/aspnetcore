@@ -485,6 +485,22 @@ describe('DomSync', () => {
     expect(checkboxElem.value).toBe('second');
   });
 
+  test('should handle radio buttons with value attribute', () => {
+    // Radio buttons require even more special-case handling because their 'value' attribute
+    // has to be handled as a regular attribute, and 'checked' must be handled similarly
+    // to 'value' on other inputs
+
+    const destination = makeExistingContent(`<input type='radio' value='first' checked />`);
+    const newContent = makeNewContent(`<input type='radio' value='second' checked />`);
+
+    const checkboxElem = destination.startExclusive.nextSibling as HTMLInputElement;
+
+    // Act/Assert
+    synchronizeDomContent(destination, newContent);
+    expect(checkboxElem.checked).toBeTruthy();
+    expect(checkboxElem.value).toBe('second');
+  });
+
   test('should treat doctype nodes as unchanged', () => {
     // Can't update a doctype after the document is created, nor is there a use case for doing so
     // We just have to skip them, as it would be an error to try removing or inserting them

@@ -46,7 +46,7 @@ public static class WebHostBuilderExtensions
         {
             services.AddSingleton<IStartup>(sp =>
             {
-                return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), (app => configureApp(app)));
+                return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
             });
         });
     }

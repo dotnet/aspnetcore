@@ -8,7 +8,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 #nullable enable
 // Copied from https://github.com/dotnet/runtime/main/src/libraries/System.Net.Security/tests/FunctionalTests/TestHelper.cs

@@ -20,12 +20,12 @@
 
     <ItemGroup>
       <AssemblyAttribute Include="Xunit.TestFramework">
-        <_Parameter1>Microsoft.AspNetCore.Testing.AspNetTestFramework</_Parameter1>
-        <_Parameter2>Microsoft.AspNetCore.Testing</_Parameter2>
+        <_Parameter1>Microsoft.AspNetCore.InternalTesting.AspNetTestFramework</_Parameter1>
+        <_Parameter2>Microsoft.AspNetCore.InternalTesting</_Parameter2>
       </AssemblyAttribute>
 
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.AssemblyTestLogFixtureAttribute" />
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Testing.TestFrameworkFileLoggerAttribute">
+      <AssemblyAttribute Include="Microsoft.AspNetCore.InternalTesting.AssemblyTestLogFixtureAttribute" />
+      <AssemblyAttribute Include="Microsoft.AspNetCore.InternalTesting.TestFrameworkFileLoggerAttribute">
         <_Parameter1>$(PreserveExistingLogsInOutput)</_Parameter1>
         <_Parameter2>$(TargetFramework)</_Parameter2>
         <_Parameter3 Condition="'$(LoggingTestingDisableFileLogging)' != 'true'">$(LoggingTestingFileLoggingDirectory)</_Parameter3>

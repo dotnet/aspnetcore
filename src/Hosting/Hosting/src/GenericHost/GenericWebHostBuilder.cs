@@ -324,7 +324,7 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             {
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
-                    options.ConfigureApplication = app => configure(app);
+                    options.ConfigureApplication = configure;
                 });
             }
         });
