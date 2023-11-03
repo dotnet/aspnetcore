@@ -223,6 +223,7 @@ internal unsafe class NativeRequestContext : IDisposable
     internal string? GetVerb()
     {
         var verb = NativeRequest->Verb;
+        Debug.Assert((int)HTTP_VERB.HttpVerbMaximum == HttpVerbs.Length);
         if (verb > HTTP_VERB.HttpVerbUnknown && verb < HTTP_VERB.HttpVerbMaximum)
         {
             return HttpVerbs[(int)verb];
