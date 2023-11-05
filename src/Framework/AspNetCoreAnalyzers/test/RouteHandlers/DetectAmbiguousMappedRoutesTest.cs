@@ -98,6 +98,51 @@ void Hello() { }
     }
 
     [Fact]
+    public async Task DuplicateRoutes_SwitchStatement_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using System;
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+switch (Random.Shared.Next())
+{
+    case 0:
+        app.MapGet(""/"", () => Hello());
+        return;
+    case 1:
+        app.MapGet(""/"", () => Hello());
+        return;
+}
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_SwitchExpression_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using System;
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+_ = Random.Shared.Next() switch
+{
+    0 => app.MapGet(""/"", () => Hello()),
+    1 => app.MapGet(""/"", () => Hello()),
+    _ => throw new Exception()
+};
+void Hello() { }
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_NullCoalescing_NoDiagnostics()
     {
         // Arrange

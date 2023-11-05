@@ -31,11 +31,11 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             .Where(u => u.ResolvedOperation != null && !u.MapOperation.RouteUsageModel.UsageContext.HttpMethods.IsDefault)
             .GroupBy(u => new MapOperationGroupKey(u.MapOperation.Builder, u.ResolvedOperation!, u.MapOperation.RouteUsageModel.RoutePattern, u.MapOperation.RouteUsageModel.UsageContext.HttpMethods));
 
-        foreach (var ambigiousGroup in groupedByParent.Where(g => g.Count() >= 2))
+        foreach (var ambiguousGroup in groupedByParent.Where(g => g.Count() >= 2))
         {
-            foreach (var ambigiousMapOperation in ambigiousGroup)
+            foreach (var ambiguousMapOperation in ambiguousGroup)
             {
-                var model = ambigiousMapOperation.MapOperation.RouteUsageModel;
+                var model = ambiguousMapOperation.MapOperation.RouteUsageModel;
 
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.AmbiguousRouteHandlerRoute,
@@ -75,9 +75,16 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 ICoalesceOperation or
                 IAssignmentOperation or
                 IArgumentOperation or
-                IInvocationOperation)
+                IInvocationOperation or
+                ISwitchCaseOperation)
             {
                 return current;
+            }
+            else if (current.Parent is ISwitchExpressionOperation)
+            {
+                // Switch expression returns builder as a value which could be modified.
+                // Remove from analysis.
+                return null;
             }
 
             current = current.Parent;
