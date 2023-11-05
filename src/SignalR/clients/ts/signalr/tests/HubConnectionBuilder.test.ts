@@ -425,6 +425,17 @@ describe("HubConnectionBuilder", () => {
 
         expect((connection as any).connection._options._useStatefulReconnect).toBe(true);
     });
+
+    it("Specify withUrl() first with restriction then without should lead to keeping transport option", () => {
+        const connection = createConnectionBuilder()
+            .withUrl("http://example.com", HttpTransportType.LongPolling)
+            .withUrl("http://example.com/2")
+            .withStatefulReconnect()
+            .build();
+
+        expect((connection as any).connection._options._transport).toBe(HttpTransportType.LongPolling);
+        expect((connection as any).connection._options._transport).not.toBe(HttpTransportType.WebSockets);
+    });
 });
 
 class CaptureLogger implements ILogger {
