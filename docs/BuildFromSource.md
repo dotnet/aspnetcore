@@ -140,7 +140,7 @@ The steps you follow next depend on your preferred development environment:
     ./build.cmd -test
     ```
 
-1. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
+2. Alternatively, you can use the `dotnet test` and `dotnet build` commands, **alongside specific project files**, once you've activated the locally installed .NET SDK.
 
     ```bash
     # Linux or Mac
@@ -170,7 +170,7 @@ If you have [Codespaces enabled on your GitHub user account](https://github.com/
 
     The Codespace will spend a few minutes building and initializing. Once it's done, you'll be able to navigate the Codespace in a web-based VS Code environment.
 
-1. You can use the `dotnet build` and `dotnet test` commands to build and test the repo.
+1. You can use the `dotnet build` and `dotnet test` commands to build and test specific projects within the repo.
 
     You don't need to activate the locally installed .NET SDK or run the `restore` script because it's done during the Codespace initialization process.
 
