@@ -118,14 +118,20 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     event.preventDefault();
 
-    const url = new URL(formElem.action);
+    let url = new URL(formElem.action);
     const fetchOptions: RequestInit = { method: formElem.method };
     const formData = new FormData(formElem);
-
-    // Replicate the normal behavior of appending the submitter name/value to the form data
+  
     const submitter = event.submitter as HTMLButtonElement;
-    if (submitter && submitter.name) {
-      formData.append(submitter.name, submitter.value);
+    if (submitter) {
+      if (submitter.name) {
+        // Replicate the normal behavior of appending the submitter name/value to the form data
+        formData.append(submitter.name, submitter.value);
+      }
+      if (submitter.getAttribute("formaction") !== null) {
+        // Replicate the normal behavior of overriding action attribute of form element
+        url = new URL(submitter.formAction);
+      }
     }
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
