@@ -140,7 +140,7 @@ The steps you follow next depend on your preferred development environment:
     ./build.cmd -test
     ```
 
-2. Alternatively, you can use the `dotnet test` and `dotnet build` commands, **alongside specific project files**, once you've activated the locally installed .NET SDK.
+1. Alternatively, you can use the `dotnet test` and `dotnet build` commands, **alongside specific project files**, once you've activated the locally installed .NET SDK.
 
     ```bash
     # Linux or Mac
