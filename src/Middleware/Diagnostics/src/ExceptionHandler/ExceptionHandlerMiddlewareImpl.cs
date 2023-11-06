@@ -48,7 +48,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         _metrics = new DiagnosticsMetrics(meterFactory);
         _problemDetailsService = problemDetailsService;
 
-        if (_options.ExceptionHandler == null)
+        if (_options.ExceptionHandler == null && _exceptionHandlers.Length == 0)
         {
             if (_options.ExceptionHandlingPath == null)
             {

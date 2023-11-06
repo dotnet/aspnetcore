@@ -533,6 +533,41 @@ public class ExceptionHandlerTest
     }
 
     [Fact]
+    public async Task UsingExceptionHandler_DoesNotThrowException_WhenExceptionHandlerIsSet()
+    {
+        // Arrange
+        DiagnosticListener diagnosticListener = null;
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder.ConfigureServices(services =>
+                {
+                    services.AddExceptionHandler<TestExceptionHandler>();
+                });
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                        app.UseExceptionHandler();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
+                    });
+            }).Build();
+
+        // Act
+        await host.StartAsync();
+        var server = host.GetTestServer();
+        var response = await server.CreateClient().GetAsync(string.Empty);
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        Assert.Equal($"{nameof(TestExceptionHandler)}: Test exception", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
     public async Task ExceptionHandlerNotFound_ThrowsIOEWithOriginalError()
     {
         using var host = new HostBuilder()
@@ -964,5 +999,16 @@ public class ExceptionHandlerTest
                 Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
                 Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
             });
+    }
+
+    private class TestExceptionHandler : IExceptionHandler
+    {
+        public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+        {
+            httpContext.Response.ContentType = "text/plain";
+            httpContext.Response.StatusCode = 500;
+            await httpContext.Response.WriteAsync($"{nameof(TestExceptionHandler)}: {exception.Message}", cancellationToken: cancellationToken);
+            return true;
+        }
     }
 }
