@@ -173,6 +173,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             return Task.Delay(Timeout.Infinite, token);
         });
 
+        endpoints.Map("/test-formaction", () => "Formaction url");
+
         static Task PerformRedirection(HttpRequest request, HttpResponse response)
         {
             response.Redirect(request.Query["external"] == "true"
