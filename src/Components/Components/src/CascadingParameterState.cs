@@ -29,7 +29,7 @@ internal readonly struct CascadingParameterState
     {
         var componentType = componentState.Component.GetType();
 
-        // Suppressed with "pragma warning disable" instead of WarningSuppressions.xml so ILLink Roslyn Anayzer doesn't report the warning.
+        // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
         #pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.CascadingParameterState.GetCascadingParameterInfos(Type)'.
         var infos = GetCascadingParameterInfos(componentType);
         #pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.CascadingParameterState.GetCascadingParameterInfos(Type)'.

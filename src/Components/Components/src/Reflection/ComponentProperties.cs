@@ -28,7 +28,7 @@ internal static class ComponentProperties
         var targetType = target.GetType();
         if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
         {
-            // Suppressed with "pragma warning disable" instead of WarningSuppressions.xml so ILLink Roslyn Anayzer doesn't report the warning.
+            // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
             #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
             writers = new WritersForType(targetType);
             #pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
@@ -45,7 +45,7 @@ internal static class ComponentProperties
 
                 if (!writers.TryGetValue(parameterName, out var writer))
                 {
-                    // Suppressed with "pragma warning disable" instead of WarningSuppressions.xml so ILLink Roslyn Anayzer doesn't report the warning.
+                    // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
                     #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
                     // Case 1: There is nowhere to put this value.
                     ThrowForUnknownIncomingParameterName(targetType, parameterName);
