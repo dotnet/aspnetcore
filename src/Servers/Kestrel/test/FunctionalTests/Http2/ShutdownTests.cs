@@ -47,6 +47,7 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/51770")]
     public async Task ConnectionClosedWithoutActiveRequestsOrGoAwayFIN()
     {
         var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
