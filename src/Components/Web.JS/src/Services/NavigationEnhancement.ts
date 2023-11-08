@@ -132,6 +132,10 @@ function onDocumentSubmit(event: SubmitEvent) {
         // Replicate the normal behavior of overriding action attribute of form element
         url = new URL(submitter.formAction);
       }
+      if (submitter.formMethod) {
+        // Replicate the normal behavior of overriding method attribute of form element
+        fetchOptions.method = submitter.formMethod;
+      }
     }
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
