@@ -72,8 +72,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
                 var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                    #nullable disable
                     (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo)),
                     (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.TestService)),
+                    #nullable restore
                 };
                 foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
                 {
