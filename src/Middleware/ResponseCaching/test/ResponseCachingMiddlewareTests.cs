@@ -3,10 +3,11 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests;
@@ -357,7 +358,7 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var middleware = TestUtils.CreateTestMiddleware(options: new ResponseCachingOptions
         {
             TimeProvider = timeProvider
@@ -373,7 +374,7 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var middleware = TestUtils.CreateTestMiddleware(options: new ResponseCachingOptions
         {
             TimeProvider = timeProvider
@@ -443,10 +444,10 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseExpiryIfAvailable()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var now = timeProvider.GetUtcNow();
         now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Offset).AddSeconds(1); // Round up to seconds.
-        timeProvider.AdvanceTo(now);
+        timeProvider.SetUtcNow(now);
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
         {
@@ -466,7 +467,7 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseMaxAgeIfAvailable()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
         {
@@ -491,7 +492,7 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseSharedMaxAgeIfAvailable()
     {
-        var timeProvider = new MockTimeProvider();
+        var timeProvider = new FakeTimeProvider();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
         {

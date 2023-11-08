@@ -82,7 +82,7 @@ function onDocumentClick(event: MouseEvent) {
     return;
   }
 
-  if (event.target instanceof HTMLElement && !enhancedNavigationIsEnabledForElement(event.target)) {
+  if (event.target instanceof Element && !enhancedNavigationIsEnabledForElement(event.target)) {
     return;
   }
 
@@ -118,14 +118,20 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     event.preventDefault();
 
-    const url = new URL(formElem.action);
+    let url = new URL(formElem.action);
     const fetchOptions: RequestInit = { method: formElem.method };
     const formData = new FormData(formElem);
-
-    // Replicate the normal behavior of appending the submitter name/value to the form data
+  
     const submitter = event.submitter as HTMLButtonElement;
-    if (submitter && submitter.name) {
-      formData.append(submitter.name, submitter.value);
+    if (submitter) {
+      if (submitter.name) {
+        // Replicate the normal behavior of appending the submitter name/value to the form data
+        formData.append(submitter.name, submitter.value);
+      }
+      if (submitter.getAttribute("formaction") !== null) {
+        // Replicate the normal behavior of overriding action attribute of form element
+        url = new URL(submitter.formAction);
+      }
     }
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
@@ -391,7 +397,7 @@ function splitStream(frameBoundaryMarker: string) {
   });
 }
 
-function enhancedNavigationIsEnabledForElement(element: HTMLElement): boolean {
+function enhancedNavigationIsEnabledForElement(element: Element): boolean {
   // For links, they default to being enhanced, but you can override at any ancestor level (both positively and negatively)
   const closestOverride = element.closest('[data-enhance-nav]');
   if (closestOverride) {

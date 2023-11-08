@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -223,7 +223,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             // Use pause threshold to block FlushAsync when writing 100+ bytes
-            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false));
+            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false, resumeWriterThreshold: 50));
             var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
             await hubConnection.StartAsync().DefaultTimeout();

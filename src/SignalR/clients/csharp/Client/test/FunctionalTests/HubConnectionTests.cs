@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -2316,7 +2316,7 @@ public class HubConnectionTests : FunctionalTestBase
     [MemberData(nameof(TransportTypes))]
     public async Task CanBlockOnAsyncOperationsWithOneAtATimeSynchronizationContext(HttpTransportType transportType)
     {
-        const int DefaultTimeout = Testing.TaskExtensions.DefaultTimeoutDuration;
+        const int DefaultTimeout = InternalTesting.TaskExtensions.DefaultTimeoutDuration;
 
         await using var server = await StartServer<Startup>();
         await using var connection = CreateHubConnection(server.Url, "/default", transportType, HubProtocols["json"], LoggerFactory);
@@ -2894,7 +2894,7 @@ public class HubConnectionTests : FunctionalTestBase
 
                 // In-progress send canceled when connection closes
                 var ex = await Assert.ThrowsAnyAsync<Exception>(() => resultTask);
-                Assert.True(ex is TaskCanceledException or WebSocketException);
+                Assert.True(ex is TaskCanceledException || ex is WebSocketException);
                 await closedTcs.Task;
 
                 Assert.Equal(HubConnectionState.Disconnected, connection.State);

@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [Retry]
 public class RetryTest

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;

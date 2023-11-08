@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks.Sources;
-using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -39,9 +38,9 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
 
         AllocateNativeRequest();
 
-        uint statusCode = QueueBeginGetContext();
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-            statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+        var statusCode = QueueBeginGetContext();
+        if (statusCode != ErrorCodes.ERROR_SUCCESS &&
+            statusCode != ErrorCodes.ERROR_IO_PENDING)
         {
             // some other bad error, possible(?) return values are:
             // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
@@ -55,8 +54,8 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
     {
         try
         {
-            if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
+            if (errorCode != ErrorCodes.ERROR_SUCCESS &&
+                errorCode != ErrorCodes.ERROR_MORE_DATA)
             {
                 _mrvts.SetException(new HttpSysException((int)errorCode));
                 return;
@@ -64,7 +63,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
 
             Debug.Assert(_requestContext != null);
 
-            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            if (errorCode == ErrorCodes.ERROR_SUCCESS)
             {
                 var requestContext = _requestContext;
                 // It's important that we clear the request context before we set the result
@@ -79,10 +78,10 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 AllocateNativeRequest(numBytes, _requestContext.RequestId);
 
                 // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
-                uint statusCode = QueueBeginGetContext();
+                var statusCode = QueueBeginGetContext();
 
-                if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                    statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+                if (statusCode != ErrorCodes.ERROR_SUCCESS &&
+                    statusCode != ErrorCodes.ERROR_IO_PENDING)
                 {
                     // someother bad error, possible(?) return values are:
                     // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
@@ -117,14 +116,14 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 _requestContext.RequestId,
                 // Small perf impact by not using HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY
                 // if the request sends header+body in a single TCP packet
-                (uint)HttpApiTypes.HTTP_FLAGS.NONE,
+                0u,
                 _requestContext.NativeRequest,
                 _requestContext.Size,
                 &bytesTransferred,
                 _overlapped);
 
-            if ((statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_CONNECTION_INVALID
-                || statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
+            if ((statusCode == ErrorCodes.ERROR_CONNECTION_INVALID
+                || statusCode == ErrorCodes.ERROR_INVALID_PARAMETER)
                 && _requestContext.RequestId != 0)
             {
                 // ERROR_CONNECTION_INVALID:
@@ -139,7 +138,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 _requestContext.RequestId = 0;
                 retry = true;
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
+            else if (statusCode == ErrorCodes.ERROR_MORE_DATA)
             {
                 // the buffer was not big enough to fit the headers, we need
                 // to read the RequestId returned, allocate a new buffer of the required size
@@ -147,7 +146,7 @@ internal sealed unsafe class AsyncAcceptContext : IValueTaskSource<RequestContex
                 AllocateNativeRequest(bytesTransferred);
                 retry = true;
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS
+            else if (statusCode == ErrorCodes.ERROR_SUCCESS
                 && HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion.

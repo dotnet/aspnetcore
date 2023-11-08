@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -27,7 +27,7 @@ public class WebHostTests : LoggedTest
     [SkipNonHelix]
     [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
     [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/46616;https://github.com/dotnet/aspnetcore/issues/47065", Queues = "Debian.12.Arm64.Open;Windows.Amd64.Server2022.Open")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/46616", Queues = "Debian.12.Arm64.Open;")]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
     public void HelixPlatform_QuicListenerIsSupported()

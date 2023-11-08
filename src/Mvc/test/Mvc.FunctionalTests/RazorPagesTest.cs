@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;

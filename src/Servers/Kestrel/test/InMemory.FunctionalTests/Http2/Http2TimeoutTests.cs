@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -242,7 +242,7 @@ public class Http2TimeoutTests : Http2TestBase
         // Remove callback that completes _pair.Application.Output on abort.
         _mockConnectionContext.Reset();
 
-        var mockTimeProvider = _serviceContext.MockTimeProvider;
+        var timeProvider = _serviceContext.FakeTimeProvider;
 
         var headers = new[]
         {
@@ -268,7 +268,7 @@ public class Http2TimeoutTests : Http2TestBase
             while (!closed)
             {
                 // Just past the timeout
-                mockTimeProvider.Advance(Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1));
+                timeProvider.Advance(Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1));
 
                 // Send an extra frame to make it fail
                 switch (finalFrameType)

@@ -3,7 +3,7 @@
 
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;

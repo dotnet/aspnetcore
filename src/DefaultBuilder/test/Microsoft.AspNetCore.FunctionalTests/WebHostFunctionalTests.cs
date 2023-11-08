@@ -4,7 +4,7 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit.Sdk;
 
@@ -153,7 +153,7 @@ public class WebHostFunctionalTests : LoggedTest
         var applicationName = "CreateDefaultBuilderApp";
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
         {
-            TargetFramework = "net8.0",
+            TargetFramework = "net9.0",
             HostingModel = HostingModel.InProcess
         };
 
@@ -208,7 +208,7 @@ public class WebHostFunctionalTests : LoggedTest
     {
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitectures.Current)
         {
-            TargetFramework = "net8.0",
+            TargetFramework = "net9.0",
         };
 
         if (setTestEnvVars)

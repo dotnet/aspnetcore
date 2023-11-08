@@ -5,7 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -32,7 +32,6 @@ public class ErrorNotificationTest : ServerTestBase<ToggleExecutionModeServerFix
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50377")]
     public void ShowsErrorNotification_OnError_Dismiss()
     {
         var errorUi = Browser.Exists(By.Id("blazor-error-ui"));
@@ -50,7 +49,6 @@ public class ErrorNotificationTest : ServerTestBase<ToggleExecutionModeServerFix
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50377")]
     public void ShowsErrorNotification_OnError_Reload()
     {
         var causeErrorButton = Browser.Exists(By.Id("throw-simple-exception"));

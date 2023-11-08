@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;

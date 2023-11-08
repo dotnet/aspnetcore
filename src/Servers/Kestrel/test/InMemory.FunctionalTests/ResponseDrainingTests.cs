@@ -5,7 +5,7 @@ using System.Net;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -58,16 +58,16 @@ public class ResponseDrainingTests : TestApplicationErrorLoggerLoggedTest
                 // Advance the clock to the grace period
                 for (var i = 0; i < 2; i++)
                 {
-                    testContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
+                    testContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
-                testContext.MockTimeProvider.Advance(Heartbeat.Interval - TimeSpan.FromSeconds(.5));
+                testContext.FakeTimeProvider.Advance(Heartbeat.Interval - TimeSpan.FromSeconds(.5));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 Assert.Null(transportConnection.AbortReason);
 
-                testContext.MockTimeProvider.Advance(TimeSpan.FromSeconds(1));
+                testContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 Assert.NotNull(transportConnection.AbortReason);

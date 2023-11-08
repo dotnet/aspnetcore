@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;

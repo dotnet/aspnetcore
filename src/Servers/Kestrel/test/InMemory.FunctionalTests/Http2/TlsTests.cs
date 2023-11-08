@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2;

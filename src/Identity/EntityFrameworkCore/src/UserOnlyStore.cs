@@ -452,7 +452,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).SingleOrDefault());
+        return Users.SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
     }
 
     /// <summary>

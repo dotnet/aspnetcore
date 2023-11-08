@@ -5,7 +5,7 @@ using HostedInAspNet.Server;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
@@ -91,9 +91,17 @@ public class BootResourceCachingTest
             requestedDll => Assert.Contains("/Microsoft.AspNetCore.Components.wasm", requestedDll),
             requestedDll => Assert.Contains("/dotnet.native.wasm", requestedDll));
 
-        // We also update the cache (add new items, remove unnecessary items)
-        await Task.Delay(10500); // wait for cache purge, which is 10 seconds delayed after app start
         var cacheEntryUrls3 = GetCacheEntryUrls();
+        // wait until the cache was cleaned, max 500ms
+        for (var i = 0; i < 5; i++)
+        {
+            if (!cacheEntryUrls3.Contains(cacheEntryForDotNetWasmWithChangedHash))
+            {
+                break;
+            }
+            await Task.Delay(100); // wait for cache purge
+            cacheEntryUrls3 = GetCacheEntryUrls();
+        }
         Assert.Contains(cacheEntryForComponentsDll, cacheEntryUrls3);
         Assert.Contains(cacheEntryForDotNetWasm, cacheEntryUrls3);
         Assert.DoesNotContain(cacheEntryForDotNetWasmWithChangedHash, cacheEntryUrls3);

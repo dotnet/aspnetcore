@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing.Tests;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class AssemblyTestLogTests : LoggedTest
 {

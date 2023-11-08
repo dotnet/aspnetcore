@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Tests;

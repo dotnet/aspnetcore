@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -136,7 +136,7 @@ public class ServerTests
 
         var exception = Assert.Throws<HttpSysException>(() => listener.Start());
 
-        Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
+        Assert.Equal((int)ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
         Assert.Contains($"The prefix '{address1}' is already registered.", exception.Message);
     }
 

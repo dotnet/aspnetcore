@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;

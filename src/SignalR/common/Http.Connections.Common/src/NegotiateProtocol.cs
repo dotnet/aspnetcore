@@ -37,7 +37,6 @@ public static class NegotiateProtocol
     private const string StatefulReconnectPropertyName = "useStatefulReconnect";
     private static readonly JsonEncodedText StatefulReconnectPropertyNameBytes = JsonEncodedText.Encode(StatefulReconnectPropertyName);
 
-    // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     // Used to detect ASP.NET SignalR Server connection attempt
     private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => "ProtocolVersion"u8;
 

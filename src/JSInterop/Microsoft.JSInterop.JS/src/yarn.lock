@@ -2,14 +2,14 @@
 # yarn lockfile v1
 
 
-"@es-joy/jsdoccomment@~0.36.1":
-  version "0.36.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@es-joy/jsdoccomment/-/jsdoccomment-0.36.1.tgz#c37db40da36e4b848da5fd427a74bae3b004a30f"
-  integrity sha1-w320DaNuS4SNpf1CenS647AEow8=
+"@es-joy/jsdoccomment@~0.39.4":
+  version "0.39.4"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/@es-joy/jsdoccomment/-/jsdoccomment-0.39.4.tgz#6b8a62e9b3077027837728818d3c4389a898b392"
+  integrity sha1-a4pi6bMHcCeDdyiBjTxDiaiYs5I=
   dependencies:
     comment-parser "1.3.1"
-    esquery "^1.4.0"
-    jsdoc-type-pratt-parser "~3.1.0"
+    esquery "^1.5.0"
+    jsdoc-type-pratt-parser "~4.0.0"
 
 "@eslint/eslintrc@^1.4.1":
   version "1.4.1"
@@ -192,6 +192,11 @@ ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
+are-docs-informative@^0.0.2:
+  version "0.0.2"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/are-docs-informative/-/are-docs-informative-0.0.2.tgz#387f0e93f5d45280373d387a59d34c96db321963"
+  integrity sha1-OH8Ok/XUUoA3PTh6WdNMltsyGWM=
+
 argparse@^2.0.1:
   version "2.0.1"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/argparse/-/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
@@ -297,17 +302,18 @@ escape-string-regexp@^4.0.0:
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
   integrity sha1-FLqDpdNz49MR5a/KKc9b+tllvzQ=
 
-eslint-plugin-jsdoc@^39.3.2:
-  version "39.9.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-39.9.1.tgz#e9ce1723411fd7ea0933b3ef0dd02156ae3068e2"
-  integrity sha1-6c4XI0Ef1+oJM7PvDdAhVq4waOI=
+eslint-plugin-jsdoc@^44.2.3:
+  version "44.2.7"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-44.2.7.tgz#5ecdb46ddfca209ecd58fff972a4eb74b8dde599"
+  integrity sha1-Xs20bd/KIJ7NWP/5cqTrdLjd5Zk=
   dependencies:
-    "@es-joy/jsdoccomment" "~0.36.1"
+    "@es-joy/jsdoccomment" "~0.39.4"
+    are-docs-informative "^0.0.2"
     comment-parser "1.3.1"
     debug "^4.3.4"
     escape-string-regexp "^4.0.0"
-    esquery "^1.4.0"
-    semver "^7.3.8"
+    esquery "^1.5.0"
+    semver "^7.5.1"
     spdx-expression-parse "^3.0.1"
 
 eslint-plugin-prefer-arrow@^1.2.3:
@@ -406,6 +412,13 @@ esquery@^1.4.0:
   version "1.4.0"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/esquery/-/esquery-1.4.0.tgz#2148ffc38b82e8c7057dfed48425b3e61f0f24a5"
   integrity sha1-IUj/w4uC6McFff7UhCWz5h8PJKU=
+  dependencies:
+    estraverse "^5.1.0"
+
+esquery@^1.5.0:
+  version "1.5.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/esquery/-/esquery-1.5.0.tgz#6ce17738de8577694edd7361c57182ac8cb0db0b"
+  integrity sha1-bOF3ON6Fd2lO3XNhxXGCrIyw2ws=
   dependencies:
     estraverse "^5.1.0"
 
@@ -629,10 +642,10 @@ js-yaml@^4.1.0:
   dependencies:
     argparse "^2.0.1"
 
-jsdoc-type-pratt-parser@~3.1.0:
-  version "3.1.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-3.1.0.tgz#a4a56bdc6e82e5865ffd9febc5b1a227ff28e67e"
-  integrity sha1-pKVr3G6C5YZf/Z/rxbGiJ/8o5n4=
+jsdoc-type-pratt-parser@~4.0.0:
+  version "4.0.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-4.0.0.tgz#136f0571a99c184d84ec84662c45c29ceff71114"
+  integrity sha1-E28FcamcGE2E7IRmLEXCnO/3ERQ=
 
 json-schema-traverse@^0.4.1:
   version "0.4.1"
@@ -815,10 +828,17 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-semver@^7.3.7, semver@^7.3.8:
+semver@^7.3.7:
   version "7.3.8"
   resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/semver/-/semver-7.3.8.tgz#07a78feafb3f7b32347d725e33de7e2a2df67798"
   integrity sha1-B6eP6vs/ezI0fXJeM95+Ki32d5g=
+  dependencies:
+    lru-cache "^6.0.0"
+
+semver@^7.5.1:
+  version "7.5.4"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/semver/-/semver-7.5.4.tgz#483986ec4ed38e1c6c48c34894a9182dbff68a6e"
+  integrity sha1-SDmG7E7TjhxsSMNIlKkYLb/2im4=
   dependencies:
     lru-cache "^6.0.0"
 

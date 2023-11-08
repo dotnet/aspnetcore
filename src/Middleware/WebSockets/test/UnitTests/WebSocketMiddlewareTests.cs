@@ -7,7 +7,8 @@ using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Timeouts;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;
@@ -516,21 +517,19 @@ public class WebSocketMiddlewareTests : LoggedTest
             serverSocket = await context.WebSockets.AcceptWebSocketAsync();
             socketWasAccepted.Set();
 
-            var serverBuffer = new byte[1024];
-
             try
             {
                 while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
                 {
                     if (firstReceiveOccured.IsSet)
                     {
-                        var pendingResponse = serverSocket.ReceiveAsync(serverBuffer, default);
+                        var pendingResponse = serverSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), default);
                         secondReceiveInitiated.Set();
                         var response = await pendingResponse;
                     }
                     else
                     {
-                        var response = await serverSocket.ReceiveAsync(serverBuffer, default);
+                        var response = await serverSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), default);
                         firstReceiveOccured.Set();
                     }
                 }
@@ -543,6 +542,7 @@ public class WebSocketMiddlewareTests : LoggedTest
             catch (Exception ex)
             {
                 // Capture this exception so a test failure can give us more information.
+                Logger.LogError(ex, "Unexpected error.");
                 receiveException = ex;
             }
             finally
@@ -592,15 +592,13 @@ public class WebSocketMiddlewareTests : LoggedTest
             serverSocket = await context.WebSockets.AcceptWebSocketAsync();
             socketWasAccepted.Set();
 
-            var serverBuffer = new byte[1024];
-
             var finishedWithOperationCancelled = false;
 
             try
             {
                 while (serverSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
                 {
-                    var response = await serverSocket.ReceiveAsync(serverBuffer, cts.Token);
+                    var response = await serverSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), cts.Token);
                     firstReceiveOccured.Set();
                 }
             }
@@ -608,6 +606,11 @@ public class WebSocketMiddlewareTests : LoggedTest
             {
                 operationWasCancelled.Set();
                 finishedWithOperationCancelled = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Unexpected error.");
+                throw;
             }
             finally
             {

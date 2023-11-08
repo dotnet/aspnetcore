@@ -10,15 +10,15 @@
   "defaultName": "BlazorApp",
   "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor",
-  "precedence": "9800",
+  "precedence": "9900",
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA",
     "53bc9b9d-9d6a-45d4-8429-2a2761773502"
   ],
-  "identity": "Microsoft.Web.Blazor.CSharp.8.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
+  "identity": "Microsoft.Web.Blazor.CSharp.9.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -208,12 +208,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net9.0",
+          "description": "Target net9.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
     },
     "HostIdentifier": {
       "type": "bind",
