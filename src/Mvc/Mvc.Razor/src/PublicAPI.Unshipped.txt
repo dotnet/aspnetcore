@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.Key.get -> object?
-Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.Key.init -> void

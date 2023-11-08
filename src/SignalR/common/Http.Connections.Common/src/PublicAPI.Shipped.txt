@@ -26,6 +26,8 @@ Microsoft.AspNetCore.Http.Connections.NegotiationResponse.Error.set -> void
 Microsoft.AspNetCore.Http.Connections.NegotiationResponse.NegotiationResponse() -> void
 Microsoft.AspNetCore.Http.Connections.NegotiationResponse.Url.get -> string?
 Microsoft.AspNetCore.Http.Connections.NegotiationResponse.Url.set -> void
+Microsoft.AspNetCore.Http.Connections.NegotiationResponse.UseStatefulReconnect.get -> bool
+Microsoft.AspNetCore.Http.Connections.NegotiationResponse.UseStatefulReconnect.set -> void
 Microsoft.AspNetCore.Http.Connections.NegotiationResponse.Version.get -> int
 Microsoft.AspNetCore.Http.Connections.NegotiationResponse.Version.set -> void
 static Microsoft.AspNetCore.Http.Connections.NegotiateProtocol.ParseResponse(System.ReadOnlySpan<byte> content) -> Microsoft.AspNetCore.Http.Connections.NegotiationResponse!

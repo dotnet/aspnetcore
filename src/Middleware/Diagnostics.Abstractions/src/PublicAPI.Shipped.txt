@@ -59,4 +59,5 @@ Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.ge
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.set -> void
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.get -> string?
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.set -> void
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalStatusCode.get -> int
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
