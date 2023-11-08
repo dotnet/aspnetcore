@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.ServiceKey.get -> object?
-Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.ServiceKey.set -> void

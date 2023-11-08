@@ -1,11 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.HubConnectionOptions() -> void
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.KeepAliveInterval.get -> System.TimeSpan
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.KeepAliveInterval.set -> void
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.ServerTimeout.get -> System.TimeSpan
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.ServerTimeout.set -> void
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.StatefulReconnectBufferSize.get -> long
-Microsoft.AspNetCore.SignalR.Client.HubConnectionOptions.StatefulReconnectBufferSize.set -> void
-static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithKeepAliveInterval(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan interval) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
-static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithServerTimeout(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.TimeSpan timeout) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!

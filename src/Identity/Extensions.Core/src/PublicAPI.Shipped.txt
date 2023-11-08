@@ -58,6 +58,7 @@ Microsoft.AspNetCore.Identity.IdentityResult.Errors.get -> System.Collections.Ge
 Microsoft.AspNetCore.Identity.IdentityResult.IdentityResult() -> void
 Microsoft.AspNetCore.Identity.IdentityResult.Succeeded.get -> bool
 Microsoft.AspNetCore.Identity.IdentityResult.Succeeded.set -> void
+Microsoft.AspNetCore.Identity.IdentitySchemaVersions
 Microsoft.AspNetCore.Identity.ILookupNormalizer
 Microsoft.AspNetCore.Identity.ILookupNormalizer.NormalizeEmail(string? email) -> string?
 Microsoft.AspNetCore.Identity.ILookupNormalizer.NormalizeName(string? name) -> string?
@@ -259,6 +260,8 @@ Microsoft.AspNetCore.Identity.StoreOptions.MaxLengthForKeys.get -> int
 Microsoft.AspNetCore.Identity.StoreOptions.MaxLengthForKeys.set -> void
 Microsoft.AspNetCore.Identity.StoreOptions.ProtectPersonalData.get -> bool
 Microsoft.AspNetCore.Identity.StoreOptions.ProtectPersonalData.set -> void
+Microsoft.AspNetCore.Identity.StoreOptions.SchemaVersion.get -> System.Version!
+Microsoft.AspNetCore.Identity.StoreOptions.SchemaVersion.set -> void
 Microsoft.AspNetCore.Identity.StoreOptions.StoreOptions() -> void
 Microsoft.AspNetCore.Identity.TokenOptions
 Microsoft.AspNetCore.Identity.TokenOptions.AuthenticatorIssuer.get -> string!
@@ -347,6 +350,9 @@ static Microsoft.AspNetCore.Identity.SignInResult.TwoFactorRequired.get -> Micro
 static Microsoft.AspNetCore.Identity.UserManager<TUser>.GetChangeEmailTokenPurpose(string! newEmail) -> string!
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityCore<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! setupAction) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
+static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Default -> System.Version!
+static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version1 -> System.Version!
+static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version2 -> System.Version!
 static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultAuthenticatorProvider -> string!
 static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultEmailProvider -> string!
 static readonly Microsoft.AspNetCore.Identity.TokenOptions.DefaultPhoneProvider -> string!

@@ -66,6 +66,7 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.Backchann
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.Events.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.Events.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.HtmlEncoder.get -> System.Text.Encodings.Web.HtmlEncoder!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AuthenticationMethod.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
@@ -131,10 +132,14 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.StateData
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.StateDataFormat.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.StringDataFormat.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<string!>!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.StringDataFormat.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenHandler.get -> Microsoft.IdentityModel.Tokens.TokenHandler!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenHandler.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenValidationParameters.get -> Microsoft.IdentityModel.Tokens.TokenValidationParameters!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenValidationParameters.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UsePkce.get -> bool
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UsePkce.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseSecurityTokenValidator.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseSecurityTokenValidator.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseTokenLifetime.get -> bool
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseTokenLifetime.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOptions

@@ -16,6 +16,8 @@ Microsoft.Extensions.ObjectPool.DefaultPooledObjectPolicy<T>.DefaultPooledObject
 Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T>
 Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T>.Create() -> T
 Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T>.Return(T obj) -> bool
+Microsoft.Extensions.ObjectPool.IResettable
+Microsoft.Extensions.ObjectPool.IResettable.TryReset() -> bool
 Microsoft.Extensions.ObjectPool.LeakTrackingObjectPool<T>
 Microsoft.Extensions.ObjectPool.LeakTrackingObjectPool<T>.LeakTrackingObjectPool(Microsoft.Extensions.ObjectPool.ObjectPool<T!>! inner) -> void
 Microsoft.Extensions.ObjectPool.LeakTrackingObjectPoolProvider
