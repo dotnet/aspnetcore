@@ -161,7 +161,7 @@ internal class Program
     }
 
     [Fact]
-    public async Task ActionReplacementToken_OnController_HasDiagnostics()
+    public async Task ActionReplacementToken_OnController_NoDiagnostics()
     {
         // Arrange
         var source = @"
@@ -186,6 +186,74 @@ internal class Program
 
         // Act & Assert
         await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionReplacementToken_OnBaseController_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+[Route(""[controller]/[action]"")]
+public class MyControllerBase : ControllerBase
+{
+}
+public class WeatherForecastController : MyControllerBase
+{
+    [Route(""{i}"")]
+    public object Get(int i) => new object();
+
+    [Route(""{i}"")]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionReplacementToken_OnBaseControllerButOverridden_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+[Route(""[controller]/[action]"")]
+public class MyControllerBase : ControllerBase
+{
+}
+[Route(""api"")]
+public class WeatherForecastController : MyControllerBase
+{
+    [Route({|#0:""{i}""|})]
+    public object Get(int i) => new object();
+
+    [Route({|#1:""{i}""|})]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{i}").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{i}").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
 
     [Fact]

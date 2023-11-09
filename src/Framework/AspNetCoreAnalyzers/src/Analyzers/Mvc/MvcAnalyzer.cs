@@ -50,7 +50,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                     }
 
                     RoutePatternTree? controllerRoutePattern = null;
-                    var controllerRouteAttribute = namedTypeSymbol.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute)).FirstOrDefault();
+                    var controllerRouteAttribute = namedTypeSymbol.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute), inherit: true).FirstOrDefault();
                     if (controllerRouteAttribute != null)
                     {
                         var routeUsage = GetRouteUsageModel(controllerRouteAttribute, routeUsageCache, context.CancellationToken);
