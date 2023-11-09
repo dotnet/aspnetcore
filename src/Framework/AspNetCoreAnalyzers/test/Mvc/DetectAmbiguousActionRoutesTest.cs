@@ -286,6 +286,39 @@ internal class Program
     }
 
     [Fact]
+    public async Task ActionReplacementToken_OnController_ActionNameOnBase_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public abstract class MyControllerBase : ControllerBase
+{
+    [ActionName(name: ""getWithString"")]
+    public abstract object Get(string s);
+}
+[Route(""[controller]/[action]"")]
+public class WeatherForecastController : MyControllerBase
+{
+    [Route(""{i}"")]
+    public object Get(int i) => new object();
+
+    [Route(""{s}"")]
+    public override object Get(string s) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task MixedRoutes_DifferentAction_HasDiagnostics()
     {
         // Arrange

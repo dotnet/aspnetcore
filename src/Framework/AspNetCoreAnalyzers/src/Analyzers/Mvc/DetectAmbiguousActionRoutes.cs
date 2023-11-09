@@ -97,7 +97,7 @@ public partial class MvcAnalyzer
 
         private static string GetActionName(IMethodSymbol actionSymbol, WellKnownTypes wellKnownTypes)
         {
-            var actionNameAttribute = actionSymbol.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_ActionNameAttribute)).FirstOrDefault();
+            var actionNameAttribute = actionSymbol.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_ActionNameAttribute), inherit: true).FirstOrDefault();
             if (actionNameAttribute != null && actionNameAttribute.ConstructorArguments.Length > 0 && actionNameAttribute.ConstructorArguments[0].Value is string name)
             {
                 return name;
