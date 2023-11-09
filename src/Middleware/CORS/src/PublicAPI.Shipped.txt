@@ -155,8 +155,11 @@ Microsoft.AspNetCore.Cors.Infrastructure.IEnableCorsAttribute
 Microsoft.AspNetCore.Cors.Infrastructure.IEnableCorsAttribute.PolicyName.get -> string?
 Microsoft.AspNetCore.Cors.Infrastructure.IEnableCorsAttribute.PolicyName.set -> void
 Microsoft.Extensions.DependencyInjection.CorsServiceCollectionExtensions
+override Microsoft.AspNetCore.Cors.DisableCorsAttribute.ToString() -> string!
+override Microsoft.AspNetCore.Cors.EnableCorsAttribute.ToString() -> string!
 override Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.ToString() -> string!
 override Microsoft.AspNetCore.Cors.Infrastructure.CorsResult.ToString() -> string!
+static Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions.RequireCors<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions.RequireCors<TBuilder>(this TBuilder builder, string! policyName) -> TBuilder
 static Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions.RequireCors<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder!>! configurePolicy) -> TBuilder
 static Microsoft.AspNetCore.Builder.CorsMiddlewareExtensions.UseCors(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

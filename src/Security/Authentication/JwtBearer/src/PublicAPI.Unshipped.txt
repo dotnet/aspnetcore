@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.JwtBearerHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenHandlers.get -> System.Collections.Generic.IList<Microsoft.IdentityModel.Tokens.TokenHandler!>!
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.UseSecurityTokenValidators.get -> bool
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.UseSecurityTokenValidators.set -> void

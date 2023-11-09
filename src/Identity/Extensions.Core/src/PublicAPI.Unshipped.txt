@@ -1,7 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.IdentitySchemaVersions
-Microsoft.AspNetCore.Identity.StoreOptions.SchemaVersion.get -> System.Version!
-Microsoft.AspNetCore.Identity.StoreOptions.SchemaVersion.set -> void
-static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Default -> System.Version!
-static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version1 -> System.Version!
-static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version2 -> System.Version!

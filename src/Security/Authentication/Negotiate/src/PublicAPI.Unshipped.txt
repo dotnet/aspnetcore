@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.NegotiateHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void

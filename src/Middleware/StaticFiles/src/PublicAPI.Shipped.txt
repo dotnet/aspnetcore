@@ -31,6 +31,8 @@ Microsoft.AspNetCore.Builder.StaticFileOptions.HttpsCompression.get -> Microsoft
 Microsoft.AspNetCore.Builder.StaticFileOptions.HttpsCompression.set -> void
 Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponse.get -> System.Action<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext!>!
 Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponse.set -> void
+Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponseAsync.get -> System.Func<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.Builder.StaticFileOptions.OnPrepareResponseAsync.set -> void
 Microsoft.AspNetCore.Builder.StaticFileOptions.ServeUnknownFileTypes.get -> bool
 Microsoft.AspNetCore.Builder.StaticFileOptions.ServeUnknownFileTypes.set -> void
 Microsoft.AspNetCore.Builder.StaticFileOptions.StaticFileOptions() -> void
