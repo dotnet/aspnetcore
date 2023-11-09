@@ -1368,6 +1368,17 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Equal("Formaction url", () => Browser.Exists(By.TagName("html")).Text);
     }
 
+    [Fact]
+    public void SubmitButtonFormmethodAttributeOverridesEnhancedFormMethod()
+    {
+        GoTo("forms/form-submit-button-with-formmethod");
+        Browser.DoesNotExist(By.Id("submitted"));
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("Form submitted!", () => Browser.Exists(By.Id("submitted")).Text);
+    }
+
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
     // to an absolute URL. We want to be able to assert about the attribute's literal value.
     private string ReadFormActionAttribute(IWebElement form)
