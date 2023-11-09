@@ -1,6 +1,5 @@
 variables:
   - group: AzureDevOps-Artifact-Feeds-Pats
-  - group: DotNet-Blob-Feed
   - group: DotNet-DotNetCli-Storage
   - group: DotNet-MSRC-Storage
   - group: Publish-Build-Assets
