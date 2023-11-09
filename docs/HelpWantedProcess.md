@@ -16,7 +16,7 @@ This process (we'll refer to it as `help-wanted` process going forward) triggers
    - Copy the direct link to the summary comment and add the link to the bottom of the description of the issue to help with discoverability, as there can be too many comments in the issue and the summary comment may be hard to find.
     Here is an example comment to use:
 
-```
+```text
 **Summary Comment** : https://github.com/dotnet/aspnetcore/issues/51912#issuecomment-1801246403
 ```
 
