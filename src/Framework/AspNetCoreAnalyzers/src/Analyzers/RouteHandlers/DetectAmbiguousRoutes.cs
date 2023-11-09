@@ -67,24 +67,18 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         while (current != null)
         {
-            if (current.Parent is IBlockOperation blockOperation)
+            if (current.Parent is IBlockOperation or ISwitchCaseOperation)
             {
-                return blockOperation;
+                return current.Parent;
             }
             else if (current.Parent is IConditionalOperation or
                 ICoalesceOperation or
                 IAssignmentOperation or
                 IArgumentOperation or
                 IInvocationOperation or
-                ISwitchCaseOperation)
+                ISwitchExpressionArmOperation)
             {
                 return current;
-            }
-            else if (current.Parent is ISwitchExpressionOperation)
-            {
-                // Switch expression returns builder as a value which could be modified.
-                // Remove from analysis.
-                return null;
             }
 
             current = current.Parent;
