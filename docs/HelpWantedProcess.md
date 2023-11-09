@@ -14,10 +14,10 @@ This process (we'll refer to it as `help-wanted` process going forward) triggers
    - Unassign themself from the issue.
    - **Replace the `help-candidate` label with `help-wanted` label**, as an indicator, that the issue is ready for the community to pick up.
    - Copy the direct link to the summary comment and add the link to the bottom of the description of the issue to help with discoverability, as there can be too many comments in the issue and the summary comment may be hard to find.
-    Here is an example comment to use:
+        Here is an example comment to use:
 
-```text
-**Summary Comment** : https://github.com/dotnet/aspnetcore/issues/51912#issuecomment-1801246403
-```
+        ```text
+        **Summary Comment** : https://github.com/dotnet/aspnetcore/issues/51912#issuecomment-1801246403
+        ```
 
 This will conclude the process.
