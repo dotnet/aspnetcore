@@ -35,7 +35,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData(true)]
         [InlineData(false)]
         public async Task RazorPagesTemplate_NoAuth(bool useProgramMain)
@@ -109,14 +109,14 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
         public Task RazorPagesTemplate_IndividualAuth_LocalDb(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
 
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
         public Task RazorPagesTemplate_IndividualAuth(bool useProgramMain) => RazorPagesTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
 
         private async Task RazorPagesTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
@@ -236,7 +236,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
         [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
@@ -244,7 +244,7 @@ namespace Templates.Test
         public Task RazorPagesTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
         [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]

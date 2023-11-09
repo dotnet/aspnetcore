@@ -35,7 +35,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("Not supported queues", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Not supported queues", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [SkipOnAlpine("https://github.com/grpc/grpc/issues/18338")]
         [InlineData(true)]
         [InlineData(false)]

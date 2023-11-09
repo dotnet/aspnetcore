@@ -33,7 +33,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { ArgConstants.UseMinimalApis })]
         [InlineData("IndividualB2C", new string[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
@@ -41,7 +41,7 @@ namespace Templates.Test
         public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain })]
         [InlineData("IndividualB2C", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
@@ -50,7 +50,7 @@ namespace Templates.Test
         public Task WebApiTemplateCSharp_IdentityWeb_IndividualB2C_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new string[] { ArgConstants.UseMinimalApis })]
         [InlineData("SingleOrg", new string[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
@@ -60,7 +60,7 @@ namespace Templates.Test
         public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain })]
         [InlineData("SingleOrg", new string[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis })]
@@ -74,19 +74,19 @@ namespace Templates.Test
         public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public Task WebApiTemplateProgramMainCSharp() => WebApiTemplateCore(languageOverride: null, args: new [] { ArgConstants.UseProgramMain });
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public Task WebApiTemplateMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseMinimalApis });
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public Task WebApiTemplateProgramMainMinimalApisCSharp() => WebApiTemplateCore(languageOverride: null, args: new[] { ArgConstants.UseProgramMain, ArgConstants.UseMinimalApis });
 
         [ConditionalTheory]
@@ -94,7 +94,7 @@ namespace Templates.Test
         [InlineData(false, true)]
         [InlineData(true, true)]
         [InlineData(true, false)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public async Task WebApiTemplateCSharp_WithoutOpenAPI(bool useProgramMain, bool useMinimalApis)
         {
             var project = await FactoryFixture.CreateProject(Output);
