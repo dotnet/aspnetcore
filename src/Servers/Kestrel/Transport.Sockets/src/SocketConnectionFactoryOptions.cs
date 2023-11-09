@@ -34,8 +34,9 @@ public class SocketConnectionFactoryOptions
     /// </summary>
     /// <remarks>
     /// Defaults to <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
+    /// Can be overridden via ASPNETCORE_IOQUEUECOUNT environment variable.
     /// </remarks>
-    public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
+    public int IOQueueCount { get; set; } = SocketTransportOptions.DefaultIOQueueCount;
 
     /// <summary>
     /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
