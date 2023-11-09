@@ -32,6 +32,7 @@ Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnSigning
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnValidatePrincipal.get -> System.Func<Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnValidatePrincipal.set -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler
+Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CookieAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CookieAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.Events.get -> Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents!
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.Events.set -> void
