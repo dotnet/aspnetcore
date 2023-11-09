@@ -1,8 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.CreateScopeForErrors.get -> bool
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.CreateScopeForErrors.set -> void
-Microsoft.AspNetCore.Diagnostics.IExceptionHandler
-Microsoft.AspNetCore.Diagnostics.IExceptionHandler.TryHandleAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.OriginalStatusCode.get -> int
-static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! errorHandlingPath, bool createScopeForErrors) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions.AddExceptionHandler<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Antiforgery.IAntiforgeryValidationFeature
-Microsoft.AspNetCore.Antiforgery.IAntiforgeryValidationFeature.Error.get -> System.Exception?
-Microsoft.AspNetCore.Antiforgery.IAntiforgeryValidationFeature.IsValid.get -> bool
-Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature
-Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.Tags.get -> System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, object?>>!

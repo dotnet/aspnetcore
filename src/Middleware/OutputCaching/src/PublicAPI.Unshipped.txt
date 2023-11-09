@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.OutputCaching.IOutputCacheBufferStore
-Microsoft.AspNetCore.OutputCaching.IOutputCacheBufferStore.SetAsync(string! key, System.Buffers.ReadOnlySequence<byte> value, System.ReadOnlyMemory<string!> tags, System.TimeSpan validFor, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.OutputCaching.IOutputCacheBufferStore.TryGetAsync(string! key, System.IO.Pipelines.PipeWriter! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
-Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.get -> string![]?
-Microsoft.AspNetCore.OutputCaching.OutputCacheAttribute.Tags.init -> void

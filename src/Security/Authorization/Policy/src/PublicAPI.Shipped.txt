@@ -2,6 +2,7 @@
 Microsoft.AspNetCore.Authorization.AuthorizationMiddleware
 Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider) -> void
 Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider! policyProvider, System.IServiceProvider! services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.AuthorizationMiddleware!>! logger) -> void
 Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authorization.IAuthorizationMiddlewareResultHandler
 Microsoft.AspNetCore.Authorization.IAuthorizationMiddlewareResultHandler.HandleAsync(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authorization.AuthorizationPolicy! policy, Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult! authorizeResult) -> System.Threading.Tasks.Task!

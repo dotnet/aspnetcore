@@ -215,7 +215,7 @@ static Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.TryParse(Microso
 static Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions.IsFileDisposition(this Microsoft.Net.Http.Headers.ContentDispositionHeaderValue! header) -> bool
 static Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions.IsFormDisposition(this Microsoft.Net.Http.Headers.ContentDispositionHeaderValue! header) -> bool
 static Microsoft.Net.Http.Headers.ContentRangeHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.ContentRangeHeaderValue!
-static Microsoft.Net.Http.Headers.ContentRangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.ContentRangeHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.ContentRangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.ContentRangeHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.CookieHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.CookieHeaderValue!
 static Microsoft.Net.Http.Headers.CookieHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>!
 static Microsoft.Net.Http.Headers.CookieHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue!>!
@@ -226,7 +226,7 @@ static Microsoft.Net.Http.Headers.EntityTagHeaderValue.Any.get -> Microsoft.Net.
 static Microsoft.Net.Http.Headers.EntityTagHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.EntityTagHeaderValue!
 static Microsoft.Net.Http.Headers.EntityTagHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!
 static Microsoft.Net.Http.Headers.EntityTagHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!
-static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.EntityTagHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.EntityTagHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>? parsedValues) -> bool
 static Microsoft.Net.Http.Headers.EntityTagHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? inputs, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>? parsedValues) -> bool
 static Microsoft.Net.Http.Headers.HeaderUtilities.ContainsCacheDirective(Microsoft.Extensions.Primitives.StringValues cacheControlDirectives, string! targetDirectives) -> bool
@@ -258,7 +258,7 @@ static Microsoft.Net.Http.Headers.NameValueHeaderValue.TryParseStrictList(System
 static Microsoft.Net.Http.Headers.RangeConditionHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.RangeConditionHeaderValue!
 static Microsoft.Net.Http.Headers.RangeConditionHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.RangeConditionHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.RangeHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.RangeHeaderValue!
-static Microsoft.Net.Http.Headers.RangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.RangeHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.RangeHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.RangeHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.SetCookieHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.SetCookieHeaderValue!
 static Microsoft.Net.Http.Headers.SetCookieHeaderValue.ParseList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>!
 static Microsoft.Net.Http.Headers.SetCookieHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? inputs) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue!>!
@@ -268,7 +268,7 @@ static Microsoft.Net.Http.Headers.SetCookieHeaderValue.TryParseStrictList(System
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.Parse(Microsoft.Extensions.Primitives.StringSegment input) -> Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.ParseList(System.Collections.Generic.IList<string!>? input) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.ParseStrictList(System.Collections.Generic.IList<string!>? input) -> System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!
-static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue! parsedValue) -> bool
+static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParse(Microsoft.Extensions.Primitives.StringSegment input, out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue? parsedValue) -> bool
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParseList(System.Collections.Generic.IList<string!>? input, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>? parsedValues) -> bool
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue.TryParseStrictList(System.Collections.Generic.IList<string!>? input, out System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>? parsedValues) -> bool
 static Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer.QualityComparer.get -> Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer!
