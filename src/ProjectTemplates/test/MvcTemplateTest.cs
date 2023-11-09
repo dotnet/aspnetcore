@@ -40,11 +40,11 @@ namespace Templates.Test
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public async Task MvcTemplate_NoAuthCSharp() => await MvcTemplateCore(languageOverride: null);
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         public async Task MvcTemplate_ProgramMainNoAuthCSharp() => await MvcTemplateCore(languageOverride: null, new [] { ArgConstants.UseProgramMain });
 
         private async Task MvcTemplateCore(string languageOverride, string[] args = null)
@@ -122,14 +122,14 @@ namespace Templates.Test
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "No LocalDb on non-Windows")]
         public Task MvcTemplate_IndividualAuth_LocalDb(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: true, useProgramMain);
 
         [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
-        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
+        [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64 + HelixConstants.DebianAmd64)]
         public Task MvcTemplate_IndividualAuth(bool useProgramMain) => MvcTemplate_IndividualAuth_Core(useLocalDB: false, useProgramMain);
 
         private async Task MvcTemplate_IndividualAuth_Core(bool useLocalDB, bool useProgramMain)
@@ -250,7 +250,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)] // Running these requires the rid-specific runtime pack to be available which is not consistent in all our platform builds.
-        [SkipOnHelix("cert failure", Queues = "All.OSX;" + HelixConstants.Windows10Arm64)]
+        [SkipOnHelix("cert failure", Queues = "All.OSX;" + HelixConstants.Windows11Arm64)]
         public async Task MvcTemplate_SingleFileExe()
         {
             // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
@@ -297,7 +297,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("IndividualB2C", null)]
         [InlineData("IndividualB2C", new[] { ArgConstants.UseProgramMain })]
         [InlineData("IndividualB2C", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
@@ -305,7 +305,7 @@ namespace Templates.Test
         public Task MvcTemplate_IdentityWeb_IndividualB2C_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
         
         [ConditionalTheory]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows11Arm64 + HelixConstants.DebianArm64)]
         [InlineData("SingleOrg", null)]
         [InlineData("SingleOrg", new[] { ArgConstants.UseProgramMain })]
         [InlineData("SingleOrg", new[] { ArgConstants.CalledApiUrlGraphMicrosoftCom, ArgConstants.CalledApiScopesUserReadWrite })]
