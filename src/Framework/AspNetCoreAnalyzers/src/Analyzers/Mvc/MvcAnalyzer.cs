@@ -5,7 +5,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -47,9 +49,20 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                         actionRoutes = new List<ActionRoute>();
                     }
 
+                    RoutePatternTree? controllerRoutePattern = null;
+                    var controllerRouteAttribute = namedTypeSymbol.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_RouteAttribute), inherit: true).FirstOrDefault();
+                    if (controllerRouteAttribute != null)
+                    {
+                        var routeUsage = GetRouteUsageModel(controllerRouteAttribute, routeUsageCache, context.CancellationToken);
+                        if (routeUsage != null)
+                        {
+                            controllerRoutePattern = routeUsage.RoutePattern;
+                        }
+                    }
+
                     PopulateActionRoutes(context, wellKnownTypes, routeUsageCache, namedTypeSymbol, actionRoutes);
 
-                    DetectAmbiguousActionRoutes(context, wellKnownTypes, actionRoutes);
+                    DetectAmbiguousActionRoutes(context, wellKnownTypes, controllerRoutePattern, actionRoutes);
 
                     // Return to the pool.
                     actionRoutes.Clear();
