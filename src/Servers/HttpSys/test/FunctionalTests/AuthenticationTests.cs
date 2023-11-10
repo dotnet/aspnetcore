@@ -431,17 +431,17 @@ public class AuthenticationTests : LoggedTest
     [InlineData(AuthenticationSchemes.Negotiate)]
     [InlineData(AuthenticationSchemes.NTLM)]
     [InlineData(AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM)]
-    public async Task AuthTypes_CaptureCredential(AuthenticationSchemes authType)
+    public async Task AuthTypes_CaptureCredentials(AuthenticationSchemes authType)
     {
         using (var server = Utilities.CreateDynamicHost(out var address, options =>
         {
             options.Authentication.Schemes = authType;
             options.Authentication.AllowAnonymous = DenyAnoymous;
-            options.Authentication.CaptureCredential = true;
+            options.Authentication.CaptureCredentials = true;
         },
         httpContext =>
         {
-            // There doesn't seem to be a simple way of testing the `CaptureCredential`
+            // There doesn't seem to be a simple way of testing the `CaptureCredentials`
             // setting, but at least check that the server works.
             Assert.NotNull(httpContext.User);
             Assert.NotNull(httpContext.User.Identity);

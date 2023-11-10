@@ -75,7 +75,7 @@ public sealed class AuthenticationManager
     /// or Negotiate authentication. Kerberos or Negotiate authentication must be enabled.
     /// The default is false.
     /// </summary>
-    public bool CaptureCredential { get; set; }
+    public bool CaptureCredentials { get; set; }
 
     internal void SetUrlGroupSecurity(UrlGroup urlGroup)
     {
@@ -106,7 +106,7 @@ public sealed class AuthenticationManager
                 authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING;
             }
 
-            if (CaptureCredential)
+            if (CaptureCredentials)
             {
                 authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL;
             }
