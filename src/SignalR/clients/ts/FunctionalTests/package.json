@@ -15,6 +15,7 @@
     "@types/node": "^9.6.28",
     "debug": "^3.1.0",
     "es6-promise": "^4.2.4",
+    "filemanager-webpack-plugin": "^8.0.0",
     "jasmine": "^3.2.0",
     "jasmine-core": "^3.2.1",
     "karma": "^6.3.16",
@@ -38,7 +39,7 @@
     "ws": " ^6.0.0"
   },
   "scripts": {
-    "clean": "rimraf ./wwwroot/dist ./obj/js",
+    "clean": "rimraf ./wwwroot/dist ./wwwroot/lib ./obj/js",
     "build": "npm run build:inner",
     "build:inner": "npm run build:lint && npm run build:webpack",
     "build:lint": "eslint . --ext .ts",
