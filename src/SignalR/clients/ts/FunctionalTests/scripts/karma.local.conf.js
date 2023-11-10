@@ -48,12 +48,12 @@ try {
     if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
       tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
     }
+    tryAddBrowser("Safari", SafariBrowser.prototype);
 
     // We need to receive an argument from the caller, but globals don't seem to work, so we use an environment variable.
     if (process.env.ASPNETCORE_SIGNALR_TEST_ALL_BROWSERS === "true") {
       tryAddBrowser("Edge", EdgeBrowser.prototype);
       tryAddBrowser("IE", IEBrowser.prototype);
-      tryAddBrowser("Safari", SafariBrowser.prototype);
     }
 
     module.exports = createKarmaConfig({
