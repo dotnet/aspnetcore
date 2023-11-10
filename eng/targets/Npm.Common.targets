@@ -42,20 +42,6 @@
   <Target Name="Restore">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Restore" />
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <!-- Add redundancy for yarn install - if first instance fails, try again -->
-    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
-        StandardOutputImportance="High"
-        StandardErrorImportance="High"
-        IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
-        IgnoreExitCode="true">
-          <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode" />
-    </Yarn>
-    <Message Importance="High" Text="yarn install failed on $(MSBuildProjectFullPath), trying again" Condition="'$(_YarnExitCode)' != '0'" />
-    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
-        StandardOutputImportance="High"
-        StandardErrorImportance="High"
-        IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
-        Condition="'$(_YarnExitCode)' != '0'" />
   </Target>
 
   <Target Name="PrepareForBuild">

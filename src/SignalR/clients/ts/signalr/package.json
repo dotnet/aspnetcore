@@ -18,8 +18,7 @@
     "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
     "build:browser": "webpack-cli",
-    "build:webworker": "webpack-cli --env platform=webworker",
-    "test": "echo \"Run 'npm test' in the 'clients/ts' folder to test this package\" && exit 1"
+    "build:webworker": "webpack-cli --env platform=webworker"
   },
   "keywords": [
     "signalr",

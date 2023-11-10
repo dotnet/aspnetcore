@@ -15,7 +15,7 @@ module.exports = {
     testRunner: "jest-jasmine2",
     moduleNameMapper: {
         "^ts-jest$": "ts-jest",
-        "^@microsoft/signalr$": "<rootDir>../node_modules/@microsoft/signalr/dist/cjs/index.js"
+        "^@microsoft/signalr$": "<rootDir>../../../../../node_modules/@microsoft/signalr/dist/cjs/index.js"
     },
     moduleFileExtensions: [
         "ts",

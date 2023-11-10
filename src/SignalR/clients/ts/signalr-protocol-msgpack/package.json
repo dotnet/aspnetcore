@@ -18,8 +18,7 @@
     "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
     "build:browser": "webpack-cli",
-    "build:uglify": "terser -m -c --ecma 2019 --module --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
-    "test": "echo \"Run 'npm test' in the 'clients/ts' folder to test this package\" && exit 1"
+    "build:uglify": "terser -m -c --ecma 2019 --module --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js"
   },
   "keywords": [
     "signalr",

@@ -9,7 +9,6 @@
     "FunctionalTests"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
     "lint-signalr": "eslint -c ./signalr/tests/.eslintrc.js --ext .ts ./signalr/tests ",
     "lint-signalr-msgpack": "eslint -c ./signalr-protocol-msgpack/tests/.eslintrc.js --ext .ts ./signalr-protocol-msgpack/tests ",
     "pretest": "npm run lint-signalr & npm run lint-signalr-msgpack",
