@@ -27,6 +27,12 @@ module.exports = {
     resolve: {
         extensions: [".ts", ".js"]
     },
+    externals: {
+        "@microsoft/signalr": "signalR",
+        "@microsoft/signalr-protocol-msgpack": "signalR.protocols.msgpack",
+        "signalR": "signalR",
+        "signalR.protocols.msgpack": "signalR.protocols.msgpack"
+    },
     output: {
         filename: 'signalr-functional-tests.js',
         path: path.resolve(__dirname, "wwwroot", "dist"),
@@ -41,16 +47,12 @@ module.exports = {
                     copy: [
                         { source: path.resolve(__dirname, '../node_modules/jasmine-core/lib/jasmine-core/*.js'), destination: path.resolve(__dirname, 'wwwroot/lib/jasmine/') },
                         { source: path.resolve(__dirname, '../node_modules/jasmine-core/lib/jasmine-core/*.css'), destination: path.resolve(__dirname, 'wwwroot/lib/jasmine/') },
-                        { source: path.resolve(__dirname, '../node_modules/@microsoft/signalr/dist/browser/'), destination: path.resolve(__dirname, 'wwwroot/lib/signalr/') },
-                        { source: path.resolve(__dirname, '../node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/'), destination: path.resolve(__dirname, 'wwwroot/lib/signalr/') },
+                        { source: path.resolve(__dirname, '../node_modules/@microsoft/signalr/dist/browser/*'), destination: path.resolve(__dirname, 'wwwroot/lib/signalr/') },
+                        { source: path.resolve(__dirname, '../node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/*'), destination: path.resolve(__dirname, 'wwwroot/lib/signalr/') },
                         { source: path.resolve(__dirname, '../node_modules/@microsoft/signalr/dist/webworker/'), destination: path.resolve(__dirname, 'wwwroot/lib/signalr-webworker/') },
                     ]
                 }
             }
         })
-    ],
-    externals: {
-        "@microsoft/signalr": "signalR",
-        "@microsoft/signalr-protocol-msgpack": "signalR.protocols.msgpack",
-    },
+    ]
 };

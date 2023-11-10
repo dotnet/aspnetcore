@@ -209,7 +209,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
         return 0;
     }
 
-    const jestPath = path.resolve(__dirname, "..", "..", "common", "node_modules", "jest", "bin", "jest.js");
+    const jestPath = path.resolve(__dirname, "..", "..", "node_modules", "jest", "bin", "jest.js");
     const configPath = path.resolve(__dirname, "..", "func.jest.config.js");
 
     console.log("Starting Node tests using Jest.");
