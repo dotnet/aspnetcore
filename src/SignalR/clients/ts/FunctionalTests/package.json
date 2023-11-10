@@ -38,8 +38,10 @@
     "ws": " ^6.0.0"
   },
   "scripts": {
-    "clean": "rimraf ./dist",
-    "build": "npm run build:webpack",
+    "clean": "rimraf ./wwwroot/dist ./obj/js",
+    "build": "npm run build:inner",
+    "build:inner": "npm run build:lint && npm run build:webpack",
+    "build:lint": "eslint . --ext .ts",
     "build:webpack": "webpack-cli",
     "test": "tsc --noEmit && npm run test:local",
     "test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
