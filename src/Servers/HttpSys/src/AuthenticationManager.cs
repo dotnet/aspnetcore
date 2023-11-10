@@ -65,7 +65,8 @@ public sealed class AuthenticationManager
     public string? AuthenticationDisplayName { get; set; }
 
     /// <summary>
-    /// If true, the Kerberos authentication credentials are cached. Kerberos or Negotiate
+    /// If true, the Kerberos authentication credentials are persisted per connection
+    /// and re-used for subsequent anonymous requests. Kerberos or Negotiate
     /// authentication must be enabled. The default is false.
     /// </summary>
     public bool EnableKerberosCredentialCaching { get; set; }
