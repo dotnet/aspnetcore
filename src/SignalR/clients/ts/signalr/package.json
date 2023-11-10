@@ -46,7 +46,7 @@
     "node-fetch": "^2.6.7",
     "ws": "^7.4.5"
   },
-  "resolutions": {
+  "overrides": {
     "ansi-regex": "5.0.1",
     "tough-cookie": ">=4.1.3"
   },

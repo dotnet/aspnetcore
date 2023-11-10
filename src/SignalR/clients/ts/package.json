@@ -37,7 +37,7 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {},
-  "resolutions": {
+  "overrides": {
     "ansi-regex": "5.0.1",
     "set-value": ">=4.0.1",
     "minimist": ">=1.2.6",

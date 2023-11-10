@@ -43,7 +43,7 @@
     "@microsoft/signalr": "^5.0.0-dev",
     "@msgpack/msgpack": "^2.7.0"
   },
-  "resolutions": {
+  "overrides": {
     "ws": ">=7.4.6",
     "tough-cookie": ">=4.1.3"
   }
