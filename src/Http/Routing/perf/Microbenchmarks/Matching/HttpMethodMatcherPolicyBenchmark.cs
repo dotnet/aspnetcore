@@ -12,7 +12,7 @@ public class HttpMethodMatcherPolicyBenchmark
     private HttpMethodMatcherPolicy _jumpTableBuilder = new();
     private List<PolicyJumpTableEdge> _edges = new();
 
-    [Params(3, 5, 10)]
+    [Params(3, 5, 11)]
     public int DestinationCount { get; set; }
 
     [GlobalSetup]

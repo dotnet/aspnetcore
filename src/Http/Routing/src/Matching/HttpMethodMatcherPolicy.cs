@@ -533,10 +533,6 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         private const int PutIndex = 7;
         private const int TraceIndex = 8;
 
-        public KnownHttpMethodsJumpTableBuilder()
-        {
-        }
-
         private BuildTable _table;
 
         public bool TrySet(string method, int destination)

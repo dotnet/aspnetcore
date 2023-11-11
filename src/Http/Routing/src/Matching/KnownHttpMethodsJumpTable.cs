@@ -41,7 +41,7 @@ internal class KnownHttpMethodsJumpTable
 
             return matchedMethod is not null && method.Equals(matchedMethod, StringComparison.OrdinalIgnoreCase);
         }
-        destination = 0;
+        destination = default;
         return false;
     }
 }
