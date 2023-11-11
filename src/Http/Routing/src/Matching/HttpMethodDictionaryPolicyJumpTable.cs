@@ -19,7 +19,7 @@ internal sealed class HttpMethodDictionaryPolicyJumpTable : PolicyJumpTable
         int exitDestination,
         KnownHttpMethodsJumpTable knownDestinations,
         Dictionary<string, int>? destinations,
-        bool hasCorsDestinations,
+        bool supportsCorsPreflight,
         int corsPreflightExitDestination,
         KnownHttpMethodsJumpTable knownCorsPreflightDestinations,
         Dictionary<string, int>? corsPreflightDestinations)
@@ -30,7 +30,7 @@ internal sealed class HttpMethodDictionaryPolicyJumpTable : PolicyJumpTable
         _destinations = destinations;
         _corsPreflightExitDestination = corsPreflightExitDestination;
         _corsPreflightDestinations = corsPreflightDestinations;
-        _supportsCorsPreflight = hasCorsDestinations;
+        _supportsCorsPreflight = supportsCorsPreflight;
     }
 
     public override int GetDestination(HttpContext httpContext)

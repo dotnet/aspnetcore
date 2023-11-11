@@ -14,29 +14,31 @@ public class HttpMethodPolicyJumpTableBenchmark
     private Dictionary<string, int> _destinations = new();
     private Dictionary<string, int> _corsDestinations = new();
 
-    private static string[] AllHttpMethods = [HttpMethods.Get, HttpMethods.Connect, HttpMethods.Delete, HttpMethods.Head, HttpMethods.Options, HttpMethods.Patch, HttpMethods.Put, HttpMethods.Post, HttpMethods.Trace];
-
-    [Params(2, 4, 9)]
-    public int DestinationCount { get; set; }
+    [Params("GET", "POST", "Merge")]
+    public string TestHttpMethod { get; set; }
 
     [GlobalSetup]
     public void Setup()
     {
-        for (int i = 0; i < DestinationCount; i++)
+        var knownJumpTable = new KnownHttpMethodsJumpTable()
         {
-            _destinations.Add(AllHttpMethods[i], i);
-            _corsDestinations.Add(AllHttpMethods[i], DestinationCount + i);
-        }
+            ConnectDestination = 1,
+            DeleteDestination = 2,
+            HeadDestination = 3,
+            GetDestination = 4,
+            OptionsDestination = 5,
+            PatchDestination = 6,
+            PutDestination = 7,
+            PostDestination = 8,
+            TraceDestination = 9
+        };
+        _destinations.Add("MERGE", 10);
 
-        _dictionaryJumptable = new HttpMethodDictionaryPolicyJumpTable(0, _destinations, -1, _corsDestinations);
-        _singleEntryJumptable = new HttpMethodSingleEntryPolicyJumpTable(0, HttpMethods.Get, -1, supportsCorsPreflight: true, -1, 2);
+        _dictionaryJumptable = new HttpMethodDictionaryPolicyJumpTable(0, knownJumpTable, _destinations, supportsCorsPreflight: false, -1, knownJumpTable, _corsDestinations);
+        _singleEntryJumptable = new HttpMethodSingleEntryPolicyJumpTable(0, HttpMethods.Get, -1, supportsCorsPreflight: false, -1, 2);
         _httpContext = new DefaultHttpContext();
-        _httpContext.Request.Method = HttpMethods.Get;
+        _httpContext.Request.Method = TestHttpMethod;
     }
-
-    [Benchmark]
-    public PolicyJumpTable DictionaryPolicyJumpTableCtor() =>
-        new HttpMethodDictionaryPolicyJumpTable(0, _destinations, -1, _corsDestinations);
 
     [Benchmark]
     public int DictionaryPolicyJumpTable()
