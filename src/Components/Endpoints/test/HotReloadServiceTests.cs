@@ -187,7 +187,7 @@ public class HotReloadServiceTests
         }
         else
         {
-            result.Options.ConfiguredRenderModes.Add(new ServerRenderMode());
+            result.Options.ConfiguredRenderModes.Add(new InteractiveServerRenderMode());
         }
 
         return result;
@@ -195,7 +195,7 @@ public class HotReloadServiceTests
 
     private class StaticComponent : ComponentBase { }
 
-    [RenderModeServer]
+    [TestRenderMode<InteractiveServerRenderMode>]
     private class ServerComponent : ComponentBase { }
 
     private class MockEndpointProvider : RenderModeEndpointProvider

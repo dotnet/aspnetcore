@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -2472,7 +2473,7 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
-    private void AcceptsFormatters_Services([FromServices] ITestService tempDataProvider)
+    private void AcceptsFormatters_Services([FromServices] ITestService tempDataProvider, [FromKeyedServices("foo")] ITestService keyedTempDataProvider)
     {
     }
 

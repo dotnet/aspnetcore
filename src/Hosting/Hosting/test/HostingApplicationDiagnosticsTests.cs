@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Hosting.Tests;

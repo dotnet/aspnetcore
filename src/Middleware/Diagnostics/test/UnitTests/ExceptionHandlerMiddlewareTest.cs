@@ -19,7 +19,7 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Diagnostics;
@@ -318,7 +318,7 @@ public class ExceptionHandlerMiddlewareTest
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
-        Assert.Equal(exceptionName, (string)measurement.Tags["exception.type"]);
+        Assert.Equal(exceptionName, (string)measurement.Tags["error.type"]);
         Assert.Equal(result, measurement.Tags["aspnetcore.diagnostics.exception.result"].ToString());
         if (handler == null)
         {

@@ -1,0 +1,18 @@
+﻿@page "/forms/non-enhanced-plainform"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Non-enhanced form</h2>
+
+<form @formname="someform" method="POST" @onsubmit="() => _submitted = true">
+    <AntiforgeryToken />
+    <input id="send" type="submit" value="Send" />
+</form>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+}

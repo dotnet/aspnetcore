@@ -2833,6 +2833,84 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/51361")]
+    public async Task ServerWithOldProtocolVersionClientWithNewProtocolVersionWorksDoesNotAllowStatefulReconnect()
+    {
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                   (writeContext.EventId.Name == "ShutdownWithError" ||
+                   writeContext.EventId.Name == "ServerDisconnectedWithError");
+        }
+
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>(ExpectedErrors))
+        {
+            var websocket = new ClientWebSocket();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            tcs.SetResult();
+
+            const string originalMessage = "SignalR";
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.WebSocketFactory = async (context, token) =>
+                    {
+                        await tcs.Task;
+                        await websocket.ConnectAsync(context.Uri, token);
+                        tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                        return websocket;
+                    };
+                    o.UseStatefulReconnect = true;
+                });
+            // Force version 1 on the server so it turns off Stateful Reconnects
+            connectionBuilder.Services.AddSingleton<IHubProtocol>(new HubProtocolVersionTests.SingleVersionHubProtocol(HubProtocols["json"], 1));
+            var connection = connectionBuilder.Build();
+
+            var closedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            connection.Closed += (_) =>
+            {
+                closedTcs.SetResult();
+                return Task.CompletedTask;
+            };
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+                var originalConnectionId = connection.ConnectionId;
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                Assert.Equal(originalMessage, result);
+
+                var originalWebsocket = websocket;
+                websocket = new ClientWebSocket();
+                originalWebsocket.Dispose();
+
+                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                tcs.SetResult();
+
+                // In-progress send canceled when connection closes
+                var ex = await Assert.ThrowsAnyAsync<Exception>(() => resultTask);
+                Assert.True(ex is TaskCanceledException or WebSocketException);
+                await closedTcs.Task;
+
+                Assert.Equal(HubConnectionState.Disconnected, connection.State);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
     private class OneAtATimeSynchronizationContext : SynchronizationContext, IAsyncDisposable
     {
         private readonly Channel<(SendOrPostCallback, object)> _taskQueue = Channel.CreateUnbounded<(SendOrPostCallback, object)>();

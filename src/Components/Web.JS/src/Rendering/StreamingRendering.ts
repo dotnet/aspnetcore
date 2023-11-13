@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { SsrStartOptions } from '../Platform/SsrStartOptions';
-import { NavigationEnhancementCallbacks, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
-import { isWithinBaseUriSpace } from '../Services/NavigationUtils';
+import { NavigationEnhancementCallbacks, hasNeverStartedAnyEnhancedPageLoad, performEnhancedPageLoad, replaceDocumentWithPlainText } from '../Services/NavigationEnhancement';
+import { isWithinBaseUriSpace, toAbsoluteUri } from '../Services/NavigationUtils';
 import { synchronizeDomContent } from './DomMerging/DomSync';
 
 let enableDomPreservation = true;
@@ -36,18 +36,38 @@ class BlazorStreamingUpdate extends HTMLElement {
       if (node instanceof HTMLTemplateElement) {
         const componentId = node.getAttribute('blazor-component-id');
         if (componentId) {
-          insertStreamingContentIntoDocument(componentId, node.content);
+          // For enhanced nav page loads, we automatically cancel the response stream if another enhanced nav supersedes it. But there's
+          // no way to cancel the original page load. So, to avoid continuing to process <blazor-ssr> blocks from the original page load
+          // if an enhanced nav supersedes it, we must explicitly check whether this content is from the original page load, and if so,
+          // ignore it if any enhanced nav has started yet. Fixes https://github.com/dotnet/aspnetcore/issues/50733
+          const isFromEnhancedNav = node.getAttribute('enhanced-nav') === 'true';
+          if (isFromEnhancedNav || hasNeverStartedAnyEnhancedPageLoad()) {
+            insertStreamingContentIntoDocument(componentId, node.content);
+          }
         } else {
           switch (node.getAttribute('type')) {
             case 'redirection':
               // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
               // if the async delay was very short, as the user would not perceive having been on the intermediate page.
-              const destinationUrl = node.content.textContent!;
-              if (isWithinBaseUriSpace(destinationUrl)) {
-                history.replaceState(null, '', destinationUrl);
-                performEnhancedPageLoad(destinationUrl);
+              const destinationUrl = toAbsoluteUri(node.content.textContent!);
+              const isFormPost = node.getAttribute('from') === 'form-post';
+              const isEnhancedNav = node.getAttribute('enhanced') === 'true';
+              if (isEnhancedNav && isWithinBaseUriSpace(destinationUrl)) {
+                if (isFormPost) {
+                  // The URL is not yet updated. Push a whole new entry so that 'back' goes back to the pre-redirection location.
+                  history.pushState(null, '', destinationUrl);
+                } else {
+                  // The URL was already updated on the original link click. Replace so that 'back' goes to the pre-redirection location.
+                  history.replaceState(null, '', destinationUrl);
+                }
+                performEnhancedPageLoad(destinationUrl, /* interceptedLink */ false);
               } else {
-                location.replace(destinationUrl);
+                // Same reason for varying as above
+                if (isFormPost) {
+                  location.assign(destinationUrl);
+                } else {
+                  location.replace(destinationUrl);
+                }
               }
               break;
             case 'error':

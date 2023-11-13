@@ -387,6 +387,8 @@ Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.PropertyFilterProvider.get -> 
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.PropertyFilterProvider.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.RequestPredicate.get -> System.Func<Microsoft.AspNetCore.Mvc.ActionContext!, bool>?
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.RequestPredicate.set -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.ServiceKey.get -> object?
+Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.ServiceKey.set -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.TryApplyBindingInfo(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! modelMetadata) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.BindingSource(string! id, string! displayName, bool isGreedy, bool isFromRequest) -> void

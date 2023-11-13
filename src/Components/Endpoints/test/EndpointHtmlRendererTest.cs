@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
@@ -53,7 +54,7 @@ public class EndpointHtmlRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new WebAssemblyRenderMode(prerender: false), ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
         var match = Regex.Match(content, ComponentPattern);
@@ -76,7 +77,7 @@ public class EndpointHtmlRendererTest
         var writer = new StringWriter();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.WebAssembly, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.InteractiveWebAssembly, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
@@ -115,7 +116,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent),
-            new WebAssemblyRenderMode(prerender: false),
+            new InteractiveWebAssemblyRenderMode(prerender: false),
             ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { "Name", "Daniel" }
@@ -152,7 +153,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent),
-            new WebAssemblyRenderMode(prerender: false),
+            new InteractiveWebAssemblyRenderMode(prerender: false),
             ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { "Name", null }
@@ -187,7 +188,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent),
-            RenderMode.WebAssembly,
+            RenderMode.InteractiveWebAssembly,
             ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { "Name", "Daniel" }
@@ -236,7 +237,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent),
-            RenderMode.WebAssembly,
+            RenderMode.InteractiveWebAssembly,
             ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 { "Name", null }
@@ -300,7 +301,7 @@ public class EndpointHtmlRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new ServerRenderMode(false), ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveServerRenderMode(false), ParameterView.Empty);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, ComponentPattern);
 
@@ -332,7 +333,7 @@ public class EndpointHtmlRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.Server, ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.InteractiveServer, ParameterView.Empty);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -376,8 +377,8 @@ public class EndpointHtmlRendererTest
 
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
-        var server = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.Server, parameters);
-        var client = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.WebAssembly, parameters);
+        var server = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.InteractiveServer, parameters);
+        var client = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.InteractiveWebAssembly, parameters);
 
         // Assert
         var (_, mode) = Assert.Single(httpContext.Items, (kvp) => kvp.Value is InvokedRenderModes);
@@ -393,11 +394,11 @@ public class EndpointHtmlRendererTest
             .ToTimeLimitedDataProtector();
 
         // Act
-        var firstResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new ServerRenderMode(true), ParameterView.Empty);
+        var firstResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveServerRenderMode(true), ParameterView.Empty);
         var firstComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(firstResult));
         var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
 
-        var secondResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new ServerRenderMode(false), ParameterView.Empty);
+        var secondResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveServerRenderMode(false), ParameterView.Empty);
         var secondComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(secondResult));
         var secondMatch = Regex.Match(secondComponent, ComponentPattern);
 
@@ -451,7 +452,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), new ServerRenderMode(false), parameters);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), new InteractiveServerRenderMode(false), parameters);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, ComponentPattern);
 
@@ -490,7 +491,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), new ServerRenderMode(false), parameters);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), new InteractiveServerRenderMode(false), parameters);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, ComponentPattern);
 
@@ -529,7 +530,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.Server, parameters);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.InteractiveServer, parameters);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -580,7 +581,7 @@ public class EndpointHtmlRendererTest
 
         // Act
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.Server, parameters);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.InteractiveServer, parameters);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
@@ -1177,6 +1178,326 @@ public class EndpointHtmlRendererTest
         Assert.Equal("<h1>This is InteractiveWithInteractiveChild</h1>\n\n<p>Hello from InteractiveGreetingServer!</p>", prerenderedContent.Replace("\r\n", "\n"));
     }
 
+    [Fact]
+    public async Task PrerenderedState_EmptyWhenNoDeclaredRenderModes()
+    {
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+
+        Assert.Equal(EndpointHtmlRenderer.ComponentStateHtmlContent.Empty, content);
+    }
+
+    public static TheoryData<IComponentRenderMode> SingleComponentRenderModeData => new TheoryData<IComponentRenderMode>
+    {
+        RenderMode.InteractiveServer,
+        RenderMode.InteractiveWebAssembly
+    };
+
+    [Theory]
+    [MemberData(nameof(SingleComponentRenderModeData))]
+    public async Task PrerenderedState_SelectsSingleStoreCorrectly(IComponentRenderMode renderMode)
+    {
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([renderMode]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+
+        Assert.NotNull(content);
+        var stateContent = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(content);
+        switch (renderMode)
+        {
+            case InteractiveServerRenderMode:
+                Assert.NotNull(stateContent.ServerStore);
+                Assert.Null(stateContent.ServerStore.PersistedState);
+                Assert.Null(stateContent.WebAssemblyStore);
+                break;
+            case InteractiveWebAssemblyRenderMode:
+                Assert.NotNull(stateContent.WebAssemblyStore);
+                Assert.Null(stateContent.WebAssemblyStore.PersistedState);
+                Assert.Null(stateContent.ServerStore);
+                break;
+            default:
+                throw new InvalidOperationException($"Unexpected render mode: {renderMode}");
+        }
+    }
+
+    [Fact]
+    public async Task PrerenderedState_MultipleStoresCorrectly()
+    {
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+
+        Assert.NotNull(content);
+        var stateContent = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(content);
+        Assert.Null(stateContent.ServerStore);
+        Assert.Null(stateContent.WebAssemblyStore);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    [InlineData("auto")]
+    public async Task PrerenderedState_PersistToStores_OnlyWhenContentIsAvailable(string renderMode)
+    {
+        IComponentRenderMode persistenceMode = renderMode switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Unexpected render mode: {renderMode}"),
+        };
+
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+
+        state.RegisterOnPersisting(() =>
+        {
+            state.PersistAsJson(renderMode, "persisted");
+            return Task.CompletedTask;
+        }, persistenceMode);
+
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+
+        Assert.NotNull(content);
+        var stateContent = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(content);
+        switch (persistenceMode)
+        {
+            case InteractiveServerRenderMode:
+                Assert.NotNull(stateContent.ServerStore);
+                Assert.NotNull(stateContent.ServerStore.PersistedState);
+                Assert.Null(stateContent.WebAssemblyStore);
+                break;
+            case InteractiveWebAssemblyRenderMode:
+                Assert.NotNull(stateContent.WebAssemblyStore);
+                Assert.NotNull(stateContent.WebAssemblyStore.PersistedState);
+                Assert.Null(stateContent.ServerStore);
+                break;
+            case InteractiveAutoRenderMode:
+                Assert.NotNull(stateContent.ServerStore);
+                Assert.NotNull(stateContent.ServerStore.PersistedState);
+                Assert.NotNull(stateContent.WebAssemblyStore);
+                Assert.NotNull(stateContent.WebAssemblyStore.PersistedState);
+                break;
+            default:
+                break;
+        }
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public async Task PrerenderedState_PersistToStores_DoesNotNeedToInferRenderMode_ForSingleRenderMode(string declaredRenderMode)
+    {
+        IComponentRenderMode configuredMode = declaredRenderMode switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Unexpected render mode: {declaredRenderMode}"),
+        };
+
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([configuredMode]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+
+        state.RegisterOnPersisting(() =>
+        {
+            state.PersistAsJson("key", "persisted");
+            return Task.CompletedTask;
+        });
+
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+
+        Assert.NotNull(content);
+        var stateContent = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(content);
+        switch (configuredMode)
+        {
+            case InteractiveServerRenderMode:
+                Assert.NotNull(stateContent.ServerStore);
+                Assert.NotNull(stateContent.ServerStore.PersistedState);
+                Assert.Null(stateContent.WebAssemblyStore);
+                break;
+            case InteractiveWebAssemblyRenderMode:
+                Assert.NotNull(stateContent.WebAssemblyStore);
+                Assert.NotNull(stateContent.WebAssemblyStore.PersistedState);
+                Assert.Null(stateContent.ServerStore);
+                break;
+            default:
+                break;
+        }
+    }
+
+    [Fact]
+    public async Task PrerenderedState_Throws_WhenItCanInfer_CallbackRenderMode_ForMultipleRenderModes()
+    {
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+
+        state.RegisterOnPersisting(() =>
+        {
+            state.PersistAsJson("key", "persisted");
+            return Task.CompletedTask;
+        });
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderPersistedStateAsync(httpContext));
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("auto")]
+    [InlineData("wasm")]
+    public async Task PrerenderedState_InfersCallbackRenderMode_ForMultipleRenderModes(string renderMode)
+    {
+        IComponentRenderMode persistenceMode = renderMode switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Unexpected render mode: {renderMode}"),
+        };
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+
+        var ssrBoundary = new SSRRenderModeBoundary(httpContext, typeof(PersistenceComponent), persistenceMode);
+        var id = renderer.AssignRootComponentId(ssrBoundary);
+
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
+
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+        Assert.NotNull(content);
+        var stateContent = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(content);
+        switch (persistenceMode)
+        {
+            case InteractiveServerRenderMode:
+                Assert.NotNull(stateContent.ServerStore);
+                Assert.NotNull(stateContent.ServerStore.PersistedState);
+                Assert.Null(stateContent.WebAssemblyStore);
+                break;
+            case InteractiveWebAssemblyRenderMode:
+                Assert.NotNull(stateContent.WebAssemblyStore);
+                Assert.NotNull(stateContent.WebAssemblyStore.PersistedState);
+                Assert.Null(stateContent.ServerStore);
+                break;
+            case InteractiveAutoRenderMode:
+                Assert.NotNull(stateContent.ServerStore);
+                Assert.NotNull(stateContent.ServerStore.PersistedState);
+                Assert.NotNull(stateContent.WebAssemblyStore);
+                Assert.NotNull(stateContent.WebAssemblyStore.PersistedState);
+                break;
+            default:
+                break;
+        }
+    }
+
+    [Theory]
+    [InlineData("server", "server", true)]
+    [InlineData("auto", "server", true)]
+    [InlineData("auto", "wasm", true)]
+    [InlineData("wasm", "wasm", true)]
+    // Note that when an incompatible explicit render mode is specified we don't serialize the data.
+    [InlineData("server", "wasm", false)]
+    [InlineData("wasm", "server", false)]
+    public async Task PrerenderedState_ExplicitRenderModes_AreRespected(string renderMode, string declared, bool persisted)
+    {
+        IComponentRenderMode persistenceMode = renderMode switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Unexpected render mode: {renderMode}"),
+        };
+
+        IComponentRenderMode configuredMode = declared switch
+        {
+            "server" => RenderMode.InteractiveServer,
+            "wasm" => RenderMode.InteractiveWebAssembly,
+            "auto" => RenderMode.InteractiveAuto,
+            _ => throw new InvalidOperationException($"Unexpected render mode: {declared}"),
+        };
+
+        var declaredRenderModesMetadata = new ConfiguredRenderModesMetadata([configuredMode]);
+        var endpoint = new Endpoint((context) => Task.CompletedTask, new EndpointMetadataCollection(declaredRenderModesMetadata),
+            "TestEndpoint");
+
+        var httpContext = GetHttpContext();
+        httpContext.SetEndpoint(endpoint);
+        var state = httpContext.RequestServices.GetRequiredService<PersistentComponentState>();
+
+        var ssrBoundary = new SSRRenderModeBoundary(httpContext, typeof(PersistenceComponent), configuredMode);
+        var id = renderer.AssignRootComponentId(ssrBoundary);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(
+            id,
+            ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                ["Mode"] = renderMode,
+            })));
+
+        var content = await renderer.PrerenderPersistedStateAsync(httpContext);
+        Assert.NotNull(content);
+        var stateContent = Assert.IsType<EndpointHtmlRenderer.ComponentStateHtmlContent>(content);
+        switch (configuredMode)
+        {
+            case InteractiveServerRenderMode:
+                if (persisted)
+                {
+                    Assert.NotNull(stateContent.ServerStore);
+                    Assert.NotNull(stateContent.ServerStore.PersistedState);
+                }
+                else
+                {
+                    Assert.Null(stateContent.ServerStore.PersistedState);
+                }
+                Assert.Null(stateContent.WebAssemblyStore);
+                break;
+            case InteractiveWebAssemblyRenderMode:
+                if (persisted)
+                {
+                    Assert.NotNull(stateContent.WebAssemblyStore);
+                    Assert.NotNull(stateContent.WebAssemblyStore.PersistedState);
+                }
+                else
+                {
+                    Assert.Null(stateContent.WebAssemblyStore.PersistedState);
+                }
+                Assert.Null(stateContent.ServerStore);
+                break;
+            default:
+                break;
+        }
+    }
+
     private class NamedEventHandlerComponent : ComponentBase
     {
         [Parameter]
@@ -1230,7 +1551,7 @@ public class EndpointHtmlRendererTest
             builder.OpenElement(0, "form");
             builder.AddAttribute(1, "onsubmit", !hasRendered
                 ? () => { Message = "Received call to original handler"; }
-                : () => { Message = "Received call to updated handler"; });
+            : () => { Message = "Received call to updated handler"; });
             builder.AddNamedEvent("onsubmit", "default");
             builder.CloseElement();
         }
@@ -1264,6 +1585,44 @@ public class EndpointHtmlRendererTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
             => _renderFragment(builder);
+    }
+
+    class PersistenceComponent : IComponent
+    {
+        [Inject] public PersistentComponentState State { get; set; }
+
+        [Parameter] public string Mode { get; set; }
+
+        private Task PersistState()
+        {
+            State.PersistAsJson("key", "value");
+            return Task.CompletedTask;
+        }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            ComponentProperties.SetProperties(parameters, this);
+            switch (Mode)
+            {
+                case "server":
+                    State.RegisterOnPersisting(PersistState, RenderMode.InteractiveServer);
+                    break;
+                case "wasm":
+                    State.RegisterOnPersisting(PersistState, RenderMode.InteractiveWebAssembly);
+                    break;
+                case "auto":
+                    State.RegisterOnPersisting(PersistState, RenderMode.InteractiveAuto);
+                    break;
+                default:
+                    State.RegisterOnPersisting(PersistState);
+                    break;
+            }
+            return Task.CompletedTask;
+        }
     }
 
     private static string HtmlContentToString(IHtmlAsyncContent result)

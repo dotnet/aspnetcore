@@ -76,6 +76,7 @@ Microsoft.AspNetCore.Authentication.WsFederation.WsFederationEvents.WsFederation
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.Events.get -> Microsoft.AspNetCore.Authentication.WsFederation.WsFederationEvents!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.Events.set -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.WsFederationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationHandler.WsFederationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.AllowUnsolicitedLogins.get -> bool
@@ -106,8 +107,11 @@ Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.SkipUnrecog
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.SkipUnrecognizedRequests.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.StateDataFormat.get -> Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties!>!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.StateDataFormat.set -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenHandlers.get -> System.Collections.Generic.ICollection<Microsoft.IdentityModel.Tokens.TokenHandler!>!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenValidationParameters.get -> Microsoft.IdentityModel.Tokens.TokenValidationParameters!
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.TokenValidationParameters.set -> void
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.UseSecurityTokenHandlers.get -> bool
+Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.UseSecurityTokenHandlers.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.UseTokenLifetime.get -> bool
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.UseTokenLifetime.set -> void
 Microsoft.AspNetCore.Authentication.WsFederation.WsFederationOptions.Wreply.get -> string?

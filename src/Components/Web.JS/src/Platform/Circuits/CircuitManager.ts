@@ -16,13 +16,13 @@ import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
 import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
-import { detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
+import { attachWebRendererInterop, detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
 
-  private readonly _applicationState: string;
+  private _applicationState: string;
 
   private readonly _options: CircuitStartOptions;
 
@@ -34,9 +34,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _connection?: HubConnection;
 
+  private _interopMethodsForReconnection?: DotNet.DotNetObject;
+
   private _circuitId?: string;
 
   private _startPromise?: Promise<boolean>;
+
+  private _firstUpdate = true;
 
   private _renderingFailed = false;
 
@@ -71,6 +75,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._startPromise;
   }
 
+  public updateRootComponents(operations: string): Promise<void> | undefined {
+    if (this._firstUpdate) {
+      // Only send the application state on the first update.
+      this._firstUpdate = false;
+      return this._connection?.send('UpdateRootComponents', operations, this._applicationState);
+    } else {
+      return this._connection?.send('UpdateRootComponents', operations, '');
+    }
+  }
+
   private async startCore(): Promise<boolean> {
     this._connection = await this.startConnection();
 
@@ -91,6 +105,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return false;
     }
 
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitOpened){
+        handler.onCircuitOpened();
+      }
+    }
+
     return true;
   }
 
@@ -106,7 +126,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const connection = connectionBuilder.build();
 
-    connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector, componentId), componentId, false));
+    connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
@@ -131,9 +151,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterRenderBatch?.(WebRendererId.Server);
     });
 
-    connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
+    connection.on('JS.EndUpdateRootComponents', (batchId: number) => {
+      this._componentManager.onAfterUpdateRootComponents?.(batchId);
+    });
 
-    connection.onclose(error => !this._disposed && !this._renderingFailed && this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error));
+    connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
+    connection.onclose(error => {
+      this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+
+      if (!this._disposed && !this._renderingFailed) {
+        this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
+      }
+    });
     connection.on('JS.Error', error => {
       this._renderingFailed = true;
       this.unhandledError(error);
@@ -189,6 +218,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     this._connection = await this.startConnection();
 
+    if (this._interopMethodsForReconnection) {
+      attachWebRendererInterop(WebRendererId.Server, this._interopMethodsForReconnection);
+      this._interopMethodsForReconnection = undefined;
+    }
+
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
       return false;
     }
@@ -234,7 +268,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return sendJSDataStream(this._connection!, data, streamId, chunkSize);
   }
 
-  public resolveElement(sequenceOrIdentifier: string, componentId: number): LogicalElement {
+  public resolveElement(sequenceOrIdentifier: string): LogicalElement {
     // It may be a root component added by JS
     const jsAddedComponentContainer = getAndRemovePendingRootComponentContainer(sequenceOrIdentifier);
     if (jsAddedComponentContainer) {
@@ -244,7 +278,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     // ... or it may be a root component added by .NET
     const parsedSequence = Number.parseInt(sequenceOrIdentifier);
     if (!Number.isNaN(parsedSequence)) {
-      const descriptor = this._componentManager.resolveRootComponent(parsedSequence, componentId);
+      const descriptor = this._componentManager.resolveRootComponent(parsedSequence);
       return toLogicalRootCommentElement(descriptor);
     }
 
@@ -307,7 +341,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
-
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
@@ -319,6 +352,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       body: formData,
     });
 
-    detachWebRendererInterop(WebRendererId.Server);
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitClosed) {
+        handler.onCircuitClosed();
+      }
+    }
   }
 }

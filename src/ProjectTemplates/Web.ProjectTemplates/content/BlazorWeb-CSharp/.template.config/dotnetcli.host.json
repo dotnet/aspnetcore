@@ -5,17 +5,24 @@
       "longName": "no-restore",
       "shortName": ""
     },
-    "UseServer": {
-      "longName": "use-server"
+    "InteractivityPlatform": {
+      "longName": "interactivity",
+      "shortName": "int"
     },
-    "UseWebAssembly": {
-      "longName": "use-wasm"
+    "AllInteractive": {
+      "longName": "all-interactive"
+    },
+    "InteractivityLocation": {
+      "isHidden": true
     },
     "Empty": {
       "longName": "empty"
     },
     "IncludeSampleContent": {
       "isHidden": true
+    },
+    "UseLocalDB": {
+      "longName": "use-local-db"
     },
     "Framework": {
       "longName": "framework"
@@ -47,5 +54,8 @@
       "longName": "use-program-main",
       "shortName": ""
     }
-  }
+  },
+  "usageExamples": [
+    "-int auto --auth individual --use-local-db"
+  ]
 }

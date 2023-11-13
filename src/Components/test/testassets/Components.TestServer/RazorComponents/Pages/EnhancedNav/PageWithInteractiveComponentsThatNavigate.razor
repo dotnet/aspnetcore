@@ -32,11 +32,11 @@ else
     {
         if (string.Equals("server", RenderMode, StringComparison.OrdinalIgnoreCase))
         {
-            _renderMode = new ServerRenderMode(prerender: false);
+            _renderMode = new InteractiveServerRenderMode(prerender: false);
         }
         else if (string.Equals("webassembly", RenderMode, StringComparison.OrdinalIgnoreCase))
         {
-            _renderMode = new WebAssemblyRenderMode(prerender: false);
+            _renderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
         }
     }
 }

@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 
 namespace Microsoft.AspNetCore.Routing;

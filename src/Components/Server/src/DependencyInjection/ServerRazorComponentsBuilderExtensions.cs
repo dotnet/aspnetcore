@@ -25,7 +25,7 @@ public static class ServerRazorComponentsBuilderExtensions
     /// <param name="configure">A callback to configure <see cref="CircuitOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
     [RequiresUnreferencedCode("Server-side Blazor does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
-    public static IServerSideBlazorBuilder AddServerComponents(this IRazorComponentsBuilder builder, Action<CircuitOptions>? configure = null)
+    public static IServerSideBlazorBuilder AddInteractiveServerComponents(this IRazorComponentsBuilder builder, Action<CircuitOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
@@ -45,19 +45,24 @@ public static class ServerRazorComponentsBuilderExtensions
         public IServiceCollection Services { get; }
     }
 
-    private class CircuitEndpointProvider : RenderModeEndpointProvider
+    private class CircuitEndpointProvider(IServiceProvider services) : RenderModeEndpointProvider
     {
-        public CircuitEndpointProvider(IServiceProvider services)
-        {
-            Services = services;
-        }
-
-        public IServiceProvider Services { get; }
+        public IServiceProvider Services { get; } = services;
 
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(
             IComponentRenderMode renderMode,
             IApplicationBuilder applicationBuilder)
         {
+            if (renderMode is not InternalServerRenderMode)
+            {
+                if (renderMode is InteractiveServerRenderMode)
+                {
+                    throw new InvalidOperationException("Invalid render mode. Use AddInteractiveServerRenderMode() to configure the Server render mode.");
+                }
+
+                return Array.Empty<RouteEndpointBuilder>();
+            }
+
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
             endpointRouteBuilder.MapBlazorHub();
 
@@ -68,7 +73,7 @@ public static class ServerRazorComponentsBuilderExtensions
         {
             return renderMode switch
             {
-                ServerRenderMode _ or AutoRenderMode _ => true,
+                InteractiveServerRenderMode _ or InteractiveAutoRenderMode _ => true,
                 _ => false,
             };
         }

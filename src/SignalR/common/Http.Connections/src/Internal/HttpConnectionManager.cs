@@ -60,7 +60,7 @@ internal sealed partial class HttpConnectionManager
     /// Creates a connection without Pipes setup to allow saving allocations until Pipes are needed.
     /// </summary>
     /// <returns></returns>
-    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useAck = false)
+    internal HttpConnectionContext CreateConnection(HttpConnectionDispatcherOptions options, int negotiateVersion = 0, bool useStatefulReconnect = false)
     {
         string connectionToken;
         var id = MakeNewConnectionId();
@@ -78,7 +78,7 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useAck);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
 
         _connections.TryAdd(connectionToken, connection);
 

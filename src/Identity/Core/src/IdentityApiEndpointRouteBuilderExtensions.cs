@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -45,7 +44,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
         var timeProvider = endpoints.ServiceProvider.GetRequiredService<TimeProvider>();
         var bearerTokenOptions = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<BearerTokenOptions>>();
-        var emailSender = endpoints.ServiceProvider.GetRequiredService<IEmailSender>();
+        var emailSender = endpoints.ServiceProvider.GetRequiredService<IEmailSender<TUser>>();
         var linkGenerator = endpoints.ServiceProvider.GetRequiredService<LinkGenerator>();
 
         // We'll figure out a unique endpoint name based on the final route pattern during endpoint generation.
@@ -189,7 +188,6 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var finalPattern = ((RouteEndpointBuilder)endpointBuilder).RoutePattern.RawText;
             confirmEmailEndpointName = $"{nameof(MapIdentityApi)}-{finalPattern}";
             endpointBuilder.Metadata.Add(new EndpointNameMetadata(confirmEmailEndpointName));
-            endpointBuilder.Metadata.Add(new RouteNameMetadata(confirmEmailEndpointName));
         });
 
         routeGroup.MapPost("/resendConfirmationEmail", async Task<Ok>
@@ -216,8 +214,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                await emailSender.SendEmailAsync(resetRequest.Email, "Reset your password",
-                    $"Reset your password using the following code: {HtmlEncoder.Default.Encode(code)}");
+                await emailSender.SendPasswordResetCodeAsync(user, resetRequest.Email, HtmlEncoder.Default.Encode(code));
             }
 
             // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
@@ -343,7 +340,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.NotFound();
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         });
 
         accountGroup.MapPost("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
@@ -385,7 +382,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         });
 
         async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, HttpContext context, string email, bool isChange = false)
@@ -416,8 +413,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var confirmEmailUrl = linkGenerator.GetUriByName(context, confirmEmailEndpointName, routeValues)
                 ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
 
-            await emailSender.SendEmailAsync(email, "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(confirmEmailUrl)}'>clicking here</a>.");
+            await emailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(confirmEmailUrl));
         }
 
         return new IdentityEndpointsConventionBuilder(routeGroup);
@@ -456,14 +452,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         return TypedResults.ValidationProblem(errorDictionary);
     }
 
-    private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, ClaimsPrincipal claimsPrincipal, UserManager<TUser> userManager)
+    private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
         where TUser : class
     {
         return new()
         {
             Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
             IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
-            Claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value),
         };
     }
 

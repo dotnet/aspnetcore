@@ -51,20 +51,20 @@ internal class ComponentInfo
 
     private string GetRenderMode()
     {
-        if (RenderMode is ServerRenderMode { Prerender: var server })
+        if (RenderMode is InteractiveServerRenderMode { Prerender: var server })
         {
-            var size = (nameof(ServerRenderMode).Length - "RenderModeComparer".Length);
-            return $"RenderModeComparer = {nameof(ServerRenderMode)[0..size]}, Prerendered = {server}";
+            var size = (nameof(InteractiveServerRenderMode).Length - "RenderModeComparer".Length);
+            return $"RenderModeComparer = {nameof(InteractiveServerRenderMode)[0..size]}, Prerendered = {server}";
         }
-        if (RenderMode is WebAssemblyRenderMode { Prerender: var wasm })
+        if (RenderMode is InteractiveWebAssemblyRenderMode { Prerender: var wasm })
         {
-            var size = (nameof(WebAssemblyRenderMode).Length - "RenderModeComparer".Length);
-            return $"RenderModeComparer = {nameof(WebAssemblyRenderMode)[0..size]}, Prerendered = {wasm}";
+            var size = (nameof(InteractiveWebAssemblyRenderMode).Length - "RenderModeComparer".Length);
+            return $"RenderModeComparer = {nameof(InteractiveWebAssemblyRenderMode)[0..size]}, Prerendered = {wasm}";
         }
-        if (RenderMode is AutoRenderMode { Prerender: var auto })
+        if (RenderMode is InteractiveAutoRenderMode { Prerender: var auto })
         {
-            var size = (nameof(AutoRenderMode).Length - "RenderModeComparer".Length);
-            return $"RenderModeComparer = {nameof(AutoRenderMode)[0..size]}, Prerendered = {auto}";
+            var size = (nameof(InteractiveAutoRenderMode).Length - "RenderModeComparer".Length);
+            return $"RenderModeComparer = {nameof(InteractiveAutoRenderMode)[0..size]}, Prerendered = {auto}";
         }
 
         return "RenderModeComparer = Unknown, Prerendered = Unknown";

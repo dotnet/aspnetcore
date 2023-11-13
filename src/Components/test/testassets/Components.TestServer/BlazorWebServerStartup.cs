@@ -22,7 +22,7 @@ public class BlazorWebServerStartup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddRazorComponents()
-            .AddServerComponents();
+            .AddInteractiveServerComponents();
 
         // Since tests run in parallel, we use an ephemeral key provider to avoid filesystem
         // contention issues.
@@ -44,7 +44,7 @@ public class BlazorWebServerStartup
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<Root>()
-                    .AddServerRenderMode();
+                    .AddInteractiveServerRenderMode();
             });
         });
     }

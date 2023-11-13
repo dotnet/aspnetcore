@@ -1,9 +1,11 @@
 #nullable enable
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.AckMessageType = 8 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.CancelInvocationMessageType = 5 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.CloseMessageType = 7 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.CompletionMessageType = 3 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.InvocationMessageType = 1 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.PingMessageType = 6 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.SequenceMessageType = 9 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.StreamInvocationMessageType = 4 -> int
 const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.StreamItemMessageType = 2 -> int
 Microsoft.AspNetCore.SignalR.HubException
@@ -17,6 +19,10 @@ Microsoft.AspNetCore.SignalR.IInvocationBinder.GetReturnType(string! invocationI
 Microsoft.AspNetCore.SignalR.IInvocationBinder.GetStreamItemType(string! streamId) -> System.Type!
 Microsoft.AspNetCore.SignalR.ISignalRBuilder
 Microsoft.AspNetCore.SignalR.ISignalRBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.AckMessage(long sequenceId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.SequenceId.get -> long
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.SequenceId.set -> void
 Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage
 Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage.CancelInvocationMessage(string! invocationId) -> void
 Microsoft.AspNetCore.SignalR.Protocol.CloseMessage
@@ -72,6 +78,10 @@ Microsoft.AspNetCore.SignalR.Protocol.PingMessage
 Microsoft.AspNetCore.SignalR.Protocol.RawResult
 Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawResult(System.Buffers.ReadOnlySequence<byte> rawBytes) -> void
 Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawSerializedData.get -> System.Buffers.ReadOnlySequence<byte>
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage.SequenceId.get -> long
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage.SequenceId.set -> void
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage.SequenceMessage(long sequenceId) -> void
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.BindingFailure.get -> System.Runtime.ExceptionServices.ExceptionDispatchInfo!
 Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.Id.get -> string!

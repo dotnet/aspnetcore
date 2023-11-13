@@ -379,13 +379,13 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
   }
 
   # Minimum VS version to require.
-  $vsMinVersionReqdStr = '17.6'
+  $vsMinVersionReqdStr = '17.7'
   $vsMinVersionReqd = [Version]::new($vsMinVersionReqdStr)
 
   # If the version of msbuild is going to be xcopied,
   # use this version. Version matches a package here:
-  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/RoslynTools.MSBuild/versions/17.6.0-2
-  $defaultXCopyMSBuildVersion = '17.6.0-2'
+  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/RoslynTools.MSBuild/versions/17.8.1-2
+  $defaultXCopyMSBuildVersion = '17.8.1-2'
 
   if (!$vsRequirements) {
     if (Get-Member -InputObject $GlobalJson.tools -Name 'vs') {

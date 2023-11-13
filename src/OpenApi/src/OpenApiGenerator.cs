@@ -188,7 +188,7 @@ internal sealed class OpenApiGenerator
 
         if (eligibileAnnotations.Count == 0)
         {
-            GenerateDefaultResponses(eligibileAnnotations, responseType);
+            GenerateDefaultResponses(eligibileAnnotations, responseType!);
         }
 
         foreach (var annotation in eligibileAnnotations)
@@ -419,7 +419,7 @@ internal sealed class OpenApiGenerator
         {
             return (true, null, null);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
+        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
                 parameter.ParameterType == typeof(HttpContext) ||
                 parameter.ParameterType == typeof(HttpRequest) ||
                 parameter.ParameterType == typeof(HttpResponse) ||

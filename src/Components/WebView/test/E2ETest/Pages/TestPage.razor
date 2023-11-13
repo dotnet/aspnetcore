@@ -1,0 +1,21 @@
+﻿@page "/"
+
+<div class="my-component">
+    The count is <span id="counterValue">@counter</span>. <button @onclick="DoClick" id="incrementButton">Increment</button>
+</div>
+
+<div id="controlDiv">@controlValue</div>
+
+@code
+{
+    int controlValue; // used to control test flow
+
+    int counter;
+
+    void DoClick()
+    {
+        counter++;
+
+        controlValue = counter;
+    }
+}

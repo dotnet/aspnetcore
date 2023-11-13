@@ -228,9 +228,16 @@ export class HubConnection {
         await this.connection.start(this._protocol.transferFormat);
 
         try {
+            let version = this._protocol.version;
+            if (!this.connection.features.reconnect) {
+                // Stateful Reconnect starts with HubProtocol version 2, newer clients connecting to older servers will fail to connect due to
+                // the handshake only supporting version 1, so we will try to send version 1 during the handshake to keep old servers working.
+                version = 1;
+            }
+
             const handshakeRequest: HandshakeRequestMessage = {
                 protocol: this._protocol.name,
-                version: this._protocol.version,
+                version,
             };
 
             this._logger.log(LogLevel.Debug, "Sending handshake request.");
@@ -257,8 +264,8 @@ export class HubConnection {
                 throw this._stopDuringStartError;
             }
 
-            const useAck = this.connection.features.reconnect || false;
-            if (useAck) {
+            const useStatefulReconnect = this.connection.features.reconnect || false;
+            if (useStatefulReconnect) {
                 this._messageBuffer = new MessageBuffer(this._protocol, this.connection, this._statefulReconnectBufferSize);
                 this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer);
                 this.connection.features.resend = () => {

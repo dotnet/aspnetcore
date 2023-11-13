@@ -1,0 +1,17 @@
+﻿@page "/forms/non-enhanced-editform"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Non-enhanced editform</h2>
+
+<EditForm FormName="someform" Model="@this" method="POST" OnValidSubmit="() => _submitted = true">
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+}

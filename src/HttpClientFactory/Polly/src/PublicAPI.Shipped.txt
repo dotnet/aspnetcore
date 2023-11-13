@@ -1,7 +1,11 @@
 #nullable enable
+Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions
+Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions
+Microsoft.Extensions.Http.PolicyHttpMessageHandler
 Microsoft.Extensions.Http.PolicyHttpMessageHandler.PolicyHttpMessageHandler(Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage!>! policy) -> void
 Microsoft.Extensions.Http.PolicyHttpMessageHandler.PolicyHttpMessageHandler(System.Func<System.Net.Http.HttpRequestMessage!, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage!>!>! policySelector) -> void
 override Microsoft.Extensions.Http.PolicyHttpMessageHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+Polly.HttpRequestMessageExtensions
 static Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions.AddPolicyHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage!>! policy) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
 static Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions.AddPolicyHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Func<System.IServiceProvider!, System.Net.Http.HttpRequestMessage!, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage!>!>! policySelector) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
 static Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions.AddPolicyHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Func<System.IServiceProvider!, System.Net.Http.HttpRequestMessage!, string!, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage!>!>! policyFactory, System.Func<System.Net.Http.HttpRequestMessage!, string!>! keySelector) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
@@ -12,10 +16,6 @@ static Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions
 static Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions.AddPolicyRegistry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Polly.Registry.IPolicyRegistry<string!>!
 static Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions.AddPolicyRegistry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Polly.Registry.IPolicyRegistry<string!>! registry) -> Polly.Registry.IPolicyRegistry<string!>!
 static Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions.AddPolicyRegistry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<System.IServiceProvider!, Polly.Registry.IPolicyRegistry<string!>!>! configureRegistry) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Polly.HttpRequestMessageExtensions.GetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request) -> Polly.Context!
-static Polly.HttpRequestMessageExtensions.SetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request, Polly.Context! context) -> void
+static Polly.HttpRequestMessageExtensions.GetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request) -> Polly.Context?
+static Polly.HttpRequestMessageExtensions.SetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request, Polly.Context? context) -> void
 virtual Microsoft.Extensions.Http.PolicyHttpMessageHandler.SendCoreAsync(System.Net.Http.HttpRequestMessage! request, Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
-Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions
-Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions
-Microsoft.Extensions.Http.PolicyHttpMessageHandler
-Polly.HttpRequestMessageExtensions

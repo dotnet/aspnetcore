@@ -26,7 +26,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     /** The name of the protocol. This is used by SignalR to resolve the protocol between the client and server. */
     public readonly name: string = "messagepack";
     /** The version of the protocol. */
-    public readonly version: number = 1;
+    public readonly version: number = 2;
     /** The TransferFormat of the protocol. */
     public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 

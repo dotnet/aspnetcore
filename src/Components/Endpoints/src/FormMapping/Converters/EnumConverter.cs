@@ -6,18 +6,12 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
-internal class EnumConverter<TEnum> : FormDataConverter<TEnum> where TEnum : struct, Enum
+internal class EnumConverter<TEnum> : FormDataConverter<TEnum>, ISingleValueConverter<TEnum> where TEnum : struct, Enum
 {
-    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
-    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
-    internal override bool TryRead(ref FormDataReader reader, Type type, FormDataMapperOptions options, out TEnum result, out bool found)
+    public bool CanConvertSingleValue() => true;
+
+    public bool TryConvertValue(ref FormDataReader reader, string value, out TEnum result)
     {
-        found = reader.TryGetValue(out var value);
-        if (!found)
-        {
-            result = default;
-            return true;
-        }
         if (Enum.TryParse(value, ignoreCase: true, out result))
         {
             return true;
@@ -29,5 +23,19 @@ internal class EnumConverter<TEnum> : FormDataConverter<TEnum> where TEnum : str
             result = default;
             return false;
         }
+    }
+
+    [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
+    [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
+    internal override bool TryRead(ref FormDataReader reader, Type type, FormDataMapperOptions options, out TEnum result, out bool found)
+    {
+        found = reader.TryGetValue(out var value);
+        if (!found)
+        {
+            result = default;
+            return true;
+        }
+
+        return TryConvertValue(ref reader, value!, out result);
     }
 }

@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -220,6 +223,97 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
                 resultBuilder.Append(Encoding.UTF8.GetString(receiveBuffer, 0, bytesRead));
                 await Task.Delay(delayPerChunkMs);
             }
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async void StopsProcessingStreamingOutputFromPreviousRequestAfterEnhancedNav(bool duringEnhancedNavigation)
+    {
+        IWebElement originalH1Elem;
+
+        if (duringEnhancedNavigation)
+        {
+            Navigate($"{ServerPathBase}/nav");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+            Browser.Equal("Hello", () => originalH1Elem.Text);
+            Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
+        }
+        else
+        {
+            Navigate($"{ServerPathBase}/streaming");
+            originalH1Elem = Browser.Exists(By.TagName("h1"));
+        }
+
+        // Initial "waiting" state
+        Browser.Equal("Streaming Rendering", () => originalH1Elem.Text);
+        var getStatusText = () => Browser.Exists(By.Id("status"));
+        var getDisplayedItems = () => Browser.FindElements(By.TagName("li"));
+        var addItemsUrl = Browser.FindElement(By.Id("add-item-link")).GetDomProperty("href");
+        var endResponseUrl = Browser.FindElement(By.Id("end-response-link")).GetDomProperty("href");
+        Assert.Equal("Waiting for more...", getStatusText().Text);
+        Assert.Empty(getDisplayedItems());
+        Assert.StartsWith("http", addItemsUrl);
+
+        // Navigate away using enhanced nav, before the response is completed
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming with interactivity")).Click();
+        Browser.Equal("Streaming Rendering with Interactivity", () => originalH1Elem.Text);
+        var statusElem = Browser.FindElement(By.Id("status"));
+        Assert.Equal("Not streaming", statusElem.Text);
+
+        // Now if the earlier navigation produces more output, we do *not* add it to the page
+        var addItemsOutput = await new HttpClient().GetStringAsync(addItemsUrl);
+        Assert.Equal("Added item", addItemsOutput);
+        await Task.Delay(1000); // Make sure we would really have seen the UI change by now if it was going to
+        Browser.Equal("Not streaming", () => statusElem.Text); // It didn't get removed from the doc, nor was its text updated
+
+        // Tidy up
+        await new HttpClient().GetAsync(endResponseUrl);
+    }
+
+    [Fact]
+    public void CanStreamDirectlyIntoSectionContentConnectedToNonStreamingOutlet()
+    {
+        Navigate($"{ServerPathBase}/streaming-with-sections");
+        Browser.Equal("This is some streaming content", () => Browser.Exists(By.Id("streaming-message")).Text);
+    }
+
+    [Fact]
+    public async Task WorksWithVeryBriefStreamingDelays()
+    {
+        // First check it works in the browser
+        Navigate($"{ServerPathBase}/brief-streaming");
+        var header = Browser.Exists(By.Id("brief-streaming"));
+        for (var i = 1; i < 20; i++)
+        {
+            Browser.FindElement(By.LinkText("Load this page")).Click();
+
+            // Keep checking the same header to show this is always enhanced nav
+            Assert.Equal("Brief streaming", header.Text);
+
+            Browser.True(() =>
+            {
+                var loadCount = int.Parse(Browser.FindElement(By.Id("load-count")).Text, CultureInfo.InvariantCulture);
+                return loadCount >= i;
+            });
+        }
+
+        // That's not enough to be sure it was really correct, since it might
+        // work in the browser even if the SSR framing is emitted in the wrong
+        // place depending on exactly where it was emitted. To be sure, we'll
+        // also validate the HTML response directly.
+        var url = Browser.Url;
+        var httpClient = new HttpClient();
+        for (var i = 0; i < 100; i++)
+        {
+            // We expect to see the SSR framing marker right before the first <blazor-ssr>
+            var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Accept.Clear();
+            req.Headers.Add("accept", "text/html; blazor-enhanced-nav=on");
+            var response = await httpClient.SendAsync(req);
+            var html = await response.Content.ReadAsStringAsync();
+            Assert.Matches(new Regex(@"</html><!--[0-9a-f\-]{36}--><blazor-ssr>"), html);
         }
     }
 }

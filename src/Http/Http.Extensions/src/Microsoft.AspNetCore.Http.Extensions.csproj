@@ -34,6 +34,7 @@
     <!-- Exclude Blazor-specific form binding suppliers. -->
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormValueMapper.cs" LinkBase="SharedFormMapping" />
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormDataProvider.cs" LinkBase="SharedFormMapping" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\BrowserFileFromFormFile.cs" LinkBase="SharedFormMapping" />
   </ItemGroup>
 
   <ItemGroup>

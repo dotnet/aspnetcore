@@ -5,13 +5,13 @@
 
 @if (ServerIncrementAmount.HasValue)
 {
-    <TestContentPackage.Counter @rendermode="@(new ServerRenderMode(Prerender))" IncrementAmount="@ServerIncrementAmount.Value" IdSuffix="server" />
+    <TestContentPackage.Counter @rendermode="@(new InteractiveServerRenderMode(Prerender))" IncrementAmount="@ServerIncrementAmount.Value" IdSuffix="server" />
     <hr />
 }
 
 @if (WebAssemblyIncrementAmount.HasValue)
 {
-    <TestContentPackage.Counter @rendermode="@(new WebAssemblyRenderMode(Prerender))" IncrementAmount="@WebAssemblyIncrementAmount.Value" IdSuffix="wasm" />
+    <TestContentPackage.Counter @rendermode="@(new InteractiveWebAssemblyRenderMode(Prerender))" IncrementAmount="@WebAssemblyIncrementAmount.Value" IdSuffix="wasm" />
     <hr />
 }
 

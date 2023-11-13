@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components;
@@ -28,4 +29,8 @@ internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderCom
 
     private void CreateProtector(IDataProtectionProvider dataProtectionProvider) =>
         _protector = dataProtectionProvider.CreateProtector("Microsoft.AspNetCore.Components.Server.State");
+
+    public override bool SupportsRenderMode(IComponentRenderMode renderMode) =>
+        renderMode is null ||
+        renderMode is InteractiveServerRenderMode || renderMode is InteractiveAutoRenderMode;
 }
