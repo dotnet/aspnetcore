@@ -367,9 +367,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>76aeefb8230c897ff83eaaa7fd66adbe9c7e6b5f</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="9.0.0-alpha.1.23555.1">
+    <Dependency Name="System.Drawing.Common" Version="9.0.0-alpha.1.23562.1">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>63643f83990d9049fc02d69b470ae4c06a6874ef</Sha>
+      <Sha>0ed4cd05c53cb4b2c7ee696d131e978800cb52c3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.23558.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
