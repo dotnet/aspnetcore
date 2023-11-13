@@ -142,7 +142,7 @@ public class HostFilteringMiddleware
         internal MiddlewareConfigurationManager(IOptionsMonitor<HostFilteringOptions> _optionsMonitor, ILogger<HostFilteringMiddleware> logger)
         {
             _logger = logger;
-            // configuration will evaluate during first request
+            // Configuration will evaluate during first request
             _getChangeRequestObject = () => new(_optionsMonitor.CurrentValue);
             _optionsMonitor.OnChange(options =>
             {
@@ -150,6 +150,10 @@ public class HostFilteringMiddleware
                 {
                     var middlewareHostFilteringOptions = new MiddlewareHostFilteringOptions(options);
                     _getChangeRequestObject = () => middlewareHostFilteringOptions;
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.OptionsChanged(middlewareHostFilteringOptions.ToString());
+                    }
                 }
             });
         }
@@ -178,6 +182,10 @@ public class HostFilteringMiddleware
 
         private MiddlewareConfiguration ConfigureMiddleware(MiddlewareHostFilteringOptions options)
         {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.MiddlewareConfigurationStarted(options.ToString());
+            }
             var allowedHosts = new List<StringSegment>();
             if (
                 options.AllowedHosts?.Count > 0
@@ -229,6 +237,11 @@ public class HostFilteringMiddleware
         {
             public MiddlewareHostFilteringOptions(HostFilteringOptions options) : this(options.AllowedHosts.AsReadOnly(), options.AllowEmptyHosts, options.IncludeFailureMessage)
             {
+            }
+
+            public override string ToString()
+            {
+                return $"{{AllowedHosts = {string.Join("; ", AllowedHosts)}, AllowEmptyHosts = {AllowEmptyHosts}, IncludeFailureMessage = {IncludeFailureMessage}}}";
             }
         };
     }
