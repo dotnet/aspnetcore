@@ -3737,7 +3737,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Looks like this issue has been identified as a candidate for community contribution. If you're a community member, considering to send a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. It contains high level guidance about what what approach you can take to address this issue as well as references to some useful relevant material. Good luck with your endeavour and we're looking forward to your PR. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)"
+              "comment": "Looks like this issue has been identified as a candidate for community contribution. If you're considering sending a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)"
             }
           }
         ]
