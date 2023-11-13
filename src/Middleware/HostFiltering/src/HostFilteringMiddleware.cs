@@ -135,41 +135,41 @@ public class HostFilteringMiddleware
     internal sealed class MiddlewareConfigurationManager
     {
         private readonly object _syncObject = new();
-        private event Func<MiddlewareHostFilteringOptions>? _changeRequest;
-        private MiddlewareConfiguration _middlewareConfiguration;
+        private event Func<MiddlewareHostFilteringOptions>? _getChangeRequestObject;
+        private MiddlewareConfiguration? _middlewareConfiguration;
         private readonly ILogger<HostFilteringMiddleware> _logger;
 
         internal MiddlewareConfigurationManager(IOptionsMonitor<HostFilteringOptions> _optionsMonitor, ILogger<HostFilteringMiddleware> logger)
         {
             _logger = logger;
-            _middlewareConfiguration = ConfigureMiddleware(new(_optionsMonitor.CurrentValue));
+            // configuration will evaluate during first request
+            _getChangeRequestObject = () => new(_optionsMonitor.CurrentValue);
             _optionsMonitor.OnChange(options =>
             {
                 lock (_syncObject)
                 {
-                    var middlewareOptions = new MiddlewareHostFilteringOptions(options);
-                    _changeRequest = () => middlewareOptions;
+                    var middlewareHostFilteringOptions = new MiddlewareHostFilteringOptions(options);
+                    _getChangeRequestObject = () => middlewareHostFilteringOptions;
                 }
             });
         }
         internal MiddlewareConfiguration GetLatestMiddlewareConfiguration()
         {
-            if (_changeRequest is not null)
+            if (_getChangeRequestObject is not null)
             {
                 MiddlewareHostFilteringOptions options;
                 lock (_syncObject)
                 {
-                    options = _changeRequest();
-                    _changeRequest = null;
+                    options = _getChangeRequestObject();
+                    _getChangeRequestObject = null;
                 }
                 _middlewareConfiguration = ConfigureMiddleware(options);
-                return _middlewareConfiguration;
             }
-            if (_middlewareConfiguration.AllowAnyNonEmptyHost == true || _middlewareConfiguration.AllowedHosts?.Count > 0)
+            if (_middlewareConfiguration?.AllowAnyNonEmptyHost == true || _middlewareConfiguration?.AllowedHosts?.Count > 0)
             {
                 return _middlewareConfiguration;
             }
-            if (_middlewareConfiguration.AllowedHosts is null || _middlewareConfiguration.AllowedHosts?.Count == 0)
+            if (_middlewareConfiguration?.AllowedHosts is null || _middlewareConfiguration.AllowedHosts?.Count == 0)
             {
                 throw new InvalidOperationException("No allowed hosts were configured.");
             }

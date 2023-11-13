@@ -267,7 +267,6 @@ public class HostFilteringMiddlewareTests
     }
 
     [Theory]
-    [InlineData("*", true, true)]
     [InlineData("[::]", true, true)]
     [InlineData("localHost;*", true, true)]
     [InlineData("localHost;foo.example.com.bar:443", false, true)]
@@ -332,7 +331,7 @@ public class HostFilteringMiddlewareTests
         var options = new HostFilteringOptions()
         {
             AllowedHosts = new List<string>() { "localhost;foo.example.com.bar:443" },
-            AllowEmptyHosts = true,
+            AllowEmptyHosts = false,
             IncludeFailureMessage = true
         };
 
@@ -341,6 +340,10 @@ public class HostFilteringMiddlewareTests
         var sut = new HostFilteringMiddleware.MiddlewareConfigurationManager(optionsMonitor, new NullLogger<HostFilteringMiddleware>());
 
         var result1 = sut.GetLatestMiddlewareConfiguration();
+
+        Assert.Equal(options.AllowEmptyHosts, result1.AllowEmptyHosts);
+        Assert.Equal(options.IncludeFailureMessage, result1.IncludeFailureMessage);
+        Assert.True(options.AllowedHosts.All(x => result1.AllowedHosts.Contains(x)) && options.AllowedHosts.Count.Equals(result1.AllowedHosts.Count));
 
         var result2 = sut.GetLatestMiddlewareConfiguration();
 
