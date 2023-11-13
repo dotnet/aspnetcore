@@ -74,14 +74,16 @@ app.MapGet("/", TestAction);
         Assert.Equal(originalAnotherCustomQueryParam, httpContext.Items["anotherCustomInput"]);
     }
 
-    [Fact]
-    public async Task RequestDelegatePopulatesFromHeaderParameter_FromParameterList()
+    [Theory]
+    [InlineData("ParameterListFromHeader")]
+    [InlineData("ParameterListFromHeaderWithProperties")]
+    public async Task RequestDelegatePopulatesFromHeaderParameter_FromParameterList(string type)
     {
         const string customHeaderName = "X-Custom-Header";
         const int originalHeaderParam = 42;
 
-        var source = """
-static void TestAction([AsParameters] ParameterListFromHeader args)
+        var source = $$"""
+static void TestAction([AsParameters] {{type}} args)
 {
     args.HttpContext.Items.Add("input", args.Value);
 }
