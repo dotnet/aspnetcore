@@ -560,11 +560,45 @@ public class ExceptionHandlerTest
 
         // Act
         await host.StartAsync();
-        var server = host.GetTestServer();
+        using var server = host.GetTestServer();
         var response = await server.CreateClient().GetAsync(string.Empty);
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Equal($"{nameof(TestExceptionHandler)}: Test exception", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task UsingExceptionHandler_HandlesExceptionHandlerWithFalseFallbackSet_RethrowsOriginalExceptionAndLogs()
+    {
+        // Arrange
+        DiagnosticListener diagnosticListener = null;
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder.ConfigureServices(services =>
+                {
+                    services.AddExceptionHandler<TestExceptionHandler>();
+                });
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                        app.UseExceptionHandler();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
+                    });
+            }).Build();
+
+        // Act
+        await host.StartAsync();
+        using var server = host.GetTestServer();
+        var exception = await Assert.ThrowsAsync<Exception>(async () => await server.CreateClient().GetAsync("/fail"));
+
+        Assert.Equal("Test exception", exception.Message);
     }
 
     [Fact]
@@ -1005,6 +1039,10 @@ public class ExceptionHandlerTest
     {
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
+            if (httpContext.Request.Path.StartsWithSegments("/fail"))
+            {
+                return false;
+            }
             httpContext.Response.ContentType = "text/plain";
             httpContext.Response.StatusCode = 500;
             await httpContext.Response.WriteAsync($"{nameof(TestExceptionHandler)}: {exception.Message}", cancellationToken: cancellationToken);

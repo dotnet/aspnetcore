@@ -188,7 +188,12 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 }
                 else
                 {
-                    handled = await _problemDetailsService!.TryWriteAsync(new()
+                    if (_problemDetailsService is null)
+                    {
+                        throw new InvalidOperationException(Resources.ExceptionHandlerOptions_NotConfiguredCorrectly);
+                    }
+
+                    handled = await _problemDetailsService.TryWriteAsync(new()
                     {
                         HttpContext = context,
                         AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
