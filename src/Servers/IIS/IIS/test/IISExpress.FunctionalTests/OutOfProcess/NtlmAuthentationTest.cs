@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre;Windows.Amd64.VS2022.Pre.Open;")]
 public class NtlmAuthenticationTests : IISFunctionalTestBase
 {
     // Test only runs on IISExpress today as our CI machines do not have

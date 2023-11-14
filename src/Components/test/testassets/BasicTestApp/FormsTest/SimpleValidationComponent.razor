@@ -1,37 +1,42 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
-    <DataAnnotationsValidator />
+@if (!removeForm)
+{
+    <EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
+        <DataAnnotationsValidator />
 
-    <p class="user-name">
-        User name: <input @bind="UserName" class="@context.FieldCssClass(() => UserName)" />
-    </p>
-    <p class="accepts-terms">
-        Accept terms: <input type="checkbox" @bind="AcceptsTerms" class="@context.FieldCssClass(() => AcceptsTerms)" />
-    </p>
+        <p class="user-name">
+            User name: <input @bind="UserName" class="@context.FieldCssClass(() => UserName)" />
+        </p>
+        <p class="accepts-terms">
+            Accept terms: <input type="checkbox" @bind="AcceptsTerms" class="@context.FieldCssClass(() => AcceptsTerms)" />
+        </p>
 
-    <button type="submit">Submit</button>
+        <button type="submit">Submit</button>
 
-    @* Could use <ValidationSummary /> instead, but this shows it can be done manually *@
-    <ul class="validation-errors">
-        @foreach (var message in context.GetValidationMessages())
-        {
-            <li class="validation-message">@message</li>
-        }
-    </ul>
-
-</EditForm>
+        @* Could use <ValidationSummary /> instead, but this shows it can be done manually *@
+        <ul class="validation-errors">
+            @foreach (var message in context.GetValidationMessages())
+            {
+                <li class="validation-message">@message</li>
+            }
+        </ul>
+    </EditForm>
+}
 
 @if (lastCallback != null)
 {
     <span id="last-callback">@lastCallback</span>
 }
 
+<p><button id="remove-form" @onclick="RemoveForm">Remove form</button></p>
+
 @code {
     protected virtual bool UseExperimentalValidator => false;
 
     string lastCallback;
+    bool removeForm;
 
     [Required(ErrorMessage = "Please choose a username")]
     public string UserName { get; set; }
@@ -48,5 +53,11 @@
     void HandleInvalidSubmit()
     {
         lastCallback = "OnInvalidSubmit";
+    }
+
+    void RemoveForm()
+    {
+        removeForm = true;
+        Thread.Sleep(1000); // To ensure we can dispatch another event before this completes
     }
 }

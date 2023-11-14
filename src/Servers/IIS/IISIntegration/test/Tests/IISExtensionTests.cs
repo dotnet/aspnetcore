@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre;Windows.Amd64.VS2022.Pre.Open;")]
 public class IISExtensionTests
 {
     [Fact]

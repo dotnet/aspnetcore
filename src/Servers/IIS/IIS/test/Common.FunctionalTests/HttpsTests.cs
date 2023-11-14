@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
 [SkipIfNotAdmin]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre;Windows.Amd64.VS2022.Pre.Open;")]
 public class ClientCertificateTests : IISFunctionalTestBase
 {
     private readonly ClientCertificateFixture _certFixture;
