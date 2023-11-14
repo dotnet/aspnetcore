@@ -52,6 +52,9 @@ namespace Microsoft.AspNetCore.Components
         internal bool IsRendererDisposed => _renderer?.Disposed
             ?? throw new InvalidOperationException("No renderer has been initialized.");
 
+        // Exists for 6.0/7.0 patch only. A different solution is used from .NET 8 onwards.
+        internal bool IsComponentDisposed() => _renderer?.IsComponentDisposed(_componentId) ?? false;
+
         /// <summary>
         /// Notifies the renderer that the component should be rendered.
         /// </summary>
