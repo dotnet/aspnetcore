@@ -169,11 +169,7 @@ public class HostFilteringMiddleware
                 }
                 _middlewareConfiguration = ConfigureMiddleware(options);
             }
-            if (_middlewareConfiguration?.AllowAnyNonEmptyHost == true || _middlewareConfiguration?.AllowedHosts?.Count > 0)
-            {
-                return _middlewareConfiguration;
-            }
-            if (_middlewareConfiguration?.AllowedHosts is null || _middlewareConfiguration.AllowedHosts?.Count == 0)
+            if (_middlewareConfiguration?.AllowAnyNonEmptyHost != true && (_middlewareConfiguration?.AllowedHosts is null || _middlewareConfiguration.AllowedHosts?.Count == 0))
             {
                 throw new InvalidOperationException("No allowed hosts were configured.");
             }
