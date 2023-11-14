@@ -199,6 +199,7 @@ public class HostFilteringMiddleware
             return new(false, options.AllowEmptyHosts, options.IncludeFailureMessage, allowedHosts.AsReadOnly());
         }
 
+        // returns false if any wildcards were found
         private static bool TryProcessHosts(IEnumerable<string> incoming, List<StringSegment> results)
         {
             foreach (var entry in incoming)
