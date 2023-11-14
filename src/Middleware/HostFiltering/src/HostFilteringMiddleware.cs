@@ -69,12 +69,14 @@ public class HostFilteringMiddleware
     private static Task HostValidationFailed(HttpContext context, MiddlewareConfiguration middlewareConfiguration)
     {
         context.Response.StatusCode = 400;
+
         if (middlewareConfiguration.IncludeFailureMessage)
         {
             context.Response.ContentLength = DefaultResponse.Length;
             context.Response.ContentType = "text/html";
             return context.Response.Body.WriteAsync(DefaultResponse, 0, DefaultResponse.Length);
         }
+
         return Task.CompletedTask;
     }
 
@@ -101,18 +103,14 @@ public class HostFilteringMiddleware
     [MethodImpl(MethodImplOptions.NoInlining)]
     private bool CheckHostInAllowList(IList<StringSegment>? allowedHosts, string host)
     {
-        if (allowedHosts is null)
-        {
-            return false;
-        }
-
-        if (HostString.MatchesAny(new StringSegment(host), allowedHosts))
+        if (allowedHosts is not null && HostString.MatchesAny(new StringSegment(host), allowedHosts))
         {
             _logger.AllowedHostMatched(host);
             return true;
         }
 
         _logger.NoAllowedHostMatched(host);
+
         return false;
     }
 
@@ -126,7 +124,9 @@ public class HostFilteringMiddleware
             _logger.RequestRejectedMissingHost(context.Request.Protocol);
             return false;
         }
+
         _logger.RequestAllowedMissingHost(context.Request.Protocol);
+
         return true;
     }
 
@@ -169,20 +169,24 @@ public class HostFilteringMiddleware
                 }
                 _middlewareConfiguration = ConfigureMiddleware(options);
             }
+
             if (_middlewareConfiguration?.AllowAnyNonEmptyHost != true && (_middlewareConfiguration?.AllowedHosts is null || _middlewareConfiguration.AllowedHosts?.Count == 0))
             {
                 throw new InvalidOperationException("No allowed hosts were configured.");
             }
+
             return _middlewareConfiguration;
         }
 
         private MiddlewareConfiguration ConfigureMiddleware(MiddlewareHostFilteringOptions options)
         {
+            var allowedHosts = new List<StringSegment>();
+
             if (_logger.IsEnabled(LogLevel.Debug))
             {
                 _logger.MiddlewareConfigurationStarted(options.ToString());
             }
-            var allowedHosts = new List<StringSegment>();
+
             if (
                 options.AllowedHosts?.Count > 0
                 && !TryProcessHosts(options.AllowedHosts, allowedHosts)
@@ -196,6 +200,7 @@ public class HostFilteringMiddleware
             {
                 _logger.AllowedHosts(string.Join("; ", allowedHosts));
             }
+
             return new(false, options.AllowEmptyHosts, options.IncludeFailureMessage, allowedHosts.AsReadOnly());
         }
 
