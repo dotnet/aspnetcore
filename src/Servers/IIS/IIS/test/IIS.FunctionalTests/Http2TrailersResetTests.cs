@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 /// on IIS Express even on the new Windows versions because IIS Express has its own outdated copy of IIS.
 /// </summary>
 [Collection(IISHttpsTestSiteCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre;Windows.Amd64.VS2022.Pre.Open;")]
 public class Http2TrailerResetTests : FunctionalTestsBase
 {
     private const string WindowsVersionForTrailers = "10.0.20238";

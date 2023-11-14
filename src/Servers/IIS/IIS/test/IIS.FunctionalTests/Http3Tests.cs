@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MsQuicSupported]
 [HttpSysHttp3Supported]
 [Collection(IISHttpsTestSiteCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre;Windows.Amd64.VS2022.Pre.Open;")]
 public class Http3Tests : FunctionalTestsBase
 {
     public Http3Tests(IISTestSiteFixture fixture)
