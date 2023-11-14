@@ -929,6 +929,39 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("210", () => rangeWithValueLast.GetDomProperty("value"));
         }
 
+        [Fact]
+        public async Task CannotSubmitEditFormSynchronouslyAfterItWasRemoved()
+        {
+            var appElement = MountSimpleValidationComponent();
+
+            var submitButtonFinder = By.CssSelector("button[type=submit]");
+            Browser.Exists(submitButtonFinder);
+
+            // Remove the form then immediately also submit it, so the server receives both
+            // the 'remove' and 'submit' commands (in that order) before it updates the UI
+            appElement.FindElement(By.Id("remove-form")).Click();
+
+            try
+            {
+                appElement.FindElement(submitButtonFinder).Click();
+            }
+            catch (NoSuchElementException)
+            {
+                // This should happen on WebAssembly because the form will be removed synchronously
+                // That means the test has passed
+                return;
+            }
+
+            // Wait for the removal to complete, which is intentionally delayed to ensure
+            // this test can submit a second instruction before the first is processed. Then
+            // wait a bit more to be really sure the second instruction was processed.
+            Browser.DoesNotExist(submitButtonFinder);
+            await Task.Delay(1000);
+
+            // Verify that the form submit event was not processed
+            Browser.DoesNotExist(By.Id("last-callback"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))

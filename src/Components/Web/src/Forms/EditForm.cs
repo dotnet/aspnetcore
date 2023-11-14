@@ -139,6 +139,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             Debug.Assert(_editContext != null);
 
+            // Exists for 6.0/7.0 patch only. A different solution is used from .NET 8 onwards.
+            if (IsComponentDisposed())
+            {
+                return;
+            }
+
             if (OnSubmit.HasDelegate)
             {
                 // When using OnSubmit, the developer takes control of the validation lifecycle
