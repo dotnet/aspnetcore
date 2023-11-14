@@ -310,64 +310,40 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
     /// <returns></returns>
     public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
     {
-        Dictionary<string, int>? destinations = null;
-        Dictionary<string, int>? corsPreflightDestinations = null;
-        KnownHttpMethodsJumpTableBuilder knowDestination = new();
-        KnownHttpMethodsJumpTableBuilder knownCorsDestinations = new();
+        List<KeyValuePair<string, int>>? destinations = null;
+        List<KeyValuePair<string, int>>? corsPreflightDestinations = null;
+        var corsPreflightExitDestination = exitDestination;
+
         for (var i = 0; i < edges.Count; i++)
         {
             // We create this data, so it's safe to cast it.
             var key = (EdgeKey)edges[i].State;
             var destination = edges[i].Destination;
+
             if (key.IsCorsPreflightRequest)
             {
-                if (!knownCorsDestinations.TrySet(key.HttpMethod, destination))
-                {
-                    corsPreflightDestinations ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                    corsPreflightDestinations.Add(key.HttpMethod, destination);
-                }
+                ProcessEdge(key.HttpMethod, destination, ref corsPreflightExitDestination, ref corsPreflightDestinations);
             }
             else
             {
-                if (!knowDestination.TrySet(key.HttpMethod, destination))
-                {
-                    destinations ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                    destinations.Add(key.HttpMethod, destination);
-                }
+                ProcessEdge(key.HttpMethod, destination, ref exitDestination, ref destinations);
             }
         }
 
-        int corsPreflightExitDestination = exitDestination;
-        if (corsPreflightDestinations != null && corsPreflightDestinations.TryGetValue(AnyMethod, out var matchesAnyVerb))
-        {
-            // If we have endpoints that match any HTTP method, use that as the exit.
-            corsPreflightExitDestination = matchesAnyVerb;
-            corsPreflightDestinations.Remove(AnyMethod);
-        }
-
-        if (destinations != null && destinations.TryGetValue(AnyMethod, out matchesAnyVerb))
-        {
-            // If we have endpoints that match any HTTP method, use that as the exit.
-            exitDestination = matchesAnyVerb;
-            destinations.Remove(AnyMethod);
-        }
-
-        var knownDestinationCount = knowDestination.Count();
-        if (knownDestinationCount + destinations?.Count == 1)
+        if (destinations?.Count == 1)
         {
             // If there is only a single valid HTTP method then use an optimized jump table.
             // It avoids unnecessary dictionary lookups with the method name.
-            var httpMethodDestination = knownDestinationCount == 1 ? knowDestination.Single() : destinations!.Single();
+            var httpMethodDestination = destinations[0];
             var method = httpMethodDestination.Key;
             var destination = httpMethodDestination.Value;
             var supportsCorsPreflight = false;
             var corsPreflightDestination = 0;
 
-            var hasKnownCorsDestination = knownCorsDestinations.Count() > 0;
-            if (hasKnownCorsDestination || corsPreflightDestinations?.Count > 0)
+            if (corsPreflightDestinations?.Count > 0)
             {
                 supportsCorsPreflight = true;
-                corsPreflightDestination = hasKnownCorsDestination ? knownCorsDestinations.Single().Value : corsPreflightDestinations!.Single().Value;
+                corsPreflightDestination = corsPreflightDestinations[0].Value;
             }
 
             return new HttpMethodSingleEntryPolicyJumpTable(
@@ -381,13 +357,23 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         else
         {
             return new HttpMethodDictionaryPolicyJumpTable(
-                exitDestination,
-                knowDestination.Build(exitDestination),
-                destinations,
-                knownCorsDestinations.Count() > 0 || corsPreflightDestinations?.Count > 0,
-                corsPreflightExitDestination,
-                knownCorsDestinations.Build(corsPreflightExitDestination),
-                corsPreflightDestinations);
+                new HttpMethodDestinationsLookup(destinations ?? new(), exitDestination),
+                corsPreflightDestinations != null ? new HttpMethodDestinationsLookup(corsPreflightDestinations, corsPreflightExitDestination) : null);
+        }
+
+        static void ProcessEdge(string httpMethod, int destination, ref int exitDestination, ref List<KeyValuePair<string, int>>? destinations)
+        {
+            // If we have endpoints that match any HTTP method, use that as the exit.
+            if (string.Equals(httpMethod, AnyMethod, StringComparison.OrdinalIgnoreCase))
+            {
+                exitDestination = destination;
+            }
+            else
+            {
+
+                destinations ??= new();
+                destinations.Add(KeyValuePair.Create(httpMethod, destination));
+            }
         }
     }
 
@@ -508,153 +494,6 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         public override string ToString()
         {
             return IsCorsPreflightRequest ? $"CORS: {HttpMethod}" : $"HTTP: {HttpMethod}";
-        }
-    }
-
-    [System.Runtime.CompilerServices.InlineArray(9)]
-    private struct BuildTable
-    {
-#pragma warning disable IDE0044 // Add readonly modifier
-#pragma warning disable IDE0051 // Remove unused private members
-        private int? _value0;
-#pragma warning restore IDE0051 // Remove unused private members
-#pragma warning restore IDE0044 // Add readonly modifier
-    }
-
-    internal struct KnownHttpMethodsJumpTableBuilder
-    {
-        private const int ConnectIndex = 0;
-        private const int DeleteIndex = 1;
-        private const int GetIndex = 2;
-        private const int HeadIndex = 3;
-        private const int OptionsIndex = 4;
-        private const int PatchIndex = 5;
-        private const int PostIndex = 6;
-        private const int PutIndex = 7;
-        private const int TraceIndex = 8;
-
-        private BuildTable _table;
-
-        public bool TrySet(string method, int destination)
-        {
-            if (method.Length < 3) // 3 == smallest known method
-            {
-                return false;
-            }
-            switch (method[0] | 0x20)
-            {
-                case 'c' when method.Equals(HttpMethods.Connect, StringComparison.OrdinalIgnoreCase):
-                    _table[ConnectIndex] = destination;
-                    return true;
-                case 'd' when method.Equals(HttpMethods.Delete, StringComparison.OrdinalIgnoreCase):
-                    _table[DeleteIndex] = destination;
-                    return true;
-                case 'g' when method.Equals(HttpMethods.Get, StringComparison.OrdinalIgnoreCase):
-                    _table[GetIndex] = destination;
-                    return true;
-                case 'h' when method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase):
-                    _table[HeadIndex] = destination;
-                    return true;
-                case 'o' when method.Equals(HttpMethods.Options, StringComparison.OrdinalIgnoreCase):
-                    _table[OptionsIndex] = destination;
-                    return true;
-                case 'p':
-                    if (method.Equals(HttpMethods.Put, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _table[PutIndex] = destination;
-                        return true;
-                    }
-                    else if (method.Equals(HttpMethods.Post, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _table[PostIndex] = destination;
-                        return true;
-                    }
-                    else if (method.Equals(HttpMethods.Patch, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _table[PatchIndex] = destination;
-                        return true;
-                    }
-                    break;
-                case 't' when method.Equals(HttpMethods.Trace, StringComparison.OrdinalIgnoreCase):
-                    _table[TraceIndex] = destination;
-                    return true;
-            };
-            return false;
-        }
-
-        public KnownHttpMethodsJumpTable Build(int exitDestination)
-        {
-            // These are hoisted because: https://github.com/dotnet/roslyn/issues/70738
-            var connectDestination = _table[ConnectIndex];
-            var deleteDestination = _table[DeleteIndex];
-            var getDestination = _table[GetIndex];
-            var headDestination = _table[HeadIndex];
-            var optionsDestination = _table[OptionsIndex];
-            var patchDestination = _table[PatchIndex];
-            var postDestination = _table[PostIndex];
-            var putDestination = _table[PutIndex];
-            var traceDestination = _table[TraceIndex];
-            return new KnownHttpMethodsJumpTable()
-            {
-                ConnectDestination = connectDestination ?? exitDestination,
-                DeleteDestination = deleteDestination ?? exitDestination,
-                GetDestination = getDestination ?? exitDestination,
-                HeadDestination = headDestination ?? exitDestination,
-                OptionsDestination = optionsDestination ?? exitDestination,
-                PatchDestination = patchDestination ?? exitDestination,
-                PostDestination = postDestination ?? exitDestination,
-                PutDestination = putDestination ?? exitDestination,
-                TraceDestination = traceDestination ?? exitDestination,
-            };
-        }
-
-        public KeyValuePair<string, int> Single()
-        {
-            int destinationsCount = 0;
-            int indexOfSingle = 0;
-            Span<int?> table = _table;
-            for (int i = 0; i < table.Length; i++)
-            {
-                if (table[i].HasValue)
-                {
-                    destinationsCount++;
-                    indexOfSingle = i;
-                }
-            }
-
-            if (destinationsCount != 1)
-            {
-                throw new InvalidOperationException();
-            }
-
-            var httpMethod = indexOfSingle switch
-            {
-                ConnectIndex => HttpMethods.Connect,
-                DeleteIndex => HttpMethods.Delete,
-                GetIndex => HttpMethods.Get,
-                HeadIndex => HttpMethods.Head,
-                OptionsIndex => HttpMethods.Options,
-                PatchIndex => HttpMethods.Patch,
-                PostIndex => HttpMethods.Post,
-                PutIndex => HttpMethods.Put,
-                TraceIndex => HttpMethods.Trace,
-                _ => throw new InvalidOperationException()
-            };
-            var destination = table[indexOfSingle]!.Value;
-            return new KeyValuePair<string, int>(httpMethod, destination);
-        }
-
-        public int Count()
-        {
-            int destinationsCount = 0;
-            foreach (var item in _table)
-            {
-                if (item.HasValue)
-                {
-                    destinationsCount++;
-                }
-            }
-            return destinationsCount;
         }
     }
 }
