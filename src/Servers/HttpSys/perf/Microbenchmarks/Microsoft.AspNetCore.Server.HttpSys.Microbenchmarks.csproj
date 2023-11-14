@@ -7,8 +7,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TieredCompilation>false</TieredCompilation>
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
-    <!-- Skip microbenchmarks until we get a net9.0 SDK: https://github.com/dotnet/aspnetcore/issues/50662 -->
-    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
   </PropertyGroup>
 
   <ItemGroup>

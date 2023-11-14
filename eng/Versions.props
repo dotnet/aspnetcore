@@ -277,12 +277,15 @@
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.17-servicing-22215-7</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>6.0.22-servicing-23424-15</MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>6.0.25-servicing-23523-15</MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version>7.0.11-servicing-23425-2</MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version>7.0.14-servicing-23523-16</MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension70x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension70x64Version>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension70x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension70x86Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version>8.0.0-rtm-23531-12</MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>
     <!-- 3rd party dependencies -->
     <AzureIdentityVersion>1.10.2</AzureIdentityVersion>
     <AngleSharpVersion>0.9.9</AngleSharpVersion>
