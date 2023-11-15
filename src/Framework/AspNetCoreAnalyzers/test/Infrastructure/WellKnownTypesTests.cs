@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -35,8 +36,11 @@ class Program
         Assert.Collection(diagnostics, d => Assert.Equal("TEST001", d.Id));
     }
 
-    [Fact]
-    public async Task ResolveAllWellKnownTypes_ToleratesDuplicateTypeNames()
+    [Theory]
+    [InlineData("ExternAssembly")]
+    [InlineData("SystemFoo")]
+    [InlineData("MicrosoftFoo")]
+    public async Task ResolveAllWellKnownTypes_ToleratesDuplicateTypeNames(string assemblyName)
     {
         // Arrange
         var source = TestSource.Read(@"
@@ -57,7 +61,7 @@ class Program
   """;
         // Act
         var project = TestDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, source.Source);
-        Stream assemblyStream = GetInMemoryAssemblyStreamForCode(referenceSource, "ExternAssembly", project.MetadataReferences.ToArray());
+        Stream assemblyStream = GetInMemoryAssemblyStreamForCode(referenceSource, assemblyName, project.MetadataReferences.ToArray());
         project = project.AddMetadataReference(MetadataReference.CreateFromStream(assemblyStream));
         var diagnostics = await Runner.GetDiagnosticsAsync(project);
 
