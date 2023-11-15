@@ -740,6 +740,12 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             _currentSegment = owner.Memory;
             _currentSegmentOwner = owner;
         }
+        else if (sizeHint <= MemoryPool<byte>.Shared.MaxBufferSize)
+        {
+            var owner = MemoryPool<byte>.Shared.Rent(sizeHint);
+            _currentSegment = owner.Memory;
+            _currentSegmentOwner = owner;
+        }
         else
         {
             _currentSegment = new byte[sizeHint];
