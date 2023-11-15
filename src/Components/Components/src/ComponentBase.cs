@@ -326,4 +326,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         // have to use "async void" and do their own exception handling in
         // the case where they want to start an async task.
     }
+
+    // Exists for 6.0/7.0 patch only. A different solution is used from .NET 8 onwards.
+    internal bool IsComponentDisposed() => _renderHandle.IsComponentDisposed();
 }

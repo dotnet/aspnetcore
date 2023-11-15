@@ -1119,4 +1119,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
         }
     }
+
+    // Exists for 6.0/7.0 patch only. A different solution is used from .NET 8 onwards.
+    internal bool IsComponentDisposed(int componentId)
+        => !_componentStateById.ContainsKey(componentId);
 }

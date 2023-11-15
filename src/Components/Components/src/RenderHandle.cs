@@ -70,4 +70,7 @@ public readonly struct RenderHandle
     {
         throw new InvalidOperationException("The render handle is not yet assigned.");
     }
+
+    // Exists for 6.0/7.0 patch only. A different solution is used from .NET 8 onwards.
+    internal bool IsComponentDisposed() => _renderer?.IsComponentDisposed(_componentId) ?? false;
 }
