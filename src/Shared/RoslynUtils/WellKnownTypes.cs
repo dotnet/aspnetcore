@@ -86,7 +86,7 @@ internal class WellKnownTypes
         return _lazyWellKnownTypes[index]!;
     }
 
-    // Look for types within well-known assemblies only.
+    // Filter for types within well-known (framework-owned) assemblies only.
     private INamedTypeSymbol? GetTypeByMetadataNameInTargetAssembly(string metadataName)
     {
         var types = _compilation.GetTypesByMetadataName(metadataName);
@@ -97,8 +97,8 @@ internal class WellKnownTypes
 
         foreach (var type in types)
         {
-            if (type.ContainingAssembly.Identity.Name.StartsWith("System", StringComparison.Ordinal)
-                || type.ContainingAssembly.Identity.Name.StartsWith("Microsoft", StringComparison.Ordinal))
+            if (type.ContainingAssembly.Identity.Name.StartsWith("System.", StringComparison.Ordinal)
+                || type.ContainingAssembly.Identity.Name.StartsWith("Microsoft.", StringComparison.Ordinal))
             {
                 return type;
             }
