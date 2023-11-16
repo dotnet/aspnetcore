@@ -3,6 +3,8 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, notifyEnhancedNavigationListners } from './NavigationUtils';
+import { ConsoleLogger } from '../Platform/Logging/Loggers';
+import { LogLevel } from '../Platform/Logging/Logger';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -31,6 +33,7 @@ Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts 
 different bundles that only contain minimal content.
 */
 
+const logger = new ConsoleLogger(LogLevel.Warning);
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
@@ -116,13 +119,26 @@ function onDocumentSubmit(event: SubmitEvent) {
       return;
     }
 
+    const submitter = event.submitter as HTMLButtonElement;
+
+    if ((submitter && submitter.formMethod && submitter.formMethod === 'dialog') ||
+      formElem.method === 'dialog') {
+      logger.log(LogLevel.Warning, 'Form cannot be enhanced when method = "dialog".');
+      return;
+    }
+
+    if ((submitter && submitter.formTarget && submitter.formTarget !== '_self') ||
+      formElem.target !== '_self') {
+      logger.log(LogLevel.Warning, 'Form cannot be enhanced when target is different from the default value "_self".');
+      return;
+    }
+
     event.preventDefault();
 
     let url = new URL(formElem.action);
     const fetchOptions: RequestInit = { method: formElem.method };
     const formData = new FormData(formElem);
-  
-    const submitter = event.submitter as HTMLButtonElement;
+   
     if (submitter) {
       if (submitter.name) {
         // Replicate the normal behavior of appending the submitter name/value to the form data
