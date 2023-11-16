@@ -68,6 +68,7 @@ public class TestRunner
             DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
             DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
             DisplayContents(Path.Combine(Options.DotnetRoot, "packs", "Microsoft.AspNetCore.App.Ref"));
+            DisplayContents(Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD"));
 
             return true;
         }
