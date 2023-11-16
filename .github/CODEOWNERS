@@ -10,7 +10,7 @@
 /.vscode/                                                                         @captainsafia
 /.github/                                                                         @dotnet/aspnet-build @wtgodbe
 /.github/*_TEMPLATE/                                                              @dotnet/aspnet-build @wtgodbe @mkArtakMSFT
-/.github/workflows/                                                               @dotnet/aspnet-build @wtgodbe @tratcher
+/.github/workflows/                                                               @dotnet/aspnet-build @wtgodbe
 /docs/                                                                            @captainsafia @mkArtakMSFT
 /eng/                                                                             @dotnet/aspnet-build @wtgodbe
 /eng/common/                                                                      @dotnet-maestro-bot
@@ -21,34 +21,31 @@
 /src/Caching/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @captainsafia @halter73 @mgravell
 /src/Components/                                                                  @dotnet/aspnet-blazor-eng
 /src/Components/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
-/src/DefaultBuilder/                                                              @tratcher @halter73
-/src/DefaultBuilder/**/PublicAPI.*Shipped.txt                                     @dotnet/aspnet-api-review @tratcher
+/src/DefaultBuilder/                                                              @halter73
+/src/DefaultBuilder/**/PublicAPI.*Shipped.txt                                     @dotnet/aspnet-api-review
 /src/Grpc/                                                                        @JamesNK @captainsafia @mgravell
 /src/Grpc/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @JamesNK @captainsafia @mgravell
-/src/Hosting/                                                                     @tratcher @halter73
-/src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher
-/src/Http/                                                                        @tratcher @BrennanConroy @halter73 @captainsafia
-/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @tratcher @BrennanConroy
+/src/Hosting/                                                                     @halter73
+/src/Hosting/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review
+/src/Http/                                                                        @BrennanConroy @halter73 @captainsafia
+/src/Http/**/PublicAPI.*Shipped.txt                                               @dotnet/aspnet-api-review @BrennanConroy
 /src/Http/Routing/                                                                @javiercn
 /src/Http/Routing/**/PublicAPI.*Shipped.txt                                       @dotnet/aspnet-api-review @javiercn
 /src/HttpClientFactory/                                                           @captainsafia @halter73
 /src/HttpClientFactory/**/PublicAPI.*Shipped.txt                                  @dotnet/aspnet-api-review @captainsafia @halter73
 /src/Installers/                                                                  @dotnet/aspnet-build @wtgodbe
 /src/JSInterop/                                                                   @dotnet/aspnet-blazor-eng
-/src/Middleware/                                                                  @tratcher @BrennanConroy
-/src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @tratcher @BrennanConroy
+/src/Middleware/                                                                  @BrennanConroy
+/src/Middleware/**/PublicAPI.*Shipped.txt                                         @dotnet/aspnet-api-review @BrennanConroy
 /src/Mvc/                                                                         @dotnet/minimal-apis
 /src/Mvc/Mvc.ApiExplorer                                                          @captainsafia @halter73 @brunolins16
 /src/Mvc/**/PublicAPI.*Shipped.txt                                                @dotnet/aspnet-api-review @dotnet/aspnet-blazor-eng
 /src/OpenApi                                                                      @captainsafia @dotnet/minimal-apis
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
-/src/Security/                                                                    @tratcher
-/src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review @tratcher
-/src/Servers/                                                                     @tratcher @halter73 @BrennanConroy @JamesNK @mgravell
-/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @tratcher @halter73 @BrennanConroy @JamesNK @mgravell
-/src/Shared/runtime/                                                              @tratcher
-/src/Shared/test/Shared.Tests/runtime/                                            @tratcher
+/src/Security/**/PublicAPI.*Shipped.txt                                           @dotnet/aspnet-api-review
+/src/Servers/                                                                     @halter73 @BrennanConroy @JamesNK @mgravell
+/src/Servers/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @halter73 @BrennanConroy @JamesNK @mgravell
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/SignalR/**/PublicAPI.*Shipped.txt                                            @dotnet/aspnet-api-review @BrennanConroy @halter73
 /src/submodules                                                                   @dotnet/aspnet-build @wtgodbe
