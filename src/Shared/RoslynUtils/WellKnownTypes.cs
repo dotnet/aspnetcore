@@ -90,11 +90,18 @@ internal class WellKnownTypes
     private INamedTypeSymbol? GetTypeByMetadataNameInTargetAssembly(string metadataName)
     {
         var types = _compilation.GetTypesByMetadataName(metadataName);
+        if (types.Length == 0)
+        {
+            return null;
+        }
+
         if (types.Length == 1)
         {
             return types[0];
         }
 
+        // Multiple types match the name. This is most likely caused by someone reusing the namespace + type name in their apps or libraries.
+        // Workaround this situation by prioritizing types in System and Microsoft assemblies.
         foreach (var type in types)
         {
             if (type.ContainingAssembly.Identity.Name.StartsWith("System.", StringComparison.Ordinal)
