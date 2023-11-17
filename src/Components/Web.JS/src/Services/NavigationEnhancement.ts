@@ -123,7 +123,7 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     if ((submitter && submitter.formMethod && submitter.formMethod === 'dialog') ||
       formElem.method === 'dialog') {
-      logger.log(LogLevel.Warning, 'Form cannot be enhanced when method = "dialog".');
+      logger.log(LogLevel.Warning, 'A form cannot be enhanced when its method is "dialog".');
       return;
     }
 
