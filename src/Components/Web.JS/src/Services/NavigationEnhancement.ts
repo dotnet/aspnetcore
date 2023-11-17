@@ -129,7 +129,7 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     if ((submitter && submitter.formTarget && submitter.formTarget !== '_self') ||
       formElem.target !== '_self') {
-      logger.log(LogLevel.Warning, 'Form cannot be enhanced when target is different from the default value "_self".');
+      logger.log(LogLevel.Warning, 'A form cannot be enhanced when its target is different from the default value "_self".');
       return;
     }
 
