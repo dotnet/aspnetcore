@@ -1371,12 +1371,66 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Fact]
     public void SubmitButtonFormmethodAttributeOverridesEnhancedFormMethod()
     {
-        GoTo("forms/form-submit-button-with-formmethod");
+        GoTo("forms/form-with-method-and-submit-button-with-formmethod/get/post");
         Browser.DoesNotExist(By.Id("submitted"));
 
         Browser.Exists(By.Id("submit-button")).Click();
 
         Browser.Equal("Form submitted!", () => Browser.Exists(By.Id("submitted")).Text);
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenMethodEqualsDialog()
+    {
+        GoTo("forms/form-with-method-and-submit-button-with-formmethod/dialog");
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of the form element because the default behavior is to stay on the page.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its method is \\\"dialog\\\"."));
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenFormmethodEqualsDialog()
+    {
+        GoTo("forms/form-with-method-and-submit-button-with-formmethod/get/dialog");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of the form element because the default behavior is to stay on the page.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its method is \\\"dialog\\\"."));
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenTargetIsNotEqualSelf()
+    {
+        GoTo("forms/form-with-target-and-submit-button-with-formtarget/_blank");
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of form element because the default behavior is to open a new browser tab and the form remains on the original tab.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenFormtargetIsNotEqualSelf()
+    {
+        GoTo("forms/form-with-target-and-submit-button-with-formtarget/_self/_blank");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of form element because the default behavior is to open a new browser tab and the form remains on the original tab.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
     }
 
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
