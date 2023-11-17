@@ -7,7 +7,7 @@ using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Timeouts;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 

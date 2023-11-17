@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 #if TESTUTILS
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 #else
 using System.Threading.Tasks.Extensions;
 #endif

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
 
@@ -47,6 +47,7 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/51770")]
     public async Task ConnectionClosedWithoutActiveRequestsOrGoAwayFIN()
     {
         var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

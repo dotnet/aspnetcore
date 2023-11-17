@@ -82,4 +82,6 @@ public sealed class RazorComponentsServiceOptions
             _temporaryRedirectionUrlValidityDuration = value;
         }
     }
+
+    internal string? JavaScriptInitializers { get; set; }
 }

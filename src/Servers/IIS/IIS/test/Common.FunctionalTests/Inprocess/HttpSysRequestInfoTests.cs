@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.HttpSys;
 
 #if !IIS_FUNCTIONALS

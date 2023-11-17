@@ -17,6 +17,8 @@ Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature
 Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature.TransportType.get -> Microsoft.AspNetCore.Http.Connections.HttpTransportType
 Microsoft.AspNetCore.Http.Connections.HttpConnectionContextExtensions
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AllowStatefulReconnects.get -> bool
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AllowStatefulReconnects.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.ApplicationMaxBufferSize.get -> long
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.ApplicationMaxBufferSize.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthorizationData.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizeData!>!

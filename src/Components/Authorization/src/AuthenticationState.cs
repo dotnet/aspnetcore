@@ -16,7 +16,8 @@ public class AuthenticationState
     /// <param name="user">A <see cref="ClaimsPrincipal"/> representing the user.</param>
     public AuthenticationState(ClaimsPrincipal user)
     {
-        User = user ?? throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(user);
+        User = user;
     }
 
     /// <summary>

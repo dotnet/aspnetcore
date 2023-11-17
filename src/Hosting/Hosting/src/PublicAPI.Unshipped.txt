@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.Extensions.Hosting.GenericHostWebHostBuilderExtensions.ConfigureSlimWebHost(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder!>! configure, System.Action<Microsoft.Extensions.Hosting.WebHostBuilderOptions!>! configureWebHostBuilder) -> Microsoft.Extensions.Hosting.IHostBuilder!

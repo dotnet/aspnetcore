@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenHandler.get -> Microsoft.IdentityModel.Tokens.TokenHandler!
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.TokenHandler.set -> void
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseSecurityTokenValidator.get -> bool
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.UseSecurityTokenValidator.set -> void

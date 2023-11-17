@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public sealed class UseCultureAttribute : BeforeAfterTestAttribute

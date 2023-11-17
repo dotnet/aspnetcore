@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 

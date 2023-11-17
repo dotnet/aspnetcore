@@ -143,6 +143,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.6.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x64" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.7.0.x86" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x64" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.8.0.x86" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
@@ -200,6 +202,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
+    <LatestPackageReference Include="Microsoft.Windows.CsWin32" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Mono.TextTemplating" />
     <LatestPackageReference Include="Moq" />

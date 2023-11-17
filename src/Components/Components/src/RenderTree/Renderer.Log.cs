@@ -63,5 +63,16 @@ public abstract partial class Renderer
                 HandlingEvent(logger, eventHandlerId, eventArgs?.GetType().Name ?? "null");
             }
         }
+
+        [LoggerMessage(6, LogLevel.Debug, "Skipping attempt to raise event {EventId} of type '{EventType}' because the component ID {ComponentId} was already disposed", EventName = "SkippingEventOnDisposedComponent", SkipEnabledCheck = true)]
+        public static partial void SkippingEventOnDisposedComponent(ILogger logger, int componentId, ulong eventId, string eventType);
+
+        public static void SkippingEventOnDisposedComponent(ILogger logger, int componentId, ulong eventHandlerId, EventArgs? eventArgs)
+        {
+            if (logger.IsEnabled(LogLevel.Debug)) // This is almost always false, so skip the evaluations
+            {
+                SkippingEventOnDisposedComponent(logger, componentId, eventHandlerId, eventArgs?.GetType().Name ?? "null");
+            }
+        }
     }
 }

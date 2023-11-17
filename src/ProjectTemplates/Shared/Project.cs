@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;

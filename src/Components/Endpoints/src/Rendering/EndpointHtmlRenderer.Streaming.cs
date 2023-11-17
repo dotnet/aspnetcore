@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -38,6 +39,11 @@ internal partial class EndpointHtmlRenderer
 
     public async Task SendStreamingUpdatesAsync(HttpContext httpContext, Task untilTaskCompleted, TextWriter writer)
     {
+        // Important: do not introduce any 'await' statements in this method above the point where we write
+        // the SSR framing markers, otherwise batches may be emitted before the framing makers, and then the
+        // response would be invalid. See the comment below indicating the point where we intentionally yield
+        // the sync context to allow SSR batches to begin being emitted.
+
         SetHttpContext(httpContext);
 
         if (_streamingUpdatesWriter is not null)
@@ -55,8 +61,11 @@ internal partial class EndpointHtmlRenderer
 
         try
         {
-            await writer.WriteAsync(_ssrFramingCommentMarkup);
-            await writer.FlushAsync(); // Make sure the initial HTML was sent
+            writer.Write(_ssrFramingCommentMarkup);
+            EmitInitializersIfNecessary(httpContext, writer);
+
+            // At this point we yield the sync context. SSR batches may then be emitted at any time.
+            await writer.FlushAsync(); 
             await untilTaskCompleted;
         }
         catch (NavigationException navigationException)
@@ -72,6 +81,18 @@ internal partial class EndpointHtmlRenderer
             await writer.FlushAsync(); // Important otherwise the client won't receive the error message, as we're about to fail the pipeline
             await _httpContext.Response.CompleteAsync();
             throw;
+        }
+    }
+
+    internal void EmitInitializersIfNecessary(HttpContext httpContext, TextWriter writer)
+    {
+        if (_options.JavaScriptInitializers != null &&
+            !IsProgressivelyEnhancedNavigation(httpContext.Request))
+        {
+            var initializersBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.JavaScriptInitializers));
+            writer.Write("<!--Blazor-Web-Initializers:");
+            writer.Write(initializersBase64);
+            writer.Write("-->");
         }
     }
 
@@ -272,7 +293,7 @@ internal partial class EndpointHtmlRenderer
     {
         // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
         var accept = request.Headers.Accept;
-        return accept.Count == 1 && string.Equals(accept[0]!, "text/html;blazor-enhanced-nav=on", StringComparison.Ordinal);
+        return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
     }
 
     private readonly struct ComponentIdAndDepth

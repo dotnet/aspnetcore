@@ -340,7 +340,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 return TypedResults.NotFound();
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         });
 
         accountGroup.MapPost("/info", async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>>
@@ -382,7 +382,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
                 }
             }
 
-            return TypedResults.Ok(await CreateInfoResponseAsync(user, claimsPrincipal, userManager));
+            return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         });
 
         async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, HttpContext context, string email, bool isChange = false)
@@ -452,14 +452,13 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         return TypedResults.ValidationProblem(errorDictionary);
     }
 
-    private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, ClaimsPrincipal claimsPrincipal, UserManager<TUser> userManager)
+    private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
         where TUser : class
     {
         return new()
         {
             Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
             IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
-            Claims = claimsPrincipal.Claims.ToDictionary(c => c.Type, c => c.Value),
         };
     }
 

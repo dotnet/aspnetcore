@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Antiforgery.RequireAntiforgeryTokenAttribute
-Microsoft.AspNetCore.Antiforgery.RequireAntiforgeryTokenAttribute.RequireAntiforgeryTokenAttribute(bool required = true) -> void
-Microsoft.AspNetCore.Antiforgery.RequireAntiforgeryTokenAttribute.RequiresValidation.get -> bool
-Microsoft.AspNetCore.Builder.AntiforgeryApplicationBuilderExtensions
-static Microsoft.AspNetCore.Builder.AntiforgeryApplicationBuilderExtensions.UseAntiforgery(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

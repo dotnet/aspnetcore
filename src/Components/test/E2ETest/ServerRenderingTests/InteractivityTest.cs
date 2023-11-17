@@ -5,7 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -229,7 +229,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         {
             Browser.Click(By.Id(addCounterLinkIds[i]));
             Browser.Equal("True", () => Browser.FindElement(By.Id($"is-interactive-{i}")).Text);
-            
+
             Browser.Click(By.Id($"increment-{i}"));
             Browser.Equal("1", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
@@ -285,7 +285,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
             Browser.Equal($"{i + 1}", () => Browser.FindElement(By.Id($"count-{i}")).Text);
         }
 
-        AssertBrowserLogDoesNotContainErrors();
+        AssertBrowserLogDoesNotContainErrors(entry => !entry.Message.Contains("Initializer"));
     }
 
     [Theory]
@@ -336,6 +336,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
 
         AssertBrowserLogDoesNotContainErrors();
+    }
+
+    private void EnableClassicInitializers(IWebDriver browser, bool skipNavigation)
+    {
+        if (!skipNavigation)
+        {
+            browser.Navigate().GoToUrl($"{new Uri(_serverFixture.RootUri, ServerPathBase)}/");
+        }
+        ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.setItem('enable-classic-initializers', 'true')");
     }
 
     [Theory]
@@ -1161,9 +1170,13 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         return entries.Any(entry => entry.Message.Contains(message));
     }
 
-    private void AssertBrowserLogDoesNotContainErrors()
+    private void AssertBrowserLogDoesNotContainErrors(Func<LogEntry, bool> filter = null)
     {
         var entries = Browser.Manage().Logs.GetLog(LogType.Browser);
+        if (filter != null)
+        {
+            entries = entries.Where(filter).ToArray().AsReadOnly();
+        }
         Assert.DoesNotContain(entries, entry => entry.Level == LogLevel.Severe);
     }
 

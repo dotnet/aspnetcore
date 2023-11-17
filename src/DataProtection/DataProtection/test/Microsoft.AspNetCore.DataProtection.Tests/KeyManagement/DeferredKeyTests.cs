@@ -5,7 +5,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;

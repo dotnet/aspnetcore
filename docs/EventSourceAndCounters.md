@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Authentication.Internal
 
 ## Automated Testing of EventSources
 
-EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.Testing`. An example test is below:
+EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.InternalTesting`. An example test is below:
 
 ```csharp
 // The base class MUST be used for EventSource testing because EventSources are global and parallel tests can cause issues.

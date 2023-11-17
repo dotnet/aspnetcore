@@ -152,7 +152,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
-            OperationDescriptor[] initialOperations = [];
+            RootComponentOperationBatch? initialOperationBatch = null;
             if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
             {
                 // In Blazor web, we wait for the JS side to tell us about the components available
@@ -161,7 +161,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 // We do it this way to ensure that the persistent component state is only used the first time
                 // the wasm runtime is initialized and is done in the same way for both webassembly and blazor
                 // web.
-                initialOperations = await InternalJSImportMethods.GetInitialComponentUpdate();
+                initialOperationBatch = await InternalJSImportMethods.GetInitialComponentUpdate();
             }
 
             var initializationTcs = new TaskCompletionSource();
@@ -173,7 +173,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = rootComponents.Count;
-                    var pendingRenders = new List<Task>(count + initialOperations.Length);
+                    var initialOperationCount = initialOperationBatch?.Operations.Length ?? 0;
+                    var pendingRenders = new List<Task>(count + initialOperationCount);
                     for (var i = 0; i < count; i++)
                     {
                         var rootComponent = rootComponents[i];
@@ -183,9 +184,9 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                             rootComponent.Selector));
                     }
 
-                    if (initialOperations != null)
+                    if (initialOperationBatch is not null)
                     {
-                        AddWebRootComponents(renderer, initialOperations, pendingRenders);
+                        AddWebRootComponents(renderer, initialOperationBatch, pendingRenders);
                     }
 
                     // Now we wait for all components to finish rendering.
@@ -206,13 +207,14 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private static void AddWebRootComponents(WebAssemblyRenderer renderer, OperationDescriptor[] operations, List<Task> pendingRenders)
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private static void AddWebRootComponents(WebAssemblyRenderer renderer, RootComponentOperationBatch operationBatch, List<Task> pendingRenders)
     {
         var webRootComponentManager = renderer.GetOrCreateWebRootComponentManager();
+        var operations = operationBatch.Operations;
         for (var i = 0; i < operations.Length; i++)
         {
-            var (operation, componentType, parameters) = operations[i];
+            var operation = operations[i];
             if (operation.Type != RootComponentOperationType.Add)
             {
                 throw new InvalidOperationException("All initial operations must be additions.");
@@ -220,9 +222,11 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
             pendingRenders.Add(webRootComponentManager.AddRootComponentAsync(
                 operation.SsrComponentId,
-                componentType!,
+                operation.Descriptor!.ComponentType,
                 operation.Marker?.Key,
-                parameters));
+                operation.Descriptor!.Parameters));
         }
+
+        WebAssemblyRenderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
     }
 }

@@ -3295,7 +3295,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.24"
+              "milestoneName": "6.0.26"
             }
           }
         ]
@@ -3339,51 +3339,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.13"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "release/8.0-rc2"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0-rc2 branch",
-        "actions": [
-          {
-            "name": "removeMilestone",
-            "parameters": {}
-          },
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "8.0-rc2"
+              "milestoneName": "7.0.15"
             }
           }
         ]
@@ -3427,7 +3383,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0.0"
+              "milestoneName": "8.0.1"
             }
           }
         ]
@@ -3743,6 +3699,45 @@
             "name": "addLabel",
             "parameters": {
               "label": "NativeAOT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "help wanted"
+              }
+            },
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "labeled"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Drop a comment when a help candidate issue is identified",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Looks like this issue has been identified as a candidate for community contribution. If you're considering sending a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)"
             }
           }
         ]

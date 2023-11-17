@@ -62,6 +62,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperation.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationBatch.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />

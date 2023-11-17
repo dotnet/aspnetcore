@@ -487,7 +487,7 @@ if [[ "$__CodeName" == "alpine" ]]; then
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
             -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
             -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" \
-            search 'llvm*-libs' | sort | tail -1 | sed 's/-[^-]*//2g')"
+            search 'llvm*-libs' | grep -E '^llvm' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
 
     # install all packages in one go

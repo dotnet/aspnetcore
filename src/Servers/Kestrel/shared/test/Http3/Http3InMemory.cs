@@ -26,7 +26,7 @@ using Microsoft.Extensions.Time.Testing;
 using static System.IO.Pipelines.DuplexPipe;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal class Http3InMemory
 {
