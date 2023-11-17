@@ -116,26 +116,28 @@ function onDocumentSubmit(event: SubmitEvent) {
       return;
     }
 
+    const method = event.submitter?.getAttribute('formmethod') || formElem.method;
+    if (method === 'dialog') {
+      console.warn('A form cannot be enhanced when its method is "dialog".');
+      return;
+    }
+
+    const target = event.submitter?.getAttribute('formtarget') || formElem.target;
+    if (target !== '' && target !== '_self') {
+      console.warn('A form cannot be enhanced when its target is different from the default value "_self".');
+      return;
+    }
+
     event.preventDefault();
 
-    let url = new URL(formElem.action);
-    const fetchOptions: RequestInit = { method: formElem.method };
+    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI); 
+    const fetchOptions: RequestInit = { method: method}; 
     const formData = new FormData(formElem);
-  
-    const submitter = event.submitter as HTMLButtonElement;
-    if (submitter) {
-      if (submitter.name) {
-        // Replicate the normal behavior of appending the submitter name/value to the form data
-        formData.append(submitter.name, submitter.value);
-      }
-      if (submitter.getAttribute("formaction") !== null) {
-        // Replicate the normal behavior of overriding action attribute of form element
-        url = new URL(submitter.formAction);
-      }
-      if (submitter.formMethod) {
-        // Replicate the normal behavior of overriding method attribute of form element
-        fetchOptions.method = submitter.formMethod;
-      }
+   
+    const submitterName = event.submitter?.getAttribute('name');
+    const submitterValue = event.submitter!.getAttribute('value');
+    if (submitterName && submitterValue) {
+      formData.append(submitterName, submitterValue);
     }
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
