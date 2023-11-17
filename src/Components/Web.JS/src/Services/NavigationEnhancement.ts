@@ -3,8 +3,6 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, notifyEnhancedNavigationListners } from './NavigationUtils';
-import { ConsoleLogger } from '../Platform/Logging/Loggers';
-import { LogLevel } from '../Platform/Logging/Logger';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -33,7 +31,6 @@ Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts 
 different bundles that only contain minimal content.
 */
 
-const logger = new ConsoleLogger(LogLevel.Warning);
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
@@ -119,39 +116,28 @@ function onDocumentSubmit(event: SubmitEvent) {
       return;
     }
 
-    const submitter = event.submitter as HTMLButtonElement;
-
-    if ((submitter && submitter.formMethod && submitter.formMethod === 'dialog') ||
-      formElem.method === 'dialog') {
-      logger.log(LogLevel.Warning, 'A form cannot be enhanced when its method is "dialog".');
+    const method = event.submitter?.getAttribute('formmethod') || formElem.method;
+    if (method === 'dialog') {
+      console.warn('A form cannot be enhanced when its method is "dialog".');
       return;
     }
 
-    if ((submitter && submitter.formTarget && submitter.formTarget !== '_self') ||
-      formElem.target !== '_self') {
-      logger.log(LogLevel.Warning, 'A form cannot be enhanced when its target is different from the default value "_self".');
+    const target = event.submitter?.getAttribute('formtarget') || formElem.target;
+    if (target !== '' && target !== '_self') {
+      console.warn('A form cannot be enhanced when its target is different from the default value "_self".');
       return;
     }
 
     event.preventDefault();
 
-    let url = new URL(formElem.action);
-    const fetchOptions: RequestInit = { method: formElem.method };
+    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI); 
+    const fetchOptions: RequestInit = { method: method}; 
     const formData = new FormData(formElem);
    
-    if (submitter) {
-      if (submitter.name) {
-        // Replicate the normal behavior of appending the submitter name/value to the form data
-        formData.append(submitter.name, submitter.value);
-      }
-      if (submitter.getAttribute("formaction") !== null) {
-        // Replicate the normal behavior of overriding action attribute of form element
-        url = new URL(submitter.formAction);
-      }
-      if (submitter.formMethod) {
-        // Replicate the normal behavior of overriding method attribute of form element
-        fetchOptions.method = submitter.formMethod;
-      }
+    const submitterName = event.submitter?.getAttribute('name');
+    const submitterValue = event.submitter!.getAttribute('value');
+    if (submitterName && submitterValue) {
+      formData.append(submitterName, submitterValue);
     }
 
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
