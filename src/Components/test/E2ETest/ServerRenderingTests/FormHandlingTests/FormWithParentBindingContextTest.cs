@@ -1389,7 +1389,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         // Check the warning
         var logs = Browser.GetBrowserLogs(LogLevel.Warning);
         Assert.True(logs.Count > 0);
-        Assert.Contains(logs, log => log.Message.Contains("Form cannot be enhanced when method = \\\"dialog\\\"."));
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its method is \\\"dialog\\\"."));
     }
 
     [Fact]
@@ -1403,7 +1403,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         // Check the warning
         var logs = Browser.GetBrowserLogs(LogLevel.Warning);
         Assert.True(logs.Count > 0);
-        Assert.Contains(logs, log => log.Message.Contains("Form cannot be enhanced when method = \\\"dialog\\\"."));
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its method is \\\"dialog\\\"."));
     }
 
     [Fact]
@@ -1416,7 +1416,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         // Check the warning
         var logs = Browser.GetBrowserLogs(LogLevel.Warning);
         Assert.True(logs.Count > 0);
-        Assert.Contains(logs, log => log.Message.Contains("Form cannot be enhanced when target is different from the default value \\\"_self\\\"."));
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
     }
 
     [Fact]
@@ -1430,7 +1430,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         // Check the warning
         var logs = Browser.GetBrowserLogs(LogLevel.Warning);
         Assert.True(logs.Count > 0);
-        Assert.Contains(logs, log => log.Message.Contains("Form cannot be enhanced when target is different from the default value \\\"_self\\\"."));
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
     }
 
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
