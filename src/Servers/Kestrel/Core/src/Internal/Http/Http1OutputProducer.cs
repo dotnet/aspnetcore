@@ -742,6 +742,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
         else if (sizeHint <= MemoryPool<byte>.Shared.MaxBufferSize)
         {
+            // fallback to ArrayPool instead of the passed in memory pool (default is PinnedBlockMemoryPool)
+            // PinnedBlockMemoryPool currently defaults to a low (4k) max buffer size while ArrayPool is 2G
             var owner = MemoryPool<byte>.Shared.Rent(sizeHint);
             _currentSegment = owner.Memory;
             _currentSegmentOwner = owner;
