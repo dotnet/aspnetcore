@@ -1,9 +1,0 @@
-﻿<h3>Large Component</h3>
-
-<p id="@Id">@content</p>
-
-@code {
-    [Parameter]
-    public string Id { get; set; }
-    private string content = new string('*', 50000);
-}

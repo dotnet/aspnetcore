@@ -1,5 +1,0 @@
-﻿{
-    "ConnectionString": "Server=localhost;Database=CacheTestDb;Trusted_Connection=True;",
-    "SchemaName": "dbo",
-    "TableName": "CacheTest"
-}

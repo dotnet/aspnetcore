@@ -1,3 +1,0 @@
-#nullable enable
-Microsoft.Extensions.ObjectPool.IResettable
-Microsoft.Extensions.ObjectPool.IResettable.TryReset() -> bool

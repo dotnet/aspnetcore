@@ -1,7 +1,0 @@
-{
-  "TimeoutInMilliseconds": 120000000,
-  "TimeoutAfterFirstFailureInMilliseconds": 20000000,
-  "GlobalBrowserOptions": {
-    "Headless": false
-  }
-}
