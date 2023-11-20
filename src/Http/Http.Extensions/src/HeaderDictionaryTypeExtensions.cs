@@ -132,18 +132,15 @@ public static class HeaderDictionaryTypeExtensions
         }
     }
 
-    private static readonly Dictionary<Type, object> KnownParsers = new()
-    {
-        { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(ContentRangeHeaderValue), new Func<string, ContentRangeHeaderValue?>(value => { return ContentRangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(MediaTypeHeaderValue), new Func<string, MediaTypeHeaderValue?>(value => { return MediaTypeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(RangeConditionHeaderValue), new Func<string, RangeConditionHeaderValue?>(value => { return RangeConditionHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue?>(value => { return RangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue?>(value => { return EntityTagHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { return HeaderUtilities.TryParseDate(value, out var result) ? result : null; }) },
-        { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
-    };
+    private static CacheControlHeaderValue? ParseCacheControlHeaderValue(string value) => CacheControlHeaderValue.TryParse(value, out var result) ? result : null;
+    private static ContentDispositionHeaderValue? ParseCacheContentDispositionHeaderValue(string value) => ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null;
+    private static ContentRangeHeaderValue? ParseCacheContentRangeHeaderValue(string value) => ContentRangeHeaderValue.TryParse(value, out var result) ? result : null;
+    private static MediaTypeHeaderValue? ParseCacheMediaTypeHeaderValue(string value) => MediaTypeHeaderValue.TryParse(value, out var result) ? result : null;
+    private static RangeConditionHeaderValue? ParseCacheRangeConditionHeaderValue(string value) => RangeConditionHeaderValue.TryParse(value, out var result) ? result : null;
+    private static RangeHeaderValue? ParseCacheRangeHeaderValue(string value) => RangeHeaderValue.TryParse(value, out var result) ? result : null;
+    private static EntityTagHeaderValue? ParseCacheEntityTagHeaderValue(string value) => EntityTagHeaderValue.TryParse(value, out var result) ? result : null;
+    private static DateTimeOffset? ParseCacheDateTimeOffset(string value) => HeaderUtilities.TryParseDate(value, out var result) ? result : null;
+    private static long? ParseCacheInt64(string value) => HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null;
 
     private static readonly Dictionary<Type, object> KnownListParsers = new()
     {
@@ -156,22 +153,49 @@ public static class HeaderDictionaryTypeExtensions
 
     internal static T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
     {
-        ArgumentNullException.ThrowIfNull(headers);
-
         var value = headers[name];
+        var tn = typeof(T).Name;
 
-        if (StringValues.IsNullOrEmpty(value))
+        object? temp = null;
+        switch (tn[0])
         {
-            return default(T);
+            case 'C' when typeof(T) == typeof(CacheControlHeaderValue):
+#pragma warning disable CS8974 // Converting method group to non-delegate type
+                temp = ParseCacheControlHeaderValue;
+                break;
+            case 'C' when typeof(T) == typeof(ContentDispositionHeaderValue):
+                temp = ParseCacheContentDispositionHeaderValue;
+                break;
+            case 'C' when typeof(T) == typeof(ContentRangeHeaderValue):
+                temp = ParseCacheContentRangeHeaderValue;
+                break;
+            case 'M' when typeof(T) == typeof(MediaTypeHeaderValue):
+                temp = ParseCacheMediaTypeHeaderValue;
+                break;
+            case 'R' when typeof(T) == typeof(RangeConditionHeaderValue):
+                temp = ParseCacheRangeConditionHeaderValue;
+                break;
+            case 'R' when typeof(T) == typeof(RangeHeaderValue):
+                temp = ParseCacheRangeHeaderValue;
+                break;
+            case 'E' when typeof(T) == typeof(EntityTagHeaderValue):
+                temp = ParseCacheEntityTagHeaderValue;
+                break;
+            case 'N' when typeof(T) == typeof(DateTimeOffset?):
+                temp = ParseCacheDateTimeOffset;
+                break;
+            case 'N' when typeof(T) == typeof(long?):
+                temp = ParseCacheInt64;
+                break;
+#pragma warning restore CS8974 // Converting method group to non-delegate type
+        }
+        if (temp is not null)
+        {
+            return ((Func<string, T>)temp)(value.ToString());
         }
 
-        if (KnownParsers.TryGetValue(typeof(T), out var temp))
-        {
-            var func = (Func<string, T>)temp;
-            return func(value.ToString());
-        }
 
-        return GetViaReflection<T>(value.ToString());
+        throw new InvalidOperationException();
     }
 
     internal static IList<T> GetList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
