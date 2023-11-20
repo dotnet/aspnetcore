@@ -1,0 +1,36 @@
+﻿@page "/multibyte-character-component/{renderModeString?}"
+@using TestContentPackage
+
+<h1>Page rendering component with multibyte type name</h1>
+
+@if (_renderMode is null)
+{
+    <p>
+        <b>Warning:</b> Render mode should be specified as a route parameter and have the value 'server' or 'webassembly'.
+    </p>
+
+    <p>
+        Defaulting to a null render mode.
+    </p>
+}
+
+<MûltibyteÇharacterCompoñent @rendermode="_renderMode" />
+
+@code {
+    private IComponentRenderMode? _renderMode;
+
+    [Parameter]
+    public string? RenderModeString { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (string.Equals("server", RenderModeString, StringComparison.OrdinalIgnoreCase))
+        {
+            _renderMode = RenderMode.InteractiveServer;
+        }
+        else if (string.Equals("webassembly", RenderModeString, StringComparison.OrdinalIgnoreCase))
+        {
+            _renderMode = RenderMode.InteractiveWebAssembly;
+        }
+    }
+}
