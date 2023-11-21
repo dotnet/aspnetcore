@@ -142,18 +142,29 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
 
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
   const absoluteUri = toAbsoluteUri(uri);
+  const pageLoadMechanism = currentPageLoadMechanism();
 
-  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    if (shouldUseClientSideRouting()) {
-      performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
-    } else {
-      performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
-    }
-  } else {
+  if (options.forceLoad || !isWithinBaseUriSpace(absoluteUri) || pageLoadMechanism === 'serverside-fullpageload') {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
     // we're unable to translate into absolute URIs.
+
+    // This is a change of behavior in that:
+    // * Before, if you had an interactive runtime with no router, but also you had disabled enhanced nav, we would
+    //   notify the interactive runtime about the navigation event even though we didn't actually load the new page
+    // * After, we don't bother notifying the interactive runtime (as we're about to unload the page) and we do a
+    //   full-page navigation
+    // Likewise if you were doing a traditional pre-.NET8 app and just didn't have an interactive router, then
+    // NavigateTo would not do anything (I think - didn't verify), whereas now it will do a full-page load.
     performExternalNavigation(uri, options.replaceHistoryEntry);
+  } else if (pageLoadMechanism === 'clientside-router') {
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+  } else if (pageLoadMechanism === 'serverside-enhanced') {
+    performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+  } else {
+    // Force a compile-time error if some other case needs to be handled in the future
+    const unreachable: never = pageLoadMechanism;
+    throw new Error(`Unsupported page load mechanism: ${unreachable}`);
   }
 }
 
@@ -287,7 +298,7 @@ async function notifyLocationChanged(interceptedLink: boolean, internalDestinati
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback && shouldUseClientSideRouting()) {
+  if (popStateCallback && currentPageLoadMechanism() !== 'serverside-enhanced') {
     await popStateCallback(state);
   }
 
@@ -303,9 +314,17 @@ function getInteractiveRouterNavigationCallbacks(): NavigationCallbacks | undefi
   return navigationCallbacks.get(interactiveRouterRendererId);
 }
 
-function shouldUseClientSideRouting() {
-  return hasInteractiveRouter() || !hasProgrammaticEnhancedNavigationHandler();
+function currentPageLoadMechanism(): PageLoadMechanism {
+  if (hasInteractiveRouter()) {
+    return 'clientside-router';
+  } else if (hasProgrammaticEnhancedNavigationHandler()) {
+    return 'serverside-enhanced';
+  } else {
+    return 'serverside-fullpageload';
+  }
 }
+
+type PageLoadMechanism = 'clientside-router' | 'serverside-enhanced' | 'serverside-fullpageload';
 
 // Keep in sync with Components/src/NavigationOptions.cs
 export interface NavigationOptions {
