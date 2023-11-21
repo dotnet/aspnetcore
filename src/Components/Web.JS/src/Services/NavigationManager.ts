@@ -148,14 +148,6 @@ function navigateToCore(uri: string, options: NavigationOptions, skipLocationCha
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
     // we're unable to translate into absolute URIs.
-
-    // This is a change of behavior in that:
-    // * Before, if you had an interactive runtime with no router, but also you had disabled enhanced nav, we would
-    //   notify the interactive runtime about the navigation event even though we didn't actually load the new page
-    // * After, we don't bother notifying the interactive runtime (as we're about to unload the page) and we do a
-    //   full-page navigation
-    // Likewise if you were doing a traditional pre-.NET8 app and just didn't have an interactive router, then
-    // NavigateTo would not do anything (I think - didn't verify), whereas now it will do a full-page load.
     performExternalNavigation(uri, options.replaceHistoryEntry);
   } else if (pageLoadMechanism === 'clientside-router') {
     performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
