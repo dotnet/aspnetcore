@@ -27,7 +27,6 @@ public class WebHostTests : LoggedTest
     [SkipNonHelix]
     [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
     [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/46616", Queues = "Debian.12.Arm64.Open;")]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
     public void HelixPlatform_QuicListenerIsSupported()
