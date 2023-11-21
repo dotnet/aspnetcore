@@ -26,8 +26,8 @@ internal class TypeNameHash
             written = typeNameBytes.Length;
         }
 
-        Span<byte> typeNameHashBytes = stackalloc byte[SHA1.HashSizeInBytes];
-        SHA1.HashData(typeNameBytes[..written], typeNameHashBytes);
+        Span<byte> typeNameHashBytes = stackalloc byte[SHA256.HashSizeInBytes];
+        SHA256.HashData(typeNameBytes[..written], typeNameHashBytes);
 
         return Convert.ToHexString(typeNameHashBytes);
     }
