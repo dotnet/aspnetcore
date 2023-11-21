@@ -1220,6 +1220,7 @@ public class StartupTests : IISFunctionalTestBase
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
     public Task WebConfigAppendsHostingStartup_InProcess() => WebConfigAppendsHostingStartup(HostingModel.InProcess);
 
+    // On helix retry list
     [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]

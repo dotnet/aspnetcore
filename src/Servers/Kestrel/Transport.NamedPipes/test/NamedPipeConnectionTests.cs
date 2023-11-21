@@ -14,6 +14,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
+    // On helix retry list
     [ConditionalFact]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {

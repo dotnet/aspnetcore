@@ -2667,6 +2667,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
+    // On helix retry list
     [Fact]
     public async Task ChangingUserNameDuringReconnectLogsWarning()
     {

@@ -417,6 +417,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
     }
 
+    // On helix retry list
     [Theory]
     [MemberData(nameof(ConnectionMiddlewareData))]
     public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
@@ -585,6 +586,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
+    // On helix retry list
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

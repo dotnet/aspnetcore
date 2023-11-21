@@ -19,6 +19,7 @@ using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
 
+// On helix retry list
 [Collection(nameof(NoParallelCollection))]
 public class Http3TlsTests : LoggedTest
 {
