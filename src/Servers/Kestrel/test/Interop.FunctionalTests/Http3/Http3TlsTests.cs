@@ -117,7 +117,6 @@ public class Http3TlsTests : LoggedTest
     [InlineData(ClientCertificateMode.NoCertificate)]
     [InlineData(ClientCertificateMode.DelayCertificate)]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/41131")]
     public async Task ClientCertificate_NoOrDelayed_Available_Ignored(ClientCertificateMode mode)
     {
         var builder = CreateHostBuilder(async context =>
