@@ -11,9 +11,9 @@ public class TypeNameHashTest
     // for any type with a valid name. We'll also do some basic sanity checking by ensuring
     // that the string representation of the hash has the expected length.
 
-    // We currently use a hex-encoded SHA1 hash, so there should be two characters per byte
+    // We currently use a hex-encoded SHA256 hash, so there should be two characters per byte
     // of encoded data.
-    private const int ExpectedHashLength = SHA1.HashSizeInBytes * 2;
+    private const int ExpectedHashLength = SHA256.HashSizeInBytes * 2;
 
     [Fact]
     public void CanComputeHashForTypeWithBasicName()
