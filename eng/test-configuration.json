@@ -6,8 +6,6 @@
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
     {"testName": {"contains": "ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent" }},
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
-    {"testName": {"contains": "Http3RequestTests"}},
-    {"testName": {"contains": "Http3TlsTests"}},
     {"testName": {"contains": "StreamPool_StreamAbortedOnClientAndServer_NotPooled"}},
     {"testName": {"contains": "TraceIdentifierIsUnique"}},
     {"testName": {"contains": "LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning"}},
