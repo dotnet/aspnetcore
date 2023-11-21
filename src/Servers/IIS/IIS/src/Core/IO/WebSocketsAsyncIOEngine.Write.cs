@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
@@ -32,7 +32,7 @@ internal partial class WebSocketsAsyncIOEngine
             _engine = engine;
         }
 
-        protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
+        protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
         {
             return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, &WriteCallback, (IntPtr)_thisHandle, out completionExpected);
         }

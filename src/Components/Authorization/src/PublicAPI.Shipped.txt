@@ -42,7 +42,9 @@ Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.Child
 Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider
 Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
+Microsoft.Extensions.DependencyInjection.CascadingAuthenticationStateServiceCollectionExtensions
 override Microsoft.AspNetCore.Components.Authorization.AuthorizeView.GetAuthorizeData() -> Microsoft.AspNetCore.Authorization.IAuthorizeData![]!
 override Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.OnInitialized() -> void
+static Microsoft.Extensions.DependencyInjection.CascadingAuthenticationStateServiceCollectionExtensions.AddCascadingAuthenticationState(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -94,9 +94,8 @@ public sealed class CngCbcAuthenticatedEncryptorConfiguration : AlgorithmConfigu
     {
         var factory = new CngCbcAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
         // Run a sample payload through an encrypt -> decrypt operation to make sure data round-trips properly.
-        using (var encryptor = factory.CreateAuthenticatedEncryptorInstance(Secret.Random(512 / 8), this))
-        {
-            encryptor.PerformSelfTest();
-        }
+        using var secret = Secret.Random(512 / 8);
+        using var encryptor = factory.CreateAuthenticatedEncryptorInstance(secret, this);
+        encryptor.PerformSelfTest();
     }
 }

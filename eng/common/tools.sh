@@ -310,7 +310,7 @@ function GetDotNetInstallScript {
       curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
         if command -v openssl &> /dev/null; then
           echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
-          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
+          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443 || true
         fi
         echo "Will now retry the same URL with verbose logging."
         with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
@@ -341,7 +341,12 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
-  _InitializeBuildToolFramework="net8.0"
+  # use override if it exists - commonly set by source-build
+  if [[ "${_OverrideArcadeInitializeBuildToolFramework:-x}" == "x" ]]; then
+    _InitializeBuildToolFramework="net8.0"
+  else
+    _InitializeBuildToolFramework="${_OverrideArcadeInitializeBuildToolFramework}"
+  fi
 }
 
 # Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116

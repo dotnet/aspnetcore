@@ -1,8 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.ISslStreamFeature
-Microsoft.AspNetCore.Server.Kestrel.Core.Features.ISslStreamFeature.SslStream.get -> System.Net.Security.SslStream!
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowHostHeaderOverride.get -> bool
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.AllowHostHeaderOverride.set -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName) -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions.ListenNamedPipe(string! pipeName, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> void
-Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.PipeName.get -> string?

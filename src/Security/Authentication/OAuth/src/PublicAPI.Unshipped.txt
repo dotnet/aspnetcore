@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.OAuthHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void

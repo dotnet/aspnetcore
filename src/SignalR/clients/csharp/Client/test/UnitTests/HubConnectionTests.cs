@@ -223,7 +223,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             // Use pause threshold to block FlushAsync when writing 100+ bytes
-            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false));
+            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false, resumeWriterThreshold: 50));
             var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
             await hubConnection.StartAsync().DefaultTimeout();

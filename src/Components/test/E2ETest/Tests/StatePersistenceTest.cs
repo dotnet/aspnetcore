@@ -45,7 +45,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     [InlineData(true, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
     [InlineData(true, typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
     [InlineData(true, typeof(InteractiveAutoRenderMode), (string)null)]
-    [InlineData(true, typeof(InteractiveAutoRenderMode), "AutoStreaming")]
+    // [InlineData(true, typeof(InteractiveAutoRenderMode), "AutoStreaming")] https://github.com/dotnet/aspnetcore/issues/50810
     [InlineData(false, typeof(InteractiveServerRenderMode), (string)null)]
     [InlineData(false, typeof(InteractiveServerRenderMode), "ServerStreaming")]
     [InlineData(false, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
