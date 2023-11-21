@@ -1,1 +1,3 @@
 #nullable enable
+~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.FallbackTestPseudoElement.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper.FallbackTestPseudoElement.set -> void
