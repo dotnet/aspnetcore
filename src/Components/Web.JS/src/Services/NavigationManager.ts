@@ -7,6 +7,7 @@ import { EventDelegator } from '../Rendering/Events/EventDelegator';
 import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
+import { Blazor } from '../GlobalExports';
 
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
@@ -312,7 +313,12 @@ function currentPageLoadMechanism(): PageLoadMechanism {
   } else if (hasProgrammaticEnhancedNavigationHandler()) {
     return 'serverside-enhanced';
   } else {
-    return 'serverside-fullpageload';
+    // For back-compat, in blazor.server.js or blazor.webassembly.js, we always behave as if there's an interactive
+    // router even if there isn't one attached. This preserves a niche case where people may call Blazor.navigateTo
+    // without a router and expect to receive a notification on the .NET side but no page load occurs.
+    // In blazor.web.js, we explicitly recognize the case where you have neither an interactive nor enhanced SSR router
+    // attached, and then handle Blazor.navigateTo by doing a full page load because that's more useful (issue #51636).
+    return Blazor._internal.isBlazorWeb ? 'serverside-fullpageload' : 'clientside-router';
   }
 }
 
