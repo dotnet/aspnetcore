@@ -11,7 +11,6 @@
     {"testName": {"contains": "StreamPool_StreamAbortedOnClientAndServer_NotPooled"}},
     {"testName": {"contains": "TraceIdentifierIsUnique"}},
     {"testName": {"contains": "LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning"}},
-    {"testName": {"contains": "ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug"}},
     {"testName": {"contains": "HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate"}},
     {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
