@@ -277,7 +277,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         {
             try
             {
-                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                var appAssembly = Assembly.GetEntryAssembly() ?? Assembly.Load(new AssemblyName(env.ApplicationName));
                 configuration.AddUserSecrets(appAssembly, optional: true, reloadOnChange: reloadOnChange);
             }
             catch (FileNotFoundException)

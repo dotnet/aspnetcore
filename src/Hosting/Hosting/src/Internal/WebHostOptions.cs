@@ -30,7 +30,7 @@ internal sealed class WebHostOptions
         PreferHostingUrls = WebHostUtilities.ParseBool(GetConfig(WebHostDefaults.PreferHostingUrlsKey));
 
         // Search the primary assembly and configured assemblies.
-        HostingStartupAssemblies = Split(ApplicationName, GetConfig(WebHostDefaults.HostingStartupAssembliesKey));
+        HostingStartupAssemblies = Split(GetHostingStartupAssemblyName(ApplicationName), GetConfig(WebHostDefaults.HostingStartupAssembliesKey));
         HostingStartupExcludeAssemblies = Split(GetConfig(WebHostDefaults.HostingStartupExcludeAssembliesKey));
 
         var timeout = GetConfig(WebHostDefaults.ShutdownTimeoutKey);
@@ -77,16 +77,29 @@ internal sealed class WebHostOptions
     private static IReadOnlyList<string> Split(string? value)
     {
         return value?.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            ?? Array.Empty<string>();
+            ?? [];
     }
 
     private static IReadOnlyList<string> Split(string applicationName, string? environment)
     {
         if (string.IsNullOrEmpty(environment))
         {
-            return new[] { applicationName };
+            return [applicationName];
         }
 
         return Split($"{applicationName};{environment}");
+    }
+
+    private static string GetHostingStartupAssemblyName(string applicationName)
+    {
+        try
+        {
+            _ = Assembly.Load(new AssemblyName(applicationName));
+            return applicationName;
+        }
+        catch
+        {
+            return Assembly.GetEntryAssembly()?.GetName().Name ?? "";
+        }
     }
 }
