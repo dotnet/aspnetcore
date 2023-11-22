@@ -29,6 +29,7 @@ internal sealed class MiddlewareConfigurationManager
             lock (_syncObject)
             {
                 _getChangeRequestObject = () => options;
+
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.OptionsChanged(GetLogMessageForHostFilteringOptions(options));
@@ -43,7 +44,14 @@ internal sealed class MiddlewareConfigurationManager
             HostFilteringOptions options;
             lock (_syncObject)
             {
-                options = _getChangeRequestObject();
+                var opt = _getChangeRequestObject();
+                // copy object to make ConfigureMiddleware atomic
+                options = new()
+                {
+                    AllowedHosts = new List<string>(opt.AllowedHosts),
+                    AllowEmptyHosts = opt.AllowEmptyHosts,
+                    IncludeFailureMessage = opt.IncludeFailureMessage
+                };
                 _getChangeRequestObject = null;
             }
             _middlewareConfiguration = ConfigureMiddleware(options);
