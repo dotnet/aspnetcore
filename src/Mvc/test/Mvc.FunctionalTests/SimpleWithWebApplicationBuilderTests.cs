@@ -147,6 +147,19 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
     }
 
     [Fact]
+    public async Task DefaultApplicationName_Is_Name_Of_EntryAssembly()
+    {
+        // Arrange
+        var expected = typeof(SimpleWebSiteWithWebApplicationBuilder.Program).Assembly.GetName().Name;
+
+        // Act
+        var content = await Client.GetStringAsync("http://localhost/appname");
+
+        // Assert
+        Assert.Equal(expected, content);
+    }
+
+    [Fact]
     public async Task Configuration_Can_Be_Overridden()
     {
         // Arrange
@@ -187,6 +200,25 @@ public class SimpleWithWebApplicationBuilderTests : IClassFixture<MvcTestFixture
 
         // Act
         var content = await client.GetStringAsync("http://localhost/environment");
+
+        // Assert
+        Assert.Equal(expected, content);
+    }
+
+    [Fact]
+    public async Task ApplicationName_Can_Be_Overridden()
+    {
+        // Arrange
+        var fixture = _fixture.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting(WebHostDefaults.ApplicationKey, "MyApp");
+        });
+
+        var expected = "MyApp";
+        using var client = fixture.CreateDefaultClient();
+
+        // Act
+        var content = await client.GetStringAsync("http://localhost/appname");
 
         // Assert
         Assert.Equal(expected, content);

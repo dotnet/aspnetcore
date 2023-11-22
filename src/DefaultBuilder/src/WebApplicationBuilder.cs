@@ -275,14 +275,12 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
 
         if (env.IsDevelopment() && env.ApplicationName is { Length: > 0 })
         {
-            try
+            var appAssembly = GetAppAssembly(env.ApplicationName);
+
+            // If the assembly cannot be found, so just skip it.
+            if (appAssembly is not null)
             {
-                var appAssembly = Assembly.GetEntryAssembly() ?? Assembly.Load(new AssemblyName(env.ApplicationName));
                 configuration.AddUserSecrets(appAssembly, optional: true, reloadOnChange: reloadOnChange);
-            }
-            catch (FileNotFoundException)
-            {
-                // The assembly cannot be found, so just skip it.
             }
         }
 
@@ -305,6 +303,18 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 }
             }
             return result;
+        }
+
+        static Assembly? GetAppAssembly(string applicationName)
+        {
+            try
+            {
+                return Assembly.Load(new AssemblyName(applicationName));
+            }
+            catch
+            {
+                return Assembly.GetEntryAssembly();
+            }
         }
     }
 
