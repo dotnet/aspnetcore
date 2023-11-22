@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -76,7 +77,7 @@ public static class MvcCoreServiceCollectionExtensions
         {
             manager = new ApplicationPartManager();
 
-            var entryAssemblyName = environment?.ApplicationName;
+            var entryAssemblyName = GetEntryAssemblyName(environment);
             if (string.IsNullOrEmpty(entryAssemblyName))
             {
                 return manager;
@@ -86,6 +87,24 @@ public static class MvcCoreServiceCollectionExtensions
         }
 
         return manager;
+
+        static string? GetEntryAssemblyName(IWebHostEnvironment? environment)
+        {
+            if (environment is null)
+            {
+                return null;
+            }
+
+            try
+            {
+                _ = Assembly.Load(new AssemblyName(environment.ApplicationName));
+                return environment.ApplicationName;
+            }
+            catch
+            {
+                return Assembly.GetEntryAssembly()?.GetName().Name;
+            }
+        }
     }
 
     private static T? GetServiceFromCollection<T>(IServiceCollection services)
