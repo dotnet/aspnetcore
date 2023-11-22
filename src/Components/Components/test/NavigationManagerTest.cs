@@ -797,7 +797,7 @@ public class NavigationManagerTest
         }
     }
 
-    // On helix retry list
+    [Repeat(100)]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {

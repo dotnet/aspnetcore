@@ -689,7 +689,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         await host.StopAsync().DefaultTimeout();
     }
 
-    // On helix retry list
+    [Repeat(100)]
     [Theory]
     [MemberData(nameof(SupportedSchemes))]
     public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)

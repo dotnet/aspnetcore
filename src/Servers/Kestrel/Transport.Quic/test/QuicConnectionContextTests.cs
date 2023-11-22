@@ -441,7 +441,7 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
     }
 
-    // On helix retry list
+    [Repeat(100)]
     [ConditionalFact]
     [MsQuicSupported]
     public async Task StreamPool_StreamAbortedOnClientAndServer_NotPooled()

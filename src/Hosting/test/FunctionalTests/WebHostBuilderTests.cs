@@ -14,7 +14,7 @@ public class WebHostBuilderTests : LoggedTest
     public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
             .WithTfms(Tfm.Default);
 
-    // On helix retry list
+    [Repeat(100)]
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]
     public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)

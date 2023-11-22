@@ -582,7 +582,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    // On helix retry list
+    [Repeat(100)]
     [Fact]
     public async Task TraceIdentifierIsUnique()
     {

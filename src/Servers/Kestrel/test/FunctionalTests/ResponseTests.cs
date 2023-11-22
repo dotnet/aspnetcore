@@ -417,7 +417,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
     }
 
-    // On helix retry list
+    [Repeat(100)]
     [Theory]
     [MemberData(nameof(ConnectionMiddlewareData))]
     public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
@@ -425,7 +425,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         // Attempt multiple connections to be extra sure the resets are consistently logged appropriately.
         const int numConnections = 10;
 
-        // There's not guarantee that the app even gets invoked in this test. The connection reset can be observed
+        // There's no guarantee that the app even gets invoked in this test. The connection reset can be observed
         // as early as accept.
         var testServiceContext = new TestServiceContext(LoggerFactory);
         await using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
@@ -586,7 +586,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    // On helix retry list
+    [Repeat(100)]
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

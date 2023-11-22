@@ -27,7 +27,6 @@ using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
 
-// On helix retry list
 [Collection(nameof(NoParallelCollection))]
 public class Http3RequestTests : LoggedTest
 {
@@ -524,7 +523,6 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-    // On helix retry list
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
     [MsQuicSupported]
@@ -591,7 +589,6 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-    // On helix retry list
     [ConditionalFact]
     [MsQuicSupported]
     public async Task POST_ServerAbortAfterWrite_ClientReceivesAbort()

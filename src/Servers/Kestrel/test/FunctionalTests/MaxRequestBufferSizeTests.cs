@@ -115,10 +115,9 @@ public class MaxRequestBufferSizeTests : LoggedTest
         }
     }
 
-    // On helix retry list
+    // On helix retry list - inherently flaky (trying to manipulate the state of the server's buffer)
     [Theory]
     [MemberData(nameof(LargeUploadData))]
-    // This is inherently flaky and is relying on helix retry to pass consistently
     public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
     {
         // Parameters
