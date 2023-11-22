@@ -308,9 +308,7 @@ internal sealed class ChunkingCookieManager
     }
 
     // Deletes unneeded cookie chunks, but not the primary cookie.
-#pragma warning disable CA1822 // Mark members as static - Shared src file
-    private void DeleteChunks(HttpContext context, IRequestCookieCollection requestCookies, CookieOptions options, string key, int startChunk, int endChunk)
-#pragma warning restore CA1822 // Mark members as static
+    private static void DeleteChunks(HttpContext context, IRequestCookieCollection requestCookies, CookieOptions options, string key, int startChunk, int endChunk)
     {
         // Don't pre-allocate, we don't trust the input.
         var keyValuePairs = new List<KeyValuePair<string, string>>();
