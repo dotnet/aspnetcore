@@ -168,7 +168,7 @@ internal sealed class ChunkingCookieManager
             if (requestChunks > 0)
             {
                 // If the cookie was previously chunked but no longer is, delete the chunks.
-                DeleteChunks(context, requestCookies, options, key, 1, requestChunks);
+                DeleteChunks(context, requestCookies, options, key, startChunk: 1, endChunk: requestChunks);
             }
 
             responseCookies.Append(key, value, options);
@@ -193,7 +193,7 @@ internal sealed class ChunkingCookieManager
             if (requestChunks > cookieChunkCount)
             {
                 // If the cookie was previously chunked but is now smaller, delete the chunks.
-                DeleteChunks(context, requestCookies, options, key, cookieChunkCount + 1, requestChunks);
+                DeleteChunks(context, requestCookies, options, key, startChunk: cookieChunkCount + 1, endChunk: requestChunks);
             }
 
             var keyValuePairs = new KeyValuePair<string, string>[cookieChunkCount + 1];
@@ -323,13 +323,16 @@ internal sealed class ChunkingCookieManager
                 break;
             }
 
-            keyValuePairs.Add(KeyValuePair.Create(string.Concat(key, "C", i.ToString(CultureInfo.InvariantCulture)), string.Empty));
+            keyValuePairs.Add(KeyValuePair.Create(subkey, string.Empty));
         }
 
-        context.Response.Cookies.Append(keyValuePairs.ToArray(), new CookieOptions(options)
+        if (keyValuePairs.Count > 0)
         {
-            Expires = DateTimeOffset.UnixEpoch,
-        });
+            context.Response.Cookies.Append(keyValuePairs.ToArray(), new CookieOptions(options)
+            {
+                Expires = DateTimeOffset.UnixEpoch,
+            });
+        }
     }
 }
 
