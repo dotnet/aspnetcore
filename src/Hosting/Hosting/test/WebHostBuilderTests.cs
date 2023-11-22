@@ -803,6 +803,24 @@ public class WebHostBuilderTests
 
     [Theory]
     [MemberData(nameof(DefaultWebHostBuilders))]
+    public void CustomApplicationName(IWebHostBuilder builder)
+    {
+        const string AppName = "MyApp";
+
+        using (var host = builder
+            .UseServer(new TestServer())
+            .UseStartup<Startup>()
+            .UseSetting(WebHostDefaults.ApplicationKey, AppName)
+            .Build())
+        {
+            var hostingEnv = host.Services.GetService<IHostEnvironment>();
+
+            Assert.Equal(AppName, hostingEnv.ApplicationName);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(DefaultWebHostBuilders))]
     public void Configure_SupportsNonStaticMethodDelegate(IWebHostBuilder builder)
     {
         using (var host = builder
