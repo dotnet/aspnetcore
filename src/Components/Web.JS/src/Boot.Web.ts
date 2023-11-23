@@ -38,6 +38,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   options = options || {};
   options.logLevel ??= LogLevel.Error;
   Blazor._internal.loadWebAssemblyQuicklyTimeout = 3000;
+  Blazor._internal.isBlazorWeb = true;
 
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.

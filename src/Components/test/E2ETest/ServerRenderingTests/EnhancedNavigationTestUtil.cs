@@ -32,4 +32,17 @@ public static class EnhancedNavigationTestUtil
 
     public static long GetScrollY(this IWebDriver browser)
         => Convert.ToInt64(((IJavaScriptExecutor)browser).ExecuteScript("return window.scrollY"), CultureInfo.CurrentCulture);
+
+    public static bool IsElementStale(IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
+    }
 }
