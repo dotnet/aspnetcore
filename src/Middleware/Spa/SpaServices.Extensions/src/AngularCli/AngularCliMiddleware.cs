@@ -23,8 +23,7 @@ internal static class AngularCliMiddleware
     public static void Attach(
         ISpaBuilder spaBuilder,
         string scriptName,
-        string finishedRegex,
-        int finishedRegexCount)
+        Regex[] finishedRegexes)
     {
         var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
         var sourcePath = spaBuilder.Options.SourcePath;
@@ -44,7 +43,7 @@ internal static class AngularCliMiddleware
         var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
         var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
         var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
-        var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, finishedRegex, finishedRegexCount, logger, diagnosticSource, applicationStoppingToken);
+        var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, finishedRegexes, logger, diagnosticSource, applicationStoppingToken);
 
         SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
         {
@@ -59,8 +58,13 @@ internal static class AngularCliMiddleware
     }
 
     private static async Task<Uri> StartAngularCliServerAsync(
-        string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, string finishedRegex, int finishedRegexCount, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
+        string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, Regex[] finishedRegexes, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
     {
+        if (finishedRegexes.Length == 0)
+        {
+            finishedRegexes = [new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout)];
+        }
+
         if (portNumber == default(int))
         {
             portNumber = TcpPortFinder.FindAvailablePort();
@@ -79,10 +83,10 @@ internal static class AngularCliMiddleware
         {
             try
             {
-                for (var i = 0; i < finishedRegexCount; i++)
+                foreach (var finishedRegex in finishedRegexes)
                 {
                     openBrowserLine = await scriptRunner.StdOut.WaitForMatch(
-                        new Regex(angularCliBuilderFinishedRegex, RegexOptions.None, RegexMatchTimeout));
+                        new Regex(finishedRegex, RegexOptions.None, RegexMatchTimeout));
                 }
             }
             catch (EndOfStreamException ex)
@@ -94,7 +98,9 @@ internal static class AngularCliMiddleware
             }
         }
 
-        var uri = new Uri(openBrowserLine.Groups[1].Value);
+        var uri = openBrowserLine.Groups.ContainsKey("openbrowser")
+            ? openBrowserLine.Groups["openbrowser"].Value
+            : new Uri(openBrowserLine.Groups[1].Value);
 
         // Even after the Angular CLI claims to be listening for requests, there's a short
         // period where it will give an error if you make a request too quickly

@@ -23,8 +23,7 @@ public static class AngularCliMiddlewareExtensions
     public static void UseAngularCliServer(
         this ISpaBuilder spaBuilder,
         string npmScript,
-        string finishedRegex = "open your browser on (http\\S+)",
-        int finishedRegexCount = 1)
+        Regex[] finishedRegexes = [new Regex("open your browser on (?<openbrowser>http\\S+)")])
     {
         ArgumentNullException.ThrowIfNull(spaBuilder);
 
@@ -35,6 +34,6 @@ public static class AngularCliMiddlewareExtensions
             throw new InvalidOperationException($"To use {nameof(UseAngularCliServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
         }
 
-        AngularCliMiddleware.Attach(spaBuilder, npmScript, finishedRegex, finishedRegexCount);
+        AngularCliMiddleware.Attach(spaBuilder, npmScript, finishedRegexes);
     }
 }
