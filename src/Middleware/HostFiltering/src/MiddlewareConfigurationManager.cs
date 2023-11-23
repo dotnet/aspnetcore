@@ -21,10 +21,7 @@ internal sealed class MiddlewareConfigurationManager
     {
         _logger = logger;
         _middlewareConfiguration = ConfigureMiddleware(_optionsMonitor.CurrentValue);
-        _optionsMonitor.OnChange(options =>
-        {
-            _middlewareConfiguration = ConfigureMiddleware(options);
-        });
+        _optionsMonitor.OnChange(options => _middlewareConfiguration = ConfigureMiddleware(options));
     }
     internal MiddlewareConfiguration GetLatestMiddlewareConfiguration()
     {
