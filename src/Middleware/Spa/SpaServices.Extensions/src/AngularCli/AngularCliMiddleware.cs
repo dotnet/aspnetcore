@@ -22,7 +22,9 @@ internal static class AngularCliMiddleware
 
     public static void Attach(
         ISpaBuilder spaBuilder,
-        string scriptName)
+        string scriptName,
+        string finishedRegex,
+        int finishedRegexCount)
     {
         var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
         var sourcePath = spaBuilder.Options.SourcePath;
@@ -42,7 +44,7 @@ internal static class AngularCliMiddleware
         var applicationStoppingToken = appBuilder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
         var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
         var diagnosticSource = appBuilder.ApplicationServices.GetRequiredService<DiagnosticSource>();
-        var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, logger, diagnosticSource, applicationStoppingToken);
+        var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, scriptName, pkgManagerCommand, devServerPort, finishedRegex, finishedRegexCount, logger, diagnosticSource, applicationStoppingToken);
 
         SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
         {
@@ -57,7 +59,7 @@ internal static class AngularCliMiddleware
     }
 
     private static async Task<Uri> StartAngularCliServerAsync(
-        string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
+        string sourcePath, string scriptName, string pkgManagerCommand, int portNumber, string finishedRegex, int finishedRegexCount, ILogger logger, DiagnosticSource diagnosticSource, CancellationToken applicationStoppingToken)
     {
         if (portNumber == default(int))
         {
@@ -77,8 +79,11 @@ internal static class AngularCliMiddleware
         {
             try
             {
-                openBrowserLine = await scriptRunner.StdOut.WaitForMatch(
-                    new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout));
+                for (var i = 0; i < finishedRegexCount; i++)
+                {
+                    openBrowserLine = await scriptRunner.StdOut.WaitForMatch(
+                        new Regex(angularCliBuilderFinishedRegex, RegexOptions.None, RegexMatchTimeout));
+                }
             }
             catch (EndOfStreamException ex)
             {

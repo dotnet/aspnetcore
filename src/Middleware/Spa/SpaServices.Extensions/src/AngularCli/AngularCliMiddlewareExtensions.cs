@@ -22,7 +22,9 @@ public static class AngularCliMiddlewareExtensions
     /// <param name="npmScript">The name of the script in your package.json file that launches the Angular CLI process.</param>
     public static void UseAngularCliServer(
         this ISpaBuilder spaBuilder,
-        string npmScript)
+        string npmScript,
+        string finishedRegex = "open your browser on (http\\S+)",
+        int finishedRegexCount = 1)
     {
         ArgumentNullException.ThrowIfNull(spaBuilder);
 
@@ -33,6 +35,6 @@ public static class AngularCliMiddlewareExtensions
             throw new InvalidOperationException($"To use {nameof(UseAngularCliServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
         }
 
-        AngularCliMiddleware.Attach(spaBuilder, npmScript);
+        AngularCliMiddleware.Attach(spaBuilder, npmScript, finishedRegex, finishedRegexCount);
     }
 }
