@@ -989,4 +989,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // Ensure we actually observed the new content, not just the presence of the element.
         return string.Equals(elements[0].Text, expectedText, StringComparison.Ordinal);
     };
+
+    private static bool IsElementStale(IWebElement element)
+        => EnhancedNavigationTestUtil.IsElementStale(element);
 }

@@ -1287,6 +1287,30 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void CanPerformNavigateToFromInteractiveEventHandler(bool suppressEnhancedNavigation, bool forceLoad)
+    {
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, suppressEnhancedNavigation);
+
+        // Get to the test page
+        Navigate($"{ServerPathBase}/interactivity/navigateto");
+        Browser.Equal("Interactive NavigateTo", () => Browser.FindElement(By.TagName("h1")).Text);
+        var originalNavElem = Browser.FindElement(By.TagName("nav"));
+
+        // Perform the navigation
+        Browser.Click(By.Id(forceLoad ? "perform-navigateto-force" : "perform-navigateto"));
+        Browser.True(() => Browser.Url.EndsWith("/nav", StringComparison.Ordinal));
+        Browser.Equal("Hello", () => Browser.FindElement(By.Id("nav-home")).Text);
+
+        // Verify the elements were preserved if and only if they should be
+        var shouldPreserveElements = !suppressEnhancedNavigation && !forceLoad;
+        Assert.Equal(shouldPreserveElements, !EnhancedNavigationTestUtil.IsElementStale(originalNavElem));
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         // Force a WebAssembly resource cache miss so that we can fall back to using server interactivity
