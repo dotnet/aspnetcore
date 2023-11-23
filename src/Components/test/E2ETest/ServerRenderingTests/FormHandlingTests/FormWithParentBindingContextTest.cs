@@ -1338,6 +1338,26 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    public void RadioButtonGetsResetAfterSubmittingEnhancedForm()
+    {
+        GoTo("forms/form-with-checkbox-and-radio-button");
+
+        Assert.False(Browser.Exists(By.Id("checkbox")).Selected);
+        Assert.False(Browser.Exists(By.Id("radio-button")).Selected);
+
+        Browser.Exists(By.Id("checkbox")).Click();
+        Browser.Exists(By.Id("radio-button")).Click();
+
+        Assert.True(Browser.Exists(By.Id("checkbox")).Selected);
+        Assert.True(Browser.Exists(By.Id("radio-button")).Selected);
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Assert.False(Browser.Exists(By.Id("checkbox")).Selected);
+        Assert.False(Browser.Exists(By.Id("radio-button")).Selected);
+    }
+
+    [Fact]
     public void SubmitButtonFormactionAttributeOverridesEnhancedFormAction()
     {
         GoTo("forms/form-submit-button-with-formaction");
