@@ -26,6 +26,7 @@ internal sealed class MiddlewareConfigurationManager
     internal MiddlewareConfiguration GetLatestMiddlewareConfiguration()
     {
         var config = _middlewareConfiguration;
+
         if (!config.AllowAnyNonEmptyHost && (config.AllowedHosts is null || config.AllowedHosts.Count == 0))
         {
             throw new InvalidOperationException("No allowed hosts were configured.");
@@ -76,6 +77,7 @@ internal sealed class MiddlewareConfigurationManager
                 results.Add(host);
             }
         }
+
         return true;
     }
 
