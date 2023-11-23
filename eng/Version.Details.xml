@@ -55,7 +55,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -179,15 +179,15 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Options" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="8.0.1-servicing.23571.29">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="8.0.1-servicing.23572.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23570.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
@@ -277,15 +277,15 @@
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -318,20 +318,20 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.1-servicing.23571.29">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.1-servicing.23572.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="8.0.1-servicing.23571.29">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="8.0.1-servicing.23572.10">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>21b90573de7d6e0c88acdd25dc116b6729fd65a7</Sha>
+      <Sha>72e5ae975785990e904372573c93dd661279f662</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22423.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
