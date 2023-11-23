@@ -69,6 +69,15 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void CanRenderInteractiveWebAssemblyComponentFromRazorClassLibraryThatIsNotExplicitlyReferenced()
+    {
+        Navigate($"{ServerPathBase}/not-explicitly-referenced-in-wasm-code");
+
+        // The element with id success is only rendered when webassembly has successfully loaded the component.
+        Browser.Exists(By.Id("success"));
+    }
+
+    [Fact]
     public void CanRenderInteractiveServerAndWebAssemblyComponentsAtTheSameTime()
     {
         // '3' and '5' configure the increment amounts.

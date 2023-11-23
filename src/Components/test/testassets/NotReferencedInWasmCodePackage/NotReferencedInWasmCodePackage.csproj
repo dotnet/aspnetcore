@@ -6,10 +6,6 @@
     <StaticWebAssetBasePath>_content/NotReferencedInWasmCodePackage</StaticWebAssetBasePath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
-  </PropertyGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
