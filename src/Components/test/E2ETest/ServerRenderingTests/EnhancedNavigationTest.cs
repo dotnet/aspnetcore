@@ -558,15 +558,5 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 
     private static bool IsElementStale(IWebElement element)
-    {
-        try
-        {
-            _ = element.Enabled;
-            return false;
-        }
-        catch (StaleElementReferenceException)
-        {
-            return true;
-        }
-    }
+        => EnhancedNavigationTestUtil.IsElementStale(element);
 }
