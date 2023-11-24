@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NotReferencedInWasmCodePackage\NotReferencedInWasmCodePackage.csproj" />
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
   </ItemGroup>
 
