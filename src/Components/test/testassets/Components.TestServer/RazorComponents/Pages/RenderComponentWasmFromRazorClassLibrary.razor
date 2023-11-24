@@ -1,0 +1,5 @@
+﻿@page "/not-explicitly-referenced-in-wasm-code"
+@using NotReferencedInWasmCodePackage
+<h3>RenderComponentWasmFromRazorClassLibrary</h3>
+
+<NotExplicitlyLoadedFromWasmCode @rendermode="RenderMode.InteractiveWebAssembly" />

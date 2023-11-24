@@ -1780,6 +1780,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Intern
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.InternalTesting.Tests", "src\Testing\test\Microsoft.AspNetCore.InternalTesting.Tests.csproj", "{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NotReferencedInWasmCodePackage", "src\Components\test\testassets\NotReferencedInWasmCodePackage\NotReferencedInWasmCodePackage.csproj", "{433F91E4-E39D-4EB0-B798-2998B3969A2C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10717,6 +10719,22 @@ Global
 		{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E}.Release|x64.Build.0 = Release|Any CPU
 		{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E}.Release|x86.ActiveCfg = Release|Any CPU
 		{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E}.Release|x86.Build.0 = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|arm64.Build.0 = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|x64.Build.0 = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Debug|x86.Build.0 = Debug|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|arm64.ActiveCfg = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|arm64.Build.0 = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|x64.ActiveCfg = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|x64.Build.0 = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|x86.ActiveCfg = Release|Any CPU
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -11596,6 +11614,7 @@ Global
 		{F232B503-D412-45EE-8B31-EFD46B9FA302} = {AA5ABFBC-177C-421E-B743-005E0FD1248B}
 		{B0A8E5D4-BC5A-448E-B222-431B6B2EB58E} = {05A169C7-4F20-4516-B10A-B13C5649D346}
 		{15D08EA7-8C63-45FB-8B4D-C5F8E43B433E} = {05A169C7-4F20-4516-B10A-B13C5649D346}
+		{433F91E4-E39D-4EB0-B798-2998B3969A2C} = {6126DCE4-9692-4EE2-B240-C65743572995}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
