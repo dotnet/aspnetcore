@@ -17,7 +17,6 @@ public static class StackExchangeRedisOutputCacheServiceCollectionExtensions
     /// Adds Redis output caching services to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <see cref="RedisOutputCacheOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddStackExchangeRedisOutputCache(this IServiceCollection services)
     {
