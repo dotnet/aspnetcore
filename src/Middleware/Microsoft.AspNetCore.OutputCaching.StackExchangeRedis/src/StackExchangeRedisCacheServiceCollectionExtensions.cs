@@ -17,6 +17,26 @@ public static class StackExchangeRedisOutputCacheServiceCollectionExtensions
     /// Adds Redis output caching services to the specified <see cref="IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <see cref="RedisOutputCacheOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddStackExchangeRedisOutputCache(this IServiceCollection services)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(services);
+
+        services.AddOptions();
+
+        // replace here (Add vs TryAdd) is intentional and part of test conditions
+        // long-form name qualification is because of the #if conditional; we'd need a matching #if around
+        // a using directive, which is messy
+        services.AddSingleton<AspNetCore.OutputCaching.IOutputCacheStore, RedisOutputCacheStoreImpl>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Redis output caching services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{RedisOutputCacheOptions}"/> to configure the provided
     /// <see cref="RedisOutputCacheOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
