@@ -666,7 +666,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(default(string), value) as Created<object>;
 
         //Assert
@@ -680,7 +680,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(string.Empty, value) as Created<object>;
 
         //Assert
@@ -694,7 +694,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act       
+        // Act
         var result = Results.Created(default(Uri), value) as Created<object>;
 
         //Assert
@@ -895,7 +895,7 @@ public partial class ResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-            
+
         // Act
         var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<object>;
 
@@ -1636,6 +1636,7 @@ public partial class ResultsTests
         (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
+        (() => Results.Gone(), typeof(Gone)),
         (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),

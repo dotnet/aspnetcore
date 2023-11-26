@@ -59,6 +59,12 @@ public static class TypedResults
         => new(authenticationSchemes: authenticationSchemes ?? Array.Empty<string>(), properties);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status410Gone"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="HttpResults.Gone"/> for the response.</returns>
+    public static Gone Gone() => ResultsCache.Gone;
+
+    /// <summary>
     /// Creates a <see cref="SignInHttpResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.
     /// </summary>
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
@@ -837,7 +843,7 @@ public static class TypedResults
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
     public static Created Created()
     {

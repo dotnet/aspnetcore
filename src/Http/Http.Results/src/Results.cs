@@ -59,6 +59,12 @@ public static partial class Results
         => TypedResults.Forbid(properties, authenticationSchemes);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status410Gone"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Gone() => TypedResults.Gone();
+
+    /// <summary>
     /// Creates an <see cref="IResult"/> that on execution invokes <see cref="AuthenticationHttpContextExtensions.SignInAsync(HttpContext, string?, ClaimsPrincipal, AuthenticationProperties?)" />.
     /// </summary>
     /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
@@ -767,7 +773,7 @@ public static partial class Results
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created()
         => TypedResults.Created();

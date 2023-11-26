@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Http.HttpResults.Gone
+Microsoft.AspNetCore.Http.HttpResults.Gone.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.Gone.StatusCode.get -> int
+static Microsoft.AspNetCore.Http.Results.Gone() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.Gone() -> Microsoft.AspNetCore.Http.HttpResults.Gone!
