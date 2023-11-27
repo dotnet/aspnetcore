@@ -118,7 +118,9 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
             propertyInfo.Set = (o, v) =>
             {
                 if (v != null || !_context.Settings.IgnoreNullValues)
+                {
                     GetSetMethod(field).Invoke(o, v);
+                }
             };
         }
 
