@@ -16,6 +16,12 @@ public sealed class GrpcJsonSettings
     public bool IgnoreDefaultValues { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that indicates whether fields received with null value will be set.
+    /// Default value is false.
+    /// </summary>
+    public bool IgnoreNullValues { get; set; }
+
+    /// <summary>
     /// Gets or sets a value that indicates whether <see cref="Enum"/> values are written as integers instead of strings.
     /// Default value is false.
     /// </summary>

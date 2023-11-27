@@ -3,6 +3,8 @@ Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.GrpcJsonSettings() -> void
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.IgnoreDefaultValues.get -> bool
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.IgnoreDefaultValues.set -> void
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.IgnoreNullValues.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.IgnoreNullValues.set -> void
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteEnumsAsIntegers.get -> bool
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteEnumsAsIntegers.set -> void
 Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.WriteIndented.get -> bool
