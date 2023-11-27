@@ -1858,7 +1858,6 @@ public abstract class ControllerBase
     /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
     /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
-    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
     [NonAction]
     public virtual ObjectResult Problem(
@@ -1866,8 +1865,7 @@ public abstract class ControllerBase
         string? instance = null,
         int? statusCode = null,
         string? title = null,
-        string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        string? type = null)
     {
         ProblemDetails problemDetails;
         if (ProblemDetailsFactory == null)
@@ -1891,14 +1889,6 @@ public abstract class ControllerBase
                 type: type,
                 detail: detail,
                 instance: instance);
-        }
-
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions.Add(extension);
-            }
         }
 
         return new ObjectResult(problemDetails)
@@ -1952,7 +1942,6 @@ public abstract class ControllerBase
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
     /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.
     /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
-    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
     [NonAction]
     [DefaultStatusCode(StatusCodes.Status400BadRequest)]
@@ -1962,8 +1951,7 @@ public abstract class ControllerBase
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        [ActionResultObjectValue] ModelStateDictionary? modelStateDictionary = null,
-        IDictionary<string, object?>? extensions = null)
+        [ActionResultObjectValue] ModelStateDictionary? modelStateDictionary = null)
     {
         modelStateDictionary ??= ModelState;
 
@@ -1982,7 +1970,7 @@ public abstract class ControllerBase
         }
         else
         {
-            validationProblem = ProblemDetailsFactory.CreateValidationProblemDetails(
+            validationProblem = ProblemDetailsFactory?.CreateValidationProblemDetails(
                 HttpContext,
                 modelStateDictionary,
                 statusCode: statusCode,
@@ -1990,14 +1978,6 @@ public abstract class ControllerBase
                 type: type,
                 detail: detail,
                 instance: instance);
-        }
-
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                validationProblem.Extensions.Add(extension);
-            }
         }
 
         if (validationProblem is { Status: 400 })

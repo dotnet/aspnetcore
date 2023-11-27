@@ -2395,27 +2395,6 @@ public class ControllerBaseTest
     }
 
     [Fact]
-    public void ValidationProblemDetails_UsesSpecifiedExtensions()
-    {
-        // Arrange
-        var options = GetApiBehaviorOptions();
-
-        var controller = new TestableController
-        {
-            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
-        };
-
-        // Act
-        var actionResult = controller.ValidationProblem(extensions: new Dictionary<string, object> { { "ext1", 1 }, { "ext2", 2 } });
-
-        // Assert
-        var objectResult = Assert.IsType<BadRequestObjectResult>(actionResult);
-        var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
-        Assert.Equal(1, problemDetails.Extensions["ext1"]);
-        Assert.Equal(2, problemDetails.Extensions["ext2"]);
-    }
-
-    [Fact]
     public void ValidationProblemDetails_StatusCode400_ReturnsBadRequestObjectResultFor2xCompatibility()
     {
         // Arrange
@@ -2513,27 +2492,6 @@ public class ControllerBaseTest
         Assert.Equal(422, problemDetails.Status);
         Assert.Equal("Unprocessable entity.", problemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc4918#section-11.2", problemDetails.Type);
-    }
-
-    [Fact]
-    public void ProblemDetails_UsesPassedInExtensions()
-    {
-        // Arrange
-        var options = GetApiBehaviorOptions();
-
-        var controller = new TestableController
-        {
-            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
-        };
-
-        // Act
-        var actionResult = controller.Problem(extensions: new Dictionary<string, object> { { "ext1", 1 }, { "ext2", 2 } });
-
-        // Assert
-        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
-        var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
-        Assert.Equal(1, problemDetails.Extensions["ext1"]);
-        Assert.Equal(2, problemDetails.Extensions["ext2"]);
     }
 
     private static ApiBehaviorOptions GetApiBehaviorOptions()
@@ -2654,14 +2612,14 @@ public class ControllerBaseTest
 
         var valueProvider = Mock.Of<IValueProvider>();
         var binder = new StubModelBinder(context =>
-        {
-            Assert.Same(valueProvider, context.ValueProvider);
+              {
+                  Assert.Same(valueProvider, context.ValueProvider);
 
-            // Include and exclude should be null, resulting in property
-            // being included.
-            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
-            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
-        });
+                  // Include and exclude should be null, resulting in property
+                  // being included.
+                  Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+                  Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
+              });
 
         var controller = GetController(binder, valueProvider: null);
         var model = new MyModel();
