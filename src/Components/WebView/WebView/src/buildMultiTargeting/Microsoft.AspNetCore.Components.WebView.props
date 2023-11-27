@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="..\build\Microsoft.AspNetCore.Components.WebView.props" />
+</Project>
