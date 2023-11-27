@@ -2654,14 +2654,14 @@ public class ControllerBaseTest
 
         var valueProvider = Mock.Of<IValueProvider>();
         var binder = new StubModelBinder(context =>
-              {
-                  Assert.Same(valueProvider, context.ValueProvider);
+        {
+            Assert.Same(valueProvider, context.ValueProvider);
 
-                  // Include and exclude should be null, resulting in property
-                  // being included.
-                  Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
-                  Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
-              });
+            // Include and exclude should be null, resulting in property
+            // being included.
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property1"]));
+            Assert.True(context.PropertyFilter(context.ModelMetadata.Properties["Property2"]));
+        });
 
         var controller = GetController(binder, valueProvider: null);
         var model = new MyModel();
