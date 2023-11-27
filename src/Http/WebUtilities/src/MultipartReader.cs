@@ -96,7 +96,7 @@ public class MultipartReader
             return null;
         }
         var headers = await ReadHeadersAsync(cancellationToken);
-        _boundary.ExpectLeadingCrlf = true;
+        _boundary.ExpectLeadingCrlf();
         _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = BodyLengthLimit };
         long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
         return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };

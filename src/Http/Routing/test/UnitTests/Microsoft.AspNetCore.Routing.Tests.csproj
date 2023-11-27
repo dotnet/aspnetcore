@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
@@ -17,7 +18,7 @@
     <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.Telemetry.Testing" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
 
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />

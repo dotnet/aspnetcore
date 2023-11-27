@@ -3,7 +3,7 @@
 
 <h2>Named form with bound parameter</h2>
 
-<EditForm FormName="named-form-handler" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" >
+<EditForm Enhance FormName="named-form-handler" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" >
     <InputText @bind-Value="Parameter" />
     <input id="send" type="submit" value="Send" />
 </EditForm>
@@ -16,5 +16,5 @@
 @code{
     bool _submitted = false;
 
-    [SupplyParameterFromForm(Handler = "named-form-handler")] public string Parameter { get; set; } = "";
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public string Parameter { get; set; } = "";
 }

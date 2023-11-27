@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using XmlFormattersWebSite;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;

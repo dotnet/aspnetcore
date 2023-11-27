@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.StackTrace.Sources;

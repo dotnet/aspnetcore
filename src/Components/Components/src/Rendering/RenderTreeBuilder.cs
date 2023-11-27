@@ -27,8 +27,6 @@ public sealed class RenderTreeBuilder : IDisposable
     private RenderTreeFrameType? _lastNonAttributeFrameType;
     private bool _hasSeenAddMultipleAttributes;
     private Dictionary<string, int>? _seenAttributeNames;
-    private IComponentRenderMode? _pendingComponentCallSiteRenderMode; // TODO: Remove when Razor compiler supports call-site @rendermode
-    private (int Sequence, string AssignedName)? _pendingNamedSubmitEvent; // TODO: Remove when Razor compiler supports @formname
 
     /// <summary>
     /// The reserved parameter name used for supplying child content.
@@ -45,8 +43,6 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <param name="elementName">A value representing the type of the element.</param>
     public void OpenElement(int sequence, string elementName)
     {
-        CompletePendingNamedSubmitEvent();
-
         // We are entering a new scope, since we track the "duplicate attributes" per
         // element/component we might need to clean them up now.
         if (_hasSeenAddMultipleAttributes)
@@ -66,8 +62,6 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void CloseElement()
     {
-        CompletePendingNamedSubmitEvent();
-
         var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
         // We might be closing an element with only attributes, run the duplicate cleanup pass
@@ -78,16 +72,6 @@ public sealed class RenderTreeBuilder : IDisposable
         }
 
         _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
-    }
-
-    // TODO: Remove this once Razor supports @formname
-    private void CompletePendingNamedSubmitEvent()
-    {
-        if (_pendingNamedSubmitEvent is { } pendingNamedSubmitEvent)
-        {
-            AddNamedEvent(pendingNamedSubmitEvent.Sequence, "onsubmit", pendingNamedSubmitEvent.AssignedName);
-            _pendingNamedSubmitEvent = default;
-        }
     }
 
     /// <summary>
@@ -237,16 +221,7 @@ public sealed class RenderTreeBuilder : IDisposable
         AssertCanAddAttribute();
         if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
         {
-            // TODO: Remove this once the Razor compiler is updated to support @formname
-            // That should compile directly as a call to AddNamedEvent.
-            if (string.Equals(name, "@formname", StringComparison.Ordinal) && _lastNonAttributeFrameType == RenderTreeFrameType.Element)
-            {
-                _pendingNamedSubmitEvent = (sequence, value!);
-            }
-            else
-            {
-                _entries.AppendAttribute(sequence, name, value);
-            }
+            _entries.AppendAttribute(sequence, name, value);
         }
         else
         {
@@ -531,28 +506,6 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
-    /// Temporary API until Razor compiler is updated. This will be removed before .NET 8 ships.
-    /// </summary>
-    public void AddComponentParameter(int sequence, string name, IComponentRenderMode renderMode)
-    {
-        if (string.Equals(name, "@rendermode", StringComparison.Ordinal))
-        {
-            // When the Razor compiler is updated, <SomeComponent @rendermode="@RenderMode.WebAssembly" />  would compile directly as a call
-            // to AddComponentRenderMode(RenderMode.WebAssembly), which must appear after all attributes. Until then we'll intercept regular
-            // parameters with this name and IComponentRenderMode values. Unfortunately we can't guarantee that the parameter will appear after
-            // all other parameters (e.g., ChildContent would always go later), so use this inefficient trick to defer adding it.
-            // It won't be needed once the Razor compiler supports @rendermode.
-            _pendingComponentCallSiteRenderMode = renderMode;
-        }
-        else
-        {
-            // For other parameter names, the developer is doing something custom so just pass the parameter as normal
-            // This special case will also not be relevant once we have @rendermode
-            AddComponentParameter(sequence, name, (object)renderMode);
-        }
-    }
-
-    /// <summary>
     /// Appends a frame representing a component parameter.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -600,8 +553,6 @@ public sealed class RenderTreeBuilder : IDisposable
 
     private void OpenComponentUnchecked(int sequence, [DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        CompletePendingNamedSubmitEvent();
-
         // We are entering a new scope, since we track the "duplicate attributes" per
         // element/component we might need to clean them up now.
         if (_hasSeenAddMultipleAttributes)
@@ -621,12 +572,6 @@ public sealed class RenderTreeBuilder : IDisposable
     /// </summary>
     public void CloseComponent()
     {
-        if (_pendingComponentCallSiteRenderMode is not null)
-        {
-            AddComponentRenderMode(0, _pendingComponentCallSiteRenderMode);
-            _pendingComponentCallSiteRenderMode = null;
-        }
-
         var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
         // We might be closing a component with only attributes. Run the attribute cleanup pass
@@ -681,11 +626,13 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <summary>
     /// Adds a frame indicating the render mode on the enclosing component frame.
     /// </summary>
-    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
-    public void AddComponentRenderMode(int sequence, IComponentRenderMode renderMode)
+    public void AddComponentRenderMode(IComponentRenderMode? renderMode)
     {
-        ArgumentNullException.ThrowIfNull(renderMode);
+        if (renderMode is null)
+        {
+            return;
+        }
 
         // Note that a ComponentRenderMode frame is technically a child of the Component frame to which it applies,
         // hence the terminology of "adding" it rather than "setting" it. For performance reasons, the diffing system
@@ -709,17 +656,16 @@ public sealed class RenderTreeBuilder : IDisposable
 
         parentFrame.ComponentFrameFlagsField |= ComponentFrameFlags.HasCallerSpecifiedRenderMode;
 
-        _entries.AppendComponentRenderMode(sequence, renderMode);
+        _entries.AppendComponentRenderMode(renderMode);
         _lastNonAttributeFrameType = RenderTreeFrameType.ComponentRenderMode;
     }
 
     /// <summary>
     /// Assigns a name to an event in the enclosing element.
     /// </summary>
-    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
     /// <param name="eventType">The event type, e.g., 'onsubmit'.</param>
     /// <param name="assignedName">The application-assigned name.</param>
-    public void AddNamedEvent(int sequence, string eventType, string assignedName)
+    public void AddNamedEvent(string eventType, string assignedName)
     {
         ArgumentNullException.ThrowIfNull(eventType);
         ArgumentException.ThrowIfNullOrEmpty(assignedName);
@@ -733,7 +679,7 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendNamedEvent(sequence, eventType, assignedName);
+        _entries.AppendNamedEvent(eventType, assignedName);
         _lastNonAttributeFrameType = RenderTreeFrameType.NamedEvent;
     }
 

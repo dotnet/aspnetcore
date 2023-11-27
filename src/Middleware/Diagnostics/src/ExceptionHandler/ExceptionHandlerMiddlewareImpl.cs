@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -70,6 +71,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
     public Task Invoke(HttpContext context)
     {
         ExceptionDispatchInfo edi;
+
         try
         {
             var task = _next(context);
@@ -141,8 +143,16 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         {
             context.Request.Path = _options.ExceptionHandlingPath;
         }
+        var oldScope = _options.CreateScopeForErrors ? context.RequestServices : null;
+        using var scope = _options.CreateScopeForErrors ? context.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope() : null;
+
         try
         {
+            if (scope != null)
+            {
+                context.RequestServices = scope.ServiceProvider;
+            }
+
             var exceptionHandlerFeature = new ExceptionHandlerFeature()
             {
                 Error = edi.SourceException,
@@ -216,6 +226,10 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         finally
         {
             context.Request.Path = originalPath;
+            if (oldScope != null)
+            {
+                context.RequestServices = oldScope;
+            }
         }
 
         _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);

@@ -10,6 +10,7 @@
     <IsPackable>false</IsPackable>
     <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
     <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);COMPONENTS</DefineConstants>
   </PropertyGroup>
 
   <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
@@ -48,6 +49,7 @@
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -187,17 +187,10 @@ public class CertificatePathWatcherTests : LoggedTest
 
         watcher.AddWatchUnsynchronized(certificateConfig);
 
-        var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        TestSink.MessageLogged += writeContext =>
-        {
-            if (writeContext.EventId.Name == "OutOfOrderEvent")
-            {
-                logTcs.SetResult();
-            }
-        };
+        var signalTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var oldChangeToken = watcher.GetChangeToken();
+        oldChangeToken.RegisterChangeCallback(_ => signalTcs.SetResult(), state: null);
 
         Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
@@ -207,9 +200,9 @@ public class CertificatePathWatcherTests : LoggedTest
         fileProvider.SetLastModifiedTime(fileName, fileLastModifiedTime.AddSeconds(-1));
         fileProvider.FireChangeToken(fileName);
 
-        await logTcs.Task.DefaultTimeout();
+        await signalTcs.Task.DefaultTimeout();
 
-        Assert.False(oldChangeToken.HasChanged);
+        Assert.True(oldChangeToken.HasChanged);
     }
 
     [Fact]
@@ -342,12 +335,10 @@ public class CertificatePathWatcherTests : LoggedTest
     }
 
     [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
+    [InlineData(true)]
+    [InlineData(false)]
     [LogLevel(LogLevel.Trace)]
-    public async Task IgnoreDeletion(bool seeChangeForDeletion, bool restoredWithNewerLastModifiedTime)
+    public async Task IgnoreDeletion(bool restoredWithNewerLastModifiedTime)
     {
         var dir = Directory.GetCurrentDirectory();
         var fileName = Path.GetRandomFileName();
@@ -377,30 +368,21 @@ public class CertificatePathWatcherTests : LoggedTest
         watcher.GetChangeToken().RegisterChangeCallback(_ => changeTcs.SetResult(), state: null);
 
         var logNoLastModifiedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var logSameLastModifiedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         TestSink.MessageLogged += writeContext =>
         {
-            if (writeContext.EventId.Name == "EventWithoutLastModifiedTime")
+            if (writeContext.EventId.Name == "EventWithoutFile")
             {
                 logNoLastModifiedTcs.SetResult();
-            }
-            else if (writeContext.EventId.Name == "RedundantEvent")
-            {
-                logSameLastModifiedTcs.SetResult();
             }
         };
 
         // Simulate file deletion
         fileProvider.SetLastModifiedTime(fileName, null);
 
-        // In some file systems and watch modes, there's no event when (e.g.) the directory containing the watched file is deleted
-        if (seeChangeForDeletion)
-        {
-            fileProvider.FireChangeToken(fileName);
+        fileProvider.FireChangeToken(fileName);
 
-            await logNoLastModifiedTcs.Task.DefaultTimeout();
-        }
+        await logNoLastModifiedTcs.Task.DefaultTimeout();
 
         Assert.Equal(1, watcher.TestGetDirectoryWatchCountUnsynchronized());
         Assert.Equal(1, watcher.TestGetFileWatchCountUnsynchronized(dir));
@@ -412,16 +394,7 @@ public class CertificatePathWatcherTests : LoggedTest
         fileProvider.SetLastModifiedTime(fileName, restoredWithNewerLastModifiedTime ? fileLastModifiedTime.AddSeconds(1) : fileLastModifiedTime);
         fileProvider.FireChangeToken(fileName);
 
-        if (restoredWithNewerLastModifiedTime)
-        {
-            await changeTcs.Task.DefaultTimeout();
-            Assert.False(logSameLastModifiedTcs.Task.IsCompleted);
-        }
-        else
-        {
-            await logSameLastModifiedTcs.Task.DefaultTimeout();
-            Assert.False(changeTcs.Task.IsCompleted);
-        }
+        await changeTcs.Task.DefaultTimeout();
     }
 
     [Fact]

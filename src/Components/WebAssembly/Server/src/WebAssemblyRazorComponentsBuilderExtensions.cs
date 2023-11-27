@@ -5,11 +5,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -23,7 +21,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddWebAssemblyComponents(this IRazorComponentsBuilder builder)
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
@@ -32,25 +30,21 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         return builder;
     }
 
-    private class WebAssemblyEndpointProvider : RenderModeEndpointProvider
+    private class WebAssemblyEndpointProvider(IServiceProvider services) : RenderModeEndpointProvider
     {
-        private readonly IServiceProvider _services;
-        private readonly WebAssemblyComponentsEndpointOptions _options;
-
-        public WebAssemblyEndpointProvider(IServiceProvider services, IOptions<WebAssemblyComponentsEndpointOptions> options)
-        {
-            _services = services;
-            _options = options.Value;
-        }
-
         public override IEnumerable<RouteEndpointBuilder> GetEndpointBuilders(IComponentRenderMode renderMode, IApplicationBuilder applicationBuilder)
         {
             if (renderMode is not WebAssemblyRenderModeWithOptions wasmWithOptions)
             {
+                if (renderMode is InteractiveWebAssemblyRenderMode)
+                {
+                    throw new InvalidOperationException("Invalid render mode. Use AddInteractiveWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
+                }
+
                 return Array.Empty<RouteEndpointBuilder>();
             }
 
-            var endpointRouteBuilder = new EndpointRouteBuilder(_services, applicationBuilder);
+            var endpointRouteBuilder = new EndpointRouteBuilder(services, applicationBuilder);
             var pathPrefix = wasmWithOptions.EndpointOptions?.PathPrefix;
 
             applicationBuilder.UseBlazorFrameworkFiles(pathPrefix ?? default);
@@ -68,7 +62,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         }
 
         public override bool Supports(IComponentRenderMode renderMode)
-            => renderMode is WebAssemblyRenderMode or AutoRenderMode;
+            => renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
 
         private class EndpointRouteBuilder : IEndpointRouteBuilder
         {

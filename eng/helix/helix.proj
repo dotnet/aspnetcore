@@ -57,7 +57,12 @@
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
-    
+
+    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
+                                 Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
+      <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
+    </AdditionalDotNetPackageFeed>
+
     <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
                                  Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
@@ -69,7 +74,7 @@
     <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
 
     <!-- Grab published `HelixTestRunner` project output. -->
-    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net8.0\publish\"
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net9.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
 

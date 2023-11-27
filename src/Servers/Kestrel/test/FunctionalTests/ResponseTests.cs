@@ -23,7 +23,7 @@ using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -588,6 +588,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49974")]
     public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
     {
         const int chunkSize = 1024;

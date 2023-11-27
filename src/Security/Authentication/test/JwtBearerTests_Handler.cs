@@ -918,15 +918,15 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, "Bob")
+           new Claim(ClaimTypes.NameIdentifier, "Bob")
         };
 
         var token = new JwtSecurityToken(
-            issuer: "issuer.contoso.com",
-            audience: "audience.contoso.com",
-            claims: claims,
-            expires: DateTime.MaxValue,
-            signingCredentials: creds);
+           issuer: "issuer.contoso.com",
+           audience: "audience.contoso.com",
+           claims: claims,
+           expires: DateTime.MaxValue,
+           signingCredentials: creds);
 
         var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
 

@@ -1,14 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,42 +21,6 @@ namespace Microsoft.AspNetCore.Routing;
 public class EndpointRoutingMiddlewareFormOptionsTest
 {
     [Fact]
-    public async Task LogsWhenFormOptionsAreNotApplied()
-    {
-        var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
-        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-        var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
-
-        var httpContext = CreateHttpContext();
-        var presetFormFeature = new FormFeature(httpContext.Request, FormOptions.Default);
-        presetFormFeature.Form = new FormCollection(new());
-        httpContext.Features.Set<IFormFeature>(presetFormFeature);
-
-        var formOptionsMetadata = new FormOptionsMetadata(bufferBody: false, valueCountLimit: 54);
-        var middleware = CreateMiddleware(
-            logger: logger,
-            matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
-            {
-                c.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(formOptionsMetadata), "myapp"));
-            }));
-
-        // Act
-        await middleware.Invoke(httpContext);
-
-        var formFeature = httpContext.Features.Get<IFormFeature>();
-        var formOptions = Assert.IsType<FormFeature>(formFeature).FormOptions;
-        // Configured values are set
-        Assert.False(formOptions.BufferBody);
-        Assert.Equal(FormReader.DefaultValueCountLimit, formOptions.ValueCountLimit);
-        // Unset values are set to default instead of null
-        Assert.Equal(FormOptions.DefaultMemoryBufferThreshold, formOptions.MemoryBufferThreshold);
-
-        // Logs that FormOptions were not applied
-        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "CannotApplyFormOptions"));
-        Assert.Equal("Unable to apply configured form options since the request form has already been read.", write.Message);
-    }
-
-    [Fact]
     public async Task SupportsSettingFormOptionsFromMetadata()
     {
         var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
@@ -64,6 +28,8 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
 
         var httpContext = CreateHttpContext();
+        httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("foo=bar"));
 
         var formOptionsMetadata = new FormOptionsMetadata(bufferBody: false, valueCountLimit: 54);
         var middleware = CreateMiddleware(
@@ -75,6 +41,7 @@ public class EndpointRoutingMiddlewareFormOptionsTest
 
         // Act
         await middleware.Invoke(httpContext);
+        var _ = httpContext.Request.Form; // Trigger the form feature.
 
         var formFeature = httpContext.Features.Get<IFormFeature>();
         var formOptions = Assert.IsType<FormFeature>(formFeature).FormOptions;
@@ -83,10 +50,6 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         Assert.Equal(54, formOptions.ValueCountLimit);
         // Unset values are set to default instead of null
         Assert.Equal(FormOptions.DefaultMemoryBufferThreshold, formOptions.MemoryBufferThreshold);
-
-        // Logs that FormOptions were applied
-        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "AppliedFormOptions"));
-        Assert.Equal("Applied the configured form options on the current request.", write.Message);
     }
 
     [Fact]
@@ -97,6 +60,8 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
 
         var httpContext = CreateHttpContext();
+        httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("foo=bar"));
 
         var formOptionsMetadata1 = new FormOptionsMetadata(bufferBody: false, valueCountLimit: 54);
         var formOptionsMetadata2 = new FormOptionsMetadata(valueLengthLimit: 45);
@@ -110,6 +75,7 @@ public class EndpointRoutingMiddlewareFormOptionsTest
 
         // Act
         await middleware.Invoke(httpContext);
+        var _ = httpContext.Request.Form; // Trigger the form feature.
 
         var formFeature = httpContext.Features.Get<IFormFeature>();
         var formOptions = Assert.IsType<FormFeature>(formFeature).FormOptions;
@@ -119,10 +85,6 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         Assert.Equal(45, formOptions.ValueLengthLimit);
         // Unset values are set to default instead of null
         Assert.Equal(FormOptions.DefaultMemoryBufferThreshold, formOptions.MemoryBufferThreshold);
-
-        // Logs that FormOptions were applied
-        var write = Assert.Single(sink.Writes.Where(w => w.EventId.Name == "AppliedFormOptions"));
-        Assert.Equal("Applied the configured form options on the current request.", write.Message);
     }
 
     [Fact]
@@ -131,7 +93,15 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
         var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
-        var httpContext = CreateHttpContext();
+        var serviceProvider = new ServiceCollection().Configure<FormOptions>(options =>
+        {
+            options.BufferBody = true;
+            options.ValueLengthLimit = 45;
+        }).BuildServiceProvider();
+        var httpContextFactory = new DefaultHttpContextFactory(serviceProvider);
+        var httpContext = httpContextFactory.Create( new DefaultHttpContext().Features);
+        httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        httpContext.Request.Body = new MemoryStream("foo=bar"u8.ToArray());
 
         var formOptionsMetadata = new FormOptionsMetadata(bufferBody: false, valueCountLimit: 54);
         var middleware = CreateMiddleware(
@@ -139,11 +109,11 @@ public class EndpointRoutingMiddlewareFormOptionsTest
             matcherFactory: new TestMatcherFactory(isHandled: true, setEndpointCallback: c =>
             {
                 c.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(formOptionsMetadata), "myapp"));
-            }),
-            formOptions: new FormOptions { BufferBody = true, ValueLengthLimit = 45});
+            }));
 
         // Act
         await middleware.Invoke(httpContext);
+        var _ = httpContext.Request.Form; // Trigger the form feature.
 
         var formFeature = httpContext.Features.Get<IFormFeature>();
         var formOptions = Assert.IsType<FormFeature>(formFeature).FormOptions;
@@ -156,12 +126,15 @@ public class EndpointRoutingMiddlewareFormOptionsTest
     }
 
     [Fact]
-    public async Task SettingEndpointManuallyDoesNotOverwriteOptions()
+    public async Task SettingEndpointManuallyStillResolvesFormOptions()
     {
         var sink = new TestSink(TestSink.EnableWithTypeName<EndpointRoutingMiddleware>);
         var loggerFactory = new TestLoggerFactory(sink, enabled: true);
         var logger = new Logger<EndpointRoutingMiddleware>(loggerFactory);
         var httpContext = CreateHttpContext();
+        httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("foo=bar"));
+
         var endpointMetadata = new FormOptionsMetadata(bufferBody: true, valueCountLimit: 70);
         var endpoint = new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(endpointMetadata), "myapp");
 
@@ -176,12 +149,13 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         // Act
         await middleware.Invoke(httpContext);
         httpContext.SetEndpoint(endpoint);
+        var _ = httpContext.Request.Form; // Trigger the form feature.
 
         var formFeature = httpContext.Features.Get<IFormFeature>();
         var formOptions = Assert.IsType<FormFeature>(formFeature).FormOptions;
         // Favor the most specific (last) value set for a property
-        Assert.False(formOptions.BufferBody);
-        Assert.Equal(54, formOptions.ValueCountLimit);
+        Assert.True(formOptions.BufferBody);
+        Assert.Equal(70, formOptions.ValueCountLimit);
         // Unset values are set to default instead of null
         Assert.Equal(FormOptions.DefaultMemoryBufferThreshold, formOptions.MemoryBufferThreshold);
     }
@@ -231,8 +205,7 @@ public class EndpointRoutingMiddlewareFormOptionsTest
         ILogger<EndpointRoutingMiddleware> logger = null,
         MatcherFactory matcherFactory = null,
         DiagnosticListener listener = null,
-        RequestDelegate next = null,
-        FormOptions formOptions = null)
+        RequestDelegate next = null)
     {
         next ??= c => Task.CompletedTask;
         logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
@@ -247,7 +220,6 @@ public class EndpointRoutingMiddlewareFormOptionsTest
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
-            Options.Create(formOptions ?? new FormOptions()),
             metrics,
             next);
 

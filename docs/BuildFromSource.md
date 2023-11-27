@@ -51,6 +51,8 @@ The steps you follow next depend on your preferred development environment:
 
 ## Visual Studio on Windows
 
+1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/). [Yarn](https://yarnpkg.com/) version 1.x will be installed automatically using `npm`, if you have already installed it with a version >= 2.x then you may have to uninstall it as it is not compatible with the aspnetcore build script.
+
 1. Before you open project in Visual Studio, install the required dependencies and set up the repo by running the `restore.cmd` script in the root of the repo:
 
     ```powershell
@@ -120,7 +122,7 @@ The steps you follow next depend on your preferred development environment:
     code .
     ```
 
-    > :information_source: If you're using a different editor, replace `code` with your editor's equivalent launch command (for example, `vim`).
+    > :bulb: If you're using a different editor, replace `code` with your editor's equivalent launch command (for example, `vim`).
 
 1. Once you've opened the project in VS Code, you can build and test changes by running the `./build.sh` command in the terminal.
 
@@ -138,7 +140,7 @@ The steps you follow next depend on your preferred development environment:
     ./build.cmd -test
     ```
 
-1. Alternatively, you can use the `dotnet test` and `dotnet build` commands directly once you've activated the locally installed .NET SDK.
+1. Alternatively, you can use the `dotnet test` and `dotnet build` commands, **alongside specific project files**, once you've activated the locally installed .NET SDK.
 
     ```bash
     # Linux or Mac
@@ -168,7 +170,7 @@ If you have [Codespaces enabled on your GitHub user account](https://github.com/
 
     The Codespace will spend a few minutes building and initializing. Once it's done, you'll be able to navigate the Codespace in a web-based VS Code environment.
 
-1. You can use the `dotnet build` and `dotnet test` commands to build and test the repo.
+1. You can use the `dotnet build` and `dotnet test` commands to build and test specific projects within the repo.
 
     You don't need to activate the locally installed .NET SDK or run the `restore` script because it's done during the Codespace initialization process.
 

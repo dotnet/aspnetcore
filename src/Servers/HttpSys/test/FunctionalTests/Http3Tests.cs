@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Quic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 [MsQuicSupported] // Required by HttpClient
 [HttpSysHttp3Supported]
-public class Http3Tests
+public class Http3Tests : LoggedTest
 {
     [ConditionalFact]
     public async Task Http3_Direct()
@@ -34,7 +34,7 @@ public class Http3Tests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        });
+        }, LoggerFactory);
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -62,7 +62,7 @@ public class Http3Tests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        });
+        }, LoggerFactory);
 
         altsvc = $@"h3="":{new Uri(address).Port}""";
         var handler = new HttpClientHandler();
@@ -102,7 +102,7 @@ public class Http3Tests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        });
+        }, LoggerFactory);
 
         altsvc = $@"h3="":{new Uri(address).Port}""";
         var handler = new HttpClientHandler();
@@ -138,7 +138,7 @@ public class Http3Tests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        });
+        }, LoggerFactory);
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -166,7 +166,7 @@ public class Http3Tests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        });
+        }, LoggerFactory);
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -196,7 +196,7 @@ public class Http3Tests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        });
+        }, LoggerFactory);
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -221,7 +221,7 @@ public class Http3Tests
             await httpContext.Response.Body.FlushAsync();
             await headersReceived.Task.DefaultTimeout();
             throw new Exception("App Exception");
-        });
+        }, LoggerFactory);
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -245,7 +245,7 @@ public class Http3Tests
         {
             httpContext.Abort();
             return Task.CompletedTask;
-        });
+        }, LoggerFactory);
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;

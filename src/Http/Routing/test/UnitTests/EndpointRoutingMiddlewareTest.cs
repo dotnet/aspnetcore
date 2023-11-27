@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -393,6 +394,36 @@ public class EndpointRoutingMiddlewareTest
         Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
     }
 
+    [Fact]
+    public async Task Create_WithoutHostBuilder_Success()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddOptions();
+        services.AddSingleton<DiagnosticListener>(s => new DiagnosticListener("Test"));
+        services.AddRouting();
+
+        var applicationBuilder = new ApplicationBuilder(services.BuildServiceProvider());
+
+        applicationBuilder.UseRouting();
+        applicationBuilder.UseEndpoints(endpoints =>
+        {
+            endpoints.MapGet("/", (HttpContext c) => Task.CompletedTask);
+        });
+
+        var requestDelegate = applicationBuilder.Build();
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert
+        var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+        Assert.NotNull(endpointFeature);
+    }
+
     private class RequestSizeLimitMetadata(long? maxRequestBodySize) : IRequestSizeLimitMetadata
     {
 
@@ -449,7 +480,6 @@ public class EndpointRoutingMiddlewareTest
             new DefaultEndpointDataSource(),
             listener,
             Options.Create(new RouteOptions()),
-            Options.Create(new FormOptions()),
             metrics,
             next);
 

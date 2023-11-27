@@ -16,13 +16,16 @@
         <NotFound>There's nothing here</NotFound>
     </Router>
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
-    <script suppress-error="BL9992">
+    <script src="_content/TestContentPackage/counterInterop.js"></script>
+    <script>
+        const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
         const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
         const useLongWebAssemblyTimeout = sessionStorage.getItem('use-long-auto-timeout') === 'true';
         sessionStorage.removeItem('suppress-enhanced-navigation');
         sessionStorage.removeItem('block-load-boot-resource');
         sessionStorage.removeItem('use-long-auto-timeout');
+        sessionStorage.removeItem('enable-classic-initializers');
 
         let loadBootResourceUnblocked = null;
         if (blockLoadBootResource) {
@@ -35,7 +38,11 @@
             Blazor.start({
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,
+
+                    // We use a short timeout so tests don't take too long
+                    circuitInactivityTimeoutMs: 100,
                 },
+                enableClassicInitializers: enableClassicInitializers,
                 webAssembly: {
                     loadBootResource: function (type, name, defaultUri, integrity) {
                         switch (type) {
@@ -61,6 +68,11 @@
                 if (useLongWebAssemblyTimeout) {
                     Blazor._internal.loadWebAssemblyQuicklyTimeout = 10000000;
                 }
+            }).then(() => {
+                const startedParagraph = document.createElement('p');
+                startedParagraph.id = 'blazor-started';
+                startedParagraph.style = 'display: none;';
+                document.body.appendChild(startedParagraph);
             });
         }
 

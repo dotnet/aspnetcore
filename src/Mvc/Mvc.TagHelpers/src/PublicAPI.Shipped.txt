@@ -133,6 +133,8 @@
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.For.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.Format.get -> string
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.Format.set -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.FormName.get -> string
+~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.FormName.set -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.Generator.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.GetInputType(Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer modelExplorer, out string inputTypeHint) -> string
 ~Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper.InputTagHelper(Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator generator) -> void

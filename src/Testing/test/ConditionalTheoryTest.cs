@@ -6,9 +6,9 @@ using System.Globalization;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-[TestCaseOrderer("Microsoft.AspNetCore.Testing.AlphabeticalOrderer", "Microsoft.AspNetCore.Testing.Tests")]
+[TestCaseOrderer("Microsoft.AspNetCore.InternalTesting.AlphabeticalOrderer", "Microsoft.AspNetCore.InternalTesting.Tests")]
 public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.ConditionalTheoryAsserter>
 {
     public ConditionalTheoryTest(ConditionalTheoryAsserter asserter)

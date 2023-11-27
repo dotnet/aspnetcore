@@ -1,10 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentsEndpointConventionBuilderExtensions
-Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.DisplayFirefox(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.PathPrefix.get -> Microsoft.AspNetCore.Http.PathString
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.PathPrefix.set -> void
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.WebAssemblyComponentsEndpointOptions() -> void
-Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions
-static Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentsEndpointConventionBuilderExtensions.AddWebAssemblyRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions? options = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
-static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddWebAssemblyComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

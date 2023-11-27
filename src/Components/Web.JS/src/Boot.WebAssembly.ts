@@ -10,6 +10,7 @@ import { setWebAssemblyOptions, startWebAssembly } from './Boot.WebAssembly.Comm
 import { WebAssemblyComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 
 let started = false;
 
@@ -19,8 +20,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
-  setWebAssemblyOptions(options);
+  setWebAssemblyOptions(Promise.resolve(options || {}));
 
+  JSEventRegistry.create(Blazor);
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
   const components = new InitialRootComponentsList(webAssemblyComponents);
   await startWebAssembly(components);

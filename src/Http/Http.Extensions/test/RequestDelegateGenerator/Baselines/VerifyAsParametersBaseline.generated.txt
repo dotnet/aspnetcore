@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
         private static readonly string[] PutVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
 
-        [InterceptsLocation(@"TestMapActions.cs", 44, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
         internal static RouteHandlerBuilder MapPost1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
         internal static RouteHandlerBuilder MapPut2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
         internal static RouteHandlerBuilder MapPatch3(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -473,11 +473,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var HttpContext_local = httpContext;
                     // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
-                    var Todo_local = Todo_resolveJsonBodyOrServiceResult.Item2;
                     if (!Todo_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var Todo_local = Todo_resolveJsonBodyOrServiceResult.Item2!;
 
                     var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody(HttpContext_local, Todo_local);
 
@@ -505,11 +505,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var HttpContext_local = httpContext;
                     // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
-                    var Todo_local = Todo_resolveJsonBodyOrServiceResult.Item2;
                     if (!Todo_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var Todo_local = Todo_resolveJsonBodyOrServiceResult.Item2!;
 
                     var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody(HttpContext_local, Todo_local);
 
@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
+        [InterceptsLocation(@"TestMapActions.cs", 49, 5)]
         internal static RouteHandlerBuilder MapGet4(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -594,11 +594,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Value_resolveJsonBodyOrServiceResult = await Value_JsonBodyOrServiceResolver(httpContext, false);
-                    var Value_local = Value_resolveJsonBodyOrServiceResult.Item2;
                     if (!Value_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var Value_local = Value_resolveJsonBodyOrServiceResult.Item2!;
 
                     var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType(HttpContext_local, Value_local);
 
@@ -617,11 +617,11 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Value_resolveJsonBodyOrServiceResult = await Value_JsonBodyOrServiceResolver(httpContext, false);
-                    var Value_local = Value_resolveJsonBodyOrServiceResult.Item2;
                     if (!Value_resolveJsonBodyOrServiceResult.Item1)
                     {
                         return;
                     }
+                    var Value_local = Value_resolveJsonBodyOrServiceResult.Item2!;
 
                     var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType(HttpContext_local, Value_local);
 
@@ -645,6 +645,136 @@ namespace Microsoft.AspNetCore.Http.Generated
                 pattern,
                 handler,
                 GetVerb,
+                populateMetadata,
+                createRequestDelegate);
+        }
+
+        [InterceptsLocation(@"TestMapActions.cs", 50, 5)]
+        internal static RouteHandlerBuilder MapPost5(
+            this IEndpointRouteBuilder endpoints,
+            [StringSyntax("Route")] string pattern,
+            Delegate handler)
+        {
+            MetadataPopulator populateMetadata = (methodInfo, options) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
+                options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, contentTypes: GeneratedMetadataConstants.PlaintextContentType));
+                return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
+            };
+            RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
+            {
+                Debug.Assert(options != null, "RequestDelegateFactoryOptions not found.");
+                Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
+                Debug.Assert(options.EndpointBuilder.ApplicationServices != null, "ApplicationServices not found.");
+                Debug.Assert(options.EndpointBuilder.FilterFactories != null, "FilterFactories not found.");
+                var handler = Cast(del, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService arg0) => throw null!);
+                EndpointFilterDelegate? filteredInvocation = null;
+                var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
+                var logOrThrowExceptionHelper = new LogOrThrowExceptionHelper(serviceProvider, options);
+                var jsonOptions = serviceProvider?.GetService<IOptions<JsonOptions>>()?.Value ?? FallbackJsonOptions;
+                var jsonSerializerOptions = jsonOptions.SerializerOptions;
+                jsonSerializerOptions.MakeReadOnly();
+                var objectJsonTypeInfo = (JsonTypeInfo<object?>)jsonSerializerOptions.GetTypeInfo(typeof(object));
+                var serviceProviderIsService = serviceProvider?.GetService<IServiceProviderIsService>();
+                var Todo_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct>(logOrThrowExceptionHelper, "TodoStruct", "Todo", jsonSerializerOptions, serviceProviderIsService);
+                var Service_JsonBodyOrServiceResolver = ResolveJsonBodyOrService<global::Microsoft.AspNetCore.Http.Generators.Tests.TestService>(logOrThrowExceptionHelper, "TestService", "Service", jsonSerializerOptions, serviceProviderIsService);
+
+                if (options.EndpointBuilder.FilterFactories.Count > 0)
+                {
+                    filteredInvocation = GeneratedRouteBuilderExtensionsCore.BuildFilterDelegate(ic =>
+                    {
+                        if (ic.HttpContext.Response.StatusCode == 400)
+                        {
+                            return ValueTask.FromResult<object?>(Results.Empty);
+                        }
+                        return ValueTask.FromResult<object?>(handler(ic.GetArgument<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService>(0)!));
+                    },
+                    options.EndpointBuilder,
+                    handler.Method);
+                }
+
+                async Task RequestHandler(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
+                    // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                    var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
+                    if (!Todo_resolveJsonBodyOrServiceResult.Item1)
+                    {
+                        return;
+                    }
+                    var Todo_local = Todo_resolveJsonBodyOrServiceResult.Item2!;
+                    // Endpoint Parameter: Service (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                    var Service_resolveJsonBodyOrServiceResult = await Service_JsonBodyOrServiceResolver(httpContext, false);
+                    if (!Service_resolveJsonBodyOrServiceResult.Item1)
+                    {
+                        return;
+                    }
+                    var Service_local = Service_resolveJsonBodyOrServiceResult.Item2!;
+
+                    var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService { Todo = Todo_local, Service = Service_local };
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                        return;
+                    }
+                    var result = handler(args_local);
+                    if (result is string)
+                    {
+                        httpContext.Response.ContentType ??= "text/plain; charset=utf-8";
+                    }
+                    else
+                    {
+                        httpContext.Response.ContentType ??= "application/json; charset=utf-8";
+                    }
+                    await httpContext.Response.WriteAsync(result);
+                }
+
+                async Task RequestHandlerFiltered(HttpContext httpContext)
+                {
+                    var wasParamCheckFailure = false;
+                    // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
+                    // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                    var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
+                    if (!Todo_resolveJsonBodyOrServiceResult.Item1)
+                    {
+                        return;
+                    }
+                    var Todo_local = Todo_resolveJsonBodyOrServiceResult.Item2!;
+                    // Endpoint Parameter: Service (Type = Microsoft.AspNetCore.Http.Generators.Tests.TestService, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                    var Service_resolveJsonBodyOrServiceResult = await Service_JsonBodyOrServiceResolver(httpContext, false);
+                    if (!Service_resolveJsonBodyOrServiceResult.Item1)
+                    {
+                        return;
+                    }
+                    var Service_local = Service_resolveJsonBodyOrServiceResult.Item2!;
+
+                    var args_local = new global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService { Todo = Todo_local, Service = Service_local };
+
+                    if (wasParamCheckFailure)
+                    {
+                        httpContext.Response.StatusCode = 400;
+                    }
+                    var result = await filteredInvocation(EndpointFilterInvocationContext.Create<global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService>(httpContext, args_local));
+                    if (result is not null)
+                    {
+                        await GeneratedRouteBuilderExtensionsCore.ExecuteReturnAsync(result, httpContext, objectJsonTypeInfo);
+                    }
+                }
+
+                RequestDelegate targetDelegate = filteredInvocation is null ? RequestHandler : RequestHandlerFiltered;
+                var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
+                return new RequestDelegateResult(targetDelegate, metadata);
+            };
+            return MapCore(
+                endpoints,
+                pattern,
+                handler,
+                PostVerb,
                 populateMetadata,
                 createRequestDelegate);
         }
@@ -857,14 +987,20 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+            var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
 
-            if (attributes == null || attributes is { Length: 0 })
+            if (constructorAttributes == null || constructorAttributes is { Length: 0 })
             {
-                attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+                return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
             }
 
-            return attributes;
+            var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+
+            var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
+            Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+            Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+            return mergedAttributes;
         }
 
         public override object[] GetCustomAttributes(bool inherit)

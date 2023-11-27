@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -19,7 +19,7 @@ public class FileLoggerProcessorTests
 
     public FileLoggerProcessorTests()
     {
-        TempPath = Path.GetTempFileName() + "_";
+        TempPath = Path.Combine(Environment.CurrentDirectory, "_");
     }
 
     public string TempPath { get; }

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Options;
 using Moq;
 

@@ -1,5 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Identity.UI.Services.IEmailSender
-*REMOVED*Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender (forwarded, contained in Microsoft.Extensions.Identity.Core)
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task! (forwarded, contained in Microsoft.Extensions.Identity.Core)

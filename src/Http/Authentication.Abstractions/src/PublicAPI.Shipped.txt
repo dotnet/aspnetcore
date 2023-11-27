@@ -12,6 +12,9 @@ Microsoft.AspNetCore.Authentication.AuthenticateResult.Properties.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticateResult.Succeeded.get -> bool
 Microsoft.AspNetCore.Authentication.AuthenticateResult.Ticket.get -> Microsoft.AspNetCore.Authentication.AuthenticationTicket?
 Microsoft.AspNetCore.Authentication.AuthenticateResult.Ticket.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationFailureException
+Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message, System.Exception? innerException) -> void
 Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions
 Microsoft.AspNetCore.Authentication.AuthenticationOptions
 Microsoft.AspNetCore.Authentication.AuthenticationOptions.AddScheme(string! name, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder!>! configureBuilder) -> void

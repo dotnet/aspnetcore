@@ -18,13 +18,16 @@ public class RazorComponentEndpointFactoryTest
         var factory = new RazorComponentEndpointFactory();
         var conventions = new List<Action<EndpointBuilder>>();
         var finallyConventions = new List<Action<EndpointBuilder>>();
+        var testRenderMode = new TestRenderMode();
+        var configuredRenderModes = new ConfiguredRenderModesMetadata(new[] { testRenderMode });
         factory.AddEndpoints(endpoints, typeof(App), new PageComponentInfo(
             "App",
             typeof(App),
             "/",
             new object[] { new AuthorizeAttribute() }),
             conventions,
-            finallyConventions);
+            finallyConventions,
+            configuredRenderModes);
 
         var endpoint = Assert.Single(endpoints);
         Assert.Equal("/ (App)", endpoint.DisplayName);
@@ -35,6 +38,8 @@ public class RazorComponentEndpointFactoryTest
         Assert.Contains(endpoint.Metadata, m => m is ComponentTypeMetadata);
         Assert.Contains(endpoint.Metadata, m => m is SuppressLinkGenerationMetadata);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
+        Assert.Contains(endpoint.Metadata, m => m is ConfiguredRenderModesMetadata c
+            && c.ConfiguredRenderModes.Single() == testRenderMode);
         Assert.NotNull(endpoint.RequestDelegate);
 
         var methods = Assert.Single(endpoint.Metadata.GetOrderedMetadata<HttpMethodMetadata>());
@@ -63,7 +68,8 @@ public class RazorComponentEndpointFactoryTest
                 "/",
                 Array.Empty<object>()),
             conventions,
-            finallyConventions);
+            finallyConventions,
+            new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>()));
 
         var endpoint = Assert.Single(endpoints);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
@@ -90,7 +96,8 @@ public class RazorComponentEndpointFactoryTest
                 "/",
                 Array.Empty<object>()),
             conventions,
-            finallyConventions);
+            finallyConventions,
+            new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>()));
 
         var endpoint = Assert.Single(endpoints);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
@@ -117,7 +124,8 @@ public class RazorComponentEndpointFactoryTest
                 "/",
                 Array.Empty<object>()),
             conventions,
-            finallyConventions);
+            finallyConventions,
+            new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>()));
 
         var endpoint = Assert.Single(endpoints);
         var routeEndpoint = Assert.IsType<RouteEndpoint>(endpoint);
@@ -148,9 +156,12 @@ public class RazorComponentEndpointFactoryTest
                 "/",
                 Array.Empty<object>()),
             conventions,
-            finallyConventions);
+            finallyConventions,
+            new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>()));
 
         var endpoint = Assert.Single(endpoints);
         Assert.DoesNotContain(endpoint.Metadata, m => m is AuthorizeAttribute);
     }
+
+    class TestRenderMode : IComponentRenderMode { }
 }

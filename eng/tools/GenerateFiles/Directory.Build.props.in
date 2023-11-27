@@ -8,11 +8,4 @@
     <!-- Temporarily hardcoded to true -->
     <SuppressGenerateILCompilerExplicitPackageReferenceWarning>true</SuppressGenerateILCompilerExplicitPackageReferenceWarning>
   </PropertyGroup>
-
-  <!-- Ignore warning about RID resolution rules changing in .NET 8 Preview 6 -->
-  <!-- Needed until https://github.com/ericsink/SQLitePCL.raw/issues/543 is fixed -->
-  <!-- See https://github.com/dotnet/aspnetcore/pull/48908#issuecomment-1601894643 -->
-  <ItemGroup>
-    <RuntimeHostConfigurationOption Include="System.Runtime.Loader.UseRidGraph" Value="true" />
-  </ItemGroup>
 </Project>

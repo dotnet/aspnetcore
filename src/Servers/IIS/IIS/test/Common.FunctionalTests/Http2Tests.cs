@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http2Cat;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;

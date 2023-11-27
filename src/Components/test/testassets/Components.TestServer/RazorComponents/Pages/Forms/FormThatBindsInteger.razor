@@ -2,7 +2,7 @@
 
 <h2>Form that binds integer</h2>
 
-<form name="bind-integer" method="post" @onsubmit="() => _submitted = true" @formname="bind-integer">
+<form data-enhance name="bind-integer" method="post" @onsubmit="() => _submitted = true" @formname="bind-integer">
     <input type="text" name="Id" value="@(_attemptedValue ?? Id.ToString())" />
     <input id="send" type="submit" value="Send" />
     <AntiforgeryToken />
@@ -31,7 +31,7 @@
     string _attemptedValue = null;
     IReadOnlyList<FormattableString> _errors;
 
-    [SupplyParameterFromForm(Handler = "bind-integer")] public int Id { get; set; } = 0;
+    [SupplyParameterFromForm(FormName = "bind-integer")] public int Id { get; set; } = 0;
 
     [CascadingParameter] public FormMappingContext Context { get; set; }
 

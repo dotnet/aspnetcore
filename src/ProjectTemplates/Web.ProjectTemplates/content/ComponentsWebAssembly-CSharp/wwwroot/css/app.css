@@ -1,3 +1,4 @@
+/*#if (SampleContent)*/
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -24,6 +25,7 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
+/*#endif*/
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -40,6 +42,7 @@ a, .btn-link {
     background: lightyellow;
     bottom: 0;
     box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
     display: none;
     left: 0;
     padding: 0.6rem 1.25rem 0.7rem 1.25rem;
@@ -97,3 +100,7 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+code {
+    color: #c02d76;
+}

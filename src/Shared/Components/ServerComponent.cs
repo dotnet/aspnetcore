@@ -12,16 +12,20 @@ internal struct ServerComponent
 {
     public ServerComponent(
         int sequence,
+        ComponentMarkerKey? key,
         string assemblyName,
         string typeName,
         IList<ComponentParameter> parametersDefinitions,
         IList<object?> parameterValues,
         Guid invocationId) =>
-        (Sequence, AssemblyName, TypeName, ParameterDefinitions, ParameterValues, InvocationId) =
-        (sequence, assemblyName, typeName, parametersDefinitions, parameterValues, invocationId);
+        (Sequence, Key, AssemblyName, TypeName, ParameterDefinitions, ParameterValues, InvocationId) =
+        (sequence, key, assemblyName, typeName, parametersDefinitions, parameterValues, invocationId);
 
     // The order in which this component was rendered
     public int Sequence { get; set; }
+
+    // A key that identifies the component instance.
+    public ComponentMarkerKey? Key { get; set; }
 
     // The assembly name for the rendered component.
     public string AssemblyName { get; set; }

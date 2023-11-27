@@ -49,8 +49,8 @@ public class NegotiationResponse
 
     /// <summary>
     /// If set, the connection should attempt to reconnect with the same <see cref="BaseConnectionContext.ConnectionId"/> if it disconnects.
-    /// It should also set <see cref="IReconnectFeature"/> on the <see cref="BaseConnectionContext.Features"/> collection so other layers of the
+    /// It should also set <see cref="IStatefulReconnectFeature"/> on the <see cref="BaseConnectionContext.Features"/> collection so other layers of the
     /// application (like SignalR) can react.
     /// </summary>
-    public bool UseAcking { get; set; }
+    public bool UseStatefulReconnect { get; set; }
 }

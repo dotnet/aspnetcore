@@ -105,18 +105,19 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         offset++;
 
         // Find end of path and if path is encoded
-        for (; (uint)offset < (uint)requestLine.Length; offset++)
+        var index = requestLine.Slice(offset).IndexOfAny(ByteSpace, ByteQuestionMark, BytePercentage);
+        if (index >= 0)
         {
-            ch = requestLine[offset];
-            if (ch == ByteSpace || ch == ByteQuestionMark)
-            {
-                // End of path
-                break;
-            }
-            else if (ch == BytePercentage)
+            if (requestLine[offset + index] == BytePercentage)
             {
                 pathEncoded = true;
+                offset += index;
+                // Found an encoded character, now just search for end of path
+                index = requestLine.Slice(offset).IndexOfAny(ByteSpace, ByteQuestionMark);
             }
+
+            offset += index;
+            ch = requestLine[offset];
         }
 
         var path = new TargetOffsetPathLength(targetStart, length: offset - targetStart, pathEncoded);

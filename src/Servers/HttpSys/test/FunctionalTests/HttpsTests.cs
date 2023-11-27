@@ -1,26 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Windows.Win32.Networking.HttpServer;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class HttpsTests
+public class HttpsTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate("eku.client.pfx");
 
@@ -30,7 +27,7 @@ public class HttpsTests
         using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
         {
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -45,7 +42,7 @@ public class HttpsTests
             byte[] body = Encoding.UTF8.GetBytes("Hello World");
             httpContext.Response.ContentLength = body.Length;
             return httpContext.Response.Body.WriteAsync(body, 0, body.Length);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal("Hello World", response);
@@ -62,7 +59,7 @@ public class HttpsTests
             var body = Encoding.UTF8.GetBytes("Hello World");
             httpContext.Response.ContentLength = body.Length;
             await httpContext.Response.Body.WriteAsync(body, 0, body.Length);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -143,7 +140,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -159,7 +156,7 @@ public class HttpsTests
             var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
             return httpContext.Response.WriteAsJsonAsync(tlsFeature);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             var result = System.Text.Json.JsonDocument.Parse(response).RootElement;
@@ -207,27 +204,27 @@ public class HttpsTests
                 Assert.NotNull(tlsFeature);
                 Assert.NotNull(requestInfoFeature);
                 Assert.True(requestInfoFeature.RequestInfo.Count > 0);
-                var tlsInfo = requestInfoFeature.RequestInfo[(int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol];
-                HttpApiTypes.HTTP_SSL_PROTOCOL_INFO tlsCopy;
+                var tlsInfo = requestInfoFeature.RequestInfo[(int)HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol];
+                HTTP_SSL_PROTOCOL_INFO tlsCopy;
                 unsafe
                 {
                     using var handle = tlsInfo.Pin();
-                    tlsCopy = Marshal.PtrToStructure<HttpApiTypes.HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
+                    tlsCopy = Marshal.PtrToStructure<HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
                 }
 
                 // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
-                Assert.Equal(tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
+                Assert.Equal((uint)tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                 Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
-                Assert.Equal(tlsFeature.HashAlgorithm, tlsCopy.HashType);
+                Assert.Equal((uint)tlsFeature.HashAlgorithm, tlsCopy.HashType);
                 Assert.Equal(tlsFeature.HashStrength, (int)tlsCopy.HashStrength);
-                Assert.Equal(tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
+                Assert.Equal((uint)tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
                 Assert.Equal(tlsFeature.KeyExchangeStrength, (int)tlsCopy.KeyExchangeStrength);
             }
             catch (Exception ex)
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -257,7 +254,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);

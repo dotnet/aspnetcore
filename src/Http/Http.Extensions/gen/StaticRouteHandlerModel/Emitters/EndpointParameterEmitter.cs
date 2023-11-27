@@ -215,7 +215,6 @@ internal static class EndpointParameterEmitter
         var assigningCode = $"await {endpointParameter.SymbolName}_JsonBodyOrServiceResolver(httpContext, {(endpointParameter.IsOptional ? "true" : "false")})";
         var resolveJsonBodyOrServiceResult = $"{endpointParameter.SymbolName}_resolveJsonBodyOrServiceResult";
         codeWriter.WriteLine($"var {resolveJsonBodyOrServiceResult} = {assigningCode};");
-        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
 
         // If binding from the JSON body fails, ResolveJsonBodyOrService
         // will return `false` and we will need to exit early.
@@ -223,6 +222,14 @@ internal static class EndpointParameterEmitter
         codeWriter.StartBlock();
         codeWriter.WriteLine("return;");
         codeWriter.EndBlock();
+
+        // Required parameters are guranteed to be set by the time we reach this point
+        // because they are either associated with a service that existed in DI or
+        // the appropriate checks have already happened when binding from the JSON body.
+        codeWriter.WriteLine(!endpointParameter.IsOptional
+            ? $"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2!;"
+            : $"var {endpointParameter.EmitHandlerArgument()} = {resolveJsonBodyOrServiceResult}.Item2;");
+
     }
 
     internal static void EmitJsonBodyOrQueryParameterPreparationString(this EndpointParameter endpointParameter, CodeWriter codeWriter)
@@ -321,6 +328,16 @@ internal static class EndpointParameterEmitter
         var assigningCode = endpointParameter.IsOptional ?
             $"httpContext.RequestServices.GetService<{endpointParameter.Type}>();" :
             $"httpContext.RequestServices.GetRequiredService<{endpointParameter.Type}>()";
+        codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
+    }
+
+    internal static void EmitKeyedServiceParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
+    {
+        codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        var assigningCode = endpointParameter.IsOptional ?
+            $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey});" :
+            $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey})";
         codeWriter.WriteLine($"var {endpointParameter.EmitHandlerArgument()} = {assigningCode};");
     }
 

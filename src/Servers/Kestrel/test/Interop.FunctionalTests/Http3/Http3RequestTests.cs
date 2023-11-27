@@ -3,10 +3,8 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
-using System.Net.Quic;
 using System.Net.Security;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
@@ -17,14 +15,14 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
@@ -431,6 +429,8 @@ public class Http3RequestTests : LoggedTest
 
             var response = await responseTask.DefaultTimeout();
 
+            requestContent.CompleteStream();
+
             // Assert
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version30, response.Version);
@@ -726,7 +726,7 @@ public class Http3RequestTests : LoggedTest
 
             // Act
             using var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromSeconds(1));
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
             var responseTask = client.SendAsync(request, cts.Token);
 
             var response = await responseTask.DefaultTimeout();
@@ -755,7 +755,6 @@ public class Http3RequestTests : LoggedTest
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43374")]
     [MsQuicSupported]
     public async Task GET_ConnectionsMakingMultipleRequests_AllSuccess()
     {
@@ -956,7 +955,6 @@ public class Http3RequestTests : LoggedTest
 
     // Verify HTTP/2 and HTTP/3 match behavior
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]

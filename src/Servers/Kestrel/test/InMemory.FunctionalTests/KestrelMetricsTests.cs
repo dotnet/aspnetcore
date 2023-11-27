@@ -15,8 +15,8 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -273,7 +273,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
             AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null);
-            Assert.Equal("System.InvalidOperationException", (string)m.Tags["exception.type"]);
+            Assert.Equal("System.InvalidOperationException", (string)m.Tags["error.type"]);
         });
         Assert.Collection(activeConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
         Assert.Collection(queuedConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));

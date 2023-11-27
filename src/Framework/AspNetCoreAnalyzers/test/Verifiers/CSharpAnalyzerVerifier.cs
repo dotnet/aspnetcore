@@ -4,7 +4,7 @@
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -54,11 +54,11 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
                 "NuGet.config") :
             Path.Combine(TestData.GetRepoRoot(), "NuGet.config");
         var net8Ref = new ReferenceAssemblies(
-            "net8.0",
+            "net9.0",
             new PackageIdentity(
                 "Microsoft.NETCore.App.Ref",
                 TestData.GetMicrosoftNETCoreAppRefPackageVersion()),
-            Path.Combine("ref", "net8.0"))
+            Path.Combine("ref", "net9.0"))
         .WithNuGetConfigFilePath(nugetConfigPath);
 
         return net8Ref.AddAssemblies(ImmutableArray.Create(

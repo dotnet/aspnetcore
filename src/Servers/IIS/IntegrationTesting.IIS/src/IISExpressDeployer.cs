@@ -9,7 +9,7 @@ using System.Runtime.InteropServices.Marshalling;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -105,6 +105,7 @@ public partial class IISExpressDeployer : IISDeployerBase
                 applicationBaseUri: actualUri.ToString(),
                 contentRoot: contentRoot,
                 hostShutdownToken: hostExitToken,
+                appPoolName: "IISExpressAppPool",
                 hostProcess: _hostProcess);
         }
     }

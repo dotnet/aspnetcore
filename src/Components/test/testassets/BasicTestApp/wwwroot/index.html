@@ -21,8 +21,8 @@
     <!-- Explicit display:none required so StartupErrorNotificationTest can observe it change -->
     <div id="blazor-error-ui" style="display: none;">
         An unhandled error has occurred.
-        <a href class='reload'>Reload</a>
-        <a class='dismiss' style="cursor: pointer;">🗙</a>
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
     </div>
 
     <!-- Used for specific test cases -->
@@ -56,7 +56,13 @@
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
 
     <script>
-        (function(){
+        (function () {
+            if (location.hash.indexOf('initializer') !== -1) {
+                const element = document.createElement('div');
+                element.id = 'initializers-content';
+                document.body.append(element);
+            }
+
             Blazor.start({
                 configureRuntime: dotnet => {
                     dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");

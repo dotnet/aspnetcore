@@ -1,14 +1,1 @@
 #nullable enable
-~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string
-~static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalPrefixHeaderName.get -> string
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedPrefixHeaderName.get -> string!
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedPrefixHeaderName.set -> void
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalPrefixHeaderName.get -> string!
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalPrefixHeaderName.set -> void
-*REMOVED*Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPrefix -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedPrefix = 8 -> Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders
-static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XForwardedPrefixHeaderName.get -> string!
-static Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults.XOriginalPrefixHeaderName.get -> string!
-static Microsoft.AspNetCore.HttpOverrides.IPNetwork.Parse(System.ReadOnlySpan<char> networkSpan) -> Microsoft.AspNetCore.HttpOverrides.IPNetwork!
-static Microsoft.AspNetCore.HttpOverrides.IPNetwork.TryParse(System.ReadOnlySpan<char> networkSpan, out Microsoft.AspNetCore.HttpOverrides.IPNetwork? network) -> bool

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack;
 internal sealed class BlazorPackHubProtocol : IHubProtocol
 {
     internal const string ProtocolName = "blazorpack";
-    private const int ProtocolVersion = 1;
+    private const int ProtocolVersion = 2;
 
     private readonly BlazorPackHubProtocolWorker _worker = new BlazorPackHubProtocolWorker();
 
@@ -32,7 +32,7 @@ internal sealed class BlazorPackHubProtocol : IHubProtocol
     /// <inheritdoc />
     public bool IsVersionSupported(int version)
     {
-        return version == Version;
+        return version <= Version;
     }
 
     /// <inheritdoc />

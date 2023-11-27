@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Tools.Internal;

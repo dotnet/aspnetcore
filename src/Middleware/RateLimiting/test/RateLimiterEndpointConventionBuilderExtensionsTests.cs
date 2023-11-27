@@ -4,7 +4,7 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.RateLimiting;
 

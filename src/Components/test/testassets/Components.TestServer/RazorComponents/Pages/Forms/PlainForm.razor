@@ -3,7 +3,7 @@
 
 <h2>Plain form</h2>
 
-<form method="post" @onsubmit="() => _submitted = true" @formname="my-form">
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="my-form">
     <AntiforgeryToken />
 
     <p id="StringViaExplicitPropertyName">
@@ -67,9 +67,9 @@
 
     [SupplyParameterFromForm] public string StringViaExpression { get; set; }
 
-    [SupplyParameterFromForm(Handler = "my-form")] public string StringViaExpressionWithHandler { get; set; }
+    [SupplyParameterFromForm(FormName = "my-form")] public string StringViaExpressionWithHandler { get; set; }
 
-    [SupplyParameterFromForm(Handler = "unmatched-handler")] public string StringViaExpressionWithUnmatchedHandler { get; set; }
+    [SupplyParameterFromForm(FormName = "unmatched-handler")] public string StringViaExpressionWithUnmatchedHandler { get; set; }
 
     [SupplyParameterFromForm] public MyComplexObject Person { get; set; } = new();
 

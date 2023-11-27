@@ -1,5 +1,5 @@
 ﻿@page "/forms/streaming-rendering/{OperationId}"
-@attribute [StreamRendering(true)]
+@attribute [StreamRendering]
 @inject AsyncOperationService AsyncOperation
 @inject NavigationManager Navigation;
 @using Components.TestServer.Services;
@@ -8,7 +8,7 @@
 
 <h2>Streaming rendering async form</h2>
 
-<EditForm EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
+<EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
     <input id="send" type="submit" value="Send" />
 </EditForm>
 

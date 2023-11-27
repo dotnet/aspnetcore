@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -72,7 +72,6 @@ public class EndToEndTests : FunctionalTestBase
     [Theory]
     [MemberData(nameof(TransportTypes))]
     [LogLevel(LogLevel.Trace)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49315")]
     public async Task CanStartAndStopConnectionUsingGivenTransport(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
@@ -686,7 +685,7 @@ public class EndToEndTests : FunctionalTestBase
     {
         private ITransport _transport;
 
-        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useAck)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
         {
             if (_transport == null)
             {

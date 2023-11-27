@@ -34,30 +34,24 @@ internal static partial class CertificatePathWatcherLoggerExtensions
     [LoggerMessage(9, LogLevel.Debug, "Ignored event for presently untracked file '{Path}'.", EventName = "UntrackedFileEvent")]
     public static partial void UntrackedFileEvent(this ILogger<CertificatePathWatcher> logger, string path);
 
-    [LoggerMessage(10, LogLevel.Debug, "Ignored out-of-order event for file '{Path}'.", EventName = "OutOfOrderEvent")]
-    public static partial void OutOfOrderEvent(this ILogger<CertificatePathWatcher> logger, string path);
-
-    [LoggerMessage(11, LogLevel.Trace, "Reused existing observer on file watcher for '{Path}'.", EventName = "ReusedObserver")]
+    [LoggerMessage(10, LogLevel.Trace, "Reused existing observer on file watcher for '{Path}'.", EventName = "ReusedObserver")]
     public static partial void ReusedObserver(this ILogger<CertificatePathWatcher> logger, string path);
 
-    [LoggerMessage(12, LogLevel.Trace, "Added observer to file watcher for '{Path}'.", EventName = "AddedObserver")]
+    [LoggerMessage(11, LogLevel.Trace, "Added observer to file watcher for '{Path}'.", EventName = "AddedObserver")]
     public static partial void AddedObserver(this ILogger<CertificatePathWatcher> logger, string path);
 
-    [LoggerMessage(13, LogLevel.Trace, "Removed observer from file watcher for '{Path}'.", EventName = "RemovedObserver")]
+    [LoggerMessage(12, LogLevel.Trace, "Removed observer from file watcher for '{Path}'.", EventName = "RemovedObserver")]
     public static partial void RemovedObserver(this ILogger<CertificatePathWatcher> logger, string path);
 
-    [LoggerMessage(14, LogLevel.Trace, "File '{Path}' now has {Count} observers.", EventName = "ObserverCount")]
+    [LoggerMessage(13, LogLevel.Trace, "File '{Path}' now has {Count} observers.", EventName = "ObserverCount")]
     public static partial void ObserverCount(this ILogger<CertificatePathWatcher> logger, string path, int count);
 
-    [LoggerMessage(15, LogLevel.Trace, "Directory '{Directory}' now has watchers on {Count} files.", EventName = "FileCount")]
+    [LoggerMessage(14, LogLevel.Trace, "Directory '{Directory}' now has watchers on {Count} files.", EventName = "FileCount")]
     public static partial void FileCount(this ILogger<CertificatePathWatcher> logger, string directory, int count);
 
-    [LoggerMessage(16, LogLevel.Trace, "Ignored event since last modified time for '{Path}' was unavailable.", EventName = "EventWithoutLastModifiedTime")]
-    public static partial void EventWithoutLastModifiedTime(this ILogger<CertificatePathWatcher> logger, string path);
-
-    [LoggerMessage(17, LogLevel.Trace, "Ignored redundant event for '{Path}'.", EventName = "RedundantEvent")]
-    public static partial void RedundantEvent(this ILogger<CertificatePathWatcher> logger, string path);
-
-    [LoggerMessage(18, LogLevel.Trace, "Flagged {Count} observers of '{Path}' as changed.", EventName = "FlaggedObservers")]
+    [LoggerMessage(15, LogLevel.Trace, "Flagged {Count} observers of '{Path}' as changed.", EventName = "FlaggedObservers")]
     public static partial void FlaggedObservers(this ILogger<CertificatePathWatcher> logger, string path, int count);
+
+    [LoggerMessage(16, LogLevel.Trace, "Ignored event since '{Path}' was unavailable.", EventName = "EventWithoutFile")]
+    public static partial void EventWithoutFile(this ILogger<CertificatePathWatcher> logger, string path);
 }

@@ -5,11 +5,11 @@ using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class ResponseBodyTests
+public class ResponseBodyTests : LoggedTest
 {
     [ConditionalFact]
     public async Task ResponseBody_StartAsync_LocksHeadersAndTriggersOnStarting()
@@ -27,7 +27,7 @@ public class ResponseBodyTests
             Assert.True(httpContext.Response.Headers.IsReadOnly);
             await startingTcs.Task.DefaultTimeout();
             await httpContext.Response.WriteAsync("Hello World");
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -56,7 +56,7 @@ public class ResponseBodyTests
             Assert.True(httpContext.Response.Headers.IsReadOnly);
             await startingTcs.Task.DefaultTimeout();
             await responseReceived.Task.DefaultTimeout();
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -77,7 +77,7 @@ public class ResponseBodyTests
             writer.Advance(memory.Length);
             await httpContext.Response.CompleteAsync();
             await responseReceived.Task.DefaultTimeout();
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -96,7 +96,7 @@ public class ResponseBodyTests
             var memory = writer.GetMemory();
             writer.Advance(memory.Length);
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -114,7 +114,7 @@ public class ResponseBodyTests
             httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
             httpContext.Response.Body.Write(new byte[10], 0, 10);
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -146,7 +146,7 @@ public class ResponseBodyTests
                     httpContext.Response.Body.Write(new byte[WriteSize], 0, WriteSize);
                 }
                 await httpContext.Response.Body.WriteAsync(new byte[WriteSize], 0, WriteSize);
-            }))
+            }, loggerFactory: LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -171,7 +171,7 @@ public class ResponseBodyTests
             httpContext.Response.Body.Write(new byte[10], 0, 10);
             await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             await httpContext.Response.Body.FlushAsync();
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -193,7 +193,7 @@ public class ResponseBodyTests
             Stream stream = httpContext.Response.Body;
             var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
             await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -217,7 +217,7 @@ public class ResponseBodyTests
             stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
             stream.Write(new byte[10], 0, 10);
             await stream.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -238,7 +238,7 @@ public class ResponseBodyTests
         {
             httpContext.Response.Headers["Content-lenGth"] = " 20 ";
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
         }
@@ -252,7 +252,7 @@ public class ResponseBodyTests
         {
             httpContext.Response.Headers["Content-lenGth"] = " 20 ";
             return httpContext.Response.Body.WriteAsync(new byte[5], 0, 5);
-        }))
+        }, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(async () => await SendRequestAsync(address));
         }
@@ -270,7 +270,7 @@ public class ResponseBodyTests
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 httpContext.Response.Body.WriteAsync(new byte[6], 0, 6));
             completed = true;
-        }))
+        }, LoggerFactory))
         {
             await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
             Assert.True(completed);
@@ -296,7 +296,7 @@ public class ResponseBodyTests
                 requestThrew.SetResult(true);
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             // The full response is received.
             HttpResponseMessage response = await SendRequestAsync(address);
@@ -328,7 +328,7 @@ public class ResponseBodyTests
             }, httpContext);
             httpContext.Response.Body.Write(new byte[10], 0, 10);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -356,7 +356,7 @@ public class ResponseBodyTests
             }, httpContext);
             httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(new byte[10], 0, 10, null, null));
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -383,7 +383,7 @@ public class ResponseBodyTests
                 return Task.FromResult(0);
             }, httpContext);
             return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -424,7 +424,7 @@ public class ResponseBodyTests
                 // the payload would not be observed
                 completion.TrySetException(ex);
             }
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             var payload = await response.Content.ReadAsByteArrayAsync();

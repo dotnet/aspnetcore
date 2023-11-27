@@ -5,27 +5,21 @@ using System.Diagnostics.CodeAnalysis;
 using System.Buffers;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-/// <summary>
-/// Executes a <see cref="RazorComponentResult"/>.
-/// </summary>
-public class RazorComponentResultExecutor
+internal static class RazorComponentResultExecutor
 {
-    /// <summary>
-    /// The default content-type header value for Razor Components, <c>text/html; charset=utf-8</c>.
-    /// </summary>
-    public static readonly string DefaultContentType = "text/html; charset=utf-8";
+    public const string DefaultContentType = "text/html; charset=utf-8";
 
-    /// <summary>
-    /// Executes a <see cref="RazorComponentResult"/> asynchronously.
-    /// </summary>
-    public virtual Task ExecuteAsync(HttpContext httpContext, RazorComponentResult result)
+    public static Task ExecuteAsync(HttpContext httpContext, RazorComponentResult result)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
@@ -44,7 +38,7 @@ public class RazorComponentResultExecutor
             result.PreventStreamingRendering);
     }
 
-    internal static Task RenderComponentToResponse(
+    private static Task RenderComponentToResponse(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,
         IReadOnlyDictionary<string, object?>? componentParameters,
@@ -53,7 +47,9 @@ public class RazorComponentResultExecutor
         var endpointHtmlRenderer = httpContext.RequestServices.GetRequiredService<EndpointHtmlRenderer>();
         return endpointHtmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
-            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext);
+            var isErrorHandler = httpContext.Features.Get<IExceptionHandlerFeature>() is not null;
+            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext, isErrorHandler);
+            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(httpContext);
 
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView
             // backing buffers could come from a pool like they do during rendering.
@@ -63,7 +59,10 @@ public class RazorComponentResultExecutor
                 { nameof(RazorComponentEndpointHost.ComponentParameters), componentParameters },
             });
 
-            await using var writer = CreateResponseWriter(httpContext.Response.Body);
+            // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
 
             // Note that we don't set any interactive rendering mode for the top-level output from a RazorComponentResult,
             // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
@@ -79,24 +78,17 @@ public class RazorComponentResultExecutor
             // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
             // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
             // renderer sync context and cause a batch that would get missed.
-            htmlContent.WriteTo(writer, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
+            htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
 
-            if (!htmlContent.QuiescenceTask.IsCompleted)
+            if (!htmlContent.QuiescenceTask.IsCompletedSuccessfully)
             {
-                await endpointHtmlRenderer.SendStreamingUpdatesAsync(httpContext, htmlContent.QuiescenceTask, writer);
+                await endpointHtmlRenderer.SendStreamingUpdatesAsync(httpContext, htmlContent.QuiescenceTask, bufferWriter);
             }
 
             // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
             // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
             // response as part of the Dispose which has a perf impact.
-            await writer.FlushAsync();
+            await bufferWriter.FlushAsync();
         });
-    }
-
-    private static TextWriter CreateResponseWriter(Stream bodyStream)
-    {
-        // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
-        const int DefaultBufferSize = 16 * 1024;
-        return new HttpResponseStreamWriter(bodyStream, Encoding.UTF8, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
     }
 }

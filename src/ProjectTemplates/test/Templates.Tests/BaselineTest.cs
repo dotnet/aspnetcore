@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
@@ -100,7 +100,7 @@ public class BaselineTest : LoggedTest
             }
             Assert.Contains(relativePath, expectedFiles);
 
-            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal) && !relativePath.EndsWith("Extensions.cs", StringComparison.Ordinal))
             {
                 var namespaceDeclarationPrefix = "namespace ";
                 var namespaceDeclaration = File.ReadLines(file)

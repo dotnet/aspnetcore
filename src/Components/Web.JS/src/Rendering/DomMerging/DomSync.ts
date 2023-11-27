@@ -6,12 +6,13 @@ import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
 import { synchronizeAttributes } from './AttributeSync';
+import { cannotMergeDueToDataPermanentAttributes, isDataPermanentElement } from './DataPermanentElementSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
 let descriptorHandler: DescriptorHandler | null = null;
 
 export interface DescriptorHandler {
-  registerComponentDescriptor(descriptor: ComponentDescriptor): void;
+  registerComponent(descriptor: ComponentDescriptor): void;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
@@ -22,7 +23,7 @@ export function registerAllComponentDescriptors(root: Node) {
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
-    descriptorHandler?.registerComponentDescriptor(descriptor);
+    descriptorHandler?.registerComponent(descriptor);
   }
 }
 
@@ -184,7 +185,12 @@ function treatAsMatch(destination: Node, source: Node) {
       const editableElementValue = getEditableElementValue(source as Element);
       synchronizeAttributes(destination as Element, source as Element);
       applyAnyDeferredValue(destination as Element);
-      synchronizeDomContentCore(destination as Element, source as Element);
+
+      if (isDataPermanentElement(destination as Element)) {
+        // The destination element's content should be retained, so we avoid recursing into it.
+      } else {
+        synchronizeDomContentCore(destination as Element, source as Element);
+      }
 
       // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
       // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
@@ -244,7 +250,7 @@ function treatAsInsertion(nodeToInsert: Node, nextNode: Node | null, parentNode:
   while (iterator.nextNode()) {
     const logicalRootDescriptor = getLogicalRootDescriptor(iterator.referenceNode as unknown as LogicalElement);
     if (logicalRootDescriptor) {
-      descriptorHandler?.registerComponentDescriptor(logicalRootDescriptor);
+      descriptorHandler?.registerComponent(logicalRootDescriptor);
     }
   }
 }
@@ -288,7 +294,18 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       //       to return UpdateCost.Infinite if either has a key but they don't match. This will prevent unwanted retention.
       //       For the converse (forcing retention, even if that means reordering), we could post-process the list of
       //       inserts/deletes to find matches based on key to treat those pairs as 'move' operations.
-      return (a as Element).tagName === (b as Element).tagName ? UpdateCost.None : UpdateCost.Infinite;
+      if ((a as Element).tagName !== (b as Element).tagName) {
+        return UpdateCost.Infinite;
+      }
+
+      // The two elements must have matching 'data-permanent' attribute values for them to be merged. If they don't match, either:
+      // [1] We're comparing a data-permanent element to a non-data-permanent one.
+      // [2] We're comparing elements that represent two different data-permanent containers.
+      if (cannotMergeDueToDataPermanentAttributes(a as Element, b as Element)) {
+        return UpdateCost.Infinite;
+      }
+
+      return UpdateCost.None;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
       // nodes by saying they are always unchanged.
@@ -337,8 +354,10 @@ function ensureEditableValueSynchronized(destination: Element, value: any) {
   } else if (destination instanceof HTMLSelectElement && destination.selectedIndex !== value) {
     destination.selectedIndex = value as number;
   } else if (destination instanceof HTMLInputElement) {
-    if (destination.type === 'checkbox' && destination.checked !== value) {
-      destination.checked = value as boolean;
+    if (destination.type === 'checkbox' || destination.type === 'radio') {
+      if (destination.checked !== value) {
+        destination.checked = value as boolean;
+      }
     } else if (destination.value !== value) {
       destination.value = value as string;
     }
@@ -349,7 +368,7 @@ function getEditableElementValue(elem: Element): string | boolean | number | nul
   if (elem instanceof HTMLSelectElement) {
     return elem.selectedIndex;
   } else if (elem instanceof HTMLInputElement) {
-    return elem.type === 'checkbox' ? elem.checked : (elem.getAttribute('value') || '');
+    return elem.type === 'checkbox' || elem.type === 'radio' ? elem.checked : (elem.getAttribute('value') || '');
   } else if (elem instanceof HTMLTextAreaElement) {
     return elem.value;
   } else {
@@ -441,7 +460,7 @@ class LogicalElementNodeList implements ItemList<Node> {
   [index: number]: Node;
 
   item(index: number): Node | null {
-    return this[index] as unknown as Node;
+    return this[index] as unknown as Node || null;
   }
 
   forEach(callbackfn: (value: Node, key: number, parent: ItemList<Node>) => void, thisArg?: any): void {

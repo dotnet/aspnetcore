@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,14 +35,20 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task RenderComponentCore(HttpContext context)
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
-        _renderer.InitializeStreamingRenderingFraming(context);
+        var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        if (isErrorHandler)
+        {
+            Log.InteractivityDisabledForErrorHandling(_logger);
+        }
+        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
+        EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
         var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;
         var pageComponent = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>().Type;
 
-        Log.BeginRenderComponent(_logger, rootComponent.Name, pageComponent.Name);
+        Log.BeginRenderRootComponent(_logger, rootComponent.Name, pageComponent.Name);
 
         // Metadata controls whether we require antiforgery protection for this endpoint or we should skip it.
         // The default for razor component endpoints is to require the metadata, but it can be overriden by
@@ -72,9 +80,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
         var defaultBufferSize = 16 * 1024;
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
-        var viewBufferScope = new MemoryPoolViewBufferScope(ArrayPool<ViewBufferValue>.Shared);
-        var viewBuffer = new MemoryPoolViewBuffer(viewBufferScope, pageComponent.FullName ?? pageComponent.Name, defaultBufferSize);
-        await using var bufferWriter = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8, HtmlEncoder.Default, writer);
+        using var bufferWriter = new BufferedTextWriter(writer);
 
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
@@ -83,7 +89,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost);
+            waitForQuiescence: result.IsPost || isErrorHandler);
 
         Task quiesceTask;
         if (!result.IsPost)
@@ -120,6 +126,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
+        else
+        {
+            _renderer.EmitInitializersIfNecessary(context, bufferWriter);
+        }
+
+        // Emit comment containing state.
+        if (!isErrorHandler)
+        {
+            var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
+            componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
+        }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
@@ -129,8 +146,13 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
-        var isPost = HttpMethods.IsPost(context.Request.Method);
-        if (isPost)
+        var processPost = HttpMethods.IsPost(context.Request.Method) &&
+            // Disable POST functionality during exception handling.
+            // The exception handler middleware will not update the request method, and we don't
+            // want to run the form handling logic against the error page.
+            context.Features.Get<IExceptionHandlerFeature>() == null;
+
+        if (processPost)
         {
             var valid = false;
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
@@ -183,7 +205,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             await context.Request.ReadFormAsync();
 
             var handler = GetFormHandler(context, out var isBadRequest);
-            return new(valid && !isBadRequest, isPost, handler);
+            return new(valid && !isBadRequest, processPost, handler);
         }
 
         return RequestValidationState.ValidNonPostRequest;
@@ -227,22 +249,25 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     public static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Debug, "Begin render root component '{componentType}' with page '{pageType}'.", EventName = "BeginRenderRootComponent")]
-        public static partial void BeginRenderComponent(ILogger<RazorComponentEndpointInvoker> logger, string componentType, string pageType);
+        [LoggerMessage(1, LogLevel.Debug, "Begin render root component '{componentType}' with page '{pageType}'.", EventName = nameof(BeginRenderRootComponent))]
+        public static partial void BeginRenderRootComponent(ILogger<RazorComponentEndpointInvoker> logger, string componentType, string pageType);
 
-        [LoggerMessage(2, LogLevel.Debug, "The antiforgery middleware already failed to validate the current token.", EventName = "MiddlewareAntiforgeryValidationFailed")]
+        [LoggerMessage(2, LogLevel.Debug, "The antiforgery middleware already failed to validate the current token.", EventName = nameof(MiddlewareAntiforgeryValidationFailed))]
         public static partial void MiddlewareAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(3, LogLevel.Debug, "The antiforgery middleware already succeeded to validate the current token.", EventName = "MiddlewareAntiforgeryValidationSucceeded")]
+        [LoggerMessage(3, LogLevel.Debug, "The antiforgery middleware already succeeded to validate the current token.", EventName = nameof(MiddlewareAntiforgeryValidationSucceeded))]
         public static partial void MiddlewareAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(4, LogLevel.Debug, "The endpoint disabled antiforgery token validation.", EventName = "EndpointAntiforgeryValidationDisabled")]
+        [LoggerMessage(4, LogLevel.Debug, "The endpoint disabled antiforgery token validation.", EventName = nameof(EndpointAntiforgeryValidationDisabled))]
         public static partial void EndpointAntiforgeryValidationDisabled(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(5, LogLevel.Information, "Antiforgery token validation failed for the current request.", EventName = "EndpointAntiforgeryValidationFailed")]
+        [LoggerMessage(5, LogLevel.Information, "Antiforgery token validation failed for the current request.", EventName = nameof(EndpointAntiforgeryValidationFailed))]
         public static partial void EndpointAntiforgeryValidationFailed(ILogger<RazorComponentEndpointInvoker> logger);
 
-        [LoggerMessage(6, LogLevel.Debug, "Antiforgery token validation succeeded for the current request.", EventName = "EndpointAntiforgeryValidationSucceeded")]
+        [LoggerMessage(6, LogLevel.Debug, "Antiforgery token validation succeeded for the current request.", EventName = nameof(EndpointAntiforgeryValidationSucceeded))]
         public static partial void EndpointAntiforgeryValidationSucceeded(ILogger<RazorComponentEndpointInvoker> logger);
+
+        [LoggerMessage(7, LogLevel.Debug, "Error handling in progress. Interactive components are not enabled.", EventName = nameof(InteractivityDisabledForErrorHandling))]
+        public static partial void InteractivityDisabledForErrorHandling(ILogger<RazorComponentEndpointInvoker> logger);
     }
 }

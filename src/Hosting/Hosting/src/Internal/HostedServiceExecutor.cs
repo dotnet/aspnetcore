@@ -2,32 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class HostedServiceExecutor
 {
     private readonly IEnumerable<IHostedService> _services;
-    private readonly ILogger<HostedServiceExecutor> _logger;
 
-    public HostedServiceExecutor(ILogger<HostedServiceExecutor> logger, IEnumerable<IHostedService> services)
+    public HostedServiceExecutor(IEnumerable<IHostedService> services)
     {
-        _logger = logger;
         _services = services;
     }
 
-    public Task StartAsync(CancellationToken token)
+    public async Task StartAsync(CancellationToken token)
     {
-        return ExecuteAsync(service => service.StartAsync(token));
+        foreach (var service in _services)
+        {
+            await service.StartAsync(token);
+        }
     }
 
-    public Task StopAsync(CancellationToken token)
-    {
-        return ExecuteAsync(service => service.StopAsync(token), throwOnFirstFailure: false);
-    }
-
-    private async Task ExecuteAsync(Func<IHostedService, Task> callback, bool throwOnFirstFailure = true)
+    public async Task StopAsync(CancellationToken token)
     {
         List<Exception>? exceptions = null;
 
@@ -35,20 +30,11 @@ internal sealed class HostedServiceExecutor
         {
             try
             {
-                await callback(service);
+                await service.StopAsync(token);
             }
             catch (Exception ex)
             {
-                if (throwOnFirstFailure)
-                {
-                    throw;
-                }
-
-                if (exceptions == null)
-                {
-                    exceptions = new List<Exception>();
-                }
-
+                exceptions ??= [];
                 exceptions.Add(ex);
             }
         }

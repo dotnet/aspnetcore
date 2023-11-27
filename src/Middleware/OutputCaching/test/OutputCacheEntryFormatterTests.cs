@@ -8,15 +8,27 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.OutputCaching.Tests;
 
-public class OutputCacheEntryFormatterTests
+public class OutputCacheEntryFormatterTests_SimpleStore : OutputCacheEntryFormatterTests
 {
+    public override ITestOutputCacheStore GetStore() => new SimpleTestOutputCache();
+}
+
+public class OutputCacheEntryFormatterTests_BufferStore : OutputCacheEntryFormatterTests
+{
+    public override ITestOutputCacheStore GetStore() => new BufferTestOutputCache();
+}
+
+public abstract class OutputCacheEntryFormatterTests
+{
+    public abstract ITestOutputCacheStore GetStore();
+
     // arbitrarily some time 17 May 2023 - so we can predict payloads
     static readonly DateTimeOffset KnownTime = DateTimeOffset.FromUnixTimeMilliseconds(1684322693875);
 
     [Fact]
     public async Task StoreAndGet_StoresEmptyValues()
     {
-        var store = new TestOutputCache();
+        var store = GetStore();
         var key = "abc";
         using var entry = new OutputCacheEntry(KnownTime, StatusCodes.Status200OK);
 
@@ -33,7 +45,7 @@ public class OutputCacheEntryFormatterTests
         var bodySegment1 = "lorem"u8.ToArray();
         var bodySegment2 = "こんにちは"u8.ToArray();
 
-        var store = new TestOutputCache();
+        var store = GetStore();
         var key = "abc";
         using (var entry = new OutputCacheEntry(KnownTime, StatusCodes.Status201Created)
             .CopyHeadersFrom(new HeaderDictionary { [HeaderNames.Accept] = new[] { "text/plain", "text/html" }, [HeaderNames.AcceptCharset] = "utf8" })
@@ -50,7 +62,7 @@ public class OutputCacheEntryFormatterTests
 
     public async Task StoreAndGet_StoresNullHeaders()
     {
-        var store = new TestOutputCache();
+        var store = GetStore();
         var key = "abc";
 
         using (var entry = new OutputCacheEntry(KnownTime, StatusCodes.Status201Created))

@@ -26,8 +26,8 @@
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
-        <a href class='reload'>Reload</a>
-        <a class='dismiss' style="cursor: pointer;">🗙</a>
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
     </div>
 
     <script>
@@ -42,6 +42,14 @@
         }
     </script>
 
+    <script>
+        if (location.hash.indexOf('initializer') !== -1) {
+            const element = document.createElement('div');
+            element.id = 'initializers-content';
+            document.body.append(element);
+        }
+    </script>
+    
     <script src="_framework/blazor.server.js"></script>
     <script src="js/jsRootComponentInitializers.js"></script>
 

@@ -1,12 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Identity.IdentitySchemaVersions
-Microsoft.AspNetCore.Identity.StoreOptions.SchemaVersion.get -> System.Version!
-Microsoft.AspNetCore.Identity.StoreOptions.SchemaVersion.set -> void
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender
-Microsoft.AspNetCore.Identity.UI.Services.IEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Identity.UI.Services.NoOpEmailSender
-Microsoft.AspNetCore.Identity.UI.Services.NoOpEmailSender.NoOpEmailSender() -> void
-Microsoft.AspNetCore.Identity.UI.Services.NoOpEmailSender.SendEmailAsync(string! email, string! subject, string! htmlMessage) -> System.Threading.Tasks.Task!
-static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Default -> System.Version!
-static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version1 -> System.Version!
-static readonly Microsoft.AspNetCore.Identity.IdentitySchemaVersions.Version2 -> System.Version!

@@ -35,7 +35,6 @@ public class DefaultHubDispatcherBenchmark
             new HubContext<TestHub>(hubLifetimeManager),
             enableDetailedErrors: false,
             disableImplicitFromServiceParameters: true,
-            useAcks: false,
             new Logger<DefaultHubDispatcher<TestHub>>(NullLoggerFactory.Instance),
             hubFilters: null,
             hubLifetimeManager);

@@ -89,6 +89,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepoRoot)src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepoRoot)src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepoRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" ProjectPath="$(RepoRoot)src\Middleware\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\src\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.MiddlewareAnalysis" ProjectPath="$(RepoRoot)src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.OutputCaching" ProjectPath="$(RepoRoot)src\Middleware\OutputCaching\src\Microsoft.AspNetCore.OutputCaching.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.RateLimiting" ProjectPath="$(RepoRoot)src\Middleware\RateLimiting\src\Microsoft.AspNetCore.RateLimiting.csproj" />
@@ -161,7 +162,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.WebEncoders" ProjectPath="$(RepoRoot)src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepoRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.Testing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.InternalTesting" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src\Extensions\Features\src\Microsoft.Extensions.Features.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.Swagger" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />

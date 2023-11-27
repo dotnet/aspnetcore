@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;

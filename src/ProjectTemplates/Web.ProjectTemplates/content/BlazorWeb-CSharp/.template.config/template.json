@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Web",
@@ -10,14 +10,15 @@
   "defaultName": "BlazorApp",
   "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.Blazor",
-  "precedence": "9800",
+  "precedence": "9900",
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
-    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502"
   ],
-  "identity": "Microsoft.Web.Blazor.CSharp.8.0",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/8.0-third-party-notices",
+  "identity": "Microsoft.Web.Blazor.CSharp.9.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
@@ -53,13 +54,20 @@
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "BlazorWeb-CSharp/wwwroot/appsettings.Development.json",
-            "BlazorWeb-CSharp/wwwroot/appsettings.json",
             "BlazorWeb-CSharp.Client/**",
             "*.sln"
           ],
           "rename": {
             "BlazorWeb-CSharp/": "./"
+          }
+        },
+        {
+          "condition": "(UseWebAssembly && InteractiveAtRoot)",
+          "rename": {
+            "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
+            "BlazorWeb-CSharp/Components/Pages/Home.razor": "./BlazorWeb-CSharp.Client/Pages/Home.razor",
+            "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
+            "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
           }
         },
         {
@@ -78,7 +86,7 @@
           }
         },
         {
-          "condition": "!(UseServer || UseWebAssembly)",
+          "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
             "BlazorWeb-CSharp/Components/Pages/Counter.razor"
           ]
@@ -92,6 +100,7 @@
         {
           "condition": "(!SampleContent)",
           "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Auth.*",
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
@@ -100,6 +109,94 @@
             "BlazorWeb-CSharp.Client/Pages/**",
             "BlazorWeb-CSharp.Client/wwwroot/**"
           ]
+        },
+        {
+          "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "*.sln"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Account/**",
+            "BlazorWeb-CSharp/Data/**",
+            "BlazorWeb-CSharp.Client/PersistentAuthenticationStateProvider.cs",
+            "BlazorWeb-CSharp.Client/UserInfo.cs",
+            "BlazorWeb-CSharp.Client/Pages/Auth.razor"
+          ]
+        },
+        {
+          "condition": "(!(IndividualLocalAuth && !UseLocalDB))",
+          "exclude": [
+            "BlazorWeb-CSharp/Data/app.db"
+          ]
+        },
+        {
+          "condition": "(!(IndividualLocalAuth && !UseWebAssembly))",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Pages/Auth.razor"
+          ]
+        },
+        {
+          "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
+          ]
+        },
+        {
+          "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
+          ]
+        },
+        {
+          "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Account/PersistingServerAuthenticationStateProvider.cs"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseLocalDB && UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Data/SqlServer/": "BlazorWeb-CSharp/Data/Migrations/"
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseLocalDB && !UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Data/SqlServer/": "Data/Migrations/"
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Data/SqlLite/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB && UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Data/SqlLite/": "BlazorWeb-CSharp/Data/Migrations/"
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Data/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && !UseLocalDB && !UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Data/SqlLite/": "Data/Migrations/"
+          },
+          "exclude": [
+            "BlazorWeb-CSharp/Data/SqlServer/**"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth && UseWebAssembly)",
+          "rename": {
+            "BlazorWeb-CSharp/Components/Account/Shared/RedirectToLogin.razor": "BlazorWeb-CSharp.Client/RedirectToLogin.razor"
+          }
         }
       ]
     }
@@ -111,16 +208,23 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net8.0",
-          "description": "Target net8.0"
+          "choice": "net9.0",
+          "description": "Target net9.0"
         }
       ],
-      "replaces": "net8.0",
-      "defaultValue": "net8.0"
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
     },
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
+    },
+    "UserSecretsId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "description": "The ID to use for secrets (use with Individual auth)."
     },
     "skipRestore": {
       "type": "parameter",
@@ -154,12 +258,12 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "5500"
     },
     "kestrelHttpsPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used)."
     },
     "kestrelHttpsPortGenerated": {
       "type": "generated",
@@ -176,7 +280,7 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5001"
+      "replaces": "5501"
     },
     "iisHttpPort": {
       "type": "parameter",
@@ -199,7 +303,7 @@
     "iisHttpsPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used)."
+      "description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if Individual auth is used)."
     },
     "iisHttpsPortGenerated": {
       "type": "generated",
@@ -218,19 +322,62 @@
       },
       "replaces": "44300"
     },
-    "UseWebAssembly": {
+    "InteractivityPlatform": {
       "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "displayName": "_Use interactive WebAssembly components",
-      "description": "Configures whether to support rendering components interactively in the browser using WebAssembly. The default value is false."
+      "datatype": "choice",
+      "defaultValue": "Server",
+      "displayName": "_Interactive render mode",
+      "description": "Chooses which interactive render mode to use for interactive components",
+      "choices": [
+        {
+          "choice": "None",
+          "displayName": "None",
+          "description": "No interactivity (static server rendering only)"
+        },
+        {
+          "choice": "Server",
+          "displayName": "Server",
+          "description": "Runs on the server"
+        },
+        {
+          "choice": "WebAssembly",
+          "displayName": "WebAssembly",
+          "description": "Runs in the browser using WebAssembly"
+        },
+        {
+          "choice": "Auto",
+          "displayName": "Auto (Server and WebAssembly)",
+          "description": "Uses Server while downloading WebAssembly assets, then uses WebAssembly"
+        }
+      ]
+    },
+    "InteractivityLocation": {
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "InteractivePerPage",
+      "displayName": "_Interactivity location",
+      "description": "Chooses which components will have interactive rendering enabled",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
+      "choices": [
+        {
+          "choice": "InteractivePerPage",
+          "displayName": "Per page/component",
+          "description": "Interactivity is applied on a per-page or per-component basis"
+        },
+        {
+          "choice": "InteractiveGlobal",
+          "displayName": "Global",
+          "description": "Interactivity is applied at the root level"
+        }
+      ]
+    },
+    "UseWebAssembly": {
+      "type": "computed",
+      "value": "(InteractivityPlatform == \"WebAssembly\" || InteractivityPlatform == \"Auto\")"
     },
     "UseServer": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "true",
-      "displayName": "_Use interactive server components",
-      "description": "Configures whether to support rendering components interactively on the server via a SignalR WebSocket connection. The default value is true."
+      "type": "computed",
+      "value": "(InteractivityPlatform == \"Server\" || InteractivityPlatform == \"Auto\")"
     },
     "IncludeSampleContent": {
       "type": "parameter",
@@ -245,13 +392,51 @@
       "defaultValue": "false",
       "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
     },
+    "auth": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "None",
+          "description": "No authentication"
+        },
+        {
+          "choice": "Individual",
+          "description": "Individual authentication"
+        }
+      ],
+      "defaultValue": "None",
+      "description": "The type of authentication to use"
+    },
+    "UseLocalDB": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified."
+    },
     "SampleContent": {
       "type": "computed",
       "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
     },
+    "AllInteractive": {
+      "type": "parameter",
+      "datatype": "bool",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
+      "defaultValue": "false",
+      "displayName": "_Enable interactive rendering globally throughout the site",
+      "description": "Configures whether to make every page interactive by applying an interactive render mode at the top level. If false, pages will use static server rendering by default, and can be marked interactive on a per-page or per-component basis."
+    },
+    "InteractiveAtRoot": {
+      "type": "computed",
+      "value": "(InteractivityLocation == \"InteractiveGlobal\" || AllInteractive)"
+    },
+    "IndividualLocalAuth": {
+      "type": "computed",
+      "value": "(auth == \"Individual\")"
+    },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(OrganizationalAuth || IndividualAuth)"
+      "value": "(OrganizationalAuth || IndividualLocalAuth)"
     },
     "HasHttpProfile": {
       "type": "computed",
@@ -265,7 +450,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
+      "description": "Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth."
     },
     "copyrightYear": {
       "type": "generated",

@@ -77,69 +77,8 @@ internal partial struct RoutePatternParser
         ValidateNoConsecutiveSeparators(root, diagnostics);
         ValidateCatchAllParameters(root, diagnostics);
         ValidateParameterParts(root, diagnostics, routeParameters);
-        ValidateAdditionalInvalidParameterCharacters(root, diagnostics, _routePatternOptions);
-        ValidateComplexSegments(root, diagnostics, _routePatternOptions);
 
         return new RoutePatternTree(_lexer.Text, root, diagnostics.ToImmutable(), routeParameters.ToImmutable());
-    }
-
-    private static void ValidateComplexSegments(RoutePatternCompilationUnit root, ImmutableArray<EmbeddedDiagnostic>.Builder diagnostics, RoutePatternOptions routePatternOptions)
-    {
-        if (routePatternOptions.SupportComplexSegments)
-        {
-            return;
-        }
-
-        foreach (var part in root)
-        {
-            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
-            {
-                if (segmentNode.ChildCount > 1)
-                {
-                    var message = $"Complex segment is not supported.";
-                    diagnostics.Add(new EmbeddedDiagnostic(message, segmentNode.GetFullSpan()!.Value));
-                }
-            }
-        }
-    }
-
-    private static void ValidateAdditionalInvalidParameterCharacters(RoutePatternCompilationUnit root, ImmutableArray<EmbeddedDiagnostic>.Builder diagnostics, RoutePatternOptions routePatternOptions)
-    {
-        if (routePatternOptions.AdditionalInvalidParameterCharacters == null)
-        {
-            return;
-        }
-
-        foreach (var part in root)
-        {
-            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
-            {
-                foreach (var segmentPart in segmentNode)
-                {
-                    if (segmentPart.TryGetNode(RoutePatternKind.Parameter, out var parameterNode))
-                    {
-                        foreach (var parameterPart in parameterNode)
-                        {
-                            if (parameterPart.TryGetNode(RoutePatternKind.ParameterName, out var parameterNameNode))
-                            {
-                                var parameterNameToken = ((RoutePatternNameParameterPartNode)parameterNameNode).ParameterNameToken;
-                                if (!parameterNameToken.IsMissing)
-                                {
-                                    var name = parameterNameToken.Value!.ToString();
-                                    var invalidCharacter = name.IndexOfAny(routePatternOptions.AdditionalInvalidParameterCharacters);
-
-                                    if (invalidCharacter != -1)
-                                    {
-                                        var message = $"The character '{name[invalidCharacter]}' in parameter segment '{parameterNode}' is not allowed.";
-                                        diagnostics.Add(new EmbeddedDiagnostic(message, parameterNameNode.GetSpan()));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private static void ValidateStart(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
@@ -567,12 +506,6 @@ internal partial struct RoutePatternParser
                     RoutePatternKind.AsteriskToken,
                     VirtualCharSequence.FromBounds(firstAsteriskToken.VirtualChars, _currentToken.VirtualChars));
 
-                if (!_routePatternOptions.SupportTwoAsteriskCatchAll)
-                {
-                    asterisksToken = asterisksToken.AddDiagnosticIfNone(
-                        new EmbeddedDiagnostic("A catch-all parameter may only have one '*' at the beginning of the segment.", asterisksToken.GetFullSpan()!.Value));
-                }
-
                 parts.Add(new RoutePatternCatchAllParameterPartNode(asterisksToken));
                 ConsumeCurrentToken();
             }
@@ -628,14 +561,6 @@ internal partial struct RoutePatternParser
     {
         var equalsToken = _currentToken;
         var defaultValue = _lexer.TryScanDefaultValue() ?? CreateMissingToken(RoutePatternKind.DefaultValueToken);
-
-        if (!_routePatternOptions.SupportDefaultValues)
-        {
-            equalsToken = equalsToken.AddDiagnosticIfNone(
-                new EmbeddedDiagnostic(
-                    "A parameter with a default value isn't supported.",
-                    EmbeddedSyntaxHelpers.GetSpan(equalsToken, defaultValue)));
-        }
 
         ConsumeCurrentToken();
         var node = new RoutePatternDefaultValueParameterPartNode(equalsToken, defaultValue);

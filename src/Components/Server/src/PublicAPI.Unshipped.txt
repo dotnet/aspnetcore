@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext
-Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext.Circuit.get -> Microsoft.AspNetCore.Components.Server.Circuits.Circuit!
-Microsoft.Extensions.DependencyInjection.ServerRazorComponentsBuilderExtensions
-static Microsoft.Extensions.DependencyInjection.ServerRazorComponentsBuilderExtensions.AddServerComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
-virtual Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler.CreateInboundActivityHandler(System.Func<Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext!, System.Threading.Tasks.Task!>! next) -> System.Func<Microsoft.AspNetCore.Components.Server.Circuits.CircuitInboundActivityContext!, System.Threading.Tasks.Task!>!

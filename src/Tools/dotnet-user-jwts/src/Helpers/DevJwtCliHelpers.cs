@@ -27,7 +27,7 @@ internal static class DevJwtCliHelpers
 
     public static bool GetProjectAndSecretsId(string projectPath, IReporter reporter, out string project, out string userSecretsId)
     {
-        var finder = new MsBuildProjectFinder(projectPath ?? Directory.GetCurrentDirectory());
+        var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
         project = finder.FindMsBuildProject(projectPath);
         userSecretsId = null;
         if (project == null)

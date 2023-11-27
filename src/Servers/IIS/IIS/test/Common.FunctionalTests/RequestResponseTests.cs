@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -609,6 +609,28 @@ public class RequestResponseTests
         Assert.Equal(_fixture.DeploymentResult.ContentRoot, await _fixture.DeploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
         Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/BaseDirectory"));
         Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
+    }
+
+    [ConditionalTheory]
+    [InlineData("IIISEnvironmentFeature")]
+    [InlineData("IIISEnvironmentFeatureConfig")]
+    public async Task IISEnvironmentFeatureIsAvailable(string endpoint)
+    {
+        var siteName = _fixture.DeploymentResult.DeploymentParameters.SiteName.ToUpperInvariant();
+    
+        var expected = $"""
+            IIS Version: 10.0
+            ApplicationId: /LM/W3SVC/1/ROOT
+            Application Path: {_fixture.DeploymentResult.ContentRoot}\
+            Application Virtual Path: /
+            Application Config Path: MACHINE/WEBROOT/APPHOST/{siteName}
+            AppPool ID: {_fixture.DeploymentResult.AppPoolName}
+            AppPool Config File: {_fixture.DeploymentResult.DeploymentParameters.ServerConfigLocation}
+            Site ID: 1
+            Site Name: {siteName}
+            """;
+
+        Assert.Equal(expected, await _fixture.Client.GetStringAsync($"/{endpoint}"));
     }
 
     [ConditionalTheory]

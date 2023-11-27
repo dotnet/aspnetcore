@@ -259,15 +259,10 @@ internal sealed class HttpsConnectionMiddleware
                 store.Open(OpenFlags.ReadOnly);
                 return store;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is CryptographicException || exception is SecurityException)
             {
-                if (exception is CryptographicException || exception is SecurityException)
-                {
-                    _logger.FailedToOpenStore(storeLocation, exception);
-                    return null;
-                }
-
-                throw;
+                _logger.FailedToOpenStore(storeLocation, exception);
+                return null;
             }
         }
 

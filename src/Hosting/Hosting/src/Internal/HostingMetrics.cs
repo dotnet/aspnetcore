@@ -24,12 +24,12 @@ internal sealed class HostingMetrics : IDisposable
         _activeRequestsCounter = _meter.CreateUpDownCounter<long>(
             "http.server.active_requests",
             unit: "{request}",
-            description: "Number of HTTP requests that are currently active on the server.");
+            description: "Number of active HTTP server requests.");
 
         _requestDuration = _meter.CreateHistogram<double>(
             "http.server.request.duration",
             unit: "s",
-            description: "Measures the duration of inbound HTTP requests.");
+            description: "Duration of HTTP server requests.");
     }
 
     // Note: Calling code checks whether counter is enabled.
@@ -54,7 +54,6 @@ internal sealed class HostingMetrics : IDisposable
 
         if (_requestDuration.Enabled)
         {
-            tags.Add("network.protocol.name", "http");
             if (TryGetHttpVersion(protocol, out var httpVersion))
             {
                 tags.Add("network.protocol.version", httpVersion);
@@ -71,10 +70,10 @@ internal sealed class HostingMetrics : IDisposable
                 tags.Add("http.route", route);
             }
             // This exception is only present if there is an unhandled exception.
-            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add exception.type to custom tags.
+            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add error.type to custom tags.
             if (exception != null)
             {
-                tags.Add("exception.type", exception.GetType().FullName);
+                tags.Add("error.type", exception.GetType().FullName);
             }
             if (customTags != null)
             {
@@ -122,86 +121,14 @@ internal sealed class HostingMetrics : IDisposable
         */
     }
 
-    // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
-    private static readonly FrozenDictionary<int, object> BoxedStatusCodes = FrozenDictionary.ToFrozenDictionary(new[]
-    {
-        KeyValuePair.Create<int, object>(100, 100),
-        KeyValuePair.Create<int, object>(101, 101),
-        KeyValuePair.Create<int, object>(102, 102),
-
-        KeyValuePair.Create<int, object>(200, 200),
-        KeyValuePair.Create<int, object>(201, 201),
-        KeyValuePair.Create<int, object>(202, 202),
-        KeyValuePair.Create<int, object>(203, 203),
-        KeyValuePair.Create<int, object>(204, 204),
-        KeyValuePair.Create<int, object>(205, 205),
-        KeyValuePair.Create<int, object>(206, 206),
-        KeyValuePair.Create<int, object>(207, 207),
-        KeyValuePair.Create<int, object>(208, 208),
-        KeyValuePair.Create<int, object>(226, 226),
-
-        KeyValuePair.Create<int, object>(300, 300),
-        KeyValuePair.Create<int, object>(301, 301),
-        KeyValuePair.Create<int, object>(302, 302),
-        KeyValuePair.Create<int, object>(303, 303),
-        KeyValuePair.Create<int, object>(304, 304),
-        KeyValuePair.Create<int, object>(305, 305),
-        KeyValuePair.Create<int, object>(306, 306),
-        KeyValuePair.Create<int, object>(307, 307),
-        KeyValuePair.Create<int, object>(308, 308),
-
-        KeyValuePair.Create<int, object>(400, 400),
-        KeyValuePair.Create<int, object>(401, 401),
-        KeyValuePair.Create<int, object>(402, 402),
-        KeyValuePair.Create<int, object>(403, 403),
-        KeyValuePair.Create<int, object>(404, 404),
-        KeyValuePair.Create<int, object>(405, 405),
-        KeyValuePair.Create<int, object>(406, 406),
-        KeyValuePair.Create<int, object>(407, 407),
-        KeyValuePair.Create<int, object>(408, 408),
-        KeyValuePair.Create<int, object>(409, 409),
-        KeyValuePair.Create<int, object>(410, 410),
-        KeyValuePair.Create<int, object>(411, 411),
-        KeyValuePair.Create<int, object>(412, 412),
-        KeyValuePair.Create<int, object>(413, 413),
-        KeyValuePair.Create<int, object>(414, 414),
-        KeyValuePair.Create<int, object>(415, 415),
-        KeyValuePair.Create<int, object>(416, 416),
-        KeyValuePair.Create<int, object>(417, 417),
-        KeyValuePair.Create<int, object>(418, 418),
-        KeyValuePair.Create<int, object>(419, 419),
-        KeyValuePair.Create<int, object>(421, 421),
-        KeyValuePair.Create<int, object>(422, 422),
-        KeyValuePair.Create<int, object>(423, 423),
-        KeyValuePair.Create<int, object>(424, 424),
-        KeyValuePair.Create<int, object>(426, 426),
-        KeyValuePair.Create<int, object>(428, 428),
-        KeyValuePair.Create<int, object>(429, 429),
-        KeyValuePair.Create<int, object>(431, 431),
-        KeyValuePair.Create<int, object>(451, 451),
-        KeyValuePair.Create<int, object>(499, 499),
-
-        KeyValuePair.Create<int, object>(500, 500),
-        KeyValuePair.Create<int, object>(501, 501),
-        KeyValuePair.Create<int, object>(502, 502),
-        KeyValuePair.Create<int, object>(503, 503),
-        KeyValuePair.Create<int, object>(504, 504),
-        KeyValuePair.Create<int, object>(505, 505),
-        KeyValuePair.Create<int, object>(506, 506),
-        KeyValuePair.Create<int, object>(507, 507),
-        KeyValuePair.Create<int, object>(508, 508),
-        KeyValuePair.Create<int, object>(510, 510),
-        KeyValuePair.Create<int, object>(511, 511)
-    });
+    private static readonly object[] BoxedStatusCodes = new object[512];
 
     private static object GetBoxedStatusCode(int statusCode)
     {
-        if (BoxedStatusCodes.TryGetValue(statusCode, out var result))
-        {
-            return result;
-        }
-
-        return statusCode;
+        object[] boxes = BoxedStatusCodes;
+        return (uint)statusCode < (uint)boxes.Length
+            ? boxes[statusCode] ??= statusCode
+            : statusCode;
     }
 
     private static readonly FrozenDictionary<string, string> KnownMethods = FrozenDictionary.ToFrozenDictionary(new[]

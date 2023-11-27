@@ -4,7 +4,9 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -23,6 +25,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new FormMappingOptionsMetadata(maxCollectionSize: 2)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         var httpContext = CreateHttpContext();
@@ -52,10 +55,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         // Act
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         // Assert
-        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
     }
 
     [Fact]
@@ -69,6 +72,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new FormMappingOptionsMetadata(maxCollectionSize: 2)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         var httpContext = CreateHttpContext();
@@ -98,10 +102,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         // Act
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         // Assert
-        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
     }
 
     [Fact]
@@ -116,6 +120,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
                 new FormMappingOptionsMetadata(maxCollectionSize: 2),
                 new FormMappingOptionsMetadata(maxKeySize: 23)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         var httpContext = CreateHttpContext();
@@ -145,10 +150,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var requestDelegate = factoryResult.RequestDelegate;
 
         // Act
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
         // Assert
-        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
 
         // Arrange - 2
         httpContext = CreateHttpContext();
@@ -239,6 +244,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             {
                 new FormMappingOptionsMetadata(maxRecursionDepth: 3)
             }),
+            ThrowOnBadRequest = true
         };
         var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
         void TestAction([FromForm] Employee args) { capturedEmployee = args; };
@@ -271,11 +277,33 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var factoryResult = RequestDelegateFactory.Create(TestAction, options, metadataResult);
         var requestDelegate = factoryResult.RequestDelegate;
 
-        var exception = await Assert.ThrowsAsync<FormDataMappingException>(async () => await requestDelegate(httpContext));
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
 
-        Assert.Equal("Manager.Manager.Manager", exception.Error.Key);
-        Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Error.Message.ToString(CultureInfo.InvariantCulture));
+        Assert.Equal("The maximum recursion depth of '3' was exceeded for 'Manager.Manager.Manager.Name'.", exception.Message);
+    }
 
+    [Fact]
+    public async Task SupportsFormFileSourcesInDto()
+    {
+        FormFileDto capturedArgument = default;
+        void TestAction([FromForm] FormFileDto args) { capturedArgument = args; };
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "file", "file.txt"),
+            new FormFile(Stream.Null, 0, 10, "formFiles", "file-1.txt"),
+            new FormFile(Stream.Null, 0, 10, "formFiles", "file-2.txt"),
+        };
+        httpContext.Request.Form = new FormCollection(new() { { "Description", "A test file" } }, formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+        Assert.Equal("A test file", capturedArgument.Description);
+        Assert.Equal(formFiles["file"], capturedArgument.File);
+        Assert.Equal(formFiles.GetFiles("formFiles"), capturedArgument.FormFiles);
+        Assert.Equal(formFiles, capturedArgument.FormFileCollection);
     }
 
     private record TodoRecord(int Id, string Name, bool IsCompleted);
@@ -284,5 +312,14 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
         public string Name { get; set; }
         public Employee Manager { get; set; }
+    }
+#nullable enable
+
+    private class FormFileDto
+    {
+        public string Description { get; set; } = String.Empty;
+        public IFormFile? File { get; set; }
+        public IReadOnlyList<IFormFile>? FormFiles { get; set; }
+        public IFormFileCollection? FormFileCollection { get; set; }
     }
 }

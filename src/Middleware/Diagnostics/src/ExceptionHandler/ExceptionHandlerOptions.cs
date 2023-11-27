@@ -18,6 +18,13 @@ public class ExceptionHandlerOptions
     public PathString ExceptionHandlingPath { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the handler needs to create a separate <see cref="IServiceProvider"/> scope and
+    /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request to handle an error.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.</remarks>
+    public bool CreateScopeForErrors { get; set; }
+
+    /// <summary>
     /// The <see cref="RequestDelegate" /> that will handle the exception. If this is not
     /// explicitly provided, the subsequent middleware pipeline will be used by default.
     /// </summary>

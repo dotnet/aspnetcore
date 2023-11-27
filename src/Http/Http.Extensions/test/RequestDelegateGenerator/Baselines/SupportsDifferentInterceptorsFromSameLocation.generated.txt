@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
-        [InterceptsLocation(@"TestMapActions.cs", 25, 13)]
+        [InterceptsLocation(@"TestMapActions.cs", 26, 13)]
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 createRequestDelegate);
         }
 
-        [InterceptsLocation(@"OtherTestMapActions.cs", 25, 13)]
+        [InterceptsLocation(@"OtherTestMapActions.cs", 26, 13)]
         internal static RouteHandlerBuilder MapGet1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,

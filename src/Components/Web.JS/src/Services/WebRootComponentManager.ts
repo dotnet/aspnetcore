@@ -2,78 +2,104 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
-import { isRendererAttached, updateRootComponents, waitForRendererAttached } from '../Rendering/WebRendererInteropMethods';
+import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
-import { NavigationEnhancementCallbacks, isPerformingEnhancedPageLoad } from './NavigationEnhancement';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
-import { startCircuit } from '../Boot.Server.Common';
-import { loadWebAssemblyPlatformIfNotStarted, startWebAssembly, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
+import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
+import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
 import { MonoConfig } from 'dotnet';
 import { RootComponentManager } from './RootComponentManager';
 import { Blazor } from '../GlobalExports';
+import { getRendererer } from '../Rendering/Renderer';
+import { isPageLoading } from './NavigationEnhancement';
+import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { LogicalElement } from '../Rendering/LogicalElements';
+
+type RootComponentOperationBatch = {
+  batchId: number;
+  operations: RootComponentOperation[];
+}
 
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
 type RootComponentAddOperation = {
   type: 'add';
-  selectorId: number;
+  ssrComponentId: number;
   marker: ComponentMarker;
 };
 
 type RootComponentUpdateOperation = {
   type: 'update';
-  componentId: number;
+  ssrComponentId: number;
   marker: ComponentMarker;
 };
 
 type RootComponentRemoveOperation = {
   type: 'remove';
-  componentId: number;
+  ssrComponentId: number;
 };
 
 type RootComponentInfo = {
+  descriptor: ComponentDescriptor;
+  ssrComponentId: number;
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
-  interactiveComponentId?: number;
-}
+  hasPendingRemoveOperation?: boolean;
+};
 
-export class WebRootComponentManager implements DescriptorHandler, NavigationEnhancementCallbacks, RootComponentManager<never> {
-  private readonly _activeDescriptors = new Set<ComponentDescriptor>();
+export class WebRootComponentManager implements DescriptorHandler, RootComponentManager</* InitialComponentsDescriptorType */ never> {
+  private readonly _rootComponentsBySsrComponentId = new Map<number, RootComponentInfo>();
 
-  private readonly _descriptorsPendingInteractivityById: { [id: number]: ComponentDescriptor } = {};
+  private readonly _seenDescriptors = new Set<ComponentDescriptor>();
 
-  private readonly _rootComponentInfoByDescriptor = new Map<ComponentDescriptor, RootComponentInfo>();
+  private readonly _pendingOperationBatches: { [batchId: number]: RootComponentOperationBatch } = {};
 
-  private _hasPendingRootComponentUpdate = false;
+  private _nextOperationBatchId = 1;
 
-  private _hasStartedCircuit = false;
-
-  private _hasStartedLoadingWebAssembly = false;
-
-  private _hasLoadedWebAssembly = false;
-
-  private _hasStartedWebAssembly = false;
+  private _nextSsrComponentId = 1;
 
   private _didWebAssemblyFailToLoadQuickly = false;
+
+  private _isComponentRefreshPending = false;
+
+  private _circuitInactivityTimeoutId: any;
 
   // Implements RootComponentManager.
   // An empty array becuase all root components managed
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor() {
+  public constructor(private readonly _circuitInactivityTimeoutMs: number) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
-    this.refreshAllRootComponentsAfter(waitForRendererAttached(WebRendererId.Server));
-    this.refreshAllRootComponentsAfter(waitForRendererAttached(WebRendererId.WebAssembly));
+    registerRendererAttachedListener(() => {
+      this.rootComponentsMayRequireRefresh();
+    });
   }
 
-  // Implements NavigationEnhancementCallbacks.
-  public documentUpdated() {
-    this.refreshAllRootComponents();
+  // Implements RootComponentManager.
+  public onAfterRenderBatch(browserRendererId: number): void {
+    if (browserRendererId === WebRendererId.Server) {
+      this.circuitMayHaveNoRootComponents();
+    }
   }
 
-  public registerComponentDescriptor(descriptor: ComponentDescriptor) {
+  public onDocumentUpdated() {
+    // Root components may have been added, updated, or removed.
+    this.rootComponentsMayRequireRefresh();
+  }
+
+  public onEnhancedNavigationCompleted() {
+    // Root components may now be ready for activation if they had been previously
+    // skipped for activation due to an enhanced navigation being underway.
+    this.rootComponentsMayRequireRefresh();
+  }
+
+  public registerComponent(descriptor: ComponentDescriptor) {
+    if (this._seenDescriptors.has(descriptor)) {
+      return;
+    }
+
     if (descriptor.type === 'auto' || descriptor.type === 'webassembly') {
       // Eagerly start loading the WebAssembly runtime, even though we're not
       // activating the component yet. This is becuase WebAssembly resources
@@ -82,30 +108,36 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
       this.startLoadingWebAssemblyIfNotStarted();
     }
 
-    this._activeDescriptors.add(descriptor);
+    const ssrComponentId = this._nextSsrComponentId++;
+
+    this._seenDescriptors.add(descriptor);
+    this._rootComponentsBySsrComponentId.set(ssrComponentId, { descriptor, ssrComponentId });
   }
 
-  private unregisterComponentDescriptor(descriptor: ComponentDescriptor) {
-    this._activeDescriptors.delete(descriptor);
+  private unregisterComponent(component: RootComponentInfo) {
+    this._seenDescriptors.delete(component.descriptor);
+    this._rootComponentsBySsrComponentId.delete(component.ssrComponentId);
+    this.circuitMayHaveNoRootComponents();
   }
 
   private async startLoadingWebAssemblyIfNotStarted() {
-    if (this._hasStartedLoadingWebAssembly) {
+    if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
 
-    this._hasStartedLoadingWebAssembly = true;
+    setWaitForRootComponents();
+
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
 
     // If WebAssembly resources can't be loaded within some time limit,
     // we take note of this fact so that "auto" components fall back
     // to using Blazor Server.
     setTimeout(() => {
-      if (!this._hasLoadedWebAssembly) {
+      if (!hasLoadedWebAssemblyPlatform()) {
         this.onWebAssemblyFailedToLoadQuickly();
       }
     }, Blazor._internal.loadWebAssemblyQuicklyTimeout);
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
     const bootConfig = await waitForBootConfigLoaded();
 
     if (!areWebAssemblyResourcesLikelyCached(bootConfig)) {
@@ -119,14 +151,13 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     await loadWebAssemblyPromise;
-    this._hasLoadedWebAssembly = true;
 
     // Store the boot config resource hash in local storage
     // so that we can detect during the next load that WebAssembly
     // resources are cached.
     cacheWebAssemblyResourceHash(bootConfig);
 
-    this.refreshAllRootComponents();
+    this.rootComponentsMayRequireRefresh();
   }
 
   private onWebAssemblyFailedToLoadQuickly() {
@@ -135,37 +166,24 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     this._didWebAssemblyFailToLoadQuickly = true;
-    this.refreshAllRootComponents();
+    this.rootComponentsMayRequireRefresh();
   }
 
-  private async startCircutIfNotStarted() {
-    if (this._hasStartedCircuit) {
-      return;
+  private startCircutIfNotStarted() {
+    if (!hasStartedServer()) {
+      return startServer(this);
     }
 
-    this._hasStartedCircuit = true;
-    await startCircuit(this);
+    if (!isCircuitAvailable()) {
+      return startCircuit();
+    }
   }
 
   private async startWebAssemblyIfNotStarted() {
     this.startLoadingWebAssemblyIfNotStarted();
 
-    if (this._hasStartedWebAssembly) {
-      return;
-    }
-
-    this._hasStartedWebAssembly = true;
-    await startWebAssembly(this);
-  }
-
-  private async refreshAllRootComponentsAfter(promise: Promise<void>) {
-    await promise;
-
-    if (!this._hasPendingRootComponentUpdate) {
-      this._hasPendingRootComponentUpdate = true;
-      setTimeout(() => {
-        this.refreshAllRootComponents();
-      }, 0);
+    if (!hasStartedWebAssembly()) {
+      await startWebAssembly(this);
     }
   }
 
@@ -173,22 +191,87 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
   // should be reflected in an interactive component renderer.
   // Examples include component descriptors updating, document content changing,
   // or an interactive renderer attaching for the first time.
-  private refreshAllRootComponents() {
-    this._hasPendingRootComponentUpdate = false;
-    this.refreshRootComponents(this._activeDescriptors);
+  private rootComponentsMayRequireRefresh() {
+    if (this._isComponentRefreshPending) {
+      return;
+    }
+
+    this._isComponentRefreshPending = true;
+
+    // The following timeout allows us to liberally call this function without
+    // taking the small performance hit from requent repeated calls to
+    // refreshRootComponents.
+    setTimeout(() => {
+      this._isComponentRefreshPending = false;
+      this.refreshRootComponents(this._rootComponentsBySsrComponentId.values());
+    }, 0);
   }
 
-  private refreshRootComponents(descriptors: Iterable<ComponentDescriptor>) {
+  private circuitMayHaveNoRootComponents() {
+    const isCircuitInUse = this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto');
+    if (isCircuitInUse) {
+      // Clear the timeout because we know the circuit is in use.
+      clearTimeout(this._circuitInactivityTimeoutId);
+      this._circuitInactivityTimeoutId = undefined;
+      return;
+    }
+
+    if (this._circuitInactivityTimeoutId !== undefined) {
+      // A timeout is already present, so we shouldn't reset it.
+      return;
+    }
+
+    // Start a new timeout to dispose the circuit unless it starts getting used.
+    this._circuitInactivityTimeoutId = setTimeout(() => {
+      if (!this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server', 'auto')) {
+        disposeCircuit();
+        this._circuitInactivityTimeoutId = undefined;
+      }
+    }, this._circuitInactivityTimeoutMs) as unknown as number;
+  }
+
+  private rendererHasComponents(rendererId: WebRendererId): boolean {
+    const renderer = getRendererer(rendererId);
+    return renderer !== undefined && renderer.getRootComponentCount() > 0;
+  }
+
+  private rendererHasExistingOrPendingComponents(rendererId: WebRendererId, ...descriptorTypesToConsider: ComponentMarker['type'][]): boolean {
+    if (this.rendererHasComponents(rendererId)) {
+      return true;
+    }
+
+    // We consider SSR'd components on the page that may get activated using the specified renderer.
+    for (const { descriptor: { type }, assignedRendererId } of this._rootComponentsBySsrComponentId.values()) {
+      if (assignedRendererId === rendererId) {
+        // The component has been assigned to use the specified renderer.
+        return true;
+      }
+
+      if (assignedRendererId !== undefined) {
+        // The component has been assigned to use another renderer.
+        continue;
+      }
+
+      if (descriptorTypesToConsider.indexOf(type) !== -1) {
+        // The component has not been assigned a renderer yet, but it might get activated with the specified renderer
+        // if it doesn't get removed from the page.
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private refreshRootComponents(components: Iterable<RootComponentInfo>) {
     const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
 
-    for (const descriptor of descriptors) {
-      const componentInfo = this.getRootComponentInfo(descriptor);
-      const operation = this.determinePendingOperation(descriptor, componentInfo);
+    for (const component of components) {
+      const operation = this.determinePendingOperation(component);
       if (!operation) {
         continue;
       }
 
-      const rendererId = componentInfo.assignedRendererId;
+      const rendererId = component.assignedRendererId;
       if (!rendererId) {
         throw new Error('Descriptors must be assigned a renderer ID before getting used as root components');
       }
@@ -203,8 +286,26 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     }
 
     for (const [rendererId, operations] of operationsByRendererId) {
-      const operationsJson = JSON.stringify(operations);
-      updateRootComponents(rendererId, operationsJson);
+      const batch: RootComponentOperationBatch = {
+        batchId: this._nextOperationBatchId++,
+        operations,
+      };
+      this._pendingOperationBatches[batch.batchId] = batch;
+      const batchJson = JSON.stringify(batch);
+
+      if (rendererId === WebRendererId.Server) {
+        updateServerRootComponents(batchJson);
+      } else {
+        this.updateWebAssemblyRootComponents(batchJson);
+      }
+    }
+  }
+
+  private updateWebAssemblyRootComponents(operationsJson: string) {
+    if (isFirstUpdate()) {
+      resolveInitialUpdate(operationsJson);
+    } else {
+      updateWebAssemblyRootComponents(operationsJson);
     }
   }
 
@@ -223,10 +324,21 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
   }
 
   private getAutoRenderMode(): 'webassembly' | 'server' | null {
-    // If the WebAssembly runtime has loaded, we will always use WebAssembly
-    // for auto components. Otherwise, we'll wait to activate root components
-    // until we determine whether the WebAssembly runtime can be loaded quickly.
-    if (this._hasLoadedWebAssembly) {
+    // If WebAssembly components exist or may exist soon, use WebAssembly.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.WebAssembly, 'webassembly')) {
+      return 'webassembly';
+    }
+
+    // If Server components exist or may exist soon, use WebAssembly.
+    if (this.rendererHasExistingOrPendingComponents(WebRendererId.Server, 'server')) {
+      return 'server';
+    }
+
+    // If no interactive components are on the page, we use WebAssembly
+    // if the WebAssembly runtime has loaded. Otherwise, we'll wait to activate
+    // root components until we determine whether the WebAssembly runtime can be
+    // loaded quickly.
+    if (hasLoadedWebAssemblyPlatform()) {
       return 'webassembly';
     }
 
@@ -237,16 +349,17 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
     return null;
   }
 
-  private determinePendingOperation(descriptor: ComponentDescriptor, componentInfo: RootComponentInfo): RootComponentOperation | null {
-    if (isDescriptorInDocument(descriptor)) {
-      if (componentInfo.assignedRendererId === undefined) {
+  private determinePendingOperation(component: RootComponentInfo): RootComponentOperation | null {
+    if (isDescriptorInDocument(component.descriptor)) {
+      if (component.assignedRendererId === undefined) {
         // We haven't added this component for interactivity yet.
-        if (isPerformingEnhancedPageLoad()) {
-          // We don't add new components during enhanced page loads.
+        if (isPageLoading()) {
+          // We don't add new components while the page is loading or while
+          // enhanced navigation is underway.
           return null;
         }
 
-        const rendererId = this.resolveRendererIdForDescriptor(descriptor);
+        const rendererId = this.resolveRendererIdForDescriptor(component.descriptor);
         if (rendererId === null) {
           // The renderer ID for the component has not been decided yet,
           // probably because the component has an "auto" render mode.
@@ -260,73 +373,88 @@ export class WebRootComponentManager implements DescriptorHandler, NavigationEnh
           return null;
         }
 
-        componentInfo.assignedRendererId = rendererId;
-        componentInfo.uniqueIdAtLastUpdate = descriptor.uniqueId;
-        this._descriptorsPendingInteractivityById[descriptor.uniqueId] = descriptor;
+        // .NET may dispose and re-initialize the interactive component as a result of a future 'update' operation.
+        // This call prevents the component's content from being deleted from the DOM between the disposal
+        // and subsequent re-initialization.
+        setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, true);
 
-        return { type: 'add', selectorId: descriptor.uniqueId, marker: descriptorToMarker(descriptor) };
+        component.assignedRendererId = rendererId;
+        component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
+        return { type: 'add', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
+      } else {
+        if (!isRendererAttached(component.assignedRendererId)) {
+          // The renderer for this descriptor is not attached, so we'll no-op.
+          // After the renderer attaches, we'll handle this descriptor again if
+          // it's still in the document.
+          return null;
+        }
+
+        // The component has already been added for interactivity.
+        if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
+          // The descriptor has not changed since the last update.
+          // Nothing to do.
+          return null;
+        }
+
+        // The descriptor has changed since it was last updated, so we'll update the component's parameters.
+        component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
+        return { type: 'update', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
       }
-
-      if (componentInfo.uniqueIdAtLastUpdate === descriptor.uniqueId) {
-        // The descriptor has not changed since the last update.
-        // Nothing to do.
+    } else {
+      if (component.hasPendingRemoveOperation) {
+        // The component is already being disposed, so there's nothing left to do.
         return null;
       }
 
-      if (componentInfo.interactiveComponentId !== undefined) {
-        // The component has become interactive, so we'll update its parameters.
-        componentInfo.uniqueIdAtLastUpdate = descriptor.uniqueId;
-        return { type: 'update', componentId: componentInfo.interactiveComponentId, marker: descriptorToMarker(descriptor) };
+      if (component.assignedRendererId === undefined) {
+        // The component was removed from the document before it was assigned to a renderer,
+        // so we don't have to notify .NET that anything has changed.
+        this.unregisterComponent(component);
+        return null;
       }
 
-      // We have started to add the component, but it has not become interactive yet.
-      // We'll wait until we have a component ID to work with before sending parameter
-      // updates.
-    } else {
-      this.unregisterComponentDescriptor(descriptor);
-
-      if (componentInfo.interactiveComponentId !== undefined) {
-        // We have an interactive component for this marker, so we'll remove it.
-        return { type: 'remove', componentId: componentInfo.interactiveComponentId };
+      if (!isRendererAttached(component.assignedRendererId)) {
+        // The component was already assigned a renderer, but that renderer is no longer attached.
+        // After the renderer attaches, we'll handle the removal of this descriptor again.
+        return null;
       }
 
-      // If we make it here, that means we either:
-      // 1. Haven't started to make the component interactive, in which case we have no further action to take.
-      // 2. Have started to make the component interactive, but it hasn't become interactive yet. In this case,
-      //    we'll wait to remove the component until after we have a component ID to provide.
-    }
+      // Since the component will be getting completedly diposed from .NET (rather than replaced by another component, which can
+      // happen as a result of an 'update' operation), we indicate that its content should no longer be preserved on disposal.
+      setShouldPreserveContentOnInteractiveComponentDisposal(component.descriptor.start as unknown as LogicalElement, false);
 
-    return null;
+      // This component was removed from the document and we've assigned a renderer ID,
+      // so we'll dispose it in .NET.
+      component.hasPendingRemoveOperation = true;
+      return { type: 'remove', ssrComponentId: component.ssrComponentId };
+    }
   }
 
-  public resolveRootComponent(selectorId: number, componentId: number): ComponentDescriptor {
-    const descriptor = this._descriptorsPendingInteractivityById[selectorId];
-    if (!descriptor) {
-      throw new Error(`Could not resolve a root component for descriptor with ID '${selectorId}'.`);
+  public resolveRootComponent(ssrComponentId: number): ComponentDescriptor {
+    const component = this._rootComponentsBySsrComponentId.get(ssrComponentId);
+    if (!component) {
+      throw new Error(`Could not resolve a root component with SSR component ID '${ssrComponentId}'.`);
     }
 
-    const rootComponentInfo = this.getRootComponentInfo(descriptor);
-    if (rootComponentInfo.interactiveComponentId !== undefined) {
-      throw new Error('Cannot resolve a root component for the same descriptor multiple times.');
-    }
-
-    rootComponentInfo.interactiveComponentId = componentId;
-
-    // The descriptor may have changed since the last call to handleUpdatedRootComponentsCore().
-    // We'll update this single descriptor so that the component receives the most up-to-date parameters
-    // or gets removed if it no longer exists on the page.
-    this.refreshRootComponents([descriptor]);
-
-    return descriptor;
+    return component.descriptor;
   }
 
-  private getRootComponentInfo(descriptor: ComponentDescriptor): RootComponentInfo {
-    let rootComponentInfo = this._rootComponentInfoByDescriptor.get(descriptor);
-    if (!rootComponentInfo) {
-      rootComponentInfo = {};
-      this._rootComponentInfoByDescriptor.set(descriptor, rootComponentInfo);
+  public onAfterUpdateRootComponents(batchId: number): void {
+    const batch = this._pendingOperationBatches[batchId];
+    delete this._pendingOperationBatches[batchId];
+
+    for (const operation of batch.operations) {
+      switch (operation.type) {
+        case 'remove': {
+          // We can stop tracking this component now that .NET has acknowedged its removal.
+          const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
+          if (component) {
+            this.unregisterComponent(component);
+          }
+          break;
+        }
+      }
     }
-    return rootComponentInfo;
   }
 }
 
