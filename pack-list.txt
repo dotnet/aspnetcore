@@ -2,6 +2,7 @@ Microsoft.AspNetCore.Antiforgery.csproj
 Microsoft.AspNetCore.Authentication.Abstractions.csproj
 Microsoft.AspNetCore.Authentication.Cookies.csproj
 Microsoft.AspNetCore.Authentication.Core.csproj
+Microsoft.AspNetCore.Authentication.OAuth.csproj
 Microsoft.AspNetCore.Authentication.csproj
 Microsoft.AspNetCore.Authorization.csproj
 Microsoft.AspNetCore.Authorization.Policy.csproj

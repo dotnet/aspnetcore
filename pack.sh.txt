@@ -1,6 +1,6 @@
 #! /bin/zsh
 
-set -e 
+set -e
 
 (cd src/Servers/Kestrel && dotnet pack ./Kestrel.slnf)
 
@@ -8,6 +8,7 @@ dotnet pack **/Microsoft.AspNetCore.Authentication.csproj
 dotnet pack **/Microsoft.AspNetCore.Authentication.Abstractions.csproj
 dotnet pack **/Microsoft.AspNetCore.Authentication.Cookies.csproj
 dotnet pack **/Microsoft.AspNetCore.Authentication.Core.csproj
+dotnet pack **/Microsoft.AspNetCore.Authentication.OAuth.csproj
 dotnet pack **/Microsoft.AspNetCore.Authorization.csproj
 dotnet pack **/Microsoft.AspNetCore.CookiePolicy.csproj
 dotnet pack **/Microsoft.AspNetCore.Connections.Abstractions.csproj
