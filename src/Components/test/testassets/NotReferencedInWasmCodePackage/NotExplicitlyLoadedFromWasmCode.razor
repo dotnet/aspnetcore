@@ -1,0 +1,16 @@
+﻿<h3>NotExplicitlyLoadedFromWasmCode</h3>
+
+<p>Represents a component that wasn't explicitly loaded from webassembly code by a direct type reference.
+</p>
+
+<p>Instead, this component is only rendered in webassembly mode from the server and not loaded into the application domain until we explicitly load it via a call to Assembly.Load when we try to render the root component.
+</p>
+
+@if(OperatingSystem.IsBrowser())
+{
+    <p id="success">Running in webassembly mode.</p>
+}
+else
+{
+    <p>Running in server mode.</p>
+}
