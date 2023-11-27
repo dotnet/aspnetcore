@@ -123,6 +123,31 @@ public class JsonConverterReadTests
         AssertReadJson<HelloRequest.Types.DataTypes>(json);
     }
 
+    [Theory]
+    [InlineData("FOO")]
+    [InlineData("BAR")]
+    [InlineData("NEG")]
+    public void Enum_ReadString(string value)
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @$"{{ ""singleEnum"": ""{value}"" }}";
+
+        AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+    }
+
+    [Fact]
+    public void Enum_ReadString_NotAllowedValue()
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @"{ ""singleEnum"": ""INVALID"" }";
+
+        AssertReadJsonError<HelloRequest.Types.DataTypes>(json, ex => Assert.Equal("Invalid enum value: INVALID for enum type: Transcoding.HelloRequest+Types+DataTypes+Types+NestedEnum.", ex.Message), descriptorRegistry: serviceDescriptorRegistry, serializeOld: false);
+    }
+
     [Fact]
     public void Timestamp_Nested()
     {
@@ -539,7 +564,7 @@ public class JsonConverterReadTests
         return objectNew;
     }
 
-    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null) where TValue : IMessage, new()
+    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool serializeOld = true) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -552,12 +577,15 @@ public class JsonConverterReadTests
         var ex = Assert.ThrowsAny<Exception>(() => JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions));
         assertException(ex);
 
-        var formatter = new JsonParser(new JsonParser.Settings(
-            recursionLimit: int.MaxValue,
-            typeRegistery));
+        if (serializeOld)
+        {
+            var formatter = new JsonParser(new JsonParser.Settings(
+                recursionLimit: int.MaxValue,
+                typeRegistery));
 
-        ex = Assert.ThrowsAny<Exception>(() => formatter.Parse<TValue>(value));
-        assertException(ex);
+            ex = Assert.ThrowsAny<Exception>(() => formatter.Parse<TValue>(value));
+            assertException(ex);
+        }
     }
 
     internal static JsonSerializerOptions CreateSerializerOptions(GrpcJsonSettings? settings, TypeRegistry? typeRegistery, DescriptorRegistry descriptorRegistry)
