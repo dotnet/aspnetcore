@@ -797,7 +797,7 @@ public class NavigationManagerTest
         }
     }
 
-    [Repeat(100)]
+    [Microsoft.AspNetCore.InternalTesting.RepeatAttribute(100)]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
