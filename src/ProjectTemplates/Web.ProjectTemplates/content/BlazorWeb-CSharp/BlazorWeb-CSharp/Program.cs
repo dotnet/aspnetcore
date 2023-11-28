@@ -118,9 +118,7 @@ app.MapRazorComponents<App>()
 #else
 app.MapRazorComponents<App>();
 #endif
-#if (UseWebAssembly && SampleContent)
-    .AddAdditionalAssemblies(typeof(Counter).Assembly);
-#elif (UseWebAssembly)
+#if (UseWebAssembly)
     .AddAdditionalAssemblies(typeof(BlazorWeb_CSharp.Client._Imports).Assembly);
 #endif
 
