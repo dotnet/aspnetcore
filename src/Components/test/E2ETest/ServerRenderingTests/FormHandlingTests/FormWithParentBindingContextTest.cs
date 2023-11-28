@@ -1433,6 +1433,36 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
     }
 
+    [Fact]
+    public void FormEnctypeEqualsDefaultWhenNotSpecified()
+    {
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("application/x-www-form-urlencoded", () => Browser.Exists(By.Id("content-type")).Text);
+    }
+
+    [Fact]
+    public void FormEnctypeSetsContentTypeHeader()
+    {
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype?enctype=multipart/form-data");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Contains("multipart/form-data", () => Browser.Exists(By.Id("content-type")).Text);
+    }
+
+    [Fact]
+    public void SubmitButtonFormenctypeAttributeOverridesEnhancedFormEnctype()
+    {
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype?enctype=text/plain&formenctype=application/x-www-form-urlencoded");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("application/x-www-form-urlencoded", () => Browser.Exists(By.Id("content-type")).Text);
+    }
+
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
     // to an absolute URL. We want to be able to assert about the attribute's literal value.
     private string ReadFormActionAttribute(IWebElement form)
