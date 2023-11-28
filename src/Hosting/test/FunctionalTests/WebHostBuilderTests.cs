@@ -14,7 +14,7 @@ public class WebHostBuilderTests : LoggedTest
     public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
             .WithTfms(Tfm.Default);
 
-    [Repeat(100)]
+    [QuarantineTest("https://github.com/dotnet/aspnetcore/issues/52429")]
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]
     public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
