@@ -2667,7 +2667,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
-    [QuarantineTest("https://github.com/dotnet/aspnetcore/issues/52408")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52408")]
     [Fact]
     public async Task ChangingUserNameDuringReconnectLogsWarning()
     {
