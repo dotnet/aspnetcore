@@ -797,7 +797,7 @@ public class NavigationManagerTest
         }
     }
 
-    [QuarantineTest("https://github.com/dotnet/aspnetcore/issues/52407")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52407")]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {
