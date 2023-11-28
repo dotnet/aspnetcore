@@ -1446,7 +1446,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Fact]
     public void FormEnctypeSetsContentTypeHeader()
     {
-        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype/multipart%form-data");
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype?enctype=multipart/form-data");
 
         Browser.Exists(By.Id("submit-button")).Click();
 
@@ -1456,7 +1456,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Fact]
     public void SubmitButtonFormenctypeAttributeOverridesEnhancedFormEnctype()
     {
-        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype/text%plain/application%x-www-form-urlencoded");
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype?enctype=text/plain&formenctype=application/x-www-form-urlencoded");
 
         Browser.Exists(By.Id("submit-button")).Click();
 

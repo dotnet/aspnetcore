@@ -1,4 +1,4 @@
-﻿@page "/forms/form-with-enctype-and-submit-button-with-formenctype/{enctype?}/{formenctype?}"
+﻿@page "/forms/form-with-enctype-and-submit-button-with-formenctype"
 @using Microsoft.AspNetCore.Components.Forms
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -18,8 +18,8 @@
     bool _submitted = false;
     private string? _contentType;
 
-    [Parameter] public string? Enctype { get; set; }
-    [Parameter] public string? Formenctype { get; set; }
+    [SupplyParameterFromQuery] public string? Enctype { get; set; }
+    [SupplyParameterFromQuery] public string? Formenctype { get; set; }
 
     public void Submitted()
     {
@@ -27,13 +27,5 @@
 
         var httpContext = HttpContextAccessor.HttpContext;
         _contentType = httpContext?.Request.ContentType;
-    }
-
-    protected override void OnParametersSet()
-    {
-        Enctype = Enctype?.Replace('%', '/');
-        Formenctype = Formenctype?.Replace('%', '/');
-
-        base.OnParametersSet();
     }
 }
