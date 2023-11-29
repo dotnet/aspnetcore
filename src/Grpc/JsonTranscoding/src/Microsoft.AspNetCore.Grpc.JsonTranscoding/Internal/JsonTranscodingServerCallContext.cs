@@ -21,6 +21,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
     private static readonly AuthContext UnauthenticatedContext = new AuthContext(null, new Dictionary<string, List<AuthProperty>>());
 
     private readonly IMethod _method;
+    private Metadata? _responseTrailers;
 
     public HttpContext HttpContext { get; }
     public MethodOptions Options { get; }
@@ -168,7 +169,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
 
     protected override CancellationToken CancellationTokenCore => HttpContext.RequestAborted;
 
-    protected override Metadata ResponseTrailersCore { get; } = new();
+    protected override Metadata ResponseTrailersCore => _responseTrailers ??= new();
 
     protected override Status StatusCore { get; set; }
 
