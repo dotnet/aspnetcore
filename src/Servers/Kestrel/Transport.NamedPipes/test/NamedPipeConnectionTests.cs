@@ -14,7 +14,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
-    [Repeat(100)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52462")]
     [ConditionalFact]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {
