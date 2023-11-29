@@ -335,6 +335,23 @@ public class JsonConverterWriteTests
     }
 
     [Fact]
+    public void Value_Null()
+    {
+        var helloRequest = new HelloRequest
+        {
+            ValueValue = Value.ForStruct(new Struct
+            {
+                Fields =
+                {
+                    ["prop"] = Value.ForNull()
+                }
+            })
+        };
+
+        AssertWrittenJson(helloRequest);
+    }
+
+    [Fact]
     public void Value_Root()
     {
         var value = Value.ForStruct(new Struct

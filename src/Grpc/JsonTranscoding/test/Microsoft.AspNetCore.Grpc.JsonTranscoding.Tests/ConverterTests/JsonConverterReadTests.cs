@@ -121,6 +121,14 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void Struct_NullProperty()
+    {
+        var json = @"{ ""prop"": null }";
+
+        AssertReadJson<Struct>(json);
+    }
+
+    [Fact]
     public void DataTypes_DefaultValues()
     {
         var json = @"{
