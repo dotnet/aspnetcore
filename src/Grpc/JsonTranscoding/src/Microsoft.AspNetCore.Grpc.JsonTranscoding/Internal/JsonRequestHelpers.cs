@@ -23,6 +23,8 @@ internal static class JsonRequestHelpers
     public const string JsonContentType = "application/json";
     public const string JsonContentTypeWithCharset = "application/json; charset=utf-8";
 
+    public const string StatusDetailsTrailerName = "grpc-status-details-bin";
+
     public static bool HasJsonContentType(HttpRequest request, out StringSegment charset)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -82,7 +84,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Status status, Metadata? trailers, JsonSerializerOptions options)
+    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Metadata trailers, Status status, JsonSerializerOptions options)
     {
         if (!response.HasStarted)
         {
@@ -98,13 +100,19 @@ internal static class JsonRequestHelpers
 
         await WriteResponseMessage(response, encoding, e, options, CancellationToken.None);
 
-        static Google.Rpc.Status? GetStatusDetails(Metadata? trailers)
+        static Google.Rpc.Status? GetStatusDetails(Metadata trailers)
         {
-            const string GrpcStatusDetailsHeader = "grpc-status-details-bin";
-            var statusDetails = trailers?.Get(GrpcStatusDetailsHeader);
-            if (statusDetails != null && statusDetails.IsBinary)
+            var statusDetails = trailers.Get(StatusDetailsTrailerName);
+            if (statusDetails?.IsBinary == true)
             {
-                return Google.Rpc.Status.Parser.ParseFrom(statusDetails.ValueBytes);
+                try
+                {
+                    return Google.Rpc.Status.Parser.ParseFrom(statusDetails.ValueBytes);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Error when parsing the '{StatusDetailsTrailerName}' trailer.", ex);
+                }
             }
 
             return null;
