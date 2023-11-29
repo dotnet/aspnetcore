@@ -13,6 +13,14 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.ConverterTests;
 public class MessageTypeInfoResolverTests
 {
     [Fact]
+    public void GetTypeInfo_IMessage_Null()
+    {
+        var resolver = CreateResolver();
+
+        Assert.Null(resolver.GetTypeInfo(typeof(IMessage), new JsonSerializerOptions()));
+    }
+
+    [Fact]
     public void GetTypeInfo_IMessageOfT_Null()
     {
         var resolver = CreateResolver();
