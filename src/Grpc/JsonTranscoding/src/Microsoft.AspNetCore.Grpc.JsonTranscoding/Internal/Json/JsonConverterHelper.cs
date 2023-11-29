@@ -141,7 +141,7 @@ internal static class JsonConverterHelper
         var existingValue = (IDictionary)fieldDescriptor.Accessor.GetValue(message);
         foreach (DictionaryEntry item in newValues)
         {
-            existingValue[item.Key] = item.Value ?? Value.ForNull();
+            existingValue[item.Key] = item.Value;
         }
     }
 

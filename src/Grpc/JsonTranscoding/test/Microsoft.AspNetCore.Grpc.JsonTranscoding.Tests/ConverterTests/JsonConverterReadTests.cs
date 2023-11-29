@@ -129,6 +129,38 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void Value_Null()
+    {
+        var json = "null";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
+    public void Value_Integer()
+    {
+        var json = "1";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
+    public void Value_String()
+    {
+        var json = @"""string!""";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
+    public void Value_Boolean()
+    {
+        var json = "true";
+
+        AssertReadJson<Value>(json);
+    }
+
+    [Fact]
     public void DataTypes_DefaultValues()
     {
         var json = @"{

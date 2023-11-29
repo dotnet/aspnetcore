@@ -335,7 +335,7 @@ public class JsonConverterWriteTests
     }
 
     [Fact]
-    public void Value_Null()
+    public void Struct_NullValue()
     {
         var helloRequest = new HelloRequest
         {
@@ -364,6 +364,14 @@ public class JsonConverterWriteTests
                     Value.ForString("value2"))
             }
         });
+
+        AssertWrittenJson(value);
+    }
+
+    [Fact]
+    public void Value_Null()
+    {
+        var value = Value.ForNull();
 
         AssertWrittenJson(value);
     }
