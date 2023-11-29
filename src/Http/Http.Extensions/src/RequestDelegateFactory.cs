@@ -507,34 +507,45 @@ public static partial class RequestDelegateFactory
         {
             return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
         }
-        else if (returnType == typeof(Task))
+        else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
+            {
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
+                methodCall = Expression.Invoke(coercerExpression, methodCall);
+            }
+
+            if (returnType == typeof(Task))
+            {
+                return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+            }
+            else if (returnType == typeof(ValueTask))
+            {
+                return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
+            }
+            else if (returnType == typeof(ValueTask<object?>))
+            {
+                return methodCall;
+            }
+            else if (returnType.IsGenericType &&
+                         returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+            {
+                var typeArg = coercedAwaitableInfo.AwaitableInfo.ResultType;
+                return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            }
+            else if (returnType.IsGenericType &&
+                        returnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var typeArg = coercedAwaitableInfo.AwaitableInfo.ResultType;
+                return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            }
         }
-        else if (returnType == typeof(ValueTask))
-        {
-            return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
-        }
-        else if (returnType == typeof(ValueTask<object?>))
-        {
-            return methodCall;
-        }
-        else if (returnType.IsGenericType &&
-                     returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
-        {
-            var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
-        }
-        else if (returnType.IsGenericType &&
-                    returnType.GetGenericTypeDefinition() == typeof(Task<>))
-        {
-            var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
-        }
-        else
-        {
-            return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
-        }
+
+        return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
     }
 
     private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> valueTask)
@@ -994,22 +1005,9 @@ public static partial class RequestDelegateFactory
             throw GetUnsupportedReturnTypeException(returnType);
         }
 
-        if (returnType == typeof(Task) || returnType == typeof(ValueTask))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            returnType = typeof(void);
-        }
-        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
-        {
-            var genericTypeDefinition = returnType.IsGenericType ? returnType.GetGenericTypeDefinition() : null;
-
-            if (genericTypeDefinition == typeof(Task<>) || genericTypeDefinition == typeof(ValueTask<>))
-            {
-                returnType = returnType.GetGenericArguments()[0];
-            }
-            else
-            {
-                throw GetUnsupportedReturnTypeException(returnType);
-            }
+            returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         // Skip void returns and IResults. IResults might implement IEndpointMetadataProvider but otherwise we don't know what it might do.
@@ -1057,8 +1055,18 @@ public static partial class RequestDelegateFactory
                 HttpContextExpr,
                 Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
-        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
+        else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
+            {
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
+                methodCall = Expression.Invoke(coercerExpression, methodCall);
+            }
+
             if (returnType == typeof(Task))
             {
                 return methodCall;
@@ -1088,6 +1096,14 @@ public static partial class RequestDelegateFactory
                         ExecuteTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {
@@ -1128,6 +1144,14 @@ public static partial class RequestDelegateFactory
                         ExecuteValueTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteValueTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {

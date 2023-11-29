@@ -755,7 +755,6 @@ public class Http3RequestTests : LoggedTest
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/43374")]
     [MsQuicSupported]
     public async Task GET_ConnectionsMakingMultipleRequests_AllSuccess()
     {
