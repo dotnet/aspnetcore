@@ -455,18 +455,14 @@ internal static class ServiceDescriptorHelpers
     {
         if (!string.IsNullOrEmpty(responseBody))
         {
-            FieldDescriptor? responseBodyDescriptor = null;
-            if (!string.IsNullOrEmpty(responseBody))
+            if (responseBody.Contains('.', StringComparison.Ordinal))
             {
-                if (responseBody.Contains('.', StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
-                }
-                responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
-                if (responseBodyDescriptor == null)
-                {
-                    throw new InvalidOperationException($"Couldn't find matching field for response body '{responseBody}' on {methodDescriptor.OutputType.Name}.");
-                }
+                throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
+            }
+            var responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
+            if (responseBodyDescriptor == null)
+            {
+                throw new InvalidOperationException($"Couldn't find matching field for response body '{responseBody}' on {methodDescriptor.OutputType.Name}.");
             }
 
             return responseBodyDescriptor;
