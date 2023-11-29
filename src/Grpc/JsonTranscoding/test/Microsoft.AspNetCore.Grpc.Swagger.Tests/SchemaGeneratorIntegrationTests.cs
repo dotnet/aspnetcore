@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Shared;
 using Messages;
 using Microsoft.AspNetCore.Grpc.Swagger.Internal;
 using Microsoft.OpenApi.Any;
@@ -13,9 +15,12 @@ namespace Microsoft.AspNetCore.Grpc.Swagger.Tests;
 
 public class SchemaGeneratorIntegrationTests
 {
-    private (OpenApiSchema Schema, SchemaRepository SchemaRepository) GenerateSchema(System.Type type)
+    private (OpenApiSchema Schema, SchemaRepository SchemaRepository) GenerateSchema(System.Type type, IDescriptor descriptor)
     {
-        var dataContractResolver = new GrpcDataContractResolver(new JsonSerializerDataContractResolver(new JsonSerializerOptions()));
+        var descriptorRegistry = new DescriptorRegistry();
+        descriptorRegistry.RegisterFileDescriptor(descriptor.File);
+
+        var dataContractResolver = new GrpcDataContractResolver(new JsonSerializerDataContractResolver(new JsonSerializerOptions()), descriptorRegistry);
         var schemaGenerator = new SchemaGenerator(new SchemaGeneratorOptions(), dataContractResolver);
         var schemaRepository = new SchemaRepository();
 
@@ -28,7 +33,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_EnumValue_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(EnumMessage));
+        var (schema, repository) = GenerateSchema(typeof(EnumMessage), EnumMessage.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -48,10 +53,29 @@ public class SchemaGeneratorIntegrationTests
     }
 
     [Fact]
+    public void GenerateSchema_EnumWithoutMessage_ReturnSchema()
+    {
+        // Arrange & Act
+        var (schema, repository) = GenerateSchema(typeof(EnumWithoutMessage), MessagesReflection.Descriptor);
+
+        // Assert
+        schema = repository.Schemas[schema.Reference.Id];
+        Assert.Equal("string", schema.Type);
+        Assert.Equal(5, schema.Enum.Count);
+
+        var enumValues = schema.Enum.Select(e => ((OpenApiString)e).Value).ToList();
+        Assert.Contains("ENUM_WITHOUT_MESSAGE_NEG", enumValues);
+        Assert.Contains("ENUM_WITHOUT_MESSAGE_UNSPECIFIED", enumValues);
+        Assert.Contains("ENUM_WITHOUT_MESSAGE_FOO", enumValues);
+        Assert.Contains("ENUM_WITHOUT_MESSAGE_BAR", enumValues);
+        Assert.Contains("ENUM_WITHOUT_MESSAGE_BAZ", enumValues);
+    }
+
+    [Fact]
     public void GenerateSchema_BasicMessage_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(HelloReply));
+        var (schema, repository) = GenerateSchema(typeof(HelloReply), HelloReply.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -68,7 +92,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_RecursiveMessage_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(RecursiveMessage));
+        var (schema, repository) = GenerateSchema(typeof(RecursiveMessage), RecursiveMessage.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -81,7 +105,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_BytesMessage_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(BytesMessage));
+        var (schema, repository) = GenerateSchema(typeof(BytesMessage), BytesMessage.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -95,7 +119,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_ListValues_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, _) = GenerateSchema(typeof(ListValue));
+        var (schema, _) = GenerateSchema(typeof(ListValue), ListValue.Descriptor);
 
         // Assert
         Assert.Equal("array", schema.Type);
@@ -107,7 +131,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_Struct_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(Struct));
+        var (schema, repository) = GenerateSchema(typeof(Struct), Struct.Descriptor);
 
         _ = repository.Schemas.Count;
 
@@ -126,7 +150,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_Any_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(Any));
+        var (schema, repository) = GenerateSchema(typeof(Any), Any.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -141,7 +165,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_OneOf_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(OneOfMessage));
+        var (schema, repository) = GenerateSchema(typeof(OneOfMessage), OneOfMessage.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -158,7 +182,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_Map_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(MapMessage));
+        var (schema, repository) = GenerateSchema(typeof(MapMessage), MapMessage.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];
@@ -173,7 +197,7 @@ public class SchemaGeneratorIntegrationTests
     public void GenerateSchema_FieldMask_ReturnSchema()
     {
         // Arrange & Act
-        var (schema, repository) = GenerateSchema(typeof(FieldMaskMessage));
+        var (schema, repository) = GenerateSchema(typeof(FieldMaskMessage), FieldMaskMessage.Descriptor);
 
         // Assert
         schema = repository.Schemas[schema.Reference.Id];

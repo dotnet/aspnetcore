@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.Swagger.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -30,6 +31,7 @@ public static class GrpcSwaggerServiceExtensions
         services.AddGrpc().AddJsonTranscoding();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IApiDescriptionProvider, GrpcJsonTranscodingDescriptionProvider>());
+        services.TryAddSingleton<DescriptorRegistry>();
 
         // Register default description provider in case MVC is not registered
         services.TryAddSingleton<IApiDescriptionGroupCollectionProvider>(serviceProvider =>
@@ -47,7 +49,7 @@ public static class GrpcSwaggerServiceExtensions
         {
             var serializerOptions = s.GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions ?? new JsonSerializerOptions();
             var innerContractResolver = new JsonSerializerDataContractResolver(serializerOptions);
-            return new GrpcDataContractResolver(innerContractResolver);
+            return new GrpcDataContractResolver(innerContractResolver, s.GetRequiredService<DescriptorRegistry>());
         }));
 
         return services;
