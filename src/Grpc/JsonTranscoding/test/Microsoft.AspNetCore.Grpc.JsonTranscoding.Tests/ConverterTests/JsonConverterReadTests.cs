@@ -145,7 +145,7 @@ public class JsonConverterReadTests
 
         var json = @"{ ""singleEnum"": ""INVALID"" }";
 
-        AssertReadJsonError<HelloRequest.Types.DataTypes>(json, ex => Assert.Equal("Invalid enum value: INVALID for enum type: Transcoding.HelloRequest+Types+DataTypes+Types+NestedEnum.", ex.Message), descriptorRegistry: serviceDescriptorRegistry, serializeOld: false);
+        AssertReadJsonError<HelloRequest.Types.DataTypes>(json, ex => Assert.Equal(@"Error converting value ""INVALID"" to enum type Transcoding.HelloRequest+Types+DataTypes+Types+NestedEnum.", ex.Message), descriptorRegistry: serviceDescriptorRegistry, deserializeOld: false);
     }
 
     [Fact]
@@ -564,7 +564,7 @@ public class JsonConverterReadTests
         return objectNew;
     }
 
-    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool serializeOld = true) where TValue : IMessage, new()
+    private void AssertReadJsonError<TValue>(string value, Action<Exception> assertException, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool deserializeOld = true) where TValue : IMessage, new()
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -577,7 +577,7 @@ public class JsonConverterReadTests
         var ex = Assert.ThrowsAny<Exception>(() => JsonSerializer.Deserialize<TValue>(value, jsonSerializerOptions));
         assertException(ex);
 
-        if (serializeOld)
+        if (deserializeOld)
         {
             var formatter = new JsonParser(new JsonParser.Settings(
                 recursionLimit: int.MaxValue,

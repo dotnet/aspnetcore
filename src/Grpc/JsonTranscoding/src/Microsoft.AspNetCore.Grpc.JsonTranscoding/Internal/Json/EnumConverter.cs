@@ -31,7 +31,7 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
                 var valueDescriptor = enumDescriptor.FindValueByName(value);
                 if (valueDescriptor == null)
                 {
-                    throw new InvalidOperationException($"Invalid enum value: {value} for enum type: {typeToConvert}.");
+                    throw new InvalidOperationException(@$"Error converting value ""{ value }"" to enum type {typeToConvert}.");
                 }
 
                 return ConvertFromInteger(valueDescriptor.Number);
