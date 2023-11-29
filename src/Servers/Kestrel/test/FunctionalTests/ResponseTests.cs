@@ -417,7 +417,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
     }
 
-    [Repeat(100)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52464")]
     [Theory]
     [MemberData(nameof(ConnectionMiddlewareData))]
     public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
