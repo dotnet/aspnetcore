@@ -397,13 +397,13 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>0aaeafef60933f87b0b50350313bb2fd77defb5d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="8.1.0-preview.23572.3">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="8.1.0-preview.23579.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>c8383902da237c8efd61a37808e444ac9b838f59</Sha>
+      <Sha>13a6288c9de8d8f83c40ae419803e6a990bf5825</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.1.0-preview.23572.3">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="8.1.0-preview.23579.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>c8383902da237c8efd61a37808e444ac9b838f59</Sha>
+      <Sha>13a6288c9de8d8f83c40ae419803e6a990bf5825</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
