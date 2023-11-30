@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.NavigationException.IsRefresh.get -> bool
+Microsoft.AspNetCore.Components.NavigationException.NavigationException(string! uri, bool isRefresh = false) -> void

@@ -18,6 +18,6 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         var absoluteUriString = ToAbsoluteUri(uri).ToString();
-        throw new NavigationException(absoluteUriString);
+        throw new NavigationException(absoluteUriString, true);
     }
 }

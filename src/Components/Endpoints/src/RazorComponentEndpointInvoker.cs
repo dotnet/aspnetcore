@@ -43,6 +43,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
         EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
 
+        if (context.Request.Cookies.ContainsKey("blazor-enhanced-nav-refresh"))
+        {
+            context.Response.Headers.Add("blazor-enhanced-nav-refresh", "true");
+            context.Response.Cookies.Delete("blazor-enhanced-nav-refresh");
+        }
+
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
         var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;

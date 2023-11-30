@@ -194,6 +194,10 @@ internal partial class EndpointHtmlRenderer
         else
         {
             httpContext.Response.Redirect(navigationException.Location);
+            if (navigationException.IsRefresh)
+            {
+                httpContext.Response.Cookies.Append("blazor-enhanced-nav-refresh", "true");
+            }
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }
