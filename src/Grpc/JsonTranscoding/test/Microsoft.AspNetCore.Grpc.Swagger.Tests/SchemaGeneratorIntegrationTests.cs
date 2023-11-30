@@ -44,12 +44,13 @@ public class SchemaGeneratorIntegrationTests
         Assert.Equal("string", enumSchema.Type);
         Assert.Equal(5, enumSchema.Enum.Count);
 
-        var enumValues = enumSchema.Enum.Select(e => ((OpenApiString)e).Value).ToList();
-        Assert.Contains("NEG", enumValues);
-        Assert.Contains("NESTED_ENUM_UNSPECIFIED", enumValues);
-        Assert.Contains("FOO", enumValues);
-        Assert.Contains("BAR", enumValues);
-        Assert.Contains("BAZ", enumValues);
+        var enumValues = enumSchema.Enum.Select(e => ((OpenApiString)e).Value).OrderBy(s => s).ToList();
+        Assert.Collection(enumValues,
+            v => Assert.Equal("BAR", v),
+            v => Assert.Equal("BAZ", v),
+            v => Assert.Equal("FOO", v),
+            v => Assert.Equal("NEG", v),
+            v => Assert.Equal("NESTED_ENUM_UNSPECIFIED", v));
     }
 
     [Fact]
@@ -63,12 +64,13 @@ public class SchemaGeneratorIntegrationTests
         Assert.Equal("string", schema.Type);
         Assert.Equal(5, schema.Enum.Count);
 
-        var enumValues = schema.Enum.Select(e => ((OpenApiString)e).Value).ToList();
-        Assert.Contains("ENUM_WITHOUT_MESSAGE_NEG", enumValues);
-        Assert.Contains("ENUM_WITHOUT_MESSAGE_UNSPECIFIED", enumValues);
-        Assert.Contains("ENUM_WITHOUT_MESSAGE_FOO", enumValues);
-        Assert.Contains("ENUM_WITHOUT_MESSAGE_BAR", enumValues);
-        Assert.Contains("ENUM_WITHOUT_MESSAGE_BAZ", enumValues);
+        var enumValues = schema.Enum.Select(e => ((OpenApiString)e).Value).OrderBy(s => s).ToList();
+        Assert.Collection(enumValues,
+            v => Assert.Equal("ENUM_WITHOUT_MESSAGE_BAR", v),
+            v => Assert.Equal("ENUM_WITHOUT_MESSAGE_BAZ", v),
+            v => Assert.Equal("ENUM_WITHOUT_MESSAGE_FOO", v),
+            v => Assert.Equal("ENUM_WITHOUT_MESSAGE_NEG", v),
+            v => Assert.Equal("ENUM_WITHOUT_MESSAGE_UNSPECIFIED", v));
     }
 
     [Fact]
