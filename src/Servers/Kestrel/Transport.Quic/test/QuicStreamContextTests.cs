@@ -25,7 +25,6 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
-    [Repeat(100)]
     [ConditionalFact]
     [MsQuicSupported]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()

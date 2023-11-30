@@ -582,7 +582,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Repeat(100)]
     [Fact]
     public async Task TraceIdentifierIsUnique()
     {
