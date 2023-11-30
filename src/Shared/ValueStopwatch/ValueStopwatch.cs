@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Extensions.Internal;
 
-internal struct ValueStopwatch
+internal readonly struct ValueStopwatch
 {
 #if !NET7_0_OR_GREATER
     private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
