@@ -18,6 +18,7 @@
     <Compile Include="..\Shared\Server\ServerMethodInvokerBase.cs" Link="Internal\Shared\Server\ServerMethodInvokerBase.cs" />
     <Compile Include="..\Shared\Server\ServerStreamingServerMethodInvoker.cs" Link="Internal\Shared\Server\ServerStreamingServerMethodInvoker.cs" />
     <Compile Include="..\Shared\Server\UnaryServerMethodInvoker.cs" Link="Internal\Shared\Server\UnaryServerMethodInvoker.cs" />
+    <Compile Include="..\Shared\DescriptorRegistry.cs" Link="Internal\Shared\DescriptorRegistry.cs" />
     <Compile Include="..\Shared\AuthContextHelpers.cs" Link="Internal\Shared\AuthContextHelpers.cs" />
     <Compile Include="..\Shared\ServiceDescriptorHelpers.cs" Link="Internal\Shared\ServiceDescriptorHelpers.cs" />
     <Compile Include="..\Shared\X509CertificateHelpers.cs" Link="Internal\Shared\X509CertificateHelpers.cs" />
