@@ -4,7 +4,7 @@
   "localRerunCount" : 3,
   "retryOnRules": [
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
-    {"testName": {"contains": "ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent" }},
+    {"testName": {"contains": "ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent" }}, // inherently flaky (writes to a well-known path)
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
     {"testName": {"contains": "CertificateChangedOnDisk"}},
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}},
