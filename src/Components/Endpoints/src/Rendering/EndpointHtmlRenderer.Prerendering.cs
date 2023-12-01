@@ -166,6 +166,16 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    public static ValueTask<PrerenderedComponentHtmlContent> HandleRefreshNavigationException(HttpContext httpContext, RefreshNavigationException refreshNavigationException)
+    {
+        httpContext.Response.Redirect(refreshNavigationException.Location);
+        // Adding 'blazor-enhanced-nav-refresh' cookie so that after post-redirect we can detect that
+        // there was a NavigationManager.Refresh(), helping us decide whether to include 'blazor-enhanced-nav-refresh' header
+        // to avoid pushing a new history entry on the client.
+        httpContext.Response.Cookies.Append("blazor-enhanced-nav-refresh", "true");
+        return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
+    }
+
     public static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
     {
         if (httpContext.Response.HasStarted)
@@ -194,10 +204,6 @@ internal partial class EndpointHtmlRenderer
         else
         {
             httpContext.Response.Redirect(navigationException.Location);
-            if (navigationException.IsRefresh)
-            {
-                httpContext.Response.Cookies.Append("blazor-enhanced-nav-refresh", "true");
-            }
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }

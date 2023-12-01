@@ -115,6 +115,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
                 await Task.WhenAll(_renderer.NonStreamingPendingTasks);
             }
+            catch (RefreshNavigationException ex)
+            {
+                await EndpointHtmlRenderer.HandleRefreshNavigationException(context, ex);
+                quiesceTask = Task.CompletedTask;
+            }
             catch (NavigationException ex)
             {
                 await EndpointHtmlRenderer.HandleNavigationException(context, ex);

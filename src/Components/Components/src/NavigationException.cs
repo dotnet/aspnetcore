@@ -17,21 +17,7 @@ public class NavigationException : Exception
     }
 
     /// <summary>
-    /// Initializes a new <see cref="NavigationException"/> instance.
-    /// </summary>
-    public NavigationException(string uri, bool isRefresh = false)
-    {
-        Location = uri;
-        IsRefresh = isRefresh;
-    }
-
-    /// <summary>
     /// Gets the uri to which navigation was attempted.
     /// </summary>
     public string Location { get; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public bool IsRefresh { get; }
 }
