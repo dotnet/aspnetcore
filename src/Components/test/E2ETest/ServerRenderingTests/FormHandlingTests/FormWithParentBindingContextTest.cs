@@ -1463,6 +1463,18 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Equal("application/x-www-form-urlencoded", () => Browser.Exists(By.Id("content-type")).Text);
     }
 
+    [Fact]
+    public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistryEntry()
+    {
+        var startUrl = Browser.Url;
+        GoTo("forms/form-that-calls-navigation-manager-refresh");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Navigate().Back();
+        Browser.Equal(startUrl, () => Browser.Url);
+    }
+
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
     // to an absolute URL. We want to be able to assert about the attribute's literal value.
     private string ReadFormActionAttribute(IWebElement form)

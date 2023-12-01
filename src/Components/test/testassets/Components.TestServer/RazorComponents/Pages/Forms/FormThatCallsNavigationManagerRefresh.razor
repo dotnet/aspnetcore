@@ -1,0 +1,10 @@
+﻿@page "/forms/form-that-calls-navigation-manager-refresh"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Nav
+
+<h3>Form That Calls NavigationManager.Refresh()</h3>
+
+<form data-enhance @onsubmit="@(() => Nav.Refresh())" @formname="form-refresh" method="post">
+    <AntiforgeryToken />
+    <button id="submit-button">Submit</button>
+</form>
