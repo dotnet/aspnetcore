@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using Google.Protobuf.Reflection;
 using Google.Rpc;
 
-namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
+namespace Grpc.Shared;
 
 internal sealed class DescriptorRegistry
 {
@@ -76,9 +76,9 @@ internal sealed class DescriptorRegistry
         }
     }
 
-    public DescriptorBase? FindDescriptorByType(Type enumType)
+    public DescriptorBase? FindDescriptorByType(Type type)
     {
-        _typeDescriptorMap.TryGetValue(enumType, out var value);
+        _typeDescriptorMap.TryGetValue(type, out var value);
         return value;
     }
 }

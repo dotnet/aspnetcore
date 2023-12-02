@@ -63,7 +63,7 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
 
     private bool IsStandardMessage(Type type, [NotNullWhen(true)] out MessageDescriptor? messageDescriptor)
     {
-        if (!typeof(IMessage).IsAssignableFrom(type))
+        if (type.IsInterface || !typeof(IMessage).IsAssignableFrom(type))
         {
             messageDescriptor = null;
             return false;

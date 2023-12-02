@@ -8,6 +8,7 @@
   <ItemGroup>
     <Protobuf Include="Proto\counter.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\body.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\responsebody.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\parameters.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\xmldoc.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\greeter.proto" GrpcServices="Both" />

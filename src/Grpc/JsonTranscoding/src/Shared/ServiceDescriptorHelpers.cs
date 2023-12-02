@@ -415,24 +415,24 @@ internal static class ServiceDescriptorHelpers
                 {
                     throw new InvalidOperationException($"The body field '{body}' references a nested field. The body field name must be on the top-level request message.");
                 }
-                var responseBodyDescriptor = methodDescriptor.InputType.FindFieldByName(body);
-                if (responseBodyDescriptor == null)
+                var bodyDescriptor = methodDescriptor.InputType.FindFieldByName(body);
+                if (bodyDescriptor == null)
                 {
                     throw new InvalidOperationException($"Couldn't find matching field for body '{body}' on {methodDescriptor.InputType.Name}.");
                 }
 
-                var propertyName = FormatUnderscoreName(responseBodyDescriptor.Name, pascalCase: true, preservePeriod: false);
-                var propertyInfo = responseBodyDescriptor.ContainingType.ClrType.GetProperty(propertyName);
+                var propertyName = FormatUnderscoreName(bodyDescriptor.Name, pascalCase: true, preservePeriod: false);
+                var propertyInfo = bodyDescriptor.ContainingType.ClrType.GetProperty(propertyName);
 
-                if (responseBodyDescriptor.IsRepeated)
+                if (bodyDescriptor.IsRepeated)
                 {
                     // A repeating field isn't a message type. The JSON parser will parse using the containing
                     // type to get the repeating collection.
-                    return new BodyDescriptorInfo(responseBodyDescriptor.ContainingType, responseBodyDescriptor, isDescriptorRepeated: true, propertyInfo);
+                    return new BodyDescriptorInfo(bodyDescriptor.ContainingType, bodyDescriptor, isDescriptorRepeated: true, propertyInfo);
                 }
                 else
                 {
-                    return new BodyDescriptorInfo(responseBodyDescriptor.MessageType, responseBodyDescriptor, isDescriptorRepeated: false, propertyInfo);
+                    return new BodyDescriptorInfo(bodyDescriptor.MessageType, bodyDescriptor, isDescriptorRepeated: false, propertyInfo);
                 }
             }
             else
@@ -446,6 +446,26 @@ internal static class ServiceDescriptorHelpers
 
                 return new BodyDescriptorInfo(methodDescriptor.InputType, fieldDescriptor: null, isDescriptorRepeated: false, parameterInfo: requestParameter);
             }
+        }
+
+        return null;
+    }
+
+    public static FieldDescriptor? ResolveResponseBodyDescriptor(string responseBody, MethodDescriptor methodDescriptor)
+    {
+        if (!string.IsNullOrEmpty(responseBody))
+        {
+            if (responseBody.Contains('.', StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"The response body field '{responseBody}' references a nested field. The response body field name must be on the top-level response message.");
+            }
+            var responseBodyDescriptor = methodDescriptor.OutputType.FindFieldByName(responseBody);
+            if (responseBodyDescriptor == null)
+            {
+                throw new InvalidOperationException($"Couldn't find matching field for response body '{responseBody}' on {methodDescriptor.OutputType.Name}.");
+            }
+
+            return responseBodyDescriptor;
         }
 
         return null;

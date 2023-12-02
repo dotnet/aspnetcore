@@ -7,6 +7,7 @@ using Example.Hello;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
@@ -335,6 +336,23 @@ public class JsonConverterWriteTests
     }
 
     [Fact]
+    public void Struct_NullValue()
+    {
+        var helloRequest = new HelloRequest
+        {
+            ValueValue = Value.ForStruct(new Struct
+            {
+                Fields =
+                {
+                    ["prop"] = Value.ForNull()
+                }
+            })
+        };
+
+        AssertWrittenJson(helloRequest);
+    }
+
+    [Fact]
     public void Value_Root()
     {
         var value = Value.ForStruct(new Struct
@@ -347,6 +365,14 @@ public class JsonConverterWriteTests
                     Value.ForString("value2"))
             }
         });
+
+        AssertWrittenJson(value);
+    }
+
+    [Fact]
+    public void Value_Null()
+    {
+        var value = Value.ForNull();
 
         AssertWrittenJson(value);
     }
