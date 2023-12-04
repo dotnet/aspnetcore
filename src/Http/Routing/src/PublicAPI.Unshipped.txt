@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute.StatusCode.get -> int?
+Microsoft.AspNetCore.Routing.ShortCircuitAttribute.ShortCircuitAttribute() -> void

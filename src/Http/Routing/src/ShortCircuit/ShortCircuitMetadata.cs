@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Routing.ShortCircuit;
 
-internal sealed class ShortCircuitMetadata
+internal sealed class ShortCircuitMetadata : IShortCircuitMetadata
 {
     public int? StatusCode { get; }
 
