@@ -204,7 +204,7 @@ internal partial class EndpointHtmlRenderer
         else
         {
             httpContext.Response.Redirect(navigationException.Location);
-            if (navigationException.ReplaceHistoryEntry)
+            if (navigationException is ReplaceHistoryNavigationException)
             {
                 // Adding 'blazor-enhanced-nav-replace' cookie so that after post-redirect we can detect that
                 // there was a NavigationManager.Refresh(), helping us decide whether to include 'blazor-enhanced-nav-replace' header
