@@ -4,22 +4,10 @@
   "localRerunCount" : 3,
   "retryOnRules": [
     {"testName": {"contains": "FlakyTestToEnsureRetryWorks" }},
-    {"testName": {"contains": "ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent" }},
-    {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }},
-    {"testName": {"contains": "StreamPool_StreamAbortedOnClientAndServer_NotPooled"}},
-    {"testName": {"contains": "TraceIdentifierIsUnique"}},
-    {"testName": {"contains": "LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning"}},
-    {"testName": {"contains": "ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug"}},
-    {"testName": {"contains": "HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate"}},
-    {"testName": {"contains": "BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed"}},
-    {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
-    {"testName": {"contains": "POST_ServerAbortAfterWrite_ClientReceivesAbort"}},
-    {"testName": {"contains": "ServerReset_BeforeRequestBody_ClientBodyThrows"}},
-    {"testName": {"contains": "InjectedStartup_DefaultApplicationNameIsEntryAssembly"}},
-    {"testName": {"contains": "CertificateChangedOnDisk"}},
-    {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}},
-    {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
-    {"testName": {"contains": "ChangingUserNameDuringReconnectLogsWarning"}},
+    {"testName": {"contains": "ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent" }}, // writes to a well-known path
+    {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }}, // tries to manipulate the state of the server's buffer
+    {"testName": {"contains": "CertificateChangedOnDisk"}}, // depends on FS event timing
+    {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}}, // depends on FS event timing
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
