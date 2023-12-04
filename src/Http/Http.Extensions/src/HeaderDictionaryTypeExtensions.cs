@@ -175,49 +175,41 @@ public static class HeaderDictionaryTypeExtensions
             return default(T);
         }
 
-        object? temp = null;
-#pragma warning disable CS8974 // Converting method group to non-delegate type
         if (typeof(T) == typeof(CacheControlHeaderValue))
         {
-            temp = ParseCacheControlHeaderValue;
+            return (T?)(object?)ParseCacheControlHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(ContentDispositionHeaderValue))
         {
-            temp = ParseCacheContentDispositionHeaderValue;
+            return (T?)(object?)ParseCacheContentDispositionHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(ContentRangeHeaderValue))
         {
-            temp = ParseCacheContentRangeHeaderValue;
+            return (T?)(object?)ParseCacheContentRangeHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(MediaTypeHeaderValue))
         {
-            temp = ParseCacheMediaTypeHeaderValue;
+            return (T?)(object?)ParseCacheMediaTypeHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(RangeConditionHeaderValue))
         {
-            temp = ParseCacheRangeConditionHeaderValue;
+            return (T?)(object?)ParseCacheRangeConditionHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(RangeHeaderValue))
         {
-            temp = ParseCacheRangeHeaderValue;
+            return (T?)(object?)ParseCacheRangeHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(EntityTagHeaderValue))
         {
-            temp = ParseCacheEntityTagHeaderValue;
+            return (T?)(object?)ParseCacheEntityTagHeaderValue(value.ToString());
         }
         else if (typeof(T) == typeof(DateTimeOffset?))
         {
-            temp = ParseCacheDateTimeOffset;
+            return (T?)(object?)ParseCacheDateTimeOffset(value.ToString());
         }
         else if (typeof(T) == typeof(long?))
         {
-            temp = ParseCacheInt64;
-        }
-#pragma warning restore CS8974 // Converting method group to non-delegate type
-
-        if (temp is not null)
-        {
-            return ((Func<string, T>)temp)(value.ToString());
+            return (T?)(object?)ParseCacheInt64(value.ToString());
         }
         return GetViaReflection<T>(value.ToString());
     }
@@ -238,34 +230,25 @@ public static class HeaderDictionaryTypeExtensions
             return Array.Empty<T>();
         }
 
-        object? temp = null;
-#pragma warning disable CS8974 // Converting method group to non-delegate type
         if (typeof(T) == typeof(MediaTypeHeaderValue))
         {
-            temp = ParseMediaTypeHeaderValue;
+            return (IList<T>)ParseMediaTypeHeaderValue(values);
         }
         else if (typeof(T) == typeof(StringWithQualityHeaderValue))
         {
-            temp = ParseStringWithQualityHeaderValue;
+            return (IList<T>)ParseStringWithQualityHeaderValue(values);
         }
         else if (typeof(T) == typeof(CookieHeaderValue))
         {
-            temp = ParseCookieHeaderValue;
+            return (IList<T>)ParseCookieHeaderValue(values);
         }
         else if (typeof(T) == typeof(EntityTagHeaderValue))
         {
-            temp = ParseEntityTagHeaderValue;
+            return (IList<T>)ParseEntityTagHeaderValue(values);
         }
         else if (typeof(T) == typeof(SetCookieHeaderValue))
         {
-            temp = ParseSetCookieHeaderValue;
-        }
-#pragma warning restore CS8974 // Converting method group to non-delegate type
-
-        if (temp is not null)
-        {
-            var func = (Func<IList<string>, IList<T>>)temp;
-            return func(values);
+            return (IList<T>)ParseSetCookieHeaderValue(values);
         }
 
         return GetListViaReflection<T>(values);
