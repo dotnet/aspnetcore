@@ -13,7 +13,7 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
     {
         var absoluteUriString = ToAbsoluteUri(uri).ToString();
         throw options.ReplaceHistoryEntry
-            ? new ReplaceHistoryNavigationException(ToAbsoluteUri(absoluteUriString).ToString())
-            : new NavigationException(ToAbsoluteUri(absoluteUriString).ToString());
+            ? new ReplaceHistoryNavigationException(absoluteUriString)
+            : new NavigationException(absoluteUriString);
     }
 }
