@@ -359,7 +359,7 @@ public class Http3RequestTests : LoggedTest
             Assert.NotNull(contentType1);
             Assert.NotNull(authority1);
 
-            Assert.Equal(contentType1, contentType2); // This will give us a better error message than Same, which is the actual test
+            // We're testing `Same`, specifically, since we're trying to detect cache misses
             Assert.Same(contentType1, contentType2);
             Assert.Same(authority1, authority2);
 
