@@ -187,6 +187,7 @@ stages:
           parameters:
             StageLabel: 'Validation'
             JobLabel: 'Signing'
+            BinlogToolVersion: $(BinlogToolVersion)
 
     - job:
       displayName: SourceLink Validation
