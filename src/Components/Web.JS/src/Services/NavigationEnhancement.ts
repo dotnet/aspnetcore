@@ -239,7 +239,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           history.replaceState(null, '', response.url);
         } else {
           // For non-gets, we're still on the source page, so need to append a whole new history entry
-          if (response.headers.get('blazor-enhanced-nav-refresh') !== 'true')
+          if (response.headers.get('blazor-enhanced-nav-replace') !== 'true')
           {
             history.pushState(null, '', response.url);
           }

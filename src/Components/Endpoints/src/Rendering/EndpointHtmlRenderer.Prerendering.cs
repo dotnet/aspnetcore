@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
+    private const string _enhancedNavReplaceHistory = "blazor-enhanced-nav-replace";
     private static readonly object ComponentSequenceKey = new object();
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
@@ -79,6 +80,15 @@ internal partial class EndpointHtmlRenderer
     public static void MarkAsAllowingEnhancedNavigation(HttpContext context)
     {
         context.Response.Headers.Add("blazor-enhanced-nav", "allow");
+    }
+
+    public static void ProcessEnhancedNavigationReplaceHistoryCookie(HttpContext context)
+    {
+        if (context.Request.Cookies.ContainsKey(_enhancedNavReplaceHistory))
+        {
+            context.Response.Headers.Add(_enhancedNavReplaceHistory, "true");
+            context.Response.Cookies.Delete(_enhancedNavReplaceHistory);
+        }
     }
 
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
@@ -166,7 +176,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    public static ValueTask<PrerenderedComponentHtmlContent> HandleRefreshNavigationException(HttpContext httpContext, RefreshNavigationException refreshNavigationException)
+    public static ValueTask<PrerenderedComponentHtmlContent> HandleRefreshNavigationException(HttpContext httpContext, ReplaceHistoryNavigationException refreshNavigationException)
     {
         httpContext.Response.Redirect(refreshNavigationException.Location);
         // Adding 'blazor-enhanced-nav-refresh' cookie so that after post-redirect we can detect that
@@ -204,6 +214,10 @@ internal partial class EndpointHtmlRenderer
         else
         {
             httpContext.Response.Redirect(navigationException.Location);
+            if (navigationException is ReplaceHistoryNavigationException)
+            {
+                httpContext.Response.Cookies.Append(_enhancedNavReplaceHistory, "true");
+            }
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }

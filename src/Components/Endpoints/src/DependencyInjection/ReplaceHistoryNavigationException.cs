@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class RefreshNavigationException : NavigationException
+internal class ReplaceHistoryNavigationException : NavigationException
 {
-    public RefreshNavigationException(string uri) : base(uri)
+    public ReplaceHistoryNavigationException(string uri) : base(uri)
     {
     }
 }
