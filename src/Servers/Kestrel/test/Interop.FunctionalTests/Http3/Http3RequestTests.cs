@@ -313,6 +313,7 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52573")]
     [ConditionalTheory]
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
@@ -358,6 +359,7 @@ public class Http3RequestTests : LoggedTest
             Assert.NotNull(contentType1);
             Assert.NotNull(authority1);
 
+            Assert.Equal(contentType1, contentType2); // This will give us a better error message than Same, which is the actual test
             Assert.Same(contentType1, contentType2);
             Assert.Same(authority1, authority2);
 
