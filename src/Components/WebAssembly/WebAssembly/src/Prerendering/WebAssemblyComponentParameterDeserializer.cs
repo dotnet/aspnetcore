@@ -65,7 +65,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidOperationException("Could not parse the parameter value for parameter '{definition.Name}' of type '{definition.TypeName}' and assembly '{definition.Assembly}'.", e);
+                    throw new InvalidOperationException($"Could not parse the parameter value for parameter '{definition.Name}' of type '{definition.TypeName}' and assembly '{definition.Assembly}'.", e);
                 }
             }
         }

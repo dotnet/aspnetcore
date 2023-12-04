@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -797,6 +798,7 @@ public class NavigationManagerTest
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52407")]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {

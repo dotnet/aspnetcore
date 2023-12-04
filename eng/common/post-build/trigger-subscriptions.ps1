@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory=$true)][string] $SourceRepo,
   [Parameter(Mandatory=$true)][int] $ChannelId,
   [Parameter(Mandatory=$true)][string] $MaestroApiAccessToken,
-  [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = 'https://maestro-prod.westus2.cloudapp.azure.com',
+  [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = 'https://maestro.dot.net',
   [Parameter(Mandatory=$false)][string] $MaestroApiVersion = '2019-01-16'
 )
 
