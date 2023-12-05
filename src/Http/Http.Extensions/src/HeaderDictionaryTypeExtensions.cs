@@ -168,51 +168,53 @@ public static class HeaderDictionaryTypeExtensions
     internal static T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
     {
         ArgumentNullException.ThrowIfNull(headers);
-        var value = headers[name];
+        var headerValue = headers[name];
 
-        if (StringValues.IsNullOrEmpty(value))
+        if (StringValues.IsNullOrEmpty(headerValue))
         {
             return default(T);
         }
+        var value = headerValue.ToString();
 
         // Comparison of typeof(T) is optimized by JIT.
         if (typeof(T) == typeof(CacheControlHeaderValue))
         {
-            return (T?)(object?)ParseCacheControlHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheControlHeaderValue(value);
         }
         else if (typeof(T) == typeof(ContentDispositionHeaderValue))
         {
-            return (T?)(object?)ParseCacheContentDispositionHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheContentDispositionHeaderValue(value);
         }
         else if (typeof(T) == typeof(ContentRangeHeaderValue))
         {
-            return (T?)(object?)ParseCacheContentRangeHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheContentRangeHeaderValue(value);
         }
         else if (typeof(T) == typeof(MediaTypeHeaderValue))
         {
-            return (T?)(object?)ParseCacheMediaTypeHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheMediaTypeHeaderValue(value);
         }
         else if (typeof(T) == typeof(RangeConditionHeaderValue))
         {
-            return (T?)(object?)ParseCacheRangeConditionHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheRangeConditionHeaderValue(value);
         }
         else if (typeof(T) == typeof(RangeHeaderValue))
         {
-            return (T?)(object?)ParseCacheRangeHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheRangeHeaderValue(value);
         }
         else if (typeof(T) == typeof(EntityTagHeaderValue))
         {
-            return (T?)(object?)ParseCacheEntityTagHeaderValue(value.ToString());
+            return (T?)(object?)ParseCacheEntityTagHeaderValue(value);
         }
         else if (typeof(T) == typeof(DateTimeOffset?))
         {
-            return (T?)(object?)ParseCacheDateTimeOffset(value.ToString());
+            return (T?)(object?)ParseCacheDateTimeOffset(value);
         }
         else if (typeof(T) == typeof(long?))
         {
-            return (T?)(object?)ParseCacheInt64(value.ToString());
+            return (T?)(object?)ParseCacheInt64(value);
         }
-        return GetViaReflection<T>(value.ToString());
+
+        return GetViaReflection<T>(value);
     }
 
     internal static IList<T> GetList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
@@ -231,6 +233,7 @@ public static class HeaderDictionaryTypeExtensions
             return Array.Empty<T>();
         }
 
+        // Comparison of typeof(T) is optimized by JIT.
         if (typeof(T) == typeof(MediaTypeHeaderValue))
         {
             return (IList<T>)ParseMediaTypeHeaderValue(values);
