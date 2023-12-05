@@ -173,6 +173,7 @@ function onDocumentSubmit(event: SubmitEvent) {
 export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit) {
   performingEnhancedPageLoad = true;
 
+  const previousLocation = location.href;
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
@@ -239,7 +240,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           history.replaceState(null, '', response.url);
         } else {
           // For non-gets, we're still on the source page, so need to append a whole new history entry
-          if (response.headers.get('blazor-enhanced-nav-replace') !== 'true')
+          if (response.url !== previousLocation)
           {
             history.pushState(null, '', response.url);
           }
