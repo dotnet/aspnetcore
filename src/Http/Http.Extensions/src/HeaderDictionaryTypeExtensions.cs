@@ -175,6 +175,7 @@ public static class HeaderDictionaryTypeExtensions
             return default(T);
         }
 
+        // Comparison of typeof(T) is optimized by JIT.
         if (typeof(T) == typeof(CacheControlHeaderValue))
         {
             return (T?)(object?)ParseCacheControlHeaderValue(value.ToString());
