@@ -32,7 +32,7 @@ internal sealed partial class HttpConnectionManager
         _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
         _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
         _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
-        _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconectTimeout ?? ConnectionOptionsSetup.DefaultDisconnectTimeout).TotalMilliseconds;
+        _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout).TotalMilliseconds;
         _metrics = metrics;
 
         // Register these last as the callbacks could run immediately
