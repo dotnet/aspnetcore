@@ -13,7 +13,7 @@ public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
     /// <summary>
     /// Default timeout value for disconnecting idle connections.
     /// </summary>
-    public static TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
+    public static TimeSpan DefaultDisconnectTimeout = TimeSpan.FromSeconds(15);
 
     /// <summary>
     /// Sets default values for options if they have not been set yet.
@@ -23,7 +23,7 @@ public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
     {
         if (options.DisconnectTimeout == null)
         {
-            options.DisconnectTimeout = DefaultDisconectTimeout;
+            options.DisconnectTimeout = DefaultDisconnectTimeout;
         }
     }
 }
