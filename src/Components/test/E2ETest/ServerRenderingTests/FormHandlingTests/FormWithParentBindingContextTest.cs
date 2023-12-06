@@ -1464,13 +1464,21 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistryEntry()
+    public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry()
     {
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh");
+        var guid = Browser.Exists(By.Id("guid")).Text;
 
         Browser.Exists(By.Id("submit-button")).Click();
 
+        // Checking that the page was refreshed.
+        // The redirect request method is GET.
+        // Providing a Guid to check that it is not the initial GET request for the page
+        Browser.NotEqual(guid, () => Browser.Exists(By.Id("guid")).Text);
+        Browser.Equal("GET", () => Browser.Exists(By.Id("method")).Text);
+
+        // Checking that the history entry was not pushed
         Browser.Navigate().Back();
         Browser.Equal(startUrl, () => Browser.Url);
     }
