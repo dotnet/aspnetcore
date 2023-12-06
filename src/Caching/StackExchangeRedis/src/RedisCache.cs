@@ -650,7 +650,11 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
             // wipe the shared field, but *only* if it is still the cache we were
             // thinking about (once it is null, the next caller will reconnect)
-            ReleaseConnection(Interlocked.CompareExchange(ref _cache, null, cache));
+            var tmp = Interlocked.CompareExchange(ref _cache, null, cache);
+            if (ReferenceEquals(tmp, cache))
+            {
+                ReleaseConnection(tmp);
+            }
         }
     }
 
