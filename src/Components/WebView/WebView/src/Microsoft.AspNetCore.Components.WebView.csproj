@@ -34,6 +34,8 @@
 
   <ItemGroup>
     <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
   </ItemGroup>
 
   <ItemGroup>
