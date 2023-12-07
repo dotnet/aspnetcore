@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.ShortCircuit;
 
 namespace Microsoft.AspNetCore.Routing.TestObjects;
 
@@ -62,7 +61,7 @@ internal class ShortCircuitMatcher : Matcher
     {
         var metadataList = new List<object>
         {
-            new ShortCircuitMetadata(_statusCode)
+            new ShortCircuitAttribute(_statusCode)
         };
 
         if (_hasAuthMetadata)
