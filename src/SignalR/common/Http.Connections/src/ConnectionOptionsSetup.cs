@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Http.Connections;
 /// </summary>
 public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
 {
+    // That's a known typo issue, while we think it's not worth worth making a breaking change here, see https://github.com/dotnet/aspnetcore/pull/30558#discussion_r585189841
     /// <summary>
     /// Default timeout value for disconnecting idle connections.
-    /// </summary>
-    /// <remarks>That's a known typo issue, while we think it's not worth worth making a breaking change here, see https://github.com/dotnet/aspnetcore/pull/30558#discussion_r585189841</remarks>
+    /// </summary>    
     public static TimeSpan DefaultDisconectTimeout = TimeSpan.FromSeconds(15);
 
     /// <summary>
