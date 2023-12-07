@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Routing.ShortCircuit;
-
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
@@ -10,13 +8,24 @@ namespace Microsoft.AspNetCore.Routing;
 /// The execution of the endpoint will happen in UseRouting middleware.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class ShortCircuitAttribute : Attribute, IShortCircuitMetadata
+public sealed class ShortCircuitAttribute : Attribute
 {
     /// <summary>
     /// Constructs an instance of <see cref="ShortCircuitAttribute"/>.
     /// </summary>
     public ShortCircuitAttribute() { }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Constructs an instance of <see cref="ShortCircuitAttribute"/>.
+    /// </summary>
+    /// <param name="statusCode">The status code to set in the response.</param>
+    internal ShortCircuitAttribute(int? statusCode)
+    {
+        StatusCode = statusCode;
+    }
+
+    /// <summary>
+    /// The status code of the response.
+    /// </summary>
     public int? StatusCode { get; }
 }
