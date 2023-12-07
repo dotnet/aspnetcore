@@ -240,8 +240,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           history.replaceState(null, '', response.url);
         } else {
           // For non-gets, we're still on the source page, so need to append a whole new history entry
-          if (response.url !== previousLocation)
-          {
+          if (response.url !== previousLocation) {
             history.pushState(null, '', response.url);
           }
         }
