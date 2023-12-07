@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.IDataProtectionKeyContext.DataProtectionKeys.set -> void
