@@ -92,7 +92,7 @@ public class HttpConnectionDispatcherOptions
     }
 
     /// <summary>
-    /// Gets or sets the minimum protocol verison supported by the server.
+    /// Gets or sets the minimum protocol version supported by the server.
     /// The default value is 0, the lowest possible protocol version.
     /// </summary>
     public int MinimumProtocolVersion { get; set; }
