@@ -21,10 +21,7 @@
 
     protected override void OnInitialized()
     {
-
         var httpContext = HttpContextAccessor.HttpContext;
         _method = httpContext?.Request.Method;
-
-        base.OnInitialized();
     }
 }
