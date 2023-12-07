@@ -1,0 +1,20 @@
+﻿@layout LayoutWithInteractiveComponent
+@page "/interactive-in-layout/streaming"
+@attribute [StreamRendering]
+
+<h3>Streaming</h3>
+
+@if (_doneStreaming)
+{
+    <p id="done-streaming">Done streaming!</p>
+}
+
+@code {
+    bool _doneStreaming;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(200);
+        _doneStreaming = true;
+    }
+}
