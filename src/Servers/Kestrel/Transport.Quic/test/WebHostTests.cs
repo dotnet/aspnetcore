@@ -23,12 +23,16 @@ public class WebHostTests : LoggedTest
     // This test isn't conditional on QuicListener.IsSupported. Instead, it verifies that HTTP/3 runs on expected CI platforms:
     // 1. Windows 11 or later.
     // 2. Linux with libmsquic package installed.
+    //
+    // The main build and PR builds run Helix tests run on different OSes. Be cautious when editing OSes skipped on this test
+    // as the test might pass in the PR build but cause the main build to fail once merged.
     [ConditionalFact]
     [SkipNonHelix]
     [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/46537")]
     [SkipOnMariner("https://github.com/dotnet/aspnetcore/issues/46537")]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "HTTP/3 isn't supported on MacOS.")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win11_21H2)]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/52623", Queues = HelixConstants.DebianArm64)]
     public void HelixPlatform_QuicListenerIsSupported()
     {
         Assert.True(QuicListener.IsSupported, "QuicListener.IsSupported should be true.");
