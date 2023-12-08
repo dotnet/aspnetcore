@@ -1372,7 +1372,7 @@ WriteAttributeValue("", 11510, exceptionDetailId, 11510, 18, false);
             WriteLiteral("</h2>\r\n");
 #nullable restore
 #line 547 "ErrorPage.cshtml"
-         if (Model.Endpoint.Metadata != null)
+         if (Model.Endpoint?.Metadata != null)
         {
 
 #line default
