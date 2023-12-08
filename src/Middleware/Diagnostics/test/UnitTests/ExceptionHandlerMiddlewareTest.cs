@@ -21,10 +21,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
-public class ExceptionHandlerMiddlewareTest
+public class ExceptionHandlerMiddlewareTest : LoggedTest
 {
     [Fact]
     public async Task ExceptionIsSetOnProblemDetailsContext()
@@ -289,6 +293,66 @@ public class ExceptionHandlerMiddlewareTest
         // Assert
         Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.InvalidOperationException", "handled", null));
+    }
+
+    [Fact]
+    public async Task Metrics_ExceptionThrown_Handled_RouteAvailable()
+    {
+        // Arrange
+        var builder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/path"), 0);
+        var endpoint = builder.Build();
+
+        var meterFactory = new TestMeterFactory();
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
+        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        using var host = new HostBuilder()
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton<IMeterFactory>(meterFactory);
+                s.AddSingleton(LoggerFactory);
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseExceptionHandler(new ExceptionHandlerOptions
+                    {
+                        ExceptionHandler = (c) => Task.CompletedTask
+                    });
+                    app.Run(context =>
+                    {
+                        context.SetEndpoint(endpoint);
+                        throw new Exception("Test exception");
+                    });
+
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        var response = await server.CreateClient().GetAsync("/path");
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        await requestDurationCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+        // Assert
+        Assert.Collection(
+            requestDurationCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal(500, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
+                Assert.Equal("/path", (string)m.Tags["http.route"]);
+            });
+        Assert.Collection(requestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.Exception", "handled"));
     }
 
     [Fact]
