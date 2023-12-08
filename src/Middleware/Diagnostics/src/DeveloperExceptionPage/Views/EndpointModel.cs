@@ -11,5 +11,5 @@ internal sealed class EndpointModel
     public string? RoutePattern { get; set; }
     public int? Order { get; set; }
     public string? HttpMethods { get; set; }
-    public EndpointMetadataCollection Metadata { get; set; }
+    public EndpointMetadataCollection? Metadata { get; set; }
 }
