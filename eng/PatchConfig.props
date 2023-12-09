@@ -139,6 +139,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
       Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
       Microsoft.AspNetCore.SignalR.Redis;
+      Microsoft.AspNetCore.HttpOverrides;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
