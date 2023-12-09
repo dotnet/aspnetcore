@@ -1,8 +1,8 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.177.0/containers/dotnet/.devcontainer/base.Dockerfile
 
-# full tag list: https://mcr.microsoft.com/v2/vscode/devcontainers/dotnet/tags/list
+# full tag list: https://mcr.microsoft.com/v2/devcontainers/dotnet/tags/list
 ARG VARIANT="8.0"
-FROM mcr.microsoft.com/vscode/devcontainers/dotnet:${VARIANT}
+FROM mcr.microsoft.com/devcontainers/dotnet:${VARIANT}
 
 # [Option] Install Node.js
 ARG INSTALL_NODE="true"
