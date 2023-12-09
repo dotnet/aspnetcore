@@ -9,7 +9,7 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 {
     void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
 
-    protected override void NavigateToCore(string uri, bool forceLoad)
+    protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         var absoluteUriString = ToAbsoluteUri(uri).ToString();
         throw new NavigationException(absoluteUriString);
