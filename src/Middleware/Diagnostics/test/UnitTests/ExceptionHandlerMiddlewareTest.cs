@@ -315,6 +315,47 @@ public class ExceptionHandlerMiddlewareTest
             m => AssertRequestException(m, "System.InvalidOperationException", "unhandled"));
     }
 
+    [Fact]
+    public async Task ExceptionFeatureSetOnDeveloperExceptionPage()
+    {
+        // Arrange
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        await next();
+
+                        var exceptionHandlerFeature = context.Features.GetRequiredFeature<IExceptionHandlerPathFeature>();
+
+                        Assert.NotNull(exceptionHandlerFeature);
+                        Assert.Equal("Test exception", exceptionHandlerFeature.Error.Message);
+                        Assert.Equal(context.Request.Path, exceptionHandlerFeature.Path);
+                    });
+                    app.UseExceptionHandler(exceptionApp =>
+                    {
+                        exceptionApp.Run(context => Task.CompletedTask);
+                    });
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/path");
+
+        var response = await server.CreateClient().SendAsync(request);
+    }
+
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);

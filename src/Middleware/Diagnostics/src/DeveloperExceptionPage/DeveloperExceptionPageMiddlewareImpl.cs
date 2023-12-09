@@ -148,6 +148,17 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     context.Response.StatusCode = 500;
                 }
 
+                var exceptionHandlerFeature = new ExceptionHandlerFeature()
+                {
+                    Error = ex,
+                    Path = context.Request.Path,
+                    Endpoint = context.GetEndpoint(),
+                    RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues
+                };
+
+                context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
+                context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
+
                 await _exceptionHandler(new ErrorContext(context, ex));
 
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.UnhandledException";
