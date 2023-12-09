@@ -151,7 +151,9 @@ internal sealed class HostingApplicationDiagnostics
             if (context.MetricsEnabled)
             {
                 var endpoint = httpContext.GetEndpoint();
-                if (httpContext.Items.TryGetValue(HttpExtensions.ClearedEndpointKey, out var e) && e is Endpoint clearedEndpoint)
+                // Some middleware re-executing the pipeline. Before they do this, they clear the endpoint.
+                // The original endpoint is stashed with a known key in HttpContext.Items. Use it as a fallback.
+                if (endpoint is null && httpContext.Items.TryGetValue(HttpExtensions.ClearedEndpointKey, out var e) && e is Endpoint clearedEndpoint)
                 {
                     endpoint = clearedEndpoint;
                 }
