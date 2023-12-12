@@ -5,6 +5,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -307,6 +308,6 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         private readonly RequestHeaders _dictionary = dictionary;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _dictionary.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
+        public DictionaryItemDebugView<string, string>[] Items => _dictionary.Select(pair => new DictionaryItemDebugView<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

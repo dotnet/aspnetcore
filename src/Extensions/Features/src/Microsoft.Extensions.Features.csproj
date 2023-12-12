@@ -19,6 +19,7 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentOutOfRangeThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

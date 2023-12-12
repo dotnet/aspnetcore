@@ -4,6 +4,7 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -256,6 +257,6 @@ public class QueryCollection : IQueryCollection
         private readonly QueryCollectionInternal _collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _collection.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
+        public DictionaryItemDebugView<string, string>[] Items => _collection.Select(pair => new DictionaryItemDebugView<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

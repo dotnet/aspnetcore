@@ -5,6 +5,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -461,6 +462,6 @@ public class HeaderDictionary : IHeaderDictionary
         private readonly HeaderDictionary _dictionary = dictionary;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _dictionary.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
+        public DictionaryItemDebugView<string, string>[] Items => _dictionary.Select(pair => new DictionaryItemDebugView<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }
