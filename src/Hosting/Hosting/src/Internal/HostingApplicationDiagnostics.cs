@@ -150,14 +150,7 @@ internal sealed class HostingApplicationDiagnostics
 
             if (context.MetricsEnabled)
             {
-                var endpoint = httpContext.GetEndpoint();
-                // Some middleware re-execute the middleware pipeline with the HttpContext. Before they do this, they clear state from context, such as the previously matched endpoint.
-                // The original endpoint is stashed with a known key in HttpContext.Items. Use it as a fallback.
-                if (endpoint is null && httpContext.Items.TryGetValue(HttpExtensions.ClearedEndpointKey, out var e) && e is Endpoint clearedEndpoint)
-                {
-                    endpoint = clearedEndpoint;
-                }
-
+                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
                 var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
                 var customTags = context.MetricsTagsFeature?.TagsList;
 

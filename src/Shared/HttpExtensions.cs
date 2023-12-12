@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -11,7 +12,7 @@ internal static class HttpExtensions
     internal static bool IsValidHttpMethodForForm(string method) =>
         HttpMethods.IsPost(method) || HttpMethods.IsPut(method) || HttpMethods.IsPatch(method);
 
-    internal const string ClearedEndpointKey = "__ClearedEndpoint";
+    internal const string OriginalEndpointKey = "__OriginalEndpoint";
 
     internal static bool IsValidContentTypeForForm(string? contentType)
     {
@@ -31,12 +32,25 @@ internal static class HttpExtensions
             contentType.StartsWith(MultipartFormContentType, StringComparison.OrdinalIgnoreCase);
     }
 
+    internal static Endpoint? GetOriginalEndpoint(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint();
+
+        // Some middleware re-execute the middleware pipeline with the HttpContext. Before they do this, they clear state from context, such as the previously matched endpoint.
+        // The original endpoint is stashed with a known key in HttpContext.Items. Use it as a fallback.
+        if (endpoint == null && context.Items.TryGetValue(OriginalEndpointKey, out var e) && e is Endpoint originalEndpoint)
+        {
+            endpoint = originalEndpoint;
+        }
+        return endpoint;
+    }
+
     internal static void ClearEndpoint(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
         if (endpoint != null)
         {
-            context.Items[ClearedEndpointKey] = endpoint;
+            context.Items[OriginalEndpointKey] = endpoint;
 
             // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
             // the endpoint and route values to ensure things are re-calculated.
