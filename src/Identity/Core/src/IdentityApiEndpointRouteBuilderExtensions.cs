@@ -413,7 +413,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var confirmEmailUrl = linkGenerator.GetUriByName(context, confirmEmailEndpointName, routeValues)
                 ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
 
-            await emailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(confirmEmailUrl));
+            await emailSender.SendConfirmationLinkAsync(user, email, confirmEmailUrl);
         }
 
         return new IdentityEndpointsConventionBuilder(routeGroup);
