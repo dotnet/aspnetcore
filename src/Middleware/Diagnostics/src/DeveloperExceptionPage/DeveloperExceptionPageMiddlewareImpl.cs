@@ -148,16 +148,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     context.Response.StatusCode = 500;
                 }
 
-                var exceptionHandlerFeature = new ExceptionHandlerFeature()
-                {
-                    Error = ex,
-                    Path = context.Request.Path,
-                    Endpoint = context.GetEndpoint(),
-                    RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues
-                };
-
-                context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
-                context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
+                SetExceptionHandlerFeatures(context, ex);
 
                 await _exceptionHandler(new ErrorContext(context, ex));
 
@@ -184,6 +175,20 @@ internal class DeveloperExceptionPageMiddlewareImpl
             Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
         static void WriteDiagnosticEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
             => diagnosticSource.Write(name, value);
+
+        static void SetExceptionHandlerFeatures(HttpContext context, Exception ex)
+        {
+            var exceptionHandlerFeature = new ExceptionHandlerFeature()
+            {
+                Error = ex,
+                Path = context.Request.Path,
+                Endpoint = context.GetEndpoint(),
+                RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues
+            };
+
+            context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
+            context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
+        }
     }
 
     // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
