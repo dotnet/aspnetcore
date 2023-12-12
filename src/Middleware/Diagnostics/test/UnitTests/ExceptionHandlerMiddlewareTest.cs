@@ -295,11 +295,11 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Fact]
-    public async Task Metrics_ExceptionThrown_Handled_RouteAvailable()
+    public async Task Metrics_ExceptionThrown_Handled_UseOriginalRoute()
     {
         // Arrange
-        var builder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/path"), 0);
-        var endpoint = builder.Build();
+        var originalEndpointBuilder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/path"), 0);
+        var originalEndpoint = originalEndpointBuilder.Build();
 
         var meterFactory = new TestMeterFactory();
         using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
@@ -323,7 +323,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                     });
                     app.Run(context =>
                     {
-                        context.SetEndpoint(endpoint);
+                        context.SetEndpoint(originalEndpoint);
                         throw new Exception("Test exception");
                     });
 
@@ -349,6 +349,73 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 Assert.Equal(500, (int)m.Tags["http.response.status_code"]);
                 Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
                 Assert.Equal("/path", (string)m.Tags["http.route"]);
+            });
+        Assert.Collection(requestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.Exception", "handled"));
+    }
+
+    [Fact]
+    public async Task Metrics_ExceptionThrown_Handled_UseNewRoute()
+    {
+        // Arrange
+        var originalEndpointBuilder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/path"), 0);
+        var originalEndpoint = originalEndpointBuilder.Build();
+
+        var newEndpointBuilder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse("/new"), 0);
+        var newEndpoint = newEndpointBuilder.Build();
+
+        var meterFactory = new TestMeterFactory();
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
+        using var requestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        using var host = new HostBuilder()
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton<IMeterFactory>(meterFactory);
+                s.AddSingleton(LoggerFactory);
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseExceptionHandler(new ExceptionHandlerOptions
+                    {
+                        ExceptionHandler = (c) =>
+                        {
+                            c.SetEndpoint(newEndpoint);
+                            return Task.CompletedTask;
+                        }
+                    });
+                    app.Run(context =>
+                    {
+                        context.SetEndpoint(originalEndpoint);
+                        throw new Exception("Test exception");
+                    });
+
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        var response = await server.CreateClient().GetAsync("/path");
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        await requestDurationCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+        // Assert
+        Assert.Collection(
+            requestDurationCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal(500, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
+                Assert.Equal("/new", (string)m.Tags["http.route"]);
             });
         Assert.Collection(requestExceptionCollector.GetMeasurementSnapshot(),
             m => AssertRequestException(m, "System.Exception", "handled"));
