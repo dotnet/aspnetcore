@@ -148,9 +148,10 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     context.Response.StatusCode = 500;
                 }
 
-                SetExceptionHandlerFeatures(context, ex);
+                var errorContext = new ErrorContext(context, ex);
 
-                await _exceptionHandler(new ErrorContext(context, ex));
+                SetExceptionHandlerFeatures(errorContext);
+                await _exceptionHandler(errorContext);
 
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.UnhandledException";
                 if (_diagnosticSource.IsEnabled(eventName))
@@ -175,20 +176,6 @@ internal class DeveloperExceptionPageMiddlewareImpl
             Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
         static void WriteDiagnosticEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
             => diagnosticSource.Write(name, value);
-
-        static void SetExceptionHandlerFeatures(HttpContext context, Exception ex)
-        {
-            var exceptionHandlerFeature = new ExceptionHandlerFeature()
-            {
-                Error = ex,
-                Path = context.Request.Path,
-                Endpoint = context.GetEndpoint(),
-                RouteValues = context.Features.Get<IRouteValuesFeature>()?.RouteValues
-            };
-
-            context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
-            context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-        }
     }
 
     // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
@@ -216,17 +203,12 @@ internal class DeveloperExceptionPageMiddlewareImpl
     {
         var httpContext = errorContext.HttpContext;
 
-        if (_problemDetailsService is not null)
-        {
-            SetExceptionHandlerFeatures(errorContext);
-        }
-
         if (_problemDetailsService == null || !await _problemDetailsService.TryWriteAsync(new()
-            {
-                HttpContext = httpContext,
-                ProblemDetails = CreateProblemDetails(errorContext, httpContext), 
-                Exception = errorContext.Exception 
-            }))
+        {
+            HttpContext = httpContext,
+            ProblemDetails = CreateProblemDetails(errorContext, httpContext),
+            Exception = errorContext.Exception
+        }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
 
