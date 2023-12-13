@@ -12,6 +12,7 @@ internal static class HttpExtensions
     internal static bool IsValidHttpMethodForForm(string method) =>
         HttpMethods.IsPost(method) || HttpMethods.IsPut(method) || HttpMethods.IsPatch(method);
 
+    // Key is a string so shared code works across different assemblies (hosting, error handling middleware, etc).
     internal const string OriginalEndpointKey = "__OriginalEndpoint";
 
     internal static bool IsValidContentTypeForForm(string? contentType)
