@@ -47,6 +47,16 @@ public:
         return !m_handlerResolver.GetDisallowRotationOnConfigChange();
     }
 
+    std::chrono::milliseconds GetShutdownDelay() const
+    {
+        return m_handlerResolver.GetShutdownDelay();
+    }
+
+    bool IsCommandLineLaunch() const
+    {
+        return m_pHttpServer.IsCommandLineLaunch();
+    }
+
 private:
 
     std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;

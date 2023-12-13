@@ -12,6 +12,7 @@
 #define CS_ASPNETCORE_SHADOW_COPY_DIRECTORY              L"shadowCopyDirectory"
 #define CS_ASPNETCORE_CLEAN_SHADOW_DIRECTORY_CONTENT     L"cleanShadowCopyDirectory"
 #define CS_ASPNETCORE_DISALLOW_ROTATE_CONFIG             L"disallowRotationOnConfigChange"
+#define CS_ASPNETCORE_SHUTDOWN_DELAY                     L"shutdownDelay"
 
 ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
         m_hostingModel(HOSTING_UNKNOWN),
@@ -53,6 +54,17 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
 
     auto disallowRotationOnConfigChange = find_element(handlerSettings, CS_ASPNETCORE_DISALLOW_ROTATE_CONFIG).value_or(std::wstring());
     m_fDisallowRotationOnConfigChange = equals_ignore_case(L"true", disallowRotationOnConfigChange);
+
+    auto shutdownDelay = find_element(handlerSettings, CS_ASPNETCORE_SHUTDOWN_DELAY).value_or(std::wstring());
+    if (shutdownDelay.empty())
+    {
+        m_fShutdownDelay = std::chrono::seconds(1);
+    }
+    else
+    {
+        auto str = to_multi_byte_string(shutdownDelay, CP_UTF8);
+        m_fShutdownDelay = std::chrono::milliseconds(std::atoi(str.c_str()));
+    }
                 
     m_strProcessPath = section->GetRequiredString(CS_ASPNETCORE_PROCESS_EXE_PATH);
     m_strArguments = section->GetString(CS_ASPNETCORE_PROCESS_ARGUMENTS).value_or(CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT);
