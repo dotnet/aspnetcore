@@ -131,7 +131,8 @@ HRESULT
     RETURN_IF_FAILED(pModuleInfo->SetGlobalNotifications(
                                      pGlobalModule.release(),
                                      GL_CONFIGURATION_CHANGE | // Configuration change triggers IIS application stop
-                                     GL_STOP_LISTENING));   // worker process stop or recycle
+                                     GL_STOP_LISTENING | // worker process stop
+                                     GL_APPLICATION_STOP)); // app pool recycle
 
     return S_OK;
 }

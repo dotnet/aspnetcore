@@ -16,23 +16,48 @@ ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(std::shared_ptr<APPLICATION
 //
 GLOBAL_NOTIFICATION_STATUS
 ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
-    _In_ IGlobalStopListeningProvider * pProvider
+    _In_ IGlobalStopListeningProvider* pProvider
 )
 {
     UNREFERENCED_PARAMETER(pProvider);
 
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening");
 
-    if (g_fInShutdown)
+    if (g_fInShutdown || m_shutdown.joinable())
     {
         // Avoid receiving two shutdown notifications.
         return GL_NOTIFICATION_CONTINUE;
     }
 
-    m_pApplicationManager->ShutDown();
-    m_pApplicationManager = nullptr;
+    StartShutdown();
 
     // Return processing to the pipeline.
+    return GL_NOTIFICATION_CONTINUE;
+}
+
+GLOBAL_NOTIFICATION_STATUS
+ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
+    IN IHttpApplicationStopProvider* pProvider
+)
+{
+    UNREFERENCED_PARAMETER(pProvider);
+    LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
+
+    if (m_shutdown.joinable())
+    {
+        m_shutdown.join();
+    }
+    else
+    {
+        if (!g_fInShutdown && m_pApplicationManager && m_pApplicationManager->IsCommandLineLaunch() &&
+            m_pApplicationManager->ShouldRecycleOnConfigChange())
+        {
+            // IISExpress can close without calling OnGlobalStopListening which is where we usually would trigger shutdown
+            // so we should make sure to shutdown the server
+            StartShutdown();
+        }
+    }
+
     return GL_NOTIFICATION_CONTINUE;
 }
 
