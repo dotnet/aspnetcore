@@ -106,7 +106,7 @@ public class MultipartReader
     {
         int totalSize = 0;
         var accumulator = new KeyValueAccumulator();
-        var line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
+        var line = await _stream.ReadLineAsync(HeadersLengthLimit, cancellationToken);
         while (!string.IsNullOrEmpty(line))
         {
             if (HeadersLengthLimit - totalSize < line.Length)
