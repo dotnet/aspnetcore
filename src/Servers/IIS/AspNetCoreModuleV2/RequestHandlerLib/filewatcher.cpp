@@ -21,12 +21,6 @@ FILE_WATCHER::FILE_WATCHER() :
         FALSE,    // not set
         nullptr); // name
 
-    m_pShutdownEvent = CreateEvent(
-        nullptr,  // default security attributes
-        TRUE,     // manual reset event
-        FALSE,    // not set
-        nullptr); // name
-
     // Use of TerminateThread for the file watcher thread was eliminated in favor of an event-based
     // approach. Out of an abundance of caution, we are temporarily adding an environment variable
     // to allow falling back to TerminateThread usage. If all goes well, this will be removed in a
@@ -175,19 +169,8 @@ Win32 error
     LOG_INFO(L"Starting file watcher thread");
     DBG_ASSERT(pFileMonitor != nullptr);
 
-    HANDLE events[2] = { pFileMonitor->m_hCompletionPort, pFileMonitor->m_pShutdownEvent };
-
-    DWORD dwEvent = 0;
     while (true)
     {
-        // Wait for either a change notification or a shutdown event.
-        dwEvent = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE, INFINITE) - WAIT_OBJECT_0;
-
-        if (dwEvent == 1)
-        {
-            // Shutdown event.
-            break;
-        }
 
         DWORD       cbCompletion = 0;
         OVERLAPPED* pOverlapped = nullptr;
@@ -202,6 +185,11 @@ Win32 error
 
         DBG_ASSERT(success);
         (void)success;
+
+        if (completionKey == FILE_WATCHER_SHUTDOWN_KEY)
+        {
+            break;
+        }
 
         DBG_ASSERT(pOverlapped != nullptr);
         if (pOverlapped != nullptr)
@@ -469,7 +457,7 @@ FILE_WATCHER::StopMonitor()
     LOG_INFO(L"Stopping file watching.");
 
     // Signal the file watcher thread to exit
-    SetEvent(m_pShutdownEvent);
+    PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
     WaitForWatcherThreadExit();
 
     if (m_fShadowCopyEnabled)
