@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>HTTP header parser implementations.</Description>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);netstandard2.0</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>http</PackageTags>
