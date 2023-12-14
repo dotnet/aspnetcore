@@ -73,8 +73,10 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         {
             ValidateIssuer = issuers.Count > 0,
             ValidIssuers = issuers,
+            ValidIssuer = issuer,
             ValidateAudience = audiences.Count > 0,
             ValidAudiences = audiences,
+            ValidAudience = audience,
             ValidateIssuerSigningKey = true,
             IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers),
         };
