@@ -102,24 +102,16 @@ internal static class ILEmitTrieFactory
         // ref byte p = ...
         il.Emit(OpCodes.Stloc_0, locals.P);
 
+        const int binarySearchThreshold = 4;
         var groups = entries.GroupBy(e => e.text.Length).ToArray();
-        for (var i = 0; i < groups.Length; i++)
+
+        if (groups.Length >= binarySearchThreshold)
         {
-            var group = groups[i];
-
-            // Similar to 'if (length != X) { ... }
-            var inside = il.DefineLabel();
-            var next = il.DefineLabel();
-            il.Emit(OpCodes.Ldarg_2);
-            il.Emit(OpCodes.Ldc_I4, group.Key);
-            il.Emit(OpCodes.Beq, inside);
-            il.Emit(OpCodes.Br, next);
-
-            // Process the group
-            il.MarkLabel(inside);
-            EmitTable(il, group.ToArray(), 0, group.Key, locals, labels, methods);
-            il.MarkLabel(next);
+            // Only sort if binary search will be used.
+            Array.Sort(groups, static (a, b) => a.Key.CompareTo(b.Key));
         }
+
+        EmitIfLadder(groups);
 
         // Exit point - we end up here when the text doesn't match
         il.MarkLabel(labels.ReturnDefault);
@@ -130,6 +122,68 @@ internal static class ILEmitTrieFactory
         il.MarkLabel(labels.ReturnNotAscii);
         il.Emit(OpCodes.Ldc_I4, NotAscii);
         il.Emit(OpCodes.Ret);
+
+        void EmitIfLadder(Span<IGrouping<int, (string text, int destination)>> groups)
+        {
+            if (groups.Length < binarySearchThreshold)
+            {
+                // Use sequential if statements, starting from the most common length
+                groups.Sort(static (a, b) => b.Count().CompareTo(a.Count()));
+                for (var i = 0; i < groups.Length; i++)
+                {
+                    var group = groups[i];
+
+                    // Similar to 'if (length != X) { ... }
+                    var inside = il.DefineLabel();
+                    var next = il.DefineLabel();
+                    il.Emit(OpCodes.Ldarg_2);
+                    il.Emit(OpCodes.Ldc_I4, group.Key);
+                    il.Emit(OpCodes.Beq, inside);
+                    il.Emit(OpCodes.Br, next);
+
+                    // Process the group
+                    il.MarkLabel(inside);
+                    EmitTable(il, group.ToArray(), 0, group.Key, locals, labels, methods);
+                    il.MarkLabel(next);
+                }
+            }
+            else
+            {
+                // Use binary search tree
+                var mid = groups.Length / 2;
+
+                var inside = il.DefineLabel();
+                var checkBranch = il.DefineLabel();
+                var rightBranch = il.DefineLabel();
+                var next = il.DefineLabel();
+
+                // if (length == X) { ... }
+                il.Emit(OpCodes.Ldarg_2);
+                il.Emit(OpCodes.Ldc_I4, groups[mid].Key);
+                il.Emit(OpCodes.Beq, inside);
+                il.Emit(OpCodes.Br, checkBranch);
+
+                // Process the group
+                il.MarkLabel(inside);
+                EmitTable(il, groups[mid].ToArray(), 0, groups[mid].Key, locals, labels, methods);
+                il.Emit(OpCodes.Br, next);
+
+                il.MarkLabel(checkBranch);
+
+                // if (length > X) goto rightBranch
+                il.Emit(OpCodes.Ldarg_2);
+                il.Emit(OpCodes.Ldc_I4, groups[mid].Key);
+                il.Emit(OpCodes.Bge, rightBranch);
+
+                // By elimination we check the left branch
+                EmitIfLadder(groups[..mid]);
+                il.Emit(OpCodes.Br, next);
+
+                il.MarkLabel(rightBranch);
+                EmitIfLadder(groups[(mid + 1)..]);
+                il.MarkLabel(next);
+            }
+        }
     }
 
     private static void EmitTable(
@@ -266,24 +320,75 @@ internal static class ILEmitTrieFactory
         // uint64Value = ...
         il.Emit(OpCodes.Stloc, locals.UInt64Value);
 
-        // Now we generate an 'if' ladder with an entry for each of the unique 64 bit sections
-        // of the text.
-        var groups = entries.GroupBy(e => GetUInt64Key(e.text, index));
-        foreach (var group in groups)
-        {
-            // if (uint64Value == 0x.....) { ... }
-            var next = il.DefineLabel();
-            il.Emit(OpCodes.Ldloc, locals.UInt64Value);
-            il.Emit(OpCodes.Ldc_I8, unchecked((long)group.Key));
-            il.Emit(OpCodes.Bne_Un, next);
+        const int binarySearchThreshold = 4;
 
-            // Process the group
-            EmitTable(il, group.ToArray(), index + 4, length, locals, labels, methods);
-            il.MarkLabel(next);
+        var groups = entries.GroupBy(e => GetUInt64Key(e.text, index)).ToArray();
+
+        if (groups.Length >= binarySearchThreshold)
+        {
+            // Only sort if binary search will be used.
+            Array.Sort(groups, static (a, b) => unchecked((long)a.Key).CompareTo(unchecked((long)b.Key)));
         }
+
+        EmitIfLadder(groups);
 
         // goto: defaultDestination
         il.Emit(OpCodes.Br, labels.ReturnDefault);
+
+        void EmitIfLadder(Span<IGrouping<ulong, (string test, int destination)>> groups)
+        {
+            // Generate an 'if' ladder with an entry for each of the unique 64 bit sections of the text.
+
+            if (groups.Length < binarySearchThreshold)
+            {
+                // Use sequential if statements, starting from the most common segment
+                groups.Sort(static (a, b) => b.Count().CompareTo(a.Count()));
+                foreach (var group in groups)
+                {
+                    // if (uint64Value == 0x.....) { ... }
+                    var next = il.DefineLabel();
+                    il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+                    il.Emit(OpCodes.Ldc_I8, unchecked((long)group.Key));
+                    il.Emit(OpCodes.Bne_Un, next);
+
+                    // Process the group
+                    EmitTable(il, group.ToArray(), index + 4, length, locals, labels, methods);
+                    il.MarkLabel(next);
+                }
+            }
+            else
+            {
+                // Use binary search tree
+                var mid = groups.Length / 2;
+
+                var checkBranch = il.DefineLabel();
+                var rightBranch = il.DefineLabel();
+                var nextGroup = il.DefineLabel();
+
+                // if (uint64Value == 0x.....) { ... }
+                il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+                il.Emit(OpCodes.Ldc_I8, unchecked((long)groups[mid].Key));
+                il.Emit(OpCodes.Bne_Un, checkBranch);
+
+                // Process the group
+                EmitTable(il, groups[mid].ToArray(), index + 4, length, locals, labels, methods);
+                il.Emit(OpCodes.Br, nextGroup);
+                il.MarkLabel(checkBranch);
+
+                // if (uint64Value > 0x.....) goto rightBranch
+                il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+                il.Emit(OpCodes.Ldc_I8, unchecked((long)groups[mid].Key));
+                il.Emit(OpCodes.Bge_Un, rightBranch);
+
+                // By elimination we check the left branch
+                EmitIfLadder(groups[..mid]);
+                il.Emit(OpCodes.Br, nextGroup);
+
+                il.MarkLabel(rightBranch);
+                EmitIfLadder(groups[(mid + 1)..]);
+                il.MarkLabel(nextGroup);
+            }
+        }
     }
 
     private static void EmitSingleCharacterTable(
