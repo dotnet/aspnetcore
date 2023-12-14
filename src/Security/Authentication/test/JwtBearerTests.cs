@@ -1052,7 +1052,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "http://localhost:5000"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "https://localhost:5001")
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:1", "https://localhost:5001")
         }).Build();
         services.AddSingleton<IConfiguration>(config);
 
