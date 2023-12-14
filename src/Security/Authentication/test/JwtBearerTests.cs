@@ -1035,11 +1035,11 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 
         // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidIssuer, "dotnet-user-jwts");
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidIssuers, new[] { "dotnet-user-jwts" });
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudience, "http://localhost:5000");
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudiences, new[] { "http://localhost:5000" });
-        Assert.Equal(jwtBearerOptions.BackchannelTimeout, TimeSpan.FromSeconds(60));
+        Assert.Equal("dotnet-user-jwts", jwtBearerOptions.TokenValidationParameters.ValidIssuer);
+        Assert.Equal(new[] { "dotnet-user-jwts" }, jwtBearerOptions.TokenValidationParameters.ValidIssuers);
+        Assert.Equal("http://localhost:5000", jwtBearerOptions.TokenValidationParameters.ValidAudience);
+        Assert.Equal(new[] { "http://localhost:5000" }, jwtBearerOptions.TokenValidationParameters.ValidAudiences);
+        Assert.Equal(TimeSpan.FromSeconds(60), jwtBearerOptions.BackchannelTimeout);
         Assert.False(jwtBearerOptions.RequireHttpsMetadata);
         Assert.True(jwtBearerOptions.SaveToken);
         Assert.True(jwtBearerOptions.MapInboundClaims); // Assert default values are respected
@@ -1067,7 +1067,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 
         // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudiences, new[] { "http://localhost:5000", "https://localhost:5001" });
+        Assert.Equal(new[] { "http://localhost:5000", "https://localhost:5001" }, jwtBearerOptions.TokenValidationParameters.ValidAudiences);
     }
 
     [Fact]
