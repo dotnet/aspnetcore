@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Certificates.Generation;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -25,17 +26,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 /// </summary>
 public class KestrelServerOptions
 {
+    internal const string DisableHttp1LineFeedTerminatorsSwitchKey = "Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators";
+    private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
+    internal const string CertificateFileWatchingSwitch = "Microsoft.AspNetCore.Server.Kestrel.DisableCertificateFileWatching";
+    private static readonly bool _finOnError;
+    private static readonly bool _disableCertificateFileWatching;
+
+    static KestrelServerOptions()
+    {
+        AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
+        AppContext.TryGetSwitch(CertificateFileWatchingSwitch, out _disableCertificateFileWatching);
+    }
+
     // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
     internal static readonly Func<string, Encoding?> DefaultHeaderEncodingSelector = _ => null;
+
+    // Opt-out flag for back compat. Remove in 9.0 (or make public).
+    internal bool FinOnError { get; set; } = _finOnError;
 
     private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
     private Func<string, Encoding?> _responseHeaderEncodingSelector = DefaultHeaderEncodingSelector;
 
+    /// <summary>
+    /// In HTTP/1.x, when a request target is in absolute-form (see RFC 9112 Section 3.2.2),
+    /// for example
+    /// <code>
+    /// GET http://www.example.com/path/to/index.html HTTP/1.1
+    /// </code>
+    /// the Host header is redundant.  In fact, the RFC says
+    ///
+    ///   When an origin server receives a request with an absolute-form of request-target,
+    ///   the origin server MUST ignore the received Host header field (if any) and instead
+    ///   use the host information of the request-target.
+    ///
+    /// However, it is still sensible to check whether the request target and Host header match
+    /// because a mismatch might indicate, for example, a spoofing attempt.  Setting this property
+    /// to true bypasses that check and unconditionally overwrites the Host header with the value
+    /// from the request target.
+    /// </summary>
+    /// <remarks>
+    /// This option does not apply to HTTP/2 or HTTP/3.
+    /// </remarks>
+    /// <seealso href="https://datatracker.ietf.org/doc/html/rfc9112#section-3.2.2-8"/>
+    public bool AllowHostHeaderOverride { get; set; }
+
     // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
     internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
     internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();
-    internal IEnumerable<ListenOptions> ListenOptions => CodeBackedListenOptions.Concat(ConfigurationBackedListenOptions);
+
+    internal ListenOptions[] GetListenOptions()
+    {
+        int resultCount = CodeBackedListenOptions.Count + ConfigurationBackedListenOptions.Count;
+        if (resultCount == 0)
+        {
+            return Array.Empty<ListenOptions>();
+        }
+
+        var result = new ListenOptions[resultCount];
+        CodeBackedListenOptions.CopyTo(result);
+        ConfigurationBackedListenOptions.CopyTo(result, CodeBackedListenOptions.Count);
+        return result;
+    }
 
     // For testing and debugging.
     internal List<ListenOptions> OptionsInUse { get; } = new List<ListenOptions>();
@@ -51,7 +103,7 @@ public class KestrelServerOptions
     /// <summary>
     /// Gets or sets a value that controls whether dynamic compression of response headers is allowed.
     /// For more information about the security considerations of HPack dynamic header compression, visit
-    /// https://tools.ietf.org/html/rfc7541#section-7.
+    /// <see href="https://tools.ietf.org/html/rfc7541#section-7"/>.
     /// </summary>
     /// <remarks>
     /// Defaults to true.
@@ -72,8 +124,8 @@ public class KestrelServerOptions
     /// If <c>false</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests must exactly match the transport (e.g. https for TLS
     /// connections, http for non-TLS). If <c>true</c> then the `:scheme` field for HTTP/2 and HTTP/3 requests can be set to alternate values
     /// and this will be reflected by `HttpRequest.Scheme`. The Scheme must still be valid according to
-    /// https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1. Only enable this when working with a trusted proxy. This can be used in
-    /// scenarios such as proxies converting from alternate protocols. See https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3.
+    /// <see href="https://datatracker.ietf.org/doc/html/rfc3986/#section-3.1"/>. Only enable this when working with a trusted proxy. This can be used in
+    /// scenarios such as proxies converting from alternate protocols. See <see href="https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2.3"/>.
     /// Applications that enable this should validate an expected scheme is provided before using it.
     /// </para>
     /// </summary>
@@ -148,14 +200,58 @@ public class KestrelServerOptions
     private Action<HttpsConnectionAdapterOptions> HttpsDefaults { get; set; } = _ => { };
 
     /// <summary>
-    /// The default server certificate for https endpoints. This is applied lazily after HttpsDefaults and user options.
+    /// The development server certificate for https endpoints. This is applied lazily after HttpsDefaults and user options.
     /// </summary>
-    internal X509Certificate2? DefaultCertificate { get; set; }
+    /// <remarks>
+    /// Getter exposed for testing.
+    /// </remarks>
+    internal X509Certificate2? DevelopmentCertificate { get; private set; }
+
+    /// <summary>
+    /// Allow tests to explicitly set the default certificate.
+    /// </summary>
+    internal X509Certificate2? TestOverrideDefaultCertificate { get; set; }
 
     /// <summary>
     /// Has the default dev certificate load been attempted?
     /// </summary>
-    internal bool IsDevCertLoaded { get; set; }
+    internal bool IsDevelopmentCertificateLoaded { get; set; }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
+    /// </summary>
+    private bool? _enableWebTransportAndH3Datagrams;
+    internal bool EnableWebTransportAndH3Datagrams
+    {
+        get
+        {
+            if (!_enableWebTransportAndH3Datagrams.HasValue)
+            {
+                _enableWebTransportAndH3Datagrams = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.Experimental.WebTransportAndH3Datagrams", out var enabled) && enabled;
+            }
+
+            return _enableWebTransportAndH3Datagrams.Value;
+        }
+        set => _enableWebTransportAndH3Datagrams = value;
+    }
+
+    /// <summary>
+    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// </summary>
+    private bool? _disableHttp1LineFeedTerminators;
+    internal bool DisableHttp1LineFeedTerminators
+    {
+        get
+        {
+            if (!_disableHttp1LineFeedTerminators.HasValue)
+            {
+                _disableHttp1LineFeedTerminators = AppContext.TryGetSwitch(DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled;
+            }
+
+            return _disableHttp1LineFeedTerminators.Value;
+        }
+        set => _disableHttp1LineFeedTerminators = value;
+    }
 
     /// <summary>
     /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
@@ -188,16 +284,51 @@ public class KestrelServerOptions
         HttpsDefaults(httpsOptions);
     }
 
-    internal void ApplyDefaultCert(HttpsConnectionAdapterOptions httpsOptions)
+    internal void ApplyDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions)
     {
-        if (httpsOptions.ServerCertificate != null || httpsOptions.ServerCertificateSelector != null)
+        if (httpsOptions.HasServerCertificateOrSelector)
         {
             return;
         }
 
-        EnsureDefaultCert();
+        // It's important (and currently true) that we don't reach here with https configuration uninitialized because
+        // we might incorrectly favor the development certificate over one specified by the user.
+        Debug.Assert(ApplicationServices.GetRequiredService<IHttpsConfigurationService>().IsInitialized, "HTTPS configuration should have been enabled");
 
-        httpsOptions.ServerCertificate = DefaultCertificate;
+        if (TestOverrideDefaultCertificate is X509Certificate2 certificateFromTest)
+        {
+            httpsOptions.ServerCertificate = certificateFromTest;
+            return;
+        }
+
+        if (ConfigurationLoader?.DefaultCertificate is X509Certificate2 certificateFromLoader)
+        {
+            httpsOptions.ServerCertificate = certificateFromLoader;
+            return;
+        }
+
+        if (!IsDevelopmentCertificateLoaded)
+        {
+            IsDevelopmentCertificateLoaded = true;
+            Debug.Assert(DevelopmentCertificate is null);
+            var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
+            DevelopmentCertificate = GetDevelopmentCertificateFromStore(logger);
+        }
+
+        httpsOptions.ServerCertificate = DevelopmentCertificate;
+    }
+
+    internal void EnableHttpsConfiguration()
+    {
+        var httpsConfigurationService = ApplicationServices.GetRequiredService<IHttpsConfigurationService>();
+
+        if (!httpsConfigurationService.IsInitialized)
+        {
+            var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+            httpsConfigurationService.Initialize(hostEnvironment, logger, httpsLogger);
+        }
     }
 
     internal void Serialize(Utf8JsonWriter writer)
@@ -214,11 +345,8 @@ public class KestrelServerOptions
         writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
         writer.WriteBooleanValue(AllowResponseHeaderCompression);
 
-        writer.WritePropertyName(nameof(EnableAltSvc));
-        writer.WriteBooleanValue(EnableAltSvc);
-
-        writer.WritePropertyName(nameof(IsDevCertLoaded));
-        writer.WriteBooleanValue(IsDevCertLoaded);
+        writer.WritePropertyName(nameof(IsDevelopmentCertificateLoaded));
+        writer.WriteBooleanValue(IsDevelopmentCertificateLoaded);
 
         writer.WriteString(nameof(RequestHeaderEncodingSelector), RequestHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
         writer.WriteString(nameof(ResponseHeaderEncodingSelector), ResponseHeaderEncodingSelector == DefaultHeaderEncodingSelector ? "default" : "configured");
@@ -244,49 +372,44 @@ public class KestrelServerOptions
         writer.WriteEndArray();
     }
 
-    private void EnsureDefaultCert()
+    private static X509Certificate2? GetDevelopmentCertificateFromStore(ILogger<KestrelServer> logger)
     {
-        if (DefaultCertificate == null && !IsDevCertLoaded)
+        try
         {
-            IsDevCertLoaded = true; // Only try once
-            var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
-            try
-            {
-                DefaultCertificate = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true)
-                    .FirstOrDefault();
+            var cert = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
+                .FirstOrDefault();
 
-                if (DefaultCertificate != null)
-                {
-                    var status = CertificateManager.Instance.CheckCertificateState(DefaultCertificate, interactive: false);
-                    if (!status.Success)
-                    {
-                        // Display a warning indicating to the user that a prompt might appear and provide instructions on what to do in that
-                        // case. The underlying implementation of this check is specific to Mac OS and is handled within CheckCertificateState.
-                        // Kestrel must NEVER cause a UI prompt on a production system. We only attempt this here because Mac OS is not supported
-                        // in production.
-                        Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
-                        logger.DeveloperCertificateFirstRun(status.FailureMessage);
-
-                        // Now that we've displayed a warning in the logs so that the user gets a notification that a prompt might appear, try
-                        // and access the certificate key, which might trigger a prompt.
-                        status = CertificateManager.Instance.CheckCertificateState(DefaultCertificate, interactive: true);
-                        if (!status.Success)
-                        {
-                            logger.BadDeveloperCertificateState();
-                        }
-                    }
-
-                    logger.LocatedDevelopmentCertificate(DefaultCertificate);
-                }
-                else
-                {
-                    logger.UnableToLocateDevelopmentCertificate();
-                }
-            }
-            catch
+            if (cert is null)
             {
                 logger.UnableToLocateDevelopmentCertificate();
+                return null;
             }
+
+            var status = CertificateManager.Instance.CheckCertificateState(cert, interactive: false);
+            if (!status.Success)
+            {
+                // Display a warning indicating to the user that a prompt might appear and provide instructions on what to do in that
+                // case. The underlying implementation of this check is specific to Mac OS and is handled within CheckCertificateState.
+                // Kestrel must NEVER cause a UI prompt on a production system. We only attempt this here because Mac OS is not supported
+                // in production.
+                Debug.Assert(status.FailureMessage != null, "Status with a failure result must have a message.");
+                logger.DeveloperCertificateFirstRun(status.FailureMessage);
+
+                // Prevent binding to HTTPS if the certificate is not valid (avoid the prompt)
+                return null;
+            }
+
+            if (!CertificateManager.Instance.IsTrusted(cert))
+            {
+                logger.DeveloperCertificateNotTrusted();
+            }
+
+            return cert;
+        }
+        catch
+        {
+            logger.UnableToLocateDevelopmentCertificate();
+            return null;
         }
     }
 
@@ -322,17 +445,19 @@ public class KestrelServerOptions
             throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
         }
 
-        var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
-        var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
-        var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-
-        var loader = new KestrelConfigurationLoader(this, config, hostEnvironment, reloadOnChange, logger, httpsLogger);
+        var httpsConfigurationService = ApplicationServices.GetRequiredService<IHttpsConfigurationService>();
+        var certificatePathWatcher = reloadOnChange && !_disableCertificateFileWatching
+            ? new CertificatePathWatcher(
+                ApplicationServices.GetRequiredService<IHostEnvironment>(),
+                ApplicationServices.GetRequiredService<ILogger<CertificatePathWatcher>>())
+            : null;
+        var loader = new KestrelConfigurationLoader(this, config, httpsConfigurationService, certificatePathWatcher, reloadOnChange);
         ConfigurationLoader = loader;
         return loader;
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// </summary>
     public void Listen(IPAddress address, int port)
     {
@@ -340,15 +465,12 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// The callback configures endpoint-specific settings.
     /// </summary>
     public void Listen(IPAddress address, int port, Action<ListenOptions> configure)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         Listen(new IPEndPoint(address, port), configure);
     }
@@ -371,7 +493,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given IP address and port.
+    /// Bind to the given IP address and port.
     /// The callback configures endpoint-specific settings.
     /// </summary>
     public void Listen(IPEndPoint endPoint, Action<ListenOptions> configure)
@@ -385,14 +507,8 @@ public class KestrelServerOptions
     /// </summary>
     public void Listen(EndPoint endPoint, Action<ListenOptions> configure)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endPoint);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(endPoint);
         ApplyEndpointDefaults(listenOptions);
@@ -412,10 +528,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenLocalhost(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new LocalhostListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -433,10 +546,7 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenAnyIP(int port, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new AnyIPListenOptions(port);
         ApplyEndpointDefaults(listenOptions);
@@ -445,7 +555,7 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given Unix domain socket path.
+    /// Bind to the given Unix domain socket path.
     /// </summary>
     public void ListenUnixSocket(string socketPath)
     {
@@ -453,24 +563,18 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Bind to given Unix domain socket path.
+    /// Bind to the given Unix domain socket path.
     /// Specify callback to configure endpoint-specific settings.
     /// </summary>
     public void ListenUnixSocket(string socketPath, Action<ListenOptions> configure)
     {
-        if (socketPath == null)
-        {
-            throw new ArgumentNullException(nameof(socketPath));
-        }
+        ArgumentNullException.ThrowIfNull(socketPath);
 
         if (!Path.IsPathRooted(socketPath))
         {
             throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
         }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(socketPath);
         ApplyEndpointDefaults(listenOptions);
@@ -492,12 +596,32 @@ public class KestrelServerOptions
     /// </summary>
     public void ListenHandle(ulong handle, Action<ListenOptions> configure)
     {
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         var listenOptions = new ListenOptions(handle);
+        ApplyEndpointDefaults(listenOptions);
+        configure(listenOptions);
+        CodeBackedListenOptions.Add(listenOptions);
+    }
+
+    /// <summary>
+    /// Bind to the given named pipe.
+    /// </summary>
+    public void ListenNamedPipe(string pipeName)
+    {
+        ListenNamedPipe(pipeName, _ => { });
+    }
+
+    /// <summary>
+    /// Bind to the given named pipe.
+    /// Specify callback to configure endpoint-specific settings.
+    /// </summary>
+    public void ListenNamedPipe(string pipeName, Action<ListenOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(pipeName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var listenOptions = new ListenOptions(new NamedPipeEndPoint(pipeName));
         ApplyEndpointDefaults(listenOptions);
         configure(listenOptions);
         CodeBackedListenOptions.Add(listenOptions);

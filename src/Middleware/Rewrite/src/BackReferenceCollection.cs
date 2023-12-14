@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Rewrite;
 
-internal class BackReferenceCollection
+internal sealed class BackReferenceCollection
 {
     private readonly List<string> _backReferences = new List<string>();
 
@@ -35,7 +35,7 @@ internal class BackReferenceCollection
             }
             else
             {
-                throw new IndexOutOfRangeException($"Cannot access back reference at index {index}. Only {_backReferences.Count} back references were captured.");
+                throw new ArgumentOutOfRangeException(null, $"Cannot access back reference at index {index}. Only {_backReferences.Count} back references were captured.");
             }
         }
     }

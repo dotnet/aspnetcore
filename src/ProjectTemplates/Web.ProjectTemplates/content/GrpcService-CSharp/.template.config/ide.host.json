@@ -1,6 +1,18 @@
 {
-  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "$schema": "https://json.schemastore.org/ide.host",
   "order": 500,
-  "icon": "ide/gRPC.png",
-  "supportsDocker": true
+  "icon": "ide/icon.ico",
+  "supportsDocker": true,
+  "symbolInfo": [
+    {
+      "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "NativeAot",
+      "isVisible": true
+    }
+  ]
 }

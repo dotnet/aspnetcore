@@ -2,6 +2,8 @@ Param(
     [Parameter(Mandatory=$true)][string] $ManifestDirPath    # Manifest directory where sbom will be placed
 )
 
+. $PSScriptRoot\pipeline-logging-functions.ps1
+
 Write-Host "Creating dir $ManifestDirPath"
 # create directory for sbom manifest to be placed
 if (!(Test-Path -path $ManifestDirPath))

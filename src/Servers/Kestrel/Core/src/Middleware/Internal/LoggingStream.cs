@@ -76,28 +76,40 @@ internal sealed class LoggingStream : Stream
     public override int Read(byte[] buffer, int offset, int count)
     {
         int read = _inner.Read(buffer, offset, count);
-        Log("Read", new ReadOnlySpan<byte>(buffer, offset, read));
+        if (count > 0)
+        {
+            Log("Read", new ReadOnlySpan<byte>(buffer, offset, read));
+        }
         return read;
     }
 
     public override int Read(Span<byte> destination)
     {
         int read = _inner.Read(destination);
-        Log("Read", destination.Slice(0, read));
+        if (!destination.IsEmpty)
+        {
+            Log("Read", destination.Slice(0, read));
+        }
         return read;
     }
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
         int read = await _inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
-        Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));
+        if (count > 0)
+        {
+            Log("ReadAsync", new ReadOnlySpan<byte>(buffer, offset, read));
+        }
         return read;
     }
 
     public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
     {
         int read = await _inner.ReadAsync(destination, cancellationToken);
-        Log("ReadAsync", destination.Span.Slice(0, read));
+        if (!destination.IsEmpty)
+        {
+            Log("ReadAsync", destination.Span.Slice(0, read));
+        }
         return read;
     }
 
@@ -153,22 +165,25 @@ internal sealed class LoggingStream : Stream
             builder.AppendLine();
         }
 
-        var charBuilder = new StringBuilder();
+        // A maximum of 2 8 byte segments are written at once with a space between them, meaning 17 characters can be written
+        // ........ ........
+        Span<char> charBuilder = stackalloc char[17];
+        var charBuilderIndex = 0;
 
         // Write the hex
         for (int i = 0; i < buffer.Length; i++)
         {
-            builder.Append(buffer[i].ToString("X2", CultureInfo.InvariantCulture));
+            builder.Append(CultureInfo.InvariantCulture, $"{buffer[i]:X2}");
             builder.Append(' ');
 
             var bufferChar = (char)buffer[i];
             if (char.IsControl(bufferChar))
             {
-                charBuilder.Append('.');
+                charBuilder[charBuilderIndex++] = '.';
             }
             else
             {
-                charBuilder.Append(bufferChar);
+                charBuilder[charBuilderIndex++] = bufferChar;
             }
 
             if ((i + 1) % 16 == 0)
@@ -180,11 +195,12 @@ internal sealed class LoggingStream : Stream
                     builder.AppendLine();
                 }
                 charBuilder.Clear();
+                charBuilderIndex = 0;
             }
             else if ((i + 1) % 8 == 0)
             {
                 builder.Append(' ');
-                charBuilder.Append(' ');
+                charBuilder[charBuilderIndex++] = ' ';
             }
         }
 
@@ -201,8 +217,8 @@ internal sealed class LoggingStream : Stream
                 padLength++;
             }
 
-            builder.Append(new string(' ', padLength));
-            builder.Append(charBuilder);
+            builder.Append(' ', padLength);
+            builder.Append(charBuilder.Slice(0, charBuilderIndex));
         }
 
         _logger.LogDebug(builder.ToString());

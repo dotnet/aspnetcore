@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -14,7 +15,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void Read_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var detail = "Product not found";
@@ -22,12 +23,11 @@ public class ValidationProblemDetailsJsonConverterTest
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
         var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"detail\":\"{detail}\", \"instance\":\"{instance}\",\"traceId\":\"{traceId}\"," +
             "\"errors\":{\"key0\":[\"error0\"],\"key1\":[\"error1\",\"error2\"]}}";
-        var converter = new ValidationProblemDetailsJsonConverter();
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
         reader.Read();
 
         // Act
-        var problemDetails = converter.Read(ref reader, typeof(ValidationProblemDetails), JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(ref reader, JsonSerializerOptions);
 
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
@@ -59,18 +59,17 @@ public class ValidationProblemDetailsJsonConverterTest
     public void Read_WithSomeMissingValues_Works()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
         var json = $"{{\"type\":\"{type}\",\"title\":\"{title}\",\"status\":{status},\"traceId\":\"{traceId}\"," +
             "\"errors\":{\"key0\":[\"error0\"],\"key1\":[\"error1\",\"error2\"]}}";
-        var converter = new ValidationProblemDetailsJsonConverter();
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
         reader.Read();
 
         // Act
-        var problemDetails = converter.Read(ref reader, typeof(ValidationProblemDetails), JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(ref reader, JsonSerializerOptions);
 
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
@@ -100,7 +99,7 @@ public class ValidationProblemDetailsJsonConverterTest
     public void ReadUsingJsonSerializerWorks()
     {
         // Arrange
-        var type = "https://tools.ietf.org/html/rfc7231#section-6.5.4";
+        var type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
         var title = "Not found";
         var status = 404;
         var traceId = "|37dd3dd5-4a9619f953c40a16.";
@@ -143,12 +142,11 @@ public class ValidationProblemDetailsJsonConverterTest
             Status = 400
         };
 
-        var converter = new ValidationProblemDetailsJsonConverter();
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
 
         // Act
-        converter.Write(writer, problemDetails, null);
+        JsonSerializer.Serialize(writer, problemDetails, JsonSerializerOptions);
 
         writer.Flush();
         var json = Encoding.UTF8.GetString(stream.ToArray());
@@ -175,14 +173,13 @@ public class ValidationProblemDetailsJsonConverterTest
         };
 
         // Act
-        var converter = new ValidationProblemDetailsJsonConverter();
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
 
         var options = new JsonOptions().JsonSerializerOptions;
         options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
 
-        converter.Write(writer, problemDetails, options);
+        JsonSerializer.Serialize(writer, problemDetails, options);
 
         writer.Flush();
         var json = Encoding.UTF8.GetString(stream.ToArray());

@@ -17,10 +17,7 @@ public class ClientErrorResultFilterConvention : IActionModelConvention
     /// <inheritdoc />
     public void Apply(ActionModel action)
     {
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         if (!ShouldApply(action))
         {

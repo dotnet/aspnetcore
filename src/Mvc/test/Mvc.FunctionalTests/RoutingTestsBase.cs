@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
@@ -1554,7 +1554,7 @@ public abstract class RoutingTestsBase<TStartup> : IClassFixture<MvcTestFixture<
         Assert.Equal("/Edit/10", editLink.GetAttribute("href"));
 
         var contactLink = document.RequiredQuerySelector("#contactlink");
-        Assert.Equal("/Home/Contact", contactLink.GetAttribute("href"));
+        Assert.Equal("/Home/Contact?org=contoso", contactLink.GetAttribute("href"));
     }
 
     [Fact]

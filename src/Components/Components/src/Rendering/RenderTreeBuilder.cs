@@ -506,6 +506,18 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Appends a frame representing a component parameter.
+    /// </summary>
+    /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+    /// <param name="name">The name of the attribute.</param>
+    /// <param name="value">The value of the attribute.</param>
+    public void AddComponentParameter(int sequence, string name, object? value)
+    {
+        AssertCanAddComponentParameter();
+        _entries.AppendAttribute(sequence, name, value);
+    }
+
+    /// <summary>
     /// Assigns the specified key value to the current element or component.
     /// </summary>
     /// <param name="value">The value for the key.</param>
@@ -612,6 +624,66 @@ public sealed class RenderTreeBuilder : IDisposable
     }
 
     /// <summary>
+    /// Adds a frame indicating the render mode on the enclosing component frame.
+    /// </summary>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
+    public void AddComponentRenderMode(IComponentRenderMode? renderMode)
+    {
+        if (renderMode is null)
+        {
+            return;
+        }
+
+        // Note that a ComponentRenderMode frame is technically a child of the Component frame to which it applies,
+        // hence the terminology of "adding" it rather than "setting" it. For performance reasons, the diffing system
+        // will only look for ComponentRenderMode frames:
+        // [a] when the HasCallerSpecifiedRenderMode flag is set on the Component frame
+        // [b] up until the first child that is *not* a ComponentRenderMode frame or any other header frame type
+        //     that we may define in the future
+
+        var parentFrameIndex = GetCurrentParentFrameIndex();
+        if (!parentFrameIndex.HasValue)
+        {
+            throw new InvalidOperationException("There is no enclosing component frame.");
+        }
+
+        var parentFrameIndexValue = parentFrameIndex.Value;
+        ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
+        if (parentFrame.FrameTypeField != RenderTreeFrameType.Component)
+        {
+            throw new InvalidOperationException($"The enclosing frame is not of the required type '{nameof(RenderTreeFrameType.Component)}'.");
+        }
+
+        parentFrame.ComponentFrameFlagsField |= ComponentFrameFlags.HasCallerSpecifiedRenderMode;
+
+        _entries.AppendComponentRenderMode(renderMode);
+        _lastNonAttributeFrameType = RenderTreeFrameType.ComponentRenderMode;
+    }
+
+    /// <summary>
+    /// Assigns a name to an event in the enclosing element.
+    /// </summary>
+    /// <param name="eventType">The event type, e.g., 'onsubmit'.</param>
+    /// <param name="assignedName">The application-assigned name.</param>
+    public void AddNamedEvent(string eventType, string assignedName)
+    {
+        ArgumentNullException.ThrowIfNull(eventType);
+        ArgumentException.ThrowIfNullOrEmpty(assignedName);
+
+        // Note that we could trivially extend this to a generic concept of "named values" that exist within the rendertree
+        // and are tracked when added, removed, or updated. Currently we don't need that generality, but if we ever do, we
+        // can replace RenderTreeFrameType.NamedEvent with RenderTreeFrameType.NamedValue and use it to implement named events.
+
+        if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
+        {
+            throw new InvalidOperationException($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}");
+        }
+
+        _entries.AppendNamedEvent(eventType, assignedName);
+        _lastNonAttributeFrameType = RenderTreeFrameType.NamedEvent;
+    }
+
+    /// <summary>
     /// Appends a frame representing a region of frames.
     /// </summary>
     /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -646,6 +718,14 @@ public sealed class RenderTreeBuilder : IDisposable
             && _lastNonAttributeFrameType != RenderTreeFrameType.Component)
         {
             throw new InvalidOperationException($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}");
+        }
+    }
+
+    private void AssertCanAddComponentParameter()
+    {
+        if (_lastNonAttributeFrameType != RenderTreeFrameType.Component)
+        {
+            throw new InvalidOperationException($"Component parameters may only be added immediately after frames of type {RenderTreeFrameType.Component}");
         }
     }
 

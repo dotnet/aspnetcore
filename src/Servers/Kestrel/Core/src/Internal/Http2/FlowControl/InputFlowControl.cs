@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
-internal class InputFlowControl
+internal sealed class InputFlowControl
 {
     private readonly int _initialWindowSize;
     private readonly int _minWindowSizeIncrement;

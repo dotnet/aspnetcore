@@ -54,7 +54,10 @@ internal static partial class HttpUtilities
     {
         Debug.Assert(str.Length == 8, "String must be exactly 8 (ASCII) characters long.");
 
-        var bytes = Encoding.ASCII.GetBytes(str);
+        Span<byte> bytes = stackalloc byte[8];
+        OperationStatus operationStatus = Ascii.FromUtf16(str, bytes, out _);
+
+        Debug.Assert(operationStatus == OperationStatus.Done);
 
         return BinaryPrimitives.ReadUInt64LittleEndian(bytes);
     }
@@ -63,11 +66,15 @@ internal static partial class HttpUtilities
     {
         Debug.Assert(str.Length == 4, "String must be exactly 4 (ASCII) characters long.");
 
-        var bytes = Encoding.ASCII.GetBytes(str);
+        Span<byte> bytes = stackalloc byte[4];
+        OperationStatus operationStatus = Ascii.FromUtf16(str, bytes, out _);
+
+        Debug.Assert(operationStatus == OperationStatus.Done);
+
         return BinaryPrimitives.ReadUInt32LittleEndian(bytes);
     }
 
-    private static ulong GetMaskAsLong(byte[] bytes)
+    private static ulong GetMaskAsLong(ReadOnlySpan<byte> bytes)
     {
         Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
 
@@ -227,78 +234,122 @@ internal static partial class HttpUtilities
     /// The Known Methods (CONNECT, DELETE, GET, HEAD, PATCH, POST, PUT, OPTIONS, TRACE)
     /// </remarks>
     /// <returns><see cref="HttpMethod"/></returns>
-    public static HttpMethod GetKnownMethod(string value)
+    public static HttpMethod GetKnownMethod(string? value)
     {
-        // Called by http/2
-        if (value == null)
+        // A perfect hash is used to get an index into a lookup-table for know HTTP-methods.
+        //
+        // If value is not null or an empty string, then local function PerfectHash is called.
+        // This perfect hashing is done by lookup up 'associatedValues' from a pre-generated lookup-table.
+        // The generation of that table was done by GNU gperf tool.
+        // Once we have that perfect hash we use another lookup-table to get the know HTTP-method if found
+        // or return HttpMethod.Custom if not found.
+        // 
+        // Further info and how to call gperf see https://github.com/dotnet/aspnetcore/pull/44096
+        //
+        // Code here could be removed if Roslyn improvements from
+        // https://github.com/dotnet/roslyn/issues/56374 are added.
+
+        const int MinWordLength = 3;
+        const int MaxWordLength = 7;
+        const int MaxHashValue = 12;
+
+        if (string.IsNullOrEmpty(value))
         {
             return HttpMethod.None;
         }
 
-        var length = value.Length;
-        if (length == 0)
+        if ((uint)(value.Length - MinWordLength) <= (MaxWordLength - MinWordLength))
         {
-            return HttpMethod.None;
-        }
+            var methodsLookup = Methods();
 
-        // Start with custom and assign if known method is found
-        var method = HttpMethod.Custom;
+            Debug.Assert(WordListForPerfectHashOfMethods.Length == (MaxHashValue + 1) && methodsLookup.Length == (MaxHashValue + 1));
 
-        var firstChar = value[0];
-        if (length == 3)
-        {
-            if (firstChar == 'G' && string.Equals(value, HttpMethods.Get, StringComparison.Ordinal))
+            var index = PerfectHash(value);
+
+            if (index < (uint)WordListForPerfectHashOfMethods.Length
+                && WordListForPerfectHashOfMethods[index] == value
+                && index < (uint)methodsLookup.Length)
             {
-                method = HttpMethod.Get;
-            }
-            else if (firstChar == 'P' && string.Equals(value, HttpMethods.Put, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Put;
-            }
-        }
-        else if (length == 4)
-        {
-            if (firstChar == 'H' && string.Equals(value, HttpMethods.Head, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Head;
-            }
-            else if (firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Post;
-            }
-        }
-        else if (length == 5)
-        {
-            if (firstChar == 'T' && string.Equals(value, HttpMethods.Trace, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Trace;
-            }
-            else if (firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Patch;
-            }
-        }
-        else if (length == 6)
-        {
-            if (firstChar == 'D' && string.Equals(value, HttpMethods.Delete, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Delete;
-            }
-        }
-        else if (length == 7)
-        {
-            if (firstChar == 'C' && string.Equals(value, HttpMethods.Connect, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Connect;
-            }
-            else if (firstChar == 'O' && string.Equals(value, HttpMethods.Options, StringComparison.Ordinal))
-            {
-                method = HttpMethod.Options;
+                return methodsLookup[(int)index];
             }
         }
 
-        return method;
+        return HttpMethod.Custom;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static uint PerfectHash(ReadOnlySpan<char> str)
+        {
+            ReadOnlySpan<byte> associatedValues =
+            [
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13,  5,  0, 13,
+                13,  0,  0, 13, 13, 13, 13, 13, 13,  0,
+                 5, 13, 13, 13,  0, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+                13, 13, 13, 13, 13, 13
+            ];
+
+            var c = MemoryMarshal.GetReference(str);
+
+            Debug.Assert(char.IsAscii(c), "Must already be validated");
+
+            return (uint)str.Length + associatedValues[c];
+        }
+
+        static ReadOnlySpan<HttpMethod> Methods() =>
+        [
+            HttpMethod.None,
+            HttpMethod.None,
+            HttpMethod.None,
+            HttpMethod.Get,
+            HttpMethod.Head,
+            HttpMethod.Trace,
+            HttpMethod.Delete,
+            HttpMethod.Options,
+            HttpMethod.Put,
+            HttpMethod.Post,
+            HttpMethod.Patch,
+            HttpMethod.None,
+            HttpMethod.Connect
+        ];
     }
+
+    private static readonly string[] WordListForPerfectHashOfMethods =
+    {
+        "",
+        "",
+        "",
+        "GET",
+        "HEAD",
+        "TRACE",
+        "DELETE",
+        "OPTIONS",
+        "PUT",
+        "POST",
+        "PATCH",
+        "",
+        "CONNECT"
+    };
 
     /// <summary>
     /// Checks 9 bytes from <paramref name="span"/>  correspond to a known HTTP version.
@@ -552,4 +603,15 @@ internal static partial class HttpUtilities
     }
 }
 
-internal record AltSvcHeader(string Value, byte[] RawBytes);
+internal sealed class AltSvcHeader
+{
+    public string Value { get; }
+    
+    public byte[] RawBytes { get; }
+
+    public AltSvcHeader(string value, byte[] rawBytes)
+    {
+        Value = value;
+        RawBytes = rawBytes;
+    }
+}

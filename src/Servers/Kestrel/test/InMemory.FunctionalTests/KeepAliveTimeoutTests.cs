@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -27,7 +23,6 @@ public class KeepAliveTimeoutTests : LoggedTest
     public async Task ConnectionClosedWhenKeepAliveTimeoutExpires()
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
         await using (var server = CreateServer(testContext))
         {
@@ -43,8 +38,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockSystemClock.UtcNow += _keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
             }
@@ -55,7 +50,6 @@ public class KeepAliveTimeoutTests : LoggedTest
     public async Task ConnectionKeptAliveBetweenRequests()
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
         await using (var server = CreateServer(testContext))
         {
@@ -73,8 +67,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                     await ReceiveResponse(connection, testContext);
 
                     // Max amount of time between requests that doesn't trigger a keep-alive timeout.
-                    testContext.MockSystemClock.UtcNow += _keepAliveTimeout + Heartbeat.Interval;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval);
+                    testContext.ConnectionManager.OnHeartbeat();
                 }
             }
         }
@@ -84,7 +78,6 @@ public class KeepAliveTimeoutTests : LoggedTest
     public async Task ConnectionNotTimedOutWhileRequestBeingSent()
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
         await using (var server = CreateServer(testContext))
         {
@@ -108,8 +101,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                         "a",
                         "");
 
-                    testContext.MockSystemClock.UtcNow += _shortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
+                    testContext.ConnectionManager.OnHeartbeat();
                 }
 
                 await connection.Send(
@@ -125,7 +118,6 @@ public class KeepAliveTimeoutTests : LoggedTest
     private async Task ConnectionNotTimedOutWhileAppIsRunning()
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
         var cts = new CancellationTokenSource();
 
         await using (var server = CreateServer(testContext, longRunningCt: cts.Token))
@@ -144,8 +136,8 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockSystemClock.UtcNow += _shortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
+                    testContext.ConnectionManager.OnHeartbeat();
                 }
 
                 cts.Cancel();
@@ -166,7 +158,6 @@ public class KeepAliveTimeoutTests : LoggedTest
     private async Task ConnectionTimesOutWhenOpenedButNoRequestSent()
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
         await using (var server = CreateServer(testContext))
         {
@@ -175,8 +166,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.TransportConnection.WaitForReadTask;
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockSystemClock.UtcNow += _keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
             }
@@ -187,7 +178,6 @@ public class KeepAliveTimeoutTests : LoggedTest
     private async Task KeepAliveTimeoutDoesNotApplyToUpgradedConnections()
     {
         var testContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
         var cts = new CancellationTokenSource();
 
         await using (var server = CreateServer(testContext, upgradeCt: cts.Token))
@@ -211,8 +201,8 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockSystemClock.UtcNow += _shortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
+                    testContext.ConnectionManager.OnHeartbeat();
                 }
 
                 cts.Cancel();

@@ -5,10 +5,10 @@ using System;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-[XunitTestCaseDiscoverer("Microsoft.AspNetCore.Testing." + nameof(ConditionalFactDiscoverer), "Microsoft.AspNetCore.Testing")]
+[XunitTestCaseDiscoverer("Microsoft.AspNetCore.InternalTesting." + nameof(ConditionalFactDiscoverer), "Microsoft.AspNetCore.InternalTesting")]
 public class ConditionalFactAttribute : FactAttribute
 {
 }

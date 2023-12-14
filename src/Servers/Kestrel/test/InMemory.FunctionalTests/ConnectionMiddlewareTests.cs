@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -73,6 +73,39 @@ public class ConnectionMiddlewareTests : TestApplicationErrorLoggerLoggedTest
         {
             listenOptions.UseConnectionLogging();
             listenOptions.Use(next => new AsyncConnectionMiddleware(next).OnConnectionAsync);
+            listenOptions.UseConnectionLogging();
+        }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.Send(
+                    "POST / HTTP/1.0",
+                    "Content-Length: 12",
+                    "",
+                    "Hello World?");
+                await connection.ReceiveEnd(
+                    "HTTP/1.1 200 OK",
+                    "Connection: close",
+                    $"Date: {serviceContext.DateHeaderValue}",
+                    "",
+                    "Hello World!");
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(EchoAppRequestDelegates))]
+    public async Task CanReadWriteThroughAsyncConnectionMiddleware(RequestDelegate requestDelegate)
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+
+        await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions =>
+        {
+            listenOptions.UseConnectionLogging();
+            listenOptions.Use((context, next) =>
+            {
+                return new AsyncConnectionMiddleware(next).OnConnectionAsync(context);
+            });
             listenOptions.UseConnectionLogging();
         }))
         {

@@ -94,7 +94,7 @@ PROCESS_MANAGER::GetProcess(
         //
         // round robin through to the next available process.
         //
-        dwProcessIndex = (DWORD)InterlockedIncrement64((LONGLONG*)&m_dwRouteToProcessIndex);
+        dwProcessIndex = InterlockedIncrement(&m_dwRouteToProcessIndex);
         dwProcessIndex = dwProcessIndex % m_dwProcessesPerApplication;
 
         if (m_ppServerProcessList[dwProcessIndex] != NULL &&

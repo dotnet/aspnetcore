@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class AutoValidateAntiforgeryPageApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class AutoValidateAntiforgeryPageApplicationModelProvider : IPageApplicationModelProvider
 {
     // The order is set to execute after the DefaultPageApplicationModelProvider.
     public int Order => -1000 + 10;
@@ -17,10 +17,7 @@ internal class AutoValidateAntiforgeryPageApplicationModelProvider : IPageApplic
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var pageApplicationModel = context.PageApplicationModel;
 

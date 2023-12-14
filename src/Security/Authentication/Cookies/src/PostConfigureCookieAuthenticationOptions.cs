@@ -31,10 +31,7 @@ public class PostConfigureCookieAuthenticationOptions : IPostConfigureOptions<Co
     {
         options.DataProtectionProvider ??= _dp;
 
-        if (name is null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         if (string.IsNullOrEmpty(options.Cookie.Name))
         {

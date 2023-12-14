@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.WebUtilities;
 public class MultipartReaderTests
 {
     private const string Boundary = "9051914041544843365972754266";
+    private const string BoundaryWithQuotes = @"""9051914041544843365972754266""";
     // Note that CRLF (\r\n) is required. You can't use multi-line C# strings here because the line breaks on Linux are just LF.
     private const string OnePartBody =
 "--9051914041544843365972754266\r\n" +
@@ -376,5 +377,16 @@ public class MultipartReaderTests
         Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
 
         Assert.Null(await reader.ReadNextSectionAsync());
+    }
+
+    // MultiPartReader should strip any quotes from the boundary passed in instead of throwing an exception
+    [Fact]
+    public async Task MultipartReader_StripQuotesFromBoundary()
+    {
+        var stream = MakeStream(OnePartBody);
+        var reader = new MultipartReader(BoundaryWithQuotes, stream);
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
     }
 }

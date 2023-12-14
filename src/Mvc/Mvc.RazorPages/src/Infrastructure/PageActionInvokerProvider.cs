@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class PageActionInvokerProvider : IActionInvokerProvider
+internal sealed class PageActionInvokerProvider : IActionInvokerProvider
 {
     private readonly PageLoader _pageLoader;
     private readonly PageActionInvokerCache _pageActionInvokerCache;
@@ -60,10 +60,7 @@ internal class PageActionInvokerProvider : IActionInvokerProvider
 
     public void OnProvidersExecuting(ActionInvokerProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var actionContext = context.ActionContext;
 

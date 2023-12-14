@@ -50,15 +50,8 @@ public class ViewEngineResult
         string viewName,
         IEnumerable<string> searchedLocations)
     {
-        if (viewName == null)
-        {
-            throw new ArgumentNullException(nameof(viewName));
-        }
-
-        if (searchedLocations == null)
-        {
-            throw new ArgumentNullException(nameof(searchedLocations));
-        }
+        ArgumentNullException.ThrowIfNull(viewName);
+        ArgumentNullException.ThrowIfNull(searchedLocations);
 
         return new ViewEngineResult(viewName)
         {
@@ -74,15 +67,8 @@ public class ViewEngineResult
     /// <returns>The found result.</returns>
     public static ViewEngineResult Found(string viewName, IView view)
     {
-        if (viewName == null)
-        {
-            throw new ArgumentNullException(nameof(viewName));
-        }
-
-        if (view == null)
-        {
-            throw new ArgumentNullException(nameof(view));
-        }
+        ArgumentNullException.ThrowIfNull(viewName);
+        ArgumentNullException.ThrowIfNull(view);
 
         return new ViewEngineResult(viewName)
         {

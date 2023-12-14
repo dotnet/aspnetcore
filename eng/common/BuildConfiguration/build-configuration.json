@@ -1,0 +1,4 @@
+{
+  "RetryCountLimit": 1,
+  "RetryByAnyError": false
+}

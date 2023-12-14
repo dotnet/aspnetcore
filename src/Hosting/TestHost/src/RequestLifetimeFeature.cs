@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class RequestLifetimeFeature : IHttpRequestLifetimeFeature
+internal sealed class RequestLifetimeFeature : IHttpRequestLifetimeFeature
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private readonly Action<Exception> _abort;
@@ -25,7 +25,7 @@ internal class RequestLifetimeFeature : IHttpRequestLifetimeFeature
 
     void IHttpRequestLifetimeFeature.Abort()
     {
-        _abort(new Exception("The application aborted the request."));
+        _abort(new OperationCanceledException("The application aborted the request."));
         _cancellationTokenSource.Cancel();
     }
 }

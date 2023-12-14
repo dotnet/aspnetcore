@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.Internal;
 
-internal class PropertyActivator<TContext>
+internal sealed class PropertyActivator<TContext>
 {
     private readonly Func<TContext, object> _valueAccessor;
     private readonly Action<object, object> _fastPropertySetter;
@@ -27,10 +27,7 @@ internal class PropertyActivator<TContext>
 
     public object Activate(object instance, TContext context)
     {
-        if (instance == null)
-        {
-            throw new ArgumentNullException(nameof(instance));
-        }
+        ArgumentNullException.ThrowIfNull(instance);
 
         var value = _valueAccessor(context);
         _fastPropertySetter(instance, value);
@@ -42,20 +39,9 @@ internal class PropertyActivator<TContext>
         Type activateAttributeType,
         Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (activateAttributeType == null)
-        {
-            throw new ArgumentNullException(nameof(activateAttributeType));
-        }
-
-        if (createActivateInfo == null)
-        {
-            throw new ArgumentNullException(nameof(createActivateInfo));
-        }
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(activateAttributeType);
+        ArgumentNullException.ThrowIfNull(createActivateInfo);
 
         return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
     }
@@ -66,21 +52,36 @@ internal class PropertyActivator<TContext>
         Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
         bool includeNonPublic)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(activateAttributeType);
+        ArgumentNullException.ThrowIfNull(createActivateInfo);
 
-        if (activateAttributeType == null)
-        {
-            throw new ArgumentNullException(nameof(activateAttributeType));
-        }
+        var properties = GetActivatableProperties(type, activateAttributeType, includeNonPublic);
+        return properties.Select(createActivateInfo).ToArray();
+    }
 
-        if (createActivateInfo == null)
-        {
-            throw new ArgumentNullException(nameof(createActivateInfo));
-        }
+    public static PropertyActivator<TContext>[] GetPropertiesToActivate<TAttribute>(
+        Type type,
+        Func<PropertyInfo, TAttribute, PropertyActivator<TContext>> createActivateInfo,
+        bool includeNonPublic)
+        where TAttribute : Attribute
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(createActivateInfo);
 
+        var properties = GetActivatableProperties(type, typeof(TAttribute), includeNonPublic);
+        return properties.Select(property =>
+        {
+            var attribute = property.GetCustomAttribute<TAttribute>()!;
+            return createActivateInfo(property, attribute);
+        }).ToArray();
+    }
+
+    private static IEnumerable<PropertyInfo> GetActivatableProperties(
+        Type type,
+        Type activateAttributeType,
+        bool includeNonPublic)
+    {
         var properties = type.GetRuntimeProperties()
             .Where((property) =>
             {
@@ -96,6 +97,6 @@ internal class PropertyActivator<TContext>
             properties = properties.Where(property => property.SetMethod is { IsPublic: true });
         }
 
-        return properties.Select(createActivateInfo).ToArray();
+        return properties;
     }
 }

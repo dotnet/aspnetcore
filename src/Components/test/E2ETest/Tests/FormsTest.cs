@@ -154,6 +154,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         ageInput.SendKeys("\t");
         Browser.Equal("modified invalid", () => ageInput.GetAttribute("class"));
         Browser.Equal(new[] { "The AgeInYears field must be a number." }, messagesAccessor);
+        Browser.Equal("", () => ageInput.GetDomProperty("value")); // We can display 'empty' even though it's not representable within the bound property
 
         // Zero is within the allowed range
         ageInput.SendKeys("0\t");
@@ -732,6 +733,186 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void InputTextWorksWithMutatingSetter()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // The input changes its value to "24:00:00" whenever "24h" is entered, and we need to show
+        // that we don't lose such changes
+
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("inputtext-with-mutating-setter"));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        input.SendKeys("24h\t");
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("24h\t");            // replace content with new value
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputTextAreaWorksWithMutatingSetter()
+    {
+        // Repro for https://github.com/dotnet/aspnetcore/issues/40097
+        // The input changes its value to "24:00:00" whenever "24h" is entered, and we need to show
+        // that we don't lose such changes
+
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("inputtextarea-with-mutating-setter"));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        input.SendKeys("24h\t");
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("24h\t");            // replace content with new value
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputCheckboxWorksWithMutatingSetter()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("inputcheckbox-with-mutating-setter"));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        Browser.Equal("False", () => input.GetDomProperty("checked"));
+        input.Click();
+        Browser.Equal("False", () => input.GetDomProperty("checked")); // i.e., it was reverted back to false
+    }
+
+    [Fact]
+    public void InputDateWorksWithMutatingSetter()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("inputdate-with-mutating-setter"));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        input.SendKeys("01012000\t");
+        Browser.Equal("2222-02-02", () => input.GetDomProperty("value"));
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("01012000\t");
+        Browser.Equal("2222-02-02", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputNumberWorksWithMutatingSetter()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("inputnumber-with-mutating-setter"));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        input.SendKeys("123\t");
+        Browser.Equal("100", () => input.GetDomProperty("value"));
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("123\t");
+        Browser.Equal("100", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputRadioGroupWorksWithMutatingSetter()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var monday = appElement.FindElement(By.Id("inputradiogroup-with-mutating-setter-monday"));
+        var tuesday = appElement.FindElement(By.Id("inputradiogroup-with-mutating-setter-tuesday"));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        tuesday.Click();
+        Browser.Equal("True", () => monday.GetDomProperty("checked"));
+        Browser.Equal("False", () => tuesday.GetDomProperty("checked"));
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        tuesday.Click();
+        Browser.Equal("True", () => monday.GetDomProperty("checked"));
+        Browser.Equal("False", () => tuesday.GetDomProperty("checked"));
+    }
+
+    [Fact]
+    public void InputSelectWorksWithMutatingSetter()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = new SelectElement(appElement.FindElement(By.Id("inputselect-with-mutating-setter")));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        input.SelectByValue("Wednesday");
+        Browser.Equal("Wednesday", () => input.SelectedOption.Text);
+        input.SelectByValue("Tuesday");
+        Browser.Equal("Monday", () => input.SelectedOption.Text);
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SelectByValue("Tuesday");
+        Browser.Equal("Monday", () => input.SelectedOption.Text);
+    }
+
+    [Fact]
+    public void InputSelectMultipleWorksWithMutatingSetter()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = new SelectElement(appElement.FindElement(By.Id("inputselectmultiple-with-mutating-setter")));
+
+        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        input.SelectByValue("Wednesday");
+        Browser.Equal("Wednesday", () => input.AllSelectedOptions.Single().Text);
+        input.SelectByValue("Tuesday");
+        Browser.Equal("Monday+Wednesday", () => string.Join('+', input.AllSelectedOptions.Select(e => e.Text)));
+
+        // If the user then re-enters the same value, even though the setter doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SelectByValue("Tuesday");
+        Browser.Equal("Monday+Wednesday", () => string.Join('+', input.AllSelectedOptions.Select(e => e.Text)));
+    }
+
+    [Fact]
+    public void InputWithCustomParserPreservesInvalidValueWhenParsingFails()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("input-with-custom-parser"));
+
+        // should not replace the input contents with last known component value (null)
+        input.SendKeys("INVALID\t");
+        Browser.Equal("INVALID", () => input.GetDomProperty("value"));
+        Browser.Equal("modified invalid", () => input.GetAttribute("class"));
+    }
+
+    [Fact]
+    public void InputWithCustomParserCanMutateValueDuringParsing()
+    {
+        var appElement = Browser.MountTestComponent<InputsWithMutatingSetters>();
+        var input = appElement.FindElement(By.Id("input-with-custom-parser"));
+
+        // Observe that the value can be mutated by the parser, and this shows up in the DOM
+        input.SendKeys("24h\t");
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+
+        // If the user then re-enters the same value, even though the parser doesn't cause any
+        // change to the .NET model (because it's re-mutated to the same value again), the diff
+        // still knows to update the DOM
+        input.SendKeys(Keys.Control + "a"); // select all content
+        input.SendKeys("24h\t");            // replace content with new value
+        Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
+    }
+
+    [Fact]
     public void InputSelectWorksWithoutEditContext()
     {
         var appElement = Browser.MountTestComponent<InputsWithoutEditForm>();
@@ -807,6 +988,39 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Func<string[]> logEntries = () => appElement.FindElements(By.ClassName("submission-log-entry")).Select(x => x.Text).ToArray();
         Browser.Collection(logEntries, x => Assert.Equal("OnValidSubmit", x));
+    }
+
+    [Fact]
+    public async Task CannotSubmitEditFormSynchronouslyAfterItWasRemoved()
+    {
+        var appElement = MountSimpleValidationComponent();
+
+        var submitButtonFinder = By.CssSelector("button[type=submit]");
+        Browser.Exists(submitButtonFinder);
+
+        // Remove the form then immediately also submit it, so the server receives both
+        // the 'remove' and 'submit' commands (in that order) before it updates the UI
+        appElement.FindElement(By.Id("remove-form")).Click();
+
+        try
+        {
+            appElement.FindElement(submitButtonFinder).Click();
+        }
+        catch (NoSuchElementException)
+        {
+            // This should happen on WebAssembly because the form will be removed synchronously
+            // That means the test has passed
+            return;
+        }
+
+        // Wait for the removal to complete, which is intentionally delayed to ensure
+        // this test can submit a second instruction before the first is processed.
+        Browser.DoesNotExist(submitButtonFinder);
+
+        // Verify that the form submit event was not processed, even if we wait a while
+        // to be really sure the second instruction was processed.
+        await Task.Delay(1000);
+        Browser.DoesNotExist(By.Id("last-callback"));
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")

@@ -92,7 +92,7 @@ internal partial class HttpProtocol
             if (!ReferenceEquals(_requestStreamInternal, RequestBody))
             {
                 _requestStreamInternal = RequestBody;
-                RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize()));
+                RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize(), useZeroByteReads: true));
 
                 OnCompleted((self) =>
                 {
@@ -149,6 +149,10 @@ internal partial class HttpProtocol
 
     bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
+    bool IHttpExtendedConnectFeature.IsExtendedConnect => IsExtendedConnectRequest;
+
+    string? IHttpExtendedConnectFeature.Protocol => ConnectProtocol;
+
     IPAddress? IHttpConnectionFeature.RemoteIpAddress
     {
         get => RemoteIpAddress;
@@ -191,7 +195,7 @@ internal partial class HttpProtocol
         set => AllowSynchronousIO = value;
     }
 
-    bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || IsUpgraded;
+    bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || IsUpgraded || IsExtendedConnectRequest;
 
     long? IHttpMaxRequestBodySizeFeature.MaxRequestBodySize
     {
@@ -272,6 +276,7 @@ internal partial class HttpProtocol
         IsUpgraded = true;
 
         KestrelEventSource.Log.RequestUpgradedStart(this);
+        ServiceContext.Metrics.RequestUpgradedStart(_context.MetricsContext);
 
         ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
 
@@ -282,6 +287,30 @@ internal partial class HttpProtocol
         await FlushAsync();
 
         return _bodyControl!.Upgrade();
+    }
+
+    async ValueTask<Stream> IHttpExtendedConnectFeature.AcceptAsync()
+    {
+        if (!IsExtendedConnectRequest)
+        {
+            throw new InvalidOperationException(CoreStrings.CannotAcceptNonConnectRequest);
+        }
+
+        if (IsExtendedConnectAccepted)
+        {
+            throw new InvalidOperationException(CoreStrings.AcceptCannotBeCalledMultipleTimes);
+        }
+
+        if (StatusCode < StatusCodes.Status200OK || StatusCodes.Status300MultipleChoices <= StatusCode)
+        {
+            throw new InvalidOperationException(CoreStrings.ConnectStatusMustBe2XX);
+        }
+
+        IsExtendedConnectAccepted = true;
+
+        await FlushAsync();
+
+        return _bodyControl!.AcceptConnect();
     }
 
     void IHttpRequestLifetimeFeature.Abort()
@@ -314,4 +343,12 @@ internal partial class HttpProtocol
     {
         return CompleteAsync();
     }
+
+#pragma warning disable CA2252 // WebTransport is a preview feature. Suppress this warning
+    public bool IsWebTransportRequest { get; set; }
+    public virtual ValueTask<IWebTransportSession> AcceptAsync(CancellationToken token)
+    {
+        throw new NotSupportedException();
+    }
+#pragma warning restore CA2252
 }

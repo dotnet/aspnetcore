@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -18,12 +19,16 @@ public abstract class RemoteAuthenticationTests<TOptions> : SharedAuthentication
         => CreateHostWithServices(s =>
         {
             var builder = s.AddAuthentication();
+            s.AddSingleton<IConfiguration>(new ConfigurationManager());
             if (isDefault)
             {
                 s.Configure<AuthenticationOptions>(o => o.DefaultScheme = DefaultScheme);
             }
-            RegisterAuth(builder, configureOptions);
-            s.AddSingleton<ISystemClock>(Clock);
+            RegisterAuth(builder, o =>
+            {
+                o.TimeProvider = TimeProvider;
+                configureOptions(o);
+            });
         }, testpath);
 
     protected virtual async Task<IHost> CreateHostWithServices(Action<IServiceCollection> configureServices, Func<HttpContext, Task> testpath = null)

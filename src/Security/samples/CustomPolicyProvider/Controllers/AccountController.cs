@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +18,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Signin(string userName, DateTime? birthDate, string returnUrl = null)
+    public async Task<IActionResult> Signin(string userName, string birthDate = null, string returnUrl = null)
     {
         if (string.IsNullOrEmpty(userName))
         {
@@ -31,9 +29,9 @@ public class AccountController : Controller
         var claims = new List<Claim>();
         // Add a Name claim and, if birth date was provided, a DateOfBirth claim
         claims.Add(new Claim(ClaimTypes.Name, userName));
-        if (birthDate.HasValue)
+        if (DateTime.TryParse(birthDate, CultureInfo.InvariantCulture, out _))
         {
-            claims.Add(new Claim(ClaimTypes.DateOfBirth, birthDate.Value.ToShortDateString()));
+            claims.Add(new Claim(ClaimTypes.DateOfBirth, birthDate));
         }
 
         // Create user's identity and sign them in

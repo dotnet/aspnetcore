@@ -34,10 +34,7 @@ public abstract class ParameterModelBase : IBindingModel
     /// <param name="other">The other instance to copy</param>
     protected ParameterModelBase(ParameterModelBase other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         ParameterType = other.ParameterType;
         Attributes = new List<object>(other.Attributes);

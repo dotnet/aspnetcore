@@ -1,13 +1,13 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Razor Class Library",
-  "description": "A project for creating a Razor class library that targets .NET Standard",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/SupportPagesAndViews/displayName": "Support pages and views",
-  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views in addition to components to this library.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/openInEditor/description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor"
+  "name": "Bibliothèque de classes Razor",
+  "description": "Projet de création d’une bibliothèque de classes Razor qui cible .NET",
+  "symbols/Framework/description": "Framework cible du projet.",
+  "symbols/Framework/choices/net8.0/description": "Cible net8.0",
+  "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
+  "symbols/SupportPagesAndViews/displayName": "Prendre en charge les pages et les vues",
+  "symbols/SupportPagesAndViews/description": "Indique si l’ajout de pages et de vues Razor classiques à cette bibliothèque.",
+  "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
+  "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »",
+  "postActions/openInEditor/description": "Ouvre Areas/MyFeature/Pages/Page1.cshtml dans l’éditeur"
 }

@@ -1,21 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
 public class RouteViewTest
 {
     private readonly TestRenderer _renderer;
+    private readonly RouteViewTestNavigationManager _navigationManager;
     private readonly RouteView _routeViewComponent;
     private readonly int _routeViewComponentId;
 
     public RouteViewTest()
     {
-        _renderer = new TestRenderer();
-        _routeViewComponent = new RouteView();
+        var serviceCollection = new ServiceCollection();
+        _navigationManager = new RouteViewTestNavigationManager();
+        serviceCollection.AddSingleton<NavigationManager>(_navigationManager);
+        var services = serviceCollection.BuildServiceProvider();
+        _renderer = new TestRenderer(services);
+
+        var componentFactory = new ComponentFactory(new DefaultComponentActivator(), _renderer);
+        _routeViewComponent = (RouteView)componentFactory.InstantiateComponent(services, typeof(RouteView), null, null);
+
         _routeViewComponentId = _renderer.AssignRootComponentId(_routeViewComponent);
     }
 
@@ -151,6 +161,18 @@ public class RouteViewTest
             frame => AssertFrame.Component<LayoutView>(frame, subtreeLength: 3, sequence: 0),
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.Layout), (object)typeof(TestLayout), sequence: 1),
             frame => AssertFrame.Attribute(frame, nameof(LayoutView.ChildContent), sequence: 2));
+    }
+
+    private class RouteViewTestNavigationManager : NavigationManager
+    {
+        public RouteViewTestNavigationManager() =>
+            Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/");
+
+        public void NotifyLocationChanged(string uri)
+        {
+            Uri = uri;
+            NotifyLocationChanged(false);
+        }
     }
 
     private class ComponentWithoutLayout : AutoRenderComponent

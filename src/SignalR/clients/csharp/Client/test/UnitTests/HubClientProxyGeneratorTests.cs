@@ -18,7 +18,7 @@ internal class HubClientProxyAttribute : Attribute
 internal static partial class RegisterCallbackProviderExtensions
 {
     [HubClientProxy]
-    public static partial IDisposable SetHubClient<T>(this HubConnection conn, T provider);
+    public static partial IDisposable SetHubClient<T>(this HubConnection conn, T p);
 }
 
 public class HubClientProxyGeneratorTests

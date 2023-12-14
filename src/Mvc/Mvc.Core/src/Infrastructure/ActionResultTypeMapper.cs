@@ -3,16 +3,15 @@
 
 #nullable enable
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class ActionResultTypeMapper : IActionResultTypeMapper
+internal sealed class ActionResultTypeMapper : IActionResultTypeMapper
 {
     public Type GetResultDataType(Type returnType)
     {
-        if (returnType == null)
-        {
-            throw new ArgumentNullException(nameof(returnType));
-        }
+        ArgumentNullException.ThrowIfNull(returnType);
 
         if (returnType.IsGenericType &&
             returnType.GetGenericTypeDefinition() == typeof(ActionResult<>))
@@ -25,14 +24,16 @@ internal class ActionResultTypeMapper : IActionResultTypeMapper
 
     public IActionResult Convert(object? value, Type returnType)
     {
-        if (returnType == null)
-        {
-            throw new ArgumentNullException(nameof(returnType));
-        }
+        ArgumentNullException.ThrowIfNull(returnType);
 
         if (value is IConvertToActionResult converter)
         {
             return converter.Convert();
+        }
+
+        if (value is IResult httpResult)
+        {
+            return new HttpActionResult(httpResult);
         }
 
         return new ObjectResult(value)

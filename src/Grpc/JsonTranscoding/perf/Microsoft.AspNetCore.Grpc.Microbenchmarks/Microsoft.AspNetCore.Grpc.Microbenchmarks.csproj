@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TieredCompilation>false</TieredCompilation>
+    <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
+    <!-- TODO: Remove when Grpc.Tools on MacOS 11 is fixed. See https://github.com/grpc/grpc/issues/32558 -->
+    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include=".\Proto\chat.proto" GrpcServices="Server" />
+    <Protobuf Include=".\Proto\greet.proto" GrpcServices="Client" />
+
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Google.Protobuf" />
+    <Reference Include="Grpc.Tools" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+  </ItemGroup>
+</Project>

@@ -158,7 +158,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   $env:DOTNET_MULTILEVEL_LOOKUP=0
 
   # Disable first run since we do not need all ASP.NET packages restored.
-  $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+  $env:DOTNET_NOLOGO=1
 
   # Disable telemetry on CI.
   if ($ci) {
@@ -228,7 +228,7 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   Write-PipelinePrependPath -Path $dotnetRoot
 
   Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
-  Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
+  Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
 
   return $global:_DotNetInstallDir = $dotnetRoot
 }
@@ -287,6 +287,25 @@ function InstallDotNet([string] $dotnetRoot,
   [string] $runtimeSourceFeedKey = '',
   [switch] $noPath) {
 
+  $dotnetVersionLabel = "'sdk v$version'"
+
+  if ($runtime -ne '' -and $runtime -ne 'sdk') {
+    $runtimePath = $dotnetRoot
+    $runtimePath = $runtimePath + "\shared"
+    if ($runtime -eq "dotnet") { $runtimePath = $runtimePath + "\Microsoft.NETCore.App" }
+    if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
+    if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
+    $runtimePath = $runtimePath + "\" + $version
+  
+    $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
+
+    if (Test-Path $runtimePath) {
+      Write-Host "  Runtime toolset '$runtime/$architecture v$version' already installed."
+      $installSuccess = $true
+      Exit
+    }
+  }
+
   $installScript = GetDotNetInstallScript $dotnetRoot
   $installParameters = @{
     Version = $version
@@ -323,18 +342,18 @@ function InstallDotNet([string] $dotnetRoot,
     } else {
       $location = "public location";
     }
-    Write-Host "Attempting to install dotnet from $location."
+    Write-Host "  Attempting to install $dotnetVersionLabel from $location."
     try {
       & $installScript @variation
       $installSuccess = $true
       break
     }
     catch {
-      Write-Host "Failed to install dotnet from $location."
+      Write-Host "  Failed to install $dotnetVersionLabel from $location."
     }
   }
   if (-not $installSuccess) {
-    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from any of the specified locations."
+    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install $dotnetVersionLabel from any of the specified locations."
     ExitWithExitCode 1
   }
 }
@@ -360,15 +379,22 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
   }
 
   # Minimum VS version to require.
-  $vsMinVersionReqdStr = '16.8'
+  $vsMinVersionReqdStr = '17.7'
   $vsMinVersionReqd = [Version]::new($vsMinVersionReqdStr)
 
   # If the version of msbuild is going to be xcopied,
   # use this version. Version matches a package here:
-  # https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet-eng&package=RoslynTools.MSBuild&protocolType=NuGet&version=16.10.0-preview2&view=overview
-  $defaultXCopyMSBuildVersion = '16.10.0-preview2'
+  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/RoslynTools.MSBuild/versions/17.8.1-2
+  $defaultXCopyMSBuildVersion = '17.8.1-2'
 
-  if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
+  if (!$vsRequirements) {
+    if (Get-Member -InputObject $GlobalJson.tools -Name 'vs') {
+      $vsRequirements = $GlobalJson.tools.vs
+    }
+    else {
+      $vsRequirements = New-Object PSObject -Property @{ version = $vsMinVersionReqdStr }
+    }
+  }
   $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { $vsMinVersionReqdStr }
   $vsMinVersion = [Version]::new($vsMinVersionStr)
 
@@ -392,7 +418,8 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
   # Locate Visual Studio installation or download x-copy msbuild.
   $vsInfo = LocateVisualStudio $vsRequirements
   if ($vsInfo -ne $null) {
-    $vsInstallDir = $vsInfo.installationPath
+    # Ensure vsInstallDir has a trailing slash
+    $vsInstallDir = Join-Path $vsInfo.installationPath "\"
     $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
 
     InitializeVisualStudioEnvironmentVariables $vsInstallDir $vsMajorVersion
@@ -406,6 +433,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       if($vsMinVersion -lt $vsMinVersionReqd){
         Write-Host "Using xcopy-msbuild version of $defaultXCopyMSBuildVersion since VS version $vsMinVersionStr provided in global.json is not compatible"
         $xcopyMSBuildVersion = $defaultXCopyMSBuildVersion
+        $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
       }
       else{
         # If the VS version IS compatible, look for an xcopy msbuild package
@@ -573,7 +601,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp3.1' }
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net8.0' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -635,8 +663,16 @@ function InitializeNativeTools() {
         InstallDirectory = "$ToolsDir"
       }
     }
+    if ($env:NativeToolsOnMachine) {
+      Write-Host "Variable NativeToolsOnMachine detected, enabling native tool path promotion..."
+      $nativeArgs += @{ PathPromotion = $true }
+    }
     & "$PSScriptRoot/init-tools-native.ps1" @nativeArgs
   }
+}
+
+function Read-ArcadeSdkVersion() {
+  return $GlobalJson.'msbuild-sdks'.'Microsoft.DotNet.Arcade.Sdk'
 }
 
 function InitializeToolset() {
@@ -646,7 +682,7 @@ function InitializeToolset() {
 
   $nugetCache = GetNuGetPackageCachePath
 
-  $toolsetVersion = $GlobalJson.'msbuild-sdks'.'Microsoft.DotNet.Arcade.Sdk'
+  $toolsetVersion = Read-ArcadeSdkVersion
   $toolsetLocationFile = Join-Path $ToolsetDir "$toolsetVersion.txt"
 
   if (Test-Path $toolsetLocationFile) {
@@ -731,6 +767,8 @@ function MSBuild() {
       (Join-Path $basePath (Join-Path netcoreapp2.1 'Microsoft.DotNet.Arcade.Sdk.dll'))
       (Join-Path $basePath (Join-Path netcoreapp3.1 'Microsoft.DotNet.ArcadeLogging.dll')),
       (Join-Path $basePath (Join-Path netcoreapp3.1 'Microsoft.DotNet.Arcade.Sdk.dll'))
+      (Join-Path $basePath (Join-Path net7.0 'Microsoft.DotNet.ArcadeLogging.dll')),
+      (Join-Path $basePath (Join-Path net7.0 'Microsoft.DotNet.Arcade.Sdk.dll'))
     )
     $selectedPath = $null
     foreach ($path in $possiblePaths) {
@@ -803,7 +841,8 @@ function MSBuild-Core() {
       Write-Host "See log: $buildLog" -ForegroundColor DarkGray
     }
 
-    if ($ci) {
+    # When running on Azure Pipelines, override the returned exit code to avoid double logging.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -898,11 +937,13 @@ if (!$disableConfigureToolsetImport) {
 function Enable-Nuget-EnhancedRetry() {
     if ($ci) {
       Write-Host "Setting NUGET enhanced retry environment variables"
-      $env:NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY = 'true'
-      $env:NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT = 6
-      $env:NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS = 1000
-      Write-PipelineSetVariable -Name 'NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY' -Value 'true'
-      Write-PipelineSetVariable -Name 'NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT' -Value '6'
-      Write-PipelineSetVariable -Name 'NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS' -Value '1000'
+      $env:NUGET_ENABLE_ENHANCED_HTTP_RETRY = 'true'
+      $env:NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT = 6
+      $env:NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS = 1000
+      $env:NUGET_RETRY_HTTP_429 = 'true'
+      Write-PipelineSetVariable -Name 'NUGET_ENABLE_ENHANCED_HTTP_RETRY' -Value 'true'
+      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT' -Value '6'
+      Write-PipelineSetVariable -Name 'NUGET_ENHANCED_NETWORK_RETRY_DELAY_MILLISECONDS' -Value '1000'
+      Write-PipelineSetVariable -Name 'NUGET_RETRY_HTTP_429' -Value 'true'
     }
 }

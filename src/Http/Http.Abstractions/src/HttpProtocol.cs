@@ -109,10 +109,7 @@ public static class HttpProtocol
     /// <returns>A HTTP request protocol.</returns>
     public static string GetHttpProtocol(Version version)
     {
-        if (version == null)
-        {
-            throw new ArgumentNullException(nameof(version));
-        }
+        ArgumentNullException.ThrowIfNull(version);
 
         return version switch
         {

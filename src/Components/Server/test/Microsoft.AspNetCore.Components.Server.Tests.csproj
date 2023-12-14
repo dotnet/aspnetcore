@@ -19,8 +19,8 @@
     <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestHubMessageEqualityComparer.cs" LinkBase="BlazorPack" />
 
-    <Compile Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\ServerComponentSerializer.cs" LinkBase="Mvc" />
-    <Compile Include="$(RepoRoot)src\Mvc\Mvc.ViewFeatures\src\ServerComponentInvocationSequence.cs" LinkBase="Mvc" />
+    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\DependencyInjection\ServerComponentSerializer.cs" LinkBase="Endpoints" />
+    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\DependencyInjection\ServerComponentInvocationSequence.cs" LinkBase="Endpoints" />
   </ItemGroup>
 
 </Project>

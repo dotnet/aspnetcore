@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 
 // This is a bridge that allows us to execute IActionConstraint instance when
 // used with Matcher.
-internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
+internal sealed class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
 {
     // We need to be able to run IActionConstraints on Endpoints that aren't associated
     // with an action. This is a sentinel value we use when the endpoint isn't from MVC.
@@ -30,10 +30,7 @@ internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorP
 
     public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // We can skip over action constraints when they aren't any for this set
         // of endpoints. This happens once on startup so it removes this component
@@ -154,7 +151,7 @@ internal class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSelectorP
         return EvaluateActionConstraintsCore(httpContext, candidateSet, items, startingOrder: null);
     }
 
-    private IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraintsCore(
+    private static IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraintsCore(
         HttpContext httpContext,
         CandidateSet candidateSet,
         IReadOnlyList<(int index, ActionSelectorCandidate candidate)> items,

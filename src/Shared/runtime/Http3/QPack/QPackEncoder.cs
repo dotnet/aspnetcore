@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http.HPack;
@@ -38,7 +39,7 @@ namespace System.Net.Http.QPack
             Span<byte> buffer = stackalloc byte[IntegerEncoder.MaxInt32EncodedLength];
 
             bool res = EncodeStaticIndexedHeaderField(index, buffer, out int bytesWritten);
-            Debug.Assert(res == true);
+            Debug.Assert(res);
 
             return buffer.Slice(0, bytesWritten).ToArray();
         }
@@ -93,7 +94,7 @@ namespace System.Net.Http.QPack
 
             temp[0] = 0b01110000;
             bool res = IntegerEncoder.Encode(index, 4, temp, out int headerBytesWritten);
-            Debug.Assert(res == true);
+            Debug.Assert(res);
 
             return temp.Slice(0, headerBytesWritten).ToArray();
         }
@@ -102,7 +103,7 @@ namespace System.Net.Http.QPack
         {
             Span<byte> temp = value.Length < 256 ? stackalloc byte[256 + IntegerEncoder.MaxInt32EncodedLength * 2] : new byte[value.Length + IntegerEncoder.MaxInt32EncodedLength * 2];
             bool res = EncodeLiteralHeaderFieldWithStaticNameReference(index, value, temp, out int bytesWritten);
-            Debug.Assert(res == true);
+            Debug.Assert(res);
             return temp.Slice(0, bytesWritten).ToArray();
         }
 
@@ -168,7 +169,7 @@ namespace System.Net.Http.QPack
             Span<byte> temp = name.Length < 256 ? stackalloc byte[256 + IntegerEncoder.MaxInt32EncodedLength] : new byte[name.Length + IntegerEncoder.MaxInt32EncodedLength];
 
             bool res = EncodeNameString(name, temp, out int nameLength);
-            Debug.Assert(res == true);
+            Debug.Assert(res);
 
             return temp.Slice(0, nameLength).ToArray();
         }
@@ -178,7 +179,7 @@ namespace System.Net.Http.QPack
             Span<byte> temp = (name.Length + value.Length) < 256 ? stackalloc byte[256 + IntegerEncoder.MaxInt32EncodedLength * 2] : new byte[name.Length + value.Length + IntegerEncoder.MaxInt32EncodedLength * 2];
 
             bool res = EncodeLiteralHeaderFieldWithoutNameReference(name, value, temp, out int bytesWritten);
-            Debug.Assert(res == true);
+            Debug.Assert(res);
 
             return temp.Slice(0, bytesWritten).ToArray();
         }
@@ -311,22 +312,20 @@ namespace System.Net.Http.QPack
         {
             Debug.Assert(buffer.Length >= s.Length);
 
-            for (int i = 0; i < s.Length; ++i)
+            OperationStatus status = Ascii.FromUtf16(s, buffer, out int bytesWritten);
+
+            if (status == OperationStatus.InvalidData)
             {
-                char ch = s[i];
-
-                if (ch > 127)
-                {
-                    throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
-                }
-
-                buffer[i] = (byte)ch;
+                throw new QPackEncodingException(SR.net_http_request_invalid_char_encoding);
             }
+
+            Debug.Assert(status == OperationStatus.Done);
+            Debug.Assert(bytesWritten == s.Length);
         }
 
         private static bool EncodeNameString(string s, Span<byte> buffer, out int length)
         {
-            const int toLowerMask = 0x20;
+            Debug.Assert(Ascii.IsValid(s));
 
             if (buffer.Length != 0)
             {
@@ -338,18 +337,9 @@ namespace System.Net.Http.QPack
 
                     if (buffer.Length >= s.Length)
                     {
-                        for (int i = 0; i < s.Length; ++i)
-                        {
-                            int ch = s[i];
-                            Debug.Assert(ch <= 127, "HttpHeaders prevents adding non-ASCII header names.");
-
-                            if ((uint)(ch - 'A') <= 'Z' - 'A')
-                            {
-                                ch |= toLowerMask;
-                            }
-
-                            buffer[i] = (byte)ch;
-                        }
+                        OperationStatus status = Ascii.ToLower(s, buffer, out int valueBytesWritten);
+                        Debug.Assert(status == OperationStatus.Done);
+                        Debug.Assert(valueBytesWritten == s.Length);
 
                         length = nameLength + s.Length;
                         return true;

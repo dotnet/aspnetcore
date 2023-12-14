@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -29,6 +29,9 @@ public class UpgradeTests : LoggedTest
             var stream = await feature.UpgradeAsync();
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.Body.WriteAsync(new byte[1], 0, 1));
+            Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.BodyWriter.WriteAsync(new byte[1]).AsTask());
             Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
 
             using (var writer = new StreamWriter(stream))

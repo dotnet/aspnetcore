@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -30,10 +30,13 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="buildTransitive\any\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
   </ItemGroup>
 
   <ItemGroup>

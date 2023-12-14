@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class PageSaveTempDataPropertyFilter : SaveTempDataPropertyFilterBase, IPageFilter
+internal sealed class PageSaveTempDataPropertyFilter : SaveTempDataPropertyFilterBase, IPageFilter
 {
     public PageSaveTempDataPropertyFilter(ITempDataDictionaryFactory factory)
         : base(factory)

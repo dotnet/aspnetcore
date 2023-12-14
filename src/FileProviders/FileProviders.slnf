@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\FileProviders\\Embedded\\src\\Microsoft.Extensions.FileProviders.Embedded.csproj",
+      "src\\FileProviders\\Embedded\\test\\Microsoft.Extensions.FileProviders.Embedded.Tests.csproj",
+      "src\\FileProviders\\Manifest.MSBuildTask\\src\\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj",
+      "src\\FileProviders\\Manifest.MSBuildTask\\test\\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Tests.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj"
+    ]
+  }
+}

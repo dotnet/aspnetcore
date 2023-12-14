@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlMatches;
 
-internal class IntegerMatch : UrlMatch
+internal sealed class IntegerMatch : UrlMatch
 {
     private readonly int _value;
     private readonly IntegerOperationType _operation;

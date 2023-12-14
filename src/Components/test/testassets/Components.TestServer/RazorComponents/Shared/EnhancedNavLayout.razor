@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+<nav>
+    <NavLink href="nav">Home</NavLink> |
+    <NavLink href="streaming">Streaming</NavLink> |
+    <NavLink href="large-streaming">Large Streaming</NavLink> |
+    <NavLink href="streaming-interactivity">Streaming with interactivity</NavLink> |
+    <NavLink href="nav/give-404-with-content">Error page with 404 content</NavLink> |
+    <NavLink href="nav/nonexistent-page">Error page with no content</NavLink> |
+    <NavLink href="nav/non-html-response">Non-HTML page</NavLink> |
+    <NavLink href="nav/non-blazor-html-response">Non-Blazor HTML page</NavLink> |
+    <NavLink href="nav/scroll-to-hash#some-content">Scroll to hash</NavLink> |
+    <NavLink href="nav/throw-while-streaming">Error while streaming</NavLink> |
+    <NavLink href="nav/interactive-component-navigation/server">Interactive component navigation (server)</NavLink> |
+    <NavLink href="nav/interactive-component-navigation/webassembly">Interactive component navigation (webassembly)</NavLink> |
+    <NavLink href="nav/list-headers">List headers</NavLink> |
+    <NavLink href="nav/preserve-content">Preserve content</NavLink>
+    <span data-enhance-nav="false">
+        <NavLink href="nav/other"><span id='not-enhanced-nav-link'>Other (no enhanced nav)</span></NavLink> |
+        <span data-enhance-nav>
+            <NavLink href="nav/other">Other (re-enabled enhanced nav)</NavLink> |
+        </span>
+    </span>
+    <NavLink href="nav/location-changed/server">LocationChanged/LocationChanging event (server)</NavLink>
+    <NavLink href="nav/location-changed/wasm">LocationChanged/LocationChanging event (wasm)</NavLink>
+    <NavLink href="nav/location-changed/server-and-wasm">LocationChanged/LocationChanging event (server-and-wasm)</NavLink>
+    <br />
+    <a href="nav/other" data-enhance-nav="false">
+        <svg width="100" height="100" id="svg-in-anchor-not-enhanced-nav-link">
+            <rect width="50" height="50" style="fill:rgb(0,0,255);" />
+        </svg>
+    </a>
+    <svg width="100px" height="30px" id="svg-nav-link">
+        <NavLink href="nav/other">
+            <text x="15" y="15" font-size="15">Other SVG</text>
+        </NavLink>
+    </svg>
+    <br />
+    <svg width="200px" height="30px" id="svg-not-enhanced-nav-link" data-enhance-nav="false">
+        <NavLink href="nav/other">
+            <text x="15" y="15" font-size="15">Other SVG (no enhanced nav)</text>
+        </NavLink>
+    </svg>
+    <br />
+</nav>
+<hr />
+@Body

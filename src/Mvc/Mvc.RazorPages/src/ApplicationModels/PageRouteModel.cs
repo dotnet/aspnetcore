@@ -45,10 +45,7 @@ public class PageRouteModel
     /// <param name="other">The <see cref="PageRouteModel"/> to copy from.</param>
     public PageRouteModel(PageRouteModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         RelativePath = other.RelativePath;
         ViewEnginePath = other.ViewEnginePath;

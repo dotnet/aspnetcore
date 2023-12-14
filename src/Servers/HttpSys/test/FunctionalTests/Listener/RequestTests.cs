@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -136,6 +136,42 @@ public class RequestTests
             var response = await responseTask;
             Assert.Equal("200", response.Substring(9));
         }
+    }
+
+    [ConditionalTheory]
+    [InlineData("/", "/", "", "/")]
+    [InlineData("/base", "/base", "/base", "")]
+    [InlineData("/base", "/baSe", "/baSe", "")]
+    [InlineData("/base", "/base/path", "/base", "/path")]
+    [InlineData("/base", "///base/path1/path2", "///base", "/path1/path2")]
+    [InlineData("/base/ball", @"/baSe\ball//path1//path2", @"/baSe\ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base%2fball//path1//path2", @"/base%2fball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base%2Fball//path1//path2", @"/base%2Fball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base%5cball//path1//path2", @"/base\ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base%5Cball//path1//path2", @"/base\ball", "//path1//path2")]
+    [InlineData("/base/ball", "///baSe//ball//path1//path2", "///baSe//ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/\ball//path1//path2", @"/base/\ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/%2fball//path1//path2", @"/base/%2fball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/%2Fball//path1//path2", @"/base/%2Fball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/%5cball//path1//path2", @"/base/\ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/%5Cball//path1//path2", @"/base/\ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/call/../ball//path1//path2", @"/base/ball", "//path1//path2")]
+    // The results should be "/base/ball", "//path1//path2", but Http.Sys collapses the "//" before the "../"
+    // and we don't have a good way of emulating that.
+    [InlineData("/base/ball", @"/base/call//../ball//path1//path2", @"", "/base/call/ball//path1//path2")]
+    [InlineData("/base/ball", @"/base/call/.%2e/ball//path1//path2", @"/base/ball", "//path1//path2")]
+    [InlineData("/base/ball", @"/base/call/.%2E/ball//path1//path2", @"/base/ball", "//path1//path2")]
+    public async Task Request_WithPathBase(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
+    {
+        using var server = Utilities.CreateHttpServerReturnRoot(pathBase, out var root);
+        var responseTask = SendSocketRequestAsync(root, requestPath);
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+        Assert.Equal(expectedPathBase, context.Request.PathBase);
+        Assert.Equal(expectedPath, context.Request.Path);
+        context.Dispose();
+
+        var response = await responseTask;
+        Assert.Equal("200", response.Substring(9));
     }
 
     private async Task<string> SendSocketRequestAsync(string address, string path, string method = "GET")

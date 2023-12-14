@@ -6,7 +6,7 @@ using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
-internal class SocketSenderPool : IDisposable
+internal sealed class SocketSenderPool : IDisposable
 {
     private const int MaxQueueSize = 1024; // REVIEW: Is this good enough?
 
@@ -19,6 +19,8 @@ internal class SocketSenderPool : IDisposable
     {
         _scheduler = scheduler;
     }
+
+    public PipeScheduler Scheduler => _scheduler;
 
     public SocketSender Rent()
     {

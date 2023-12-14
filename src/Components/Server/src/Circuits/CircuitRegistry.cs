@@ -33,7 +33,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// Consequently, we have to account for reconnects and disconnects occuring simultaneously as well as appearing out of order.
 /// To manage this, we use a critical section to manage all state transitions.
 /// </remarks>
+#pragma warning disable CA1852 // Seal internal types
 internal partial class CircuitRegistry
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly object CircuitRegistryLock = new object();
     private readonly CircuitOptions _options;
@@ -409,7 +411,7 @@ internal partial class CircuitRegistry
         [LoggerMessage(114, LogLevel.Error, "Exception handler for {CircuitId} failed.", EventName = "CircuitExceptionHandlerFailed")]
         public static partial void CircuitExceptionHandlerFailed(ILogger logger, CircuitId circuitId, Exception exception);
 
-        [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "FailedToReconnectToCircuit")]
+        [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "ReconnectionSucceeded")]
         public static partial void ReconnectionSucceeded(ILogger logger, CircuitId circuitId);
     }
 }

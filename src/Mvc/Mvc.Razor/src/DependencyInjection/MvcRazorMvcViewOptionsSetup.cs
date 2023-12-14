@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Configures <see cref="MvcViewOptions"/> to use <see cref="RazorViewEngine"/>.
 /// </summary>
-internal class MvcRazorMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
+internal sealed class MvcRazorMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
 {
     private readonly IRazorViewEngine _razorViewEngine;
 
@@ -20,10 +20,7 @@ internal class MvcRazorMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
     /// <param name="razorViewEngine">The <see cref="IRazorViewEngine"/>.</param>
     public MvcRazorMvcViewOptionsSetup(IRazorViewEngine razorViewEngine)
     {
-        if (razorViewEngine == null)
-        {
-            throw new ArgumentNullException(nameof(razorViewEngine));
-        }
+        ArgumentNullException.ThrowIfNull(razorViewEngine);
 
         _razorViewEngine = razorViewEngine;
     }
@@ -34,10 +31,7 @@ internal class MvcRazorMvcViewOptionsSetup : IConfigureOptions<MvcViewOptions>
     /// <param name="options">The <see cref="MvcViewOptions"/> to configure.</param>
     public void Configure(MvcViewOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.ViewEngines.Add(_razorViewEngine);
     }

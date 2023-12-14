@@ -5,6 +5,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -23,14 +24,8 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, StatusCodePagesOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<StatusCodePagesMiddleware>(Options.Create(options));
     }
@@ -43,10 +38,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<StatusCodePagesMiddleware>();
     }
@@ -60,14 +52,8 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Func<StatusCodeContext, Task> handler)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(handler);
 
         return app.UseStatusCodePages(new StatusCodePagesOptions
         {
@@ -85,10 +71,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, string contentType, string bodyFormat)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseStatusCodePages(context =>
         {
@@ -108,10 +91,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePagesWithRedirects(this IApplicationBuilder app, string locationFormat)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         if (locationFormat.StartsWith('~'))
         {
@@ -143,10 +123,7 @@ public static class StatusCodePagesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Action<IApplicationBuilder> configuration)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         var builder = app.New();
         configuration(builder);
@@ -167,28 +144,14 @@ public static class StatusCodePagesExtensions
         string pathFormat,
         string? queryFormat = null)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
-        const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         // Only use this path if there's a global router (in the 'WebApplication' case).
-        if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>
             {
-                RequestDelegate? newNext = null;
-                // start a new middleware pipeline
-                var builder = app.New();
-                // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                builder.UseRouting();
-                // apply the next middleware
-                builder.Run(next);
-                newNext = builder.Build();
-
+                var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                 return new StatusCodePagesMiddleware(next,
                     Options.Create(new StatusCodePagesOptions() { HandleAsync = CreateHandler(pathFormat, queryFormat, newNext) })).Invoke;
             });
@@ -201,10 +164,12 @@ public static class StatusCodePagesExtensions
     {
         var handler = async (StatusCodeContext context) =>
         {
+            var originalStatusCode = context.HttpContext.Response.StatusCode;
+
             var newPath = new PathString(
-                string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
+                string.Format(CultureInfo.InvariantCulture, pathFormat, originalStatusCode));
             var formatedQueryString = queryFormat == null ? null :
-                string.Format(CultureInfo.InvariantCulture, queryFormat, context.HttpContext.Response.StatusCode);
+                string.Format(CultureInfo.InvariantCulture, queryFormat, originalStatusCode);
             var newQueryString = queryFormat == null ? QueryString.Empty : new QueryString(formatedQueryString);
 
             var originalPath = context.HttpContext.Request.Path;
@@ -218,17 +183,14 @@ public static class StatusCodePagesExtensions
                 OriginalPathBase = context.HttpContext.Request.PathBase.Value!,
                 OriginalPath = originalPath.Value!,
                 OriginalQueryString = originalQueryString.HasValue ? originalQueryString.Value : null,
+                OriginalStatusCode = originalStatusCode,
                 Endpoint = context.HttpContext.GetEndpoint(),
                 RouteValues = routeValuesFeature?.RouteValues
             });
 
             // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
             // the endpoint and route values to ensure things are re-calculated.
-            context.HttpContext.SetEndpoint(endpoint: null);
-            if (routeValuesFeature != null)
-            {
-                routeValuesFeature.RouteValues = null!;
-            }
+            HttpExtensions.ClearEndpoint(context.HttpContext);
 
             context.HttpContext.Request.Path = newPath;
             context.HttpContext.Request.QueryString = newQueryString;

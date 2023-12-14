@@ -14,10 +14,7 @@ public class SerializableErrorWrapperProvider : IWrapperProvider
     /// <inheritdoc />
     public object? Wrap(object? original)
     {
-        if (original == null)
-        {
-            throw new ArgumentNullException(nameof(original));
-        }
+        ArgumentNullException.ThrowIfNull(original);
 
         var error = original as SerializableError;
         if (error == null)

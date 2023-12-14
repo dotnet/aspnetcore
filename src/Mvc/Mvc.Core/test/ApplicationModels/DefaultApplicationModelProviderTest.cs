@@ -94,6 +94,15 @@ public class DefaultApplicationModelProviderTest
             },
             property =>
             {
+                Assert.Equal(nameof(ModelBinderController.Service), property.PropertyName);
+                Assert.Equal(BindingSource.Services, property.BindingInfo.BindingSource);
+                Assert.Same(controllerModel, property.Controller);
+
+                var attribute = Assert.Single(property.Attributes);
+                Assert.IsType<FromServicesAttribute>(attribute);
+            },
+            property =>
+            {
                 Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
                 Assert.Null(property.BindingInfo);
                 Assert.Same(controllerModel, property.Controller);
@@ -104,7 +113,7 @@ public class DefaultApplicationModelProviderTest
     public void OnProvidersExecuting_ReadsBindingSourceForPropertiesFromModelMetadata()
     {
         // Arrange
-        var detailsProvider = new BindingSourceMetadataProvider(typeof(string), BindingSource.Services);
+        var detailsProvider = new BindingSourceMetadataProvider(typeof(string), BindingSource.Special);
         var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
         var typeInfo = typeof(ModelBinderController).GetTypeInfo();
         var provider = new TestApplicationModelProvider(new MvcOptions(), modelMetadataProvider);
@@ -137,8 +146,17 @@ public class DefaultApplicationModelProviderTest
             },
             property =>
             {
-                Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
+                Assert.Equal(nameof(ModelBinderController.Service), property.PropertyName);
                 Assert.Equal(BindingSource.Services, property.BindingInfo.BindingSource);
+                Assert.Same(controllerModel, property.Controller);
+
+                var attribute = Assert.Single(property.Attributes);
+                Assert.IsType<FromServicesAttribute>(attribute);
+            },
+            property =>
+            {
+                Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
+                Assert.Equal(BindingSource.Special, property.BindingInfo.BindingSource);
                 Assert.Same(controllerModel, property.Controller);
             });
     }
@@ -1743,12 +1761,18 @@ public class DefaultApplicationModelProviderTest
     {
     }
 
+    public interface ITestService
+    { }
+
     public class ModelBinderController
     {
         [FromQuery]
         public string Bound { get; set; }
 
         public string Unbound { get; set; }
+
+        [FromServices]
+        public ITestService Service { get; set; }
 
         public IFormFile FormFile { get; set; }
 

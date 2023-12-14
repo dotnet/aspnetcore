@@ -21,9 +21,12 @@ internal class HttpConnectionContext : BaseHttpConnectionContext
         IFeatureCollection connectionFeatures,
         MemoryPool<byte> memoryPool,
         IPEndPoint? localEndPoint,
-        IPEndPoint? remoteEndPoint) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        IPEndPoint? remoteEndPoint,
+        ConnectionMetricsContext metricsContext) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
     {
+        MetricsContext = metricsContext;
     }
 
     public IDuplexPipe Transport { get; set; } = default!;
+    public ConnectionMetricsContext MetricsContext { get; }
 }

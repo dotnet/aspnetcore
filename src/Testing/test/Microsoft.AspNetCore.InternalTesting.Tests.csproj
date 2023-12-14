@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+
+    <!-- allow skipped tests -->
+    <NoWarn>$(NoWarn);xUnit1004</NoWarn>
+    <!-- allow unused theory parameters -->
+    <NoWarn>$(NoWarn);xUnit1026</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\contentFiles\cs\netstandard2.0\EventSourceTestCollection.cs" Link="EventSourceTestCollection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472' OR '$(MSBuildRestoreSessionId)' == ''">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+</Project>

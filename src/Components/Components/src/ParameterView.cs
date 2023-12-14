@@ -16,7 +16,7 @@ public readonly struct ParameterView
 {
     private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
     {
-            RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
+        RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
     };
 
     private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
@@ -103,9 +103,9 @@ public readonly struct ParameterView
     /// Returns a dictionary populated with the contents of the <see cref="ParameterView"/>.
     /// </summary>
     /// <returns>A dictionary populated with the contents of the <see cref="ParameterView"/>.</returns>
-    public IReadOnlyDictionary<string, object> ToDictionary()
+    public IReadOnlyDictionary<string, object?> ToDictionary()
     {
-        var result = new Dictionary<string, object>();
+        var result = new Dictionary<string, object?>();
         foreach (var entry in this)
         {
             result[entry.Name] = entry.Value;
@@ -130,6 +130,20 @@ public readonly struct ParameterView
 
     internal ParameterView WithCascadingParameters(IReadOnlyList<CascadingParameterState> cascadingParameters)
         => new ParameterView(_lifetime, _frames, _ownerIndex, cascadingParameters);
+
+    internal bool HasDirectParameter(string parameterName)
+    {
+        var directParameterEnumerator = new RenderTreeFrameParameterEnumerator(_frames, _ownerIndex);
+        while (directParameterEnumerator.MoveNext())
+        {
+            if (string.Equals(directParameterEnumerator.Current.Name, parameterName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     // It's internal because there isn't a known use case for user code comparing
     // ParameterView instances, and even if there was, it's unlikely it should
@@ -197,6 +211,61 @@ public readonly struct ParameterView
         }
     }
 
+    internal bool HasRemovedDirectParameters(in ParameterView oldParameters)
+    {
+        var oldDirectParameterFrames = GetDirectParameterFrames(oldParameters);
+        if (oldDirectParameterFrames.Length == 0)
+        {
+            // Parameters could not have been removed if there were no old direct parameters.
+            return false;
+        }
+
+        var newDirectParameterFrames = GetDirectParameterFrames(this);
+        if (newDirectParameterFrames.Length < oldDirectParameterFrames.Length)
+        {
+            // Parameters must have been removed if there are fewer new direct parameters than
+            // old direct parameters.
+            return true;
+        }
+
+        // Fall back to comparing each set of direct parameters.
+        foreach (var oldFrame in oldDirectParameterFrames)
+        {
+            var found = false;
+            foreach (var newFrame in newDirectParameterFrames)
+            {
+                if (string.Equals(oldFrame.AttributeNameField, newFrame.AttributeNameField, StringComparison.Ordinal))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        static Span<RenderTreeFrame> GetDirectParameterFrames(in ParameterView parameterView)
+        {
+            var frames = parameterView._frames;
+            var ownerIndex = parameterView._ownerIndex;
+            var ownerDescendantsEndIndexExcl = ownerIndex + frames[ownerIndex].ElementSubtreeLength;
+            var attributeFramesStartIndex = ownerIndex + 1;
+            var attributeFramesEndIndexExcl = attributeFramesStartIndex;
+
+            while (attributeFramesEndIndexExcl < ownerDescendantsEndIndexExcl && frames[attributeFramesEndIndexExcl].FrameType == RenderTreeFrameType.Attribute)
+            {
+                attributeFramesEndIndexExcl++;
+            }
+
+            return frames.AsSpan(attributeFramesStartIndex..attributeFramesEndIndexExcl);
+        }
+    }
+
     internal void CaptureSnapshot(ArrayBuilder<RenderTreeFrame> builder)
     {
         builder.Clear();
@@ -249,10 +318,7 @@ public readonly struct ParameterView
     /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
     public void SetParameterProperties(object target)
     {
-        if (target is null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         ComponentProperties.SetProperties(this, target);
     }
@@ -371,7 +437,8 @@ public readonly struct ParameterView
                 _currentIndex = nextIndex;
 
                 var state = _cascadingParameters[_currentIndex];
-                _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue!, true);
+                var currentValue = state.ValueSupplier.GetCurrentValue(state.ParameterInfo);
+                _current = new ParameterValue(state.ParameterInfo.PropertyName, currentValue!, true);
                 return true;
             }
             else

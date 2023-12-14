@@ -14,10 +14,7 @@ public class ValueProviderFactoryContext
     /// <param name="context">The <see cref="ActionContext"/>.</param>
     public ValueProviderFactoryContext(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         ActionContext = context;
     }

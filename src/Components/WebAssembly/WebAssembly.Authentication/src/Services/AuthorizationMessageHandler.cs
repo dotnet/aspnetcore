@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -17,11 +18,11 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
 {
     private readonly IAccessTokenProvider _provider;
     private readonly NavigationManager _navigation;
-    private readonly AuthenticationStateChangedHandler _authenticationStateChangedHandler;
-    private AccessToken _lastToken;
-    private AuthenticationHeaderValue _cachedHeader;
-    private Uri[] _authorizedUris;
-    private AccessTokenRequestOptions _tokenOptions;
+    private readonly AuthenticationStateChangedHandler? _authenticationStateChangedHandler;
+    private AccessToken? _lastToken;
+    private AuthenticationHeaderValue? _cachedHeader;
+    private Uri[]? _authorizedUris;
+    private AccessTokenRequestOptions? _tokenOptions;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AuthorizationMessageHandler"/>.
@@ -53,7 +54,7 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
                 $"Call '{nameof(AuthorizationMessageHandler.ConfigureHandler)}' and provide a list of endpoint urls to attach the token to.");
         }
 
-        if (_authorizedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
+        if (request.RequestUri != null && _authorizedUris.Any(uri => uri.IsBaseOf(request.RequestUri)))
         {
             if (_lastToken == null || now >= _lastToken.Expires.AddMinutes(-5))
             {
@@ -93,18 +94,15 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
     /// <returns>This <see cref="AuthorizationMessageHandler"/>.</returns>
     public AuthorizationMessageHandler ConfigureHandler(
         IEnumerable<string> authorizedUrls,
-        IEnumerable<string> scopes = null,
-        string returnUrl = null)
+        IEnumerable<string>? scopes = null,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null)
     {
         if (_authorizedUris != null)
         {
             throw new InvalidOperationException("Handler already configured.");
         }
 
-        if (authorizedUrls == null)
-        {
-            throw new ArgumentNullException(nameof(authorizedUrls));
-        }
+        ArgumentNullException.ThrowIfNull(authorizedUrls);
 
         var uris = authorizedUrls.Select(uri => new Uri(uri, UriKind.Absolute)).ToArray();
         if (uris.Length == 0)

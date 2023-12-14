@@ -166,7 +166,7 @@ public class RedisHubLifetimeManagerBenchmark
     {
     }
 
-    private class WrappedHubProtocol : IHubProtocol
+    private sealed class WrappedHubProtocol : IHubProtocol
     {
         private readonly string _name;
         private readonly IHubProtocol _innerProtocol;

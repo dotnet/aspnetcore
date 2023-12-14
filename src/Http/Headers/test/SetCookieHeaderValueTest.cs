@@ -62,6 +62,18 @@ public class SetCookieHeaderValueTest
             header8.Extensions.Add("extension2=value");
             dataset.Add(header8, "name8=value8; extension1; extension2=value");
 
+            var header9 = new SetCookieHeaderValue("name9", "value9")
+            {
+                MaxAge = TimeSpan.FromDays(-1),
+            };
+            dataset.Add(header9, "name9=value9; max-age=-86400");
+
+            var header10 = new SetCookieHeaderValue("name10", "value10")
+            {
+                MaxAge = TimeSpan.FromDays(0),
+            };
+            dataset.Add(header10, "name10=value10; max-age=0");
+
             return dataset;
         }
     }
@@ -74,7 +86,6 @@ public class SetCookieHeaderValueTest
                 {
                     "expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1",
                     "name=value; expires=Sun, 06 Nov 1994 08:49:37 ZZZ; max-age=86400; domain=domain1",
-                    "name=value; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=-86400; domain=domain1",
                 };
         }
     }

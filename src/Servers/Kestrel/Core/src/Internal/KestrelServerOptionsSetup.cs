@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
+internal sealed class KestrelServerOptionsSetup : IConfigureOptions<KestrelServerOptions>
 {
     private readonly IServiceProvider _services;
 

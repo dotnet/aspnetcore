@@ -19,6 +19,9 @@ public class StatusCodeReExecuteFeature : IStatusCodeReExecuteFeature
     public string? OriginalQueryString { get; set; }
 
     /// <inheritdoc/>
+    public int OriginalStatusCode { get; internal set; }
+
+    /// <inheritdoc/>
     public Endpoint? Endpoint { get; set; }
 
     /// <inheritdoc/>

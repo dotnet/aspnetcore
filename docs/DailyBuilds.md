@@ -4,8 +4,10 @@ Daily builds include the latest source code changes. They are not supported for 
 
 If you want to download the latest daily build and use it in a project, then you need to:
 
-* Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/core-sdk#installers-and-binaries).
+* Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/installer#table).
 * Add a NuGet.Config to your project directory with the following content:
+
+## .NET 7
 
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
@@ -13,6 +15,19 @@ If you want to download the latest daily build and use it in a project, then you
       <packageSources>
           <clear />
           <add key="aspnetcore" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json" />
+          <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+      </packageSources>
+  </configuration>
+  ```
+  
+## .NET 8
+
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <configuration>
+      <packageSources>
+          <clear />
+          <add key="aspnetcore" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet8/nuget/v3/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>
@@ -29,3 +44,7 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 * *Enable source server support* in Visual should be enabled.
 * *Enable Just My Code* should be disabled
 * Under Symbols enable the *Microsoft Symbol Servers* setting.
+
+## Downloading daily builds of aspnetcore
+
+Links to our daily builds can be found [here](https://github.com/dotnet/aspnetcore/blob/main/README.md#nightly-builds).

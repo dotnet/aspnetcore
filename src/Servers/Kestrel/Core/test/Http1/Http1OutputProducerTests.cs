@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
 
@@ -52,6 +52,65 @@ public class Http1OutputProducerTests : IDisposable
             socketOutput.Pipe.Writer.Complete();
             socketOutput.Pipe.Reader.Complete();
         }
+    }
+
+    [Fact]
+    public async Task FlushAsync_OnDisposedSocket_ReturnsResultWithIsCompletedTrue()
+    {
+        var pipeOptions = new PipeOptions
+        (
+            pool: _memoryPool,
+            readerScheduler: Mock.Of<PipeScheduler>(),
+            writerScheduler: PipeScheduler.Inline,
+            useSynchronizationContext: false
+        );
+
+        var socketOutput = CreateOutputProducer(pipeOptions);
+
+        await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
+        var successResult = await socketOutput.FlushAsync();
+        Assert.False(successResult.IsCompleted);
+
+        // Close
+        socketOutput.Dispose();
+
+        await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
+        var completedResult = await socketOutput.FlushAsync();
+        Assert.True(completedResult.IsCompleted);
+
+        socketOutput.Pipe.Writer.Complete();
+        socketOutput.Pipe.Reader.Complete();
+    }
+
+    [Fact]
+    public async Task FlushAsync_OnSocketWithCanceledPendingFlush_ReturnsResultWithIsCanceledTrue()
+    {
+        var pipeOptions = new PipeOptions
+        (
+            pool: _memoryPool,
+            readerScheduler: Mock.Of<PipeScheduler>(),
+            writerScheduler: PipeScheduler.Inline,
+            useSynchronizationContext: false
+        );
+
+        var socketOutput = CreateOutputProducer(pipeOptions);
+
+        await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
+        var successResult = await socketOutput.FlushAsync();
+        Assert.False(successResult.IsCanceled);
+
+        // Close
+        socketOutput.CancelPendingFlush();
+
+        var cancelResult = await socketOutput.WriteDataToPipeAsync(new byte[] { 1, 2, 3, 4 }, default);
+        Assert.True(cancelResult.IsCanceled);
+
+        // only one flush should be cancelled
+        var goodResult = await socketOutput.WriteDataToPipeAsync(new byte[] { 1, 2, 3, 4 }, default);
+        Assert.False(goodResult.IsCanceled);
+
+        socketOutput.Pipe.Writer.Complete();
+        socketOutput.Pipe.Reader.Complete();
     }
 
     [Fact]

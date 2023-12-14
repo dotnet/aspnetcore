@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -13,8 +10,10 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.AspNetCore.DeveloperCertificates.Tools;
 
-internal class Program
+internal sealed class Program
 {
+    // NOTE: Exercise caution when touching these exit codes, since existing tooling
+    // might depend on some of these values.
     private const int CriticalError = -1;
     private const int Success = 0;
     private const int ErrorCreatingTheCertificate = 1;
@@ -74,8 +73,8 @@ internal class Program
 
                 // We want to force generating a key without a password to not be an accident.
                 var noPassword = c.Option("-np|--no-password",
-                "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
-                CommandOptionType.NoValue);
+                    "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
+                    CommandOptionType.NoValue);
 
                 var check = c.Option(
                     "-c|--check",
@@ -170,10 +169,10 @@ internal class Program
 
                     if (clean.HasValue())
                     {
-                        var clean = CleanHttpsCertificates(reporter);
-                        if (clean != Success || !import.HasValue())
+                        var cleanResult = CleanHttpsCertificates(reporter);
+                        if (cleanResult != Success || !import.HasValue())
                         {
-                            return clean;
+                            return cleanResult;
                         }
 
                         return ImportCertificate(import, password, reporter);
@@ -298,7 +297,7 @@ internal class Program
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var trustedCertificates = certificates.Where(c => certificateManager.IsTrusted(c)).ToList();
+                var trustedCertificates = certificates.Where(certificateManager.IsTrusted).ToList();
                 if (!trustedCertificates.Any())
                 {
                     reporter.Output($@"The following certificates were found, but none of them is trusted: {CertificateManager.ToCertificateDescription(certificates)}");
@@ -365,9 +364,9 @@ internal class Program
             {
                 reporter.Warn("Trusting the HTTPS development certificate was requested. If the certificate is not " +
                     "already trusted we will run the following command:" + Environment.NewLine +
-                    "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
+                    "'security add-trusted-cert -p basic -p ssl -k <<login-keychain>> <<certificate>>'" +
                     Environment.NewLine + "This command might prompt you for your password to install the certificate " +
-                    "on the system keychain. To undo these changes: 'sudo security remove-trusted-cert -d <<certificate>>'");
+                    "on the keychain. To undo these changes: 'security remove-trusted-cert <<certificate>>'" + Environment.NewLine);
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -430,6 +429,12 @@ internal class Program
             case EnsureCertificateResult.UserCancelledTrustStep:
                 reporter.Warn("The user cancelled the trust step.");
                 return ErrorUserCancelledTrustPrompt;
+            case EnsureCertificateResult.ExistingHttpsCertificateTrusted:
+                reporter.Output("Successfully trusted the existing HTTPS certificate.");
+                return Success;
+            case EnsureCertificateResult.NewHttpsCertificateTrusted:
+                reporter.Output("Successfully created and trusted a new HTTPS certificate.");
+                return Success;
             default:
                 reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                 return CriticalError;

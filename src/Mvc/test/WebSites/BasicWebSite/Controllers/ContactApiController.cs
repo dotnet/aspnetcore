@@ -87,6 +87,10 @@ public class ContactApiController : Controller
     public ActionResult<Contact> ActionWithInferredFromServicesParameter(int id, ContactsRepository repository)
         => repository.GetContact(id) ?? new Contact() { ContactId = id };
 
+    [HttpPost("[action]/{id}")]
+    public ActionResult<ContactRequest> ActionWithCompositeComplexTypeParameter(ContactRequest request, ContactsRepository repository)
+        => Ok(request);
+
     [HttpGet("[action]")]
     public ActionResult<int> ActionReturningStatusCodeResult()
     {
@@ -127,6 +131,14 @@ public class ContactApiController : Controller
                 },
         });
     }
+
+    [HttpGet("[action]/{id}")]
+    public IResult ActionReturningObjectIResult(int id)
+        => Results.Ok(new Contact() { ContactId = id });
+
+    [HttpGet("[action]")]
+    public IResult ActionReturningStatusCodeIResult()
+        => Results.NoContent();
 
     private class TestModelBinder : IModelBinder
     {

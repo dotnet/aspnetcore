@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using MessagePack;
 using Microsoft.AspNetCore.Internal;
 
@@ -59,6 +60,10 @@ internal abstract class MessagePackHubProtocolWorker
                 return PingMessage.Instance;
             case HubProtocolConstants.CloseMessageType:
                 return CreateCloseMessage(ref reader, itemCount);
+            case HubProtocolConstants.AckMessageType:
+                return CreateAckMessage(ref reader);
+            case HubProtocolConstants.SequenceMessageType:
+                return CreateSequenceMessage(ref reader);
             default:
                 // Future protocol changes can add message types, old clients can ignore them
                 return null;
@@ -77,9 +82,10 @@ internal abstract class MessagePackHubProtocolWorker
             invocationId = null;
         }
 
-        var target = ReadString(ref reader, "target");
+        var target = ReadString(ref reader, binder, "target");
+        ThrowIfNullOrEmpty(target, "target for Invocation message");
 
-        object[]? arguments;
+        object?[]? arguments;
         try
         {
             var parameterTypes = binder.GetParameterTypes(target);
@@ -104,9 +110,12 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
-        var target = ReadString(ref reader, "target");
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for StreamInvocation message");
 
-        object[] arguments;
+        var target = ReadString(ref reader, "target");
+        ThrowIfNullOrEmpty(target, "target for StreamInvocation message");
+
+        object?[] arguments;
         try
         {
             var parameterTypes = binder.GetParameterTypes(target);
@@ -131,7 +140,9 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
-        object value;
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for StreamItem message");
+
+        object? value;
         try
         {
             var itemType = binder.GetStreamItemType(invocationId);
@@ -149,6 +160,8 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for Completion message");
+
         var resultKind = ReadInt32(ref reader, "resultKind");
 
         string? error = null;
@@ -161,9 +174,31 @@ internal abstract class MessagePackHubProtocolWorker
                 error = ReadString(ref reader, "error");
                 break;
             case NonVoidResult:
-                var itemType = binder.GetReturnType(invocationId);
-                result = DeserializeObject(ref reader, itemType, "argument");
                 hasResult = true;
+                var itemType = ProtocolHelper.TryGetReturnType(binder, invocationId);
+                if (itemType is null)
+                {
+                    reader.Skip();
+                }
+                else
+                {
+                    if (itemType == typeof(RawResult))
+                    {
+                        result = new RawResult(reader.ReadRaw());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            result = DeserializeObject(ref reader, itemType, "argument");
+                        }
+                        catch (Exception ex)
+                        {
+                            error = $"Error trying to deserialize result to {itemType.Name}. {ex.Message}";
+                            hasResult = false;
+                        }
+                    }
+                }
                 break;
             case VoidResult:
                 hasResult = false;
@@ -179,6 +214,8 @@ internal abstract class MessagePackHubProtocolWorker
     {
         var headers = ReadHeaders(ref reader);
         var invocationId = ReadInvocationId(ref reader);
+        ThrowIfNullOrEmpty(invocationId, "invocation ID for CancelInvocation message");
+
         return ApplyHeaders(headers, new CancelInvocationMessage(invocationId));
     }
 
@@ -211,7 +248,11 @@ internal abstract class MessagePackHubProtocolWorker
             for (var i = 0; i < headerCount; i++)
             {
                 var key = ReadString(ref reader, $"headers[{i}].Key");
+                ThrowIfNullOrEmpty(key, "key in header");
+
                 var value = ReadString(ref reader, $"headers[{i}].Value");
+                ThrowIfNullOrEmpty(value, "value in header");
+
                 headers.Add(key, value);
             }
             return headers;
@@ -232,14 +273,27 @@ internal abstract class MessagePackHubProtocolWorker
             streams = new List<string>();
             for (var i = 0; i < streamIdCount; i++)
             {
-                streams.Add(reader.ReadString());
+                var id = reader.ReadString();
+                ThrowIfNullOrEmpty(id, "value in streamIds received");
+
+                streams.Add(id);
             }
         }
 
         return streams?.ToArray();
     }
 
-    private object[] BindArguments(ref MessagePackReader reader, IReadOnlyList<Type> parameterTypes)
+    private static AckMessage CreateAckMessage(ref MessagePackReader reader)
+    {
+        return new AckMessage(ReadInt64(ref reader, "sequenceId"));
+    }
+
+    private static SequenceMessage CreateSequenceMessage(ref MessagePackReader reader)
+    {
+        return new SequenceMessage(ReadInt64(ref reader, "sequenceId"));
+    }
+
+    private object?[] BindArguments(ref MessagePackReader reader, IReadOnlyList<Type> parameterTypes)
     {
         var argumentCount = ReadArrayLength(ref reader, "arguments");
 
@@ -251,7 +305,7 @@ internal abstract class MessagePackHubProtocolWorker
 
         try
         {
-            var arguments = new object[argumentCount];
+            var arguments = new object?[argumentCount];
             for (var i = 0; i < argumentCount; i++)
             {
                 arguments[i] = DeserializeObject(ref reader, parameterTypes[i], "argument");
@@ -265,7 +319,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    protected abstract object DeserializeObject(ref MessagePackReader reader, Type type, string field);
+    protected abstract object? DeserializeObject(ref MessagePackReader reader, Type type, string field);
 
     private static T ApplyHeaders<T>(IDictionary<string, string>? source, T destination) where T : HubInvocationMessage
     {
@@ -355,6 +409,12 @@ internal abstract class MessagePackHubProtocolWorker
             case CloseMessage closeMessage:
                 WriteCloseMessage(closeMessage, ref writer);
                 break;
+            case AckMessage ackMessage:
+                WriteAckMessage(ackMessage, ref writer);
+                break;
+            case SequenceMessage sequenceMessage:
+                WriteSequenceMessage(sequenceMessage, ref writer);
+                break;
             default:
                 throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
         }
@@ -434,6 +494,10 @@ internal abstract class MessagePackHubProtocolWorker
         {
             writer.WriteNil();
         }
+        else if (argument is RawResult result)
+        {
+            writer.WriteRaw(result.RawSerializedData);
+        }
         else
         {
             Serialize(ref writer, argument.GetType(), argument);
@@ -511,6 +575,20 @@ internal abstract class MessagePackHubProtocolWorker
         writer.Write(HubProtocolConstants.PingMessageType);
     }
 
+    private static void WriteAckMessage(AckMessage message, ref MessagePackWriter writer)
+    {
+        writer.WriteArrayHeader(2);
+        writer.Write(HubProtocolConstants.AckMessageType);
+        writer.Write(message.SequenceId);
+    }
+
+    private static void WriteSequenceMessage(SequenceMessage message, ref MessagePackWriter writer)
+    {
+        writer.WriteArrayHeader(2);
+        writer.Write(HubProtocolConstants.SequenceMessageType);
+        writer.Write(message.SequenceId);
+    }
+
     private static void PackHeaders(IDictionary<string, string>? headers, ref MessagePackWriter writer)
     {
         if (headers != null)
@@ -531,7 +609,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    private static string ReadInvocationId(ref MessagePackReader reader) =>
+    private static string? ReadInvocationId(ref MessagePackReader reader) =>
         ReadString(ref reader, "invocationId");
 
     private static bool ReadBoolean(ref MessagePackReader reader, string field)
@@ -558,7 +636,39 @@ internal abstract class MessagePackHubProtocolWorker
         }
     }
 
-    protected static string ReadString(ref MessagePackReader reader, string field)
+    private static long ReadInt64(ref MessagePackReader reader, string field)
+    {
+        try
+        {
+            return reader.ReadInt64();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading '{field}' as Int64 failed.", ex);
+        }
+    }
+
+    protected static string? ReadString(ref MessagePackReader reader, IInvocationBinder binder, string field)
+    {
+        try
+        {
+#if NETCOREAPP
+            if (reader.TryReadStringSpan(out var span))
+            {
+                return binder.GetTarget(span) ?? Encoding.UTF8.GetString(span);
+            }
+            return reader.ReadString();
+#else
+            return reader.ReadString();
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException($"Reading '{field}' as String failed.", ex);
+        }
+    }
+
+    protected static string? ReadString(ref MessagePackReader reader, string field)
     {
         try
         {
@@ -591,6 +701,14 @@ internal abstract class MessagePackHubProtocolWorker
         catch (Exception ex)
         {
             throw new InvalidDataException($"Reading array length for '{field}' failed.", ex);
+        }
+    }
+
+    private static void ThrowIfNullOrEmpty([NotNull] string? target, string message)
+    {
+        if (string.IsNullOrEmpty(target))
+        {
+            throw new InvalidDataException($"Null or empty {message}.");
         }
     }
 }

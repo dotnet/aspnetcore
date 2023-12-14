@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Html.Abstractions\\src\\Microsoft.AspNetCore.Html.Abstractions.csproj",
+      "src\\Html.Abstractions\\test\\Microsoft.AspNetCore.Html.Abstractions.Tests.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
+      "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
+    ]
+  }
+}

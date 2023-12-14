@@ -9,14 +9,11 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.SpaServices;
 
-internal class SpaDefaultPageMiddleware
+internal sealed class SpaDefaultPageMiddleware
 {
     public static void Attach(ISpaBuilder spaBuilder)
     {
-        if (spaBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(spaBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(spaBuilder);
 
         var app = spaBuilder.ApplicationBuilder;
         var options = spaBuilder.Options;

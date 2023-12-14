@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -40,7 +40,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
 
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null, httpClient: null);
             Assert.NotNull(webSocketsTransport);
 
             // we need to open a connection so it would apply httpOptions to webSocketOptions
@@ -77,7 +77,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
             return ValueTask.FromResult(webSocketMock.Object);
         };
 
-        var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null);
+        var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: httpOptions, loggerFactory: null, accessTokenProvider: null, httpClient: null);
         await webSocketsTransport.StartAsync(new Uri("http://FakeEndpot.com/echo"), TransferFormat.Binary).DefaultTimeout();
         await webSocketsTransport.StopAsync().DefaultTimeout();
 
@@ -91,7 +91,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null, httpClient: null);
             await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                 TransferFormat.Binary).DefaultTimeout();
             await webSocketsTransport.StopAsync().DefaultTimeout();
@@ -105,7 +105,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null, httpClient: null);
             await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
                 TransferFormat.Binary).DefaultTimeout();
 
@@ -136,7 +136,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null, httpClient: null);
             await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
                 TransferFormat.Binary).DefaultTimeout();
 
@@ -159,7 +159,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null, httpClient: null);
             await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                 TransferFormat.Binary);
             webSocketsTransport.Output.Complete();
@@ -175,7 +175,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null, httpClient: null);
             await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echoAndClose"), transferFormat);
 
             await webSocketsTransport.Output.WriteAsync(new byte[] { 0x42 });
@@ -197,7 +197,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         await using (var server = await StartServer<Startup>())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null, httpClient: null);
 
             await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                 transferFormat).DefaultTimeout();
@@ -215,7 +215,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
     {
         using (StartVerifiableLog())
         {
-            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, LoggerFactory, accessTokenProvider: null);
+            var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, LoggerFactory, accessTokenProvider: null, httpClient: null);
             var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
                 webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 

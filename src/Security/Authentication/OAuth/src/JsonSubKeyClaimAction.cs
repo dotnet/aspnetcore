@@ -34,21 +34,28 @@ public class JsonSubKeyClaimAction : JsonKeyClaimAction
     /// <inheritdoc />
     public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
     {
-        var value = GetValue(userData, JsonKey, SubKey);
-        if (!string.IsNullOrEmpty(value))
+        if (!TryGetSubProperty(userData, JsonKey, SubKey, out var value))
         {
-            identity.AddClaim(new Claim(ClaimType, value, ValueType, issuer));
+            return;
+        }
+        if (value.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var v in value.EnumerateArray())
+            {
+                AddClaim(v.ToString()!, identity, issuer);
+            }
+        }
+        else
+        {
+            AddClaim(value.ToString()!, identity, issuer);
         }
     }
 
     // Get the given subProperty from a property.
-    private static string? GetValue(JsonElement userData, string propertyName, string subProperty)
+    private static bool TryGetSubProperty(JsonElement userData, string propertyName, string subProperty, out JsonElement value)
     {
-        if (userData.TryGetProperty(propertyName, out var value)
-            && value.ValueKind == JsonValueKind.Object && value.TryGetProperty(subProperty, out value))
-        {
-            return value.ToString();
-        }
-        return null;
+        return userData.TryGetProperty(propertyName, out value)
+            && value.ValueKind == JsonValueKind.Object
+            && value.TryGetProperty(subProperty, out value);
     }
 }

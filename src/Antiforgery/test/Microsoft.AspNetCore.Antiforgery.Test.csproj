@@ -13,4 +13,8 @@
     <Reference Include="Microsoft.Extensions.WebEncoders" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" />
+  </ItemGroup>
+
 </Project>

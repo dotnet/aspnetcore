@@ -19,10 +19,7 @@ public class SelectList : MultiSelectList
     public SelectList(IEnumerable items)
         : this(items, selectedValue: null)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
     }
 
     /// <summary>
@@ -33,10 +30,7 @@ public class SelectList : MultiSelectList
     public SelectList(IEnumerable items, object selectedValue)
         : this(items, dataValueField: null, dataTextField: null, selectedValue: selectedValue)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
     }
 
     /// <summary>
@@ -48,10 +42,7 @@ public class SelectList : MultiSelectList
     public SelectList(IEnumerable items, string dataValueField, string dataTextField)
         : this(items, dataValueField, dataTextField, selectedValue: null)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
     }
 
     /// <summary>
@@ -68,10 +59,7 @@ public class SelectList : MultiSelectList
         object selectedValue)
         : base(items, dataValueField, dataTextField, ToEnumerable(selectedValue))
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         SelectedValue = selectedValue;
     }
@@ -97,10 +85,7 @@ public class SelectList : MultiSelectList
         string dataGroupField)
         : base(items, dataValueField, dataTextField, ToEnumerable(selectedValue), dataGroupField)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         SelectedValue = selectedValue;
     }

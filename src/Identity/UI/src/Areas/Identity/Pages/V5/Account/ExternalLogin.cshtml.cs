@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -73,28 +73,28 @@ public class ExternalLoginModel : PageModel
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual IActionResult OnPost(string provider, string? returnUrl = null) => throw new NotImplementedException();
+    public virtual IActionResult OnPost(string provider, [StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnGetCallbackAsync(string? returnUrl = null, string? remoteError = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnGetCallbackAsync([StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null, string? remoteError = null) => throw new NotImplementedException();
 
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public virtual Task<IActionResult> OnPostConfirmationAsync(string? returnUrl = null) => throw new NotImplementedException();
+    public virtual Task<IActionResult> OnPostConfirmationAsync([StringSyntax(StringSyntaxAttribute.Uri)] string? returnUrl = null) => throw new NotImplementedException();
 }
 
-internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
+internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : class
 {
     private readonly SignInManager<TUser> _signInManager;
     private readonly UserManager<TUser> _userManager;
     private readonly IUserStore<TUser> _userStore;
     private readonly IUserEmailStore<TUser> _emailStore;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailSender<TUser> _emailSender;
     private readonly ILogger<ExternalLoginModel> _logger;
 
     public ExternalLoginModel(
@@ -102,7 +102,7 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
         UserManager<TUser> userManager,
         IUserStore<TUser> userStore,
         ILogger<ExternalLoginModel> logger,
-        IEmailSender emailSender)
+        IEmailSender<TUser> emailSender)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -141,7 +141,10 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
         var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
         if (result.Succeeded)
         {
-            _logger.LogInformation(LoggerEventIds.UserLoggedInByExternalProvider, "User logged in with {LoginProvider} provider.", info.LoginProvider);
+            if (_logger.IsEnabled(LogLevel.Information))
+            {
+                _logger.LogInformation(LoggerEventIds.UserLoggedInByExternalProvider, "User logged in with {LoginProvider} provider.", info.LoginProvider);
+            }
             return LocalRedirect(returnUrl);
         }
         if (result.IsLockedOut)
@@ -188,7 +191,10 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
                 result = await _userManager.AddLoginAsync(user, info);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation(LoggerEventIds.UserCreatedByExternalProvider, "User created an account using {Name} provider.", info.LoginProvider);
+                    if (_logger.IsEnabled(LogLevel.Information))
+                    {
+                        _logger.LogInformation(LoggerEventIds.UserCreatedByExternalProvider, "User created an account using {Name} provider.", info.LoginProvider);
+                    }
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -199,8 +205,7 @@ internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : clas
                         values: new { area = "Identity", userId = userId, code = code },
                         protocol: Request.Scheme)!;
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
                     // If account confirmation is required, we need to show the link if we don't have a real email sender
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)

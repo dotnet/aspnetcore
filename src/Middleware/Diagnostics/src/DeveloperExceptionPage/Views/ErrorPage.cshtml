@@ -99,7 +99,7 @@
                     exceptionDetailId = "exceptionDetail" + exceptionCount;
 
                     <li>
-                        <h2 class="stackerror">@errorDetail.Error!.GetType().Name: @errorDetail.Error.Message</h2>
+                        <h2>@errorDetail.Error!.GetType().Name: @errorDetail.Error.Message</h2>
                         <ul>
                             @foreach (var frame in errorDetail.StackFrames)
                             {
@@ -155,9 +155,7 @@
                     <li>
                         <br />
                         <div class="rawExceptionBlock">
-                            <div class="showRawExceptionContainer">
-                                <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show raw exception details</button>
-                            </div>
+                            <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show raw exception details</button>
                             <div id="@exceptionDetailId" class="rawExceptionDetails">
                                 <pre class="rawExceptionStackTrace">@errorDetail.Error.ToString()</pre>
                             </div>
@@ -255,7 +253,7 @@
         </div>
 
         <div id="routingpage" class="page">
-            <h2 class="subheader">@Resources.ErrorPageHtml_Endpoint</h2>
+            <h2>@Resources.ErrorPageHtml_Endpoint</h2>
             @if (Model.Endpoint != null)
             {
                 <table>
@@ -298,7 +296,7 @@
             {
                 <p>@Resources.ErrorPageHtml_NoEndpoint</p>
             }
-            <h2 class="subheader">@Resources.ErrorPageHtml_RouteValues</h2>
+            <h2>@Resources.ErrorPageHtml_RouteValues</h2>
             @if (Model.RouteValues != null && Model.RouteValues.Any())
             {
                 <table>

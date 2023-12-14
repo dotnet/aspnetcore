@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// type provides data tokens value for <see cref="RouteData.DataTokens"/> associated
 /// with an endpoint.
 /// </summary>
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class DataTokensMetadata : IDataTokensMetadata
 {
     /// <summary>
@@ -27,4 +29,10 @@ public sealed class DataTokensMetadata : IDataTokensMetadata
     /// Get the data tokens.
     /// </summary>
     public IReadOnlyDictionary<string, object?> DataTokens { get; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return DebuggerHelpers.GetDebugText(nameof(DataTokens), DataTokens.Select(t => $"{t.Key}={t.Value ?? "(null)"}"));
+    }
 }

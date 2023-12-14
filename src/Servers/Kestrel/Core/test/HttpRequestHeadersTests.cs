@@ -100,6 +100,22 @@ public class HttpRequestHeadersTests
     }
 
     [Fact]
+    public void IHeaderDictionaryMembersReturnStringValuesEmptyForMissingHeaders()
+    {
+        IHeaderDictionary headers = new HttpRequestHeaders();
+
+        // StringValues.Empty.Equals(default(StringValues)), so we check if the implicit conversion
+        // to string[] returns null or Array.Empty<string>() to tell the difference.
+        Assert.Same(Array.Empty<string>(), (string[])headers["custom"]);
+        Assert.Same(Array.Empty<string>(), (string[])headers["host"]);
+        Assert.Same(Array.Empty<string>(), (string[])headers["Content-Length"]);
+
+        // Test both optimized and non-optimized properties.
+        Assert.Same(Array.Empty<string>(), (string[])headers.Host);
+        Assert.Same(Array.Empty<string>(), (string[])headers.AltSvc);
+    }
+
+    [Fact]
     public void EntriesCanBeEnumeratedAfterResets()
     {
         HttpRequestHeaders headers = new HttpRequestHeaders();
@@ -390,7 +406,7 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void ValueReuseOnlyWhenAllowed(bool reuseValue, KnownHeader header)
+    public void ValueReuseOnlyWhenAllowed(bool reuseValue, string headerName)
     {
         const string HeaderValue = "Hello";
 
@@ -398,8 +414,8 @@ public class HttpRequestHeadersTests
 
         for (var i = 0; i < 6; i++)
         {
-            var prevName = ChangeNameCase(header.Name, variant: i);
-            var nextName = ChangeNameCase(header.Name, variant: i + 1);
+            var prevName = ChangeNameCase(headerName, variant: i);
+            var nextName = ChangeNameCase(headerName, variant: i + 1);
 
             var values = GetHeaderValues(headers, prevName, nextName, HeaderValue, HeaderValue);
 
@@ -425,7 +441,7 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void ValueReuseChangedValuesOverwrite(bool reuseValue, KnownHeader header)
+    public void ValueReuseChangedValuesOverwrite(bool reuseValue, string headerName)
     {
         const string HeaderValue1 = "Hello1";
         const string HeaderValue2 = "Hello2";
@@ -433,8 +449,8 @@ public class HttpRequestHeadersTests
 
         for (var i = 0; i < 6; i++)
         {
-            var prevName = ChangeNameCase(header.Name, variant: i);
-            var nextName = ChangeNameCase(header.Name, variant: i + 1);
+            var prevName = ChangeNameCase(headerName, variant: i);
+            var nextName = ChangeNameCase(headerName, variant: i + 1);
 
             var values = GetHeaderValues(headers, prevName, nextName, HeaderValue1, HeaderValue2);
 
@@ -450,15 +466,15 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void ValueReuseMissingValuesClear(bool reuseValue, KnownHeader header)
+    public void ValueReuseMissingValuesClear(bool reuseValue, string headerName)
     {
         const string HeaderValue1 = "Hello1";
         var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
 
         for (var i = 0; i < 6; i++)
         {
-            var prevName = ChangeNameCase(header.Name, variant: i);
-            var nextName = ChangeNameCase(header.Name, variant: i + 1);
+            var prevName = ChangeNameCase(headerName, variant: i);
+            var nextName = ChangeNameCase(headerName, variant: i + 1);
 
             var values = GetHeaderValues(headers, prevName, nextName, HeaderValue1, nextValue: null);
 
@@ -473,7 +489,7 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void ValueReuseNeverWhenNotAscii(bool reuseValue, KnownHeader header)
+    public void ValueReuseNeverWhenNotAscii(bool reuseValue, string headerName)
     {
         const string HeaderValue = "Hello \u03a0";
 
@@ -481,8 +497,8 @@ public class HttpRequestHeadersTests
 
         for (var i = 0; i < 6; i++)
         {
-            var prevName = ChangeNameCase(header.Name, variant: i);
-            var nextName = ChangeNameCase(header.Name, variant: i + 1);
+            var prevName = ChangeNameCase(headerName, variant: i);
+            var nextName = ChangeNameCase(headerName, variant: i + 1);
 
             var values = GetHeaderValues(headers, prevName, nextName, HeaderValue, HeaderValue);
 
@@ -500,7 +516,7 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void ValueReuseLatin1NotConfusedForUtf16AndStillRejected(bool reuseValue, KnownHeader header)
+    public void ValueReuseLatin1NotConfusedForUtf16AndStillRejected(bool reuseValue, string headerName)
     {
         var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
 
@@ -531,27 +547,27 @@ public class HttpRequestHeadersTests
 
                 headers.Reset();
 
-                var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                var headerNameBytes = Encoding.ASCII.GetBytes(headerName).AsSpan();
                 var prevSpan = Encoding.UTF8.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
 
-                headers.Append(headerName, prevSpan, checkForNewlineChars: false);
+                headers.Append(headerNameBytes, prevSpan, checkForNewlineChars: false);
                 headers.OnHeadersComplete();
-                var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+                var prevHeaderValue = ((IHeaderDictionary)headers)[headerName].ToString();
 
                 Assert.Equal(headerValueUtf16Latin1CrossOver, prevHeaderValue);
                 Assert.NotSame(headerValueUtf16Latin1CrossOver, prevHeaderValue);
 
                 headers.Reset();
 
-                Assert.Throws<InvalidOperationException>(() =>
+                Assert.Throws<InvalidOperationException>((Action)(() =>
                 {
-                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var headerNameBytes = Encoding.ASCII.GetBytes((string)headerName).AsSpan();
                     var nextSpan = Encoding.Latin1.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
 
                     Assert.False(nextSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
 
-                    headers.Append(headerName, nextSpan, checkForNewlineChars: false);
-                });
+                    headers.Append(headerNameBytes, nextSpan, checkForNewlineChars: false);
+                }));
             }
 
             // Reset back to Ascii
@@ -561,7 +577,7 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void Latin1ValuesAcceptedInLatin1ModeButNotReused(bool reuseValue, KnownHeader header)
+    public void Latin1ValuesAcceptedInLatin1ModeButNotReused(bool reuseValue, string headerName)
     {
         var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue, _ => Encoding.Latin1);
 
@@ -590,20 +606,20 @@ public class HttpRequestHeadersTests
                     headerValueUtf16Latin1CrossOver = new string(headerValue.AsSpan().Slice(0, i + 1));
                 }
 
-                var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                var headerNameBytes = Encoding.ASCII.GetBytes(headerName).AsSpan();
                 var latinValueSpan = Encoding.Latin1.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
 
                 Assert.False(latinValueSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
 
                 headers.Reset();
-                headers.Append(headerName, latinValueSpan, checkForNewlineChars: false);
+                headers.Append(headerNameBytes, latinValueSpan, checkForNewlineChars: false);
                 headers.OnHeadersComplete();
-                var parsedHeaderValue1 = ((IHeaderDictionary)headers)[header.Name].ToString();
+                var parsedHeaderValue1 = ((IHeaderDictionary)headers)[headerName].ToString();
 
                 headers.Reset();
-                headers.Append(headerName, latinValueSpan, checkForNewlineChars: false);
+                headers.Append(headerNameBytes, latinValueSpan, checkForNewlineChars: false);
                 headers.OnHeadersComplete();
-                var parsedHeaderValue2 = ((IHeaderDictionary)headers)[header.Name].ToString();
+                var parsedHeaderValue2 = ((IHeaderDictionary)headers)[headerName].ToString();
 
                 Assert.Equal(headerValueUtf16Latin1CrossOver, parsedHeaderValue1);
                 Assert.Equal(parsedHeaderValue1, parsedHeaderValue2);
@@ -617,7 +633,7 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void NullCharactersRejectedInUTF8AndLatin1Mode(bool useLatin1, KnownHeader header)
+    public void NullCharactersRejectedInUTF8AndLatin1Mode(bool useLatin1, string headerName)
     {
         var headers = new HttpRequestHeaders(encodingSelector: useLatin1 ? _ => Encoding.Latin1 : (Func<string, Encoding>)null);
 
@@ -637,10 +653,10 @@ public class HttpRequestHeadersTests
 
             Assert.Throws<InvalidOperationException>(() =>
             {
-                var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                var headerNameBytes = Encoding.ASCII.GetBytes(headerName).AsSpan();
                 var valueSpan = Encoding.ASCII.GetBytes(valueString).AsSpan();
 
-                headers.Append(headerName, valueSpan, checkForNewlineChars: false);
+                headers.Append(headerNameBytes, valueSpan, checkForNewlineChars: false);
             });
 
             valueArray[i] = 'a';
@@ -723,17 +739,17 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void ValueReuseEmptyAfterReset(bool reuseValue, KnownHeader header)
+    public void ValueReuseEmptyAfterReset(bool reuseValue, string headerName)
     {
         const string HeaderValue = "Hello";
 
         var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
-        var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+        var headerNameBytes = Encoding.ASCII.GetBytes(headerName).AsSpan();
         var prevSpan = Encoding.UTF8.GetBytes(HeaderValue).AsSpan();
 
-        headers.Append(headerName, prevSpan, checkForNewlineChars: false);
+        headers.Append(headerNameBytes, prevSpan, checkForNewlineChars: false);
         headers.OnHeadersComplete();
-        var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+        var prevHeaderValue = ((IHeaderDictionary)headers)[headerName].ToString();
 
         Assert.NotNull(prevHeaderValue);
         Assert.NotEqual(string.Empty, prevHeaderValue);
@@ -746,7 +762,7 @@ public class HttpRequestHeadersTests
         headers.Reset();
 
         // Empty after reset
-        var nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+        var nextHeaderValue = ((IHeaderDictionary)headers)[headerName].ToString();
 
         Assert.NotNull(nextHeaderValue);
         Assert.Equal(string.Empty, nextHeaderValue);
@@ -758,7 +774,7 @@ public class HttpRequestHeadersTests
         headers.OnHeadersComplete();
 
         // Still empty after complete
-        nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+        nextHeaderValue = ((IHeaderDictionary)headers)[headerName].ToString();
 
         Assert.NotNull(nextHeaderValue);
         Assert.Equal(string.Empty, nextHeaderValue);
@@ -770,20 +786,20 @@ public class HttpRequestHeadersTests
 
     [Theory]
     [MemberData(nameof(KnownRequestHeaders))]
-    public void MultiValueReuseEmptyAfterReset(bool reuseValue, KnownHeader header)
+    public void MultiValueReuseEmptyAfterReset(bool reuseValue, string headerName)
     {
         const string HeaderValue1 = "Hello1";
         const string HeaderValue2 = "Hello2";
 
         var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
-        var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+        var headerNameBytes = Encoding.ASCII.GetBytes(headerName).AsSpan();
         var prevSpan1 = Encoding.UTF8.GetBytes(HeaderValue1).AsSpan();
         var prevSpan2 = Encoding.UTF8.GetBytes(HeaderValue2).AsSpan();
 
-        headers.Append(headerName, prevSpan1, checkForNewlineChars: false);
-        headers.Append(headerName, prevSpan2, checkForNewlineChars: false);
+        headers.Append(headerNameBytes, prevSpan1, checkForNewlineChars: false);
+        headers.Append(headerNameBytes, prevSpan2, checkForNewlineChars: false);
         headers.OnHeadersComplete();
-        var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name];
+        var prevHeaderValue = ((IHeaderDictionary)headers)[headerName];
 
         Assert.Equal(2, prevHeaderValue.Count);
 
@@ -795,7 +811,7 @@ public class HttpRequestHeadersTests
         headers.Reset();
 
         // Empty after reset
-        var nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+        var nextHeaderValue = ((IHeaderDictionary)headers)[headerName].ToString();
 
         Assert.NotNull(nextHeaderValue);
         Assert.Equal(string.Empty, nextHeaderValue);
@@ -806,7 +822,7 @@ public class HttpRequestHeadersTests
         headers.OnHeadersComplete();
 
         // Still empty after complete
-        nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+        nextHeaderValue = ((IHeaderDictionary)headers)[headerName].ToString();
 
         Assert.NotNull(nextHeaderValue);
         Assert.Equal(string.Empty, nextHeaderValue);
@@ -860,6 +876,6 @@ public class HttpRequestHeadersTests
 
     // Content-Length is numeric not a string, so we exclude it from the string reuse tests
     public static IEnumerable<object[]> KnownRequestHeaders =>
-        RequestHeaders.Where(h => h.Name != "Content-Length").Select(h => new object[] { true, h }).Concat(
-        RequestHeaders.Where(h => h.Name != "Content-Length").Select(h => new object[] { false, h }));
+        RequestHeaders.Where(h => h.Name != "Content-Length").Select(h => new object[] { true, h.Name }).Concat(
+        RequestHeaders.Where(h => h.Name != "Content-Length").Select(h => new object[] { false, h.Name }));
 }

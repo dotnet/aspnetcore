@@ -27,10 +27,7 @@ public class DefaultViewComponentSelector : IViewComponentSelector
     /// <inheritdoc />
     public ViewComponentDescriptor SelectComponent(string componentName)
     {
-        if (componentName == null)
-        {
-            throw new ArgumentNullException(nameof(componentName));
-        }
+        ArgumentNullException.ThrowIfNull(componentName);
 
         var collection = _descriptorProvider.ViewComponents;
         if (_cache == null || _cache.Version != collection.Version)
@@ -50,7 +47,7 @@ public class DefaultViewComponentSelector : IViewComponentSelector
         }
     }
 
-    private class ViewComponentDescriptorCache
+    private sealed class ViewComponentDescriptorCache
     {
         private readonly ILookup<string, ViewComponentDescriptor> _lookupByShortName;
         private readonly ILookup<string, ViewComponentDescriptor> _lookupByFullName;

@@ -30,10 +30,7 @@ internal class VirtualRazorProjectFileSystem : RazorProjectFileSystem
 
     public void Add(RazorProjectItem projectItem)
     {
-        if (projectItem == null)
-        {
-            throw new ArgumentNullException(nameof(projectItem));
-        }
+        ArgumentNullException.ThrowIfNull(projectItem);
 
         var filePath = NormalizeAndEnsureValidPath(projectItem.FilePath);
         _root.AddFile(new FileNode(filePath, projectItem));

@@ -166,7 +166,6 @@ public class AzureAppendBlobTests
         Assert.Equal(2, stage);
     }
 
-
     private class TestMessageHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _callback;

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
@@ -8,17 +8,14 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class ResponseCacheFilterApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class ResponseCacheFilterApplicationModelProvider : IPageApplicationModelProvider
 {
     private readonly MvcOptions _mvcOptions;
     private readonly ILoggerFactory _loggerFactory;
 
     public ResponseCacheFilterApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor, ILoggerFactory loggerFactory)
     {
-        if (mvcOptionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(mvcOptionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(mvcOptionsAccessor);
 
         _mvcOptions = mvcOptionsAccessor.Value;
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -29,10 +26,7 @@ internal class ResponseCacheFilterApplicationModelProvider : IPageApplicationMod
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var pageModel = context.PageApplicationModel;
         var responseCacheAttributes = pageModel.HandlerTypeAttributes.OfType<ResponseCacheAttribute>();

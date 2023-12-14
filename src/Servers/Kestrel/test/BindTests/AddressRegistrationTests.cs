@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -130,12 +130,11 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [ConditionalTheory]
-    [MemberData(nameof(AddressRegistrationDataIPv6Port5000And5001Default))]
+    [MemberData(nameof(AddressRegistrationDataIPv6Port5000Default))]
     [IPv6SupportedCondition]
-    public async Task RegisterAddresses_IPv6Port5000And5001Default_Success(string addressInput, string[] testUrls)
+    public async Task RegisterAddresses_IPv6Port5000Default_Success(string addressInput, string[] testUrls)
     {
-        if ((!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)) &&
-            (!CanBindToEndpoint(IPAddress.Loopback, 5001) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5001)))
+        if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
         {
             return;
         }
@@ -329,7 +328,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
             var testUrlWithPort = $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}";
 
             var options = ((IOptions<KestrelServerOptions>)host.Services.GetService(typeof(IOptions<KestrelServerOptions>))).Value;
-            Assert.Single(options.ListenOptions);
+            Assert.Single(options.GetListenOptions());
 
             var response = await HttpClientSlim.GetStringAsync(testUrlWithPort, validateCertificate: false);
 
@@ -471,32 +470,30 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [SkipOnCI]
-    public Task DefaultsServerAddress_BindsToIPv4WithHttps()
+    public Task DefaultsServerAddress_BindsToIPv4WithHttp()
     {
-        if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.Loopback, 5001))
+        if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
         {
             return Task.CompletedTask;
         }
 
         return RegisterDefaultServerAddresses_Success(
-            new[] { "http://127.0.0.1:5000", "https://127.0.0.1:5001" }, mockHttps: true);
+            new[] { "http://127.0.0.1:5000" }, mockHttps: false);
     }
 
     [ConditionalFact]
     [IPv6SupportedCondition]
     [SkipOnCI]
-    public Task DefaultsServerAddress_BindsToIPv6WithHttps()
+    public Task DefaultsServerAddress_BindsToIPv6WithHttp()
     {
-        if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)
-            || !CanBindToEndpoint(IPAddress.Loopback, 5001) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5001))
+        if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000))
         {
             return Task.CompletedTask;
         }
 
-        return RegisterDefaultServerAddresses_Success(new[] {
-                "http://127.0.0.1:5000", "http://[::1]:5000",
-                "https://127.0.0.1:5001", "https://[::1]:5001"},
-            mockHttps: true);
+        return RegisterDefaultServerAddresses_Success(
+            new[] { "http://127.0.0.1:5000", "http://[::1]:5000" },
+            mockHttps: false);
     }
 
     private async Task RegisterDefaultServerAddresses_Success(IEnumerable<string> addresses, bool mockHttps = false)
@@ -509,7 +506,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
                     {
                         if (mockHttps)
                         {
-                            options.DefaultCertificate = TestResources.GetTestCertificate();
+                            options.TestOverrideDefaultCertificate = TestResources.GetTestCertificate();
                         }
                     })
                     .Configure(ConfigureEchoAddress);
@@ -522,14 +519,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
             Assert.Equal(5000, host.GetPort());
 
-            if (mockHttps)
-            {
-                Assert.Contains(5001, host.GetPorts());
-            }
-
-            Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Debug &&
-                (string.Equals(CoreStrings.FormatBindingToDefaultAddresses(Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress), log.Message, StringComparison.Ordinal)
-                    || string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal)));
+            Assert.Single(LogMessages, log => log.LogLevel == LogLevel.Debug && string.Equals(CoreStrings.FormatBindingToDefaultAddress(Constants.DefaultServerAddress), log.Message, StringComparison.Ordinal));
 
             foreach (var address in addresses)
             {
@@ -1144,11 +1134,11 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port5000And5001Default =>
+    public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port5000Default =>
         new TheoryData<string, string[]>
         {
-                { null, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/", "https://127.0.0.1:5001/", "https://[::1]:5001/" } },
-                { string.Empty, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/", "https://127.0.0.1:5001/", "https://[::1]:5001/" } }
+                { null, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } },
+                { string.Empty, new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" } }
         };
 
     public static TheoryData<string, string[]> AddressRegistrationDataIPv6Port80 =>

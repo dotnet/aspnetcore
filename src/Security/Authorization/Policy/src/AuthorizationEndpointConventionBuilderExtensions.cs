@@ -41,10 +41,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (policyNames == null)
-        {
-            throw new ArgumentNullException(nameof(policyNames));
-        }
+        ArgumentNullException.ThrowIfNull(policyNames);
 
         return builder.RequireAuthorization(policyNames.Select(n => new AuthorizeAttribute(n)).ToArray());
     }
@@ -65,10 +62,7 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             throw new ArgumentNullException(nameof(builder));
         }
 
-        if (authorizeData == null)
-        {
-            throw new ArgumentNullException(nameof(authorizeData));
-        }
+        ArgumentNullException.ThrowIfNull(authorizeData);
 
         if (authorizeData.Length == 0)
         {
@@ -76,6 +70,49 @@ public static class AuthorizationEndpointConventionBuilderExtensions
         }
 
         RequireAuthorizationCore(builder, authorizeData);
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an authorization policy to the endpoint(s).
+    /// </summary>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="policy">The <see cref="AuthorizationPolicy"/> policy.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, AuthorizationPolicy policy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        ArgumentNullException.ThrowIfNull(policy);
+
+        RequirePolicyCore(builder, policy);
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an new authorization policy configured by a callback to the endpoint(s).
+    /// </summary>
+    /// <typeparam name="TBuilder"></typeparam>
+    /// <param name="builder">The endpoint convention builder.</param>
+    /// <param name="configurePolicy">The callback used to configure the policy.</param>
+    /// <returns>The original convention builder parameter.</returns>
+    public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, Action<AuthorizationPolicyBuilder> configurePolicy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        if (builder == null)
+        {
+            throw new ArgumentNullException(nameof(builder));
+        }
+
+        ArgumentNullException.ThrowIfNull(configurePolicy);
+
+        var policyBuilder = new AuthorizationPolicyBuilder();
+        configurePolicy(policyBuilder);
+        RequirePolicyCore(builder, policyBuilder.Build());
         return builder;
     }
 
@@ -92,6 +129,20 @@ public static class AuthorizationEndpointConventionBuilderExtensions
             endpointBuilder.Metadata.Add(_allowAnonymousMetadata);
         });
         return builder;
+    }
+
+    private static void RequirePolicyCore<TBuilder>(TBuilder builder, AuthorizationPolicy policy)
+        where TBuilder : IEndpointConventionBuilder
+    {
+        builder.Add(endpointBuilder =>
+        {
+            // Only add an authorize attribute if there isn't one
+            if (!endpointBuilder.Metadata.Any(meta => meta is IAuthorizeData))
+            {
+                endpointBuilder.Metadata.Add(new AuthorizeAttribute());
+            }
+            endpointBuilder.Metadata.Add(policy);
+        });
     }
 
     private static void RequireAuthorizationCore<TBuilder>(TBuilder builder, IEnumerable<IAuthorizeData> authorizeData)

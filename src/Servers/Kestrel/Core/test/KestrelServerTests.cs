@@ -8,16 +8,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 
@@ -27,8 +29,15 @@ public class KestrelServerTests
 {
     private KestrelServerOptions CreateServerOptions()
     {
+        // It's not actually going to be used - we just need to satisfy the check in ApplyDefaultCertificate
+        var mockHttpsConfig = new Mock<IHttpsConfigurationService>();
+        mockHttpsConfig.Setup(m => m.IsInitialized).Returns(true);
+
         var serverOptions = new KestrelServerOptions();
         serverOptions.ApplicationServices = new ServiceCollection()
+            .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
+            .AddSingleton(Mock.Of<IHostEnvironment>())
+            .AddSingleton(mockHttpsConfig.Object)
             .AddLogging()
             .BuildServiceProvider();
         return serverOptions;
@@ -54,7 +63,7 @@ public class KestrelServerTests
     public void StartWithHttpsAddressConfiguresHttpsEndpoints()
     {
         var options = CreateServerOptions();
-        options.DefaultCertificate = TestResources.GetTestCertificate();
+        options.TestOverrideDefaultCertificate = TestResources.GetTestCertificate();
         using (var server = CreateServer(options))
         {
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
@@ -70,7 +79,7 @@ public class KestrelServerTests
     public void KestrelServerThrowsUsefulExceptionIfDefaultHttpsProviderNotAdded()
     {
         var options = CreateServerOptions();
-        options.IsDevCertLoaded = true; // Prevent the system default from being loaded
+        options.IsDevelopmentCertificateLoaded = true; // Prevent the system default from being loaded
         using (var server = CreateServer(options, throwOnCriticalErrors: false))
         {
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
@@ -142,6 +151,64 @@ public class KestrelServerTests
 
             var warning = testLogger.Messages.Single(log => log.LogLevel == LogLevel.Warning);
             Assert.Contains("Overriding", warning.Message);
+        }
+    }
+
+    [Theory]
+    [InlineData(null)] // Uses the default
+    [InlineData(HttpProtocols.Http1)]
+    [InlineData(HttpProtocols.Http2)]
+    public void NoTlsLogging_None(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Empty(warnings);
+        Assert.Empty(infos);
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1 | HttpProtocols.Http3)]
+    public void NoTlsLogging_Info(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Empty(warnings);
+        Assert.Equal(2, infos.Count()); // ipv4 and ipv6
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1AndHttp2)]
+    public void NoTlsLogging_Warn(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Equal(2, warnings.Count()); // ipv4 and ipv6
+        Assert.Empty(infos);
+    }
+
+    [Theory]
+    [InlineData(HttpProtocols.Http1AndHttp2AndHttp3)]
+    public void NoTlsLogging_WarnAndInfo(HttpProtocols? protocols)
+    {
+        var (warnings, infos) = GetNoTlsLogging(protocols);
+        Assert.Equal(2, warnings.Count()); // ipv4 and ipv6
+        Assert.Equal(2, infos.Count()); // ipv4 and ipv6
+    }
+
+    private static (IEnumerable<TestApplicationErrorLogger.LogMessage> warnings, IEnumerable<TestApplicationErrorLogger.LogMessage> infos) GetNoTlsLogging(HttpProtocols? protocols)
+    {
+        var testLogger = new TestApplicationErrorLogger();
+        var kestrelOptions = new KestrelServerOptions();
+
+        if (protocols.HasValue)
+        {
+            kestrelOptions.ConfigureEndpointDefaults(opt =>
+            {
+                opt.Protocols = protocols.Value;
+            });
+        }
+
+        using (var server = CreateServer(kestrelOptions, testLogger))
+        {
+            StartDummyApplication(server);
+            return (testLogger.Messages.Where(log => log.EventId == 64), testLogger.Messages.Where(log => log.EventId == 65));
         }
     }
 
@@ -220,14 +287,39 @@ public class KestrelServerTests
         Assert.Equal("transportFactory", exception.ParamName);
     }
 
+    private static KestrelServerImpl CreateKestrelServer(
+        KestrelServerOptions options,
+        IEnumerable<IConnectionListenerFactory> transportFactories,
+        IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+        ILoggerFactory loggerFactory = null,
+        KestrelMetrics metrics = null)
+    {
+        var httpsConfigurationService = new HttpsConfigurationService();
+        if (options?.ApplicationServices is IServiceProvider serviceProvider)
+        {
+            httpsConfigurationService.Initialize(
+                serviceProvider.GetRequiredService<IHostEnvironment>(),
+                serviceProvider.GetRequiredService<ILogger<KestrelServer>>(),
+                serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>());
+        }
+	
+        return new KestrelServerImpl(
+            Options.Create<KestrelServerOptions>(options),
+            transportFactories,
+            multiplexedFactories,
+            httpsConfigurationService,
+            loggerFactory ?? new LoggerFactory(new[] { new KestrelTestLoggerProvider() }),
+            metrics ?? new KestrelMetrics(new TestMeterFactory()));
+    }
+
     [Fact]
     public void ConstructorWithNoTransportFactoriesThrows()
     {
         var exception = Assert.Throws<InvalidOperationException>(() =>
-            new KestrelServerImpl(
-                Options.Create<KestrelServerOptions>(null),
+            CreateKestrelServer(
+                options: null,
                 new List<IConnectionListenerFactory>(),
-                new LoggerFactory(new[] { new KestrelTestLoggerProvider() })));
+                Array.Empty<IMultiplexedConnectionListenerFactory>()));
 
         Assert.Equal(CoreStrings.TransportNotFound, exception.Message);
     }
@@ -235,21 +327,100 @@ public class KestrelServerTests
     [Fact]
     public void StartWithMultipleTransportFactoriesDoesNotThrow()
     {
-        using var server = new KestrelServerImpl(
-            Options.Create(CreateServerOptions()),
+        using var server = CreateKestrelServer(
+            CreateServerOptions(),
             new List<IConnectionListenerFactory>() { new ThrowingTransportFactory(), new MockTransportFactory() },
-            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+            Array.Empty<IMultiplexedConnectionListenerFactory>());
 
         StartDummyApplication(server);
     }
 
     [Fact]
+    public async Task StartWithNoValidTransportFactoryThrows()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0));
+
+        using var server = CreateKestrelServer(
+                serverOptions,
+                new List<IConnectionListenerFactory> { new NonBindableTransportFactory() },
+                Array.Empty<IMultiplexedConnectionListenerFactory>());
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None));
+
+        Assert.Equal("No registered IConnectionListenerFactory supports endpoint IPEndPoint: 127.0.0.1:0", exception.Message);
+    }
+
+    [Fact]
+    public async Task StartWithMultipleTransportFactories_UseSupported()
+    {
+        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(endpoint);
+
+        var transportFactory = new MockTransportFactory();
+
+        using var server = CreateKestrelServer(
+                serverOptions,
+                new List<IConnectionListenerFactory> { transportFactory, new NonBindableTransportFactory() },
+                Array.Empty<IMultiplexedConnectionListenerFactory>());
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        Assert.Collection(transportFactory.BoundEndPoints,
+            ep => Assert.Equal(endpoint, ep.OriginalEndPoint));
+    }
+
+    [Fact]
+    public async Task StartWithNoValidTransportFactoryThrows_Http3()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0), c =>
+        {
+            c.Protocols = HttpProtocols.Http3;
+            c.UseHttps(TestResources.GetTestCertificate());
+        });
+
+        using var server = CreateKestrelServer(
+                serverOptions,
+                new List<IConnectionListenerFactory>(),
+                new List<IMultiplexedConnectionListenerFactory> { new NonBindableMultiplexedTransportFactory() });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None));
+
+        Assert.Equal("No registered IMultiplexedConnectionListenerFactory supports endpoint IPEndPoint: 127.0.0.1:0", exception.Message);
+    }
+
+    [Fact]
+    public async Task StartWithMultipleTransportFactories_Http3_UseSupported()
+    {
+        var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+        var serverOptions = CreateServerOptions();
+        serverOptions.Listen(endpoint, c =>
+        {
+            c.Protocols = HttpProtocols.Http3;
+            c.UseHttps(TestResources.GetTestCertificate());
+        });
+
+        var transportFactory = new MockMultiplexedTransportFactory();
+
+        using var server = CreateKestrelServer(
+                serverOptions,
+                new List<IConnectionListenerFactory>(),
+                new List<IMultiplexedConnectionListenerFactory> { transportFactory, new NonBindableMultiplexedTransportFactory() });
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        Assert.Collection(transportFactory.BoundEndPoints,
+            ep => Assert.Equal(endpoint, ep.OriginalEndPoint));
+    }
+
+    [Fact]
     public async Task ListenWithCustomEndpoint_DoesNotThrow()
     {
-        var options = new KestrelServerOptions();
-        options.ApplicationServices = new ServiceCollection()
-           .AddLogging()
-           .BuildServiceProvider();
+        var options = CreateServerOptions();
 
         var customEndpoint = new UriEndPoint(new("http://localhost:5000"));
         options.Listen(customEndpoint, options =>
@@ -261,11 +432,10 @@ public class KestrelServerTests
         var mockTransportFactory = new MockTransportFactory();
         var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
 
-        using var server = new KestrelServerImpl(
-            Options.Create(options),
+        using var server = CreateKestrelServer(
+            options,
             new List<IConnectionListenerFactory>() { mockTransportFactory },
-            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
-            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory });
 
         await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
 
@@ -279,10 +449,7 @@ public class KestrelServerTests
     [Fact]
     public async Task ListenIPWithStaticPort_TransportsGetIPv6Any()
     {
-        var options = new KestrelServerOptions();
-        options.ApplicationServices = new ServiceCollection()
-           .AddLogging()
-           .BuildServiceProvider();
+        var options = CreateServerOptions();
         options.ListenAnyIP(5000, options =>
         {
             options.UseHttps(TestResources.GetTestCertificate());
@@ -292,11 +459,10 @@ public class KestrelServerTests
         var mockTransportFactory = new MockTransportFactory();
         var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
 
-        using var server = new KestrelServerImpl(
-            Options.Create(options),
+        using var server = CreateKestrelServer(
+            options,
             new List<IConnectionListenerFactory>() { mockTransportFactory },
-            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
-            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory });
 
         await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
 
@@ -314,38 +480,57 @@ public class KestrelServerTests
     [Fact]
     public async Task ListenIPWithEphemeralPort_TransportsGetIPv6Any()
     {
-        var options = new KestrelServerOptions();
-        options.ApplicationServices = new ServiceCollection()
-           .AddLogging()
-           .BuildServiceProvider();
+        var options = CreateServerOptions();
         options.ListenAnyIP(0, options =>
         {
             options.UseHttps(TestResources.GetTestCertificate());
-            options.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+            options.Protocols = HttpProtocols.Http1AndHttp2;
         });
 
         var mockTransportFactory = new MockTransportFactory();
         var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
 
-        using var server = new KestrelServerImpl(
-            Options.Create(options),
+        using var server = CreateKestrelServer(
+            options,
             new List<IConnectionListenerFactory>() { mockTransportFactory },
-            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory },
-            new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory });
 
         await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
 
         var transportEndPoint = Assert.Single(mockTransportFactory.BoundEndPoints);
-        var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
 
         Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)transportEndPoint.OriginalEndPoint).Address);
-        Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
 
         // Should have been assigned a random value.
         Assert.NotEqual(0, ((IPEndPoint)transportEndPoint.BoundEndPoint).Port);
+    }
 
-        // Same random value should be used for both transports.
-        Assert.Equal(((IPEndPoint)transportEndPoint.BoundEndPoint).Port, ((IPEndPoint)multiplexedTransportEndPoint.BoundEndPoint).Port);
+    [Fact]
+    public async Task ListenIPWithEphemeralPort_MultiplexedTransportsGetIPv6Any()
+    {
+        var options = CreateServerOptions();
+        options.ListenAnyIP(0, options =>
+        {
+            options.UseHttps(TestResources.GetTestCertificate());
+            options.Protocols = HttpProtocols.Http3;
+        });
+
+        var mockTransportFactory = new MockTransportFactory();
+        var mockMultiplexedTransportFactory = new MockMultiplexedTransportFactory();
+
+        using var server = CreateKestrelServer(
+            options,
+            new List<IConnectionListenerFactory>() { mockTransportFactory },
+            new List<IMultiplexedConnectionListenerFactory>() { mockMultiplexedTransportFactory });
+
+        await server.StartAsync(new DummyApplication(context => Task.CompletedTask), CancellationToken.None);
+
+        var multiplexedTransportEndPoint = Assert.Single(mockMultiplexedTransportFactory.BoundEndPoints);
+
+        Assert.Equal(IPAddress.IPv6Any, ((IPEndPoint)multiplexedTransportEndPoint.OriginalEndPoint).Address);
+
+        // Should have been assigned a random value.
+        Assert.NotEqual(0, ((IPEndPoint)multiplexedTransportEndPoint.BoundEndPoint).Port);
     }
 
     [Fact]
@@ -527,6 +712,7 @@ public class KestrelServerTests
     [Fact]
     public void StartingServerInitializesHeartbeat()
     {
+        var timeProvider = new FakeTimeProvider();
         var testContext = new TestServiceContext
         {
             ServerOptions =
@@ -536,26 +722,29 @@ public class KestrelServerTests
                         new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
                     }
                 },
-            DateHeaderValueManager = new DateHeaderValueManager()
+            FakeTimeProvider = timeProvider,
+            TimeProvider = timeProvider,
+            DateHeaderValueManager = new DateHeaderValueManager(timeProvider)
         };
 
         testContext.Heartbeat = new Heartbeat(
             new IHeartbeatHandler[] { testContext.DateHeaderValueManager },
-            testContext.MockSystemClock,
+            timeProvider,
             DebuggerWrapper.Singleton,
-            testContext.Log);
+            testContext.Log,
+            Heartbeat.Interval);
 
-        using (var server = new KestrelServerImpl(new MockTransportFactory(), testContext))
+        using (var server = new KestrelServerImpl(new[] { new MockTransportFactory() }, Array.Empty<IMultiplexedConnectionListenerFactory>(), new HttpsConfigurationService(), testContext))
         {
             Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 
             // Ensure KestrelServer is started at a different time than when it was constructed, since we're
             // verifying the heartbeat is initialized during KestrelServer.StartAsync().
-            testContext.MockSystemClock.UtcNow += TimeSpan.FromDays(1);
+            testContext.FakeTimeProvider.Advance(TimeSpan.FromDays(1));
 
             StartDummyApplication(server);
 
-            Assert.Equal(HeaderUtilities.FormatDate(testContext.MockSystemClock.UtcNow),
+            Assert.Equal(HeaderUtilities.FormatDate(testContext.FakeTimeProvider.GetUtcNow()),
                          testContext.DateHeaderValueManager.GetDateHeaderValues().String);
         }
     }
@@ -573,6 +762,7 @@ public class KestrelServerTests
         TaskCompletionSource changeCallbackRegisteredTcs = null;
 
         var mockChangeToken = new Mock<IChangeToken>();
+        mockChangeToken.Setup(t => t.ActiveChangeCallbacks).Returns(true);
         mockChangeToken.Setup(t => t.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>())).Returns<Action<object>, object>((callback, state) =>
         {
             changeCallbackRegisteredTcs?.SetResult();
@@ -599,6 +789,8 @@ public class KestrelServerTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<ILogger<CertificatePathWatcher>>());
+        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
 
         var options = new KestrelServerOptions
         {
@@ -736,6 +928,7 @@ public class KestrelServerTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
 
         var options = new KestrelServerOptions
         {
@@ -821,6 +1014,26 @@ public class KestrelServerTests
         {
             throw new InvalidOperationException();
         }
+    }
+
+    private class NonBindableTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
+    {
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public bool CanBind(EndPoint endpoint) => false;
+    }
+
+    private class NonBindableMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory, IConnectionListenerFactorySelector
+    {
+        public ValueTask<IMultiplexedConnectionListener> BindAsync(EndPoint endpoint, IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        {
+            throw new InvalidOperationException();
+        }
+
+        public bool CanBind(EndPoint endpoint) => false;
     }
 
     private class MockMultiplexedTransportFactory : IMultiplexedConnectionListenerFactory

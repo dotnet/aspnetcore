@@ -32,7 +32,12 @@ internal class BasePolicy : IQueuePolicy, IDisposable
             throw new ArgumentException("The RequestQueueLimit cannot be a negative number.", nameof(options));
         }
 
-        _limiter = new Limiter(new LimiterOptions(permitLimit: maxConcurrentRequests, order, queueLimit: requestQueueLimit));
+        _limiter = new Limiter(new LimiterOptions
+        {
+            PermitLimit = maxConcurrentRequests,
+            QueueProcessingOrder = order,
+            QueueLimit = requestQueueLimit
+        });
     }
 
     public ValueTask<bool> TryEnterAsync()
@@ -40,14 +45,14 @@ internal class BasePolicy : IQueuePolicy, IDisposable
         // a return value of 'false' indicates that the request is rejected
         // a return value of 'true' indicates that the request may proceed
 
-        var lease = _limiter.Acquire();
+        var lease = _limiter.AttemptAcquire();
         if (lease.IsAcquired)
         {
             _leases.Enqueue(lease);
             return ValueTask.FromResult(true);
         }
 
-        var task = _limiter.WaitAsync();
+        var task = _limiter.AcquireAsync();
         if (task.IsCompletedSuccessfully)
         {
             lease = task.Result;

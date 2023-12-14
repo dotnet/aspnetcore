@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -35,7 +35,7 @@ public class Http1ConnectionParsingOverheadBenchmark
             serviceContext: serviceContext,
             connectionContext: null,
             transport: pair.Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, TimeProvider.System),
             memoryPool: memoryPool,
             connectionFeatures: new FeatureCollection());
 

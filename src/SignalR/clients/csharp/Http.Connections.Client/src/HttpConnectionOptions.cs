@@ -12,6 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
@@ -92,10 +93,7 @@ public class HttpConnectionOptions
         get => _transportMaxBufferSize;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeThrowHelper.ThrowIfNegative(value);
 
             _transportMaxBufferSize = value;
         }
@@ -115,10 +113,7 @@ public class HttpConnectionOptions
         get => _applicationMaxBufferSize;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value));
-            }
+            ArgumentOutOfRangeThrowHelper.ThrowIfNegative(value);
 
             _applicationMaxBufferSize = value;
         }
@@ -262,6 +257,8 @@ public class HttpConnectionOptions
     /// <remarks>
     /// This delegate is invoked after headers from <see cref="Headers"/> and the access token from <see cref="AccessTokenProvider"/>
     /// has been applied.
+    /// <para />
+    /// If <c>ClientWebSocketOptions.HttpVersion</c> is set to <c>2.0</c> or higher, some options like <see cref="ClientWebSocketOptions.Cookies"/> will not be applied. Instead use <see cref="Cookies"/> or the corresponding option on <see cref="HttpConnectionOptions"/>.
     /// </remarks>
     [UnsupportedOSPlatform("browser")]
     public Action<ClientWebSocketOptions>? WebSocketConfiguration
@@ -277,6 +274,15 @@ public class HttpConnectionOptions
             _webSocketConfiguration = value;
         }
     }
+
+    /// <summary>
+    /// Setting to enable Stateful Reconnect between client and server, this allows reconnecting that preserves messages sent while disconnected.
+    /// Also preserves the <see cref="HttpConnection.ConnectionId"/> when the reconnect is successful.
+    /// </summary>
+    /// <remarks>
+    /// Only works with WebSockets transport currently.
+    /// </remarks>
+    public bool UseStatefulReconnect { get; set; }
 
     private static void ThrowIfUnsupportedPlatform()
     {

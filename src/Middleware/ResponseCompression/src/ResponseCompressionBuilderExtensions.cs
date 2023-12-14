@@ -16,10 +16,7 @@ public static class ResponseCompressionBuilderExtensions
     /// <param name="builder">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
     public static IApplicationBuilder UseResponseCompression(this IApplicationBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         return builder.UseMiddleware<ResponseCompressionMiddleware>();
     }

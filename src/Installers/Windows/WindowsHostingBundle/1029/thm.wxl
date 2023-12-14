@@ -1,15 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">Instalace [WixBundleName]</String>
+  <String Id="Caption">Instalační program [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Vítejte</String>
-  <String Id="InstallMessage">Instalační program nainstaluje [WixBundleName] do počítače. Pokud chcete pokračovat, klikněte na Nainstalovat. Pokud chcete nastavit instalační adresář, klikněte na Možnosti. Pokud chcete program ukončit, klikněte na Zavřít.</String>
   <String Id="InstallVersion">Verze [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
-  <String Id="HelpHeader">Nápověda k instalaci</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [adresář] – Nainstaluje, opraví, odinstaluje nebo
+  <String Id="HelpHeader">Nápověda nastavení</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]adresář[\]] – Nainstaluje, opraví, odinstaluje nebo
    vytvoří úplnou místní kopii svazku v adresáři. Výchozí možností je instalace.
 
 /passive | /quiet –  Zobrazí minimální uživatelské rozhraní bez výzev nebo nezobrazí žádné uživatelské rozhraní a
@@ -18,41 +16,34 @@
 /norestart   – potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní před restartováním zobrazí výzvu.
 /log log.txt – Uloží protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zavřít</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Licenční podmínky&lt;/a&gt; pro [WixBundleName]</String>
-  <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami.</String>
-  <String Id="InstallOptionsButton">M&amp;ožnosti</String>
+  <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami</String>
   <String Id="InstallInstallButton">&amp;Instalovat</String>
   <String Id="InstallCloseButton">&amp;Zavřít</String>
-  <String Id="OptionsHeader">Možnosti instalace</String>
-  <String Id="OptionsLocationLabel">Umístění instalace:</String>
-  <String Id="OptionsBrowseButton">&amp;Procházet</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Storno</String>
   <String Id="ProgressHeader">Průběh instalace</String>
-  <String Id="ProgressLabel">Zpracování:</String>
-  <String Id="OverallProgressPackageText">Inicializuje se...</String>
+  <String Id="ProgressLabel">Probíhá zpracování:</String>
+  <String Id="OverallProgressPackageText">Inicializace...</String>
   <String Id="ProgressCancelButton">&amp;Storno</String>
   <String Id="ModifyHeader">Změnit instalaci</String>
   <String Id="ModifyRepairButton">Op&amp;ravit</String>
   <String Id="ModifyUninstallButton">O&amp;dinstalovat</String>
   <String Id="ModifyCloseButton">&amp;Zavřít</String>
-  <String Id="SuccessRepairHeader">Oprava se úspěšně dokončila.</String>
-  <String Id="SuccessUninstallHeader">Odinstalace se úspěšně dokončila.</String>
-  <String Id="SuccessInstallHeader">Instalace se úspěšně dokončila.</String> 
-  <String Id="SuccessHeader">Instalace byla úspěšná.</String>	
+  <String Id="SuccessRepairHeader">Oprava byla úspěšně dokončena</String>
+  <String Id="SuccessUninstallHeader">Odinstalace se úspěšně dokončila</String>
+  <String Id="SuccessInstallHeader">Instalace se úspěšně dokončila</String>
+  <String Id="SuccessHeader">Instalace byla úspěšná.</String>
   <String Id="SuccessLaunchButton">&amp;Spustit</String>
   <String Id="SuccessRestartText">Před použitím tohoto softwaru musíte restartovat počítač.</String>
   <String Id="SuccessRestartButton">&amp;Restartovat</String>
   <String Id="SuccessCloseButton">&amp;Zavřít</String>
-  <String Id="FailureHeader">Instalace se nepovedla.</String>
-  <String Id="FailureInstallHeader">Instalace se nepovedla.</String>
-  <String Id="FailureUninstallHeader">Odinstalace se nepovedla.</String>
-  <String Id="FailureRepairHeader">Oprava se nepovedla.</String> 
-  <String Id="FailureHyperlinkLogText">Instalace se nepovedla kvůli jednomu nebo více problémům. Opravte prosím tyto problémy a zkuste software nainstalovat znovu. Další informace najdete v &lt;a href="#"&gt;souboru protokolu&lt;/a&gt;.</String>
+  <String Id="FailureHeader">Instalace se nepovedla</String>
+  <String Id="FailureInstallHeader">Instalace se nepovedla</String>
+  <String Id="FailureUninstallHeader">Odinstalace se nepovedla</String>
+  <String Id="FailureRepairHeader">Oprava se nepovedla</String>
+  <String Id="FailureHyperlinkLogText">Jeden nebo více problémů způsobilo selhání instalace. Opravte tyto problémy a znovu spusťte instalaci. Pro více informací se podívejte do &lt;a href="#"&gt;souboru protokolu&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Pro dokončení vrácení změn tohoto softwaru je potřeba restartovat počítač.</String>
   <String Id="FailureRestartButton">&amp;Restartovat</String>
   <String Id="FailureCloseButton">&amp;Zavřít</String>
-  <String Id="FilesInUseHeader">Používané soubory</String>
+  <String Id="FilesInUseHeader">Soubory jsou používány</String>
   <String Id="FilesInUseLabel">Následující aplikace používají soubory, které je potřeba aktualizovat:</String>
   <String Id="FilesInUseCloseRadioButton">Zavřete &amp;aplikace a zkuste je restartovat.</String>
   <String Id="FilesInUseDontCloseRadioButton">A&amp;plikace nezavírejte. Bude potřeba provést restart.</String>
@@ -61,9 +52,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Vítá vás instalační program produktu [WixBundleName]</String>
-  <String Id="InstallResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Po dokončení instalace restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
-  <String Id="ModifyResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tady&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Po dokončení instalace restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
 </WixLocalization>

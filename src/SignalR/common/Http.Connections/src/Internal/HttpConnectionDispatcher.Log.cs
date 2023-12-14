@@ -56,5 +56,16 @@ internal sealed partial class HttpConnectionDispatcher
 
         [LoggerMessage(16, LogLevel.Debug, "The client requested an invalid protocol version '{queryStringVersionValue}'", EventName = "InvalidNegotiateProtocolVersion")]
         public static partial void InvalidNegotiateProtocolVersion(ILogger logger, string queryStringVersionValue);
+
+        [LoggerMessage(17, LogLevel.Warning, "The name of the user changed from '{PreviousUserName}' to '{CurrentUserName}'.", EventName = "UserNameChanged")]
+        private static partial void UserNameChangedInternal(ILogger logger, string previousUserName, string currentUserName);
+
+        public static void UserNameChanged(ILogger logger, string? previousUserName, string? currentUserName)
+        {
+            UserNameChangedInternal(logger, previousUserName ?? "(null)", currentUserName ?? "(null)");
+        }
+
+        [LoggerMessage(18, LogLevel.Debug, "Exception from IStatefulReconnectFeature.NotifyOnReconnect callback.", EventName = "NotifyOnReconnectError")]
+        public static partial void NotifyOnReconnectError(ILogger logger, Exception ex);
     }
 }

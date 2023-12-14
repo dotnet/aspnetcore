@@ -17,10 +17,7 @@ public static class TemplateParser
     /// <returns>A <see cref="RouteTemplate"/> instance.</returns>
     public static RouteTemplate Parse(string routeTemplate)
     {
-        if (routeTemplate == null)
-        {
-            throw new ArgumentNullException(nameof(routeTemplate));
-        }
+        ArgumentNullException.ThrowIfNull(routeTemplate);
 
         try
         {

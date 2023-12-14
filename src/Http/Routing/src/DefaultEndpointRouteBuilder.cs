@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class DefaultEndpointRouteBuilder : IEndpointRouteBuilder
+internal sealed class DefaultEndpointRouteBuilder : IEndpointRouteBuilder
 {
     public DefaultEndpointRouteBuilder(IApplicationBuilder applicationBuilder)
     {

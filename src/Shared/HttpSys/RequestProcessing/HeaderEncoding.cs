@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -9,8 +8,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal;
 
 internal static class HeaderEncoding
 {
-    private static readonly Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
-
     internal static unsafe string GetString(byte* pBytes, int byteCount, bool useLatin1)
     {
         if (useLatin1)
@@ -19,12 +16,7 @@ internal static class HeaderEncoding
         }
         else
         {
-            return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
+            return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding.UTF8);
         }
-    }
-
-    internal static byte[] GetBytes(string myString)
-    {
-        return Encoding.GetBytes(myString);
     }
 }

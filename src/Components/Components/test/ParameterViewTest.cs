@@ -95,8 +95,8 @@ public partial class ParameterViewTest
             RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
         }, 0).WithCascadingParameters(new List<CascadingParameterState>
         {
-            new CascadingParameterState("attribute 2", new TestCascadingValue(attribute2Value)),
-            new CascadingParameterState("attribute 3", new TestCascadingValue(attribute3Value)),
+            new CascadingParameterState(new(null, "attribute 2", attribute2Value.GetType()), new TestCascadingValue(attribute2Value)),
+            new CascadingParameterState(new(null, "attribute 3", attribute3Value.GetType()), new TestCascadingValue(attribute3Value)),
         });
 
         // Assert
@@ -190,7 +190,7 @@ public partial class ParameterViewTest
             RenderTreeFrame.Attribute(1, "some other entry", new object())
         }, 0).WithCascadingParameters(new List<CascadingParameterState>
         {
-            new CascadingParameterState("another entry", new TestCascadingValue(null))
+            new CascadingParameterState(new(null, "another entry", typeof(object)), new TestCascadingValue(null))
         });
 
         // Act
@@ -305,9 +305,9 @@ public partial class ParameterViewTest
             RenderTreeFrame.Attribute(1, "unrelated value", new object())
         }, 0).WithCascadingParameters(new List<CascadingParameterState>
         {
-            new CascadingParameterState("unrelated value 2", new TestCascadingValue(null)),
-            new CascadingParameterState("my entry", new TestCascadingValue(myEntryValue)),
-            new CascadingParameterState("unrelated value 3", new TestCascadingValue(null)),
+            new CascadingParameterState(new(null, "unrelated value 2", typeof(object)), new TestCascadingValue(null)),
+            new CascadingParameterState(new(null, "my entry", myEntryValue.GetType()), new TestCascadingValue(myEntryValue)),
+            new CascadingParameterState(new(null, "unrelated value 3", typeof(object)), new TestCascadingValue(null)),
         });
 
         // Act
@@ -402,6 +402,172 @@ public partial class ParameterViewTest
             p => AssertParameter("attribute 3", attribute3Value, expectedIsCascading: false));
     }
 
+    [Fact]
+    public void HasRemovedDirectParameters_BothEmpty()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.False(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_OldEmpty_NewNonEmpty()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.False(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_OldNonEmpty_NewEmpty()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParameterRemoved()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 3", "value 3"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParameterReplaced()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 2", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute replaced", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParameterReplacedAndAdded()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(5),
+            RenderTreeFrame.Attribute(1, "attribute 2", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute replaced", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+            RenderTreeFrame.Attribute(4, "attribute 4", "value 3"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.True(hasRemovedDirectParameters);
+    }
+
+    [Fact]
+    public void HasRemovedDirectParameters_ParametersSwapped()
+    {
+        // Arrange
+        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 2", "value 2"),
+            RenderTreeFrame.Attribute(3, "attribute 3", "value 3"),
+        }, 0);
+        var newParameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(4),
+            RenderTreeFrame.Attribute(1, "attribute 1", "value 1"),
+            RenderTreeFrame.Attribute(2, "attribute 3", "value 3"),
+            RenderTreeFrame.Attribute(3, "attribute 2", "value 2"),
+        }, 0);
+
+        // Act
+        var hasRemovedDirectParameters = newParameters.HasRemovedDirectParameters(oldParameters);
+
+        // Assert
+        Assert.False(hasRemovedDirectParameters);
+    }
+
     private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
     {
         return parameter =>
@@ -429,24 +595,27 @@ public partial class ParameterViewTest
             => throw new NotImplementedException();
     }
 
-    private class TestCascadingValue : ICascadingValueComponent
+    private class TestCascadingValue : ICascadingValueSupplier
     {
+        private readonly object _value;
+
         public TestCascadingValue(object value)
         {
-            CurrentValue = value;
+            _value = value;
         }
 
-        public object CurrentValue { get; }
+        public bool IsFixed => false;
 
-        public bool CurrentValueIsFixed => false;
-
-        public bool CanSupplyValue(Type valueType, string valueName)
+        public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
 
-        public void Subscribe(ComponentState subscriber)
+        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+            => _value;
+
+        public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
 
-        public void Unsubscribe(ComponentState subscriber)
+        public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
     }
 }

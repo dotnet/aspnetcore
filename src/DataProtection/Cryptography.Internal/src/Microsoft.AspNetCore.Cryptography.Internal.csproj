@@ -7,7 +7,16 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Cryptography.Internal.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Extensions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
+  </ItemGroup>
 </Project>

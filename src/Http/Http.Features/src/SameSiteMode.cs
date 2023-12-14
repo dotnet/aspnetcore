@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Used to set the SameSite field on response cookies to indicate if those cookies should be included by the client on future "same-site" or "cross-site" requests.
-/// RFC Draft: https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1
+/// RFC Draft: <see href="https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-03#section-4.1.1"/>
 /// </summary>
 // This mirrors Microsoft.Net.Http.Headers.SameSiteMode
 public enum SameSiteMode

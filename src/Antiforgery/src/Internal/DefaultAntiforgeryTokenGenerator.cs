@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
+internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
 {
     private readonly IClaimUidExtractor _claimUidExtractor;
     private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;
@@ -36,15 +36,8 @@ internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
         HttpContext httpContext,
         AntiforgeryToken cookieToken)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (cookieToken == null)
-        {
-            throw new ArgumentNullException(nameof(cookieToken));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(cookieToken);
 
         if (!IsCookieTokenValid(cookieToken))
         {
@@ -112,10 +105,7 @@ internal class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
         AntiforgeryToken requestToken,
         [NotNullWhen(false)] out string? message)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         if (cookieToken == null)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices;
 /// <summary>
 /// Represents the default implementation of <see cref="IWebAppContext"/>.
 /// </summary>
-internal class WebAppContext : IWebAppContext
+internal sealed class WebAppContext : IWebAppContext
 {
     /// <summary>
     /// Gets the default instance of the WebApp context.

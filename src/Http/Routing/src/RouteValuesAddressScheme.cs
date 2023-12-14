@@ -21,10 +21,7 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
 
     public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress address)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         var state = State;
 
@@ -169,7 +166,7 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
         _cache.Dispose();
     }
 
-    internal class StateEntry
+    internal sealed class StateEntry
     {
         // For testing
         public readonly List<OutboundMatch> MatchesWithRequiredValues;

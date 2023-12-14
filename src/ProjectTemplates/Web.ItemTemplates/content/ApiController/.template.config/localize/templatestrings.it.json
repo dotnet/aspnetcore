@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Controller API",
+  "description": "Controller API con o senza azioni di lettura/scrittura",
+  "symbols/namespace/description": "Spazio dei nomi per il codice generato.",
+  "symbols/actions/description": "Crea controller con azioni di lettura/scrittura",
+  "symbols/actions/displayName": "Aggiungi azioni di lettura/scrittura",
+  "postActions/openInEditor/description": "Apre il controller creato nell'editor"
+}

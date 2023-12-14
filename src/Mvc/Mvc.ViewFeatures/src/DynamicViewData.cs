@@ -1,20 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Dynamic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-internal class DynamicViewData : DynamicObject
+[DebuggerDisplay("Count = {ViewData.Count}")]
+[DebuggerTypeProxy(typeof(DynamicViewDataDebugView))]
+internal sealed class DynamicViewData : DynamicObject
 {
     private readonly Func<ViewDataDictionary> _viewDataFunc;
 
     public DynamicViewData(Func<ViewDataDictionary> viewDataFunc)
     {
-        if (viewDataFunc == null)
-        {
-            throw new ArgumentNullException(nameof(viewDataFunc));
-        }
+        ArgumentNullException.ThrowIfNull(viewDataFunc);
 
         _viewDataFunc = viewDataFunc;
     }
@@ -43,10 +44,7 @@ internal class DynamicViewData : DynamicObject
 
     public override bool TryGetMember(GetMemberBinder binder, out object result)
     {
-        if (binder == null)
-        {
-            throw new ArgumentNullException(nameof(binder));
-        }
+        ArgumentNullException.ThrowIfNull(binder);
 
         result = ViewData[binder.Name];
 
@@ -57,14 +55,19 @@ internal class DynamicViewData : DynamicObject
 
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
-        if (binder == null)
-        {
-            throw new ArgumentNullException(nameof(binder));
-        }
+        ArgumentNullException.ThrowIfNull(binder);
 
         ViewData[binder.Name] = value;
 
         // Can always add / update a ViewDataDictionary value.
         return true;
+    }
+
+    private sealed class DynamicViewDataDebugView(DynamicViewData dictionary)
+    {
+        private readonly ViewDataDictionary _dictionary = dictionary.ViewData;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, object>[] Items => _dictionary.ToArray();
     }
 }

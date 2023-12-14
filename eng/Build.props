@@ -1,6 +1,16 @@
 <Project>
   <Import Project="Common.props" />
 
+  <!--
+    @(RequiresDelayedBuild) projects can be extended many ways but this isn't fully automated because the new
+    projects likely aren't referenced initially. To add new projects, edit RequiresDelayedBuildProjects.props
+    manually, update the $(BuildMainlyReferenceProviders)' == 'true' item group near the bottom of this file,
+    or edit BuildAfterTargetingPack.csproj. Then run GenerateProjectList.ps1 (even for the first option to ensure
+    the format is correct) and undo any temporary changes. When complete, only BuildAfterTargetingPack.csproj and
+    other @(RequiresDelayedBuild) projects should mention projects listed in RequiresDelayedBuildProjects.props.
+  -->
+  <Import Project="RequiresDelayedBuildProjects.props" />
+
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
     <!-- Explicitly excluded projects -->
@@ -16,8 +26,11 @@
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="$(RepoRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
 
-    <!-- These projects are meant to be referenced only by tests. -->
-    <ProjectToExclude Include="$(RepoRoot)src\**\testassets\**\*.*proj"
+    <!-- These projects are meant to be referenced only by tests or via BuildAfterTargetingPack.csproj. -->
+    <ProjectToExclude
+      Include="$(RepoRoot)src\**\testassets\**\*.*proj;
+               @(RequiresDelayedBuild);
+               "
       Exclude="$(RepoRoot)src\Components\WebAssembly\testassets\WasmLinkerTest\*.*proj;
                $(RepoRoot)src\Components\WebView\Samples\PhotinoPlatform\testassets\PhotinoTestApp\*.*proj;
                $(RepoRoot)src\Http\Routing\test\testassets\RoutingSandbox\*.*proj;
@@ -26,11 +39,9 @@
                " />
 
     <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
-    <!-- On the other hand, the main spa-templates project is just another project in this repo. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\googletest\**\*.*proj;
                       $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
-                      $(RepoRoot)src\submodules\spa-templates\src\content\**\*.csproj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
@@ -85,21 +96,15 @@
         <!-- Build the SharedFramework installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Build the SharedFramework wixlib -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-      </ItemGroup>
-
-      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'arm64' ">
-        <!-- We don't build the targeting pack installer here because it's built in the x86/x64 leg.
-        Instead we only provide the ARM64 SharedFramework MSI-->
-
-        <!-- Build the SharedFramework wixlib -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=arm64" />
       </ItemGroup>
 
       <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND ('$(TargetRuntimeIdentifier)' == 'linux-x64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64')">
@@ -153,6 +158,7 @@
         <DotNetProjects Include="
                           $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
+                          $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
                           $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
@@ -162,7 +168,7 @@
                           $(RepoRoot)src\Hosting\**\*.*proj;
                           $(RepoRoot)src\Http\**\*.*proj;
                           $(RepoRoot)src\HttpClientFactory\**\*.*proj;
-                          $(RepoRoot)src\Html.Abstractions\*.*proj;
+                          $(RepoRoot)src\Html.Abstractions\**\*.*proj;
                           $(RepoRoot)src\Identity\**\*.*proj;
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
@@ -187,9 +193,11 @@
                           $(RepoRoot)src\HealthChecks\**\*.csproj;
                           $(RepoRoot)src\Testing\**\*.csproj;
                           $(RepoRoot)src\Grpc\**\*.csproj;
-                          $(RepoRoot)src\ProjectTemplates\*\*.csproj;
-                          $(RepoRoot)src\submodules\spa-templates\src\*.csproj;
+                          $(RepoRoot)src\ProjectTemplates\**\*.csproj;
                           $(RepoRoot)src\Extensions\**\*.csproj;
+                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\*.csproj;
+                          $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -229,6 +237,8 @@
                           $(RepoRoot)src\HealthChecks\**\src\*.csproj;
                           $(RepoRoot)src\Testing\**\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
+                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

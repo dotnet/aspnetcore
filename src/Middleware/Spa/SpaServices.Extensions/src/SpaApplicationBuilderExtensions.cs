@@ -27,10 +27,7 @@ public static class SpaApplicationBuilderExtensions
     /// </param>
     public static void UseSpa(this IApplicationBuilder app, Action<ISpaBuilder> configuration)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullException.ThrowIfNull(configuration);
 
         // Use the options configured in DI (or blank if none was configured). We have to clone it
         // otherwise if you have multiple UseSpa calls, their configurations would interfere with one another.

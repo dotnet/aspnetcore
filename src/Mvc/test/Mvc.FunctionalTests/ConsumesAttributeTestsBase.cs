@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;

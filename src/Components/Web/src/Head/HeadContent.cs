@@ -21,8 +21,8 @@ public sealed class HeadContent : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenComponent<SectionContent>(0);
-        builder.AddAttribute(1, nameof(SectionContent.Name), HeadOutlet.HeadSectionOutletName);
-        builder.AddAttribute(2, nameof(SectionContent.ChildContent), ChildContent);
+        builder.AddComponentParameter(1, nameof(SectionContent.SectionId), HeadOutlet.HeadSectionId);
+        builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), ChildContent);
         builder.CloseComponent();
     }
 }

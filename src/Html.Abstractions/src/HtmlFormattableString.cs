@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Encodings.Web;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Html;
 
 /// <summary>
 /// An <see cref="IHtmlContent"/> implementation of composite string formatting
-/// (see https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx) which HTML encodes
+/// (see <see href="https://msdn.microsoft.com/en-us/library/txafckwd(v=vs.110).aspx"/>) which HTML encodes
 /// formatted arguments.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
@@ -25,7 +26,7 @@ public class HtmlFormattableString : IHtmlContent
     /// </summary>
     /// <param name="format">A composite format string.</param>
     /// <param name="args">An array that contains objects to format.</param>
-    public HtmlFormattableString(string format, params object?[] args)
+    public HtmlFormattableString([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format, params object?[] args)
         : this(formatProvider: null, format: format, args: args)
     {
     }
@@ -37,17 +38,13 @@ public class HtmlFormattableString : IHtmlContent
     /// <param name="formatProvider">An object that provides culture-specific formatting information.</param>
     /// <param name="format">A composite format string.</param>
     /// <param name="args">An array that contains objects to format.</param>
-    public HtmlFormattableString(IFormatProvider? formatProvider, string format, params object?[] args)
+    public HtmlFormattableString(
+        IFormatProvider? formatProvider,
+        [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object?[] args)
     {
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
-
-        if (args == null)
-        {
-            throw new ArgumentNullException(nameof(args));
-        }
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(args);
 
         _formatProvider = formatProvider ?? CultureInfo.CurrentCulture;
         _format = format;
@@ -57,15 +54,8 @@ public class HtmlFormattableString : IHtmlContent
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(encoder);
 
         var formatProvider = new EncodingFormatProvider(_formatProvider, encoder);
         writer.Write(string.Format(formatProvider, _format, _args));

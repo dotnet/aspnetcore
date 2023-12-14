@@ -20,13 +20,6 @@ struct NullHandleTraits
     static void Close(HANDLE handle) noexcept { CloseHandle(handle); }
 };
 
-struct FindFileHandleTraits
-{
-    using HandleType = HANDLE;
-    static constexpr HANDLE DefaultHandle = nullptr;
-    static void Close(HANDLE handle) noexcept { FindClose(handle); }
-};
-
 struct ModuleHandleTraits
 {
     using HandleType = HMODULE;

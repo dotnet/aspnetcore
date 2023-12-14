@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 /// <summary>
 /// Default implementation for <see cref="IViewComponentInvoker"/>.
 /// </summary>
-internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
+internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoker
 {
     private readonly IViewComponentFactory _viewComponentFactory;
     private readonly ViewComponentInvokerCache _viewComponentInvokerCache;
@@ -36,25 +36,10 @@ internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
         DiagnosticListener diagnosticListener,
         ILogger logger)
     {
-        if (viewComponentFactory == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentFactory));
-        }
-
-        if (viewComponentInvokerCache == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentInvokerCache));
-        }
-
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(viewComponentFactory);
+        ArgumentNullException.ThrowIfNull(viewComponentInvokerCache);
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _viewComponentFactory = viewComponentFactory;
         _viewComponentInvokerCache = viewComponentInvokerCache;
@@ -65,10 +50,7 @@ internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
     /// <inheritdoc />
     public async Task InvokeAsync(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
 
@@ -320,7 +302,7 @@ internal partial class DefaultViewComponentInvoker : IViewComponentInvoker
                     {
                         return new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id);
                     }
-                    throw new IndexOutOfRangeException(nameof(index));
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 

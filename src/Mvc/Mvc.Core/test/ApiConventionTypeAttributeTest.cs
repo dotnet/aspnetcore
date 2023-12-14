@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +14,7 @@ public class ApiConventionTypeAttributeTest
     {
         // Arrange
         var methodName = typeof(ConventionWithProducesAttribute).FullName + '.' + nameof(ConventionWithProducesAttribute.Get);
-        var attribute = typeof(ProducesAttribute);
+        var attribute = new ProducesAttribute(typeof(object));
 
         var expected = GetErrorMessage(methodName, attribute);
 
@@ -36,7 +36,7 @@ public class ApiConventionTypeAttributeTest
     {
         // Arrange
         var methodName = typeof(ConventionWithRouteAttribute).FullName + '.' + nameof(ConventionWithRouteAttribute.Get);
-        var attribute = typeof(HttpGetAttribute);
+        var attribute = new HttpGetAttribute();
         var expected = GetErrorMessage(methodName, attribute);
 
         // Act & Assert
@@ -57,7 +57,7 @@ public class ApiConventionTypeAttributeTest
     {
         // Arrange
         var methodName = typeof(ConventionWitUnsupportedAttributes).FullName + '.' + nameof(ConventionWitUnsupportedAttributes.Get);
-        var attributes = new[] { typeof(ProducesAttribute), typeof(ServiceFilterAttribute), typeof(AuthorizeAttribute) };
+        var attributes = new Attribute[] { new ProducesAttribute(typeof(object)), new ServiceFilterAttribute(typeof(object)), new AuthorizeAttribute() };
         var expected = GetErrorMessage(methodName, attributes);
 
         // Act & Assert
@@ -76,11 +76,11 @@ public class ApiConventionTypeAttributeTest
         public static void Get() { }
     }
 
-    private static string GetErrorMessage(string methodName, params Type[] attributes)
+    private static string GetErrorMessage(string methodName, params Attribute[] attributes)
     {
         return $"Method {methodName} is decorated with the following attributes that are not allowed on an API convention method:" +
             Environment.NewLine +
-            string.Join(Environment.NewLine, attributes.Select(a => a.FullName)) +
+            string.Join(Environment.NewLine, attributes.Select(a => a.ToString())) +
             Environment.NewLine +
             $"The following attributes are allowed on API convention methods: {nameof(ProducesResponseTypeAttribute)}, {nameof(ProducesDefaultResponseTypeAttribute)}, {nameof(ApiConventionNameMatchAttribute)}";
     }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
-internal class RenderTreeUpdater
+internal sealed class RenderTreeUpdater
 {
     public static void UpdateToMatchClientState(RenderTreeBuilder renderTreeBuilder, ulong eventHandlerId, object newFieldValue)
     {

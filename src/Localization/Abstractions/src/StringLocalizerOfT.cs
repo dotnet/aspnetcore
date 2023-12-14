@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -20,10 +21,7 @@ public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource
     /// <param name="factory">The <see cref="IStringLocalizerFactory"/> to use.</param>
     public StringLocalizer(IStringLocalizerFactory factory)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(factory);
 
         _localizer = factory.Create(typeof(TResourceSource));
     }
@@ -33,10 +31,7 @@ public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource
     {
         get
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(name);
 
             return _localizer[name];
         }
@@ -47,10 +42,7 @@ public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource
     {
         get
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            ArgumentNullThrowHelper.ThrowIfNull(name);
 
             return _localizer[name, arguments];
         }

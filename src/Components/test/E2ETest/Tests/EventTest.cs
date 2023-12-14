@@ -5,9 +5,11 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.Extensions;
+using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -82,6 +84,48 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void MouseEnterAndMouseLeave_CanTrigger()
+    {
+        Browser.MountTestComponent<MouseEventComponent>();
+
+        var input = Browser.Exists(By.Id("mouseenter_input"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Mouse enter the button and then mouse leave
+        Browser.ExecuteJavaScript($@"
+            var mouseEnterElement = document.getElementById('mouseenter_input');
+            var mouseEnterEvent = new MouseEvent('mouseenter');
+            var mouseLeaveEvent = new MouseEvent('mouseleave');
+            mouseEnterElement.dispatchEvent(mouseEnterEvent);
+            mouseEnterElement.dispatchEvent(mouseLeaveEvent);");
+
+        Browser.Equal("mouseenter,mouseleave,", () => output.Text);
+    }
+
+    [Fact]
+    public void PointerEnterAndPointerLeave_CanTrigger()
+    {
+        Browser.MountTestComponent<MouseEventComponent>();
+
+        var input = Browser.Exists(By.Id("pointerenter_input"));
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Pointer enter the button and then pointer leave
+        Browser.ExecuteJavaScript($@"
+            var pointerEnterElement = document.getElementById('pointerenter_input');
+            var pointerEnterEvent = new PointerEvent('pointerenter');
+            var pointerLeaveEvent = new PointerEvent('pointerleave');
+            pointerEnterElement.dispatchEvent(pointerEnterEvent);
+            pointerEnterElement.dispatchEvent(pointerLeaveEvent);");
+
+        Browser.Equal("pointerenter,pointerleave,", () => output.Text);
+    }
+
+    [Fact]
     public void MouseMove_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();
@@ -142,6 +186,38 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void Close_CanTrigger()
+    {
+        Browser.MountTestComponent<DialogEventsComponent>();
+
+        Browser.Exists(By.Id("show-dialog")).Click();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Click
+        Browser.Exists(By.Id("dialog-close")).Click();
+        Browser.Equal("onclose,", () => output.Text);
+    }
+
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52783")]
+    public void Cancel_CanTrigger()
+    {
+        Browser.MountTestComponent<DialogEventsComponent>();
+
+        Browser.Exists(By.Id("show-dialog")).Click();
+
+        var output = Browser.Exists(By.Id("output"));
+        Assert.Equal(string.Empty, output.Text);
+
+        // Press escape to cancel. This fires both close and cancel, but MDN doesn't document in which order
+        Browser.FindElement(By.Id("my-dialog")).SendKeys(Keys.Escape);
+        Browser.Contains("onclose,", () => output.Text);
+        Browser.Contains("oncancel,", () => output.Text);
+    }
+
+    [Fact]
     public void PointerDown_CanTrigger()
     {
         Browser.MountTestComponent<MouseEventComponent>();
@@ -171,14 +247,11 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var actions = new Actions(Browser).DragAndDrop(input, target);
 
         actions.Perform();
-        // drop doesn't seem to trigger in Selenium. But it's sufficient to determine "any" drag event works
-        Browser.Equal("dragstart,", () => output.Text);
+        // drop doesn't reliably trigger in Selenium. But it's sufficient to determine "any" drag event works
+        Browser.True(() => output.Text.StartsWith("dragstart,", StringComparison.Ordinal));
     }
 
-    // Skipped because it will never pass because Selenium doesn't support this kind of event
-    // The linked issue tracks the desire to find a way of testing this
-    // There's no point quarantining it - we know it will always fail
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/32373")]
+    [Fact]
     public void TouchEvent_CanTrigger()
     {
         Browser.MountTestComponent<TouchEventComponent>();
@@ -188,9 +261,13 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var actions = new TouchActions(Browser).SingleTap(input);
+        var touchPointer = new PointerInputDevice(PointerKind.Touch);
+        var singleTap = new ActionBuilder()
+            .AddAction(touchPointer.CreatePointerMove(input, 0, 0, TimeSpan.Zero))
+            .AddAction(touchPointer.CreatePointerDown(MouseButton.Touch))
+            .AddAction(touchPointer.CreatePointerUp(MouseButton.Touch));
+        ((IActionExecutor)Browser).PerformActions(singleTap.ToActionSequenceList());
 
-        actions.Perform();
         Browser.Equal("touchstart,touchend,", () => output.Text);
     }
 

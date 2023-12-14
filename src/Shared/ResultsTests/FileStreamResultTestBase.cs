@@ -22,10 +22,10 @@ public abstract class FileStreamResultTestBase
         bool enableRangeProcessing = false);
 
     [Theory]
-    [InlineData(0, 4, "Hello", 5)]
-    [InlineData(6, 10, "World", 5)]
-    [InlineData(null, 5, "World", 5)]
-    [InlineData(6, null, "World", 5)]
+    [InlineData(0L, 4L, "Hello", 5L)]
+    [InlineData(6L, 10L, "World", 5L)]
+    [InlineData(null, 5L, "World", 5L)]
+    [InlineData(6L, null, "World", 5L)]
     public async Task WriteFileAsync_PreconditionStateShouldProcess_WritesRangeRequested(long? start, long? end, string expectedString, long contentLength)
     {
         // Arrange
@@ -326,7 +326,7 @@ public abstract class FileStreamResultTestBase
     }
 
     [Theory]
-    [InlineData(0)]
+    [InlineData(0L)]
     [InlineData(null)]
     public async Task WriteFileAsync_RangeRequested_FileLengthZeroOrNull(long? fileLength)
     {

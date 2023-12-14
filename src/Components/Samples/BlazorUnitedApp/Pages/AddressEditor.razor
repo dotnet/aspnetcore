@@ -1,0 +1,31 @@
+﻿@inherits Editor<Address>
+@using BlazorUnitedApp.Data
+
+<div>
+    <label>
+        <span>Street</span>
+        <InputText @bind-Value="Value.Street" />
+        <ValidationMessage For="() => Value.Street" />
+    </label>
+</div>
+<div>
+    <label>
+        <span>State</span>
+        <InputText @bind-Value="Value.State" />
+        <ValidationMessage For="() => Value.State" />
+    </label>
+</div>
+<div>
+    <label>
+        <span>Zip</span>
+        <InputText @bind-Value="Value.Zip" />
+        <ValidationMessage For="() => Value.Zip" />
+    </label>
+</div>
+<div>
+    <label>
+        <span>City</span>
+        <InputText @bind-Value="Value.City" />
+        <ValidationMessage For="() => Value.City" />
+    </label>
+</div>

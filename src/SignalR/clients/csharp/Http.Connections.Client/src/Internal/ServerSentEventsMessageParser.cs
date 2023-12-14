@@ -10,15 +10,15 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
-internal class ServerSentEventsMessageParser
+internal sealed class ServerSentEventsMessageParser
 {
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';
     private const byte ByteColon = (byte)':';
 
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> DataPrefix => new byte[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
-    private static ReadOnlySpan<byte> SseLineEnding => new byte[] { (byte)'\r', (byte)'\n' };
+    private static ReadOnlySpan<byte> DataPrefix => "data: "u8;
+    private static ReadOnlySpan<byte> SseLineEnding => "\r\n"u8;
     private static readonly byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
 
     private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
@@ -36,27 +36,14 @@ internal class ServerSentEventsMessageParser
         {
             if (!(buffer.PositionOf(ByteLF) is SequencePosition lineEnd))
             {
-                // For the case of data: Foo\r\n\r\<Anything except \n>
-                if (_internalParserState == InternalParseState.ReadEndOfMessage)
-                {
-                    if (ConvertBufferToSpan(buffer.Slice(start, buffer.End)).Length > 1)
-                    {
-                        throw new FormatException("Expected a \\r\\n frame ending");
-                    }
-                }
-
                 // Partial message. We need to read more.
                 return ParseResult.Incomplete;
             }
 
+            // buffer, and thus line should atleast contain \n at this point.
             lineEnd = buffer.GetPosition(1, lineEnd);
             var line = ConvertBufferToSpan(buffer.Slice(start, lineEnd));
             buffer = buffer.Slice(line.Length);
-
-            if (line.Length <= 1)
-            {
-                throw new FormatException("There was an error in the frame format");
-            }
 
             // Skip comments
             if (line[0] == ByteColon)
@@ -70,16 +57,6 @@ internal class ServerSentEventsMessageParser
             {
                 _internalParserState = InternalParseState.ReadEndOfMessage;
             }
-
-            // To ensure that the \n was preceded by a \r
-            // since messages can't contain \n.
-            // data: foo\n\bar should be encoded as
-            // data: foo\r\n
-            // data: bar\r\n
-            else if (line[line.Length - SseLineEnding.Length] != ByteCR)
-            {
-                throw new FormatException("Unexpected '\\n' in message. A '\\n' character can only be used as part of the newline sequence '\\r\\n'");
-            }
             else
             {
                 EnsureStartsWithDataPrefix(line);
@@ -92,8 +69,9 @@ internal class ServerSentEventsMessageParser
                     EnsureStartsWithDataPrefix(line);
 
                     // Slice away the 'data: '
-                    var payloadLength = line.Length - (DataPrefix.Length + SseLineEnding.Length);
-                    var newData = line.Slice(DataPrefix.Length, payloadLength).ToArray();
+                    var payloadLength = line.Length - DataPrefix.Length;
+                    var lineWithEnding = line.Slice(DataPrefix.Length, payloadLength);
+                    var newData = TrimEnding(lineWithEnding).ToArray();
                     _data.Add(newData);
 
                     start = lineEnd;
@@ -146,6 +124,15 @@ internal class ServerSentEventsMessageParser
         return ParseResult.Incomplete;
     }
 
+    private static ReadOnlySpan<byte> TrimEnding(ReadOnlySpan<byte> lineWithEnding)
+    {
+        // Up above we ensure that we will have a line ending.
+        // that can be either CRLF or LF
+        return lineWithEnding.EndsWith(SseLineEnding)
+            ? lineWithEnding.Slice(0, lineWithEnding.Length - 2) // CRLF
+            : lineWithEnding.Slice(0, lineWithEnding.Length - 1); // LF
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ReadOnlySpan<byte> ConvertBufferToSpan(in ReadOnlySequence<byte> buffer)
     {
@@ -172,7 +159,15 @@ internal class ServerSentEventsMessageParser
 
     private static bool IsMessageEnd(ReadOnlySpan<byte> line)
     {
-        return line.Length == SseLineEnding.Length && line.SequenceEqual(SseLineEnding);
+        if (line.Length == 2)
+        {
+            return line[0] == ByteCR && line[1] == ByteLF;
+        }
+        else if (line.Length == 1)
+        {
+            return line[0] == ByteLF;
+        }
+        return false;
     }
 
     public enum ParseResult

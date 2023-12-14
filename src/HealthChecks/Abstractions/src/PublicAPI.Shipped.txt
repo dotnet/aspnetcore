@@ -4,6 +4,8 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext.HealthCheckCont
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext.Registration.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext.Registration.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Delay.get -> System.TimeSpan?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Delay.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Factory.get -> System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Factory.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.FailureStatus.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
@@ -14,6 +16,8 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthChec
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.HealthCheckRegistration(string! name, System.Func<System.IServiceProvider!, Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck!>! factory, Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus? failureStatus, System.Collections.Generic.IEnumerable<string!>? tags, System.TimeSpan? timeout) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Name.get -> string!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Name.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.get -> System.TimeSpan?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Period.set -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Tags.get -> System.Collections.Generic.ISet<string!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Timeout.get -> System.TimeSpan
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration.Timeout.set -> void
@@ -21,6 +25,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Data.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Description.get -> string?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Exception.get -> System.Exception?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.HealthCheckResult() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.HealthCheckResult(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description = null, System.Exception? exception = null, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data = null) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Status.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport
@@ -34,6 +39,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Data.get -> Syst
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Description.get -> string?
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Duration.get -> System.TimeSpan
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Exception.get -> System.Exception?
+Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry() -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string? description, System.TimeSpan duration, System.Exception? exception, System.Collections.Generic.IReadOnlyDictionary<string!, object!>? data, System.Collections.Generic.IEnumerable<string!>? tags = null) -> void
 Microsoft.Extensions.Diagnostics.HealthChecks.HealthReportEntry.Status.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus

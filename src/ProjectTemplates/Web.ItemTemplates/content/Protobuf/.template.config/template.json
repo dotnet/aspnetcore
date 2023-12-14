@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Web",
@@ -12,9 +12,9 @@
     "language": "",
     "type": "item"
   },
-  "groupIdentity": "Microsoft.Web.Grpc.Protobuf.6.0",
-  "precedence": "600",
-  "identity": "Microsoft.Web.Grpc.Protobuf",
+  "groupIdentity": "Microsoft.Web.Grpc.Protobuf",
+  "precedence": "9900",
+  "identity": "Microsoft.Web.Grpc.Protobuf.9.0",
   "shortname": "proto",
   "sourceName": "protobuf",
   "primaryOutputs": [

@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
-Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?

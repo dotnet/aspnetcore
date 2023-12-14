@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// A filter that sets the <see cref="IHttpMaxRequestBodySizeFeature.MaxRequestBodySize"/>
 /// to the specified <see cref="Bytes"/>.
 /// </summary>
-internal partial class RequestSizeLimitFilter : IAuthorizationFilter, IRequestSizePolicy
+internal sealed partial class RequestSizeLimitFilter : IAuthorizationFilter, IRequestSizePolicy
 {
     private readonly ILogger _logger;
 
@@ -33,10 +33,7 @@ internal partial class RequestSizeLimitFilter : IAuthorizationFilter, IRequestSi
     /// the <see cref="RequestSizeLimitAttribute"/> is not applied.</remarks>
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var effectivePolicy = context.FindEffectivePolicy<IRequestSizePolicy>();
         if (effectivePolicy != null && effectivePolicy != this)

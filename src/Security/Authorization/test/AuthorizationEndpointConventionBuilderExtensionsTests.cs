@@ -118,6 +118,106 @@ public class AuthorizationEndpointConventionBuilderExtensionsTests
     }
 
     [Fact]
+    public void RequireAuthorization_Policy()
+    {
+        // Arrange
+        var builder = new TestEndpointConventionBuilder();
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+
+        // Act
+        builder.RequireAuthorization(policy);
+
+        // Assert
+        var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        convention(endpointModel);
+
+        Assert.Equal(2, endpointModel.Metadata.Count);
+        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(endpointModel.Metadata[0]);
+        Assert.Null(authMetadata.Policy);
+
+        Assert.Equal(policy, endpointModel.Metadata[1]);
+    }
+
+    [Fact]
+    public void RequireAuthorization_PolicyCallback()
+    {
+        // Arrange
+        var builder = new TestEndpointConventionBuilder();
+        var requirement = new TestRequirement();
+
+        // Act
+        builder.RequireAuthorization(policyBuilder => policyBuilder.Requirements.Add(requirement));
+
+        // Assert
+        var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        convention(endpointModel);
+
+        Assert.Equal(2, endpointModel.Metadata.Count);
+        var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(endpointModel.Metadata[0]);
+        Assert.Null(authMetadata.Policy);
+
+        var policy = Assert.IsAssignableFrom<AuthorizationPolicy>(endpointModel.Metadata[1]);
+        Assert.Equal(1, policy.Requirements.Count);
+        Assert.Equal(requirement, policy.Requirements[0]);
+    }
+
+    [Fact]
+    public void RequireAuthorization_PolicyCallbackWithAuthorize()
+    {
+        // Arrange
+        var builder = new TestEndpointConventionBuilder();
+        var authorize = new AuthorizeAttribute();
+        var requirement = new TestRequirement();
+
+        // Act
+        builder.RequireAuthorization(policyBuilder => policyBuilder.Requirements.Add(requirement));
+
+        // Assert
+        var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        endpointModel.Metadata.Add(authorize);
+        convention(endpointModel);
+
+        // Confirm that we don't add another authorize if one already exists
+        Assert.Equal(2, endpointModel.Metadata.Count);
+        Assert.Equal(authorize, endpointModel.Metadata[0]);
+        var policy = Assert.IsAssignableFrom<AuthorizationPolicy>(endpointModel.Metadata[1]);
+        Assert.Equal(1, policy.Requirements.Count);
+        Assert.Equal(requirement, policy.Requirements[0]);
+    }
+
+    [Fact]
+    public void RequireAuthorization_PolicyWithAuthorize()
+    {
+        // Arrange
+        var builder = new TestEndpointConventionBuilder();
+        var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var authorize = new AuthorizeAttribute();
+
+        // Act
+        builder.RequireAuthorization(policy);
+
+        // Assert
+        var convention = Assert.Single(builder.Conventions);
+
+        var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+        endpointModel.Metadata.Add(authorize);
+        convention(endpointModel);
+
+        // Confirm that we don't add another authorize if one already exists
+        Assert.Equal(2, endpointModel.Metadata.Count);
+        Assert.Equal(authorize, endpointModel.Metadata[0]);
+        Assert.Equal(policy, endpointModel.Metadata[1]);
+    }
+
+    class TestRequirement : IAuthorizationRequirement { }
+
+    [Fact]
     public void AllowAnonymous_Default()
     {
         // Arrange

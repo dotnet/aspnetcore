@@ -31,7 +31,7 @@
   <Target Name="_AddContentRootForProjectReferences" BeforeTargets="PrepareResources" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup Condition="'@(_ContentRootProjectReferences->Count())' != '0'">
       <_ManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
-        <ContentRoot>$([System.IO.Path]::GetDirectoryName(%(_ContentRootProjectReferences.MSBuildSourceProjectFile)))</ContentRoot>
+        <ContentRoot>$([System.IO.Path]::GetDirectoryName('%(_ContentRootProjectReferences.MSBuildSourceProjectFile)'))</ContentRoot>
       </_ManifestProjects>
     </ItemGroup>
 
@@ -46,7 +46,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GeneratePublishTestManifest" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
+  <Target Name="_GeneratePublishTestManifest" Condition="$(IsPublishable) == 'true'" BeforeTargets="Publish" DependsOnTargets="_ResolveMvcTestProjectReferences">
     <ItemGroup>
       <_PublishManifestProjects Include="%(_ContentRootProjectReferences.FusionName)">
         <ContentRoot>~</ContentRoot>
@@ -64,8 +64,17 @@
         Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
         Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.ResolvedFrom)', '.deps.json'))" />
     </ItemGroup>
+    
+    <PropertyGroup>
+        <_CreateHardLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)' == ''">$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)</_CreateHardLinksForMvcCopyDependencyFilesIfPossible>
+        <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
+    </PropertyGroup>
 
-    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutDir)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)"
+       DestinationFolder="$(OutDir)"
+       UseHardlinksIfPossible="$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)"
+       UseSymboliclinksIfPossible="$(_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible)"
+       Condition="Exists('%(DepsFilePaths.FullPath)')" />
   </Target>
 
 </Project>

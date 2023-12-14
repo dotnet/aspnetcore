@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.SignalR.Tests.Internal;
 
@@ -162,7 +157,7 @@ public class TypedClientBuilderTests
     {
         var clientProxy = new MockProxy();
         var ex = Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IVoidMethodClient>.Build(clientProxy));
-        Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidMethodClient).FullName}.{nameof(IVoidMethodClient.Method)}'. All client proxy methods must return '{typeof(Task).FullName}'.", ex.Message);
+        Assert.Equal($"Cannot generate proxy implementation for '{typeof(IVoidMethodClient).FullName}.{nameof(IVoidMethodClient.Method)}'. All client proxy methods must return '{typeof(Task).FullName}' or '{typeof(Task).FullName}<T>'.", ex.Message);
     }
 
     [Fact]
@@ -170,7 +165,7 @@ public class TypedClientBuilderTests
     {
         var clientProxy = new MockProxy();
         var ex = Assert.Throws<InvalidOperationException>(() => TypedClientBuilder<IStringMethodClient>.Build(clientProxy));
-        Assert.Equal($"Cannot generate proxy implementation for '{typeof(IStringMethodClient).FullName}.{nameof(IStringMethodClient.Method)}'. All client proxy methods must return '{typeof(Task).FullName}'.", ex.Message);
+        Assert.Equal($"Cannot generate proxy implementation for '{typeof(IStringMethodClient).FullName}.{nameof(IStringMethodClient.Method)}'. All client proxy methods must return '{typeof(Task).FullName}' or '{typeof(Task).FullName}<T>'.", ex.Message);
     }
 
     [Fact]
@@ -207,9 +202,86 @@ public class TypedClientBuilderTests
         Assert.Equal("Type must not contain events.", ex.Message);
     }
 
+    [Fact]
+    public async Task ProducesImplementationThatProxiesMethodsToISingleClientProxyAsync()
+    {
+        var clientProxy = new MockSingleClientProxy();
+        var typedProxy = TypedClientBuilder<ITestClient>.Build(clientProxy);
+
+        var objArg = new object();
+        var task = typedProxy.GetValue(1008, objArg, "test");
+        Assert.False(task.IsCompleted);
+
+        Assert.Collection(clientProxy.Sends,
+            send =>
+            {
+                Assert.Equal("GetValue", send.Method);
+                Assert.Collection(send.Arguments,
+                    arg1 => Assert.Equal(1008, arg1),
+                    arg2 => Assert.Same(objArg, arg2),
+                    arg3 => Assert.Same("test", arg3));
+                Assert.Equal(CancellationToken.None, send.CancellationToken);
+                send.Complete();
+            });
+
+        var result = await task.DefaultTimeout();
+        Assert.Equal(default(int), result);
+    }
+
+    [Fact]
+    public async Task ThrowsIfReturnMethodUsedWithoutSingleClientProxy()
+    {
+        var clientProxy = new MockProxy();
+        var typedProxy = TypedClientBuilder<ITestClient>.Build(clientProxy);
+
+        var objArg = new object();
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => typedProxy.GetValue(102, objArg, "test")).DefaultTimeout();
+        Assert.Equal("InvokeAsync only works with Single clients.", ex.Message);
+
+        Assert.Empty(clientProxy.Sends);
+    }
+
+    [Fact]
+    public async Task ResultMethodSupportsCancellationToken()
+    {
+        var clientProxy = new MockSingleClientProxy();
+        var typedProxy = TypedClientBuilder<ICancellationTokenMethod>.Build(clientProxy);
+        CancellationTokenSource cts1 = new CancellationTokenSource();
+        var task1 = typedProxy.MethodReturning("foo", cts1.Token);
+        Assert.False(task1.IsCompleted);
+
+        CancellationTokenSource cts2 = new CancellationTokenSource();
+        var task2 = typedProxy.NoArgumentMethodReturning(cts2.Token);
+        Assert.False(task2.IsCompleted);
+
+        Assert.Collection(clientProxy.Sends,
+            send1 =>
+            {
+                Assert.Equal("MethodReturning", send1.Method);
+                Assert.Single(send1.Arguments);
+                Assert.Collection(send1.Arguments,
+                    arg1 => Assert.Equal("foo", arg1));
+                Assert.Equal(cts1.Token, send1.CancellationToken);
+                send1.Complete();
+            },
+            send2 =>
+            {
+                Assert.Equal("NoArgumentMethodReturning", send2.Method);
+                Assert.Empty(send2.Arguments);
+                Assert.Equal(cts2.Token, send2.CancellationToken);
+                send2.Complete();
+            });
+
+        var result = await task1.DefaultTimeout();
+        Assert.Equal(default(string), result);
+        var result2 = await task2.DefaultTimeout();
+        Assert.Equal(default(int), result2);
+    }
+
     public interface ITestClient
     {
         Task Method(string arg1, int arg2, object arg3);
+        Task<int> GetValue(int arg1, object arg2, string arg3);
     }
 
     public interface IRenamedTestClient
@@ -247,6 +319,9 @@ public class TypedClientBuilderTests
     {
         Task Method(string foo, CancellationToken cancellationToken);
         Task NoArgumentMethod(CancellationToken cancellationToken);
+
+        Task<int> NoArgumentMethodReturning(CancellationToken cancellationToken);
+        Task<string> MethodReturning(string foo, CancellationToken cancellationToken);
     }
 
     public interface IPropertiesClient
@@ -257,6 +332,11 @@ public class TypedClientBuilderTests
     public interface IEventsClient
     {
         event EventHandler Event;
+    }
+
+    public interface ITestReturnValueClient
+    {
+        Task<int> GetValue();
     }
 
     private class MockProxy : IClientProxy
@@ -270,6 +350,30 @@ public class TypedClientBuilderTests
             Sends.Add(new SendContext(method, args, cancellationToken, tcs));
 
             return tcs.Task;
+        }
+    }
+
+    private class MockSingleClientProxy : ISingleClientProxy
+    {
+        public IList<SendContext> Sends { get; } = new List<SendContext>();
+
+        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken)
+        {
+            var tcs = new TaskCompletionSource();
+
+            Sends.Add(new SendContext(method, args, cancellationToken, tcs));
+
+            return tcs.Task;
+        }
+
+        public async Task<T> InvokeCoreAsync<T>(string method, object[] args, CancellationToken cancellationToken = default)
+        {
+            var tcs = new TaskCompletionSource();
+
+            Sends.Add(new SendContext(method, args, cancellationToken, tcs));
+
+            await tcs.Task;
+            return default(T);
         }
     }
 

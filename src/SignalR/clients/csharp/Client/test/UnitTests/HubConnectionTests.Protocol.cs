@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
@@ -668,7 +668,265 @@ public partial class HubConnectionTests
                 await hubConnection.DisposeAsync().DefaultTimeout();
                 await connection.DisposeAsync().DefaultTimeout();
 
-                Assert.Equal(0, (await connection.ReadAllSentMessagesAsync(ignorePings: false).DefaultTimeout()).Count);
+                var messages = await connection.ReadAllSentMessagesAsync(ignorePings: false).DefaultTimeout();
+                var message = Assert.Single(messages);
+                Assert.Equal("{\"type\":7}", message);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientCanReturnResult()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                hubConnection.On("Result", () => 10);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":10}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ThrowsWhenMultipleReturningHandlersRegistered()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                hubConnection.On("Result", () => 10);
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => hubConnection.On("Result", () => 11));
+                Assert.Equal("'Result' already has a value returning handler. Multiple return values are not supported.", ex.Message);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientReturnHandlerCanMixWithNonReturnHandler()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.On("Result", () => 40);
+                hubConnection.On("Result", tcs.SetResult);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":40}", invokeMessage);
+                await tcs.Task.DefaultTimeout();
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientCanThrowErrorResult()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                hubConnection.On("Result", int () =>
+                {
+                    throw new Exception("error from client");
+                });
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"error from client\"}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientResultIgnoresErrorWhenLastHandlerSuccessful()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                hubConnection.On("Result", () =>
+                {
+                    throw new Exception("error from client");
+                });
+
+                hubConnection.On("Result", () => 20);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":20}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientResultReturnsErrorIfNoHandlerFromClient()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client didn't provide a result.\"}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientResultReturnsErrorIfNoResultFromClient()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                // No result provided
+                hubConnection.On("Result", () => { });
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client didn't provide a result.\"}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientResultReturnsErrorIfCannotParseArgument()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                // No result provided
+                hubConnection.On("Result", (string _) => 1);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[15]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client failed to parse argument(s).\"}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientResultCanReturnNullResult()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                // No result provided
+                hubConnection.On("Result", object () => null);
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":null}", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ClientResultHandlerDoesNotBlockOtherHandlers()
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection);
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.On("Result", async () =>
+                {
+                    await tcs.Task.DefaultTimeout();
+                    return 1;
+                });
+                hubConnection.On("Other", () => tcs.SetResult());
+
+                await connection.ReceiveTextAsync("{\"type\":1,\"invocationId\":\"1\",\"target\":\"Result\",\"arguments\":[]}\u001e").DefaultTimeout();
+                await connection.ReceiveTextAsync("{\"type\":1,\"target\":\"Other\",\"arguments\":[]}\u001e").DefaultTimeout();
+
+                var invokeMessage = await connection.ReadSentTextMessageAsync().DefaultTimeout();
+
+                Assert.Equal("{\"type\":3,\"invocationId\":\"1\",\"result\":1}", invokeMessage);
             }
             finally
             {

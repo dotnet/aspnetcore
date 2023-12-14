@@ -42,7 +42,7 @@ public class WebApplicationFactoryClientOptions
     /// <see cref="WebApplicationFactory{TEntryPoint}.CreateClient(WebApplicationFactoryClientOptions)"/>
     /// should automatically follow redirect responses.
     /// The default is <c>true</c>.
-    /// /// </summary>
+    /// </summary>
     public bool AllowAutoRedirect { get; set; } = true;
 
     /// <summary>

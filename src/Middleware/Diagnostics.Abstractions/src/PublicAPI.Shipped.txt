@@ -16,13 +16,6 @@
 ~Microsoft.AspNetCore.Diagnostics.ICompilationException.CompilationFailures.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.CompilationFailure>
 ~Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter.HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext, System.Threading.Tasks.Task> next) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature.Error.get -> System.Exception
-~Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature.Path.get -> string
-~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.get -> string
-~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.set -> void
-~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.get -> string
-~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.set -> void
-~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.get -> string
-~Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.set -> void
 Microsoft.AspNetCore.Diagnostics.CompilationFailure
 Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string? sourceFilePath, string? sourceFileContent, string? compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage!>? messages) -> void
 Microsoft.AspNetCore.Diagnostics.CompilationFailure.CompilationFailure(string? sourceFilePath, string? sourceFileContent, string? compiledContent, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.DiagnosticMessage?>? messages, string? failureSummary) -> void
@@ -59,9 +52,12 @@ Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature
 Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature.Enabled.get -> bool
 Microsoft.AspNetCore.Diagnostics.IStatusCodePagesFeature.Enabled.set -> void
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.get -> string!
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPath.set -> void
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.get -> string!
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalPathBase.set -> void
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.get -> string?
 Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalQueryString.set -> void
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalStatusCode.get -> int
+Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?

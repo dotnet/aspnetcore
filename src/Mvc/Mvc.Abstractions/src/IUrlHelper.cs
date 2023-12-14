@@ -70,7 +70,7 @@ public interface IUrlHelper
     /// </code>
     /// </para>
     /// </example>
-    bool IsLocalUrl([NotNullWhen(true)] string? url);
+    bool IsLocalUrl([NotNullWhen(true)][StringSyntax(StringSyntaxAttribute.Uri)] string? url);
 
     /// <summary>
     /// Generates a URL with an absolute path, which contains the route name, route values, protocol to use, host

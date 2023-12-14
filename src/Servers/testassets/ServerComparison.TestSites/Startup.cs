@@ -12,6 +12,14 @@ public class Startup
 {
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
+        app.Map("/throwexception", subApp =>
+        {
+            subApp.Run(context =>
+            {
+                throw new ApplicationException("Application exception");
+            });
+        });
+
         app.Run(ctx =>
         {
             return ctx.Response.WriteAsync("Hello World " + RuntimeInformation.ProcessArchitecture);

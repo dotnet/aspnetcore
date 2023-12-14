@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
-internal class DefaultPageFactoryProvider : IPageFactoryProvider
+internal sealed class DefaultPageFactoryProvider : IPageFactoryProvider
 {
     private readonly IPageActivatorProvider _pageActivator;
     private readonly IModelMetadataProvider _modelMetadataProvider;
@@ -31,7 +31,7 @@ internal class DefaultPageFactoryProvider : IPageFactoryProvider
         _modelMetadataProvider = metadataProvider;
         _propertyAccessors = new RazorPagePropertyActivator.PropertyValueAccessors
         {
-            UrlHelperAccessor = context => urlHelperFactory.GetUrlHelper(context),
+            UrlHelperAccessor = urlHelperFactory.GetUrlHelper,
             JsonHelperAccessor = context => jsonHelper,
             DiagnosticSourceAccessor = context => diagnosticListener,
             HtmlEncoderAccessor = context => htmlEncoder,
@@ -69,20 +69,14 @@ internal class DefaultPageFactoryProvider : IPageFactoryProvider
 
     public Action<PageContext, ViewContext, object>? CreatePageDisposer(CompiledPageActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         return _pageActivator.CreateReleaser(descriptor);
     }
 
     public Func<PageContext, ViewContext, object, ValueTask>? CreateAsyncPageDisposer(CompiledPageActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         return _pageActivator.CreateAsyncReleaser(descriptor);
     }

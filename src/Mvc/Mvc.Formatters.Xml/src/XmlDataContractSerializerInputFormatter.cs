@@ -76,10 +76,7 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
         get => _serializerSettings;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _serializerSettings = value;
         }
@@ -101,15 +98,8 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     /// <inheritdoc />
     public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var request = context.HttpContext.Request;
         Stream readStream = new NonDisposableStream(request.Body);
@@ -182,10 +172,7 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     /// <inheritdoc />
     protected override bool CanReadType(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         return GetCachedSerializer(GetSerializableType(type)) != null;
     }
@@ -198,15 +185,8 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     /// <returns>The <see cref="XmlReader"/> used during deserialization.</returns>
     protected virtual XmlReader CreateXmlReader(Stream readStream, Encoding encoding)
     {
-        if (readStream == null)
-        {
-            throw new ArgumentNullException(nameof(readStream));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(readStream);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         return XmlDictionaryReader.CreateTextReader(readStream, encoding, _readerQuotas, onClose: null);
     }
@@ -218,10 +198,7 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     /// <returns>The type to which the XML will be deserialized.</returns>
     protected virtual Type GetSerializableType(Type declaredType)
     {
-        if (declaredType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredType));
-        }
+        ArgumentNullException.ThrowIfNull(declaredType);
 
         var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(
             new WrapperProviderContext(declaredType, isSerialization: false));
@@ -236,10 +213,7 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     /// <returns>The <see cref="DataContractSerializer"/> used during deserialization.</returns>
     protected virtual DataContractSerializer? CreateSerializer(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         try
         {
@@ -260,10 +234,7 @@ public class XmlDataContractSerializerInputFormatter : TextInputFormatter, IInpu
     /// <returns>The <see cref="DataContractSerializer"/> instance.</returns>
     protected virtual DataContractSerializer GetCachedSerializer(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         if (!_serializerCache.TryGetValue(type, out var serializer))
         {

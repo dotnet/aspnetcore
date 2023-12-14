@@ -48,7 +48,7 @@ In general, events should follow a pattern like this:
 ```csharp
 // This needs to have the NonEventAttribute because otherwise EventSource will try to auto-generate a manifest for it!
 [NonEvent]
-public void SomethingHappened(ObjectNeededToCalulateThePayload p, AnotherObjectNeededToCalculateThePayload p2)
+public void SomethingHappened(ObjectNeededToCalculateThePayload p, AnotherObjectNeededToCalculateThePayload p2)
 {
   // Check that the source is enabled (regardless of level)
   if (IsEnabled())
@@ -57,7 +57,7 @@ public void SomethingHappened(ObjectNeededToCalulateThePayload p, AnotherObjectN
     _somethingsHappenedCounter.WriteMetric(1.0f);
 
     // Check that this specific event is actually enabled (by level and optionally keywords).
-    if (IsEnabled(EventLevel.Informational, EventKeyords.None))
+    if (IsEnabled(EventLevel.Informational, EventKeywords.None))
     {
       // Do any complex calculation needed to determine the payload values.
       var payloadValue = CalculateThePayload(p);
@@ -74,7 +74,7 @@ public void SomethingHappened(ObjectNeededToCalulateThePayload p, AnotherObjectN
 private void SomethingHappened(string payloadValue, int anotherPayloadValue, double morePayload) => WriteEvent(42, payloadValue, anotherPayloadValue, morePayload);
 ```
 
-The above example is one that covers basically all the scenarios. However, many of the individual elements of that pattern can be elided when not needed. For example, when there isn't any complex payload calcuation, everything can be done in a single method with the `Event` attribute. We generally write EventCounters regardless of the level that the provider is activated at (see the section on counters), hence why we check `IsEnabled()` (no parameters) in the above example. However, if there is no counter associated with the event, the `IsEnabled(EventLevel, EventKeyword)` overload can be used directly. So, below is an example of an event with a simple payload and no event counter:
+The above example is one that covers basically all the scenarios. However, many of the individual elements of that pattern can be elided when not needed. For example, when there isn't any complex payload calculation, everything can be done in a single method with the `Event` attribute. We generally write EventCounters regardless of the level that the provider is activated at (see the section on counters), hence why we check `IsEnabled()` (no parameters) in the above example. However, if there is no counter associated with the event, the `IsEnabled(EventLevel, EventKeyword)` overload can be used directly. So, below is an example of an event with a simple payload and no event counter:
 
 ```csharp
 [Event(eventId: 42, Level = EventLevel.Informational)]
@@ -95,7 +95,7 @@ When we have places where we want to enable events but only when explicitly requ
 
 Since Event Counters are only actually enabled when the `EventCounterIntervalSec` parameter is provided to the event source when a listener attaches, we don't really need a level or keyword to control them. As a result, we always write to them, when the EventSource itself is enabled.
 
-There are a number of different "kinds" of event counters in our system. They are characterized by what kind of value is written in the `EventCounter.WriteMetric` call. Counters provide mulitple aggregations (Count, Mean, StdDev, Min, Max), and certain aggregations are appropriate for different kinds of counters.
+There are a number of different "kinds" of event counters in our system. They are characterized by what kind of value is written in the `EventCounter.WriteMetric` call. Counters provide multiple aggregations (Count, Mean, StdDev, Min, Max), and certain aggregations are appropriate for different kinds of counters.
 
 * Counters track the number of times an event occurs. They are written by calling `.WriteMetric(1.0f)` to the counter. The consumer can determine the number of events that occurred over an interval by reading the "Count" aggregation. They should have names combining a plural noun and adjective, like "RequestsStarted"
 * Metrics track a value that changes over time or per "unit" (i.e. per request, per connection, etc.). They are written by calling `.WriteMetric` with the current value of the metric. The consumer can use the aggregates to get data about the metric over time. They should have names combining a singular nouns describing the metric, like "RequestBodySize"
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Authentication.Internal
 
 ## Automated Testing of EventSources
 
-EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.Testing`. An example test is below:
+EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.InternalTesting`. An example test is below:
 
 ```csharp
 // The base class MUST be used for EventSource testing because EventSources are global and parallel tests can cause issues.

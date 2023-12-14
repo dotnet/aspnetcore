@@ -1,13 +1,17 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core gRPC Service",
-  "description": "A project template for creating a gRPC ASP.NET Core service.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
-  "symbols/kestrelHttpsPort/description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used).",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "ASP.NET Core-gRPC-Dienst",
+  "description": "Eine Projektvorlage zum Erstellen eines gRPC-Diensts mit ASP.NET Core, mit optionaler Unterstützung für die Veröffentlichung als native AOT.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net8.0/description": "Ziel net8.0",
+  "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "symbols/kestrelHttpPort/description": "Portnummer, die für den HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/kestrelHttpsPort/description": "Portnummer, die für den HTTPS Endpunkt in launchSettings.json verwendet werden soll. Diese Option ist nur anwendbar, wenn der Parameter no-https nicht verwendet wird (no-https wird ignoriert, wenn entweder IndividualAuth oder OrganizationalAuth verwendet wird).",
+  "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
+  "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll.",
+  "symbols/NativeAot/displayName": "_native AOT-Veröffentlichung aktivieren",
+  "symbols/NativeAot/description": "Gibt an, ob das Projekt für die Veröffentlichung als native AOT aktiviert werden soll.",
+  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
 }

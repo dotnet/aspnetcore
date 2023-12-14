@@ -15,14 +15,14 @@ public class FiltersController : Controller
     public IActionResult AlwaysRunResultFiltersCanRunWhenResourceFilterShortCircuit([FromBody] Product product) =>
         throw new Exception("Shouldn't be executed");
 
-    [ServiceFilter(typeof(ServiceActionFilter))]
+    [ServiceFilter<ServiceActionFilter>]
     public IActionResult ServiceFilterTest() => Content("Service filter content");
 
     [TraceResultOutputFilter]
     public IActionResult TraceResult() => new EmptyResult();
 
     [Route("{culture}/[controller]/[action]")]
-    [MiddlewareFilter(typeof(LocalizationPipeline))]
+    [MiddlewareFilter<LocalizationPipeline>]
     public IActionResult MiddlewareFilterTest()
     {
         return Content($"CurrentCulture:{CultureInfo.CurrentCulture.Name},CurrentUICulture:{CultureInfo.CurrentUICulture.Name}");

@@ -1,13 +1,13 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Razor Class Library",
-  "description": "A project for creating a Razor class library that targets .NET Standard",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/SupportPagesAndViews/displayName": "Support pages and views",
-  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views in addition to components to this library.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/openInEditor/description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor"
+  "name": "Razor 클래스 라이브러리",
+  "description": ".NET을 대상으로 하는 Razor 클래스 라이브러리를 생성하기 위한 프로젝트",
+  "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
+  "symbols/Framework/choices/net8.0/description": "대상 net8.0",
+  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
+  "symbols/SupportPagesAndViews/displayName": "지원 페이지 및 보기",
+  "symbols/SupportPagesAndViews/description": "이 라이브러리에 기존 Razor 페이지 및 보기 추가를 지원할지 여부입니다.",
+  "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행",
+  "postActions/openInEditor/description": "편집기에서 Areas/MyFeature/Pages/Page1.cshtml을 엽니다."
 }

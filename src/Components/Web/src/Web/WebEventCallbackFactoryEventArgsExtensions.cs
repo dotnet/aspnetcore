@@ -19,10 +19,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<ClipboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ClipboardEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<ClipboardEventArgs>(receiver, callback);
     }
@@ -38,10 +35,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<ClipboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ClipboardEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<ClipboardEventArgs>(receiver, callback);
     }
@@ -57,10 +51,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<DragEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<DragEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<DragEventArgs>(receiver, callback);
     }
@@ -76,10 +67,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<DragEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<DragEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<DragEventArgs>(receiver, callback);
     }
@@ -95,10 +83,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<ErrorEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ErrorEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<ErrorEventArgs>(receiver, callback);
     }
@@ -114,10 +99,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<ErrorEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ErrorEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<ErrorEventArgs>(receiver, callback);
     }
@@ -133,10 +115,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<FocusEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<FocusEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<FocusEventArgs>(receiver, callback);
     }
@@ -152,10 +131,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<FocusEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<FocusEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<FocusEventArgs>(receiver, callback);
     }
@@ -171,10 +147,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<KeyboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<KeyboardEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<KeyboardEventArgs>(receiver, callback);
     }
@@ -190,10 +163,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<KeyboardEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<KeyboardEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<KeyboardEventArgs>(receiver, callback);
     }
@@ -209,10 +179,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<MouseEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<MouseEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<MouseEventArgs>(receiver, callback);
     }
@@ -228,10 +195,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<MouseEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<MouseEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<MouseEventArgs>(receiver, callback);
     }
@@ -246,10 +210,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<PointerEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<PointerEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<PointerEventArgs>(receiver, callback);
     }
@@ -265,10 +226,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<PointerEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<PointerEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<PointerEventArgs>(receiver, callback);
     }
@@ -284,10 +242,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<ProgressEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<ProgressEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<ProgressEventArgs>(receiver, callback);
     }
@@ -303,10 +258,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<ProgressEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<ProgressEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<ProgressEventArgs>(receiver, callback);
     }
@@ -322,10 +274,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<TouchEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<TouchEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<TouchEventArgs>(receiver, callback);
     }
@@ -341,10 +290,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<TouchEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<TouchEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<TouchEventArgs>(receiver, callback);
     }
@@ -360,10 +306,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<WheelEventArgs> Create(this EventCallbackFactory factory, object receiver, Action<WheelEventArgs> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<WheelEventArgs>(receiver, callback);
     }
@@ -379,10 +322,7 @@ public static class WebEventCallbackFactoryEventArgsExtensions
     [Obsolete("This extension method is obsolete and will be removed in a future version. Use the generic overload instead.")]
     public static EventCallback<WheelEventArgs> Create(this EventCallbackFactory factory, object receiver, Func<WheelEventArgs, Task> callback)
     {
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullException.ThrowIfNull(factory);
 
         return factory.Create<WheelEventArgs>(receiver, callback);
     }

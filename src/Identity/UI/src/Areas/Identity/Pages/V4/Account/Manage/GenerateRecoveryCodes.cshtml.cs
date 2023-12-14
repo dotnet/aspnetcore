@@ -42,7 +42,7 @@ public abstract class GenerateRecoveryCodesModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class GenerateRecoveryCodesModel<TUser> : GenerateRecoveryCodesModel where TUser : class
+internal sealed class GenerateRecoveryCodesModel<TUser> : GenerateRecoveryCodesModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly ILogger<GenerateRecoveryCodesModel> _logger;

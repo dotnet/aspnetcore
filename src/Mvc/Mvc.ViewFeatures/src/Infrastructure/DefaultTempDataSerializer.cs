@@ -6,14 +6,11 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 
-internal class DefaultTempDataSerializer : TempDataSerializer
+internal sealed class DefaultTempDataSerializer : TempDataSerializer
 {
     public override IDictionary<string, object> Deserialize(byte[] value)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         if (value.Length == 0)
         {
@@ -219,10 +216,7 @@ internal class DefaultTempDataSerializer : TempDataSerializer
 
     public override bool CanSerializeType(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         type = Nullable.GetUnderlyingType(type) ?? type;
 

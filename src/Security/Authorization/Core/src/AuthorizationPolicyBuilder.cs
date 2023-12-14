@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -14,6 +15,8 @@ namespace Microsoft.AspNetCore.Authorization;
 /// </summary>
 public class AuthorizationPolicyBuilder
 {
+    private static readonly DenyAnonymousAuthorizationRequirement _denyAnonymousAuthorizationRequirement = new();
+
     /// <summary>
     /// Creates a new instance of <see cref="AuthorizationPolicyBuilder"/>
     /// </summary>
@@ -53,7 +56,9 @@ public class AuthorizationPolicyBuilder
     /// </summary>
     /// <param name="schemes">The schemes to add.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public AuthorizationPolicyBuilder AddAuthenticationSchemes(params string[] schemes)
+    public AuthorizationPolicyBuilder AddAuthenticationSchemes(params string[] schemes) => AddAuthenticationSchemesCore(schemes);
+
+    private AuthorizationPolicyBuilder AddAuthenticationSchemesCore(IEnumerable<string> schemes)
     {
         foreach (var authType in schemes)
         {
@@ -68,7 +73,9 @@ public class AuthorizationPolicyBuilder
     /// </summary>
     /// <param name="requirements">The authorization requirements to add.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
-    public AuthorizationPolicyBuilder AddRequirements(params IAuthorizationRequirement[] requirements)
+    public AuthorizationPolicyBuilder AddRequirements(params IAuthorizationRequirement[] requirements) => AddRequirementsCore(requirements);
+
+    private AuthorizationPolicyBuilder AddRequirementsCore(IEnumerable<IAuthorizationRequirement> requirements)
     {
         foreach (var req in requirements)
         {
@@ -84,13 +91,10 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder Combine(AuthorizationPolicy policy)
     {
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(policy);
 
-        AddAuthenticationSchemes(policy.AuthenticationSchemes.ToArray());
-        AddRequirements(policy.Requirements.ToArray());
+        AddAuthenticationSchemesCore(policy.AuthenticationSchemes);
+        AddRequirementsCore(policy.Requirements);
         return this;
     }
 
@@ -99,14 +103,11 @@ public class AuthorizationPolicyBuilder
     /// that the current user has the specified claim and that the claim value must be one of the allowed values.
     /// </summary>
     /// <param name="claimType">The claim type required.</param>
-    /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
+    /// <param name="allowedValues">Optional list of claim values. If specified, the claim must match one or more of these values.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues)
     {
-        if (claimType == null)
-        {
-            throw new ArgumentNullException(nameof(claimType));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(claimType);
 
         return RequireClaim(claimType, (IEnumerable<string>)allowedValues);
     }
@@ -116,14 +117,11 @@ public class AuthorizationPolicyBuilder
     /// that the current user has the specified claim and that the claim value must be one of the allowed values.
     /// </summary>
     /// <param name="claimType">The claim type required.</param>
-    /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
+    /// <param name="allowedValues">Optional list of claim values. If specified, the claim must match one or more of these values.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues)
     {
-        if (claimType == null)
-        {
-            throw new ArgumentNullException(nameof(claimType));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(claimType);
 
         Requirements.Add(new ClaimsAuthorizationRequirement(claimType, allowedValues));
         return this;
@@ -137,10 +135,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireClaim(string claimType)
     {
-        if (claimType == null)
-        {
-            throw new ArgumentNullException(nameof(claimType));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(claimType);
 
         Requirements.Add(new ClaimsAuthorizationRequirement(claimType, allowedValues: null));
         return this;
@@ -154,10 +149,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireRole(params string[] roles)
     {
-        if (roles == null)
-        {
-            throw new ArgumentNullException(nameof(roles));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(roles);
 
         return RequireRole((IEnumerable<string>)roles);
     }
@@ -170,10 +162,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireRole(IEnumerable<string> roles)
     {
-        if (roles == null)
-        {
-            throw new ArgumentNullException(nameof(roles));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(roles);
 
         Requirements.Add(new RolesAuthorizationRequirement(roles));
         return this;
@@ -182,14 +171,11 @@ public class AuthorizationPolicyBuilder
     /// <summary>
     /// Adds a <see cref="NameAuthorizationRequirement"/> to the current instance which enforces that the current user matches the specified name.
     /// </summary>
-    /// <param name="userName">The user name the current user must possess.</param>
+    /// <param name="userName">The user name the current user must have.</param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireUserName(string userName)
     {
-        if (userName == null)
-        {
-            throw new ArgumentNullException(nameof(userName));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(userName);
 
         Requirements.Add(new NameAuthorizationRequirement(userName));
         return this;
@@ -201,7 +187,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireAuthenticatedUser()
     {
-        Requirements.Add(new DenyAnonymousAuthorizationRequirement());
+        Requirements.Add(_denyAnonymousAuthorizationRequirement);
         return this;
     }
 
@@ -212,10 +198,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationHandlerContext, bool> handler)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(handler);
 
         Requirements.Add(new AssertionRequirement(handler));
         return this;
@@ -228,10 +211,7 @@ public class AuthorizationPolicyBuilder
     /// <returns>A reference to this instance after the operation has completed.</returns>
     public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationHandlerContext, Task<bool>> handler)
     {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(handler);
 
         Requirements.Add(new AssertionRequirement(handler));
         return this;

@@ -33,7 +33,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
 
         int initialItemCount = 0;
 
@@ -193,7 +193,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerStyle = "height: 0px;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
@@ -216,7 +216,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
@@ -236,6 +236,30 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetAttribute("style"));
 
         int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
+    }
+
+    [Fact]
+    public void CanRenderHtmlTable()
+    {
+        Browser.MountTestComponent<VirtualizationTable>();
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var topSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :first-child"));
+        var bottomSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :last-child"));
+
+        // We can override the tag name of the spacer
+        Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
+        Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
+        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetAttribute("style"));
+
+        // Check scrolling document element works
+        Browser.DoesNotExist(By.Id("row-999"));
+        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+        var lastElement = Browser.Exists(By.Id("row-999"));
+        Browser.True(() => lastElement.Displayed);
+
+        // Validate that the top spacer has expanded, and bottom one has collapsed
+        Browser.False(() => topSpacer.GetAttribute("style").Contains(expectedInitialSpacerStyle));
+        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetAttribute("style"));
     }
 
     [Fact]
@@ -463,6 +487,51 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         dataSetLengthSelector.SelectByText("25");
         Browser.Equal(25, dataSetLengthLastRendered);
         Browser.True(() => GetPeopleNames(container).Contains("Person 25"));
+    }
+
+    [Fact]
+    public void EmptyContentRendered_Sync()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        Browser.Exists(By.Id("no-data-sync"));
+    }
+
+    [Fact]
+    public void EmptyContentRendered_Async()
+    {
+        Browser.MountTestComponent<VirtualizationComponent>();
+        var finishLoadingWithItemsButton = Browser.Exists(By.Id("finish-loading-button"));
+        var finishLoadingWithoutItemsButton = Browser.Exists(By.Id("finish-loading-button-empty"));
+        var refreshDataAsync = Browser.Exists(By.Id("refresh-data-async"));
+
+        // Check that no items or placeholders are visible.
+        // No data fetches have happened so we don't know how many items there are.
+        Browser.Equal(0, GetItemCount);
+        Browser.Equal(0, GetPlaceholderCount);
+
+        // Check that <EmptyContent> is not shown while loading
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Load the initial set of items.
+        finishLoadingWithItemsButton.Click();
+
+        // Check that <EmptyContent> is still not shown (because there are items loaded)
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Start loading
+        refreshDataAsync.Click();
+
+        // Check that <EmptyContent> is not shown
+        Browser.DoesNotExist(By.Id("no-data-async"));
+
+        // Simulate 0 items
+        finishLoadingWithoutItemsButton.Click();
+
+        // Check that <EmptyContent> is shown
+        Browser.Exists(By.Id("no-data-async"));
+
+        int GetItemCount() => Browser.FindElements(By.Id("async-item")).Count;
+        int GetPlaceholderCount() => Browser.FindElements(By.Id("async-placeholder")).Count;
     }
 
     private string[] GetPeopleNames(IWebElement container)

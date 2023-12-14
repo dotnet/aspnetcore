@@ -104,7 +104,7 @@ public class OAuthOptions : RemoteAuthenticationOptions
     public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; } = default!;
 
     /// <summary>
-    /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See https://tools.ietf.org/html/rfc7636.
+    /// Enables or disables the use of the Proof Key for Code Exchange (PKCE) standard. See <see href="https://tools.ietf.org/html/rfc7636"/>.
     /// The default value is `false` but derived handlers should enable this if their provider supports it.
     /// </summary>
     public bool UsePkce { get; set; }

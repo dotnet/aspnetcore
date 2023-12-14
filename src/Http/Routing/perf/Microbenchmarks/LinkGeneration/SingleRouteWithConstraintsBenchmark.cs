@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BenchmarkDotNet.Attributes;
@@ -17,7 +17,7 @@ public class SingleRouteWithConstraintsBenchmark : EndpointRoutingBenchmarkBase
     [GlobalSetup]
     public void Setup()
     {
-        var template = "Customers/Details/{category}/{region}/{id:int}";
+        var template = "Customers/Details/{category:alpha}/{region:alpha}/{id:int}";
         var defaults = new { controller = "Customers", action = "Details" };
         var requiredValues = new { controller = "Customers", action = "Details" };
 

@@ -22,10 +22,7 @@ public class FloatingPointTypeModelBinderProvider : IModelBinderProvider
     /// <inheritdoc />
     public IModelBinder? GetBinder(ModelBinderProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var modelType = context.Metadata.UnderlyingOrModelType;
         var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();

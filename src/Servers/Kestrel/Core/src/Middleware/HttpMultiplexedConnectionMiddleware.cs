@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class HttpMultiplexedConnectionMiddleware<TContext> where TContext : notnull
+internal sealed class HttpMultiplexedConnectionMiddleware<TContext> where TContext : notnull
 {
     private readonly ServiceContext _serviceContext;
     private readonly IHttpApplication<TContext> _application;
@@ -40,6 +40,12 @@ internal class HttpMultiplexedConnectionMiddleware<TContext> where TContext : no
             memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,
             localEndPoint,
             connectionContext.RemoteEndPoint as IPEndPoint);
+
+        if (connectionContext.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        {
+            // HTTP/3 is always TLS 1.3. If multiple versions are support in the future then this value will need to be detected.
+            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", "1.3"));
+        }
 
         var connection = new HttpConnection(httpConnectionContext);
 

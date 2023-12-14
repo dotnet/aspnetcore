@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
@@ -59,10 +60,8 @@ public class AzureFileLoggerOptions : BatchingLoggerOptions
         get { return _fileName; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentThrowHelper.ThrowIfNullOrEmpty(value);
+
             _fileName = value;
         }
     }

@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.WebUtilities;
@@ -40,10 +41,7 @@ public sealed class FileBufferingWriteStream : Stream
         long? bufferLimit = null,
         Func<string>? tempFileDirectoryAccessor = null)
     {
-        if (memoryThreshold < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(memoryThreshold));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegative(memoryThreshold);
 
         if (bufferLimit != null && bufferLimit < memoryThreshold)
         {
@@ -108,7 +106,7 @@ public sealed class FileBufferingWriteStream : Stream
     /// <inheritdoc />
     public override void Write(byte[] buffer, int offset, int count)
     {
-        ThrowArgumentException(buffer, offset, count);
+        ValidateBufferArguments(buffer, offset, count);
         ThrowIfDisposed();
 
         if (_bufferLimit.HasValue && _bufferLimit - Length < count)
@@ -141,7 +139,6 @@ public sealed class FileBufferingWriteStream : Stream
     /// <inheritdoc />
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        ThrowArgumentException(buffer, offset, count);
         await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
     }
 
@@ -271,6 +268,14 @@ public sealed class FileBufferingWriteStream : Stream
         {
             var tempFileDirectory = _tempFileDirectoryAccessor();
             var tempFileName = Path.Combine(tempFileDirectory, "ASPNETCORE_" + Guid.NewGuid() + ".tmp");
+
+            // Create a temp file with the correct Unix file mode before moving it to the assigned tempFileName in the _tempFileDirectory.
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var tempTempFileName = Path.GetTempFileName();
+                File.Move(tempTempFileName, tempFileName);
+            }
+
             FileStream = new FileStream(
                 tempFileName,
                 FileMode.Create,
@@ -283,32 +288,6 @@ public sealed class FileBufferingWriteStream : Stream
 
     private void ThrowIfDisposed()
     {
-        if (Disposed)
-        {
-            throw new ObjectDisposedException(nameof(FileBufferingWriteStream));
-        }
-    }
-
-    private static void ThrowArgumentException(byte[] buffer, int offset, int count)
-    {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (offset < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset));
-        }
-
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count));
-        }
-
-        if (buffer.Length - offset < count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(offset));
-        }
+        ObjectDisposedException.ThrowIf(Disposed, nameof(FileBufferingWriteStream));
     }
 }

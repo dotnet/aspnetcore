@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3FrameWriter
+internal sealed class Http3FrameWriter
 {
     // These bytes represent a ":status: 100" continue response header frame encoded with
     // QPACK. To arrive at this, we first take the index in the QPACK static table for status
@@ -23,7 +23,7 @@ internal class Http3FrameWriter
     // is 63, and encode it to get ff 00 (see QPackEncoder.EncodeStaticIndexedHeaderField).
     // The two zero bytes are for the section prefix
     // (https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#header-prefix)
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { 0x00, 0x00, 0xff, 0x00 };
+    private static ReadOnlySpan<byte> ContinueBytes => [0x00, 0x00, 0xff, 0x00];
 
     // Size based on HTTP/2 default frame size
     private const int MaxDataFrameSize = 16 * 1024;

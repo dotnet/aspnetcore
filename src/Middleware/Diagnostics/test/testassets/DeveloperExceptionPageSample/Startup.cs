@@ -7,6 +7,11 @@ namespace DeveloperExceptionPageSample;
 
 public class Startup
 {
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddProblemDetails();
+    }
+
     public void Configure(IApplicationBuilder app)
     {
         app.Use((context, next) =>
@@ -21,7 +26,8 @@ public class Startup
                 c => null,
                 RoutePatternFactory.Parse("/"),
                 0,
-                new EndpointMetadataCollection(new HttpMethodMetadata(new[] { "GET", "POST" })),
+                new EndpointMetadataCollection(
+                    new HttpMethodMetadata(new[] { "GET", "POST" })),
                 "Endpoint display name");
 
             context.SetEndpoint(endpoint);

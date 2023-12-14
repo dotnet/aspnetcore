@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class ResponseBodyWriterStream : Stream
+internal sealed class ResponseBodyWriterStream : Stream
 {
     private readonly ResponseBodyPipeWriter _responseWriter;
     private readonly Func<bool> _allowSynchronousIO;

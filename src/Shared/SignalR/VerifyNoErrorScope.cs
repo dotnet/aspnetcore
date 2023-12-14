@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -60,7 +61,7 @@ public class VerifyNoErrorsScope : IDisposable
                 return lineMessage;
             }));
 
-            throw new Exception(errorMessage);
+            Assert.Fail(errorMessage);
         }
     }
 }

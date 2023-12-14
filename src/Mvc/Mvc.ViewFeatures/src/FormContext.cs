@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Html;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -12,9 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// Literal &lt;form&gt; elements in a view will share the default <see cref="FormContext"/> instance unless tag
 /// helpers are enabled.
 /// </remarks>
+[DebuggerDisplay("FormData = {FormData.Count}")]
 public class FormContext
 {
     private Dictionary<string, bool> _renderedFields;
+    private Dictionary<string, bool> _invariantFields;
     private Dictionary<string, object> _formData;
     private IList<IHtmlContent> _endOfFormContent;
 
@@ -108,6 +112,19 @@ public class FormContext
     }
 
     /// <summary>
+    /// Gets a dictionary mapping full HTML field names to indications that corresponding value was formatted
+    /// using <see cref="CultureInfo.InvariantCulture"/>.
+    /// </summary>
+    private Dictionary<string, bool> InvariantFields
+    {
+        get
+        {
+            _invariantFields ??= new(StringComparer.Ordinal);
+            return _invariantFields;
+        }
+    }
+
+    /// <summary>
     /// Returns an indication based on <see cref="RenderedFields"/> that the given <paramref name="fieldName"/> has
     /// been rendered in this &lt;form&gt;.
     /// </summary>
@@ -117,10 +134,7 @@ public class FormContext
     /// </returns>
     public bool RenderedField(string fieldName)
     {
-        if (fieldName == null)
-        {
-            throw new ArgumentNullException(nameof(fieldName));
-        }
+        ArgumentNullException.ThrowIfNull(fieldName);
 
         bool result;
         RenderedFields.TryGetValue(fieldName, out result);
@@ -136,11 +150,24 @@ public class FormContext
     /// <param name="value">If <c>true</c>, the given <paramref name="fieldName"/> has been rendered.</param>
     public void RenderedField(string fieldName, bool value)
     {
-        if (fieldName == null)
-        {
-            throw new ArgumentNullException(nameof(fieldName));
-        }
+        ArgumentNullException.ThrowIfNull(fieldName);
 
         RenderedFields[fieldName] = value;
+    }
+
+    internal bool InvariantField(string fieldName)
+    {
+        ArgumentNullException.ThrowIfNull(fieldName);
+
+        InvariantFields.TryGetValue(fieldName, out var result);
+
+        return result;
+    }
+
+    internal void InvariantField(string fieldName, bool value)
+    {
+        ArgumentNullException.ThrowIfNull(fieldName);
+
+        InvariantFields[fieldName] = value;
     }
 }

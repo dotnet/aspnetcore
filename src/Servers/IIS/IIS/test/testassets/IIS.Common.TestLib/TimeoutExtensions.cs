@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting;
 
 public static class TimeoutExtensions
 {
-    public static TimeSpan DefaultTimeoutValue = TimeSpan.FromSeconds(300);
+    public static TimeSpan DefaultTimeoutValue = TimeSpan.FromMinutes(10);
 }

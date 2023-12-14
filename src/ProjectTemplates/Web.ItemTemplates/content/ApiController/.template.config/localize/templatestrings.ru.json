@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Контроллер API",
+  "description": "Контроллер API с действиями чтения и записи или без них",
+  "symbols/namespace/description": "Пространство имен для созданного кода",
+  "symbols/actions/description": "Создание контроллера с действиями чтения и записи",
+  "symbols/actions/displayName": "Добавление действий чтения и записи",
+  "postActions/openInEditor/description": "Открытие созданного контроллера в редакторе"
+}

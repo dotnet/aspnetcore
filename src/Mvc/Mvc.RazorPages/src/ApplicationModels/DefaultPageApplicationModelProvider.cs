@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
@@ -13,7 +13,7 @@ using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class DefaultPageApplicationModelProvider : IPageApplicationModelProvider
+internal sealed class DefaultPageApplicationModelProvider : IPageApplicationModelProvider
 {
     private const string ModelPropertyName = "Model";
     private readonly PageHandlerPageFilter _pageHandlerPageFilter = new PageHandlerPageFilter();
@@ -41,10 +41,7 @@ internal class DefaultPageApplicationModelProvider : IPageApplicationModelProvid
     /// <inheritdoc />
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.PageApplicationModel = CreateModel(context.ActionDescriptor, context.PageType);
     }
@@ -60,19 +57,12 @@ internal class DefaultPageApplicationModelProvider : IPageApplicationModelProvid
     /// <param name="actionDescriptor">The <see cref="PageActionDescriptor"/>.</param>
     /// <param name="pageTypeInfo">The <see cref="TypeInfo"/>.</param>
     /// <returns>A <see cref="PageApplicationModel"/> for the given <see cref="TypeInfo"/>.</returns>
-    protected virtual PageApplicationModel CreateModel(
+    private PageApplicationModel CreateModel(
         PageActionDescriptor actionDescriptor,
         TypeInfo pageTypeInfo)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
-
-        if (pageTypeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(pageTypeInfo));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
+        ArgumentNullException.ThrowIfNull(pageTypeInfo);
 
         if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(pageTypeInfo))
         {

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class FileParser
+internal sealed class FileParser
 {
     public static IList<IRule> Parse(TextReader input)
     {
@@ -11,9 +11,6 @@ internal class FileParser
         var rules = new List<IRule>();
         var builder = new RuleBuilder();
         var lineNum = 0;
-
-        // parsers
-        var flagsParser = new FlagParser();
 
         while ((line = input.ReadLine()) != null)
         {
@@ -48,7 +45,7 @@ internal class FileParser
                         var flags = new Flags();
                         if (tokens.Count == 4)
                         {
-                            flags = flagsParser.Parse(tokens[3]);
+                            flags = FlagParser.Parse(tokens[3]);
                         }
 
                         builder.AddConditionFromParts(pattern, condActionParsed, flags);
@@ -67,7 +64,7 @@ internal class FileParser
                         Flags flags;
                         if (tokens.Count == 4)
                         {
-                            flags = flagsParser.Parse(tokens[3]);
+                            flags = FlagParser.Parse(tokens[3]);
                         }
                         else
                         {

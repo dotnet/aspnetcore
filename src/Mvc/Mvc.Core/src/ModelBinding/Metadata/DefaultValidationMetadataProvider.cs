@@ -11,15 +11,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 /// <summary>
 /// A default implementation of <see cref="IValidationMetadataProvider"/>.
 /// </summary>
-internal class DefaultValidationMetadataProvider : IValidationMetadataProvider
+internal sealed class DefaultValidationMetadataProvider : IValidationMetadataProvider
 {
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var attribute in context.Attributes)
         {

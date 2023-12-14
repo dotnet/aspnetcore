@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -260,6 +260,36 @@ public class ClientHandlerTests
     }
 
     [Fact]
+    public Task AdditionalConfigurationAllowsSettingConnectionInfo()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal(IPAddress.Parse("1.1.1.1"), features.Get<IHttpConnectionFeature>().RemoteIpAddress);
+        }), context =>
+        {
+            context.Connection.RemoteIpAddress = IPAddress.Parse("1.1.1.1");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
+    public Task AdditionalConfigurationAllowsOverridingDefaultBehavior()
+    {
+        var handler = new ClientHandler(PathString.Empty, new InspectingApplication(features =>
+        {
+            Assert.Equal("?and=something", features.Get<IHttpRequestFeature>().QueryString);
+        }), context =>
+        {
+            context.Request.QueryString = new QueryString("?and=something");
+        });
+
+        var httpClient = new HttpClient(handler);
+        return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+    }
+
+    [Fact]
     public async Task ResponseStartAsync()
     {
         var hasStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -299,6 +329,19 @@ public class ClientHandlerTests
 
         Assert.False(preHasStarted);
         Assert.True(postHasStarted);
+    }
+
+    [Fact]
+    public void Send_ThrowsNotSupportedException()
+    {
+        var handler = new ClientHandler(
+            PathString.Empty,
+            new DummyApplication(context => { return Task.CompletedTask; }));
+
+        var invoker = new HttpMessageInvoker(handler);
+        var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+        Assert.Throws<NotSupportedException>(() => invoker.Send(message, CancellationToken.None));
     }
 
     [Fact]
@@ -435,6 +478,29 @@ public class ClientHandlerTests
         cts.Cancel();
         await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.DefaultTimeout());
         block.SetResult();
+    }
+
+    [Fact]
+    public async Task ExceptionFromDisposedRequestContent()
+    {
+        var requestCount = 0;
+        var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+        {
+            requestCount++;
+            return Task.CompletedTask;
+        }));
+
+        var invoker = new HttpMessageInvoker(handler);
+        Task<HttpResponseMessage> responseTask;
+        using (var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/"))
+        {
+            message.Content = new StringContent("Hello World");
+            message.Content.Dispose();
+
+            responseTask = invoker.SendAsync(message, CancellationToken.None);
+        }
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => responseTask);
+        Assert.Equal(0, requestCount);
     }
 
     [Fact]

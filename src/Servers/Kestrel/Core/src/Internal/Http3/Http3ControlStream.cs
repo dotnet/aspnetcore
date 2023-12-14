@@ -23,24 +23,31 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private readonly Http3StreamContext _context;
     private readonly Http3PeerSettings _serverPeerSettings;
     private readonly IStreamIdFeature _streamIdFeature;
+    private readonly IStreamClosedFeature _streamClosedFeature;
     private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
     private volatile int _isClosed;
-    private int _gracefulCloseInitiator;
     private long _headerType;
+    private readonly object _completionLock = new();
 
     private bool _haveReceivedSettingsFrame;
+    private StreamCompletionFlags _completionState;
+
+    public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
+    public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
+    public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
     public long StreamId => _streamIdFeature.StreamId;
 
-    public Http3ControlStream(Http3StreamContext context)
+    public Http3ControlStream(Http3StreamContext context, long? headerType)
     {
         var httpLimits = context.ServiceContext.ServerOptions.Limits;
         _context = context;
         _serverPeerSettings = context.ServerPeerSettings;
         _streamIdFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamIdFeature>();
+        _streamClosedFeature = context.ConnectionFeatures.GetRequiredFeature<IStreamClosedFeature>();
         _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
-        _headerType = -1;
+        _headerType = headerType ?? -1;
 
         _frameWriter = new Http3FrameWriter(
             context.StreamContext,
@@ -56,13 +63,13 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     private void OnStreamClosed()
     {
-        Abort(new ConnectionAbortedException("HTTP_CLOSED_CRITICAL_STREAM"), Http3ErrorCode.InternalError);
+        ApplyCompletionFlag(StreamCompletionFlags.Completed);
     }
 
     public PipeReader Input => _context.Transport.Input;
     public KestrelTrace Log => _context.ServiceContext.Log;
 
-    public long StreamTimeoutTicks { get; set; }
+    public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _headerType == -1;
     public bool IsDraining => false;
     public bool IsRequestStream => false;
@@ -70,15 +77,27 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     public void Abort(ConnectionAbortedException abortReason, Http3ErrorCode errorCode)
     {
-        // TODO - Should there be a check here to track abort state to avoid
-        // running twice for a request?
+        lock (_completionLock)
+        {
+            if (IsCompleted || IsAborted)
+            {
+                return;
+            }
 
-        Log.Http3StreamAbort(_context.ConnectionId, errorCode, abortReason);
+            var (oldState, newState) = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
 
-        _errorCodeFeature.Error = (long)errorCode;
-        _frameWriter.Abort(abortReason);
+            if (oldState == newState)
+            {
+                return;
+            }
 
-        Input.Complete(abortReason);
+            Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
+
+            _errorCodeFeature.Error = (long)errorCode;
+            _frameWriter.Abort(abortReason);
+
+            Input.Complete(abortReason);
+        }
     }
 
     public void OnInputOrOutputCompleted()
@@ -97,20 +116,33 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         return false;
     }
 
-    internal async ValueTask SendStreamIdAsync(long id)
+    private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)
     {
+        lock (_completionLock)
+        {
+            var oldCompletionState = _completionState;
+            _completionState |= completionState;
+
+            return (oldCompletionState, _completionState);
+        }
+    }
+
+    internal async ValueTask ProcessOutboundSendsAsync(long id)
+    {
+        _streamClosedFeature.OnClosed(static state =>
+        {
+            var stream = (Http3ControlStream)state!;
+            stream.OnStreamClosed();
+        }, this);
+
         await _frameWriter.WriteStreamIdAsync(id);
+        await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
 
     internal ValueTask<FlushResult> SendGoAway(long id)
     {
         Log.Http3GoAwayStreamId(_context.ConnectionId, id);
         return _frameWriter.WriteGoAway(id);
-    }
-
-    internal async ValueTask SendSettingsFrameAsync()
-    {
-        await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
 
     private async ValueTask<long> TryReadStreamHeaderAsync()
@@ -152,7 +184,16 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     {
         try
         {
-            _headerType = await TryReadStreamHeaderAsync();
+            // todo: the _headerType should be read earlier
+            // and by the Http3PendingStream. However, to
+            // avoid perf issues with the current implementation
+            // we can defer the reading until now
+            // (https://github.com/dotnet/aspnetcore/issues/42789)
+            if (_headerType == -1)
+            {
+                _headerType = await TryReadStreamHeaderAsync();
+            }
+
             _context.StreamLifetimeHandler.OnStreamHeaderReceived(this);
 
             switch (_headerType)
@@ -199,6 +240,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
         finally
         {
+            ApplyCompletionFlag(StreamCompletionFlags.Completed);
             _context.StreamLifetimeHandler.OnStreamCompleted(this);
         }
     }
@@ -228,12 +270,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
                 if (result.IsCompleted)
                 {
-                    if (!_context.StreamContext.ConnectionClosed.IsCancellationRequested)
-                    {
-                        // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1-2
-                        throw new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClientClosedInbound, Http3ErrorCode.ClosedCriticalStream);
-                    }
-
                     return;
                 }
             }
@@ -289,7 +325,11 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
 
         _haveReceivedSettingsFrame = true;
-        using var closedRegistration = _context.StreamContext.ConnectionClosed.Register(state => ((Http3ControlStream)state!).OnStreamClosed(), this);
+        _streamClosedFeature.OnClosed(static state =>
+        {
+            var stream = (Http3ControlStream)state!;
+            stream.OnStreamClosed();
+        }, this);
 
         while (true)
         {
@@ -331,6 +371,8 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             case (long)Http3SettingType.QPackMaxTableCapacity:
             case (long)Http3SettingType.MaxFieldSectionSize:
             case (long)Http3SettingType.QPackBlockedStreams:
+            case (long)Http3SettingType.EnableWebTransport:
+            case (long)Http3SettingType.H3Datagram:
                 _context.StreamLifetimeHandler.OnInboundControlStreamSetting((Http3SettingType)id, value);
                 break;
             default:
@@ -343,6 +385,10 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
     private ValueTask ProcessGoAwayFrameAsync()
     {
         EnsureSettingsFrame(Http3FrameType.GoAway);
+
+        // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
+        _context.Connection.StopProcessingNextRequest(serverInitiated: false);
+        _context.ConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
 
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-goaway
         // PUSH is not implemented so nothing to do.
@@ -386,19 +432,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         {
             var message = CoreStrings.FormatHttp3ErrorControlStreamFrameReceivedBeforeSettings(Http3Formatting.ToFormattedType(frameType));
             throw new Http3ConnectionErrorException(message, Http3ErrorCode.MissingSettings);
-        }
-    }
-
-    public void StopProcessingNextRequest()
-        => StopProcessingNextRequest(serverInitiated: true);
-
-    public void StopProcessingNextRequest(bool serverInitiated)
-    {
-        var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
-
-        if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
-        {
-            Input.CancelPendingRead();
         }
     }
 

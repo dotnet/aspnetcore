@@ -6,9 +6,10 @@
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
             <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770"
                                                     LogoFile="DotNetLogo.bmp"
+                                                    SuppressDowngradeFailure="yes"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
-                                                    LocalizationFile="thm.wxl"/>
+                                                    LocalizationFile="1033\thm.wxl"/>
             <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
 
@@ -46,7 +47,6 @@
         <PayloadGroup Id="PG_Resources">
             <?foreach lcid in 2052;1028;1029;1031;3082;1033;1036;1040;1041;1042;1045;1046;1049;1055?>
             <Payload Id="PL_thm_$(var.lcid)" SourceFile="$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes"/>
-            <Payload Id="PL_Strings_$(var.lcid)" SourceFile="$(var.lcid)\Strings.wxl" Name="$(var.lcid)\Strings.wxl" Compressed="yes"/>
             <?endforeach?>
         </PayloadGroup>
 
@@ -69,18 +69,18 @@
         <?define RegistrySeachCondition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0 OR OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=0)" ?>
 
         <?foreach Option in $(var.Options) ?>
-            <util:RegistrySearch Id="$(var.Option)_should_be_set" 
+            <util:RegistrySearch Id="$(var.Option)_should_be_set"
                              Condition="$(var.RegistrySeachCondition)"
-                             Root="HKLM" 
-                             Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                             Value="$(var.Option)" 
-                             Result="exists" 
+                             Root="HKLM"
+                             Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)"
+                             Value="$(var.Option)"
+                             Result="exists"
                              Variable="$(var.Option)_Exists"/>
 
-            <util:RegistrySearch Condition="$(var.Option)_Exists"     
+            <util:RegistrySearch Condition="$(var.Option)_Exists"
                              After="$(var.Option)_should_be_set"
-                             Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" 
-                             Value="$(var.Option)" 
+                             Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)"
+                             Value="$(var.Option)"
                              Variable="$(var.Option)"
                              Result="value" />
         <?endforeach?>
@@ -99,7 +99,7 @@
                 <MsiProperty Name="OPT_NO_RUNTIME" Value="[OPT_NO_RUNTIME]"/>
                 <MsiProperty Name="OPT_NO_X86" Value="[OPT_NO_X86]"/>
                 <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]"/>
-            </MsiPackage> 
+            </MsiPackage>
             <PackageGroupRef Id="PG_ANCM" />
             <PackageGroupRef Id="PG_DOTNET_REDIST_LTS_BUNDLE" />
             <!--<PackageGroupRef Id="PG_DOTNET_REDIST_FTS_BUNDLE" />-->

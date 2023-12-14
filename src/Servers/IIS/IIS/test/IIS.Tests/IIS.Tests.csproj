@@ -5,6 +5,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA2200</NoWarn>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
@@ -19,6 +21,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>

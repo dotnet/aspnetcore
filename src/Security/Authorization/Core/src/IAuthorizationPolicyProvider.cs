@@ -28,4 +28,11 @@ public interface IAuthorizationPolicyProvider
     /// </summary>
     /// <returns>The fallback authorization policy.</returns>
     Task<AuthorizationPolicy?> GetFallbackPolicyAsync();
+
+#if NETCOREAPP
+    /// <summary>
+    /// Determines if policies from this provider can be cached, defaults to false.
+    /// </summary>
+    bool AllowsCachingPolicies => false;
+#endif
 }

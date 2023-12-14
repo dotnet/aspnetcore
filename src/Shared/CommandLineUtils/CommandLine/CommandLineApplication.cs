@@ -12,7 +12,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.CommandLineUtils;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class CommandLineApplication
+#pragma warning restore CA1852 // Seal internal types
 {
     // Indicates whether the parser should throw an exception when it runs into an unexpected argument. If this is
     // set to true (the default), the parser will throw on the first unexpected argument. Otherwise, all unexpected
@@ -53,7 +55,7 @@ internal class CommandLineApplication
     public CommandOption OptionVersion { get; private set; }
     public readonly List<CommandArgument> Arguments;
     public readonly List<string> RemainingArguments;
-    public bool IsShowingInformation { get; protected set; }  // Is showing help or version?
+    public bool IsShowingInformation { get; private set; }  // Is showing help or version?
     public Func<int> Invoke { get; set; }
     public Func<string> LongVersionGetter { get; set; }
     public Func<string> ShortVersionGetter { get; set; }
@@ -434,7 +436,7 @@ internal class CommandLineApplication
         Out.WriteLine(GetHelpText(commandName));
     }
 
-    public virtual string GetHelpText(string commandName = null)
+    public string GetHelpText(string commandName = null)
     {
         var headerBuilder = new StringBuilder("Usage:");
         for (var cmd = this; cmd != null; cmd = cmd.Parent)
@@ -596,7 +598,7 @@ internal class CommandLineApplication
         }
     }
 
-    private class CommandArgumentEnumerator : IEnumerator<CommandArgument>
+    private sealed class CommandArgumentEnumerator : IEnumerator<CommandArgument>
     {
         private readonly IEnumerator<CommandArgument> _enumerator;
 

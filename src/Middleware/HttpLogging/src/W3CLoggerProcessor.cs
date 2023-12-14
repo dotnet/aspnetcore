@@ -9,20 +9,24 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class W3CLoggerProcessor : FileLoggerProcessor
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly W3CLoggingFields _loggingFields;
+    private readonly ISet<string>? _additionalRequestHeaders;
 
     public W3CLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory) : base(options, environment, factory)
     {
         _loggingFields = options.CurrentValue.LoggingFields;
+        _additionalRequestHeaders = W3CLoggerOptions.FilterRequestHeaders(options.CurrentValue);
     }
 
     public override async Task OnFirstWrite(StreamWriter streamWriter, CancellationToken cancellationToken)
     {
         await WriteMessageAsync("#Version: 1.0", streamWriter, cancellationToken);
 
-        await WriteMessageAsync("#Start-Date: " + DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
+        await WriteMessageAsync("#Start-Date: " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), streamWriter, cancellationToken);
 
         await WriteMessageAsync(GetFieldsDirective(), streamWriter, cancellationToken);
     }
@@ -99,6 +103,14 @@ internal class W3CLoggerProcessor : FileLoggerProcessor
         if (_loggingFields.HasFlag(W3CLoggingFields.Referer))
         {
             sb.Append(" cs(Referer)");
+        }
+
+        if (_additionalRequestHeaders != null)
+        {
+            foreach (var header in _additionalRequestHeaders)
+            {
+                sb.Append($" cs({header})");
+            }
         }
 
         return sb.ToString();

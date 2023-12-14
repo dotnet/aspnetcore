@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,9 +11,9 @@
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCode.SpaServices.Extensions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SpaServices.Extensions.Tests" />
   </ItemGroup>
 
 </Project>

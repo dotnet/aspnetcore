@@ -3,87 +3,84 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal sealed partial class RequestQueue
 {
-    private static readonly int BindingInfoSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
-
     private readonly RequestQueueMode _mode;
     private readonly ILogger _logger;
     private bool _disposed;
 
     internal RequestQueue(string requestQueueName, ILogger logger)
-        : this(urlGroup: null, requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
+        : this(requestQueueName, RequestQueueMode.Attach, logger, receiver: true)
     {
     }
 
-    internal RequestQueue(UrlGroup urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger)
-        : this(urlGroup, requestQueueName, mode, logger, false)
+    internal RequestQueue(string? requestQueueName, RequestQueueMode mode, ILogger logger)
+        : this(requestQueueName, mode, logger, false)
     { }
 
-    private RequestQueue(UrlGroup? urlGroup, string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
+    private RequestQueue(string? requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
     {
         _mode = mode;
-        UrlGroup = urlGroup;
         _logger = logger;
 
-        var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
+        var flags = 0u;
         Created = true;
 
         if (_mode == RequestQueueMode.Attach)
         {
-            flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+            flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
             Created = false;
             if (receiver)
             {
-                flags |= HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
+                flags |= PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_DELEGATION;
             }
         }
 
-        var statusCode = HttpApi.HttpCreateRequestQueue(
+        var statusCode = PInvoke.HttpCreateRequestQueue(
                 HttpApi.Version,
                 requestQueueName,
-                null,
+                default,
                 flags,
                 out var requestQueueHandle);
 
-        if (_mode == RequestQueueMode.CreateOrAttach && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
+        if (_mode == RequestQueueMode.CreateOrAttach && statusCode == ErrorCodes.ERROR_ALREADY_EXISTS)
         {
             // Tried to create, but it already exists so attach to it instead.
             Created = false;
-            flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
-            statusCode = HttpApi.HttpCreateRequestQueue(
+            flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
+            statusCode = PInvoke.HttpCreateRequestQueue(
                     HttpApi.Version,
                     requestQueueName,
-                    null,
+                    default,
                     flags,
                     out requestQueueHandle);
         }
 
-        if (flags.HasFlag(HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting) && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+        if ((flags & PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING) != 0 && statusCode == ErrorCodes.ERROR_FILE_NOT_FOUND)
         {
             throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
         }
-        else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_NAME)
+        else if (statusCode == ErrorCodes.ERROR_INVALID_NAME)
         {
             throw new HttpSysException((int)statusCode, $"The given request queue name '{requestQueueName}' is invalid.");
         }
-        else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        else if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             throw new HttpSysException((int)statusCode);
         }
 
         // Disabling callbacks when IO operation completes synchronously (returns ErrorCodes.ERROR_SUCCESS)
         if (HttpSysListener.SkipIOCPCallbackOnSuccess &&
-            !UnsafeNclNativeMethods.SetFileCompletionNotificationModes(
+            !PInvoke.SetFileCompletionNotificationModes(
                 requestQueueHandle,
-                UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
-                UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipSetEventOnHandle))
+                (byte)(PInvoke.FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
+                PInvoke.FILE_SKIP_SET_EVENT_ON_HANDLE)))
         {
             requestQueueHandle.Dispose();
             throw new HttpSysException(Marshal.GetLastWin32Error());
@@ -106,64 +103,15 @@ internal sealed partial class RequestQueue
     internal SafeHandle Handle { get; }
     internal ThreadPoolBoundHandle BoundHandle { get; }
 
-    internal UrlGroup? UrlGroup { get; }
-
-    internal unsafe void AttachToUrlGroup()
-    {
-        if (UrlGroup == null)
-        {
-            throw new NotSupportedException("Can't attach when UrlGroup is null");
-        }
-
-        Debug.Assert(Created);
-        CheckDisposed();
-        // Set the association between request queue and url group. After this, requests for registered urls will
-        // get delivered to this request queue.
-
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-        info.RequestQueueHandle = Handle.DangerousGetHandle();
-
-        var infoptr = new IntPtr(&info);
-
-        UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
-            infoptr, (uint)BindingInfoSize);
-    }
-
-    internal unsafe void DetachFromUrlGroup()
-    {
-        if (UrlGroup == null)
-        {
-            throw new NotSupportedException("Can't detach when UrlGroup is null");
-        }
-
-        Debug.Assert(Created);
-        CheckDisposed();
-        // Break the association between request queue and url group. After this, requests for registered urls
-        // will get 503s.
-        // Note that this method may be called multiple times (Stop() and then Abort()). This
-        // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid
-        // Url groups.
-
-        var info = new HttpApiTypes.HTTP_BINDING_INFO();
-        info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
-        info.RequestQueueHandle = IntPtr.Zero;
-
-        var infoptr = new IntPtr(&info);
-
-        UrlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
-            infoptr, (uint)BindingInfoSize, throwOnError: false);
-    }
-
     // The listener must be active for this to work.
     internal unsafe void SetLengthLimit(long length)
     {
         Debug.Assert(Created);
         CheckDisposed();
 
-        var result = HttpApi.HttpSetRequestQueueProperty(Handle,
-            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
-            new IntPtr((void*)&length), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
+        var result = PInvoke.HttpSetRequestQueueProperty(Handle,
+            HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
+            &length, (uint)Marshal.SizeOf<long>());
 
         if (result != 0)
         {
@@ -177,9 +125,9 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
-        var result = HttpApi.HttpSetRequestQueueProperty(Handle,
-            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
-            new IntPtr((void*)&verbosity), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
+        var result = PInvoke.HttpSetRequestQueueProperty(Handle,
+            HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
+            &verbosity, (uint)Marshal.SizeOf<long>());
 
         if (result != 0)
         {
@@ -201,10 +149,7 @@ internal sealed partial class RequestQueue
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 
     private static partial class Log

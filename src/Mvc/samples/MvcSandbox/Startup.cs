@@ -19,11 +19,24 @@ public class Startup
         app.UseStaticFiles();
 
         app.UseRouting();
+
+        static void ConfigureEndpoints(IEndpointRouteBuilder endpoints)
+        {
+            endpoints.MapGet("/MapGet", () => "MapGet");
+
+            endpoints.MapControllers();
+            endpoints.MapControllerRoute(
+                Guid.NewGuid().ToString(),
+                "{controller=Home}/{action=Index}/{id?}");
+
+            endpoints.MapRazorPages();
+        }
+
         app.UseEndpoints(builder =>
         {
-            builder.MapControllers();
-            builder.MapDefaultControllerRoute();
-            builder.MapRazorPages();
+            ConfigureEndpoints(builder);
+            var group = builder.MapGroup("/group");
+            ConfigureEndpoints(group);
         });
     }
 

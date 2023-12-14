@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
 internal partial class WebSocketsAsyncIOEngine
 {
-    internal class AsyncInitializeOperation : AsyncIOOperation
+    internal sealed class AsyncInitializeOperation : AsyncIOOperation
     {
         private readonly WebSocketsAsyncIOEngine _engine;
 
@@ -36,7 +36,6 @@ internal partial class WebSocketsAsyncIOEngine
             base.ResetOperation();
 
             _requestHandler = default;
-            _engine.ReturnOperation(this);
         }
     }
 }

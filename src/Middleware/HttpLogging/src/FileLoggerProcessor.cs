@@ -35,6 +35,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     internal ISystemDateTime SystemDateTime { get; set; } = new SystemDateTime();
 
     private readonly object _pathLock = new object();
+    private ISet<string> _additionalHeaders;
 
     public FileLoggerProcessor(IOptionsMonitor<W3CLoggerOptions> options, IHostEnvironment environment, ILoggerFactory factory)
     {
@@ -61,6 +62,8 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
         _flushInterval = loggerOptions.FlushInterval;
         _fields = loggerOptions.LoggingFields;
+        _additionalHeaders = W3CLoggerOptions.FilterRequestHeaders(loggerOptions);
+
         _options.OnChange(options =>
         {
             lock (_pathLock)
@@ -69,7 +72,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                 loggerOptions = options;
 
                 // Move to a new file if the fields have changed
-                if (_fields != loggerOptions.LoggingFields)
+                if (_fields != loggerOptions.LoggingFields || !_additionalHeaders.SetEquals(loggerOptions.AdditionalRequestHeaders))
                 {
                     _fileNumber++;
                     if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
@@ -78,6 +81,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                         Log.MaxFilesReached(_logger);
                     }
                     _fields = loggerOptions.LoggingFields;
+                    _additionalHeaders = W3CLoggerOptions.FilterRequestHeaders(loggerOptions);
                 }
 
                 if (!string.IsNullOrEmpty(loggerOptions.LogDirectory))
@@ -152,23 +156,28 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     {
         // Files are written up to _maxFileSize before rolling to a new file
         DateTime today = SystemDateTime.Now;
+
+        if (!TryCreateDirectory())
+        {
+            // return early if we fail to create the directory
+            return;
+        }
+
         var fullName = GetFullName(today);
         // Don't write to an incomplete file left around by a previous FileLoggerProcessor
         if (_firstFile)
         {
-            while (File.Exists(fullName))
+            _fileNumber = GetFirstFileCount(today);
+            fullName = GetFullName(today);
+            if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
             {
-                _fileNumber++;
-                if (_fileNumber >= W3CLoggerOptions.MaxFileCount)
-                {
-                    _maxFilesReached = true;
-                    // Return early if log directory is already full
-                    Log.MaxFilesReached(_logger);
-                    return;
-                }
-                fullName = GetFullName(today);
+                _maxFilesReached = true;
+                // Return early if log directory is already full
+                Log.MaxFilesReached(_logger);
+                return;
             }
         }
+
         _firstFile = false;
         if (_maxFilesReached)
         {
@@ -178,12 +187,6 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
             return;
         }
         var fileInfo = new FileInfo(fullName);
-
-        if (!TryCreateDirectory())
-        {
-            // return early if we fail to create the directory
-            return;
-        }
         var streamWriter = GetStreamWriter(fullName);
 
         try
@@ -261,7 +264,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
             return;
         }
         await streamWriter.WriteLineAsync(message.AsMemory(), cancellationToken);
-        await streamWriter.FlushAsync();
+        await streamWriter.FlushAsync(cancellationToken);
     }
 
     // Virtual for testing
@@ -294,6 +297,23 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
         _cancellationTokenSource.Cancel();
         _messageQueue.CompleteAdding();
         await _outputTask;
+    }
+
+    private int GetFirstFileCount(DateTime date)
+    {
+        lock (_pathLock)
+        {
+            var searchString = FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.*.txt");
+            var files = new DirectoryInfo(_path)
+                .GetFiles(searchString);
+
+            return files.Length == 0
+                ? 0
+                : files
+                    .Max(x => int.TryParse(x.Name.Split('.').ElementAtOrDefault(Index.FromEnd(2)), out var parsed)
+                        ? parsed + 1
+                        : 0);
+        }
     }
 
     private string GetFullName(DateTime date)

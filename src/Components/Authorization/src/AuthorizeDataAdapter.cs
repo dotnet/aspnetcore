@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Microsoft.AspNetCore.Components.Authorization;
 
 // This is so the AuthorizeView can avoid implementing IAuthorizeData (even privately)
-internal class AuthorizeDataAdapter : IAuthorizeData
+internal sealed class AuthorizeDataAdapter : IAuthorizeData
 {
     private readonly AuthorizeView _component;
 

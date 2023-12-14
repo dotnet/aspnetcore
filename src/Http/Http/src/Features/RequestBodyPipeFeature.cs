@@ -14,16 +14,16 @@ public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     private Stream? _streamInstanceWhenWrapped;
     private readonly HttpContext _context;
 
+    // We want to use zero byte reads for the request body
+    private static readonly StreamPipeReaderOptions _defaultReaderOptions = new(useZeroByteReads: true);
+
     /// <summary>
     /// Initializes a new instance of <see cref="IRequestBodyPipeFeature"/>.
     /// </summary>
     /// <param name="context"></param>
     public RequestBodyPipeFeature(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
         _context = context;
     }
 
@@ -36,7 +36,7 @@ public class RequestBodyPipeFeature : IRequestBodyPipeFeature
                 !ReferenceEquals(_streamInstanceWhenWrapped, _context.Request.Body))
             {
                 _streamInstanceWhenWrapped = _context.Request.Body;
-                _internalPipeReader = PipeReader.Create(_context.Request.Body);
+                _internalPipeReader = PipeReader.Create(_context.Request.Body, _defaultReaderOptions);
 
                 _context.Response.OnCompleted((self) =>
                 {

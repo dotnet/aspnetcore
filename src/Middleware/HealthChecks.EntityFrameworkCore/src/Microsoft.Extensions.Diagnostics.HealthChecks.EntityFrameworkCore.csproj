@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
     <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,4 +17,7 @@
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests" />
+  </ItemGroup>
 </Project>

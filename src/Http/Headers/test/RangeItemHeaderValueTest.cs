@@ -121,13 +121,13 @@ public class RangeItemHeaderValueTest
     [InlineData("-9999999999999999999")] // 19-digit numbers outside the Int64 range.
     public void TryParse_DifferentInvalidScenarios_AllReturnFalse(string input)
     {
-        RangeHeaderValue result;
+        RangeHeaderValue? result;
         Assert.False(RangeHeaderValue.TryParse("byte=" + input, out result));
     }
 
     private static void CheckValidTryParse(string input, long? expectedFrom, long? expectedTo)
     {
-        RangeHeaderValue result;
+        RangeHeaderValue? result;
         Assert.True(RangeHeaderValue.TryParse("byte=" + input, out result), input);
 
         var ranges = result.Ranges.ToArray();
@@ -141,7 +141,7 @@ public class RangeItemHeaderValueTest
 
     private static void CheckValidTryParse(string input, params Tuple<long?, long?>[] expectedRanges)
     {
-        RangeHeaderValue result;
+        RangeHeaderValue? result;
         Assert.True(RangeHeaderValue.TryParse("byte=" + input, out result), input);
 
         var ranges = result.Ranges.ToArray();

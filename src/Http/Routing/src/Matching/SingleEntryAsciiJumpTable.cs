@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Text;
+
 namespace Microsoft.AspNetCore.Routing.Matching;
 
 // Optimized implementation for cases where we know that we're
 // comparing to ASCII.
-internal class SingleEntryAsciiJumpTable : JumpTable
+internal sealed class SingleEntryAsciiJumpTable : JumpTable
 {
     private readonly int _defaultDestination;
     private readonly int _exitDestination;
@@ -41,7 +44,9 @@ internal class SingleEntryAsciiJumpTable : JumpTable
         var a = path.AsSpan(segment.Start, length);
         var b = text.AsSpan();
 
-        return Ascii.AsciiIgnoreCaseEquals(a, b, length) ? _destination : _defaultDestination;
+        Debug.Assert(a.Length == b.Length && b.Length == length);
+
+        return Ascii.EqualsIgnoreCase(a, b) ? _destination : _defaultDestination;
     }
 
     public override string DebuggerToString()

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -332,6 +333,42 @@ public class MethodHub : TestHub
 
         await tcs.Task;
     }
+
+    public async Task<int> GetClientResult(int num)
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", num, cancellationToken: default);
+        return sum;
+    }
+
+    public void BackgroundClientResult(TcsService tcsService)
+    {
+        var caller = Clients.Caller;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await tcsService.StartedMethod.Task;
+                var result = await caller.InvokeAsync<int>("GetResult", 1, CancellationToken.None);
+                tcsService.EndMethod.SetResult(result);
+            }
+            catch (Exception ex)
+            {
+                tcsService.EndMethod.SetException(ex);
+            }
+        });
+    }
+
+    public async Task<int> GetClientResultWithStream(ChannelReader<int> channelReader)
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        return sum;
+    }
+
+    public async IAsyncEnumerable<int> StreamWithClientResult()
+    {
+        var sum = await Clients.Caller.InvokeAsync<int>("Sum", 1, cancellationToken: default);
+        yield return sum;
+    }
 }
 
 internal class SelfRef
@@ -434,7 +471,7 @@ public class DynamicTestHub : DynamicHub
     }
 }
 
-public class HubT : Hub<Test>
+public class HubT : Hub<ITest>
 {
     public override Task OnConnectedAsync()
     {
@@ -518,13 +555,24 @@ public class HubT : Hub<Test>
     {
         return Clients.Caller.Send(message);
     }
+
+    public async Task<ClientResults> GetClientResultTwoWays(int clientValue, int callerValue) =>
+        new ClientResults(
+            await Clients.Client(Context.ConnectionId).GetClientResult(clientValue),
+            await Clients.Caller.GetClientResult(callerValue));
 }
 
-public interface Test
+public interface ITest
 {
     Task Send(string message);
     Task Broadcast(string message);
+
+    Task<int> GetClientResult(int value);
+
+    Task<int> GetClientResultWithCancellation(int value, CancellationToken cancellationToken);
 }
+
+public record ClientResults(int ClientResult, int CallerResult);
 
 public class OnConnectedThrowsHub : Hub
 {
@@ -676,6 +724,15 @@ public class StreamingHub : TestHub
         }
     }
 
+    public async IAsyncEnumerable<string> ExceptionAsyncEnumerable()
+    {
+        await Task.Yield();
+        throw new Exception("Exception from async enumerable");
+#pragma warning disable CS0162 // Unreachable code detected
+        yield break;
+#pragma warning restore CS0162 // Unreachable code detected
+    }
+
     public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
     {
         await Task.Yield();
@@ -701,6 +758,20 @@ public class StreamingHub : TestHub
     {
         var channel = Channel.CreateUnbounded<int>();
         channel.Writer.TryComplete(new Exception("Exception from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException("ChannelClosedException from channel"));
+        return channel.Reader;
+    }
+
+    public ChannelReader<int> ChannelClosedExceptionInnerExceptionStream()
+    {
+        var channel = Channel.CreateUnbounded<int>();
+        channel.Writer.TryComplete(new ChannelClosedException(new Exception("ChannelClosedException from channel")));
         return channel.Reader;
     }
 
@@ -1216,6 +1287,22 @@ public class ConnectionLifetimeState
     public Exception DisconnectedException { get; set; }
 }
 
+public class OnConnectedClientResultHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
+    }
+}
+
+public class OnDisconnectedClientResultHub : Hub
+{
+    public override async Task OnDisconnectedAsync(Exception ex)
+    {
+        await Clients.Caller.InvokeAsync<int>("Test", cancellationToken: default);
+    }
+}
+
 public class CallerServiceHub : Hub
 {
     private readonly CallerService _service;
@@ -1286,12 +1373,54 @@ public class ServicesHub : TestHub
         return 1;
     }
 
+    public int IEnumerableOfServiceWithoutAttribute(IEnumerable<Service1> services)
+    {
+        return 1;
+    }
+
     public async Task Stream(ChannelReader<int> channelReader)
     {
         while (await channelReader.WaitToReadAsync())
         {
             await channelReader.ReadAsync();
         }
+    }
+}
+
+public class KeyedServicesHub : TestHub
+{
+    public int MultipleSameKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service1")] Service1 service2)
+    {
+        Assert.Same(service, service2);
+        return 445;
+    }
+
+    public int KeyedService([FromKeyedServices("service1")] Service1 service)
+    {
+        return 43;
+    }
+
+    public int KeyedServiceWithParam(int input, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 13 * input;
+    }
+
+    public int KeyedServiceNonKeyedService(Service2 service2, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 11;
+    }
+
+    public int MultipleKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service2")] Service1 service2)
+    {
+        Assert.NotEqual(service, service2);
+        return 45;
+    }
+}
+
+public class BadServicesHub : Hub
+{
+    public void BadMethod([FromKeyedServices("service1")] [FromService] Service1 service)
+    {
     }
 }
 
@@ -1304,4 +1433,16 @@ public class TooManyParamsHub : Hub
         int a51, int a52, int a53, int a54, int a55, int a56, int a57, int a58, int a59, int a60, int a61, int a62, int a63,
         int a64, [FromService] Service1 service)
     { }
+}
+
+public class OnConnectedSendToClientHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        string id = Context.GetHttpContext()?.Request.Query["client"] ?? string.Empty;
+        if (!string.IsNullOrEmpty(id))
+        {
+            await Clients.Client(id).SendAsync("Test", 1);
+        }
+    }
 }

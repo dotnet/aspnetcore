@@ -74,10 +74,7 @@ public class HttpRequestStreamReader : TextReader
         _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
         _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
 
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         if (!stream.CanRead)
         {
             throw new ArgumentException(Resources.HttpRequestStreamReader_StreamNotReadable, nameof(stream));
@@ -123,10 +120,7 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override int Peek()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpRequestStreamReader));
 
         if (_charBufferIndex == _charsRead)
         {
@@ -142,10 +136,7 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override int Read()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpRequestStreamReader));
 
         if (_charBufferIndex == _charsRead)
         {
@@ -161,15 +152,8 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override int Read(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         if (count < 0 || index + count > buffer.Length)
         {
@@ -188,10 +172,7 @@ public class HttpRequestStreamReader : TextReader
             throw new ArgumentNullException(nameof(buffer));
         }
 
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpRequestStreamReader));
 
         var count = buffer.Length;
         var charsRead = 0;
@@ -237,15 +218,8 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override Task<int> ReadAsync(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
 
         if (count < 0 || index + count > buffer.Length)
         {
@@ -260,10 +234,7 @@ public class HttpRequestStreamReader : TextReader
     [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
     public override async ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken cancellationToken = default)
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpRequestStreamReader));
 
         if (_charBufferIndex == _charsRead && await ReadIntoBufferAsync() == 0)
         {
@@ -353,10 +324,7 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override async Task<string?> ReadLineAsync()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpRequestStreamReader));
 
         StringBuilder? sb = null;
         var consumeLineFeed = false;
@@ -391,10 +359,7 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override string? ReadLine()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpRequestStreamReader));
 
         StringBuilder? sb = null;
         var consumeLineFeed = false;

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class DefaultHubActivator<THub> : IHubActivator<THub> where THub : Hub
+internal sealed class DefaultHubActivator<THub> : IHubActivator<THub> where THub : Hub
 {
     // Object factory for THub instances
     private static readonly Lazy<ObjectFactory> _objectFactory = new Lazy<ObjectFactory>(() => ActivatorUtilities.CreateFactory(typeof(THub), Type.EmptyTypes));
@@ -18,7 +18,7 @@ internal class DefaultHubActivator<THub> : IHubActivator<THub> where THub : Hub
         _serviceProvider = serviceProvider;
     }
 
-    public virtual THub Create()
+    public THub Create()
     {
         Debug.Assert(!_created.HasValue, "hub activators must not be reused.");
 
@@ -33,12 +33,9 @@ internal class DefaultHubActivator<THub> : IHubActivator<THub> where THub : Hub
         return hub;
     }
 
-    public virtual void Release(THub hub)
+    public void Release(THub hub)
     {
-        if (hub == null)
-        {
-            throw new ArgumentNullException(nameof(hub));
-        }
+        ArgumentNullException.ThrowIfNull(hub);
 
         Debug.Assert(_created.HasValue, "hubs must be released with the hub activator they were created");
 

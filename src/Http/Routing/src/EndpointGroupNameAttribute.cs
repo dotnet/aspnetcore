@@ -15,10 +15,7 @@ public sealed class EndpointGroupNameAttribute : Attribute, IEndpointGroupNameMe
     /// <param name="endpointGroupName">The endpoint group name.</param>
     public EndpointGroupNameAttribute(string endpointGroupName)
     {
-        if (endpointGroupName == null)
-        {
-            throw new ArgumentNullException(nameof(endpointGroupName));
-        }
+        ArgumentNullException.ThrowIfNull(endpointGroupName);
 
         EndpointGroupName = endpointGroupName;
     }

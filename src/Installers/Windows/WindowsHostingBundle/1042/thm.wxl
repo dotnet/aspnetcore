@@ -1,33 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[WixBundleName] 설치</String>
+  <String Id="Caption">[WixBundleName] 설치 프로그램</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">환영</String>
-  <String Id="InstallMessage">설치 프로그램이 컴퓨터에 [WixBundleName]을(를) 설치합니다. 계속하려면 [\[]설치[\]]를 클릭하고, 설치 디렉터리를 설정하는 옵션을 선택하거나, 종료하려면 [\[]닫기[\]]를 클릭합니다.</String>
   <String Id="InstallVersion">버전 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
   <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - 디렉터리에 번들의 전체 로컬 복사본을 설치, 복구, 제거 또는
-   작성합니다. 설치가 기본값입니다.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]디렉터리[\]] - 디렉터리에 번들의 전체 로컬 복사본을
+   설치, 복구, 제거 또는 작성합니다. 설치가 기본값입니다.
 
-/passive | /quiet -  프롬프트 없이 최소 UI를 표시하거나 UI 및
-   프롬프트를 표시하지 않습니다. 기본적으로 UI와 모든 프롬프트가 표시됩니다.
+/passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및
+   프롬프트를 표시하지 않습니다. 기본값으로 UI와 모든 프롬프트가 표시됩니다.
 
-/norestart   - 다시 시작하지 않게 합니다. 기본적으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
-/log log.txt - 특정 파일에 기록합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다.</String>
+/norestart   - 다시 시작하지 않게 합니다. 기본값으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
+/log log.txt - 특정 파일에 기록합니다. 기본값으로 로그 파일은 %TEMP%에 만들어집니다.</String>
   <String Id="HelpCloseButton">닫기(&amp;C)</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;사용 조건&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">동의함(&amp;A)</String>
-  <String Id="InstallOptionsButton">옵션(&amp;O)</String>
   <String Id="InstallInstallButton">설치(&amp;I)</String>
   <String Id="InstallCloseButton">닫기(&amp;C)</String>
-  <String Id="OptionsHeader">설치 옵션</String>
-  <String Id="OptionsLocationLabel">설치 위치:</String>
-  <String Id="OptionsBrowseButton">찾아보기(&amp;B)</String>
-  <String Id="OptionsOkButton">확인(&amp;O)</String>
-  <String Id="OptionsCancelButton">취소(&amp;C)</String>
   <String Id="ProgressHeader">설치 진행률</String>
   <String Id="ProgressLabel">처리 중:</String>
   <String Id="OverallProgressPackageText">초기화 중...</String>
@@ -38,8 +29,8 @@
   <String Id="ModifyCloseButton">닫기(&amp;C)</String>
   <String Id="SuccessRepairHeader">복구 완료됨</String>
   <String Id="SuccessUninstallHeader">제거 완료됨</String>
-  <String Id="SuccessInstallHeader">설치 완료됨</String> 
-  <String Id="SuccessHeader">설치 완료</String>	
+  <String Id="SuccessInstallHeader">설치 완료됨</String>
+  <String Id="SuccessHeader">설치 완료</String>
   <String Id="SuccessLaunchButton">시작(&amp;L)</String>
   <String Id="SuccessRestartText">소프트웨어를 사용하려면 먼저 컴퓨터를 다시 시작해야 합니다.</String>
   <String Id="SuccessRestartButton">다시 시작(&amp;R)</String>
@@ -47,7 +38,7 @@
   <String Id="FailureHeader">설치 실패</String>
   <String Id="FailureInstallHeader">설치 실패</String>
   <String Id="FailureUninstallHeader">제거 실패</String>
-  <String Id="FailureRepairHeader">복구 실패</String> 
+  <String Id="FailureRepairHeader">복구 실패</String>
   <String Id="FailureHyperlinkLogText">하나 이상의 문제가 발생하여 설치하지 못했습니다. 문제를 해결한 다음 설치를 다시 시도하십시오. 자세한 내용은 &lt;a href="#"&gt;로그 파일&lt;/a&gt;을 참조하십시오.</String>
   <String Id="FailureRestartText">소프트웨어 롤백을 완료하려면 컴퓨터를 다시 시작해야 합니다.</String>
   <String Id="FailureRestartButton">다시 시작(&amp;R)</String>
@@ -55,15 +46,15 @@
   <String Id="FilesInUseHeader">사용 중인 파일</String>
   <String Id="FilesInUseLabel">다음의 응용 프로그램이 업데이트해야 할 파일을 사용 중입니다.</String>
   <String Id="FilesInUseCloseRadioButton">응용 프로그램을 닫고 다시 시작합니다(&amp;A).</String>
-  <String Id="FilesInUseDontCloseRadioButton">애플리케이션을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
+  <String Id="FilesInUseDontCloseRadioButton">응용 프로그램을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
   <String Id="FilesInUseOkButton">확인(&amp;O)</String>
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
 
   <!-- Custom UI strings -->
   <String Id="Welcome">[WixBundleName] 설치를 시작합니다.</String>
-  <String Id="InstallResetIIS">설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
-  <String Id="InstallNoIIS">이 머신에는 IIS가 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
+  <String Id="InstallResetIIS">설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
+  <String Id="InstallNoIIS">이 컴퓨터에서 IIS를 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
-  <String Id="ModifyNoIIS">이 머신에는 IIS가 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
+  <String Id="ModifyResetIIS">설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
+  <String Id="ModifyNoIIS">이 컴퓨터에서 IIS를 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다.</String>
 </WixLocalization>

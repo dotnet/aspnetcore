@@ -15,11 +15,11 @@ public class PersistentComponentState
     private IDictionary<string, byte[]>? _existingState;
     private readonly IDictionary<string, byte[]> _currentState;
 
-    private readonly List<Func<Task>> _registeredCallbacks;
+    private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
 
     internal PersistentComponentState(
-        IDictionary<string, byte[]> currentState,
-        List<Func<Task>> pauseCallbacks)
+        IDictionary<string , byte[]> currentState,
+        List<PersistComponentStateRegistration> pauseCallbacks)
     {
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
@@ -43,15 +43,24 @@ public class PersistentComponentState
     /// <param name="callback">The callback to invoke when the application is being paused.</param>
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback)
+        => RegisterOnPersisting(callback, null);
+
+    /// <summary>
+    /// Register a callback to persist the component state when the application is about to be paused.
+    /// Registered callbacks can use this opportunity to persist their state so that it can be retrieved when the application resumes.
+    /// </summary>
+    /// <param name="callback">The callback to invoke when the application is being paused.</param>
+    /// <param name="renderMode"></param>
+    /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
+    public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback, IComponentRenderMode? renderMode)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
 
-        _registeredCallbacks.Add(callback);
+        var persistenceCallback = new PersistComponentStateRegistration(callback, renderMode);
 
-        return new PersistingComponentStateSubscription(_registeredCallbacks, callback);
+        _registeredCallbacks.Add(persistenceCallback);
+
+        return new PersistingComponentStateSubscription(_registeredCallbacks, persistenceCallback);
     }
 
     /// <summary>
@@ -63,15 +72,7 @@ public class PersistentComponentState
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (!PersistingState)
         {
@@ -98,10 +99,7 @@ public class PersistentComponentState
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
     public bool TryTakeFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (TryTake(key, out var data))
         {
@@ -118,10 +116,7 @@ public class PersistentComponentState
 
     private bool TryTake(string key, out byte[]? value)
     {
-        if (key is null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (_existingState == null)
         {

@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components;
 
 // A cache for root component types
-internal class RootComponentTypeCache
+internal sealed class RootComponentTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
@@ -24,6 +25,7 @@ internal class RootComponentTypeCache
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
     private static Type? ResolveType(Key key, Assembly[] assemblies)
     {
         Assembly? assembly = null;
@@ -39,10 +41,26 @@ internal class RootComponentTypeCache
 
         if (assembly == null)
         {
-            return null;
+            // It might be that the assembly is not loaded yet, this can happen if the root component is defined in a
+            // different assembly than the app and there is no reference from the app assembly to any type in the class
+            // library that has been used yet.
+            // In this case, try and load the assembly and look up the type again.
+            // We only need to do this in the browser because its a different process, in the server the assembly will already
+            // be loaded.
+            if (OperatingSystem.IsBrowser())
+            {
+                try
+                {
+                    assembly = Assembly.Load(key.Assembly);
+                }
+                catch
+                {
+                    // It's fine to ignore the exception, since we'll return null below.
+                }
+            }
         }
 
-        return assembly.GetType(key.Type, throwOnError: false, ignoreCase: false);
+        return assembly?.GetType(key.Type, throwOnError: false, ignoreCase: false);
     }
 
     private readonly struct Key : IEquatable<Key>

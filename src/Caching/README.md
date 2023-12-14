@@ -1,6 +1,6 @@
 # Caching
 
-This area contains distributed cache implementations for Microsoft SQL Server and Redis. See documentation at <https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-5.0>.
+This area contains distributed cache implementations for Microsoft SQL Server and Redis. See documentation at <https://learn.microsoft.com/en-us/aspnet/core/performance/caching/distributed>.
 
 ## Description
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -23,10 +24,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// <returns>An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
     public static ControllerActionEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         EnsureControllerServices(endpoints);
 
@@ -43,10 +41,7 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// </returns>
     public static ControllerActionEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         EnsureControllerServices(endpoints);
 
@@ -85,15 +80,12 @@ public static class ControllerEndpointRouteBuilderExtensions
     public static ControllerActionEndpointConventionBuilder MapControllerRoute(
         this IEndpointRouteBuilder endpoints,
         string name,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         object? defaults = null,
         object? constraints = null,
         object? dataTokens = null)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         EnsureControllerServices(endpoints);
 
@@ -134,15 +126,12 @@ public static class ControllerEndpointRouteBuilderExtensions
         this IEndpointRouteBuilder endpoints,
         string name,
         string areaName,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         object? defaults = null,
         object? constraints = null,
         object? dataTokens = null)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (string.IsNullOrEmpty(areaName))
         {
@@ -193,20 +182,9 @@ public static class ControllerEndpointRouteBuilderExtensions
         string action,
         string controller)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
-
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
 
@@ -263,29 +241,14 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToController(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         string action,
         string controller)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
-
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
 
@@ -343,20 +306,9 @@ public static class ControllerEndpointRouteBuilderExtensions
         string controller,
         string area)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
-
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
 
@@ -414,30 +366,15 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToAreaController(
         this IEndpointRouteBuilder endpoints,
-        string pattern,
+        [StringSyntax("Route")] string pattern,
         string action,
         string controller,
         string area)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
-
-        if (controller == null)
-        {
-            throw new ArgumentNullException(nameof(controller));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(controller);
 
         EnsureControllerServices(endpoints);
 
@@ -475,13 +412,10 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
     /// </para>
     /// </remarks>
-    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
+    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern)
         where TTransformer : DynamicRouteValueTransformer
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         MapDynamicControllerRoute<TTransformer>(endpoints, pattern, state: null);
     }
@@ -505,13 +439,10 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// is required when using <paramref name="state" />.
     /// </para>
     /// </remarks>
-    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object? state)
+    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object? state)
         where TTransformer : DynamicRouteValueTransformer
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         EnsureControllerServices(endpoints);
 
@@ -543,13 +474,10 @@ public static class ControllerEndpointRouteBuilderExtensions
     /// is required when using <paramref name="state" />.
     /// </para>
     /// </remarks>
-    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state, int order)
+    public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object state, int order)
         where TTransformer : DynamicRouteValueTransformer
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         EnsureControllerServices(endpoints);
 

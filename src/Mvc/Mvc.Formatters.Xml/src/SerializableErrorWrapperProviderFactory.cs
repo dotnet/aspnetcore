@@ -21,10 +21,7 @@ public class SerializableErrorWrapperProviderFactory : IWrapperProviderFactory
     /// </returns>
     public IWrapperProvider? GetProvider(WrapperProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.DeclaredType == typeof(SerializableError))
         {

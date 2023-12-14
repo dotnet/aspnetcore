@@ -10,12 +10,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class OpaqueUpgradeTests
+public class OpaqueUpgradeTests : LoggedTest
 {
     [ConditionalFact]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
@@ -33,7 +34,7 @@ public class OpaqueUpgradeTests
                 return httpContext.Response.WriteAsync(ex.ToString());
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -61,7 +62,7 @@ public class OpaqueUpgradeTests
                 return httpContext.Response.WriteAsync(ex.ToString());
             }
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -92,7 +93,7 @@ public class OpaqueUpgradeTests
             {
                 upgradeThrew = true;
             }
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             Assert.Equal(200, (int)response.StatusCode);
@@ -114,7 +115,7 @@ public class OpaqueUpgradeTests
             Assert.True(opaqueFeature.IsUpgradableRequest);
             await opaqueFeature.UpgradeAsync();
             upgraded.SetResult(true);
-        }))
+        }, LoggerFactory))
         {
             using (Stream stream = await SendOpaqueRequestAsync("GET", address))
             {
@@ -145,7 +146,7 @@ public class OpaqueUpgradeTests
             Assert.Throws<InvalidOperationException>(() => feature.MaxRequestBodySize = 12);
             Assert.Equal(15, await stream.ReadAsync(new byte[15], 0, 15));
             upgraded.SetResult(true);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             using (Stream stream = await SendOpaqueRequestAsync("GET", address))
             {
@@ -174,7 +175,7 @@ public class OpaqueUpgradeTests
             Assert.True(opaqueFeature.IsUpgradableRequest);
             await opaqueFeature.UpgradeAsync();
             upgraded.SetResult(true);
-        }))
+        }, LoggerFactory))
         {
             using (Stream stream = await SendOpaqueRequestAsync("GET", address))
             {
@@ -230,7 +231,7 @@ public class OpaqueUpgradeTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             using (Stream stream = await SendOpaqueRequestAsync(method, address, extraHeader))
             {
@@ -266,7 +267,7 @@ public class OpaqueUpgradeTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendOpaqueRequestAsync(method, address, extraHeader));
             Assert.Equal("The response status code was incorrect: HTTP/1.1 200 OK", ex.Message);
@@ -289,7 +290,7 @@ public class OpaqueUpgradeTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             using var client = new HttpClient();
 
@@ -298,6 +299,70 @@ public class OpaqueUpgradeTests
             request.Content = new StringContent("Hello World");
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
+    public async Task OpaqueUpgrade_Http10_ThrowsIfUpgraded()
+    {
+        var upgrade = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using (Utilities.CreateHttpServer(out string address, async httpContext =>
+        {
+            var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+            Assert.NotNull(opaqueFeature);
+            Assert.False(opaqueFeature.IsUpgradableRequest);
+            try
+            {
+                await opaqueFeature.UpgradeAsync();
+            }
+            catch (Exception ex)
+            {
+                upgrade.TrySetException(ex);
+                throw;
+            }
+            upgrade.TrySetResult();
+        }, LoggerFactory))
+        {
+            // Connect with a socket
+            Uri uri = new Uri(address);
+            TcpClient client = new TcpClient();
+
+            try
+            {
+                await client.ConnectAsync(uri.Host, uri.Port);
+                NetworkStream stream = client.GetStream();
+
+                // Send an HTTP GET request
+                StringBuilder builder = new StringBuilder();
+                builder.Append("GET");
+                builder.Append(" ");
+                builder.Append(uri.PathAndQuery);
+                builder.Append(" HTTP/1.0");
+                builder.AppendLine();
+
+                builder.Append("Host: ");
+                builder.Append(uri.Host);
+                builder.Append(':');
+                builder.Append(uri.Port);
+                builder.AppendLine();
+
+                builder.AppendLine();
+                var requestBytes = Encoding.ASCII.GetBytes(builder.ToString());
+                await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => upgrade.Task);
+                Assert.Equal("Upgrade requires HTTP/1.1.", ex.Message);
+
+                // Read the response headers, fail if it's not a 101
+                ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ParseResponseAsync(stream));
+                Assert.EndsWith("HTTP/1.1 500 Internal Server Error", ex.Message);
+            }
+            catch (Exception)
+            {
+                ((IDisposable)client).Dispose();
+                throw;
+            }
         }
     }
 

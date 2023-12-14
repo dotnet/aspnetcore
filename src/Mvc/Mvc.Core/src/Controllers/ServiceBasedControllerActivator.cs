@@ -14,10 +14,7 @@ public class ServiceBasedControllerActivator : IControllerActivator
     /// <inheritdoc />
     public object Create(ControllerContext actionContext)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
         var controllerType = actionContext.ActionDescriptor.ControllerTypeInfo.AsType();
 

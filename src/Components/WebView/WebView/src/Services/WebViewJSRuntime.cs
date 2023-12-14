@@ -7,7 +7,7 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
-internal class WebViewJSRuntime : JSRuntime
+internal sealed class WebViewJSRuntime : JSRuntime
 {
     private IpcSender _ipcSender;
 
@@ -30,6 +30,11 @@ internal class WebViewJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
     {
+        if (_ipcSender is null)
+        {
+            throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");
+        }
+
         _ipcSender.BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
     }
 
@@ -51,6 +56,6 @@ internal class WebViewJSRuntime : JSRuntime
 
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
-        return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
+        return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebViewDotNetDataStream", streamId, dotNetStreamReference);
     }
 }

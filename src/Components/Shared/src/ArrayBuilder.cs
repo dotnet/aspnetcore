@@ -26,7 +26,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// components can be long-lived and re-render frequently, with the rendered size
 /// varying dramatically depending on the user's navigation in the app.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class ArrayBuilder<T> : IDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
     // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
     protected T[] _items;
@@ -172,10 +174,7 @@ internal class ArrayBuilder<T> : IDisposable
         // If someone tries to do something that would require non-zero storage then
         // this is a use-after-free. Throwing here is an easy way to prevent that without
         // introducing overhead to every method.
-        if (_disposed)
-        {
-            ThrowObjectDisposedException();
-        }
+        ObjectDisposedException.ThrowIf(_disposed, null);
 
         var newCapacity = Math.Max(desiredCapacity, _minCapacity);
         Debug.Assert(newCapacity > _items.Length);
@@ -213,10 +212,5 @@ internal class ArrayBuilder<T> : IDisposable
     private static void ThrowIndexOutOfBoundsException()
     {
         throw new ArgumentOutOfRangeException("index");
-    }
-
-    private static void ThrowObjectDisposedException()
-    {
-        throw new ObjectDisposedException(objectName: null);
     }
 }

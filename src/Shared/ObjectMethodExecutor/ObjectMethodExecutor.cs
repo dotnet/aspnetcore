@@ -3,15 +3,16 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Internal;
 
-internal class ObjectMethodExecutor
+[RequiresUnreferencedCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+[RequiresDynamicCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+internal sealed class ObjectMethodExecutor
 {
     private readonly object?[]? _parameterDefaultValues;
     private readonly MethodExecutorAsync? _executorAsync;
@@ -19,20 +20,17 @@ internal class ObjectMethodExecutor
 
     private static readonly ConstructorInfo _objectMethodExecutorAwaitableConstructor =
         typeof(ObjectMethodExecutorAwaitable).GetConstructor(new[] {
-                typeof(object),                 // customAwaitable
-                typeof(Func<object, object>),   // getAwaiterMethod
-                typeof(Func<object, bool>),     // isCompletedMethod
-                typeof(Func<object, object>),   // getResultMethod
-                typeof(Action<object, Action>), // onCompletedMethod
-                typeof(Action<object, Action>)  // unsafeOnCompletedMethod
-        })!;
+            typeof(object),                 // customAwaitable
+            typeof(Func<object, object>),   // getAwaiterMethod
+            typeof(Func<object, bool>),     // isCompletedMethod
+            typeof(Func<object, object>),   // getResultMethod
+            typeof(Action<object, Action>), // onCompletedMethod
+            typeof(Action<object, Action>)  // unsafeOnCompletedMethod
+    })!;
 
     private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[]? parameterDefaultValues)
     {
-        if (methodInfo == null)
-        {
-            throw new ArgumentNullException(nameof(methodInfo));
-        }
+        ArgumentNullException.ThrowIfNull(methodInfo);
 
         MethodInfo = methodInfo;
         MethodParameters = methodInfo.GetParameters();
@@ -83,10 +81,7 @@ internal class ObjectMethodExecutor
 
     public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[] parameterDefaultValues)
     {
-        if (parameterDefaultValues == null)
-        {
-            throw new ArgumentNullException(nameof(parameterDefaultValues));
-        }
+        ArgumentNullException.ThrowIfNull(parameterDefaultValues);
 
         return new ObjectMethodExecutor(methodInfo, targetTypeInfo, parameterDefaultValues);
     }

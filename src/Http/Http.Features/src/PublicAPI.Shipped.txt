@@ -1,12 +1,16 @@
 #nullable enable
-~Microsoft.AspNetCore.Http.Features.FeatureReference<> (forwarded, contained in Microsoft.Extensions.Features)
-~Microsoft.AspNetCore.Http.Features.FeatureReferences<> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryValidationFeature
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryValidationFeature.Error.get -> System.Exception?
+Microsoft.AspNetCore.Antiforgery.IAntiforgeryValidationFeature.IsValid.get -> bool
 Microsoft.AspNetCore.Http.CookieOptions
 Microsoft.AspNetCore.Http.CookieOptions.CookieOptions() -> void
+Microsoft.AspNetCore.Http.CookieOptions.CookieOptions(Microsoft.AspNetCore.Http.CookieOptions! options) -> void
+Microsoft.AspNetCore.Http.CookieOptions.CreateCookieHeader(string! name, string! value) -> Microsoft.Net.Http.Headers.SetCookieHeaderValue!
 Microsoft.AspNetCore.Http.CookieOptions.Domain.get -> string?
 Microsoft.AspNetCore.Http.CookieOptions.Domain.set -> void
 Microsoft.AspNetCore.Http.CookieOptions.Expires.get -> System.DateTimeOffset?
 Microsoft.AspNetCore.Http.CookieOptions.Expires.set -> void
+Microsoft.AspNetCore.Http.CookieOptions.Extensions.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Http.CookieOptions.HttpOnly.get -> bool
 Microsoft.AspNetCore.Http.CookieOptions.HttpOnly.set -> void
 Microsoft.AspNetCore.Http.CookieOptions.IsEssential.get -> bool
@@ -32,6 +36,20 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection.IsReadOnly.get -> bool (for
 Microsoft.AspNetCore.Http.Features.FeatureCollection.Set<TFeature>(TFeature? instance) -> void (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].get -> object? (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureCollection.this[System.Type! key].set -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T>.FeatureReference() -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Fetch(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features) -> T? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Update(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features, T feature) -> T (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache> (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Cache -> TCache? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Collection.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection! (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences() -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature, TState>(ref TFeature? cached, TState state, System.Func<TState, TFeature?>! factory) -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature>(ref TFeature? cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection!, TFeature?>! factory) -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection, int revision) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.Compress = 2 -> Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.Default = 0 -> Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
@@ -65,10 +83,16 @@ Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.RemoteIpAddress.get ->
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.RemoteIpAddress.set -> void
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.RemotePort.get -> int
 Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.RemotePort.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature
+Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature.AcceptAsync() -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
+Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature.IsExtendedConnect.get -> bool
+Microsoft.AspNetCore.Http.Features.IHttpExtendedConnectFeature.Protocol.get -> string?
 Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature
 Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature.IsReadOnly.get -> bool
 Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature.MaxRequestBodySize.get -> long?
 Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature.MaxRequestBodySize.set -> void
+Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature
+Microsoft.AspNetCore.Http.Features.IHttpMetricsTagsFeature.Tags.get -> System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string!, object?>>!
 Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature
 Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature.CanHaveBody.get -> bool
 Microsoft.AspNetCore.Http.Features.IHttpRequestFeature
@@ -133,6 +157,9 @@ Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.UpgradeAsync() -> System.
 Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature
 Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature.AcceptAsync(Microsoft.AspNetCore.Http.WebSocketAcceptContext! context) -> System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket!>!
 Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature.IsWebSocketRequest.get -> bool
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Http.Features.IWebTransportSession!>
+Microsoft.AspNetCore.Http.Features.IHttpWebTransportFeature.IsWebTransportRequest.get -> bool
 Microsoft.AspNetCore.Http.Features.IItemsFeature
 Microsoft.AspNetCore.Http.Features.IItemsFeature.Items.get -> System.Collections.Generic.IDictionary<object!, object?>!
 Microsoft.AspNetCore.Http.Features.IItemsFeature.Items.set -> void
@@ -169,6 +196,11 @@ Microsoft.AspNetCore.Http.Features.ITrackingConsentFeature.GrantConsent() -> voi
 Microsoft.AspNetCore.Http.Features.ITrackingConsentFeature.HasConsent.get -> bool
 Microsoft.AspNetCore.Http.Features.ITrackingConsentFeature.IsConsentNeeded.get -> bool
 Microsoft.AspNetCore.Http.Features.ITrackingConsentFeature.WithdrawConsent() -> void
+Microsoft.AspNetCore.Http.Features.IWebTransportSession
+Microsoft.AspNetCore.Http.Features.IWebTransportSession.Abort(int errorCode) -> void
+Microsoft.AspNetCore.Http.Features.IWebTransportSession.AcceptStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
+Microsoft.AspNetCore.Http.Features.IWebTransportSession.OpenUnidirectionalStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext?>
+Microsoft.AspNetCore.Http.Features.IWebTransportSession.SessionId.get -> long
 Microsoft.AspNetCore.Http.IFormCollection
 Microsoft.AspNetCore.Http.IFormCollection.ContainsKey(string! key) -> bool
 Microsoft.AspNetCore.Http.IFormCollection.Count.get -> int
@@ -414,6 +446,7 @@ Microsoft.AspNetCore.Http.WebSocketAcceptContext.DisableServerContextTakeover.se
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.ServerMaxWindowBits.get -> int
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.ServerMaxWindowBits.set -> void
 Microsoft.AspNetCore.Http.WebSocketAcceptContext.WebSocketAcceptContext() -> void
+static readonly Microsoft.AspNetCore.Http.Features.FeatureReference<T>.Default -> Microsoft.AspNetCore.Http.Features.FeatureReference<T> (forwarded, contained in Microsoft.Extensions.Features)
 virtual Microsoft.AspNetCore.Http.Features.FeatureCollection.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
 virtual Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveInterval.get -> System.TimeSpan?
 virtual Microsoft.AspNetCore.Http.WebSocketAcceptContext.KeepAliveInterval.set -> void

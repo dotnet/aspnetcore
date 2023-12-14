@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AssemblyName>Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
+    <Content Include="$(ToolSharedSourceRoot)\SecretsHelpers\assets\SecretManager.targets" Link="assets\SecretManager.targets" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\dotnet-user-jwts.csproj" />
+  </ItemGroup>
+
+</Project>

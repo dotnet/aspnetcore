@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Sdk Name="Yarn.MSBuild" />
+  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side authentication for single-page applications (SPAs).</Description>
     <IsShippingPackage>true</IsShippingPackage>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Trimmable>true</Trimmable>
-    <Nullable>disable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +41,7 @@
     <Content Remove="$(YarnWorkingDir)**" />
     <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
 
-    <UpToDateCheckInput Include="@(YarnInputs)" Set="StaticWebassets" />
+    <UpToDateCheckInput Include="@(YarnInputs)" Exclude="$(YarnWorkingDir)package.json" Set="StaticWebassets" />
     <UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />
   </ItemGroup>
 
@@ -63,7 +64,17 @@
   </Target>
 
   <Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
-    <Yarn Command="install --mutex network --frozen-lockfile" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <!-- Retry yarn install if first one fails -->
+    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
+          WorkingDirectory="$(YarnWorkingDir)"
+          IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"
+          IgnoreExitCode="true">
+            <Output TaskParameter="ExitCode" PropertyName="_LocalYarnExitCode" />
+    </Yarn>
+    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
+          WorkingDirectory="$(YarnWorkingDir)"
+          IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"
+          Condition="'$(_LocalYarnExitCode)' != '0'" />
     <Yarn Command="run build:production" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
     <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
 
@@ -76,14 +87,7 @@
       <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''"
-      SourceType="Computed"
-      SourceId="$(PackageId)"
-      ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\"
-      BasePath="_content/$(PackageId)"
-      CandidateAssets="@(_InteropBuildOutput)"
-      RelativePathFilter="**.js"
-    >
+    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''" SourceType="Computed" SourceId="$(PackageId)" ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\" BasePath="_content/$(PackageId)" CandidateAssets="@(_InteropBuildOutput)" RelativePathFilter="**.js">
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
 
@@ -93,4 +97,9 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Tests" />
+  </ItemGroup>
 </Project>

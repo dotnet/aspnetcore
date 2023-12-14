@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Internal;
 
-internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
+internal sealed class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
 {
     private readonly IDictionary<TKey, TValue> _sourceDictionary;
     private readonly IEqualityComparer<TKey> _comparer;
@@ -19,15 +19,8 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         IDictionary<TKey, TValue> sourceDictionary,
         IEqualityComparer<TKey> comparer)
     {
-        if (sourceDictionary == null)
-        {
-            throw new ArgumentNullException(nameof(sourceDictionary));
-        }
-
-        if (comparer == null)
-        {
-            throw new ArgumentNullException(nameof(comparer));
-        }
+        ArgumentNullException.ThrowIfNull(sourceDictionary);
+        ArgumentNullException.ThrowIfNull(comparer);
 
         _sourceDictionary = sourceDictionary;
         _comparer = comparer;
@@ -55,7 +48,7 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         }
     }
 
-    public virtual ICollection<TKey> Keys
+    public ICollection<TKey> Keys
     {
         get
         {
@@ -63,7 +56,7 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         }
     }
 
-    public virtual ICollection<TValue> Values
+    public ICollection<TValue> Values
     {
         get
         {
@@ -71,7 +64,7 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         }
     }
 
-    public virtual int Count
+    public int Count
     {
         get
         {
@@ -79,7 +72,7 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         }
     }
 
-    public virtual bool IsReadOnly
+    public bool IsReadOnly
     {
         get
         {
@@ -87,7 +80,7 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         }
     }
 
-    public virtual TValue this[TKey key]
+    public TValue this[TKey key]
     {
         get
         {
@@ -99,42 +92,42 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         }
     }
 
-    public virtual bool ContainsKey(TKey key)
+    public bool ContainsKey(TKey key)
     {
         return ReadDictionary.ContainsKey(key);
     }
 
-    public virtual void Add(TKey key, TValue value)
+    public void Add(TKey key, TValue value)
     {
         WriteDictionary.Add(key, value);
     }
 
-    public virtual bool Remove(TKey key)
+    public bool Remove(TKey key)
     {
         return WriteDictionary.Remove(key);
     }
 
-    public virtual bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
+    public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         return ReadDictionary.TryGetValue(key, out value);
     }
 
-    public virtual void Add(KeyValuePair<TKey, TValue> item)
+    public void Add(KeyValuePair<TKey, TValue> item)
     {
         WriteDictionary.Add(item);
     }
 
-    public virtual void Clear()
+    public void Clear()
     {
         WriteDictionary.Clear();
     }
 
-    public virtual bool Contains(KeyValuePair<TKey, TValue> item)
+    public bool Contains(KeyValuePair<TKey, TValue> item)
     {
         return ReadDictionary.Contains(item);
     }
 
-    public virtual void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
         ReadDictionary.CopyTo(array, arrayIndex);
     }
@@ -144,7 +137,7 @@ internal class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> w
         return WriteDictionary.Remove(item);
     }
 
-    public virtual IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
     {
         return ReadDictionary.GetEnumerator();
     }

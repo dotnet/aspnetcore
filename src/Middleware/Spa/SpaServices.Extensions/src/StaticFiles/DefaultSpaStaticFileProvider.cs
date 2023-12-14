@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SpaServices.StaticFiles;
 /// Provides an implementation of <see cref="ISpaStaticFileProvider"/> that supplies
 /// physical files at a location configured using <see cref="SpaStaticFilesOptions"/>.
 /// </summary>
-internal class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
+internal sealed class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
 {
     private readonly IFileProvider? _fileProvider;
 
@@ -19,10 +19,7 @@ internal class DefaultSpaStaticFileProvider : ISpaStaticFileProvider
         IServiceProvider serviceProvider,
         SpaStaticFilesOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (string.IsNullOrEmpty(options.RootPath))
         {

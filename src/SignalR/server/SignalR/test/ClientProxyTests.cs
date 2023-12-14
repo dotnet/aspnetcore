@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
 
@@ -204,5 +205,83 @@ public class ClientHubProxyTests
         var arg = (byte[])Assert.Single(resultArgs);
 
         Assert.Same(data, arg);
+    }
+
+    [Fact]
+    public async Task SingleClientProxyWithInvoke_ThrowsNotSupported()
+    {
+        var hubLifetimeManager = new EmptyHubLifetimeManager<FakeHub>();
+
+        var proxy = new SingleClientProxy<FakeHub>(hubLifetimeManager, "");
+        var ex = await Assert.ThrowsAsync<NotImplementedException>(async () => await proxy.InvokeAsync<int>("method", cancellationToken: default)).DefaultTimeout();
+        Assert.Equal("EmptyHubLifetimeManager`1 does not support client return values.", ex.Message);
+    }
+
+    internal class EmptyHubLifetimeManager<THub> : HubLifetimeManager<THub> where THub : Hub
+    {
+        public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task OnConnectedAsync(HubConnectionContext connection)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task OnDisconnectedAsync(HubConnectionContext connection)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendAllAsync(string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendConnectionAsync(string connectionId, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendGroupAsync(string groupName, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendUserAsync(string userId, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.Extensions.Internal.PropertyHelper.MetadataUpdateHandler))]
 
@@ -41,8 +42,6 @@ internal sealed class PropertyHelper
 
     private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache = new();
 
-    private static readonly Type IsByRefLikeAttribute = typeof(System.Runtime.CompilerServices.IsByRefLikeAttribute);
-
     private Action<object, object?>? _valueSetter;
     private Func<object, object?>? _valueGetter;
 
@@ -74,12 +73,7 @@ internal sealed class PropertyHelper
         [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
-            if (_valueGetter == null)
-            {
-                _valueGetter = MakeFastPropertyGetter(Property);
-            }
-
-            return _valueGetter;
+            return _valueGetter ??= MakeFastPropertyGetter(Property);
         }
     }
 
@@ -91,12 +85,7 @@ internal sealed class PropertyHelper
         [RequiresUnreferencedCode("This API is not trim safe.")]
         get
         {
-            if (_valueSetter == null)
-            {
-                _valueSetter = MakeFastPropertySetter(Property);
-            }
-
-            return _valueSetter;
+            return _valueSetter ??= MakeFastPropertySetter(Property);
         }
     }
 
@@ -220,28 +209,40 @@ internal sealed class PropertyHelper
         Debug.Assert(!getMethod.IsStatic);
         Debug.Assert(getMethod.GetParameters().Length == 0);
 
-        // Instance methods in the CLR can be turned into static methods where the first parameter
-        // is open over "target". This parameter is always passed by reference, so we have a code
-        // path for value types and a code path for reference types.
-        if (getMethod.DeclaringType!.IsValueType)
+        // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
+        if (RuntimeFeature.IsDynamicCodeSupported)
         {
-            // Create a delegate (ref TDeclaringType) -> TValue
-            return MakeFastPropertyGetter(
-                typeof(ByRefFunc<,>),
-                getMethod,
-                propertyGetterByRefWrapperMethod);
+            // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+            // Instance methods in the CLR can be turned into static methods where the first parameter
+            // is open over "target". This parameter is always passed by reference, so we have a code
+            // path for value types and a code path for reference types.
+            if (getMethod.DeclaringType!.IsValueType)
+            {
+                // Create a delegate (ref TDeclaringType) -> TValue
+                return MakeFastPropertyGetter(
+                    typeof(ByRefFunc<,>),
+                    getMethod,
+                    propertyGetterByRefWrapperMethod);
+            }
+            else
+            {
+                // Create a delegate TDeclaringType -> TValue
+                return MakeFastPropertyGetter(
+                    typeof(Func<,>),
+                    getMethod,
+                    propertyGetterWrapperMethod);
+            }
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
         }
         else
         {
-            // Create a delegate TDeclaringType -> TValue
-            return MakeFastPropertyGetter(
-                typeof(Func<,>),
-                getMethod,
-                propertyGetterWrapperMethod);
+            return propertyInfo.GetValue;
         }
     }
 
     [RequiresUnreferencedCode("This API is not trimmer safe.")]
+    [RequiresDynamicCode("This API requires dynamic code because it makes generic types which may be filled with ValueTypes.")]
     private static Func<object, object?> MakeFastPropertyGetter(
         Type openGenericDelegateType,
         MethodInfo propertyGetMethod,
@@ -283,22 +284,33 @@ internal sealed class PropertyHelper
         var parameters = setMethod.GetParameters();
         Debug.Assert(parameters.Length == 1);
 
-        // Instance methods in the CLR can be turned into static methods where the first parameter
-        // is open over "target". This parameter is always passed by reference, so we have a code
-        // path for value types and a code path for reference types.
-        var typeInput = setMethod.DeclaringType!;
-        var parameterType = parameters[0].ParameterType;
+        // MakeGenericMethod + value type requires IsDynamicCodeSupported to be true.
+        if (RuntimeFeature.IsDynamicCodeSupported)
+        {
+            // TODO: Remove disable when https://github.com/dotnet/linker/issues/2715 is complete.
+#pragma warning disable IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+            // Instance methods in the CLR can be turned into static methods where the first parameter
+            // is open over "target". This parameter is always passed by reference, so we have a code
+            // path for value types and a code path for reference types.
+            var typeInput = setMethod.DeclaringType!;
+            var parameterType = parameters[0].ParameterType;
 
-        // Create a delegate TDeclaringType -> { TDeclaringType.Property = TValue; }
-        var propertySetterAsAction =
-            setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(typeInput, parameterType));
-        var callPropertySetterClosedGenericMethod =
-            CallPropertySetterOpenGenericMethod.MakeGenericMethod(typeInput, parameterType);
-        var callPropertySetterDelegate =
-            callPropertySetterClosedGenericMethod.CreateDelegate(
-                typeof(Action<object, object?>), propertySetterAsAction);
+            // Create a delegate TDeclaringType -> { TDeclaringType.Property = TValue; }
+            var propertySetterAsAction =
+                setMethod.CreateDelegate(typeof(Action<,>).MakeGenericType(typeInput, parameterType));
+            var callPropertySetterClosedGenericMethod =
+                CallPropertySetterOpenGenericMethod.MakeGenericMethod(typeInput, parameterType);
+            var callPropertySetterDelegate =
+                callPropertySetterClosedGenericMethod.CreateDelegate(
+                    typeof(Action<object, object?>), propertySetterAsAction);
 
-        return (Action<object, object?>)callPropertySetterDelegate;
+            return (Action<object, object?>)callPropertySetterDelegate;
+#pragma warning restore IL3050 // Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
+        }
+        else
+        {
+            return propertyInfo.SetValue;
+        }
     }
 
     /// <summary>
@@ -538,23 +550,14 @@ internal sealed class PropertyHelper
             property.GetMethod.IsPublic &&
             !property.GetMethod.IsStatic &&
 
-            // PropertyHelper can't work with ref structs.
-            !IsRefStructProperty(property) &&
+            // PropertyHelper can't really interact with ref-struct properties since they can't be
+            // boxed and can't be used as generic types. We just ignore them.
+            //
+            // see: https://github.com/aspnet/Mvc/issues/8545
+            !property.PropertyType.IsByRefLike &&
 
             // Indexed properties are not useful (or valid) for grabbing properties off an object.
             property.GetMethod.GetParameters().Length == 0;
-    }
-
-    // PropertyHelper can't really interact with ref-struct properties since they can't be
-    // boxed and can't be used as generic types. We just ignore them.
-    //
-    // see: https://github.com/aspnet/Mvc/issues/8545
-    private static bool IsRefStructProperty(PropertyInfo property)
-    {
-        return
-            IsByRefLikeAttribute != null &&
-            property.PropertyType.IsValueType &&
-            property.PropertyType.IsDefined(IsByRefLikeAttribute);
     }
 
     internal static class MetadataUpdateHandler

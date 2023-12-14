@@ -13,6 +13,6 @@ internal interface IRequestProcessor
     void HandleRequestHeadersTimeout();
     void HandleReadDataRateTimeout();
     void OnInputOrOutputCompleted();
-    void Tick(DateTimeOffset now);
+    void Tick(long timestamp);
     void Abort(ConnectionAbortedException ex);
 }

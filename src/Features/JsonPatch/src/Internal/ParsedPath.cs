@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal;
 
@@ -18,10 +19,7 @@ public readonly struct ParsedPath
 
     public ParsedPath(string path)
     {
-        if (path == null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(path);
 
         _segments = ParsePath(path);
     }

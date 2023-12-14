@@ -28,10 +28,7 @@ public abstract class UrlHelperBase : IUrlHelper
     /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
     protected UrlHelperBase(ActionContext actionContext)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
         ActionContext = actionContext;
         AmbientValues = actionContext.RouteData.Values;
@@ -47,7 +44,7 @@ public abstract class UrlHelperBase : IUrlHelper
     public ActionContext ActionContext { get; }
 
     /// <inheritdoc />
-    public virtual bool IsLocalUrl([NotNullWhen(true)] string? url) => CheckIsLocalUrl(url);
+    public virtual bool IsLocalUrl([NotNullWhen(true)][StringSyntax(StringSyntaxAttribute.Uri)] string? url) => CheckIsLocalUrl(url);
 
     /// <inheritdoc />
     [return: NotNullIfNotNull("contentPath")]
@@ -443,12 +440,12 @@ public abstract class UrlHelperBase : IUrlHelper
             {
                 builder.Append(pathBase.Value);
 
-                if (pathBase.Value.EndsWith("/", StringComparison.Ordinal))
+                if (pathBase.Value.EndsWith('/'))
                 {
                     builder.Length--;
                 }
 
-                if (!virtualPath.StartsWith("/", StringComparison.Ordinal))
+                if (!virtualPath.StartsWith('/'))
                 {
                     builder.Append('/');
                 }
@@ -483,7 +480,7 @@ public abstract class UrlHelperBase : IUrlHelper
                 url = "/";
                 return true;
             }
-            else if (virtualPath.StartsWith("/", StringComparison.Ordinal))
+            else if (virtualPath.StartsWith('/'))
             {
                 url = virtualPath;
                 return true;

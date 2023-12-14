@@ -12,17 +12,14 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
-    // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
-    // "HTTP/1.1 100 Continue\r\n\r\n"
-    private static ReadOnlySpan<byte> ContinueBytes => new byte[] { (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'1', (byte)'.', (byte)'1', (byte)' ', (byte)'1', (byte)'0', (byte)'0', (byte)' ', (byte)'C', (byte)'o', (byte)'n', (byte)'t', (byte)'i', (byte)'n', (byte)'u', (byte)'e', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-    // "HTTP/1.1 "
-    private static ReadOnlySpan<byte> HttpVersion11Bytes => new byte[] { (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'1', (byte)'.', (byte)'1', (byte)' ' };
-    // "\r\n\r\n"
-    private static ReadOnlySpan<byte> EndHeadersBytes => new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
-    // "0\r\n\r\n"
-    private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+    private static ReadOnlySpan<byte> ContinueBytes => "HTTP/1.1 100 Continue\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> HttpVersion11Bytes => "HTTP/1.1 "u8;
+    private static ReadOnlySpan<byte> EndHeadersBytes => "\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> EndChunkedResponseBytes => "0\r\n\r\n"u8;
 
     private const int MaxBeginChunkLength = 10;
     private const int EndChunkLength = 2;
@@ -143,7 +140,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_autoChunk)
@@ -486,7 +483,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             // Uses same BufferWriter to write response headers and response
@@ -506,7 +503,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             // Uses same BufferWriter to write response headers and chunk
@@ -544,7 +541,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             if (_pipeWriterCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);
@@ -743,6 +740,14 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             _currentSegment = owner.Memory;
             _currentSegmentOwner = owner;
         }
+        else if (sizeHint <= MemoryPool<byte>.Shared.MaxBufferSize)
+        {
+            // fallback to ArrayPool instead of the passed in memory pool (default is PinnedBlockMemoryPool)
+            // PinnedBlockMemoryPool currently defaults to a low (4k) max buffer size while ArrayPool is 2G
+            var owner = MemoryPool<byte>.Shared.Rent(sizeHint);
+            _currentSegment = owner.Memory;
+            _currentSegmentOwner = owner;
+        }
         else
         {
             _currentSegment = new byte[sizeHint];
@@ -789,10 +794,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         public void Return()
         {
-            if (_memoryOwner != null)
-            {
-                _memoryOwner.Dispose();
-            }
+            _memoryOwner?.Dispose();
         }
     }
 }

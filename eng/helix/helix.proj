@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test"
+    TreatAsLocalProperty="ProjectToBuild;TreatWarningsAsErrors">
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
@@ -35,8 +36,17 @@
     <DotNetCliChannel>Current</DotNetCliChannel>
 
     <!-- Similar to ProjectLayout.props in the Arcade SDK. The Helix SDK contains nothing similar. -->
+    <ArtifactsBinDir Condition=" '$(ArtifactsBinDir)' == '' "
+        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
     <OutputPath Condition=" '$(OutputPath)' == '' "
-        >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin', '$(MSBuildProjectName)'))</OutputPath>
+        >$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', '$(MSBuildProjectName)'))</OutputPath>
+
+    <!--
+      Define $(HelixTestConfigurationFilePath) so the Helix SDK automatically includes our test config file in the
+      correlation payload. The Helix SDK has a fallback value that doesn't work w/o including the Arcade SDK and
+      we intentionally do not do that in this project.
+    -->
+    <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
   </PropertyGroup>
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
@@ -47,6 +57,25 @@
     <AdditionalDotNetPackage Include="$(MicrosoftNETCoreBrowserDebugHostTransportVersion)">
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
+
+    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
+                                 Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
+      <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
+    </AdditionalDotNetPackageFeed>
+
+    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
+                                 Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
+      <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
+    </AdditionalDotNetPackageFeed>
+
+    <!-- Grab the tool packages for what HelixTestRunner installs. -->
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+
+    <!-- Grab published `HelixTestRunner` project output. -->
+    <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net9.0\publish\"
+        Destination="HelixTestRunner" />
   </ItemGroup>
 
   <Choose>
@@ -143,5 +172,16 @@
         SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
+  </Target>
+
+  <!--
+    The inner (per-queue) CoreTest target executes the SendHelixJob task and that may warn about expiring
+    queues. Those warnings should not break the build but should be visible. Disable warn-as-error as close
+    to target as we can get to avoid ignoring the many warnings that _should_ fail our build.
+  -->
+  <Target Name="TreatWarningsAsWarnings" BeforeTargets="CoreTest" Condition=" '$(HelixTargetQueue)' != '' ">
+    <PropertyGroup>
+      <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    </PropertyGroup>
   </Target>
 </Project>

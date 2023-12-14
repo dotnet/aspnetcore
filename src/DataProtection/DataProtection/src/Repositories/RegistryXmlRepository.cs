@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Principal;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
@@ -30,10 +31,7 @@ public class RegistryXmlRepository : IXmlRepository
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public RegistryXmlRepository(RegistryKey registryKey, ILoggerFactory loggerFactory)
     {
-        if (registryKey == null)
-        {
-            throw new ArgumentNullException(nameof(registryKey));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(registryKey);
 
         RegistryKey = registryKey;
         _logger = loggerFactory.CreateLogger<RegistryXmlRepository>();
@@ -137,10 +135,7 @@ public class RegistryXmlRepository : IXmlRepository
     /// <inheritdoc/>
     public virtual void StoreElement(XElement element, string friendlyName)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         if (!IsSafeRegistryValueName(friendlyName))
         {

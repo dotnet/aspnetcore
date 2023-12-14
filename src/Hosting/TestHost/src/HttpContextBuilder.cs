@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
+internal sealed class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
 {
     private readonly ApplicationWrapper _application;
     private readonly bool _preserveExecutionContext;
@@ -25,7 +25,7 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
     private readonly Pipe _requestPipe;
 
     private Action<HttpContext>? _responseReadCompleteCallback;
-    private Task? _sendRequestStreamTask;
+    private Func<PipeWriter, Task>? _sendRequestStream;
 
     internal HttpContextBuilder(ApplicationWrapper application, bool allowSynchronousIO, bool preserveExecutionContext)
     {
@@ -60,22 +60,16 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
 
     internal void Configure(Action<HttpContext, PipeReader> configureContext)
     {
-        if (configureContext == null)
-        {
-            throw new ArgumentNullException(nameof(configureContext));
-        }
+        ArgumentNullException.ThrowIfNull(configureContext);
 
         configureContext(_httpContext, _requestPipe.Reader);
     }
 
     internal void SendRequestStream(Func<PipeWriter, Task> sendRequestStream)
     {
-        if (sendRequestStream == null)
-        {
-            throw new ArgumentNullException(nameof(sendRequestStream));
-        }
+        ArgumentNullException.ThrowIfNull(sendRequestStream);
 
-        _sendRequestStreamTask = sendRequestStream(_requestPipe.Writer);
+        _sendRequestStream = sendRequestStream;
     }
 
     internal void RegisterResponseReadCompleteCallback(Action<HttpContext> responseReadCompleteCallback)
@@ -107,6 +101,18 @@ internal class HttpContextBuilder : IHttpBodyControlFeature, IHttpResetFeature
             _testContext = _application.CreateContext(_httpContext.Features);
             try
             {
+                if (_sendRequestStream != null)
+                {
+                    // Read content into a pipe in a background task.
+                    // A background task allows duplex streaming scenarios.
+                    var requestTask = _sendRequestStream(_requestPipe.Writer);
+                    // Observe synchronous exceptions immediately.
+                    if (requestTask.IsCompleted)
+                    {
+                        await requestTask;
+                    }
+                }
+
                 await _application.ProcessRequestAsync(_testContext);
 
                 // Determine whether request body was complete when the delegate exited.

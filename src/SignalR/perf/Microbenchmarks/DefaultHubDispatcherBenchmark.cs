@@ -29,13 +29,15 @@ public class DefaultHubDispatcherBenchmark
 
         var serviceScopeFactory = provider.GetService<IServiceScopeFactory>();
 
+        var hubLifetimeManager = new DefaultHubLifetimeManager<TestHub>(NullLogger<DefaultHubLifetimeManager<TestHub>>.Instance);
         _dispatcher = new DefaultHubDispatcher<TestHub>(
             serviceScopeFactory,
-            new HubContext<TestHub>(new DefaultHubLifetimeManager<TestHub>(NullLogger<DefaultHubLifetimeManager<TestHub>>.Instance)),
+            new HubContext<TestHub>(hubLifetimeManager),
             enableDetailedErrors: false,
             disableImplicitFromServiceParameters: true,
             new Logger<DefaultHubDispatcher<TestHub>>(NullLoggerFactory.Instance),
-            hubFilters: null);
+            hubFilters: null,
+            hubLifetimeManager);
 
         var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
         var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Application, pair.Transport);

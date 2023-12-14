@@ -2,20 +2,64 @@
 @using Microsoft.AspNetCore.Components.Routing
 
 @inject IJSRuntime JSRuntime
+@inject INavigationInterception NavigationInterception
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
-<button @onclick="Navigate">Navigate</button>
+<p>
+    <button @onclick="Navigate">Navigate</button>
+</p>
 
-<span id="test-info">@UrlLocation</span>
+<p>
+    <button id="programmatic-navigation" @onclick="ProgrammaticNavigation">Programmatic navigation</button><br />
+</p>
+
+<p>
+    <button id="programmatic-refresh" @onclick="ProgrammaticRefresh">Programmatic refresh</button><br />
+</p>
+
+<p>
+    <a id="internal-link-navigation" href="some-path-@nextLinkNavigationIndex">/some-path-@nextLinkNavigationIndex</a>
+    <button id="increment-link-navigation-index" @onclick="IncrementLinkNavigationIndex">Increment path index</button><br />
+</p>
+
+<p>
+    <span id="test-info">@UrlLocation</span><br />
+    Location changed <span id="location-changed-count">@locationChangedCount</span> times
+</p>
+
+<p>
+    <button id="add-navigation-lock" @onclick="AddNavigationLock">Add navigation lock</button><br />
+    <button id="remove-navigation-lock" @onclick="RemoveNavigationLock">Remove navigation lock</button>
+</p>
+
+@for (var i = 0; i < navigationLockCount; i++)
+{
+    var lockIndex = i;
+
+    <div id="navigation-lock-@lockIndex" style="outline: 2px solid black">
+        Navigation lock @lockIndex<br />
+        <ConfigurableNavigationLock />
+    </div>
+}
 
 @code{
     string UrlLocation;
+
+    int navigationLockCount;
+    int locationChangedCount;
+    int nextProgrammaticNavigationIndex;
+    int nextLinkNavigationIndex;
 
     protected override void OnInitialized()
     {
         UrlLocation = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await NavigationInterception.EnableNavigationInterceptionAsync();
     }
 
     void IDisposable.Dispose()
@@ -26,11 +70,43 @@
     void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         UrlLocation = NavigationManager.Uri;
+        locationChangedCount++;
         StateHasChanged();
+    }
+
+    void AddNavigationLock()
+        => navigationLockCount++;
+
+    void RemoveNavigationLock()
+    {
+        if (navigationLockCount > 0)
+        {
+            navigationLockCount--;
+        }
     }
 
     async Task Navigate()
     {
         await JSRuntime.InvokeVoidAsync("navigationManagerNavigate");
+    }
+
+    void IncrementLinkNavigationIndex()
+    {
+        nextLinkNavigationIndex++;
+    }
+
+    void ProgrammaticNavigation()
+    {
+        NavigationManager.NavigateTo($"/subdir/some-path-{nextProgrammaticNavigationIndex}", new NavigationOptions
+        {
+            HistoryEntryState = $"Navigation index {nextProgrammaticNavigationIndex}",
+        });
+
+        nextProgrammaticNavigationIndex++;
+    }
+
+    void ProgrammaticRefresh()
+    {
+        NavigationManager.Refresh();
     }
 }

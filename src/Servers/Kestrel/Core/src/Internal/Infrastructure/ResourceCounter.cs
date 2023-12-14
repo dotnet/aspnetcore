@@ -13,7 +13,7 @@ internal abstract class ResourceCounter
     public static ResourceCounter Unlimited { get; } = new UnlimitedCounter();
     public static ResourceCounter Quota(long amount) => new FiniteCounter(amount);
 
-    private class UnlimitedCounter : ResourceCounter
+    private sealed class UnlimitedCounter : ResourceCounter
     {
         public override bool TryLockOne() => true;
         public override void ReleaseOne()
@@ -21,7 +21,7 @@ internal abstract class ResourceCounter
         }
     }
 
-    internal class FiniteCounter : ResourceCounter
+    internal sealed class FiniteCounter : ResourceCounter
     {
         private readonly long _max;
         private long _count;

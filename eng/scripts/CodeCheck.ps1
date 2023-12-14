@@ -26,12 +26,16 @@ function LogError {
         [Parameter(Mandatory = $true, Position = 0)]
         [string]$message,
         [string]$FilePath,
+        [string]$LineNumber, # Ignored if -FilePath not specified.
         [string]$Code
     )
     if ($env:TF_BUILD) {
         $prefix = "##vso[task.logissue type=error"
         if ($FilePath) {
             $prefix = "${prefix};sourcepath=$FilePath"
+            if ($LineNumber) {
+                $prefix = "${prefix};linenumber=$LineNumber"
+            }
         }
         if ($Code) {
             $prefix = "${prefix};code=$Code"
@@ -40,7 +44,11 @@ function LogError {
     }
     $fullMessage = "error ${Code}: $message"
     if ($FilePath) {
-        $fullMessage += " [$FilePath]"
+        $fullMessage += " [$FilePath"
+        if ($LineNumber) {
+            $fullMessage += ":$LineNumber"
+        }
+        $fullMessage += "]"
     }
     Write-Host -f Red $fullMessage
     $script:errors += $fullMessage
@@ -68,7 +76,10 @@ try {
     # Ignore duplicates in submodules. These should be isolated from the rest of the build.
     # Ignore duplicates in the .ref folder. This is expected.
     Get-ChildItem -Recurse "$repoRoot/src/*.*proj" |
-    Where-Object { $_.FullName -notmatch 'submodules' -and $_.FullName -notmatch 'node_modules' } |
+    Where-Object {
+        $_.FullName -NotLike '*\submodules\*' -and $_.FullName -NotLike '*\node_modules\*' -and
+        $_.FullName -NotLike '*\bin\*' -and $_.FullName -NotLike '*\src\ProjectTemplates\*\content\*'
+    } |
     Where-Object { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } |
     ForEach-Object {
         $fileName = [io.path]::GetFileNameWithoutExtension($_)
@@ -77,6 +88,23 @@ try {
                 ("Multiple project files named '$fileName' exist. Project files should have a unique name " +
                  "to avoid conflicts in build output.")
         }
+    }
+
+    #
+    # Check for unexpected (not from dotnet-public-npm) yarn resolutions in lock files.
+    #
+
+    $registry = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/'
+    Get-ChildItem src\yarn.lock -Recurse |
+    ForEach-Object FullName |
+    Where-Object {$_ -NotLike '*\node_modules\*'} |
+    ForEach-Object {
+        # -List to limit complaints to one per file.
+        Select-String '^  resolved ' $_ | Select-String -List -NotMatch $registry
+    } |
+    ForEach-Object {
+        LogError -filePath "${_.Path}" -lineNumber $_.LineNumber `
+            "Packages in yarn.lock file resolved from wrong registry. All dependencies must be resolved from $registry"
     }
 
     #
@@ -99,7 +127,6 @@ try {
         $expectedVersion = $dep.Version
 
         if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
-
             $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
 
             if ($expectedVersion -ne $actualVersion) {
@@ -191,7 +218,7 @@ try {
 
     # Temporary: Disable check for blazor js file and nuget.config (updated automatically for
     # internal builds)
-    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "NuGet.config")
+    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "src/Components/Web.JS/dist/Release/blazor.web.js", "NuGet.config")
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
@@ -226,7 +253,7 @@ try {
                     }
                 }
                 # Check for changes in Unshipped in servicing branches
-                if ($targetBranch -like 'release*' -and $targetBranch -notlike '*preview*' -and $file -like '*PublicAPI.Unshipped.txt') {
+                if ($targetBranch -like 'release*' -and $targetBranch -notlike '*preview*' -and $targetBranch -notlike '*rc1*' -and $targetBranch -notlike '*rc2*' -and $file -like '*PublicAPI.Unshipped.txt') {
                     $changedAPIBaselines.Add($file)
                 }
             }
@@ -236,7 +263,8 @@ try {
 
         if ($changedAPIBaselines.count -gt 0) {
             LogError ("Detected modification to baseline API files. PublicAPI.Shipped.txt files should only " +
-                "be updated after a major release. See /docs/APIBaselines.md for more information.")
+                "be updated after a major release, and PublicAPI.Unshipped.txt files should not " +
+                "be updated in release branches. See /docs/APIBaselines.md for more information.")
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file

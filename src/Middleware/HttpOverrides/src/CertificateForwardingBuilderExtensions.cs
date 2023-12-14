@@ -18,10 +18,7 @@ public static class CertificateForwardingBuilderExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseCertificateForwarding(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<CertificateForwardingMiddleware>();
     }

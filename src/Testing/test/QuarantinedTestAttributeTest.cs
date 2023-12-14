@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.Tests;
+namespace Microsoft.AspNetCore.InternalTesting.Tests;
 
 public class QuarantinedTestAttributeTest
 {
@@ -17,5 +17,13 @@ public class QuarantinedTestAttributeTest
         {
             throw new Exception("Flaky!");
         }
+    }
+
+    [Fact]
+    [QuarantinedTest("No issue, used to verify retry is working")]
+    public void FlakyTestToEnsureRetryWorks()
+    {
+        // Fail 20% of the time
+        Assert.True(new Random().Next(100) <= 80);
     }
 }

@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Win32.SafeHandles;
+using Windows.Win32;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -34,8 +34,8 @@ internal sealed class HttpServerSessionHandle : CriticalHandleZeroOrMinusOneIsIn
             if (Interlocked.Increment(ref disposed) == 1)
             {
                 // Closing server session also closes all open url groups under that server session.
-                return (HttpApi.HttpCloseServerSession(serverSessionId) ==
-                    UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+                return PInvoke.HttpCloseServerSession(serverSessionId) ==
+                    ErrorCodes.ERROR_SUCCESS;
             }
         }
         return true;

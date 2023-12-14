@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BenchmarkDotNet.Attributes;
@@ -43,7 +43,7 @@ public class AuthorizationMiddlewareBenchmark
         return _authorizationMiddleware.Invoke(_httpContextHasEndpoint);
     }
 
-    private class EndpointFeature : IEndpointFeature
+    private sealed class EndpointFeature : IEndpointFeature
     {
         public Endpoint Endpoint { get; set; }
     }

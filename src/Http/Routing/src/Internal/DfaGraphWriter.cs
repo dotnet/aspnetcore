@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Routing.Internal;
 /// <summary>
 /// <para>
 /// A singleton service that can be used to write the route table as a state machine
-/// in GraphViz DOT language https://www.graphviz.org/doc/info/lang.html
+/// in GraphViz DOT language <see href="https://www.graphviz.org/doc/info/lang.html"/>.
 /// </para>
 /// <para>
-/// You can use http://www.webgraphviz.com/ to visualize the results.
+/// You can use <see href="http://www.webgraphviz.com/"/> to visualize the results.
 /// </para>
 /// <para>
 /// This type has no support contract, and may be removed or changed at any time in

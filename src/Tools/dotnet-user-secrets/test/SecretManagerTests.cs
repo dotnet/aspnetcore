@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Tools.Internal;
@@ -193,7 +193,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains("Cannot find 'secret1' in the secret store.", _console.GetOutput());
     }
 
-    [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
+    [Fact]
     public void Remove_Is_Case_Insensitive()
     {
         var projectPath = _fixture.GetTempSecretProject();
@@ -267,7 +267,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
     }
 
-    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/25109")]
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void Clear_Secrets(bool fromCurrentDirectory)
@@ -337,5 +337,18 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
 
         Assert.DoesNotContain(Resources.FormatError_ProjectMissingId(project), _console.GetOutput());
         Assert.DoesNotContain("--help", _console.GetOutput());
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
+    public void SetSecrets_CreatesFileWithUserOnlyUnixFileMode()
+    {
+        var projectPath = _fixture.GetTempSecretProject();
+        var secretManager = new Program(_console, projectPath);
+
+        secretManager.RunInternal("set", "key1", Guid.NewGuid().ToString(), "--verbose");
+
+        Assert.NotNull(secretManager.SecretsFilePath);
+        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(secretManager.SecretsFilePath));
     }
 }

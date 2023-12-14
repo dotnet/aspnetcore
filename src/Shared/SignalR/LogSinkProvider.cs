@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging.Testing;
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
 // TestSink does not have an event
-internal class LogSinkProvider : ILoggerProvider
+internal sealed class LogSinkProvider : ILoggerProvider
 {
     private readonly ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
 
@@ -47,7 +47,7 @@ internal class LogSinkProvider : ILoggerProvider
         RecordLogged?.Invoke(record);
     }
 
-    private class LogSinkLogger : ILogger
+    private sealed class LogSinkLogger : ILogger
     {
         private readonly string _categoryName;
         private readonly LogSinkProvider _logSinkProvider;

@@ -32,6 +32,7 @@ internal partial class RequestContext :
     IHttpMaxRequestBodySizeFeature,
     IHttpBodyControlFeature,
     IHttpSysRequestInfoFeature,
+    IHttpSysRequestTimingFeature,
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
@@ -434,10 +435,7 @@ internal partial class RequestContext :
 
     void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
         if (_onStartingActions == null)
         {
             throw new InvalidOperationException("Cannot register new callbacks, the response has already started.");
@@ -448,10 +446,7 @@ internal partial class RequestContext :
 
     void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
         if (_onCompletedActions == null)
         {
             throw new InvalidOperationException("Cannot register new callbacks, the response has already completed.");
@@ -592,7 +587,7 @@ internal partial class RequestContext :
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
 
-    IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
+    string ITlsHandshakeFeature.HostName => Request.SniHostName;
 
     IHeaderDictionary IHttpResponseTrailersFeature.Trailers
     {

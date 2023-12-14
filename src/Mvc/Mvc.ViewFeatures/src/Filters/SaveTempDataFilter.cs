@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 /// <summary>
 /// A filter that saves temp data.
 /// </summary>
-internal class SaveTempDataFilter : IResourceFilter, IResultFilter
+internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
 {
     private static readonly Func<object, Task> OnStartingCallback = (state) => OnStarting((HttpContext)state);
     // Internal for unit testing
@@ -148,7 +148,7 @@ internal class SaveTempDataFilter : IResourceFilter, IResultFilter
         tempData.Save();
     }
 
-    internal class SaveTempDataContext
+    internal sealed class SaveTempDataContext
     {
         public bool RequestHasUnhandledException { get; set; }
         public bool TempDataSaved { get; set; }

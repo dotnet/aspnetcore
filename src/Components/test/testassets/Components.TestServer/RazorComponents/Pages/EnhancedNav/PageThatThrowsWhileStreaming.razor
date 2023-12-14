@@ -1,0 +1,10 @@
+﻿@page "/nav/throw-while-streaming"
+@attribute [StreamRendering]
+<p>Please wait...</p>
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+        throw new InvalidTimeZoneException("This is an exception while streaming");
+    }
+}

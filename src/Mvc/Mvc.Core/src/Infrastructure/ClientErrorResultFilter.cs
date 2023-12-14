@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal partial class ClientErrorResultFilter : IAlwaysRunResultFilter, IOrderedFilter
+internal sealed partial class ClientErrorResultFilter : IAlwaysRunResultFilter, IOrderedFilter
 {
     internal const int FilterOrder = -2000;
     private readonly IClientErrorFactory _clientErrorFactory;
@@ -31,10 +31,7 @@ internal partial class ClientErrorResultFilter : IAlwaysRunResultFilter, IOrdere
 
     public void OnResultExecuting(ResultExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!(context.Result is IClientErrorActionResult clientError))
         {

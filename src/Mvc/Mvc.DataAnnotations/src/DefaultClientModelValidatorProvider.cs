@@ -12,15 +12,12 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 /// The <see cref="DefaultClientModelValidatorProvider"/> provides validators from
 /// <see cref="IClientModelValidator"/> instances in <see cref="ModelBinding.ModelMetadata.ValidatorMetadata"/>.
 /// </remarks>
-internal class DefaultClientModelValidatorProvider : IClientModelValidatorProvider
+internal sealed class DefaultClientModelValidatorProvider : IClientModelValidatorProvider
 {
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Perf: Avoid allocations
         var results = context.Results;

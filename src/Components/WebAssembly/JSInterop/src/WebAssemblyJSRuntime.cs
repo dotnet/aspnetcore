@@ -23,37 +23,22 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     }
 
     /// <inheritdoc />
-    protected override string InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var callInfo = new JSCallInfo
+        try
         {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-            MarshalledCallArgsJson = argsJson ?? "[]",
-            MarshalledCallAsyncHandle = default
-        };
-
-        var result = InternalCalls.InvokeJS<object, object, object, string>(out var exception, ref callInfo, null, null, null);
-
-        return exception != null
-            ? throw new JSException(exception)
-            : result;
+            return InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", 0);
+        }
+        catch (Exception ex)
+        {
+            throw new JSException(ex.Message, ex);
+        }
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+    protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var callInfo = new JSCallInfo
-        {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-            MarshalledCallArgsJson = argsJson ?? "[]",
-            MarshalledCallAsyncHandle = asyncHandle
-        };
-
-        InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
+        InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
     }
 
     /// <inheritdoc />
@@ -63,16 +48,16 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         var resultJsonOrErrorMessage = dispatchResult.Success
             ? dispatchResult.ResultJson!
             : dispatchResult.Exception!.ToString();
-        InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
-            callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+        InternalCalls.EndInvokeDotNetFromJS(callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
     }
 
     /// <inheritdoc />
     protected override void SendByteArray(int id, byte[] data)
     {
-        InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
+        InternalCalls.ReceiveByteArray(id, data);
     }
 
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
     {
         var resultType = JSCallResultTypeHelper.FromGeneric<TResult>();
@@ -115,25 +100,29 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
         if (jsStreamReference is null)
         {
-            throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");
+            throw new ArgumentException($"Failed to parse as {nameof(IJSStreamReference)}.", nameof(serializedStreamReference));
         }
 
         return jsStreamReference;
     }
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<TResult>(string identifier)
         => InvokeUnmarshalled<object?, object?, object?, TResult>(identifier, null, null, null, 0);
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
         => InvokeUnmarshalled<T0, object?, object?, TResult>(identifier, arg0, null, null, 0);
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
         => InvokeUnmarshalled<T0, T1, object?, TResult>(identifier, arg0, arg1, null, 0);
 
     /// <inheritdoc />
+    [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
     public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         => InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2, 0);
 }

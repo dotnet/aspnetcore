@@ -6,16 +6,13 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
-internal class JsonArrayPool<T> : IArrayPool<T>
+internal sealed class JsonArrayPool<T> : IArrayPool<T>
 {
     private readonly ArrayPool<T> _inner;
 
     public JsonArrayPool(ArrayPool<T> inner)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
 
         _inner = inner;
     }
@@ -27,10 +24,7 @@ internal class JsonArrayPool<T> : IArrayPool<T>
 
     public void Return(T[]? array)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         _inner.Return(array);
     }

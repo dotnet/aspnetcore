@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <summary>
 /// An <see cref="IActionFilter"/> which sets the appropriate headers related to response caching.
 /// </summary>
-internal partial class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
+internal sealed partial class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
 {
     private readonly ResponseCacheFilterExecutor _executor;
     private readonly ILogger _logger;
@@ -81,10 +81,7 @@ internal partial class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
     /// <inheritdoc />
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // If there are more filters which can override the values written by this filter,
         // then skip execution of this filter.

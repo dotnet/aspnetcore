@@ -18,22 +18,23 @@ using Serilog.Extensions.Logging;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-public class AssemblyTestLog : IDisposable
+public class AssemblyTestLog : IAcceptFailureReports, IDisposable
 {
     private const string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
     private const string LogFileExtension = ".log";
     private static readonly int MaxPathLength = GetMaxPathLength();
 
-    private static readonly object _lock = new object();
-    private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new Dictionary<Assembly, AssemblyTestLog>();
+    private static readonly object _lock = new();
+    private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new();
 
     private readonly ILoggerFactory _globalLoggerFactory;
     private readonly ILogger _globalLogger;
     private readonly string _baseDirectory;
     private readonly Assembly _assembly;
     private readonly IServiceProvider _serviceProvider;
+    private bool _testFailureReported;
 
     private static int GetMaxPathLength()
     {
@@ -50,6 +51,9 @@ public class AssemblyTestLog : IDisposable
         _assembly = assembly;
         _serviceProvider = serviceProvider;
     }
+
+    // internal for testing
+    internal bool OnCI { get; set; } = SkipOnCIAttribute.OnCI();
 
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) =>
@@ -176,7 +180,8 @@ public class AssemblyTestLog : IDisposable
         return serviceCollection.BuildServiceProvider();
     }
 
-    public static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
+    // internal for testing. Expectation is AspNetTestAssembly runner calls ForAssembly() first for every Assembly.
+    internal static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
     {
         var logStart = DateTimeOffset.UtcNow;
         SerilogLoggerProvider serilogLoggerProvider = null;
@@ -218,12 +223,20 @@ public class AssemblyTestLog : IDisposable
         {
             if (!_logs.TryGetValue(assembly, out var log))
             {
+                var stackTrace = Environment.StackTrace;
+                if (!stackTrace.Contains(
+                    "Microsoft.AspNetCore.InternalTesting"
+#if NETCOREAPP
+                    , StringComparison.Ordinal
+#endif
+                    ))
+                {
+                    throw new InvalidOperationException($"Unexpected initial {nameof(ForAssembly)} caller.");
+                }
+
                 var baseDirectory = TestFileOutputContext.GetOutputDirectory(assembly);
 
-                log = Create(assembly, baseDirectory);
-                _logs[assembly] = log;
-
-                // Try to clear previous logs, continue if it fails.
+                // Try to clear previous logs, continue if it fails. Do this before creating new global logger.
                 var assemblyBaseDirectory = TestFileOutputContext.GetAssemblyBaseDirectory(assembly);
                 if (!string.IsNullOrEmpty(assemblyBaseDirectory) &&
                     !TestFileOutputContext.GetPreserveExistingLogsInOutput(assembly))
@@ -232,11 +245,22 @@ public class AssemblyTestLog : IDisposable
                     {
                         Directory.Delete(assemblyBaseDirectory, recursive: true);
                     }
-                    catch { }
+                    catch
+                    {
+                    }
                 }
+
+                log = Create(assembly, baseDirectory);
+                _logs[assembly] = log;
             }
+
             return log;
         }
+    }
+
+    public void ReportTestFailure()
+    {
+        _testFailureReported = true;
     }
 
     private static TestFrameworkFileLoggerAttribute GetFileLoggerAttribute(Assembly assembly)
@@ -262,19 +286,41 @@ public class AssemblyTestLog : IDisposable
             .Enrich.FromLogContext()
             .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
             .MinimumLevel.Verbose()
-            .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+            .WriteTo.File(fileName,
+                outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}",
+                flushToDiskInterval: TimeSpan.FromSeconds(1),
+                shared: true,
+                formatProvider: CultureInfo.InvariantCulture)
             .CreateLogger();
 
         return new SerilogLoggerProvider(serilogger, dispose: true);
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         (_serviceProvider as IDisposable)?.Dispose();
         _globalLoggerFactory.Dispose();
+
+        // Clean up if no tests failed and we're not running local tests. (Ignoring tests of this class, OnCI is
+        // true on both build and Helix agents.) In particular, remove the directory containing the global.log
+        // file. All test class log files for this assembly are in subdirectories of this location.
+        if (!_testFailureReported &&
+            OnCI &&
+            _baseDirectory is not null &&
+            Directory.Exists(_baseDirectory))
+        {
+            try
+            {
+                Directory.Delete(_baseDirectory, recursive: true);
+            }
+            catch
+            {
+                // Best effort. Ignore problems deleting locked logged files.
+            }
+        }
     }
 
-    private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
+    private sealed class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
     {
         private readonly DateTimeOffset? _logStart;
 
@@ -292,7 +338,7 @@ public class AssemblyTestLog : IDisposable
                         : DateTimeOffset.UtcNow.ToString("s", CultureInfo.InvariantCulture)));
     }
 
-    private class Disposable : IDisposable
+    private sealed class Disposable : IDisposable
     {
         private readonly Action _action;
 

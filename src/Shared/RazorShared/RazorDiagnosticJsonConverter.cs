@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor.Serialization;
 
-internal class RazorDiagnosticJsonConverter : JsonConverter
+internal sealed class RazorDiagnosticJsonConverter : JsonConverter
 {
     public static readonly RazorDiagnosticJsonConverter Instance = new RazorDiagnosticJsonConverter();
     private const string RazorDiagnosticMessageKey = "Message";

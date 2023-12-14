@@ -22,14 +22,6 @@ internal static class Utilities
 
     internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
-    internal static HttpSysListener CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress)
-    {
-        var listener = CreateHttpServer(out baseAddress);
-        listener.Options.Authentication.Schemes = authType;
-        listener.Options.Authentication.AllowAnonymous = allowAnonymous;
-        return listener;
-    }
-
     internal static HttpSysListener CreateHttpServer(out string baseAddress)
     {
         string root;
@@ -64,9 +56,9 @@ internal static class Utilities
                 catch (HttpSysException ex)
                 {
                     listener.Dispose();
-                    if (ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS
-                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
-                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
+                    if (ex.ErrorCode != ErrorCodes.ERROR_ALREADY_EXISTS
+                        && ex.ErrorCode != ErrorCodes.ERROR_SHARING_VIOLATION
+                        && ex.ErrorCode != ErrorCodes.ERROR_ACCESS_DENIED)
                     {
                         throw;
                     }
@@ -90,21 +82,22 @@ internal static class Utilities
         return listener;
     }
 
-    internal static HttpSysListener CreateServerOnExistingQueue(string requestQueueName)
-    {
-        return CreateServerOnExistingQueue(AuthenticationSchemes.None, true, requestQueueName);
-    }
-
-    internal static HttpSysListener CreateServerOnExistingQueue(AuthenticationSchemes authScheme, bool allowAnonymos, string requestQueueName)
+    internal static HttpSysListener CreateServer(Action<HttpSysOptions> configureOptions)
     {
         var options = new HttpSysOptions();
-        options.RequestQueueMode = RequestQueueMode.Attach;
-        options.RequestQueueName = requestQueueName;
-        options.Authentication.Schemes = authScheme;
-        options.Authentication.AllowAnonymous = allowAnonymos;
+        configureOptions(options);
         var listener = new HttpSysListener(options, new LoggerFactory());
         listener.Start();
         return listener;
+    }
+
+    internal static HttpSysListener CreateServerOnExistingQueue(string requestQueueName)
+    {
+        return CreateServer(options =>
+        {
+            options.RequestQueueName = requestQueueName;
+            options.RequestQueueMode = RequestQueueMode.Attach;
+        });
     }
 
     /// <summary>

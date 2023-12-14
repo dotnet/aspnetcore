@@ -58,10 +58,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ApiDescriptionProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var action in context.Actions.OfType<ControllerActionDescriptor>())
         {
@@ -115,8 +112,6 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             apiDescription.ParameterDescriptions.Add(parameter);
         }
 
-        var requestMetadataAttributes = GetRequestMetadataAttributes(action);
-
         var apiResponseTypes = _responseTypeProvider.GetApiResponseTypes(action);
         foreach (var apiResponseType in apiResponseTypes)
         {
@@ -127,7 +122,11 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         // could end up with duplicate data.
         if (apiDescription.ParameterDescriptions.Count > 0)
         {
-            var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes);
+            // Get the most significant accepts metadata
+            var acceptsMetadata = action.EndpointMetadata.OfType<IAcceptsMetadata>().LastOrDefault();
+            var requestMetadataAttributes = GetRequestMetadataAttributes(action);
+
+            var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes, acceptsMetadata);
             foreach (var parameter in apiDescription.ParameterDescriptions)
             {
                 if (parameter.Source == BindingSource.Body)
@@ -449,11 +448,23 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         return results;
     }
 
-    internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes)
+    internal static MediaTypeCollection GetDeclaredContentTypes(IReadOnlyList<IApiRequestMetadataProvider>? requestMetadataAttributes, IAcceptsMetadata? acceptsMetadata)
     {
+        var contentTypes = new MediaTypeCollection();
+
+        // Walking the content types from the accepts metadata first
+        // to allow any RequestMetadataProvider to see or override any accepts metadata
+        // keeping the current behavior.
+        if (acceptsMetadata != null)
+        {
+            foreach (var contentType in acceptsMetadata.ContentTypes)
+            {
+                contentTypes.Add(contentType);
+            }
+        }
+
         // Walk through all 'filter' attributes in order, and allow each one to see or override
         // the results of the previous ones. This is similar to the execution path for content-negotiation.
-        var contentTypes = new MediaTypeCollection();
         if (requestMetadataAttributes != null)
         {
             foreach (var metadataAttribute in requestMetadataAttributes)
@@ -495,7 +506,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         return endpointGroupName?.EndpointGroupName ?? extensionData.GroupName;
     }
 
-    private class ApiParameterDescriptionContext
+    private sealed class ApiParameterDescriptionContext
     {
         public ModelMetadata ModelMetadata { get; }
 
@@ -521,7 +532,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         }
     }
 
-    private class PseudoModelBindingVisitor
+    private sealed class PseudoModelBindingVisitor
     {
         public PseudoModelBindingVisitor(ApiParameterContext context, ParameterDescriptor parameter)
         {
@@ -644,10 +655,21 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 ModelMetadata = bindingContext.ModelMetadata,
                 Name = GetName(containerName, bindingContext),
                 Source = source,
-                Type = bindingContext.ModelMetadata.ModelType,
+                Type = GetModelType(bindingContext.ModelMetadata),
                 ParameterDescriptor = Parameter,
                 BindingInfo = bindingContext.BindingInfo
             };
+        }
+
+        private static Type GetModelType(ModelMetadata metadata)
+        {
+            // IsParseableType || IsConvertibleType
+            if (!metadata.IsComplexType)
+            {
+                return EndpointModelMetadata.GetDisplayType(metadata.ModelType);
+            }
+
+            return metadata.ModelType;
         }
 
         private static string GetName(string containerName, ApiParameterDescriptionContext metadata)
@@ -672,7 +694,7 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             }
         }
 
-        private class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
+        private sealed class PropertyKeyEqualityComparer : IEqualityComparer<PropertyKey>
         {
             public bool Equals(PropertyKey x, PropertyKey y)
             {

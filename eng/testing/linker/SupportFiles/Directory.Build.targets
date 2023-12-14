@@ -1,0 +1,78 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Used to silence the warning caused by the workaround for https://github.com/dotnet/runtime/issues/81382 -->
+    <SuppressGenerateILCompilerExplicitPackageReferenceWarning>true</SuppressGenerateILCompilerExplicitPackageReferenceWarning>
+  </PropertyGroup>
+
+  <!-- needed to reference a specific version of NetCoreApp. Workaround https://github.com/dotnet/runtime/issues/81382 -->
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.NETCore.App"
+                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)" />
+
+    <PackageReference Include="Microsoft.DotNet.ILCompiler"
+                      Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+
+    <!-- Workaround when there is no vNext SDK available; copy known packs info from 8.0. -->
+    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownAppHostPack->Count())' != '0' AND
+                                 !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownRuntimePack->Count())' != '0' AND
+                                 !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownFrameworkReference->Count())' != '0' AND
+                                 !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownILLinkPack->Count())' != '0' AND
+                                 !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(TargetFramework)"
+                     Condition="'@(KnownILCompilerPack->Count())' != '0' AND
+                                 !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
+
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion
+          Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
+      <!--
+        Change the default shared framework version only when _not_ servicing. Avoid bumping version used in most
+        projects. When servicing, projects (Microsoft.AspNetCore.App.Runtime in particular) can use
+        $(TargetLatestRuntimePatch) to explicitly control whether assemblies build against default (false) or
+        latest (true). When that property is not set, SDK uses default metadata in most cases but published apps
+        e.g. tool projects (again, property not set) use latest.
+      -->
+      <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+          '%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+      <RuntimePackRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+    </KnownFrameworkReference>
+
+    <KnownAppHostPack Update="Microsoft.NETCore.App">
+      <AppHostPackVersion
+        Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</AppHostPackVersion>
+      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+    </KnownAppHostPack>
+
+    <KnownRuntimePack Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion
+        Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+    </KnownRuntimePack>
+
+  </ItemGroup>
+
+  <!--
+  Reference the Microsoft.AspNetCore.App shared framework assemblies with ProjectReference.
+  This allows for easy dev workflow. Just need to update the product code, and re-run the tests.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>

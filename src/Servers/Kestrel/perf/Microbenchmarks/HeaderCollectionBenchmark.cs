@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
@@ -21,7 +21,7 @@ public class HeaderCollectionBenchmark
     private const int InnerLoopCount = 1024 * 1024;
 
     private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
-    private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager();
+    private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
     private HttpResponseHeaders _responseHeadersDirect;
     private HttpResponse _response;
 
@@ -343,7 +343,7 @@ public class HeaderCollectionBenchmark
         var http1Connection = new Http1Connection(connectionContext);
 
         http1Connection.Reset();
-        serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
         _responseHeadersDirect = (HttpResponseHeaders)http1Connection.ResponseHeaders;
         var context = new DefaultHttpContext(http1Connection);

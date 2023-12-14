@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors;
 /// <summary>
 /// A filter factory which creates a new instance of <see cref="CorsAuthorizationFilter"/>.
 /// </summary>
-internal class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
+internal sealed class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
 {
     private readonly string? _policyName;
 
@@ -33,10 +33,7 @@ internal class CorsAuthorizationFilterFactory : IFilterFactory, IOrderedFilter
     /// <inheritdoc />
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var filter = serviceProvider.GetRequiredService<CorsAuthorizationFilter>();
         filter.PolicyName = _policyName;

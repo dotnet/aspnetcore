@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 #if !IIS_FUNCTIONALS
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to shutdown, including app_offline, abort, and app recycle
 [Collection(PublishedSitesCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ShutdownTests : IISFunctionalTestBase
 {
     public ShutdownTests(PublishedSitesFixture fixture) : base(fixture)
@@ -34,7 +35,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38995")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52676")]
     public async Task ShutdownTimeoutIsApplied()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -187,7 +188,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38951")]
     public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
     {
         // The goal of this test is to have multiple requests currently in progress
@@ -316,6 +316,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task AppOfflineAddedAndRemovedStress_InProcess()
     {
@@ -371,7 +372,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/40628")]
     public async Task ConfigurationChangeStopsInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
@@ -485,7 +485,7 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38951")]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     public async Task ConfigurationTouchedStress_InProcess()
     {
         await ConfigurationTouchedStress(HostingModel.InProcess);
@@ -539,8 +539,15 @@ public class ShutdownTests : IISFunctionalTestBase
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
             Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+
+#if NEWSHIM_FUNCTIONALS
+            // In-proc SocketConnection isn't used and there's no abort
             // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
             Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
+#else
+            // 0x80072efe ERROR_INTERNET_CONNECTION_ABORTED The connection with the server was terminated abnormally
+            Assert.Contains("0x80072efe", await response.Content.ReadAsStringAsync());
+#endif
         }
         catch (HttpRequestException)
         {

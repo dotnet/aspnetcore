@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -19,13 +20,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter;
 /// <summary>
 /// Authentication handler for Twitter's OAuth based authentication.
 /// </summary>
-public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
+public partial class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
 {
-    private static readonly JsonSerializerOptions ErrorSerializerOptions = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private HttpClient Backchannel => Options.Backchannel;
 
     /// <summary>
@@ -42,8 +38,17 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     /// Initializes a new instance of <see cref="TwitterHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="TwitterHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public TwitterHandler(IOptionsMonitor<TwitterOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />
@@ -59,7 +64,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
 
         if (requestToken == null)
         {
-            return HandleRequestResult.Fail("Invalid state cookie.");
+            return HandleRequestResults.InvalidStateCookie;
         }
 
         var properties = requestToken.Properties;
@@ -93,7 +98,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
             return HandleRequestResult.Fail("Missing or blank oauth_verifier", properties);
         }
 
-        var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.StateCookie.Build(Context, TimeProvider.GetUtcNow());
 
         Response.Cookies.Delete(Options.StateCookie.Name!, cookieOptions);
 
@@ -167,7 +172,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
         var requestToken = await ObtainRequestTokenAsync(BuildRedirectUri(Options.CallbackPath), properties);
         var twitterAuthenticationEndpoint = TwitterDefaults.AuthenticationEndpoint + requestToken.Token;
 
-        var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.StateCookie.Build(Context, TimeProvider.GetUtcNow());
 
         Response.Cookies.Append(Options.StateCookie.Name!, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
@@ -207,46 +212,48 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
             }
         }
 
-        var parameterBuilder = new StringBuilder();
+        var stringBuilder = new StringBuilder();
         foreach (var signaturePart in signatureParts)
         {
-            parameterBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
+            stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", Uri.EscapeDataString(signaturePart.Key), Uri.EscapeDataString(signaturePart.Value));
         }
-        parameterBuilder.Length--;
-        var parameterString = parameterBuilder.ToString();
+        stringBuilder.Length--;
+        var parameterString = stringBuilder.ToString();
+        stringBuilder.Clear();
 
-        var canonicalizedRequestBuilder = new StringBuilder();
-        canonicalizedRequestBuilder.Append(httpMethod.Method);
-        canonicalizedRequestBuilder.Append('&');
-        canonicalizedRequestBuilder.Append(Uri.EscapeDataString(url));
-        canonicalizedRequestBuilder.Append('&');
-        canonicalizedRequestBuilder.Append(Uri.EscapeDataString(parameterString));
+        stringBuilder.Append(httpMethod.Method);
+        stringBuilder.Append('&');
+        stringBuilder.Append(Uri.EscapeDataString(url));
+        stringBuilder.Append('&');
+        stringBuilder.Append(Uri.EscapeDataString(parameterString));
 
-        var signature = ComputeSignature(Options.ConsumerSecret!, accessToken?.TokenSecret, canonicalizedRequestBuilder.ToString());
+        var signature = ComputeSignature(Options.ConsumerSecret!, accessToken?.TokenSecret, stringBuilder.ToString());
+        stringBuilder.Clear();
         authorizationParts.Add("oauth_signature", signature);
 
         var queryString = "";
         if (queryParameters != null)
         {
-            var queryStringBuilder = new StringBuilder("?");
+            stringBuilder.Append('?');
             foreach (var queryParam in queryParameters)
             {
-                queryStringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
+                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}={1}&", queryParam.Key, queryParam.Value);
             }
-            queryStringBuilder.Length--;
-            queryString = queryStringBuilder.ToString();
+            stringBuilder.Length--;
+            queryString = stringBuilder.ToString();
+            stringBuilder.Clear();
         }
 
-        var authorizationHeaderBuilder = new StringBuilder();
-        authorizationHeaderBuilder.Append("OAuth ");
+        stringBuilder.Append("OAuth ");
         foreach (var authorizationPart in authorizationParts)
         {
-            authorizationHeaderBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
+            stringBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}=\"{1}\",", authorizationPart.Key, Uri.EscapeDataString(authorizationPart.Value));
         }
-        authorizationHeaderBuilder.Length--;
+        stringBuilder.Length--;
 
         var request = new HttpRequestMessage(httpMethod, url + queryString);
-        request.Headers.Add("Authorization", authorizationHeaderBuilder.ToString());
+        request.Headers.Add("Authorization", stringBuilder.ToString());
+        stringBuilder.Clear();
 
         // This header is so that the error response is also JSON - without it the success response is already JSON
         request.Headers.Add("Accept", "application/json");
@@ -270,7 +277,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
         var responseParameters = new FormCollection(new FormReader(responseText).ReadForm());
         if (!string.Equals(responseParameters["oauth_callback_confirmed"], "true", StringComparison.Ordinal))
         {
-            throw new Exception("Twitter oauth_callback_confirmed is not true.");
+            throw new AuthenticationFailureException("Twitter oauth_callback_confirmed is not true.");
         }
 
         return new RequestToken
@@ -330,7 +337,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
 
     private string GenerateTimeStamp()
     {
-        var secondsSinceUnixEpocStart = Clock.UtcNow - DateTimeOffset.UnixEpoch;
+        var secondsSinceUnixEpocStart = TimeProvider.GetUtcNow() - DateTimeOffset.UnixEpoch;
         return Convert.ToInt64(secondsSinceUnixEpocStart.TotalSeconds).ToString(CultureInfo.InvariantCulture);
     }
 
@@ -361,7 +368,7 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
         {
             // Failure, attempt to parse Twitters error message
             var errorContentStream = await response.Content.ReadAsStreamAsync(Context.RequestAborted);
-            errorResponse = await JsonSerializer.DeserializeAsync<TwitterErrorResponse>(errorContentStream, ErrorSerializerOptions);
+            errorResponse = await JsonSerializer.DeserializeAsync(errorContentStream, TwitterJsonContext.DefaultWithOptions.TwitterErrorResponse);
         }
         catch
         {
@@ -384,10 +391,19 @@ public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
             foreach (var error in errorResponse.Errors)
             {
                 errorMessageStringBuilder.Append(Environment.NewLine);
-                errorMessageStringBuilder.Append(FormattableString.Invariant($"Code: {error.Code}, Message: '{error.Message}'"));
+                errorMessageStringBuilder.Append(CultureInfo.InvariantCulture, $"Code: {error.Code}, Message: '{error.Message}'");
             }
         }
 
         throw new InvalidOperationException(errorMessageStringBuilder.ToString());
+    }
+
+    [JsonSerializable(typeof(TwitterErrorResponse))]
+    internal sealed partial class TwitterJsonContext : JsonSerializerContext
+    {
+        public static readonly TwitterJsonContext DefaultWithOptions = new TwitterJsonContext(new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
     }
 }

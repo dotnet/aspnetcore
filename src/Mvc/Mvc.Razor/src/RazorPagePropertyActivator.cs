@@ -13,7 +13,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Razor;
 
-internal class RazorPagePropertyActivator
+internal sealed class RazorPagePropertyActivator
 {
     private readonly IModelMetadataProvider _metadataProvider;
     private readonly Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> _rootFactory;
@@ -35,20 +35,15 @@ internal class RazorPagePropertyActivator
         _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(viewDataDictionaryModelType);
         _rootFactory = ViewDataDictionaryFactory.CreateFactory(viewDataDictionaryModelType);
         _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(viewDataDictionaryModelType);
-
-        _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
+        _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate<RazorInjectAttribute>(
             pageType,
-            typeof(RazorInjectAttribute),
-            propertyInfo => CreateActivateInfo(propertyInfo, propertyValueAccessors),
+            (propertyInfo, attribute) => CreateActivateInfo(propertyInfo, attribute, propertyValueAccessors),
             includeNonPublic: true);
     }
 
     public void Activate(object page, ViewContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.ViewData = CreateViewDataDictionary(context);
         for (var i = 0; i < _propertyActivators.Length; i++)
@@ -79,10 +74,22 @@ internal class RazorPagePropertyActivator
 
     private static PropertyActivator<ViewContext> CreateActivateInfo(
         PropertyInfo property,
+        RazorInjectAttribute attribute,
         PropertyValueAccessors valueAccessors)
     {
         Func<ViewContext, object> valueAccessor;
-        if (typeof(ViewDataDictionary).IsAssignableFrom(property.PropertyType))
+        if (attribute.Key is { } key)
+        {
+            valueAccessor = context =>
+            {
+                var serviceProvider = context.HttpContext.RequestServices;
+                var value = serviceProvider.GetRequiredKeyedService(property.PropertyType, key);
+                (value as IViewContextAware)?.Contextualize(context);
+
+                return value;
+            };
+        }
+        else if (typeof(ViewDataDictionary).IsAssignableFrom(property.PropertyType))
         {
             // Logic looks reversed in condition above but is OK. Support only properties of base
             // ViewDataDictionary type and activationInfo.ViewDataDictionaryType. VDD<AnotherType> will fail when
@@ -127,7 +134,7 @@ internal class RazorPagePropertyActivator
         return new PropertyActivator<ViewContext>(property, valueAccessor);
     }
 
-    public class PropertyValueAccessors
+    public sealed class PropertyValueAccessors
     {
         public Func<ViewContext, object> UrlHelperAccessor { get; init; } = default!;
 

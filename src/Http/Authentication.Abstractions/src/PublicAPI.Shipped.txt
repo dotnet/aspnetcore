@@ -12,6 +12,9 @@ Microsoft.AspNetCore.Authentication.AuthenticateResult.Properties.set -> void
 Microsoft.AspNetCore.Authentication.AuthenticateResult.Succeeded.get -> bool
 Microsoft.AspNetCore.Authentication.AuthenticateResult.Ticket.get -> Microsoft.AspNetCore.Authentication.AuthenticationTicket?
 Microsoft.AspNetCore.Authentication.AuthenticateResult.Ticket.set -> void
+Microsoft.AspNetCore.Authentication.AuthenticationFailureException
+Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message) -> void
+Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message, System.Exception? innerException) -> void
 Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions
 Microsoft.AspNetCore.Authentication.AuthenticationOptions
 Microsoft.AspNetCore.Authentication.AuthenticationOptions.AddScheme(string! name, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder!>! configureBuilder) -> void
@@ -88,6 +91,8 @@ Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions
 Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature
 Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.get -> Microsoft.AspNetCore.Authentication.AuthenticateResult?
 Microsoft.AspNetCore.Authentication.IAuthenticateResultFeature.AuthenticateResult.set -> void
+Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider
+Microsoft.AspNetCore.Authentication.IAuthenticationConfigurationProvider.AuthenticationConfiguration.get -> Microsoft.Extensions.Configuration.IConfiguration!
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Authentication.IAuthenticationFeature.OriginalPath.set -> void

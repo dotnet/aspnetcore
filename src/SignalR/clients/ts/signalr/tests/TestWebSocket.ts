@@ -234,6 +234,9 @@ export class TestMessageEvent implements MessageEvent {
     constructor(data: any) {
         this.data = data;
     }
+    initMessageEvent(type: string, bubbles?: boolean | undefined, cancelable?: boolean | undefined, data?: any, origin?: string | undefined, lastEventId?: string | undefined, source?: MessageEventSource | null | undefined, ports?: MessagePort[] | undefined): void {
+        throw new Error("Method not implemented.");
+    }
     public data: any;
     public lastEventId: string = "";
     public origin: string = "";

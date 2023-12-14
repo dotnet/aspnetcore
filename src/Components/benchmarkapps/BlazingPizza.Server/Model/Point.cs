@@ -1,9 +1,8 @@
-namespace BlazingPizza.Server
-{
-    public class Point
-    {
-        public double X { get; set; }
+namespace BlazingPizza.Server.Model;
 
-        public double Y { get; set; }
-    }
+public class Point
+{
+    public double X { get; set; }
+
+    public double Y { get; set; }
 }

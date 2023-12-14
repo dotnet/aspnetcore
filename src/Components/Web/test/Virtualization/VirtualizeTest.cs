@@ -113,9 +113,9 @@ public class VirtualizeTest
         => builder =>
     {
         builder.OpenComponent<Virtualize<TItem>>(0);
-        builder.AddAttribute(1, "ItemSize", itemSize);
-        builder.AddAttribute(2, "ItemsProvider", itemsProvider);
-        builder.AddAttribute(3, "Items", items);
+        builder.AddComponentParameter(1, "ItemSize", itemSize);
+        builder.AddComponentParameter(2, "ItemsProvider", itemsProvider);
+        builder.AddComponentParameter(3, "Items", items);
 
         if (captureRenderedVirtualize != null)
         {

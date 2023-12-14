@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Shared;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http;
@@ -13,6 +16,8 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Represents an implementation of the HTTP Context class.
 /// </summary>
+// DebuggerDisplayAttribute is inherited but we're replacing it on this implementation to include reason phrase.
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 public sealed class DefaultHttpContext : HttpContext
 {
     // The initial size of the feature collection when using the default constructor; based on number of common features
@@ -234,6 +239,12 @@ public sealed class DefaultHttpContext : HttpContext
     private static void ThrowContextDisposed()
     {
         throw new ObjectDisposedException(nameof(HttpContext), $"Request has finished and {nameof(HttpContext)} disposed.");
+    }
+
+    private string DebuggerToString()
+    {
+        // DebuggerToString is also on this type because this project has access to ReasonPhrases.
+        return HttpContextDebugFormatter.ContextToString(this, ReasonPhrases.GetReasonPhrase(Response.StatusCode));
     }
 
     struct FeatureInterfaces

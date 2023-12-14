@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright (c) .NET Foundation and contributors. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
@@ -271,8 +271,8 @@ def _option_string_helper(specifier_short, specifier_long, parameter, include_br
 
 
 def print_usage():
-    print "Usage: argv[1] = path to docs.json; argv[2] = output path"
-    print "Example: manpage_generator.py ../docs.json ./dotnet-1.0/debian"
+    print("Usage: argv[1] = path to docs.json; argv[2] = output path")
+    print("Example: manpage_generator.py ../docs.json ./dotnet-1.0/debian")
 
 def parse_args():
     doc_path = sys.argv[1]
@@ -296,7 +296,7 @@ def execute_command_line():
         generate_man_pages(doc_path, output_dir)
 
     except Exception as exc:
-        print "Error: ", exc
+        print("Error: ", exc)
         print_usage()
 
 if __name__ == "__main__":

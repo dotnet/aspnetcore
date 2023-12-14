@@ -7,11 +7,18 @@
     <ProjectReference Include="$(SignalRTestUtilsProject)" />
 
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="System.Reactive.Linq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)EphemeralDataProtectionProvider.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TestCertificates.cs" Link="TestCertificates.cs" />
+    <Content Include="$(SignalRSharedSourceRoot)*.pfx" LinkBase="TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

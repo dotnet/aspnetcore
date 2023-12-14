@@ -79,11 +79,11 @@ public class RenderTreeDiffBuilderBenchmark
     public void ComputeDiff_SingleFormField()
     {
         builder.ClearStateForCurrentBatch();
-        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, builder, 0, original.GetFrames(), modified.GetFrames());
+        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, builder, 0, modified.GetFrames(), original.GetFrames());
         GC.KeepAlive(diff);
     }
 
-    private class FakeRenderer : Renderer
+    private sealed class FakeRenderer : Renderer
     {
         public FakeRenderer()
             : base(new TestServiceProvider(), NullLoggerFactory.Instance)
@@ -101,7 +101,7 @@ public class RenderTreeDiffBuilderBenchmark
             => Task.CompletedTask;
     }
 
-    private class TestServiceProvider : IServiceProvider
+    private sealed class TestServiceProvider : IServiceProvider
     {
         public object GetService(Type serviceType)
         {

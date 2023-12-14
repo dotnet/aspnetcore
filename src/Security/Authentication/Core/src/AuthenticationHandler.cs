@@ -18,7 +18,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     private Task<AuthenticateResult>? _authenticateTask;
 
     /// <summary>
-    /// Gets or sets the <see cref="AuthenticationScheme"/> asssociated with this authentication handler.
+    /// Gets or sets the <see cref="AuthenticationScheme"/> associated with this authentication handler.
     /// </summary>
     public AuthenticationScheme Scheme { get; private set; } = default!;
 
@@ -71,7 +71,13 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <summary>
     /// Gets the <see cref="ISystemClock"/>.
     /// </summary>
-    protected ISystemClock Clock { get; }
+    [Obsolete("ISystemClock is obsolete, use TimeProvider instead.")]
+    protected ISystemClock Clock { get; private set; }
+
+    /// <summary>
+    /// Gets the current time, primarily for unit testing.
+    /// </summary>
+    protected TimeProvider TimeProvider { get; private set; } = TimeProvider.System;
 
     /// <summary>
     /// Gets the <see cref="IOptionsMonitor{TOptions}"/> to detect changes to options.
@@ -107,11 +113,28 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
     /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
     {
         Logger = logger.CreateLogger(this.GetType().FullName!);
         UrlEncoder = encoder;
         Clock = clock;
+        OptionsMonitor = options;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="AuthenticationHandler{TOptions}"/>.
+    /// </summary>
+    /// <param name="options">The monitor for the options instance.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="encoder">The <see cref="System.Text.Encodings.Web.UrlEncoder"/>.</param>
+// Clock is obsolete.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    {
+        Logger = logger.CreateLogger(this.GetType().FullName!);
+        UrlEncoder = encoder;
         OptionsMonitor = options;
     }
 
@@ -123,19 +146,18 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     /// <returns></returns>
     public async Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
     {
-        if (scheme == null)
-        {
-            throw new ArgumentNullException(nameof(scheme));
-        }
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(scheme);
+        ArgumentNullException.ThrowIfNull(context);
 
         Scheme = scheme;
         Context = context;
 
         Options = OptionsMonitor.Get(Scheme.Name);
+
+        TimeProvider = Options.TimeProvider ?? TimeProvider.System;
+#pragma warning disable CS0618 // Type or member is obsolete
+        Clock = TimeProvider == TimeProvider.System ? SystemClock.Default : new SystemClock(TimeProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         await InitializeEventsAsync();
         await InitializeHandlerAsync();

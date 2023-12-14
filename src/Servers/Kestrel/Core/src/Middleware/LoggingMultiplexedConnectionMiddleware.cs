@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class LoggingMultiplexedConnectionMiddleware
+internal sealed class LoggingMultiplexedConnectionMiddleware
 {
     private readonly MultiplexedConnectionDelegate _multiplexedNext;
     private readonly ILogger _logger;
@@ -29,7 +29,7 @@ internal class LoggingMultiplexedConnectionMiddleware
     /// Wrap the initial <see cref="MultiplexedConnectionContext"/>.
     /// ConnectionContext's returned from ConnectAsync and AcceptAsync will then be wrapped.
     /// </summary>
-    private class LoggingMultiplexedConnectionContext : MultiplexedConnectionContext
+    private sealed class LoggingMultiplexedConnectionContext : MultiplexedConnectionContext
     {
         private readonly MultiplexedConnectionContext _inner;
         private readonly ILogger _logger;
@@ -83,7 +83,7 @@ internal class LoggingMultiplexedConnectionMiddleware
     /// <summary>
     /// Wraps transport with <see cref="LoggingDuplexPipe"/>.
     /// </summary>
-    private class LoggingConnectionContext : ConnectionContext
+    private sealed class LoggingConnectionContext : ConnectionContext
     {
         private readonly ConnectionContext _inner;
         private readonly ILogger _logger;

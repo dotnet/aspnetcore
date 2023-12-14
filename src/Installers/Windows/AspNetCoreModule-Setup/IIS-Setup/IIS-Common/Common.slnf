@@ -2,8 +2,7 @@
   "solution": {
     "path": "..\\..\\..\\..\\..\\..\\AspNetCore.sln",
     "projects" : [
-      "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\IIS-Common\\lib\\IISSetup.CommonLib.vcxproj",
-      "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\IIS-Common\\reftrace\\reftrace.vcxproj"
+      "src\\Installers\\Windows\\AspNetCoreModule-Setup\\IIS-Setup\\IIS-Common\\lib\\IISSetup.CommonLib.vcxproj"
     ]
   }
 }

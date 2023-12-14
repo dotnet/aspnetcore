@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Allows fine grained configuration of MVC services.
 /// </summary>
-internal class MvcBuilder : IMvcBuilder
+internal sealed class MvcBuilder : IMvcBuilder
 {
     /// <summary>
     /// Initializes a new <see cref="MvcBuilder"/> instance.
@@ -17,15 +17,8 @@ internal class MvcBuilder : IMvcBuilder
     /// <param name="manager">The <see cref="ApplicationPartManager"/> of the application.</param>
     public MvcBuilder(IServiceCollection services, ApplicationPartManager manager)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(manager);
 
         Services = services;
         PartManager = manager;

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
@@ -16,10 +17,7 @@ internal sealed partial class LoggingHttpMessageHandler : DelegatingHandler
 
     public LoggingHttpMessageHandler(HttpMessageHandler inner, ILoggerFactory loggerFactory) : base(inner)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<LoggingHttpMessageHandler>();
     }
@@ -30,7 +28,7 @@ internal sealed partial class LoggingHttpMessageHandler : DelegatingHandler
 
         var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.SwitchingProtocols)
         {
             Log.UnsuccessfulHttpResponse(_logger, response.StatusCode, request.Method, request.RequestUri!);
         }

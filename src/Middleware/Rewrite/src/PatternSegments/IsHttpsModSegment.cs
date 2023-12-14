@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Rewrite.PatternSegments;
 
-internal class IsHttpsModSegment : PatternSegment
+internal sealed class IsHttpsModSegment : PatternSegment
 {
     // Note: Mod rewrite pattern matches on lower case "on" and "off"
     // while IIS looks for capitalized "ON" and "OFF"

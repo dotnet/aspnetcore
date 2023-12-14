@@ -8,7 +8,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using XmlFormattersWebSite;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
@@ -228,7 +228,7 @@ public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<Mvc
             var root = XDocument.Parse(content).Root;
             Assert.Equal("404", root.Element(root.Name.Namespace.GetName("status"))?.Value);
             Assert.Equal("Not Found", root.Element(root.Name.Namespace.GetName("title"))?.Value);
-            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", root.Element(root.Name.Namespace.GetName("type"))?.Value);
+            Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", root.Element(root.Name.Namespace.GetName("type"))?.Value);
             // Activity is not null
             Assert.NotNull(root.Element(root.Name.Namespace.GetName("traceId"))?.Value);
         }

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.TestObjects;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -139,7 +139,7 @@ public class RouteConstraintBuilderTest
         Assert.Equal("name", result.First().Key);
         Assert.IsType<OptionalRouteConstraint>(Assert.Single(result).Value);
         var optionalConstraint = (OptionalRouteConstraint)result.First().Value;
-        var compositeConstraint = Assert.IsType<CompositeRouteConstraint>(optionalConstraint.InnerConstraint); ;
+        var compositeConstraint = Assert.IsType<CompositeRouteConstraint>(optionalConstraint.InnerConstraint);
         Assert.Equal(2, compositeConstraint.Constraints.Count());
 
         Assert.Single(compositeConstraint.Constraints, c => c is MinLengthRouteConstraint);

@@ -20,15 +20,8 @@ public class MapWhenMiddleware
     /// <param name="options">The middleware options.</param>
     public MapWhenMiddleware(RequestDelegate next, MapWhenOptions options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.Predicate == null)
         {
@@ -51,10 +44,7 @@ public class MapWhenMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_options.Predicate!(context))
         {

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
-internal class SetCommand
+internal sealed class SetCommand
 {
     public static void Configure(CommandLineApplication command, CommandLineOptions options, IConsole console)
     {
@@ -56,7 +56,7 @@ Examples:
         });
     }
 
-    public class FromStdInStrategy : ICommand
+    public sealed class FromStdInStrategy : ICommand
     {
         public void Execute(CommandContext context)
         {
@@ -84,7 +84,7 @@ Examples:
         }
     }
 
-    public class ForOneValueStrategy : ICommand
+    public sealed class ForOneValueStrategy : ICommand
     {
         private readonly string _keyName;
         private readonly string _keyValue;

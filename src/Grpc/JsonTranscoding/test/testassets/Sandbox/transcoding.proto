@@ -1,0 +1,184 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/struct.proto";
+
+package transcoding;
+
+service JsonTranscodingGreeter {
+  rpc SayHello (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v11/greeter8/{name}"
+    };
+  }
+  rpc ResponseBody (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v11/greeter7/{name}"
+      response_body: "message"
+    };
+  }
+  rpc Custom (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      custom: {
+        kind: "HEAD",
+        path: "/v1/greeter6/{name}"
+      }
+    };
+  }
+  rpc AdditionalBindings (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v1/additional_bindings/{name}"
+      additional_bindings {
+        delete: "/v1/additional_bindings/{name}"
+      }
+    };
+  }
+  rpc NoOption (HelloRequest) returns (HelloReply2);
+  rpc ServerStreamingGetOption (HelloRequest) returns (stream HelloReply2) {
+    option (google.api.http) = {
+      get: "/v11/greeter5/{name}"
+    };
+  }
+  rpc Body (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      post: "/v11/greeter4"
+      body: "*"
+    };
+  }
+  rpc SubBody (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      post: "/v11/greeter3"
+      body: "sub"
+    };
+  }
+  rpc SubRepeatedBody (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      post: "/v11/greeter2"
+      body: "repeated_strings"
+    };
+  }
+  rpc ParameterRoute (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      post: "/v11/greeter2/{data.single_int32}"
+      body: "repeated_strings"
+    };
+  }
+  rpc ReturnListValue (HelloRequest) returns (google.protobuf.ListValue) {
+    option (google.api.http) = {
+      post: "/v11/list_value"
+    };
+  }
+  rpc ReturnValue (HelloRequest) returns (google.protobuf.Value) {
+    option (google.api.http) = {
+      post: "/v11/value"
+    };
+  }
+  rpc ReturnStruct (HelloRequest) returns (google.protobuf.Struct) {
+    option (google.api.http) = {
+      post: "/v11/struct"
+    };
+  }
+  rpc ReturnEnum (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v11/enum"
+      response_body: "enum"
+    };
+  }
+}
+
+service JsonTranscodingInvalidResponseBodyGreeter {
+  rpc BadResponseBody (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+      response_body: "NoMatch"
+    };
+  }
+}
+
+service JsonTranscodingInvalidBodyGreeter {
+  rpc BadBody (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+      body: "NoMatch"
+    };
+  }
+}
+
+service JsonTranscodingInvalidPatternGreeter {
+  rpc BadPattern (HelloRequest) returns (HelloReply2) {
+    option (google.api.http) = {
+      get: "v1/greeter/{name}"
+      body: "NoMatch"
+    };
+  }
+}
+
+message HelloRequest {
+  message SubMessage {
+    string subfield = 1;
+    repeated string subfields = 2;
+  }
+  message DataTypes {
+    enum NestedEnum {
+      NESTED_ENUM_UNSPECIFIED = 0;
+      FOO = 1;
+      BAR = 2;
+      BAZ = 3;
+      NEG = -1;  // Intentionally negative.
+    }
+    message NestedMessage {
+      string subfield = 1;
+    }
+    int32 single_int32 = 1;
+    int64 single_int64 = 2;
+    uint32 single_uint32 = 3;
+    uint64 single_uint64 = 4;
+    sint32 single_sint32 = 5;
+    sint64 single_sint64 = 6;
+    fixed32 single_fixed32 = 7;
+    fixed64 single_fixed64 = 8;
+    sfixed32 single_sfixed32 = 9;
+    sfixed64 single_sfixed64 = 10;
+    float single_float = 11;
+    double single_double = 12;
+    bool single_bool = 13;
+    string single_string = 14;
+    bytes single_bytes = 15;
+    NestedEnum single_enum = 16;
+    NestedMessage single_message = 17;
+  }
+  message Wrappers {
+    google.protobuf.StringValue string_value = 1;
+    google.protobuf.Int32Value int32_value = 2;
+    google.protobuf.Int64Value int64_value = 3;
+    google.protobuf.FloatValue float_value = 4;
+    google.protobuf.DoubleValue double_value = 5;
+    google.protobuf.BoolValue bool_value = 6;
+    google.protobuf.UInt32Value uint32_value = 7;
+    google.protobuf.UInt64Value uint64_value = 8;
+    google.protobuf.BytesValue bytes_value = 9;
+  }
+  string name = 1;
+  SubMessage sub = 2;
+  DataTypes data = 3;
+  Wrappers wrappers = 4;
+  repeated string repeated_strings = 5;
+}
+
+message HelloReply2 {
+  string message = 1;
+  repeated string values = 2;
+  EnumWithoutMessage enum = 3;
+}
+
+enum EnumWithoutMessage {
+  ENUM_WITHOUT_MESSAGE_UNSPECIFIED = 0;
+  ENUM_WITHOUT_MESSAGE_FOO = 1;
+  ENUM_WITHOUT_MESSAGE_BAR = 2;
+  ENUM_WITHOUT_MESSAGE_BAZ = 3;
+  ENUM_WITHOUT_MESSAGE_NEG = -1;  // Intentionally negative.
+}

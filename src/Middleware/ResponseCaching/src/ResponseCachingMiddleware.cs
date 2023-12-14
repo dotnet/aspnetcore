@@ -62,30 +62,12 @@ public class ResponseCachingMiddleware
         IResponseCache cache,
         IResponseCachingKeyProvider keyProvider)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
-        if (keyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(keyProvider));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(policyProvider);
+        ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(keyProvider);
 
         _next = next;
         _options = options.Value;
@@ -160,7 +142,7 @@ public class ResponseCachingMiddleware
 
         context.CachedResponse = cachedResponse;
         context.CachedResponseHeaders = cachedResponse.Headers;
-        context.ResponseTime = _options.SystemClock.UtcNow;
+        context.ResponseTime = _options.TimeProvider.GetUtcNow();
         var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
 
@@ -392,7 +374,7 @@ public class ResponseCachingMiddleware
         if (!context.ResponseStarted)
         {
             context.ResponseStarted = true;
-            context.ResponseTime = _options.SystemClock.UtcNow;
+            context.ResponseTime = _options.TimeProvider.GetUtcNow();
 
             return true;
         }
@@ -456,7 +438,7 @@ public class ResponseCachingMiddleware
                 return true;
             }
 
-            EntityTagHeaderValue eTag;
+            EntityTagHeaderValue? eTag;
             if (!StringValues.IsNullOrEmpty(cachedResponseHeaders.ETag)
                 && EntityTagHeaderValue.TryParse(cachedResponseHeaders.ETag.ToString(), out eTag)
                 && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out var ifNoneMatchEtags))

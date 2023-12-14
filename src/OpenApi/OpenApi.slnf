@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
+      "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
+      "src\\OpenApi\\src\\Microsoft.AspNetCore.OpenApi.csproj",
+      "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests.csproj"
+    ]
+  }
+}

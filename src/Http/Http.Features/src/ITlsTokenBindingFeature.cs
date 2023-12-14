@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// <remarks>
 /// TLS token bindings help mitigate the risk of impersonation by an attacker in the
 /// event an authenticated client's bearer tokens are somehow exfiltrated from the
-/// client's machine. See https://datatracker.ietf.org/doc/draft-popov-token-binding/
+/// client's machine. See <see href="https://datatracker.ietf.org/doc/draft-popov-token-binding/"/>
 /// for more information.
 /// </remarks>
 public interface ITlsTokenBindingFeature

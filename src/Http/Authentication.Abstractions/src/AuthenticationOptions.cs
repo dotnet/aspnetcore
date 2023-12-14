@@ -31,14 +31,9 @@ public class AuthenticationOptions
     /// <param name="configureBuilder">Configures the scheme.</param>
     public void AddScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-        if (configureBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(configureBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(configureBuilder);
+
         if (SchemeMap.ContainsKey(name))
         {
             throw new InvalidOperationException("Scheme already exists: " + name);
@@ -57,11 +52,13 @@ public class AuthenticationOptions
     /// <param name="name">The name of the scheme being added.</param>
     /// <param name="displayName">The display name for the scheme.</param>
     public void AddScheme<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(string name, string? displayName) where THandler : IAuthenticationHandler
-        => AddScheme(name, b =>
+    {
+        AddScheme(name, b =>
         {
             b.DisplayName = displayName;
             b.HandlerType = typeof(THandler);
         });
+    }
 
     /// <summary>
     /// Used as the fallback default scheme for all the other defaults.
@@ -98,4 +95,22 @@ public class AuthenticationOptions
     /// A user is considered authenticated if <see cref="ClaimsIdentity.IsAuthenticated"/> returns <see langword="true" /> for the <see cref="ClaimsPrincipal"/> associated with the HTTP request.
     /// </summary>
     public bool RequireAuthenticatedSignIn { get; set; } = true;
+
+    /// <summary>
+    /// If true, DefaultScheme will not automatically use a single registered scheme.
+    /// </summary>
+    private bool? _disableAutoDefaultScheme;
+    internal bool DisableAutoDefaultScheme
+    {
+        get
+        {
+            if (!_disableAutoDefaultScheme.HasValue)
+            {
+                _disableAutoDefaultScheme = AppContext.TryGetSwitch("Microsoft.AspNetCore.Authentication.SuppressAutoDefaultScheme", out var enabled) && enabled;
+            }
+
+            return _disableAutoDefaultScheme.Value;
+        }
+        set => _disableAutoDefaultScheme = value;
+    }
 }

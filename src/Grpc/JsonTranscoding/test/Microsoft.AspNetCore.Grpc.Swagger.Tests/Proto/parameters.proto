@@ -1,0 +1,138 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+package params;
+
+import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/wrappers.proto";
+
+// Add go_package to keep protoc happy when testing generating OpenAPI from commandline.
+option go_package = "github.com/dotnet/aspnetcore/swagger";
+
+// HttpRule: https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#google.api.HttpRule
+
+service Parameters {
+  // parameter_int & parameter_string should be query parameters
+  rpc DemoParametersOne (RequestOne) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters1"
+    };
+  }
+
+  // parameter_string should be query parameters
+  rpc DemoParametersTwo (RequestOne) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters2/{parameter_int}"
+    };
+  }
+
+  // parameter_two & parameter_three should be query parameters
+  rpc DemoParametersThree (RequestTwo) returns (ParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/parameters3/{parameter_one}"
+      body: "parameter_four"
+    };
+  }
+
+  // no query parameters
+  rpc DemoParametersFour (RequestTwo) returns (ParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/parameters4/{parameter_two}"
+      body: "*"
+    };
+  }
+
+  // parameter_two & parameter_three & parameter_four should be query parameters
+  rpc DemoParametersFive (RequestTwo) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters5/{parameter_one}"
+    };
+  }
+
+  // parameter_two & parameter_three & parameter_four should be query parameters
+  rpc DemoParametersSix (RequestThree) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters6"
+    };
+  }
+
+  // parameter_two & parameter_one.nested_parameter_three & parameter_one.nested_parameter_four should be query parameters
+  rpc DemoParametersSeven (RequestFour) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters7/{parameter_one.nested_parameter_one}/{parameter_one.nested_parameter_two}"
+    };
+  }
+
+  rpc DemoParametersEight (RequestFour) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters8/{parameter_one.nested_parameter_one=messages1/*}/{parameter_one.nested_parameter_two=shelves/*/books/*}"
+    };
+  }
+
+  rpc DemoParametersNine (RequestFive) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters9"
+    };
+  }
+
+  rpc DemoParametersTenOne (RequestOne) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters10/{parameter_int}:one"
+    };
+  }
+
+  rpc DemoParametersTenTwo (RequestOne) returns (ParamResponse) {
+    option (google.api.http) = {
+      get: "/v1/parameters10/{parameter_int}:two"
+    };
+  }
+}
+
+message RequestOne {
+  int64 parameter_int = 1;
+  string parameter_string = 2;
+}
+
+message RequestTwo {
+  int64 parameter_one = 1;
+  string parameter_two = 2;
+  int64 parameter_three = 3;
+  RequestBody parameter_four = 45;
+}
+
+message RequestThree {
+  repeated int64 parameter_one = 1;
+  // repeated complex field not a valid query parameter
+  repeated RequestBody parameter_two = 2;
+  // map field not a valid query parameter
+  map<string, string> parameter_three = 3;
+}
+
+message RequestFour {
+  Nested parameter_one = 1;
+  string parameter_two = 2;
+
+  message Nested {
+    int64 nested_parameter_one = 1;
+    string nested_parameter_two = 2;
+    int64 nested_parameter_three = 3;
+    repeated int64 nested_parameter_four = 4;
+  }
+}
+
+message RequestFive {
+  google.protobuf.FieldMask field_mask_value = 1;
+  google.protobuf.StringValue string_value = 2;
+  google.protobuf.Int32Value int32_value = 3;
+}
+
+message RequestBody {
+  string request_body = 1;
+}
+
+message ParamResponse {
+  string message = 1;
+}

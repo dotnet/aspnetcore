@@ -36,7 +36,6 @@
     <Compile Include="Bundle.wxs" />
     <Compile Include="DotNetCore.wxs" />
     <Compile Include="SharedFramework.wxs" />
-    <EmbeddedResource Include="thm.wxl" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +49,13 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <Name>AspNetCoreModuleV2_x64</Name>
+      <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
+      <Private>True</Private>
+      <DoNotHarvest>true</DoNotHarvest>
+    </ProjectReference>
+    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
+      <SetPlatform>Platform=arm64</SetPlatform>
+      <Name>AspNetCoreModuleV2_arm64</Name>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
@@ -107,6 +113,11 @@
       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
       <Version>$(SharedFxPackageVersion)</Version>
     </SharedFxInstallers>
+    <SharedFxInstallers Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxPackageVersion)-win-arm64.exe">
+      <TargetPlatform>arm64</TargetPlatform>
+      <BundleNameProperty>SharedFxRedistInstallerarm64</BundleNameProperty>
+      <Version>$(SharedFxPackageVersion)</Version>
+    </SharedFxInstallers>
   </ItemGroup>
 
   <PropertyGroup>
@@ -137,6 +148,10 @@
         <ProductVersionProperty>SharedFxInstallerProductVersionx86</ProductVersionProperty>
         <ProductCodeProperty>SharedFxInstallerProductCodex86</ProductCodeProperty>
       </SharedFxPayload>
+      <SharedFxPayload Include="$(InstallersOutputPath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
+        <ProductVersionProperty>SharedFxInstallerProductVersionarm64</ProductVersionProperty>
+        <ProductCodeProperty>SharedFxInstallerProductCodearm64</ProductCodeProperty>
+      </SharedFxPayload>
     </ItemGroup>
 
     <!-- Read MSI properties -->
@@ -154,6 +169,9 @@
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx86=$(SharedFxRedistInstallerx86)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionx86=$(SharedFxInstallerProductVersionx86)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodex86=$(SharedFxInstallerProductCodex86)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxRedistInstallerarm64=$(SharedFxRedistInstallerarm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxInstallerProductVersionarm64=$(SharedFxInstallerProductVersionarm64)</DefineConstants>
+      <DefineConstants>$(DefineConstants);SharedFxInstallerProductCodearm64=$(SharedFxInstallerProductCodearm64)</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>

@@ -20,7 +20,7 @@
     <DefineConstants>$(DefineConstants);AspNetCoreTargetingPackSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>DDBB771F-963F-47D3-8510-9ABD04DBE1D1</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <ToolsetInstallerNuspecFile>$(RepoRoot)\src\Installers\Windows\TargetingPack\TargetingPackPackage.nuspec</ToolsetInstallerNuspecFile>
+    <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
     <BundleVersion>$(TargetingPackVersionPrefix)</BundleVersion>
   </PropertyGroup>
@@ -80,7 +80,7 @@
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
 
-   <Target Name="CreateTargetingPackNugetPackage" AfterTargets="CopyToArtifactsDirectory;Build">
+   <Target Name="CreateTargetingPackNugetPackage" DependsOnTargets="CopyToArtifactsDirectory" BeforeTargets="Build">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
     </PropertyGroup>

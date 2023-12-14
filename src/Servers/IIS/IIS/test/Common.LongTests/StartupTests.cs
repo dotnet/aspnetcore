@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Win32;
 
 #if !IIS_FUNCTIONALS
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -41,7 +42,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38260")]
     public async Task ExpandEnvironmentVariableInWebConfig()
     {
         // Point to dotnet installed in user profile.
@@ -236,7 +236,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38732")]
     public async Task LogsStartupExceptionExitError()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -359,7 +358,7 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependencies()
+    public async Task TargetDifferenceSharedFramework_FailedToFindNativeDependencies()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
         var deploymentResult = await DeployAsync(deploymentParameters);
@@ -375,6 +374,25 @@ public class StartupTests : IISFunctionalTestBase
         }
 
         EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task WrongApplicationPath_FailedToRun()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+        deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "TRUE";
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        deploymentResult.ModifyWebConfig(element => element
+            .Descendants("system.webServer")
+            .Single()
+            .GetOrAdd("aspNetCore")
+            .SetAttributeValue("arguments", "not-exist.dll"));
+
+        await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.31", "Provided application path does not exist, or isn't a .dll or .exe.");
+
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindApplication(), Logger);
     }
 
     [ConditionalFact]
@@ -410,7 +428,7 @@ public class StartupTests : IISFunctionalTestBase
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             var responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("500.31", responseContent);
-            Assert.Contains("The framework 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
+            Assert.Contains("Framework: 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
         }
         else
         {
@@ -1029,7 +1047,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37932")]
     public async Task Gets500_30_ErrorPage()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -1278,6 +1295,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";
@@ -1354,7 +1372,8 @@ public class StartupTests : IISFunctionalTestBase
         };
         var client = new HttpClient(handler)
         {
-            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint)
+            BaseAddress = new Uri(deploymentParameters.ApplicationBaseUriHint),
+            Timeout = TimeSpan.FromSeconds(200),
         };
 
         if (DeployerSelector.HasNewHandler)
@@ -1559,6 +1578,25 @@ public class StartupTests : IISFunctionalTestBase
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         Assert.Contains(error, await response.Content.ReadAsStringAsync());
+        StopServer();
+    }
+
+    private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult, params string[] errors)
+    {
+        HttpResponseMessage response = null;
+
+        // Make sure strings aren't freed.
+        for (var i = 0; i < 2; i++)
+        {
+            response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        }
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        var responseText = await response.Content.ReadAsStringAsync();
+        foreach (var error in errors)
+        {
+            Assert.Contains(error, responseText);
+        }
         StopServer();
     }
 }

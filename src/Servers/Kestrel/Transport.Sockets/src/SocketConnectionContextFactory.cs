@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 /// </summary>
 public sealed class SocketConnectionContextFactory : IDisposable
 {
-    private readonly MemoryPool<byte> _memoryPool;
     private readonly SocketConnectionFactoryOptions _options;
     private readonly ILogger _logger;
     private readonly int _settingsCount;
@@ -31,19 +30,11 @@ public sealed class SocketConnectionContextFactory : IDisposable
     /// <param name="logger">The logger.</param>
     public SocketConnectionContextFactory(SocketConnectionFactoryOptions options, ILogger logger)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _options = options;
         _logger = logger;
-        _memoryPool = _options.MemoryPoolFactory();
         _settingsCount = _options.IOQueueCount;
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
@@ -56,33 +47,34 @@ public sealed class SocketConnectionContextFactory : IDisposable
 
             for (var i = 0; i < _settingsCount; i++)
             {
+                var memoryPool = _options.MemoryPoolFactory();
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
-                // https://github.com/aspnet/KestrelHttpServer/issues/2573
-                var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
 
                 _settings[i] = new QueueSettings()
                 {
                     Scheduler = transportScheduler,
-                    InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                    OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                    SocketSenderPool = new SocketSenderPool(awaiterScheduler)
+                    InputOptions = new PipeOptions(memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
+                    OutputOptions = new PipeOptions(memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
+                    SocketSenderPool = new SocketSenderPool(PipeScheduler.Inline),
+                    MemoryPool = memoryPool,
                 };
             }
         }
         else
         {
+            var memoryPool = _options.MemoryPoolFactory();
             var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
-            // https://github.com/aspnet/KestrelHttpServer/issues/2573
-            var awaiterScheduler = OperatingSystem.IsWindows() ? transportScheduler : PipeScheduler.Inline;
+
             _settings = new QueueSettings[]
             {
-                    new QueueSettings()
-                    {
-                        Scheduler = transportScheduler,
-                        InputOptions = new PipeOptions(_memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
-                        OutputOptions = new PipeOptions(_memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
-                        SocketSenderPool = new SocketSenderPool(awaiterScheduler)
-                    }
+                new QueueSettings()
+                {
+                    Scheduler = transportScheduler,
+                    InputOptions = new PipeOptions(memoryPool, applicationScheduler, transportScheduler, maxReadBufferSize, maxReadBufferSize / 2, useSynchronizationContext: false),
+                    OutputOptions = new PipeOptions(memoryPool, transportScheduler, applicationScheduler, maxWriteBufferSize, maxWriteBufferSize / 2, useSynchronizationContext: false),
+                    SocketSenderPool = new SocketSenderPool(PipeScheduler.Inline),
+                    MemoryPool = memoryPool,
+                }
             };
             _settingsCount = 1;
         }
@@ -98,13 +90,14 @@ public sealed class SocketConnectionContextFactory : IDisposable
         var setting = _settings[Interlocked.Increment(ref _settingsIndex) % _settingsCount];
 
         var connection = new SocketConnection(socket,
-            _memoryPool,
-            setting.Scheduler,
+            setting.MemoryPool,
+            setting.SocketSenderPool.Scheduler,
             _logger,
             setting.SocketSenderPool,
             setting.InputOptions,
             setting.OutputOptions,
-            waitForData: _options.WaitForDataBeforeAllocatingBuffer);
+            waitForData: _options.WaitForDataBeforeAllocatingBuffer,
+            finOnError: _options.FinOnError);
 
         connection.Start();
         return connection;
@@ -113,21 +106,20 @@ public sealed class SocketConnectionContextFactory : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        // Dispose the memory pool
-        _memoryPool.Dispose();
-
-        // Dispose any pooled senders
+        // Dispose any pooled senders and memory pools
         foreach (var setting in _settings)
         {
             setting.SocketSenderPool.Dispose();
+            setting.MemoryPool.Dispose();
         }
     }
 
-    private class QueueSettings
+    private sealed class QueueSettings
     {
         public PipeScheduler Scheduler { get; init; } = default!;
         public PipeOptions InputOptions { get; init; } = default!;
         public PipeOptions OutputOptions { get; init; } = default!;
         public SocketSenderPool SocketSenderPool { get; init; } = default!;
+        public MemoryPool<byte> MemoryPool { get; init; } = default!;
     }
 }

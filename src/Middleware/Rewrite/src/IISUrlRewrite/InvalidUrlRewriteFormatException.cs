@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class InvalidUrlRewriteFormatException : FormatException
+internal sealed class InvalidUrlRewriteFormatException : FormatException
 {
     public int LineNumber { get; }
     public int LinePosition { get; }

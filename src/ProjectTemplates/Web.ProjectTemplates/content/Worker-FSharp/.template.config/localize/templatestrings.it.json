@@ -1,11 +1,11 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Worker Service",
-  "description": "An empty project template for creating a worker service.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "Servizio del ruolo di lavoro",
+  "description": "Modello di progetto vuoto per la creazione di un'istanza di Worker Service.",
+  "symbols/ExcludeLaunchSettings/description": "Indica se escludere launchSettings.json dal modello generato.",
+  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"
 }

@@ -11,15 +11,16 @@
   <PropertyGroup>
     <_TestingArchitecture>x64</_TestingArchitecture>
     <_TestingArchitecture Condition=" '$(IsArm64HelixQueue)' == 'true' ">arm64</_TestingArchitecture>
+    <TestDependsOnPlaywright Condition="'$(TestDependsOnPlaywright)' == ''">false</TestDependsOnPlaywright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
-      $(HelixQueueAlpine314);
+      $(HelixQueueAlmaLinux8);
+      $(HelixQueueAlpine316);
       $(HelixQueueDebian11);
-      $(HelixQueueFedora34);
+      $(HelixQueueFedora38);
       $(HelixQueueMariner);
-      Redhat.7.Amd64.Open;
       Ubuntu.2004.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
@@ -188,9 +189,9 @@
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
 
     <!--
-      Use the shared framework and ref/ assemblies copied to the Helix agents and expanded by RunTests. Unfortunately,
-      tests of Microsoft.NET.Sdk.Web templates will not reference the just-built Microsoft.NET.Sdk.Razor. Adding a
-      package reference for that would confuse tests of Microsoft.NET.Sdk templates.
+      Use the shared framework and ref/ assemblies copied to the Helix agents and expanded by HelixTestRunner.
+      Unfortunately, tests of Microsoft.NET.Sdk.Web templates will not reference the just-built
+      Microsoft.NET.Sdk.Razor. Adding a package reference for that would confuse tests of Microsoft.NET.Sdk templates.
     -->
     <Copy SourceFiles="$(ArtifactsBinDir)GenerateFiles\Directory.Build.props"
         DestinationFiles="$(PublishDir)Directory.Build.props"
@@ -220,8 +221,8 @@
           When the targeting pack builds, it has exactly the same version as the shared framework. Passing
           SharedFxVersion because that's needed even when the targeting pack isn't building.
         -->
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(DotnetEfVersion) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(_TestingArchitecture) $(RunQuarantinedTests) $(HelixTimeout) $(TestDependsOnPlaywright)</Command>
         <Command Condition="'$(HelixCommand)' != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

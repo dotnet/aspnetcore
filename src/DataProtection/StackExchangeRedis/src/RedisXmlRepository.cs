@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -45,7 +45,7 @@ public class RedisXmlRepository : IXmlRepository
         var database = _databaseFactory();
         foreach (var value in database.ListRange(_key))
         {
-            yield return XElement.Parse(value);
+            yield return XElement.Parse((string)value!);
         }
     }
 

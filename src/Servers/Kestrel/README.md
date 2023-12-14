@@ -2,7 +2,7 @@
 
 Kestrel is our cross-platform web server that is included and enabled by default in ASP.NET Core.
 
-Documentation for ASP.NET Core Kestrel can be found in the [ASP.NET Core Kestrel Docs](https://docs.microsoft.com/aspnet/core/fundamentals/servers/kestrel).
+Documentation for ASP.NET Core Kestrel can be found in the [ASP.NET Core Kestrel Docs](https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel).
 
 ## Description
 

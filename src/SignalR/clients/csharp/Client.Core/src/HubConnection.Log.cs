@@ -310,5 +310,32 @@ public partial class HubConnection
 
         [LoggerMessage(84, LogLevel.Trace, "Client threw an error for stream '{StreamId}'.", EventName = "ErroredStream")]
         public static partial void ErroredStream(ILogger logger, string streamId, Exception exception);
+
+        [LoggerMessage(85, LogLevel.Warning, "Failed to find a value returning handler for '{Target}' method. Sending error to server.", EventName = "MissingResultHandler")]
+        public static partial void MissingResultHandler(ILogger logger, string target);
+
+        [LoggerMessage(86, LogLevel.Warning, "Result given for '{Target}' method but server is not expecting a result.", EventName = "ResultNotExpected")]
+        public static partial void ResultNotExpected(ILogger logger, string target);
+
+        [LoggerMessage(87, LogLevel.Trace, "Completion message for stream '{StreamId}' was not sent because the connection is closed.", EventName = "CompletingStreamNotSent")]
+        public static partial void CompletingStreamNotSent(ILogger logger, string streamId);
+
+        [LoggerMessage(88, LogLevel.Warning, "Error returning result for invocation '{InvocationId}' for method '{Target}' because the underlying connection is closed.", EventName = "ErrorSendingInvocationResult")]
+        public static partial void ErrorSendingInvocationResult(ILogger logger, string invocationId, string target, Exception exception);
+
+        [LoggerMessage(89, LogLevel.Trace, "Error sending Completion message for stream '{StreamId}'.", EventName = "ErrorSendingStreamCompletion")]
+        public static partial void ErrorSendingStreamCompletion(ILogger logger, string streamId, Exception exception);
+
+        [LoggerMessage(90, LogLevel.Trace, "Dropping {MessageType} with ID '{InvocationId}'.", EventName = "DroppingMessage")]
+        public static partial void DroppingMessage(ILogger logger, string messageType, string? invocationId);
+
+        [LoggerMessage(91, LogLevel.Trace, "Received AckMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedAckMessage")]
+        public static partial void ReceivedAckMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(92, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
+        public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(93, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
+        public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
     }
 }

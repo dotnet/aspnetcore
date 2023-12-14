@@ -5,7 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -40,6 +40,22 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
         appElement.FindElement(By.TagName("button")).Click();
         Browser.Equal("20", () => svgCircleElement.GetAttribute("r"));
+    }
+
+    [Fact]
+    public void CanRenderSvgWithAttributeRemoval()
+    {
+        var appElement = Browser.MountTestComponent<SvgComponent>();
+
+        var svgElement = appElement.FindElement(By.Id("svg-with-callback"));
+        Assert.NotNull(svgElement);
+
+        var svgCircleElement = svgElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
+        Assert.NotNull(svgCircleElement);
+        Assert.Equal("stroke: red;", svgCircleElement.GetAttribute("style"));
+
+        appElement.FindElement(By.TagName("button")).Click();
+        Browser.Equal("", () => svgCircleElement.GetAttribute("style"));
     }
 
     [Fact]

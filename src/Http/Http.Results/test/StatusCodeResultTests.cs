@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Http.Result;
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class StatusCodeResultTests
 {
@@ -13,7 +13,7 @@ public class StatusCodeResultTests
     public void StatusCodeResult_ExecuteResultSetsResponseStatusCode()
     {
         // Arrange
-        var result = new StatusCodeResult(StatusCodes.Status404NotFound);
+        var result = new StatusCodeHttpResult(StatusCodes.Status404NotFound);
 
         var httpContext = GetHttpContext();
 
@@ -24,10 +24,30 @@ public class StatusCodeResultTests
         Assert.Equal(StatusCodes.Status404NotFound, httpContext.Response.StatusCode);
     }
 
+    [Fact]
+    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    {
+        // Arrange
+        var result = new StatusCodeHttpResult(200);
+        HttpContext httpContext = null;
+
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+    }
+
+    [Fact]
+    public void StatusCodeResult_Implements_IStatusCodeHttpResult_Correctly()
+    {
+        // Act & Assert
+        var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new StatusCodeHttpResult(StatusCodes.Status406NotAcceptable));
+        Assert.Equal(StatusCodes.Status406NotAcceptable, result.StatusCode);
+    }
+
     private static IServiceCollection CreateServices()
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
         return services;
     }
 

@@ -11,13 +11,13 @@
   <ItemGroup>
     <Compile Include="..\FunctionalTests\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestServiceContext.cs" Link="shared\TestServiceContext.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestConnection.cs" Link="shared\TestConnection.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\MockSystemClock.cs" Link="shared\MockSystemClock.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLoggerLoggedTest.cs" Link="shared\TestApplicationErrorLoggerLoggedTest.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" Link="shared\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamBackedTestConnection.cs" Link="shared\StreamBackedTestConnection.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" Link="shared\TestResources.cs" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" Link="shared\TestResources.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestConstants.cs" Link="shared\TestConstants.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" Link="shared\KestrelTestLoggerProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\LifetimeNotImplemented.cs" Link="shared\LifetimeNotImplemented.cs" />
@@ -25,7 +25,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApp.cs" Link="shared\TestApp.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +33,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

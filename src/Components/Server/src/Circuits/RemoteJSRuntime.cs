@@ -11,7 +11,9 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class RemoteJSRuntime : JSRuntime
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly CircuitOptions _options;
     private readonly ILogger<RemoteJSRuntime> _logger;
@@ -194,16 +196,16 @@ internal partial class RemoteJSRuntime : JSRuntime
         [LoggerMessage(1, LogLevel.Debug, "Begin invoke JS interop '{AsyncHandle}': '{FunctionIdentifier}'", EventName = "BeginInvokeJS")]
         internal static partial void BeginInvokeJS(ILogger logger, long asyncHandle, string functionIdentifier);
 
-        [LoggerMessage(2, LogLevel.Debug, "There was an error invoking the static method '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}'.", EventName = "InvokeDotNetMethodException")]
+        [LoggerMessage(2, LogLevel.Debug, "There was an error invoking the static method '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}'.", EventName = "InvokeStaticDotNetMethodException")]
         private static partial void InvokeStaticDotNetMethodException(ILogger logger, string assemblyName, string methodIdentifier, string? callbackId, Exception exception);
 
-        [LoggerMessage(4, LogLevel.Debug, "There was an error invoking the instance method '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}'.", EventName = "InvokeDotNetMethodException")]
+        [LoggerMessage(4, LogLevel.Debug, "There was an error invoking the instance method '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}'.", EventName = "InvokeInstanceDotNetMethodException")]
         private static partial void InvokeInstanceDotNetMethodException(ILogger logger, string methodIdentifier, long dotNetObjectReference, string? callbackId, Exception exception);
 
-        [LoggerMessage(3, LogLevel.Debug, "Invocation of '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}' completed successfully.", EventName = "InvokeDotNetMethodSuccess")]
+        [LoggerMessage(3, LogLevel.Debug, "Invocation of '[{AssemblyName}]::{MethodIdentifier}' with callback id '{CallbackId}' completed successfully.", EventName = "InvokeStaticDotNetMethodSuccess")]
         private static partial void InvokeStaticDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, string assemblyName, string methodIdentifier, string? callbackId);
 
-        [LoggerMessage(5, LogLevel.Debug, "Invocation of '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}' completed successfully.", EventName = "InvokeDotNetMethodSuccess")]
+        [LoggerMessage(5, LogLevel.Debug, "Invocation of '{MethodIdentifier}' on reference '{DotNetObjectReference}' with callback id '{CallbackId}' completed successfully.", EventName = "InvokeInstanceDotNetMethodSuccess")]
         private static partial void InvokeInstanceDotNetMethodSuccess(ILogger<RemoteJSRuntime> logger, string methodIdentifier, long dotNetObjectReference, string? callbackId);
 
         internal static void InvokeDotNetMethodException(ILogger logger, in DotNetInvocationInfo invocationInfo, Exception exception)

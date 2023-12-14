@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
-internal class HttpConnectionsEventSource : EventSource
+internal sealed class HttpConnectionsEventSource : EventSource
 {
     public static readonly HttpConnectionsEventSource Log = new HttpConnectionsEventSource();
 
@@ -35,15 +35,15 @@ internal class HttpConnectionsEventSource : EventSource
     // This has to go through NonEvent because only Primitive types are allowed
     // in function parameters for Events
     [NonEvent]
-    public void ConnectionStop(string connectionId, ValueStopwatch timer)
+    public void ConnectionStop(string connectionId, long startTimestamp, long currentTimestamp)
     {
         Interlocked.Increment(ref _connectionsStopped);
         Interlocked.Decrement(ref _currentConnections);
 
         if (IsEnabled())
         {
-            var duration = timer.IsActive ? timer.GetElapsedTime().TotalMilliseconds : 0.0;
-            _connectionDuration!.WriteMetric(duration);
+            var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
+            _connectionDuration!.WriteMetric(duration.TotalMilliseconds);
 
             if (IsEnabled(EventLevel.Informational, EventKeywords.None))
             {
@@ -53,7 +53,7 @@ internal class HttpConnectionsEventSource : EventSource
     }
 
     [Event(eventId: 1, Level = EventLevel.Informational, Message = "Started connection '{0}'.")]
-    public ValueStopwatch ConnectionStart(string connectionId)
+    public void ConnectionStart(string connectionId)
     {
         Interlocked.Increment(ref _connectionsStarted);
         Interlocked.Increment(ref _currentConnections);
@@ -61,9 +61,7 @@ internal class HttpConnectionsEventSource : EventSource
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
             WriteEvent(1, connectionId);
-            return ValueStopwatch.StartNew();
         }
-        return default;
     }
 
     [Event(eventId: 2, Level = EventLevel.Informational, Message = "Stopped connection '{0}'.")]

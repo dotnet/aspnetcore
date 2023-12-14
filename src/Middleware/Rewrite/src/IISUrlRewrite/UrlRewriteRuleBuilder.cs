@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class UrlRewriteRuleBuilder
+internal sealed class UrlRewriteRuleBuilder
 {
     private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 
@@ -75,10 +75,7 @@ internal class UrlRewriteRuleBuilder
         {
             throw new InvalidOperationException($"You must first configure condition behavior by calling {nameof(ConfigureConditionBehavior)}");
         }
-        if (condition == null)
-        {
-            throw new ArgumentNullException(nameof(condition));
-        }
+        ArgumentNullException.ThrowIfNull(condition);
         _conditions.Add(condition);
     }
 

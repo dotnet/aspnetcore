@@ -1,0 +1,96 @@
+<Project>
+  <!-- Fake a unit test project unless that would prevent building this project. -->
+  <PropertyGroup>
+    <IsUnitTestProject Condition=" '$(SkipTestBuild)' == 'true' ">false</IsUnitTestProject>
+    <IsUnitTestProject Condition=" '$(SkipTestBuild)' != 'true' ">true</IsUnitTestProject>
+    <IsTestProject>$(IsUnitTestProject)</IsTestProject>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <!--
+    Forward targets to @(RequiresDelayedBuild) projects after App.Ref has built. Intended for projects that
+    cannot restore without our App.Ref layout and aren't referenced elsewhere in the repo. For projects
+    referenced elsewhere, use something else e.g. @(TestAssetProjectReference) items and
+    FunctionalTestWithAssets.targets for test asset projects that need special handling.
+  -->
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Nothing from this project ships whether we're faking a unit test project or not. -->
+    <IsShipping>false</IsShipping>
+
+    <!-- Build.props is main thing that references this project. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      When adding new projects to @(RequiresDelayedBuild), temporarily reference the projects here, run
+      GenerateProjectList.ps1, then undo changes in this file. See comments in Build.props for other options.
+    -->
+    <!-- RequiresDelayedBuild Include="..." / -->
+
+    <!-- Enforce build order. Need shared Fx before building the important projects. -->
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <!-- Cannot build in source-build because that does not create an App.Ref layout. -->
+  <Target Name="BuildDelayedProjects"
+      BeforeTargets="Build"
+      Condition=" '$(DotNetBuildFromSource)' != 'true' "
+      Returns="@(TargetPathWithTargetPlatformMoniker)">
+    <MSBuild Projects="@(RequiresDelayedBuild)"
+        BuildInParallel="$(BuildInParallel)"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
+        Targets="Restore" />
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Build">
+      <Output TaskParameter="TargetOutputs" ItemName="TargetPathWithTargetPlatformMoniker" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="CleanDelayedProjects" BeforeTargets="Clean" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Clean" />
+  </Target>
+
+  <Target Name="CreateHelixPayloadDelayedProjects"
+      BeforeTargets="CreateHelixPayload"
+      Condition=" '$(DotNetBuildFromSource)' != 'true' "
+      Returns="@(HelixWorkItem)">
+    <MSBuild Projects="@(RequiresDelayedBuild)"
+        BuildInParallel="$(BuildInParallel)"
+        SkipNonexistentTargets="true"
+        Targets="CreateHelixPayload">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetReferencesProvidedDelayedProjects"
+      BeforeTargets="GetReferencesProvided"
+      Returns="@(ProvidesReference)">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="GetReferencesProvided">
+      <Output TaskParameter="TargetOutputs" ItemName="ProvidesReference" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="PackDelayedProjects" BeforeTargets="Pack" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Pack" />
+  </Target>
+
+  <Target Name="PublishDelayedProjects" BeforeTargets="Publish" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Publish" />
+  </Target>
+
+  <Target Name="TestDelayedProjects" BeforeTargets="Test" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Test" />
+  </Target>
+
+  <Target Name="VSTestDelayedProjects" BeforeTargets="VSTest" Condition=" '$(DotNetBuildFromSource)' != 'true' ">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="VSTest" />
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

@@ -16,7 +16,9 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         app.UseConcurrencyLimiter();
+#pragma warning restore CS0618 // Type or member is obsolete
         app.Run(async context =>
         {
             Task.Delay(100).Wait(); // 100ms sync-over-async

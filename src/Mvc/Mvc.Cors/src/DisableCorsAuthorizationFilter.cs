@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors;
 /// <summary>
 /// An <see cref="ICorsAuthorizationFilter"/> which ensures that an action does not run for a pre-flight request.
 /// </summary>
-internal class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
+internal sealed class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
 {
     /// <inheritdoc />
     // Since clients' preflight requests would not have data to authenticate requests, this
@@ -21,10 +21,7 @@ internal class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
     /// <inheritdoc />
     public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var accessControlRequestMethod =
                     context.HttpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];

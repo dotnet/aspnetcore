@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Newtonsoft.Json;
@@ -508,7 +508,7 @@ public partial class HttpConnectionTests
 
             var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
 
-            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
+            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling, false))
                 .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
             using (var noErrorScope = new VerifyNoErrorsScope())
@@ -523,7 +523,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task StartSkipsOverTransportsThatDoNotSupportTheRequredTransferFormat()
+        public async Task StartSkipsOverTransportsThatDoNotSupportTheRequiredTransferFormat()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
 
@@ -557,7 +557,7 @@ public partial class HttpConnectionTests
 
             var transportFactory = new Mock<ITransportFactory>(MockBehavior.Strict);
 
-            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling))
+            transportFactory.Setup(t => t.CreateTransport(HttpTransportType.LongPolling, false))
                 .Returns(new TestTransport(transferFormat: TransferFormat.Text | TransferFormat.Binary));
 
             await WithConnectionAsync(
@@ -593,7 +593,7 @@ public partial class HttpConnectionTests
                     CreateConnection(testHttpHandler, loggerFactory: noErrorScope.LoggerFactory),
                     async (connection) =>
                     {
-                        var exception = await Assert.ThrowsAsync<Exception>(() => connection.StartAsync().DefaultTimeout());
+                        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync().DefaultTimeout());
                         Assert.Equal("Test error.", exception.Message);
                     });
             }

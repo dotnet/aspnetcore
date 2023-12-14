@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-internal class AspNetTestRunner : XunitTestRunner
+internal sealed class AspNetTestRunner : XunitTestRunner
 {
     private readonly TestOutputHelper _testOutputHelper;
     private readonly bool _ownsTestOutputHelper;

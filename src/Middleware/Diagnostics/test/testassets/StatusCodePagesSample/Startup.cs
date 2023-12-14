@@ -11,6 +11,11 @@ namespace StatusCodePagesSample;
 
 public class Startup
 {
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddProblemDetails();
+    }
+
     public void Configure(IApplicationBuilder app)
     {
         app.UseDeveloperExceptionPage();

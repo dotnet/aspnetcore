@@ -6,7 +6,9 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.InternalTesting;
+using Windows.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
@@ -226,6 +228,87 @@ public class ServerOnExistingQueueTests
         context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
         Assert.Equal(string.Empty, context.Request.PathBase);
         Assert.Equal("/pathbase/", context.Request.Path);
+        context.Dispose();
+
+        response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
+
+    [ConditionalFact]
+    public async Task Server_CreateOrAttach_NoUrlPrefix_NewUrlPrefixWorks()
+    {
+        var queueName = Guid.NewGuid().ToString();
+
+        // Create a queue without a UrlGroup or any UrlPrefixes
+        var statusCode = PInvoke.HttpCreateRequestQueue(
+                HttpApi.Version,
+                queueName,
+                default,
+                0,
+                out var requestQueueHandle);
+
+        Assert.True(statusCode == ErrorCodes.ERROR_SUCCESS);
+
+        using var server = Utilities.CreateServer(options =>
+        {
+            options.RequestQueueName = queueName;
+            options.RequestQueueMode = RequestQueueMode.CreateOrAttach;
+            options.UrlPrefixes.Add("http://localhost:0");
+        });
+
+        var address = server.Options.UrlPrefixes.First().FullPrefix;
+
+        var responseTask = SendRequestAsync(address);
+
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        context.Dispose();
+
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
+
+    [ConditionalFact]
+    public async Task Server_CreateOrAttach_UrlPrefixExist_ExistingUrlPrefixWorks()
+    {
+        using var baseServer = Utilities.CreateHttpServer(out var address);
+        using var server = Utilities.CreateServer(options =>
+        {
+            options.RequestQueueName = baseServer.Options.RequestQueueName;
+            options.RequestQueueMode = RequestQueueMode.CreateOrAttach;
+            options.UrlPrefixes.Add(address);
+        });
+
+        var responseTask = SendRequestAsync(address);
+
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        context.Dispose();
+
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+    }
+
+    [ConditionalFact]
+    public async Task Server_CreateOrAttach_UrlPrefixExist_NewAndExistingUrlPrefixsWork()
+    {
+        using var baseServer = Utilities.CreateHttpServerReturnRoot("/baseServer", out string rootAddress);
+        using var server = Utilities.CreateServer(options =>
+        {
+            options.RequestQueueName = baseServer.Options.RequestQueueName;
+            options.RequestQueueMode = RequestQueueMode.CreateOrAttach;
+            options.UrlPrefixes.Add(rootAddress + "/server");
+        });
+
+        var responseTask = SendRequestAsync(rootAddress + "/baseServer");
+
+        var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+        context.Dispose();
+
+        var response = await responseTask;
+        Assert.Equal(string.Empty, response);
+
+        responseTask = SendRequestAsync(rootAddress + "/server");
+
+        context = await server.AcceptAsync(Utilities.DefaultTimeout);
         context.Dispose();
 
         response = await responseTask;

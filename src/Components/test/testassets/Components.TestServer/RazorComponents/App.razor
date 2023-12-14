@@ -1,0 +1,90 @@
+﻿@using Components.TestServer.RazorComponents.Pages.Forms
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+    <HeadOutlet />
+</head>
+<body>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>There's nothing here</NotFound>
+    </Router>
+    <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
+    <script src="_content/TestContentPackage/counterInterop.js"></script>
+    <script>
+        const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
+        const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
+        const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
+        const useLongWebAssemblyTimeout = sessionStorage.getItem('use-long-auto-timeout') === 'true';
+        sessionStorage.removeItem('suppress-enhanced-navigation');
+        sessionStorage.removeItem('block-load-boot-resource');
+        sessionStorage.removeItem('use-long-auto-timeout');
+        sessionStorage.removeItem('enable-classic-initializers');
+
+        let loadBootResourceUnblocked = null;
+        if (blockLoadBootResource) {
+            loadBootResourceUnblocked = new Promise(resolve => {
+                window.unblockLoadBootResource = resolve;
+            });
+        }
+
+        function callBlazorStart() {
+            Blazor.start({
+                ssr: {
+                    disableDomPreservation: suppressEnhancedNavigation,
+
+                    // We use a short timeout so tests don't take too long
+                    circuitInactivityTimeoutMs: 100,
+                },
+                enableClassicInitializers: enableClassicInitializers,
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        switch (type) {
+                            case 'manifest':
+                            case 'dotnetjs':
+                            case 'dotnetwasm':
+                                // note this is resolved to absolute URL using document.baseURI
+                                return `WasmMinimal/_framework/${name}`;
+                            default:
+                                // The following allows us to arbitrarily delay the loading of WebAssembly resources.
+                                // This is useful for guaranteeing that auto mode components will fall back on
+                                // using Blazor server.
+                                return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
+                                    method: "GET",
+                                }).then(async (response) => {
+                                    await loadBootResourceUnblocked;
+                                    return response;
+                                });
+                        }
+                    },
+                },
+            }).then(() => {
+                if (useLongWebAssemblyTimeout) {
+                    Blazor._internal.loadWebAssemblyQuicklyTimeout = 10000000;
+                }
+            }).then(() => {
+                const startedParagraph = document.createElement('p');
+                startedParagraph.id = 'blazor-started';
+                startedParagraph.style = 'display: none;';
+                document.body.appendChild(startedParagraph);
+            });
+        }
+
+        if (location.search.indexOf('suppress-autostart') < 0) {
+            callBlazorStart();
+        } else {
+            const startButton = document.createElement('button');
+            startButton.id = 'call-blazor-start';
+            startButton.textContent = 'Call Blazor.start()';
+            startButton.onclick = callBlazorStart;
+            document.body.appendChild(startButton);
+        }
+    </script>
+</body>
+</html>

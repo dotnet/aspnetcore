@@ -67,7 +67,7 @@ public abstract class SetPasswordModel : PageModel
     public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 }
 
-internal class SetPasswordModel<TUser> : SetPasswordModel where TUser : class
+internal sealed class SetPasswordModel<TUser> : SetPasswordModel where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly SignInManager<TUser> _signInManager;

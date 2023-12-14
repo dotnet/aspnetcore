@@ -145,14 +145,11 @@ public class TagBuilder : IHtmlContent
     /// Valid HTML 4.01 "id" attribute value for an element with the given <paramref name="name"/>.
     /// </returns>
     /// <remarks>
-    /// Valid "id" attributes are defined in https://www.w3.org/TR/html401/types.html#type-id.
+    /// Valid "id" attributes are defined in <see href="https://www.w3.org/TR/html401/types.html#type-id"/>.
     /// </remarks>
     public static string CreateSanitizedId(string? name, string invalidCharReplacement)
     {
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -170,7 +167,7 @@ public class TagBuilder : IHtmlContent
         }
 
         var firstChar = name[0];
-        var startsWithAsciiLetter = Html401IdUtil.IsAsciiLetter(firstChar);
+        var startsWithAsciiLetter = char.IsAsciiLetter(firstChar);
         if (!startsWithAsciiLetter)
         {
             // The first character must be a letter according to the HTML 4.01 specification.
@@ -223,10 +220,7 @@ public class TagBuilder : IHtmlContent
     /// <seealso cref="CreateSanitizedId(string, string)"/>
     public void GenerateId(string name, string invalidCharReplacement)
     {
-        if (invalidCharReplacement == null)
-        {
-            throw new ArgumentNullException(nameof(invalidCharReplacement));
-        }
+        ArgumentNullException.ThrowIfNull(invalidCharReplacement);
 
         if (string.IsNullOrEmpty(name))
         {
@@ -337,15 +331,8 @@ public class TagBuilder : IHtmlContent
     /// <inheritdoc />
     public void WriteTo(TextWriter writer, HtmlEncoder encoder)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(encoder);
 
         WriteTo(this, writer, encoder, TagRenderMode);
     }
@@ -404,10 +391,7 @@ public class TagBuilder : IHtmlContent
                 writer.Write(tagBuilder.TagName);
                 tagBuilder.AppendAttributes(writer, encoder);
                 writer.Write(">");
-                if (tagBuilder._innerHtml != null)
-                {
-                    tagBuilder._innerHtml.WriteTo(writer, encoder);
-                }
+                tagBuilder._innerHtml?.WriteTo(writer, encoder);
                 writer.Write("</");
                 writer.Write(tagBuilder.TagName);
                 writer.Write(">");
@@ -424,7 +408,7 @@ public class TagBuilder : IHtmlContent
         }
     }
 
-    private class RenderTagHtmlContent : IHtmlContent
+    private sealed class RenderTagHtmlContent : IHtmlContent
     {
         private readonly TagBuilder _tagBuilder;
         private readonly TagRenderMode _tagRenderMode;
@@ -443,19 +427,9 @@ public class TagBuilder : IHtmlContent
 
     private static class Html401IdUtil
     {
-        public static bool IsAsciiLetter(char testChar)
-        {
-            return (('A' <= testChar && testChar <= 'Z') || ('a' <= testChar && testChar <= 'z'));
-        }
-
         public static bool IsValidIdCharacter(char testChar)
         {
-            return (IsAsciiLetter(testChar) || IsAsciiDigit(testChar) || IsAllowableSpecialCharacter(testChar));
-        }
-
-        private static bool IsAsciiDigit(char testChar)
-        {
-            return ('0' <= testChar && testChar <= '9');
+            return char.IsAsciiLetterOrDigit(testChar) || IsAllowableSpecialCharacter(testChar);
         }
 
         private static bool IsAllowableSpecialCharacter(char testChar)

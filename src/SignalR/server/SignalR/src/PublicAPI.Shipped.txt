@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.HubEndpointConventionBuilder
 Microsoft.AspNetCore.Builder.HubEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.HubEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
 Microsoft.AspNetCore.Builder.HubEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Builder.IHubEndpointConventionBuilder
 Microsoft.AspNetCore.SignalR.GetHttpContextExtensions

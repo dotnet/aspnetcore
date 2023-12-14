@@ -16,10 +16,7 @@ public class WrapperProviderContext
     /// serialization, otherwise <see langword="false"/>.</param>
     public WrapperProviderContext(Type declaredType, bool isSerialization)
     {
-        if (declaredType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredType));
-        }
+        ArgumentNullException.ThrowIfNull(declaredType);
 
         DeclaredType = declaredType;
         IsSerialization = isSerialization;

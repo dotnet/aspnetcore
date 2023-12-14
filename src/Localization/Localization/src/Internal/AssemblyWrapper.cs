@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -11,14 +12,13 @@ namespace Microsoft.Extensions.Localization;
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
+#pragma warning disable CA1852 // Seal internal types
 internal class AssemblyWrapper
+#pragma warning restore CA1852 // Seal internal types
 {
     public AssemblyWrapper(Assembly assembly)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
 
         Assembly = assembly;
     }

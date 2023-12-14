@@ -7,14 +7,8 @@ public static class FrameworkEndpointRouteBuilderExtensions
 {
     public static IEndpointConventionBuilder MapFramework(this IEndpointRouteBuilder endpoints, Action<FrameworkConfigurationBuilder> configure)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(configure);
 
         var dataSource = endpoints.ServiceProvider.GetRequiredService<FrameworkEndpointDataSource>();
 

@@ -1,16 +1,18 @@
-{
-  "author": "Microsoft",
-  "name": "ASP.NET Core Empty",
-  "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
-  "symbols/kestrelHttpPort/description": "Port number to use for the HTTP endpoint in launchSettings.json.",
-  "symbols/kestrelHttpsPort/description": "Port number to use for the HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used).",
-  "symbols/iisHttpPort/description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json.",
-  "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualAuth or OrganizationalAuth is used).",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+﻿{
+  "author": "Майкрософт",
+  "name": "Пустой шаблон ASP.NET Core",
+  "description": "Пустой шаблон проекта для создания приложения ASP.NET Core. Этот шаблон не имеет содержимого.",
+  "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",
+  "symbols/kestrelHttpPort/description": "Номер порта, используемый для конечной точки HTTP в launchSettings.json.",
+  "symbols/kestrelHttpsPort/description": "Номер порта, используемый для конечной точки HTTPS в launchSettings.json. Этот параметр применим только в том случае, если no-https не используется (при использовании IndividualAuth или OrganizationalAuth no-https игнорируется).",
+  "symbols/iisHttpPort/description": "Номер порта, используемый для конечной точки HTTP IIS Express в launchSettings.json.",
+  "symbols/iisHttpsPort/description": "Номер порта, используемый для конечной точки HTTPS IIS Express в launchSettings.json. Этот параметр применим только в том случае, если no-https не используется (при использовании IndividualAuth или OrganizationalAuth no-https игнорируется).",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
+  "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
+  "symbols/NoHttps/description": "Следует ли отключить HTTPS. Этот параметр применяется, только если для --auth не используются Individual, IndividualB2C, SingleOrg или MultiOrg.",
+  "symbols/UseProgramMain/displayName": "Не использовать _операторы верхнего уровня",
+  "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
 }

@@ -7,6 +7,8 @@
 #include <memory>
 #include "iapplication.h"
 #include "inprocessapplication.h"
+#include <mutex>
+#include <condition_variable>
 
 class IN_PROCESS_APPLICATION;
 
@@ -88,4 +90,8 @@ private:
     static ALLOC_CACHE_HANDLER *   sm_pAlloc;
     bool m_disconnectFired;
     SRWLOCK m_srwDisconnectLock;
+
+    std::mutex m_lockQueue;
+    std::condition_variable m_queueCheck;
+    bool m_queueNotified;
 };

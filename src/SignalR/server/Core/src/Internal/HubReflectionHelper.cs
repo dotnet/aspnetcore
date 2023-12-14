@@ -15,7 +15,7 @@ internal static class HubReflectionHelper
         var methods = hubType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
         var allInterfaceMethods = _excludeInterfaces.SelectMany(i => GetInterfaceMethods(hubType, i));
 
-        return methods.Except(allInterfaceMethods).Where(m => IsHubMethod(m));
+        return methods.Except(allInterfaceMethods).Where(IsHubMethod);
     }
 
     private static IEnumerable<MethodInfo> GetInterfaceMethods(Type type, Type iface)

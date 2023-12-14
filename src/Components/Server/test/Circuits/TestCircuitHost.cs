@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitHost : CircuitHost
 {
-    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger)
-        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, circuitHandlers, logger)
+    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, ILogger logger)
+        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, logger)
     {
     }
 
@@ -29,10 +29,12 @@ internal class TestCircuitHost : CircuitHost
         serviceScope = serviceScope ?? new AsyncServiceScope(Mock.Of<IServiceScope>());
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
         var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider
             .Setup(services => services.GetService(typeof(IJSRuntime)))
             .Returns(jsRuntime);
+        var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
 
         if (remoteRenderer == null)
         {
@@ -41,6 +43,7 @@ internal class TestCircuitHost : CircuitHost
                 NullLoggerFactory.Instance,
                 new CircuitOptions(),
                 clientProxy,
+                serverComponentDeserializer,
                 NullLogger.Instance,
                 jsRuntime,
                 new CircuitJSComponentInterop(new CircuitOptions()));
@@ -55,6 +58,7 @@ internal class TestCircuitHost : CircuitHost
             remoteRenderer,
             descriptors ?? new List<ComponentDescriptor>(),
             jsRuntime,
+            navigationManager,
             handlers,
             NullLogger<CircuitHost>.Instance);
     }

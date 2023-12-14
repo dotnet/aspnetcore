@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching;
 //  IComparer implementation considers the template string as a tiebreaker.
 //  IEqualityComparer implementation does not.
 //  This is cool and good.
-internal class EndpointComparer : IComparer<Endpoint>, IEqualityComparer<Endpoint>
+internal sealed class EndpointComparer : IComparer<Endpoint>, IEqualityComparer<Endpoint>
 {
     private readonly IComparer<Endpoint>[] _comparers;
 
@@ -103,7 +103,7 @@ internal class EndpointComparer : IComparer<Endpoint>, IEqualityComparer<Endpoin
         return 0;
     }
 
-    private class OrderComparer : IComparer<Endpoint>
+    private sealed class OrderComparer : IComparer<Endpoint>
     {
         public static readonly IComparer<Endpoint> Instance = new OrderComparer();
 
@@ -130,7 +130,7 @@ internal class EndpointComparer : IComparer<Endpoint>, IEqualityComparer<Endpoin
         }
     }
 
-    private class PrecedenceComparer : IComparer<Endpoint>
+    private sealed class PrecedenceComparer : IComparer<Endpoint>
     {
         public static readonly IComparer<Endpoint> Instance = new PrecedenceComparer();
 

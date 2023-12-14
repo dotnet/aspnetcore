@@ -50,7 +50,9 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
 
         services.TryAddScoped<IRemoteAuthenticationPathsProvider, DefaultRemoteApplicationPathsProvider<TProviderOptions>>();
         services.TryAddScoped<IAccessTokenProviderAccessor, AccessTokenProviderAccessor>();
+#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
         services.TryAddScoped<SignOutSessionStateManager>();
+#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
 
         services.TryAddScoped<AccountClaimsPrincipalFactory<TAccount>>();
 
@@ -75,7 +77,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
     public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddRemoteAuthentication<
         [DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount, [DynamicallyAccessedMembers(JsonSerialized)] TProviderOptions>(
-        this IServiceCollection services, Action<RemoteAuthenticationOptions<TProviderOptions>> configure)
+        this IServiceCollection services, Action<RemoteAuthenticationOptions<TProviderOptions>>? configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState
         where TAccount : RemoteUserAccount
         where TProviderOptions : class, new()
@@ -141,7 +143,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> where the services were registered.</returns>
     public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization(this IServiceCollection services)
     {
-        return AddApiAuthorizationCore<RemoteAuthenticationState, RemoteUserAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name);
+        return AddApiAuthorizationCore<RemoteAuthenticationState, RemoteUserAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name!);
     }
 
     /// <summary>
@@ -153,7 +155,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     public static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState>(this IServiceCollection services)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
-        return AddApiAuthorizationCore<TRemoteAuthenticationState, RemoteUserAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name);
+        return AddApiAuthorizationCore<TRemoteAuthenticationState, RemoteUserAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name!);
     }
 
     /// <summary>
@@ -168,7 +170,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         where TAccount : RemoteUserAccount
     {
-        return AddApiAuthorizationCore<TRemoteAuthenticationState, TAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name);
+        return AddApiAuthorizationCore<TRemoteAuthenticationState, TAccount>(services, configure: null, Assembly.GetCallingAssembly().GetName().Name!);
     }
 
     /// <summary>
@@ -180,7 +182,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     public static IRemoteAuthenticationBuilder<RemoteAuthenticationState, RemoteUserAccount> AddApiAuthorization(
         this IServiceCollection services, Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> configure)
     {
-        return AddApiAuthorizationCore<RemoteAuthenticationState, RemoteUserAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name);
+        return AddApiAuthorizationCore<RemoteAuthenticationState, RemoteUserAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name!);
     }
 
     /// <summary>
@@ -194,7 +196,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         this IServiceCollection services, Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> configure)
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
     {
-        return AddApiAuthorizationCore<TRemoteAuthenticationState, RemoteUserAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name);
+        return AddApiAuthorizationCore<TRemoteAuthenticationState, RemoteUserAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name!);
     }
 
     /// <summary>
@@ -210,12 +212,12 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         where TRemoteAuthenticationState : RemoteAuthenticationState, new()
         where TAccount : RemoteUserAccount
     {
-        return AddApiAuthorizationCore<TRemoteAuthenticationState, TAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name);
+        return AddApiAuthorizationCore<TRemoteAuthenticationState, TAccount>(services, configure, Assembly.GetCallingAssembly().GetName().Name!);
     }
 
     private static IRemoteAuthenticationBuilder<TRemoteAuthenticationState, TAccount> AddApiAuthorizationCore<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState, [DynamicallyAccessedMembers(JsonSerialized)] TAccount>(
         IServiceCollection services,
-        Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> configure,
+        Action<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>>? configure,
         string inferredClientId)
         where TRemoteAuthenticationState : RemoteAuthenticationState
         where TAccount : RemoteUserAccount

@@ -24,7 +24,7 @@ public class ActionContextAccessor : IActionContextAccessor
         set { _storage.Value = value; }
     }
 
-    private class NullActionContextAccessor : IActionContextAccessor
+    private sealed class NullActionContextAccessor : IActionContextAccessor
     {
         public ActionContext? ActionContext
         {

@@ -29,17 +29,18 @@
     "karma-sauce-launcher": "^4.3.6",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-summary-reporter": "^3.0.0",
+    "mitt": "^3.0.0",
     "process": "^0.11.10",
     "rxjs": "^6.3.3",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5",
-    "webpack": "^5.23.0",
+    "typescript": "^5.0.2",
+    "webpack": "^5.76.3",
     "ws": " ^6.0.0"
   },
   "scripts": {
     "preclean": "cd .. && yarn run build",
     "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
-    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile",
+    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
     "build": "yarn run build:inner",
     "build:inner": "yarn run build:lint && yarn run build:webpack",
     "build:lint": "node ../common/node_modules/eslint/bin/eslint . --ext .ts --resolve-plugins-relative-to ../common",
@@ -54,8 +55,11 @@
   },
   "resolutions": {
     "lodash": ">=4.17.21",
-    "url-parse": ">=1.5.6",
-    "ua-parser-js": "^0.7.30"
+    "ua-parser-js": "^0.7.30",
+    "minimist": ">=1.2.6",
+    "ws": ">=7.4.6",
+    "string_decoder": ">=1.3.0",
+    "tough-cookie": ">=4.1.3"
   },
   "author": "",
   "license": "MIT"

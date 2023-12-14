@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Routing;
 
@@ -23,10 +24,7 @@ public sealed class AcceptVerbsAttribute : Attribute, IActionHttpMethodProvider,
     public AcceptVerbsAttribute(string method)
         : this(new[] { method })
     {
-        if (method == null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
+        ArgumentNullException.ThrowIfNull(method);
     }
 
     /// <summary>
@@ -46,6 +44,7 @@ public sealed class AcceptVerbsAttribute : Attribute, IActionHttpMethodProvider,
     /// <summary>
     /// The route template. May be null.
     /// </summary>
+    [StringSyntax("Route")]
     public string? Route { get; set; }
 
     /// <inheritdoc />

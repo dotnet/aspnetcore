@@ -10,7 +10,13 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// An input component for editing date values.
-/// Supported types are <see cref="DateTime"/> and <see cref="DateTimeOffset"/>.
+/// The supported types for the date value are:
+/// <list type="bullet">
+/// <item><see cref="DateTime"/></item>
+/// <item><see cref="DateTimeOffset"/></item>
+/// <item><see cref="DateOnly"/></item>
+/// <item><see cref="TimeOnly"/></item>
+/// </list>
 /// </summary>
 public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
 {
@@ -80,10 +86,12 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
         builder.OpenElement(0, "input");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "type", _typeAttributeValue);
-        builder.AddAttribute(3, "class", CssClass);
-        builder.AddAttribute(4, "value", BindConverter.FormatValue(CurrentValueAsString));
-        builder.AddAttribute(5, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-        builder.AddElementReferenceCapture(6, __inputReference => Element = __inputReference);
+        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
+        builder.AddAttribute(4, "class", CssClass);
+        builder.AddAttribute(5, "value", CurrentValueAsString);
+        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.SetUpdatesAttributeName("value");
+        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

@@ -7,7 +7,7 @@ using static Microsoft.AspNetCore.SignalR.Crankier.Commands.CommandLineUtilities
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {
-    internal class AgentCommand
+    internal sealed class AgentCommand
     {
         public static void Register(CommandLineApplication app)
         {

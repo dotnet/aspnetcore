@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class UpgradeFeature : IHttpUpgradeFeature
+internal sealed class UpgradeFeature : IHttpUpgradeFeature
 {
     public bool IsUpgradableRequest => false;
 

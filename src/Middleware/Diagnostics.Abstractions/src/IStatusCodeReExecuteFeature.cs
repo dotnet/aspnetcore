@@ -29,6 +29,11 @@ public interface IStatusCodeReExecuteFeature
     string? OriginalQueryString { get; set; }
 
     /// <summary>
+    /// The <see cref="HttpResponse.StatusCode"/> of the original response.
+    /// </summary>
+    int OriginalStatusCode => throw new NotImplementedException();
+
+    /// <summary>
     /// Gets the selected <see cref="Http.Endpoint"/> for the original request.
     /// </summary>
     Endpoint? Endpoint => null;

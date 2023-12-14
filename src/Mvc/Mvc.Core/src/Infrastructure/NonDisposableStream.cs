@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// This Stream is present so that the inner stream is not closed
 /// even when Close() or Dispose() is called.
 /// </summary>
-internal class NonDisposableStream : Stream
+internal sealed class NonDisposableStream : Stream
 {
     private readonly Stream _innerStream;
 
@@ -20,10 +20,7 @@ internal class NonDisposableStream : Stream
     /// <param name="innerStream">The stream which should not be closed or flushed.</param>
     public NonDisposableStream(Stream innerStream)
     {
-        if (innerStream == null)
-        {
-            throw new ArgumentNullException(nameof(innerStream));
-        }
+        ArgumentNullException.ThrowIfNull(innerStream);
 
         _innerStream = innerStream;
     }

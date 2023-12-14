@@ -7,7 +7,7 @@ using System.Net.Http.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack;
 
-internal class EncoderStreamReader
+internal sealed class EncoderStreamReader
 {
     private enum State
     {

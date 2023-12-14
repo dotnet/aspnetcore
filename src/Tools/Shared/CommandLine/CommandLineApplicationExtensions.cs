@@ -26,7 +26,11 @@ internal static class CommandLineApplicationExtensions
         => command.Option(
             template,
             description,
-            template.IndexOf("<", StringComparison.Ordinal) != -1
+#if NETCOREAPP
+            template.Contains('<')
+#else
+            template.IndexOf('<') != -1
+#endif
                 ? template.EndsWith(">...", StringComparison.Ordinal) ? CommandOptionType.MultipleValue : CommandOptionType.SingleValue
                 : CommandOptionType.NoValue);
 

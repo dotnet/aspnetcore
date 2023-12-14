@@ -7,7 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -38,7 +38,7 @@ public class TargetingPackTests
         var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
             .Select(Path.GetFileNameWithoutExtension)
             .ToHashSet();
-        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.Keys.ToHashSet();
+        var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.ToHashSet();
 
         _output.WriteLine("==== actual assemblies ====");
         _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
@@ -60,11 +60,25 @@ public class TargetingPackTests
     [Fact]
     public void RefAssembliesHaveExpectedAssemblyVersions()
     {
+        // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
+        var repoAssemblies = TestData.GetAspNetCoreTargetingPackDependencies()
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet();
+
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+        var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
+        var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
+
         IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
+            var expectedVersion = repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)) ?
+                aspnetcoreVersion :
+                version;
+
             var fileName = Path.GetFileNameWithoutExtension(path);
             var assemblyName = AssemblyName.GetAssemblyName(path);
             using var fileStream = File.OpenRead(path);
@@ -72,8 +86,24 @@ public class TargetingPackTests
             var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
-            TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
-            Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
+            // Assembly versions should all match Major.Minor.0.0
+            if (repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
+            Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
+            Assert.Equal(0, assemblyDefinition.Version.Build);
+            Assert.Equal(0, assemblyDefinition.Version.Revision);
         });
     }
 
@@ -182,7 +212,10 @@ public class TargetingPackTests
 
             Assert.True(hasRefAssemblyAttribute, $"{path} should have {nameof(ReferenceAssemblyAttribute)}");
 #pragma warning disable SYSLIB0037 // AssemblyName.ProcessorArchitecture is obsolete
-            Assert.Equal(ProcessorArchitecture.None, assemblyName.ProcessorArchitecture);
+            // MSIL and None represent platform neutral assemblies such that reference assemblies can always be loaded.
+            Assert.True(assemblyName.ProcessorArchitecture == ProcessorArchitecture.MSIL ||
+                assemblyName.ProcessorArchitecture == ProcessorArchitecture.None
+                );
 #pragma warning restore SYSLIB0037
         });
     }

@@ -5,7 +5,7 @@ using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
-internal class MockDuplexPipe : IDuplexPipe
+internal sealed class MockDuplexPipe : IDuplexPipe
 {
     public MockDuplexPipe(PipeReader input, PipeWriter output)
     {

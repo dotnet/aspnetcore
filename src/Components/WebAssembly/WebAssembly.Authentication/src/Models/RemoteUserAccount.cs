@@ -17,5 +17,5 @@ public class RemoteUserAccount
     /// Gets or sets properties not explicitly mapped about the user.
     /// </summary>
     [JsonExtensionData]
-    public IDictionary<string, object> AdditionalProperties { get; set; }
+    public IDictionary<string, object> AdditionalProperties { get; set; } = default!;
 }

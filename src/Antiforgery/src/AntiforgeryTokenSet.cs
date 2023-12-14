@@ -21,10 +21,7 @@ public class AntiforgeryTokenSet
         string formFieldName,
         string? headerName)
     {
-        if (formFieldName == null)
-        {
-            throw new ArgumentNullException(nameof(formFieldName));
-        }
+        ArgumentNullException.ThrowIfNull(formFieldName);
 
         RequestToken = requestToken;
         CookieToken = cookieToken;

@@ -1,15 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">Installazione di [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Benvenuti</String>
-  <String Id="InstallMessage">Il programma di installazione installerà [WixBundleName] nel computer. Fare clic su Installa per continuare, su Opzioni per impostare la directory di installazione o su Chiudi per uscire.</String>
   <String Id="InstallVersion">Versione [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Annullare?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versione precedente</String>
-  <String Id="HelpHeader">Guida alla configurazione</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [directory] - installa, ripara, disinstalla o
+  <String Id="HelpHeader">Guida all'installazione</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]directory[\]] - installa, ripara, disinstalla o
    crea una copia locale completa del bundle nella directory. L'opzione predefinita è install.
 
 /passive | /quiet -  visualizza un'interfaccia utente minima senza prompt oppure non visualizza alcuna interfaccia utente
@@ -18,16 +16,9 @@
 /norestart   - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio.
 /log log.txt - registra il log in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Chiudi</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Condizioni di licenza&lt;/a&gt; di [WixBundleName].</String>
   <String Id="InstallAcceptCheckbox">&amp;Accetto i termini e le condizioni di licenza</String>
-  <String Id="InstallOptionsButton">&amp;Opzioni</String>
   <String Id="InstallInstallButton">&amp;Installa</String>
   <String Id="InstallCloseButton">&amp;Chiudi</String>
-  <String Id="OptionsHeader">Opzioni di installazione</String>
-  <String Id="OptionsLocationLabel">Percorso di installazione:</String>
-  <String Id="OptionsBrowseButton">&amp;Sfoglia</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Annulla</String>
   <String Id="ProgressHeader">Stato installazione</String>
   <String Id="ProgressLabel">Elaborazione di:</String>
   <String Id="OverallProgressPackageText">Inizializzazione in corso...</String>
@@ -36,20 +27,20 @@
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
-  <String Id="SuccessRepairHeader">La riparazione è stata completata</String>
-  <String Id="SuccessUninstallHeader">La disinstallazione è stata completata</String>
-  <String Id="SuccessInstallHeader">L'installazione è stata completata</String> 
-  <String Id="SuccessHeader">L'installazione è stata completata</String>	
+  <String Id="SuccessRepairHeader">Riparazione completata correttamente</String>
+  <String Id="SuccessUninstallHeader">Disinstallazione completata correttamente</String>
+  <String Id="SuccessInstallHeader">Installazione completata correttamente</String>
+  <String Id="SuccessHeader">Installazione completata</String>
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
-  <String Id="SuccessRestartText">Per poter usare il software, è necessario riavviare il computer.</String>
+  <String Id="SuccessRestartText">È necessario riavviare il computer prima di utilizzare il software.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
   <String Id="SuccessCloseButton">&amp;Chiudi</String>
-  <String Id="FailureHeader">L'installazione non è riuscita</String>
-  <String Id="FailureInstallHeader">L'installazione non è riuscita</String>
-  <String Id="FailureUninstallHeader">La disinstallazione non è riuscita</String>
-  <String Id="FailureRepairHeader">La riparazione non è riuscita</String> 
-  <String Id="FailureHyperlinkLogText">L'installazione non è riuscita a causa di uno o più problemi. Risolvere i problemi e ripetere l'installazione. Per altre informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Per completare il rollback del software, è necessario riavviare il computer.</String>
+  <String Id="FailureHeader">Installazione non riuscita</String>
+  <String Id="FailureInstallHeader">Installazione non riuscita</String>
+  <String Id="FailureUninstallHeader">Disinstallazione non riuscita</String>
+  <String Id="FailureRepairHeader">Riparazione non riuscita</String>
+  <String Id="FailureHyperlinkLogText">Installazione non riuscita a causa di uno o più problemi. Risolvere i problemi e ritentare l'installazione. Per ulteriori informazioni, vedere il &lt;a href="#"&gt;file di log&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">È necessario riavviare il computer per completare il rollback del software.</String>
   <String Id="FailureRestartButton">&amp;Riavvia</String>
   <String Id="FailureCloseButton">&amp;Chiudi</String>
   <String Id="FilesInUseHeader">File in uso</String>
@@ -61,9 +52,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Installazione di [WixBundleName].</String>
-  <String Id="InstallResetIIS">Riavviare IIS dopo il completamento dell'installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS non è abilitato in questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Al termine dell'installazione, riavviare IIS. È possibile trovare altre informazioni &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS non è abilitato su questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Altre informazioni &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;informativa sulla privacy&lt;/a&gt; di [WixBundleName].</String>
-  <String Id="ModifyResetIIS">Riavviare IIS dopo il completamento dell'installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS non è abilitato in questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Per altre informazioni, vedere &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;qui&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Al termine dell'installazione, riavviare IIS. È possibile trovare altre informazioni &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS non è abilitato su questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Altre informazioni &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;qui&lt;/a&gt;.</String>
 </WixLocalization>

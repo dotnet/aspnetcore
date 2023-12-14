@@ -14,12 +14,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class SniOptionsSelector
+internal sealed class SniOptionsSelector
 {
     private const string WildcardHost = "*";
     private const string WildcardPrefix = "*.";
 
     private readonly string _endpointName;
+    private readonly ILogger<HttpsConnectionMiddleware> _logger;
 
     private readonly Func<ConnectionContext, string?, X509Certificate2?>? _fallbackServerCertificateSelector;
     private readonly Action<ConnectionContext, SslServerAuthenticationOptions>? _onAuthenticateCallback;
@@ -37,22 +38,25 @@ internal class SniOptionsSelector
         ILogger<HttpsConnectionMiddleware> logger)
     {
         _endpointName = endpointName;
+        _logger = logger;
 
         _fallbackServerCertificateSelector = fallbackHttpsOptions.ServerCertificateSelector;
         _onAuthenticateCallback = fallbackHttpsOptions.OnAuthenticate;
 
         foreach (var (name, sniConfig) in sniDictionary)
         {
+            var (serverCert, fullChain) = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointName}:Sni:{name}");
             var sslOptions = new SslServerAuthenticationOptions
             {
-                ServerCertificate = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointName}:Sni:{name}"),
+
+                ServerCertificate = serverCert,
                 EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackHttpsOptions.SslProtocols,
                 CertificateRevocationCheckMode = fallbackHttpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
             };
 
             if (sslOptions.ServerCertificate is null)
             {
-                if (fallbackHttpsOptions.ServerCertificate is null && _fallbackServerCertificateSelector is null)
+                if (!fallbackHttpsOptions.HasServerCertificateOrSelector)
                 {
                     throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
                 }
@@ -68,12 +72,12 @@ internal class SniOptionsSelector
             {
                 // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                 // made to the server
-                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: null);
+                sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: fullChain);
             }
 
             if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
             {
-                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2);
+                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2, logger);
             }
 
             var clientCertificateMode = sniConfig.ClientCertificateMode ?? fallbackHttpsOptions.ClientCertificateMode;
@@ -156,7 +160,7 @@ internal class SniOptionsSelector
 
             if (fallbackCertificate != null)
             {
-                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(fallbackCertificate);
+                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(fallbackCertificate, _logger);
             }
 
             sslOptions.ServerCertificate = fallbackCertificate;
@@ -194,9 +198,11 @@ internal class SniOptionsSelector
             ServerCertificate = sslOptions.ServerCertificate,
             ServerCertificateContext = sslOptions.ServerCertificateContext,
             ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
+            CertificateChainPolicy = sslOptions.CertificateChainPolicy,
+            AllowTlsResume = sslOptions.AllowTlsResume,
         };
 
-    private class SniOptions
+    private sealed class SniOptions
     {
         public SniOptions(SslServerAuthenticationOptions sslOptions, HttpProtocols httpProtocols, ClientCertificateMode clientCertificateMode)
         {
@@ -210,7 +216,7 @@ internal class SniOptionsSelector
         public ClientCertificateMode ClientCertificateMode { get; }
     }
 
-    private class LongestStringFirstComparer : IComparer<string>
+    private sealed class LongestStringFirstComparer : IComparer<string>
     {
         public static LongestStringFirstComparer Instance { get; } = new LongestStringFirstComparer();
 
@@ -221,7 +227,15 @@ internal class SniOptionsSelector
         public int Compare(string? x, string? y)
         {
             // Flip x and y to put the longest instead of the shortest string first in the SortedList.
-            return y!.Length.CompareTo(x!.Length);
+            var lengthResult = y!.Length.CompareTo(x!.Length);
+            if (lengthResult != 0)
+            {
+                return lengthResult;
+            }
+            else
+            {
+                return string.Compare(x, y, StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }

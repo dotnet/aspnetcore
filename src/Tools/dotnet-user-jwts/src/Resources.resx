@@ -1,0 +1,318 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ClearCommand_Canceled" xml:space="preserve">
+    <value>Canceled! No JWTs were deleted.</value>
+  </data>
+  <data name="ClearCommand_Confirmed" xml:space="preserve">
+    <value>Deleted {0} token(s) from '{1}' successfully.</value>
+  </data>
+  <data name="ClearCommand_Description" xml:space="preserve">
+    <value>Remove all issued JWTs for a project</value>
+  </data>
+  <data name="ClearCommand_ForceOption_Description" xml:space="preserve">
+    <value>Don't prompt for confirmation before deleting JWTs.</value>
+  </data>
+  <data name="ClearCommand_NoJwtsRemoved" xml:space="preserve">
+    <value>There are no JWTs to delete from '{0}'.</value>
+  </data>
+  <data name="ClearCommand_Permission" xml:space="preserve">
+    <value>Are you sure you want to delete {0} JWT(s) for '{1}'?</value>
+  </data>
+  <data name="CreateCommand_AudienceOption_Description" xml:space="preserve">
+    <value>The audiences to create the JWT for. Defaults to the URLs configured in the project's launchSettings.json.</value>
+  </data>
+  <data name="CreateCommand_ClaimOption_Description" xml:space="preserve">
+    <value>Claims to add to the JWT. Specify once for each claim in the format "name=value".</value>
+  </data>
+  <data name="CreateCommand_Confirmed" xml:space="preserve">
+    <value>New JWT saved with ID '{id}'.</value>
+  </data>
+  <data name="CreateCommand_Description" xml:space="preserve">
+    <value>Issue a new JSON Web Token</value>
+  </data>
+  <data name="CreateCommand_ExpiresOnOption_Description" xml:space="preserve">
+    <value>The UTC date &amp; time the JWT should expire in the format 'yyyy-MM-dd [[[[HH:mm]]:ss]]'. Defaults to 3 months after the --not-before date. Do not use this option in conjunction with the --valid-for option.</value>
+  </data>
+  <data name="CreateCommand_InvalidClaims_Error" xml:space="preserve">
+    <value>Malformed claims supplied. Ensure each claim is in the format "name=value".</value>
+  </data>
+  <data name="CreateCommand_InvalidDate_Error" xml:space="preserve">
+    <value>The date provided for '{type}' could not be parsed. Dates must consist of a date and can include an optional timestamp.</value>
+  </data>
+  <data name="CreateCommand_InvalidExpiresOn_Error" xml:space="preserve">
+    <value>'--valid-for' and '--expires-on' are mutually exclusive flags. Provide either option but not both.</value>
+  </data>
+  <data name="CreateCommand_InvalidPeriod_Error" xml:space="preserve">
+    <value>The period provided for '{0}' could not be parsed. Ensure you use a format like '10d', '22h', '45s' etc.</value>
+  </data>
+  <data name="CreateCommand_IssuerOption_Description" xml:space="preserve">
+    <value>The issuer of the JWT. Defaults to 'dotnet-user-jwts'.</value>
+  </data>
+  <data name="CreateCommand_NameOption_Description" xml:space="preserve">
+    <value>The name of the user to create the JWT for. Defaults to the current environment user.</value>
+  </data>
+  <data name="CreateCommand_NoAudience_Error" xml:space="preserve">
+    <value>Could not determine the project's URL. Please specify an audience for the JWT using the --audience option or ensure that launchSettings.json is configured properly.</value>
+  </data>
+  <data name="CreateCommand_NotBeforeOption_Description" xml:space="preserve">
+    <value>The UTC date &amp; time the JWT should not be valid before in the format 'yyyy-MM-dd [[HH:mm[[:ss]]]]'. Defaults to the date &amp; time the JWT is created.</value>
+  </data>
+  <data name="CreateCommand_OutputOption_Description" xml:space="preserve">
+    <value>The format to use for displaying output from the command. Can be one of 'default', 'token', or 'json'.</value>
+  </data>
+  <data name="CreateCommand_RoleOption_Description" xml:space="preserve">
+    <value>A role claim to add to the JWT. Specify once for each role.</value>
+  </data>
+  <data name="CreateCommand_SchemeOption_Description" xml:space="preserve">
+    <value>The scheme name to use for the generated token. Defaults to 'Bearer'.</value>
+  </data>
+  <data name="CreateCommand_ScopeOption_Description" xml:space="preserve">
+    <value>A scope claim to add to the JWT. Specify once for each scope.</value>
+  </data>
+  <data name="CreateCommand_ValidForOption_Description" xml:space="preserve">
+    <value>The period the JWT should expire after. Specify using a number followed by a duration type like 'd' for days, 'h' for hours, 'm' for minutes, and 's' for seconds, e.g. '365d'. Do not use this option in conjunction with the --expires-on option.</value>
+  </data>
+  <data name="JwtPrint_Audiences" xml:space="preserve">
+    <value>Audience(s)</value>
+  </data>
+  <data name="JwtPrint_CompactToken" xml:space="preserve">
+    <value>Compact Token</value>
+  </data>
+  <data name="JwtPrint_CustomClaims" xml:space="preserve">
+    <value>Custom Claims</value>
+  </data>
+  <data name="JwtPrint_ExpiresOn" xml:space="preserve">
+    <value>Expires On</value>
+  </data>
+  <data name="JwtPrint_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="JwtPrint_IssuedOn" xml:space="preserve">
+    <value>Issued On</value>
+  </data>
+  <data name="JwtPrint_Issuer" xml:space="preserve">
+    <value>Issuer</value>
+  </data>
+  <data name="JwtPrint_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="JwtPrint_NotBefore" xml:space="preserve">
+    <value>Not Before</value>
+  </data>
+  <data name="JwtPrint_Roles" xml:space="preserve">
+    <value>Roles</value>
+  </data>
+  <data name="JwtPrint_Scheme" xml:space="preserve">
+    <value>Scheme</value>
+  </data>
+  <data name="JwtPrint_Scopes" xml:space="preserve">
+    <value>Scopes</value>
+  </data>
+  <data name="JwtPrint_Token" xml:space="preserve">
+    <value>Token</value>
+  </data>
+  <data name="JwtPrint_TokenHeader" xml:space="preserve">
+    <value>Token Header</value>
+  </data>
+  <data name="JwtPrint_TokenPayload" xml:space="preserve">
+    <value>Token Payload</value>
+  </data>
+  <data name="KeyCommand_Canceled" xml:space="preserve">
+    <value>Key reset canceled.</value>
+  </data>
+  <data name="KeyCommand_Confirmed" xml:space="preserve">
+    <value>Signing Key: '{0}'</value>
+  </data>
+  <data name="KeyCommand_Description" xml:space="preserve">
+    <value>Display or reset the signing key used to issue JWTs</value>
+  </data>
+  <data name="KeyCommand_ForceOption_Description" xml:space="preserve">
+    <value>Don't prompt for confirmation before resetting the signing key.</value>
+  </data>
+  <data name="KeyCommand_KeyCreated" xml:space="preserve">
+    <value>New signing key created: '{0}'</value>
+  </data>
+  <data name="KeyCommand_KeyNotFound" xml:space="preserve">
+    <value>Signing key for JWTs was not found. One will be created automatically when the first JWT is created, or you can force creation of a key with the --reset option.</value>
+  </data>
+  <data name="KeyCommand_Permission" xml:space="preserve">
+    <value>Are you sure you want to reset the JWT signing key? This will invalidate all JWTs previously issued for this project.</value>
+  </data>
+  <data name="KeyCommand_ResetOption_Description" xml:space="preserve">
+    <value>Reset the signing key. This will invalidate all previously issued JWTs for this project.</value>
+  </data>
+  <data name="KeyCommand_SchemeOption_Description" xml:space="preserve">
+    <value>The scheme name associated with the signing key to be reset or displayed. Defaults to 'Bearer'.</value>
+  </data>
+  <data name="ListCommand_Description" xml:space="preserve">
+    <value>Lists the JWTs issued for the project</value>
+  </data>
+  <data name="ListCommand_NoJwts" xml:space="preserve">
+    <value>No JWTs created yet!</value>
+  </data>
+  <data name="ListCommand_Project" xml:space="preserve">
+    <value>Project: '{0}'</value>
+  </data>
+  <data name="ListCommand_ShowTokenOption_Description" xml:space="preserve">
+    <value>Indicates whether JWT base64 strings should be shown.</value>
+  </data>
+  <data name="ListCommand_UserSecretsId" xml:space="preserve">
+    <value>User Secrets ID: '{0}'</value>
+  </data>
+  <data name="PrintCommand_Confirmed" xml:space="preserve">
+    <value>Found JWT with ID '{0}'.</value>
+  </data>
+  <data name="PrintCommand_Description" xml:space="preserve">
+    <value>Print the details of a given JWT</value>
+  </data>
+  <data name="PrintCommand_IdArgument_Description" xml:space="preserve">
+    <value>The ID of the JWT to print.</value>
+  </data>
+  <data name="PrintCommand_NoJwtFound" xml:space="preserve">
+    <value>No token with ID '{0}' found.</value>
+  </data>
+  <data name="PrintCommand_ShowAllOption_Description" xml:space="preserve">
+    <value>Whether to show all details associated with the JWT.</value>
+  </data>
+  <data name="ProjectOption_ProjectNotFound" xml:space="preserve">
+    <value>No project found at `-p|--project` path or current directory.</value>
+  </data>
+  <data name="ProjectOption_SercretIdNotFound" xml:space="preserve">
+    <value>Project does not contain a user secrets ID.</value>
+  </data>
+  <data name="ProjectOption_Description" xml:space="preserve">
+    <value>The path of the project to operate on. Defaults to the project in the current directory.</value>
+  </data>
+  <data name="RemoveCommand_Confirmed" xml:space="preserve">
+    <value>Deleted JWT with ID '{0}'.</value>
+  </data>
+  <data name="RemoveCommand_Description" xml:space="preserve">
+    <value>Remove a given JWT</value>
+  </data>
+  <data name="RemoveCommand_IdArgument_Description" xml:space="preserve">
+    <value>The ID of the JWT to delete.</value>
+  </data>
+  <data name="RemoveCommand_NoJwtFound" xml:space="preserve">
+    <value>No JWT with ID '{0}' found.</value>
+  </data>
+  <data name="KeyCommand_IssuerOption_Description" xml:space="preserve">
+    <value>The issuer associated with the signing key to be reset or displayed. Defaults to 'dotnet-user-jwts'.</value>
+  </data>
+</root>

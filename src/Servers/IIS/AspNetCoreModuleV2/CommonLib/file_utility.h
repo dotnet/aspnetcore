@@ -22,25 +22,25 @@ public:
 
     static
     HRESULT
-    EnsureDirectoryPathExist(
+    EnsureDirectoryPathExists(
         _In_  LPCWSTR pszPath
     );
 
     static
     std::string
-    GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& speicificReasonPhrase, const std::string& solution);
+    GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& solution);
 
     static
     std::string
-    GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& speicificReasonPhrase, const std::string& solution, const std::string& error);
+    GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& solution, const std::string& error);
 
 private:
+
     static
     HRESULT
     IsPathUnc(
         __in  LPCWSTR       pszPath,
-        __out BOOL *        pfIsUnc
+        __out bool *        pfIsUnc
     );
-
 };
 

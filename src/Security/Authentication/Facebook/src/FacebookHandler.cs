@@ -24,8 +24,17 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
     /// Initializes a new instance of <see cref="FacebookHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="FacebookHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />
@@ -64,7 +73,7 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
         var builder = new StringBuilder();
         for (int i = 0; i < hash.Length; i++)
         {
-            builder.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
+            builder.Append(CultureInfo.InvariantCulture, $"{hash[i]:x2}");
         }
         return builder.ToString();
     }

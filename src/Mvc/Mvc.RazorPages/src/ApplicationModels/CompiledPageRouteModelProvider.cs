@@ -11,7 +11,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
+#pragma warning restore CA1852 // Seal internal types
 {
     private const string RazorPageDocumentKind = "mvc.1.0.razor-page";
     private const string RouteTemplateKey = "RouteTemplate";
@@ -33,28 +35,19 @@ internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
 
     public void OnProvidersExecuting(PageRouteModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         CreateModels(context);
     }
 
     public void OnProvidersExecuted(PageRouteModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
     }
 
     private IEnumerable<CompiledViewDescriptor> GetViewDescriptors(ApplicationPartManager applicationManager)
     {
-        if (applicationManager == null)
-        {
-            throw new ArgumentNullException(nameof(applicationManager));
-        }
+        ArgumentNullException.ThrowIfNull(applicationManager);
 
         var viewsFeature = GetViewFeature(applicationManager);
 

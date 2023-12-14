@@ -16,35 +16,39 @@ public static class MultipartSectionStreamExtensions
     /// </summary>
     /// <param name="section">The section to read from</param>
     /// <returns>The body steam as string</returns>
-    public static async Task<string> ReadAsStringAsync(this MultipartSection section)
+    public static Task<string> ReadAsStringAsync(this MultipartSection section)
+        => section.ReadAsStringAsync(CancellationToken.None).AsTask();
+
+    /// <summary>
+    /// Reads the body of the section as a string
+    /// </summary>
+    /// <param name="section">The section to read from</param>
+    /// <param name="cancellationToken">The cancellationt token.</param>
+    /// <returns>The body steam as string</returns>
+    public static async ValueTask<string> ReadAsStringAsync(this MultipartSection section, CancellationToken cancellationToken)
     {
-        if (section == null)
-        {
-            throw new ArgumentNullException(nameof(section));
-        }
+        ArgumentNullException.ThrowIfNull(section);
 
         if (section.Body is null)
         {
             throw new ArgumentException("Multipart section must have a body to be read.", nameof(section));
         }
 
-        MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
+        _ = MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
 
         var streamEncoding = sectionMediaType?.Encoding;
-        // https://docs.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (streamEncoding == null || streamEncoding.CodePage == 65000)
         {
             streamEncoding = Encoding.UTF8;
         }
 
-        using (var reader = new StreamReader(
+        using var reader = new StreamReader(
             section.Body,
             streamEncoding,
             detectEncodingFromByteOrderMarks: true,
             bufferSize: 1024,
-            leaveOpen: true))
-        {
-            return await reader.ReadToEndAsync();
-        }
+            leaveOpen: true);
+        return await reader.ReadToEndAsync(cancellationToken);
     }
 }

@@ -1,0 +1,111 @@
+#nullable enable
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.AckMessageType = 8 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.CancelInvocationMessageType = 5 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.CloseMessageType = 7 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.CompletionMessageType = 3 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.InvocationMessageType = 1 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.PingMessageType = 6 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.SequenceMessageType = 9 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.StreamInvocationMessageType = 4 -> int
+const Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants.StreamItemMessageType = 2 -> int
+Microsoft.AspNetCore.SignalR.HubException
+Microsoft.AspNetCore.SignalR.HubException.HubException() -> void
+Microsoft.AspNetCore.SignalR.HubException.HubException(string? message) -> void
+Microsoft.AspNetCore.SignalR.HubException.HubException(string? message, System.Exception? innerException) -> void
+Microsoft.AspNetCore.SignalR.HubException.HubException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+Microsoft.AspNetCore.SignalR.IInvocationBinder
+Microsoft.AspNetCore.SignalR.IInvocationBinder.GetParameterTypes(string! methodName) -> System.Collections.Generic.IReadOnlyList<System.Type!>!
+Microsoft.AspNetCore.SignalR.IInvocationBinder.GetReturnType(string! invocationId) -> System.Type!
+Microsoft.AspNetCore.SignalR.IInvocationBinder.GetStreamItemType(string! streamId) -> System.Type!
+Microsoft.AspNetCore.SignalR.ISignalRBuilder
+Microsoft.AspNetCore.SignalR.ISignalRBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.AckMessage(long sequenceId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.SequenceId.get -> long
+Microsoft.AspNetCore.SignalR.Protocol.AckMessage.SequenceId.set -> void
+Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage
+Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage.CancelInvocationMessage(string! invocationId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.CloseMessage
+Microsoft.AspNetCore.SignalR.Protocol.CloseMessage.AllowReconnect.get -> bool
+Microsoft.AspNetCore.SignalR.Protocol.CloseMessage.CloseMessage(string? error) -> void
+Microsoft.AspNetCore.SignalR.Protocol.CloseMessage.CloseMessage(string? error, bool allowReconnect) -> void
+Microsoft.AspNetCore.SignalR.Protocol.CloseMessage.Error.get -> string?
+Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage
+Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.CompletionMessage(string! invocationId, string? error, object? result, bool hasResult) -> void
+Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.Error.get -> string?
+Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.HasResult.get -> bool
+Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.Result.get -> object?
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage.HandshakeRequestMessage(string! protocol, int version) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage.Protocol.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage.Version.get -> int
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage.Error.get -> string?
+Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage.HandshakeResponseMessage(string? error) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage.Headers.get -> System.Collections.Generic.IDictionary<string!, string!>?
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage.Headers.set -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage.HubInvocationMessage(string? invocationId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubInvocationMessage.InvocationId.get -> string?
+Microsoft.AspNetCore.SignalR.Protocol.HubMessage
+Microsoft.AspNetCore.SignalR.Protocol.HubMessage.HubMessage() -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.Arguments.get -> object?[]!
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.HubMethodInvocationMessage(string? invocationId, string! target, object?[]! arguments) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.HubMethodInvocationMessage(string? invocationId, string! target, object?[]! arguments, string![]? streamIds) -> void
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.StreamIds.get -> string![]?
+Microsoft.AspNetCore.SignalR.Protocol.HubMethodInvocationMessage.Target.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.HubProtocolConstants
+Microsoft.AspNetCore.SignalR.Protocol.HubProtocolExtensions
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.GetMessageBytes(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> System.ReadOnlyMemory<byte>
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.IsVersionSupported(int version) -> bool
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.Name.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.TransferFormat.get -> Microsoft.AspNetCore.Connections.TransferFormat
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage? message) -> bool
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.Version.get -> int
+Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void
+Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage
+Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.BindingFailure.get -> System.Runtime.ExceptionServices.ExceptionDispatchInfo!
+Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.InvocationBindingFailureMessage(string? invocationId, string! target, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
+Microsoft.AspNetCore.SignalR.Protocol.InvocationBindingFailureMessage.Target.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage
+Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string! target, object?[]! arguments) -> void
+Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string? invocationId, string! target, object?[]! arguments) -> void
+Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.InvocationMessage(string? invocationId, string! target, object?[]! arguments, string![]? streamIds) -> void
+Microsoft.AspNetCore.SignalR.Protocol.PingMessage
+Microsoft.AspNetCore.SignalR.Protocol.RawResult
+Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawResult(System.Buffers.ReadOnlySequence<byte> rawBytes) -> void
+Microsoft.AspNetCore.SignalR.Protocol.RawResult.RawSerializedData.get -> System.Buffers.ReadOnlySequence<byte>
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage.SequenceId.get -> long
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage.SequenceId.set -> void
+Microsoft.AspNetCore.SignalR.Protocol.SequenceMessage.SequenceMessage(long sequenceId) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage
+Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.BindingFailure.get -> System.Runtime.ExceptionServices.ExceptionDispatchInfo!
+Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.Id.get -> string!
+Microsoft.AspNetCore.SignalR.Protocol.StreamBindingFailureMessage.StreamBindingFailureMessage(string! id, System.Runtime.ExceptionServices.ExceptionDispatchInfo! bindingFailure) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage
+Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object?[]! arguments) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.StreamInvocationMessage(string! invocationId, string! target, object?[]! arguments, string![]? streamIds) -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage
+Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.Item.get -> object?
+Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.Item.set -> void
+Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.StreamItemMessage(string! invocationId, object? item) -> void
+override Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.ToString() -> string!
+override Microsoft.AspNetCore.SignalR.Protocol.InvocationMessage.ToString() -> string!
+override Microsoft.AspNetCore.SignalR.Protocol.StreamInvocationMessage.ToString() -> string!
+override Microsoft.AspNetCore.SignalR.Protocol.StreamItemMessage.ToString() -> string!
+static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.Empty(string! invocationId) -> Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage!
+static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.WithError(string! invocationId, string? error) -> Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage!
+static Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage.WithResult(string! invocationId, object? payload) -> Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage!
+static Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol.GetSuccessfulHandshake(Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol! protocol) -> System.ReadOnlySpan<byte>
+static Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol.TryParseRequestMessage(ref System.Buffers.ReadOnlySequence<byte> buffer, out Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage? requestMessage) -> bool
+static Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol.TryParseResponseMessage(ref System.Buffers.ReadOnlySequence<byte> buffer, out Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage? responseMessage) -> bool
+static Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol.WriteRequestMessage(Microsoft.AspNetCore.SignalR.Protocol.HandshakeRequestMessage! requestMessage, System.Buffers.IBufferWriter<byte>! output) -> void
+static Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol.WriteResponseMessage(Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage! responseMessage, System.Buffers.IBufferWriter<byte>! output) -> void
+static Microsoft.AspNetCore.SignalR.Protocol.HubProtocolExtensions.GetMessageBytes(this Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol! hubProtocol, Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message) -> byte[]!
+static readonly Microsoft.AspNetCore.SignalR.Protocol.CloseMessage.Empty -> Microsoft.AspNetCore.SignalR.Protocol.CloseMessage!
+static readonly Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage.Empty -> Microsoft.AspNetCore.SignalR.Protocol.HandshakeResponseMessage!
+static readonly Microsoft.AspNetCore.SignalR.Protocol.PingMessage.Instance -> Microsoft.AspNetCore.SignalR.Protocol.PingMessage!

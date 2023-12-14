@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MsQuicSupported]
 [HttpSysHttp3Supported]
 [Collection(IISHttpsTestSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Http3Tests : FunctionalTestsBase
 {
     public Http3Tests(IISTestSiteFixture fixture)
@@ -120,8 +121,9 @@ public class Http3Tests : FunctionalTestsBase
         client.DefaultRequestVersion = HttpVersion.Version30;
         client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-        Assert.Equal(0x010b, qex.ErrorCode);
+        var qex = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x010b, qex.ApplicationErrorCode.Value);
     }
 
     [ConditionalFact]
@@ -135,8 +137,9 @@ public class Http3Tests : FunctionalTestsBase
         await client.GetAsync(Fixture.Client.BaseAddress.ToString() + "Http3_ResetAfterHeaders_SetResult");
         response.EnsureSuccessStatusCode();
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
-        Assert.Equal(0x010c, qex.ErrorCode); // H3_REQUEST_CANCELLED
+        var qex = Assert.IsType<QuicException>(ex.InnerException?.InnerException?.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x010c, qex.ApplicationErrorCode.Value); // H3_REQUEST_CANCELLED
     }
 
     [ConditionalFact]
@@ -151,8 +154,9 @@ public class Http3Tests : FunctionalTestsBase
         await client.GetAsync(Fixture.Client.BaseAddress.ToString() + "Http3_AppExceptionAfterHeaders_InternalError_SetResult");
         response.EnsureSuccessStatusCode();
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException?.InnerException?.InnerException);
-        Assert.Equal(0x0102, qex.ErrorCode); // H3_INTERNAL_ERROR
+        var qex = Assert.IsType<QuicException>(ex.InnerException?.InnerException?.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x0102, qex.ApplicationErrorCode.Value); // H3_INTERNAL_ERROR
     }
 
     [ConditionalFact]
@@ -164,8 +168,9 @@ public class Http3Tests : FunctionalTestsBase
         client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
         var ex = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetAsync(address));
-        var qex = Assert.IsType<QuicStreamAbortedException>(ex.InnerException);
-        Assert.Equal(0x010c, qex.ErrorCode); // H3_REQUEST_CANCELLED
+        var qex = Assert.IsType<QuicException>(ex.InnerException);
+        Assert.Equal(QuicError.StreamAborted, qex.QuicError);
+        Assert.Equal(0x010c, qex.ApplicationErrorCode.Value); // H3_REQUEST_CANCELLED
     }
 
     private HttpClient SetUpClient()
@@ -173,6 +178,6 @@ public class Http3Tests : FunctionalTestsBase
         var handler = new HttpClientHandler();
         // Needed on CI, the IIS Express cert we use isn't trusted there.
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return new HttpClient(handler);
+        return new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
     }
 }

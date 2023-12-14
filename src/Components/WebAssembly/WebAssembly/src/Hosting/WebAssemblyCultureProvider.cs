@@ -3,24 +3,21 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Runtime.Loader;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.JSInterop;
+using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "This type loads resx files. We don't expect it's dependencies to be trimmed in the ordinary case.")]
-internal class WebAssemblyCultureProvider
+#pragma warning disable CA1852 // Seal internal types
+internal partial class WebAssemblyCultureProvider
+#pragma warning restore CA1852 // Seal internal types
 {
     internal const string GetSatelliteAssemblies = "window.Blazor._internal.getSatelliteAssemblies";
     internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
-    private readonly IJSUnmarshalledRuntime _invoker;
-
     // For unit testing.
-    internal WebAssemblyCultureProvider(IJSUnmarshalledRuntime invoker, CultureInfo initialCulture, CultureInfo initialUICulture)
+    internal WebAssemblyCultureProvider(CultureInfo initialCulture, CultureInfo initialUICulture)
     {
-        _invoker = invoker;
         InitialCulture = initialCulture;
         InitialUICulture = initialUICulture;
     }
@@ -34,7 +31,6 @@ internal class WebAssemblyCultureProvider
     internal static void Initialize()
     {
         Instance = new WebAssemblyCultureProvider(
-            DefaultWebAssemblyJSRuntime.Instance,
             initialCulture: CultureInfo.CurrentCulture,
             initialUICulture: CultureInfo.CurrentUICulture);
     }
@@ -61,43 +57,22 @@ internal class WebAssemblyCultureProvider
 
     public virtual async ValueTask LoadCurrentCultureResourcesAsync()
     {
+        if (!OperatingSystem.IsBrowser())
+        {
+            throw new PlatformNotSupportedException("This method is only supported in the browser.");
+        }
+
         var culturesToLoad = GetCultures(CultureInfo.CurrentCulture);
 
-        if (culturesToLoad.Count == 0)
+        if (culturesToLoad.Length == 0)
         {
             return;
         }
 
-        // Now that we know the cultures we care about, let WebAssemblyResourceLoader (in JavaScript) load these
-        // assemblies. We effectively want to resovle a Task<byte[][]> but there is no way to express this
-        // using interop. We'll instead do this in two parts:
-        // getSatelliteAssemblies resolves when all satellite assemblies to be loaded in .NET are fetched and available in memory.
-        var count = (int)await _invoker.InvokeUnmarshalled<string[], object?, object?, Task<object>>(
-            GetSatelliteAssemblies,
-            culturesToLoad.ToArray(),
-            null,
-            null);
-
-        if (count == 0)
-        {
-            return;
-        }
-
-        // readSatelliteAssemblies resolves the assembly bytes
-        var assemblies = _invoker.InvokeUnmarshalled<object?, object?, object?, object[]>(
-            ReadSatelliteAssemblies,
-            null,
-            null,
-            null);
-
-        for (var i = 0; i < assemblies.Length; i++)
-        {
-            using var stream = new MemoryStream((byte[])assemblies[i]);
-            AssemblyLoadContext.Default.LoadFromStream(stream);
-        }
+        await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad);
     }
 
-    internal static List<string> GetCultures(CultureInfo cultureInfo)
+    internal static string[] GetCultures(CultureInfo cultureInfo)
     {
         var culturesToLoad = new List<string>();
 
@@ -118,6 +93,12 @@ internal class WebAssemblyCultureProvider
             cultureInfo = cultureInfo.Parent;
         }
 
-        return culturesToLoad;
+        return culturesToLoad.ToArray();
+    }
+
+    private partial class WebAssemblyCultureProviderInterop
+    {
+        [JSImport("INTERNAL.loadSatelliteAssemblies")]
+        public static partial Task LoadSatelliteAssemblies(string[] culturesToLoad);
     }
 }

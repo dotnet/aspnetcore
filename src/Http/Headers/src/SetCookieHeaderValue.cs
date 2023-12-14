@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -41,6 +42,7 @@ public class SetCookieHeaderValue
 
     private StringSegment _name;
     private StringSegment _value;
+    private List<StringSegment>? _extensions;
 
     private SetCookieHeaderValue()
     {
@@ -110,7 +112,7 @@ public class SetCookieHeaderValue
     /// represented as the date and time at which the cookie expires.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.1</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.1"/>.</remarks>
     public DateTimeOffset? Expires { get; set; }
 
     /// <summary>
@@ -120,7 +122,7 @@ public class SetCookieHeaderValue
     /// represented as the number of seconds until the cookie expires.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.2</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.2"/>.</remarks>
     public TimeSpan? MaxAge { get; set; }
 
     /// <summary>
@@ -130,7 +132,7 @@ public class SetCookieHeaderValue
     /// be sent.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.3</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.3"/>.</remarks>
     public StringSegment Domain { get; set; }
 
     /// <summary>
@@ -140,7 +142,7 @@ public class SetCookieHeaderValue
     /// be sent.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.4</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.4"/>.</remarks>
     public StringSegment Path { get; set; }
 
     /// <summary>
@@ -150,7 +152,7 @@ public class SetCookieHeaderValue
     /// channels.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.5</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.5"/>.</remarks>
     public bool Secure { get; set; }
 
     /// <summary>
@@ -160,7 +162,7 @@ public class SetCookieHeaderValue
     /// deployed in strict mode, and when supported by the client.
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-8.8</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-05#section-8.8"/>.</remarks>
     public SameSiteMode SameSite { get; set; } = SameSiteMode.Unspecified;
 
     /// <summary>
@@ -171,13 +173,16 @@ public class SetCookieHeaderValue
     /// (such as a web browser API that exposes cookies to scripts).
     /// </para>
     /// </summary>
-    /// <remarks>See https://tools.ietf.org/html/rfc6265#section-4.1.2.6</remarks>
+    /// <remarks>See <see href="https://tools.ietf.org/html/rfc6265#section-4.1.2.6"/>.</remarks>
     public bool HttpOnly { get; set; }
 
     /// <summary>
     /// Gets a collection of additional values to append to the cookie.
     /// </summary>
-    public IList<StringSegment> Extensions { get; } = new List<StringSegment>();
+    public IList<StringSegment> Extensions
+    {
+        get => _extensions ??= new List<StringSegment>();
+    }
 
     // name="value"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite={strict|lax|none}; httponly
     /// <inheritdoc />
@@ -195,7 +200,7 @@ public class SetCookieHeaderValue
 
         if (MaxAge.HasValue)
         {
-            maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
+            maxAge = HeaderUtilities.FormatInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
             length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
         }
 
@@ -236,9 +241,12 @@ public class SetCookieHeaderValue
             length += SeparatorToken.Length + HttpOnlyToken.Length;
         }
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            length += SeparatorToken.Length + extension.Length;
+            foreach (var extension in _extensions)
+            {
+                length += SeparatorToken.Length + extension.Length;
+            }
         }
 
         return string.Create(length, (this, maxAge, sameSite), (span, tuple) =>
@@ -255,7 +263,7 @@ public class SetCookieHeaderValue
                 Append(ref span, ExpiresToken);
                 Append(ref span, EqualsToken);
 
-                var formatted = expiresValue.TryFormat(span, out var charsWritten, ExpiresDateFormat);
+                var formatted = expiresValue.TryFormat(span, out var charsWritten, ExpiresDateFormat, CultureInfo.InvariantCulture);
                 span = span.Slice(charsWritten);
 
                 Debug.Assert(formatted);
@@ -291,9 +299,12 @@ public class SetCookieHeaderValue
                 AppendSegment(ref span, HttpOnlyToken, null);
             }
 
-            foreach (var extension in Extensions)
+            if (_extensions?.Count > 0)
             {
-                AppendSegment(ref span, extension, null);
+                foreach (var extension in _extensions)
+                {
+                    AppendSegment(ref span, extension, null);
+                }
             }
         });
     }
@@ -336,7 +347,7 @@ public class SetCookieHeaderValue
 
         if (MaxAge.HasValue)
         {
-            AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
+            AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
         }
 
         if (Domain != null)
@@ -373,9 +384,12 @@ public class SetCookieHeaderValue
             AppendSegment(builder, HttpOnlyToken, null);
         }
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            AppendSegment(builder, extension, null);
+            foreach (var extension in _extensions)
+            {
+                AppendSegment(builder, extension, null);
+            }
         }
     }
 
@@ -538,7 +552,7 @@ public class SetCookieHeaderValue
                 }
                 result.Expires = expirationDate;
             }
-            // max-age-av = "Max-Age=" non-zero-digit *DIGIT
+            // max-age-av = "Max-Age=" digit *DIGIT ; valid positive and negative values following the RFC6265, Section 5.2.2
             else if (StringSegment.Equals(token, MaxAgeToken, StringComparison.OrdinalIgnoreCase))
             {
                 // = (no spaces)
@@ -547,11 +561,19 @@ public class SetCookieHeaderValue
                     return 0;
                 }
 
+                var isNegative = false;
+                if (input[offset] == '-')
+                {
+                    isNegative = true;
+                    offset++;
+                }
+
                 itemLength = HttpRuleParser.GetNumberLength(input, offset, allowDecimal: false);
                 if (itemLength == 0)
                 {
                     return 0;
                 }
+
                 var numberString = input.Subsegment(offset, itemLength);
                 long maxAge;
                 if (!HeaderUtilities.TryParseNonNegativeInt64(numberString, out maxAge))
@@ -559,6 +581,12 @@ public class SetCookieHeaderValue
                     // Invalid expiration date, abort
                     return 0;
                 }
+
+                if (isNegative)
+                {
+                    maxAge = -maxAge;
+                }
+
                 result.MaxAge = TimeSpan.FromSeconds(maxAge);
                 offset += itemLength;
             }
@@ -701,7 +729,7 @@ public class SetCookieHeaderValue
             && Secure == other.Secure
             && SameSite == other.SameSite
             && HttpOnly == other.HttpOnly
-            && HeaderUtilities.AreEqualCollections(Extensions, other.Extensions, StringSegmentComparer.OrdinalIgnoreCase);
+            && HeaderUtilities.AreEqualCollections(_extensions, other._extensions, StringSegmentComparer.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
@@ -717,9 +745,12 @@ public class SetCookieHeaderValue
             ^ SameSite.GetHashCode()
             ^ HttpOnly.GetHashCode();
 
-        foreach (var extension in Extensions)
+        if (_extensions?.Count > 0)
         {
-            hash ^= extension.GetHashCode();
+            foreach (var extension in _extensions)
+            {
+                hash ^= extension.GetHashCode();
+            }
         }
 
         return hash;

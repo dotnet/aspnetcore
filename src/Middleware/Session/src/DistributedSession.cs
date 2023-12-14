@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography;
@@ -13,6 +14,8 @@ namespace Microsoft.AspNetCore.Session;
 /// <summary>
 /// An <see cref="ISession"/> backed by an <see cref="IDistributedCache"/>.
 /// </summary>
+[DebuggerDisplay("Count = {System.Linq.Enumerable.Count(Keys)}")]
+[DebuggerTypeProxy(typeof(DistributedSessionDebugView))]
 public class DistributedSession : ISession
 {
     private const int IdByteCount = 16;
@@ -60,25 +63,15 @@ public class DistributedSession : ISession
         ILoggerFactory loggerFactory,
         bool isNewSessionKey)
     {
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
+        ArgumentNullException.ThrowIfNull(cache);
 
         if (string.IsNullOrEmpty(sessionKey))
         {
             throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
         }
 
-        if (tryEstablishSession == null)
-        {
-            throw new ArgumentNullException(nameof(tryEstablishSession));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(tryEstablishSession);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _cache = cache;
         _sessionKey = sessionKey;
@@ -150,10 +143,7 @@ public class DistributedSession : ISession
     /// <inheritdoc />
     public void Set(string key, byte[] value)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         if (IsAvailable)
         {
@@ -228,9 +218,9 @@ public class DistributedSession : ISession
         // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
         if (!_loaded)
         {
-            using (var timeout = new CancellationTokenSource(_ioTimeout))
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             {
-                var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+                cts.CancelAfter(_ioTimeout);
                 try
                 {
                     cts.Token.ThrowIfCancellationRequested();
@@ -244,14 +234,10 @@ public class DistributedSession : ISession
                         _logger.AccessingExpiredSession(_sessionKey);
                     }
                 }
-                catch (OperationCanceledException oex)
+                catch (OperationCanceledException oex) when (!cancellationToken.IsCancellationRequested && cts.IsCancellationRequested)
                 {
-                    if (timeout.Token.IsCancellationRequested)
-                    {
-                        _logger.SessionLoadingTimeout();
-                        throw new OperationCanceledException("Timed out loading the session.", oex, timeout.Token);
-                    }
-                    throw;
+                    _logger.SessionLoadingTimeout();
+                    throw new OperationCanceledException("Timed out loading the session.", oex, cts.Token);
                 }
             }
             _isAvailable = true;
@@ -262,15 +248,9 @@ public class DistributedSession : ISession
     /// <inheritdoc />
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsAvailable)
+        using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
         {
-            _logger.SessionNotAvailable();
-            return;
-        }
-
-        using (var timeout = new CancellationTokenSource(_ioTimeout))
-        {
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+            cts.CancelAfter(_ioTimeout);
             if (_isModified)
             {
                 if (_logger.IsEnabled(LogLevel.Information))
@@ -309,14 +289,10 @@ public class DistributedSession : ISession
                     _isModified = false;
                     _logger.SessionStored(_sessionKey, Id, _store.Count);
                 }
-                catch (OperationCanceledException oex)
+                catch (OperationCanceledException oex) when (!cancellationToken.IsCancellationRequested && cts.IsCancellationRequested)
                 {
-                    if (timeout.Token.IsCancellationRequested)
-                    {
-                        _logger.SessionCommitTimeout();
-                        throw new OperationCanceledException("Timed out committing the session.", oex, timeout.Token);
-                    }
-                    throw;
+                    _logger.SessionCommitTimeout();
+                    throw new OperationCanceledException("Timed out committing the session.", oex, cts.Token);
                 }
             }
             else
@@ -325,14 +301,10 @@ public class DistributedSession : ISession
                 {
                     await _cache.RefreshAsync(_sessionKey, cts.Token);
                 }
-                catch (OperationCanceledException oex)
+                catch (OperationCanceledException oex) when (!cancellationToken.IsCancellationRequested && cts.IsCancellationRequested)
                 {
-                    if (timeout.Token.IsCancellationRequested)
-                    {
-                        _logger.SessionRefreshTimeout();
-                        throw new OperationCanceledException("Timed out refreshing the session.", oex, timeout.Token);
-                    }
-                    throw;
+                    _logger.SessionRefreshTimeout();
+                    throw new OperationCanceledException("Timed out refreshing the session.", oex, cts.Token);
                 }
             }
         }
@@ -452,5 +424,14 @@ public class DistributedSession : ISession
             total += read;
         }
         return output;
+    }
+
+    private sealed class DistributedSessionDebugView(DistributedSession session)
+    {
+        private readonly DistributedSession _session = session;
+
+        public bool IsAvailable => _session.IsAvailable;
+        public string Id => _session.Id;
+        public IEnumerable<string> Keys => new List<string>(_session.Keys);
     }
 }

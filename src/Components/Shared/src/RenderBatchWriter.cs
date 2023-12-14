@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 ///
 /// We don't have or need a .NET reader for this format. We only read it from JS code.
 /// </summary>
-internal class RenderBatchWriter : IDisposable
+internal sealed class RenderBatchWriter : IDisposable
 {
     private readonly ArrayBuilder<string> _strings;
     private readonly Dictionary<string, int> _deduplicatedStringIndices;
@@ -167,6 +167,8 @@ internal class RenderBatchWriter : IDisposable
                 WritePadding(_binaryWriter, 8);
                 break;
             case RenderTreeFrameType.ComponentReferenceCapture:
+            case RenderTreeFrameType.ComponentRenderMode:
+            case RenderTreeFrameType.NamedEvent:
                 // The client doesn't need to know about these. But we still have
                 // to include them in the array otherwise the ReferenceFrameIndex
                 // values in the edits data would be wrong.

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
+#if !COMPONENTS
 /// <summary>
 /// Represents a parsed route template with default values and constraints.
 /// Use <see cref="RoutePatternFactory"/> to create <see cref="RoutePattern"/>
@@ -14,6 +15,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
 public sealed class RoutePattern
+#else
+[DebuggerDisplay("{DebuggerToString()}")]
+internal sealed class RoutePattern
+#endif
 {
     /// <summary>
     /// A marker object that can be used in <see cref="RequiredValues"/> to designate that
@@ -132,10 +137,7 @@ public sealed class RoutePattern
     /// <returns>The matching parameter or <c>null</c> if no parameter matches the given name.</returns>
     public RoutePatternParameterPart? GetParameter(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var parameters = Parameters;
         // Read interface .Count once rather than per iteration
@@ -152,13 +154,17 @@ public sealed class RoutePattern
         return null;
     }
 
+    // Used for:
+    // 1. RoutePattern debug string.
+    // 2. Default IRouteDiagnosticsMetadata value.
+    // 3. RouteEndpoint display name.
     internal string DebuggerToString()
     {
         return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
     }
 
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    private class RequiredValueAnySentinal
+    private sealed class RequiredValueAnySentinal
     {
         private static string DebuggerToString() => "*any*";
     }

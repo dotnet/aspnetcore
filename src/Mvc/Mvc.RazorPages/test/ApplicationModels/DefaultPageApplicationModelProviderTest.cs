@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
@@ -353,6 +353,14 @@ public class DefaultPageApplicationModelProviderTest
                 Assert.Equal(name, property.PropertyName);
                 Assert.NotNull(property.BindingInfo);
                 Assert.Equal(BindingSource.Query, property.BindingInfo.BindingSource);
+            },
+            property =>
+            {
+                var name = nameof(TestPageModel.TestService);
+                Assert.Equal(modelType.GetProperty(name), property.PropertyInfo);
+                Assert.Equal(name, property.PropertyName);
+                Assert.NotNull(property.BindingInfo);
+                Assert.Equal(BindingSource.Services, property.BindingInfo.BindingSource);
             });
     }
 
@@ -1058,6 +1066,9 @@ public class DefaultPageApplicationModelProviderTest
         public override Task ExecuteAsync() => throw new NotImplementedException();
     }
 
+    public interface ITestService
+    { }
+
     [PageModel]
     private class TestPageModel
     {
@@ -1065,6 +1076,9 @@ public class DefaultPageApplicationModelProviderTest
 
         [FromQuery]
         public string Property2 { get; set; }
+
+        [FromServices]
+        public ITestService TestService { get; set; }
 
         public void OnGetUser() { }
     }

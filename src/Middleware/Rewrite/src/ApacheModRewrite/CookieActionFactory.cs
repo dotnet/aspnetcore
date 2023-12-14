@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Rewrite.UrlActions;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class CookieActionFactory
+internal sealed class CookieActionFactory
 {
     /// <summary>
     ///  Creates a <see cref="ChangeCookieAction" /> <see href="https://httpd.apache.org/docs/current/rewrite/flags.html#flag_co" /> for details.
@@ -16,10 +16,7 @@ internal class CookieActionFactory
     /// <returns>The action</returns>
     public static ChangeCookieAction Create(string flagValue)
     {
-        if (string.IsNullOrEmpty(flagValue))
-        {
-            throw new ArgumentNullException(nameof(flagValue));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(flagValue);
 
         var i = 0;
         var separator = ':';

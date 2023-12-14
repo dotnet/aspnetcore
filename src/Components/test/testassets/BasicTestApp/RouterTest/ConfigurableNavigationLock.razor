@@ -1,0 +1,99 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+<input class="block-internal-navigation" type="checkbox" @bind-value="_blockInternalNavigation" />Block internal navigation<br />
+<input class="confirm-external-navigation" type="checkbox" @bind-value="_confirmExternalNavigation" />Confirm external navigation<br />
+
+<p class="navigation-log">
+    @for (var i = 0; i < _log.Count; i++)
+    {
+        var entryIndex = i;
+        <span class="navigation-log-entry-@entryIndex">@_log[entryIndex]</span><br />
+    }
+</p>
+
+@if (_context?.TargetLocation is { } targetLocation)
+{
+    <div class="blocking-controls">
+        <span style="color: red;">Blocking '@targetLocation'</span><br />
+        @if (_context?.HistoryEntryState is { } state)
+        {
+            <span class="history-state">State = '@state'</span><br />
+        }
+        <button class="navigation-continue" @onclick="Continue">Continue</button>
+        <button class="navigation-cancel" @onclick="Cancel">Cancel</button>
+        <button class="navigation-throw-exception" @onclick="ThrowException">Throw exception</button>
+    </div>
+}
+
+@{
+    var onBeforeInternalNavigation = _blockInternalNavigation
+        ? BlockNavigationAsync
+        : default(Func<LocationChangingContext, Task>);
+}
+
+<NavigationLock OnBeforeInternalNavigation="onBeforeInternalNavigation" ConfirmExternalNavigation="_confirmExternalNavigation" />
+
+@code {
+    private readonly List<string> _log = new();
+
+    private TaskCompletionSource<bool> _tcs;
+    private LocationChangingContext _context;
+
+    private bool _blockInternalNavigation;
+    private bool _confirmExternalNavigation;
+
+    public async Task BlockNavigationAsync(LocationChangingContext context)
+    {
+        if (_tcs is not null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        _tcs = new();
+        _context = context;
+
+        try
+        {
+            var shouldContinueNavigation = await _tcs.Task.WaitAsync(context.CancellationToken);
+
+            if (!shouldContinueNavigation)
+            {
+                _context.PreventNavigation();
+                Log($"Canceling '{context.TargetLocation}'");
+                return;
+            }
+
+            Log($"Continuing '{context.TargetLocation}'");
+        }
+        catch (TaskCanceledException)
+        {
+            Log($"Canceling '{context.TargetLocation}'");
+            throw;
+        }
+        catch
+        {
+            Log($"Exception thrown for '{context.TargetLocation}'");
+            throw;
+        }
+        finally
+        {
+            _tcs = null;
+            _context = null;
+        }
+    }
+
+    public void Continue()
+        => _tcs?.TrySetResult(true);
+
+    public void Cancel()
+        => _tcs?.TrySetResult(false);
+
+    public void ThrowException()
+        => _tcs?.SetException(new InvalidOperationException("A test exception was thrown during navigation"));
+
+    private void Log(string message)
+    {
+        _log.Add(message);
+        StateHasChanged();
+    }
+}

@@ -12,10 +12,7 @@ public class StreamOutputFormatter : IOutputFormatter
     /// <inheritdoc />
     public bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Ignore the passed in content type, if the object is a Stream.
         if (context.Object is Stream)
@@ -29,10 +26,7 @@ public class StreamOutputFormatter : IOutputFormatter
     /// <inheritdoc />
     public async Task WriteAsync(OutputFormatterWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         using (var valueAsStream = ((Stream)context.Object!))
         {

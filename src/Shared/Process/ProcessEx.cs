@@ -11,11 +11,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Internal;
 
-internal class ProcessEx : IDisposable
+internal sealed class ProcessEx : IDisposable
 {
     private static readonly TimeSpan DefaultProcessTimeout = TimeSpan.FromMinutes(15);
     private static readonly string NUGET_PACKAGES = GetNugetPackagesRestorePath();
@@ -47,6 +48,11 @@ internal class ProcessEx : IDisposable
         proc.Exited += OnProcessExited;
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
+
+        if (proc.HasExited)
+        {
+            OnProcessExited();
+        }
 
         // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
         // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
@@ -167,13 +173,10 @@ internal class ProcessEx : IDisposable
             }
         }
 
-        if (_stdoutLines != null)
-        {
-            _stdoutLines.Add(e.Data);
-        }
+        _stdoutLines?.Add(e.Data);
     }
 
-    private void OnProcessExited(object sender, EventArgs e)
+    private void OnProcessExited(object sender = null, EventArgs e = null)
     {
         lock (_testOutputLock)
         {
@@ -182,8 +185,9 @@ internal class ProcessEx : IDisposable
                 _output.WriteLine("Process exited.");
             }
         }
+        // Don't remove this line - There is a race condition where the process exits and we grab the output before the stdout/stderr completed writing.
         _process.WaitForExit();
-        _stdoutLines.CompleteAdding();
+        _stdoutLines?.CompleteAdding();
         _stdoutLines = null;
         _exited.TrySetResult(_process.ExitCode);
     }
@@ -192,7 +196,7 @@ internal class ProcessEx : IDisposable
     {
         if (!_process.HasExited)
         {
-            throw new InvalidOperationException($"Process {_process.ProcessName} with pid: {_process.Id} has not finished running.");
+            Assert.Fail($"Process {_process.ProcessName} with pid: {_process.Id} has not finished running.");
         }
 
         return $"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}";
@@ -217,7 +221,7 @@ internal class ProcessEx : IDisposable
         }
         else if (assertSuccess && _process.ExitCode != 0)
         {
-            throw new Exception($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
+            Assert.Fail($"Process exited with code {_process.ExitCode}\nStdErr: {Error}\nStdOut: {Output}");
         }
     }
 

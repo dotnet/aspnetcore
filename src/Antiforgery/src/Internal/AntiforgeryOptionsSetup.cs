@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
+internal sealed class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
 {
     private readonly DataProtectionOptions _dataProtectionOptions;
 
@@ -20,10 +20,7 @@ internal class AntiforgeryOptionsSetup : IConfigureOptions<AntiforgeryOptions>
 
     public void Configure(AntiforgeryOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.Cookie.Name == null)
         {

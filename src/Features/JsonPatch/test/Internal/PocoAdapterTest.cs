@@ -1,6 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.JsonPatch.IntegrationTests;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -190,6 +197,28 @@ public class PocoAdapterTest
         Assert.Equal("Joana", model.Name);
         Assert.False(replaceStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
+    }
+
+    [Fact]
+    public void TryReplace_UsesCustomConverter()
+    {
+        // Arrange
+        var adapter = new PocoAdapter();
+        var contractResolver = new RectangleContractResolver();
+        var model = new Square()
+        {
+            Rectangle = new Rectangle()
+            {
+                RectangleProperty = "Square"
+            }
+        };
+
+        // Act
+        var replaceStatus = adapter.TryReplace(model, "Rectangle", contractResolver, "Oval", out var errorMessage);
+
+        // Assert
+        Assert.Equal("Oval", model.Rectangle.RectangleProperty);
+        Assert.True(replaceStatus);
     }
 
     [Fact]

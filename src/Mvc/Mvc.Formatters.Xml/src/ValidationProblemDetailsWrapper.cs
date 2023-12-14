@@ -38,10 +38,7 @@ public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappab
     /// <inheritdoc />
     protected override void ReadValue(XmlReader reader, string name)
     {
-        if (reader == null)
-        {
-            throw new ArgumentNullException(nameof(reader));
-        }
+        ArgumentNullException.ThrowIfNull(reader);
 
         if (string.Equals(name, ErrorKey, StringComparison.Ordinal))
         {
@@ -78,10 +75,7 @@ public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappab
     /// <inheritdoc />
     public override void WriteXml(XmlWriter writer)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
 
         base.WriteXml(writer);
 
@@ -114,10 +108,7 @@ public class ValidationProblemDetailsWrapper : ProblemDetailsWrapper, IUnwrappab
 
     object IUnwrappable.Unwrap(Type declaredType)
     {
-        if (declaredType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredType));
-        }
+        ArgumentNullException.ThrowIfNull(declaredType);
 
         return ProblemDetails;
     }

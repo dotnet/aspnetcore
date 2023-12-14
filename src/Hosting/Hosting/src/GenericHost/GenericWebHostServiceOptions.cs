@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class GenericWebHostServiceOptions
+internal sealed class GenericWebHostServiceOptions
 {
     public Action<IApplicationBuilder>? ConfigureApplication { get; set; }
 

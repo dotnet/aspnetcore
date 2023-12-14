@@ -25,10 +25,7 @@ public class KnownRouteValueConstraint : IRouteConstraint
     /// <param name="actionDescriptorCollectionProvider">The <see cref="IActionDescriptorCollectionProvider"/>.</param>
     public KnownRouteValueConstraint(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
     {
-        if (actionDescriptorCollectionProvider == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptorCollectionProvider));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptorCollectionProvider);
 
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
     }
@@ -41,15 +38,8 @@ public class KnownRouteValueConstraint : IRouteConstraint
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var obj))
         {
@@ -79,10 +69,7 @@ public class KnownRouteValueConstraint : IRouteConstraint
         if (actionDescriptorsProvider == null)
         {
             // Only validate that HttpContext was passed to constraint if it is needed
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
+            ArgumentNullException.ThrowIfNull(httpContext);
 
             var services = httpContext.RequestServices;
             actionDescriptorsProvider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
@@ -127,7 +114,7 @@ public class KnownRouteValueConstraint : IRouteConstraint
         return valuesCollection.Items;
     }
 
-    private class RouteValuesCollection
+    private sealed class RouteValuesCollection
     {
         public RouteValuesCollection(int version, string[] items)
         {

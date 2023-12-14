@@ -10,12 +10,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 /// <summary>
 /// Manages the generation of the date header value.
 /// </summary>
-internal class DateHeaderValueManager : IHeartbeatHandler
+internal sealed class DateHeaderValueManager : IHeartbeatHandler
 {
     // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
-    private static ReadOnlySpan<byte> DatePreambleBytes => new byte[8] { (byte)'\r', (byte)'\n', (byte)'D', (byte)'a', (byte)'t', (byte)'e', (byte)':', (byte)' ' };
+    private static ReadOnlySpan<byte> DatePreambleBytes => "\r\nDate: "u8;
+
+    public TimeProvider _timeProvider;
 
     private DateHeaderValues? _dateValues;
+
+    public DateHeaderValueManager(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider;
+    }
 
     /// <summary>
     /// Returns a value representing the current server date/time for use in the HTTP "Date" response header
@@ -25,17 +32,17 @@ internal class DateHeaderValueManager : IHeartbeatHandler
     public DateHeaderValues GetDateHeaderValues() => _dateValues!;
 
     // Called by the Timer (background) thread
-    public void OnHeartbeat(DateTimeOffset now)
+    public void OnHeartbeat()
     {
-        SetDateValues(now);
+        SetDateValues();
     }
 
     /// <summary>
     /// Sets date values from a provided ticks value
     /// </summary>
-    /// <param name="value">A DateTimeOffset value</param>
-    private void SetDateValues(DateTimeOffset value)
+    private void SetDateValues()
     {
+        var value = _timeProvider.GetUtcNow();
         var dateValue = HeaderUtilities.FormatDate(value);
         var dateBytes = new byte[DatePreambleBytes.Length + dateValue.Length];
         DatePreambleBytes.CopyTo(dateBytes);
@@ -45,7 +52,7 @@ internal class DateHeaderValueManager : IHeartbeatHandler
         Volatile.Write(ref _dateValues, dateValues);
     }
 
-    public class DateHeaderValues
+    public sealed class DateHeaderValues
     {
         public readonly byte[] Bytes;
         public readonly string String;

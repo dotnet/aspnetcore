@@ -49,6 +49,7 @@ Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.Events.get -> Microsoft.AspNetCore.Authentication.Negotiate.NegotiateEvents!
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.Events.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.HandleRequestAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.NegotiateHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.NegotiateHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions.EnableLdap(string! domain) -> void
@@ -61,7 +62,7 @@ Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions.PersistKerberosCr
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions.PersistNtlmCredentials.get -> bool
 Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions.PersistNtlmCredentials.set -> void
 Microsoft.AspNetCore.Authentication.Negotiate.PostConfigureNegotiateOptions
-Microsoft.AspNetCore.Authentication.Negotiate.PostConfigureNegotiateOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions! options) -> void
+Microsoft.AspNetCore.Authentication.Negotiate.PostConfigureNegotiateOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions! options) -> void
 Microsoft.AspNetCore.Authentication.Negotiate.PostConfigureNegotiateOptions.PostConfigureNegotiateOptions(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Hosting.Server.IServerIntegratedAuth!>! serverAuthServices, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler!>! logger) -> void
 Microsoft.Extensions.DependencyInjection.NegotiateExtensions
 override Microsoft.AspNetCore.Authentication.Negotiate.NegotiateHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!

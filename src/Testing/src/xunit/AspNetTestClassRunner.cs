@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-internal class AspNetTestClassRunner : XunitTestClassRunner
+internal sealed class AspNetTestClassRunner : XunitTestClassRunner
 {
     public AspNetTestClassRunner(
         ITestClass testClass,

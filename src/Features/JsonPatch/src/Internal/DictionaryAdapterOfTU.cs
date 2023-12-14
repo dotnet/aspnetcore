@@ -31,7 +31,7 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, contractResolver, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -119,7 +119,7 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
             return false;
         }
 
-        if (!TryConvertValue(value, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, contractResolver, out var convertedValue, out errorMessage))
         {
             return false;
         }
@@ -147,18 +147,16 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
         }
 
         // As per JsonPatch spec, the target location must exist for test to be successful
-        if (!dictionary.ContainsKey(convertedKey))
+        if (!dictionary.TryGetValue(convertedKey, out var currentValue))
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
         }
 
-        if (!TryConvertValue(value, out var convertedValue, out errorMessage))
+        if (!TryConvertValue(value, contractResolver, out var convertedValue, out errorMessage))
         {
             return false;
         }
-
-        var currentValue = dictionary[convertedKey];
 
         // The target segment does not have an assigned value to compare the test value with
         if (currentValue == null)
@@ -229,7 +227,12 @@ public class DictionaryAdapter<TKey, TValue> : IAdapter
 
     protected virtual bool TryConvertValue(object value, out TValue convertedValue, out string errorMessage)
     {
-        var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue));
+        return TryConvertValue(value, null, out convertedValue, out errorMessage);
+    }
+
+    protected virtual bool TryConvertValue(object value, IContractResolver contractResolver, out TValue convertedValue, out string errorMessage)
+    {
+        var conversionResult = ConversionResultProvider.ConvertTo(value, typeof(TValue), contractResolver);
         if (conversionResult.CanBeConverted)
         {
             errorMessage = null;

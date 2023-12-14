@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 /// </summary>
 public class JQueryFormValueProvider : JQueryValueProvider
 {
+    private readonly HashSet<string?>? _invariantValueKeys;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="JQueryFormValueProvider"/> class.
     /// </summary>
@@ -25,5 +27,22 @@ public class JQueryFormValueProvider : JQueryValueProvider
         CultureInfo? culture)
         : base(bindingSource, values, culture)
     {
+        if (values.TryGetValue(FormValueHelper.CultureInvariantFieldName, out var invariantKeys) && invariantKeys.Count > 0)
+        {
+            _invariantValueKeys = new(invariantKeys, StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override ValueProviderResult GetValue(string key)
+    {
+        var result = base.GetValue(key);
+
+        if (result.Length > 0 && _invariantValueKeys?.Contains(key) == true)
+        {
+            return new(result.Values, CultureInfo.InvariantCulture);
+        }
+
+        return result;
     }
 }

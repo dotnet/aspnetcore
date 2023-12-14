@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// <summary>
 /// <see cref="IPooledObjectPolicy{T}"/> for <see cref="JsonSerializer"/>.
 /// </summary>
-internal class JsonSerializerObjectPolicy : IPooledObjectPolicy<JsonSerializer>
+internal sealed class JsonSerializerObjectPolicy : IPooledObjectPolicy<JsonSerializer>
 {
     private readonly JsonSerializerSettings _serializerSettings;
 

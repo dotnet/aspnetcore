@@ -1,0 +1,2 @@
+#nullable enable
+static Microsoft.AspNetCore.Builder.RateLimiterServiceCollectionExtensions.AddRateLimiter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

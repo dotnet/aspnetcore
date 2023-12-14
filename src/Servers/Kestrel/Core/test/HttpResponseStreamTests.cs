@@ -94,13 +94,13 @@ public class HttpResponseStreamTests
     }
 
     [Fact]
-    public void StopAcceptingWritesCausesWriteToThrowObjectDisposedException()
+    public async Task StopAcceptingWritesCausesWriteToThrowObjectDisposedException()
     {
         var pipeWriter = new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>());
         var stream = new HttpResponseStream(Mock.Of<IHttpBodyControlFeature>(), pipeWriter);
         pipeWriter.StartAcceptingWrites();
-        pipeWriter.StopAcceptingWritesAsync();
-        var ex = Assert.Throws<ObjectDisposedException>(() => { stream.WriteAsync(new byte[1], 0, 1); });
+        await pipeWriter.StopAcceptingWritesAsync();
+        var ex = await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.WriteAsync(new byte[1], 0, 1); });
         Assert.Contains(CoreStrings.WritingToResponseBodyAfterResponseCompleted, ex.Message);
     }
 

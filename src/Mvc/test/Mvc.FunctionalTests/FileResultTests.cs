@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -288,7 +288,8 @@ public class FileResultTests : IClassFixture<MvcTestFixture<FilesWebSite.Startup
         Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows)] // Creating symlinks requires special permissions on Windows
     public async Task FileFromDisk_ReturnsFileFromSymlink()
     {
         // Arrange & Act

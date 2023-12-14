@@ -40,10 +40,7 @@ public class BufferedReadStream : Stream
     /// <param name="bytePool">ArrayPool for the buffer.</param>
     public BufferedReadStream(Stream inner, int bufferSize, ArrayPool<byte> bytePool)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
 
         _inner = inner;
         _bytePool = bytePool;
@@ -204,7 +201,7 @@ public class BufferedReadStream : Stream
     /// <inheritdoc/>
     public override int Read(byte[] buffer, int offset, int count)
     {
-        ValidateBuffer(buffer, offset, count);
+        ValidateBufferArguments(buffer, offset, count);
 
         // Drain buffer
         if (_bufferCount > 0)
@@ -222,7 +219,6 @@ public class BufferedReadStream : Stream
     /// <inheritdoc/>
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        ValidateBuffer(buffer, offset, count);
         return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
@@ -356,11 +352,7 @@ public class BufferedReadStream : Stream
 
             while (!foundCRLF && EnsureBuffered())
             {
-                if (builder.Length > lengthLimit)
-                {
-                    throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
-                }
-                ProcessLineChar(builder, ref foundCR, ref foundCRLF);
+                ProcessLineChar(builder, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
             return DecodeLine(builder, foundCRLF);
@@ -384,54 +376,48 @@ public class BufferedReadStream : Stream
 
             while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
             {
-                if (builder.Length > lengthLimit)
-                {
-                    throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
-                }
-
-                ProcessLineChar(builder, ref foundCR, ref foundCRLF);
+                ProcessLineChar(builder, lengthLimit, ref foundCR, ref foundCRLF);
             }
 
             return DecodeLine(builder, foundCRLF);
         }
     }
 
-    private void ProcessLineChar(MemoryStream builder, ref bool foundCR, ref bool foundCRLF)
+    private void ProcessLineChar(MemoryStream builder, int lengthLimit,  ref bool foundCR, ref bool foundCRLF)
     {
-        var b = _buffer[_bufferOffset];
-        builder.WriteByte(b);
-        _bufferOffset++;
-        _bufferCount--;
-        if (b == LF && foundCR)
+        var writeCount = 0;
+        while (_bufferCount > 0)
         {
-            foundCRLF = true;
-            return;
+            var b = _buffer[_bufferOffset];
+            _bufferOffset++;
+            _bufferCount--;
+            writeCount++;
+            if (b == LF && foundCR)
+            {
+                builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
+                foundCRLF = true;
+                return;
+            }
+            foundCR = b == CR;
+
+            if (writeCount > lengthLimit)
+            {
+                throw new InvalidDataException($"Line length limit {lengthLimit} exceeded.");
+            }
         }
-        foundCR = b == CR;
+
+        builder.Write(_buffer.AsSpan(_bufferOffset - writeCount, writeCount));
     }
 
     private static string DecodeLine(MemoryStream builder, bool foundCRLF)
     {
         // Drop the final CRLF, if any
         var length = foundCRLF ? builder.Length - 2 : builder.Length;
-        return Encoding.UTF8.GetString(builder.ToArray(), 0, (int)length);
+        return Encoding.UTF8.GetString(builder.GetBuffer(), 0, (int)length);
     }
 
     private void CheckDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(BufferedReadStream));
-        }
-    }
-
-    private static void ValidateBuffer(byte[] buffer, int offset, int count)
-    {
-        // Delegate most of our validation.
-        _ = new ArraySegment<byte>(buffer, offset, count);
-        if (count == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), "The value must be greater than zero.");
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(BufferedReadStream));
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -36,9 +37,9 @@ public class FunctionalTestBase : VerifiableLoggedTest
         };
     }
 
-    public Task<InProcessTestServer<T>> StartServer<T>(Func<WriteContext, bool> expectedErrorsFilter = null) where T : class
+    public Task<InProcessTestServer<T>> StartServer<T>(Func<WriteContext, bool> expectedErrorsFilter = null, Action<KestrelServerOptions> configureKestrelServerOptions = null) where T : class
     {
         var disposable = base.StartVerifiableLog(ResolveExpectedErrorsFilter(expectedErrorsFilter));
-        return InProcessTestServer<T>.StartServer(LoggerFactory, disposable);
+        return InProcessTestServer<T>.StartServer(LoggerFactory, configureKestrelServerOptions, disposable);
     }
 }

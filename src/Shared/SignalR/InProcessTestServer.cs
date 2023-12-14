@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,7 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
     private IHostApplicationLifetime _lifetime;
     private readonly IDisposable _logToken;
     private readonly IDisposable _extraDisposable;
+    private readonly Action<KestrelServerOptions> _configureKestrelServerOptions;
 
     private readonly LogSinkProvider _logSinkProvider;
     private string _url;
@@ -52,19 +54,20 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
 
     public override string Url => _url;
 
-    public static async Task<InProcessTestServer<TStartup>> StartServer(ILoggerFactory loggerFactory, IDisposable disposable = null)
+    public static async Task<InProcessTestServer<TStartup>> StartServer(ILoggerFactory loggerFactory, Action<KestrelServerOptions> configureKestrelServerOptions = null, IDisposable disposable = null)
     {
-        var server = new InProcessTestServer<TStartup>(loggerFactory, disposable);
+        var server = new InProcessTestServer<TStartup>(loggerFactory, configureKestrelServerOptions, disposable);
         await server.StartServerInner();
         return server;
     }
 
-    private InProcessTestServer() : this(loggerFactory: null, null)
+    private InProcessTestServer() : this(loggerFactory: null, null, null)
     {
     }
 
-    private InProcessTestServer(ILoggerFactory loggerFactory, IDisposable disposable)
+    private InProcessTestServer(ILoggerFactory loggerFactory, Action<KestrelServerOptions> configureKestrelServerOptions, IDisposable disposable)
     {
+        _configureKestrelServerOptions = configureKestrelServerOptions;
         _extraDisposable = disposable;
         _logSinkProvider = new LogSinkProvider();
 
@@ -99,7 +102,7 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
                 .SetMinimumLevel(LogLevel.Trace)
                 .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
-                .UseKestrel()
+                .UseKestrel(o => _configureKestrelServerOptions?.Invoke(o))
                 .UseUrls(url)
                 .UseContentRoot(Directory.GetCurrentDirectory());
             }).Build();
@@ -162,7 +165,7 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
         }
     }
 
-    private class ForwardingLoggerProvider : ILoggerProvider
+    private sealed class ForwardingLoggerProvider : ILoggerProvider
     {
         private readonly ILoggerFactory _loggerFactory;
 

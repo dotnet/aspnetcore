@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
@@ -12,10 +13,7 @@ internal class ManifestDirectory : ManifestEntry
     protected ManifestDirectory(string name, ManifestEntry[] children)
         : base(name)
     {
-        if (children == null)
-        {
-            throw new ArgumentNullException(nameof(children));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(children);
 
         Children = children;
     }
@@ -54,10 +52,7 @@ internal class ManifestDirectory : ManifestEntry
             throw new ArgumentException($"'{nameof(name)}' must not be null, empty or whitespace.", nameof(name));
         }
 
-        if (children == null)
-        {
-            throw new ArgumentNullException(nameof(children));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(children);
 
         var result = new ManifestDirectory(name, children);
         ValidateChildrenAndSetParent(children, result);
@@ -67,10 +62,7 @@ internal class ManifestDirectory : ManifestEntry
 
     public static ManifestRootDirectory CreateRootDirectory(ManifestEntry[] children)
     {
-        if (children == null)
-        {
-            throw new ArgumentNullException(nameof(children));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(children);
 
         var result = new ManifestRootDirectory(children);
         ValidateChildrenAndSetParent(children, result);

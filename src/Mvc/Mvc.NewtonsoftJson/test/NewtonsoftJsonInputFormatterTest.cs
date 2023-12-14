@@ -385,7 +385,7 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
             new MvcOptions(),
             new MvcNewtonsoftJsonOptions());
 
-        var contentBytes = Encoding.UTF8.GetBytes("{\"shortValue\":\"32768\"}");
+        var contentBytes = Encoding.UTF8.GetBytes("{\"ShortValue\":\"32768\"}");
         var httpContext = GetHttpContext(contentBytes);
 
         var formatterContext = CreateInputFormatterContext(typeof(TypeWithPrimitives), httpContext);
@@ -399,7 +399,38 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
 
         var modelError = Assert.Single(formatterContext.ModelState["shortValue"].Errors);
         Assert.Null(modelError.Exception);
-        Assert.Equal("The supplied value is invalid.", modelError.ErrorMessage);
+        Assert.Equal("The supplied value is invalid for ShortValue.", modelError.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ReadAsync_HasCorrectModelErrorWithNestedType()
+    {
+        // Arrange
+        _serializerSettings.Converters.Add(new IsoDateTimeConverter());
+
+        var formatter = new NewtonsoftJsonInputFormatter(
+            GetLogger(),
+            _serializerSettings,
+            ArrayPool<char>.Shared,
+            _objectPoolProvider,
+            new MvcOptions(),
+            new MvcNewtonsoftJsonOptions());
+
+        var contentBytes = Encoding.UTF8.GetBytes("{ \"Complex\": { \"WithPrimitives\": [ { \"ShortValue\":\"32768\" } ] } }");
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(typeof(TypeWithNestedComplex), httpContext);
+
+        // Act
+        var result = await formatter.ReadAsync(formatterContext);
+
+        // Assert
+        Assert.True(result.HasError);
+        Assert.False(formatterContext.ModelState.IsValid);
+
+        var modelError = Assert.Single(formatterContext.ModelState["Complex.WithPrimitives[0].shortValue"].Errors);
+        Assert.Null(modelError.Exception);
+        Assert.Equal("The supplied value is invalid for ShortValue.", modelError.ErrorMessage);
     }
 
     [Fact]
@@ -622,6 +653,16 @@ public class NewtonsoftJsonInputFormatterTest : JsonInputFormatterTestBase
 
         [JsonConverter(typeof(IncorrectShortConverter))]
         public short ShortValue { get; set; }
+    }
+
+    public class TypeWithComplex
+    {
+        public TypeWithPrimitives[] WithPrimitives { get; set; }
+    }
+
+    public class TypeWithNestedComplex
+    {
+        public TypeWithComplex Complex { get; set; }
     }
 
     private class IncorrectShortConverter : JsonConverter<short>

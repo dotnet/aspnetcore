@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,13 +14,18 @@ using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
+#pragma warning disable CA1852 // Seal internal types
 internal partial class CircuitHost : IAsyncDisposable
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly AsyncServiceScope _scope;
     private readonly CircuitOptions _options;
-    private readonly CircuitHandler[] _circuitHandlers;
+    private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
+    private readonly Func<Func<Task>, Task> _dispatchInboundActivity;
+    private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
+    private bool _isFirstUpdate = true;
     private bool _disposed;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
@@ -37,6 +44,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteRenderer renderer,
         IReadOnlyList<ComponentDescriptor> descriptors,
         RemoteJSRuntime jsRuntime,
+        RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
         ILogger logger)
     {
@@ -53,6 +61,7 @@ internal partial class CircuitHost : IAsyncDisposable
         Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+        _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -61,11 +70,15 @@ internal partial class CircuitHost : IAsyncDisposable
         Circuit = new Circuit(this);
         Handle = new CircuitHandle() { CircuitHost = this, };
 
+        _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
+
         // An unhandled exception from the renderer is always fatal because it came from user code.
         Renderer.UnhandledException += ReportAndInvoke_UnhandledException;
         Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
 
         JSRuntime.UnhandledException += ReportAndInvoke_UnhandledException;
+
+        _navigationManager.UnhandledException += ReportAndInvoke_UnhandledException;
     }
 
     public CircuitHandle Handle { get; }
@@ -101,8 +114,15 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                await OnCircuitOpenedAsync(cancellationToken);
-                await OnConnectionUpAsync(cancellationToken);
+                // We only run the handlers in case we are in a Blazor Server scenario, which renders
+                // the components inmediately during start.
+                // On Blazor Web scenarios we delay running these handlers until the first UpdateRootComponents call
+                // We do this so that the handlers can have access to the restored application state.
+                if (Descriptors.Count > 0)
+                {
+                    await OnCircuitOpenedAsync(cancellationToken);
+                    await OnConnectionUpAsync(cancellationToken);
+                }
 
                 // Here, we add each root component but don't await the returned tasks so that the
                 // components can be processed in parallel.
@@ -120,7 +140,20 @@ internal partial class CircuitHost : IAsyncDisposable
                 // At this point all components have successfully produced an initial render and we can clear the contents of the component
                 // application state store. This ensures the memory that was not used during the initial render of these components gets
                 // reclaimed since no-one else is holding on to it any longer.
-                store.ExistingState.Clear();
+                // This is also important because otherwise components will keep reusing the existing state after
+                // the initial render instead of initializing their state from the original sources like the Db or a
+                // web service, preventing UI updates.
+                if (Descriptors.Count > 0)
+                {
+                    store.ExistingState.Clear();
+                }
+
+                // This variable is used to track that this is the first time we are updating components.
+                // In Blazor Web scenarios the app will send an initial empty list of descriptors,
+                // so we want to make sure that we allow setting up the state in that case.
+                // In Blazor Server the initial set of descriptors is provided via the call to Start, so
+                // we want to make sure we don't take any state afterwards.
+                _isFirstUpdate = Descriptors.Count == 0;
 
                 Log.InitializationSucceeded(_logger);
             }
@@ -317,7 +350,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            _ = Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull);
+            _ = HandleInboundActivityAsync(() => Renderer.OnRenderCompletedAsync(renderId, errorMessageOrNull));
         }
         catch (Exception e)
         {
@@ -338,12 +371,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.BeginInvokeDotNet(_logger, callId, assemblyName, methodIdentifier, dotNetObjectId);
                 var invocationInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
                 DotNetDispatcher.BeginInvokeDotNet(JSRuntime, invocationInfo, argsJson);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -364,7 +397,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 if (!succeeded)
                 {
@@ -377,7 +410,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
 
                 DotNetDispatcher.EndInvokeJS(JSRuntime, arguments);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -398,11 +431,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.ReceiveByteArraySuccess(_logger, id);
                 DotNetDispatcher.ReceiveByteArray(JSRuntime, id, data);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -423,10 +456,10 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            return await Renderer.Dispatcher.InvokeAsync(() =>
+            return await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 return RemoteJSDataStream.ReceiveData(JSRuntime, streamId, chunkId, chunk, error);
-            });
+            }));
         }
         catch (Exception ex)
         {
@@ -446,7 +479,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
         try
         {
-            return await Renderer.Dispatcher.InvokeAsync<int>(async () => await dotNetStreamReference.Stream.ReadAsync(buffer));
+            return await Renderer.Dispatcher.InvokeAsync(async () => await dotNetStreamReference.Stream.ReadAsync(buffer));
         }
         catch (Exception ex)
         {
@@ -491,20 +524,19 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // OnLocationChangedAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public async Task OnLocationChangedAsync(string uri, bool intercepted)
+    public async Task OnLocationChangedAsync(string uri, string state, bool intercepted)
     {
         AssertInitialized();
         AssertNotDisposed();
 
         try
         {
-            await Renderer.Dispatcher.InvokeAsync(() =>
+            await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(() =>
             {
                 Log.LocationChange(_logger, uri, CircuitId);
-                var navigationManager = (RemoteNavigationManager)Services.GetRequiredService<NavigationManager>();
-                navigationManager.NotifyLocationChanged(uri, intercepted);
+                _navigationManager.NotifyLocationChanged(uri, state, intercepted);
                 Log.LocationChangeSucceeded(_logger, uri, CircuitId);
-            });
+            }));
         }
 
         // It's up to the NavigationManager implementation to validate the URI.
@@ -534,6 +566,31 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    public async Task OnLocationChangingAsync(int callId, string uri, string? state, bool intercepted)
+    {
+        AssertInitialized();
+        AssertNotDisposed();
+
+        try
+        {
+            var shouldContinueNavigation = await HandleInboundActivityAsync(() => Renderer.Dispatcher.InvokeAsync(async () =>
+            {
+                Log.LocationChanging(_logger, uri, CircuitId);
+                return await _navigationManager.HandleLocationChangingAsync(uri, state, intercepted);
+            }));
+
+            await Client.SendAsync("JS.EndLocationChanging", callId, shouldContinueNavigation);
+        }
+        catch (Exception ex)
+        {
+            // An exception caught at this point was probably thrown inside the NavigationManager. Treat
+            // this like bad data.
+            Log.LocationChangeFailed(_logger, uri, CircuitId, ex);
+            await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex, $"Location change to '{uri}' failed."));
+            UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+        }
+    }
+
     public void SetCircuitUser(ClaimsPrincipal user)
     {
         // This can be called before the circuit is initialized.
@@ -555,7 +612,38 @@ internal partial class CircuitHost : IAsyncDisposable
         // Dispatch any buffered renders we accumulated during a disconnect.
         // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
         // OnRenderCompletedAsync to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
-        _ = Renderer.Dispatcher.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
+        _ = Renderer.Dispatcher.InvokeAsync(Renderer.ProcessBufferedRenderBatches);
+    }
+
+    // Internal for testing.
+    internal Task HandleInboundActivityAsync(Func<Task> handler)
+        => _dispatchInboundActivity(handler);
+
+    // Internal for testing.
+    internal async Task<TResult> HandleInboundActivityAsync<TResult>(Func<Task<TResult>> handler)
+    {
+        TResult result = default;
+        await _dispatchInboundActivity(async () => result = await handler());
+        return result;
+    }
+
+    private static Func<Func<Task>, Task> BuildInboundActivityDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers, Circuit circuit)
+    {
+        if (circuitHandlers.Count == 0)
+        {
+            // If there are no registered handlers, there is no need to allocate a context on each call.
+            return static handler => handler();
+        }
+
+        var result = static (CircuitInboundActivityContext context) => context.Handler();
+
+        for (var i = circuitHandlers.Count - 1; i >= 0; i--)
+        {
+            var next = result;
+            result = circuitHandlers[i].CreateInboundActivityHandler(next);
+        }
+
+        return handler => result(new(handler, circuit));
     }
 
     private void AssertInitialized()
@@ -568,10 +656,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private void AssertNotDisposed()
     {
+#pragma warning disable CA1513 // Use ObjectDisposedException throw helper
         if (_disposed)
         {
             throw new ObjectDisposedException(objectName: null);
         }
+#pragma warning restore CA1513 // Use ObjectDisposedException throw helper
     }
 
     // We want to notify the client if it's still connected, and then tear-down the circuit.
@@ -635,6 +725,118 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    internal Task UpdateRootComponents(
+        RootComponentOperationBatch operationBatch,
+        ProtectedPrerenderComponentApplicationStore store,
+        IServerComponentDeserializer serverComponentDeserializer,
+        CancellationToken cancellation)
+    {
+        Log.UpdateRootComponentsStarted(_logger);
+
+        return Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+            var shouldClearStore = false;
+            var operations = operationBatch.Operations;
+            var batchId = operationBatch.BatchId;
+            Task[]? pendingTasks = null;
+            try
+            {
+                if (Descriptors.Count > 0)
+                {
+                    // Block updating components if they were provided during StartCircuit. This keeps
+                    // the footprint for Blazor Server closer to what it was before.
+                    throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
+                        " been provided during circuit start up.");
+                }
+                if (_isFirstUpdate)
+                {
+                    _isFirstUpdate = false;
+                    if (store != null)
+                    {
+                        shouldClearStore = true;
+                        // We only do this if we have no root components. Otherwise, the state would have been
+                        // provided during the start up process
+                        var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                        await appLifetime.RestoreStateAsync(store);
+                    }
+
+                    // Retrieve the circuit handlers at this point.
+                    _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
+                    await OnCircuitOpenedAsync(cancellation);
+                    await OnConnectionUpAsync(cancellation);
+
+                    for (var i = 0; i < operations.Length; i++)
+                    {
+                        var operation = operations[i];
+                        if (operation.Type != RootComponentOperationType.Add)
+                        {
+                            throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
+                        }
+                    }
+
+                    pendingTasks = new Task[operations.Length];
+                }
+
+                for (var i = 0; i < operations.Length; i++)
+                {
+                    var operation = operations[i];
+                    switch (operation.Type)
+                    {
+                        case RootComponentOperationType.Add:
+                            var task = webRootComponentManager.AddRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Marker.Value.Key,
+                                operation.Descriptor.Parameters);
+                            if (pendingTasks != null)
+                            {
+                                pendingTasks[i] = task;
+                            }
+                            break;
+                        case RootComponentOperationType.Update:
+                            // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                            _ = webRootComponentManager.UpdateRootComponentAsync(
+                                operation.SsrComponentId,
+                                operation.Descriptor.ComponentType,
+                                operation.Marker.Value.Key,
+                                operation.Descriptor.Parameters);
+                            break;
+                        case RootComponentOperationType.Remove:
+                            webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                            break;
+                    }
+                }
+
+                if (pendingTasks != null)
+                {
+                    await Task.WhenAll(pendingTasks);
+                }
+
+                await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
+
+                Log.UpdateRootComponentsSucceeded(_logger);
+            }
+            catch (Exception ex)
+            {
+                // Report errors asynchronously. UpdateRootComponents is designed not to throw.
+                Log.UpdateRootComponentsFailed(_logger, ex);
+                UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+                await TryNotifyClientErrorAsync(Client, GetClientErrorMessage(ex), ex);
+            }
+            finally
+            {
+                if (shouldClearStore)
+                {
+                    // At this point all components have successfully produced an initial render and we can clear the contents of the component
+                    // application state store. This ensures the memory that was not used during the initial render of these components gets
+                    // reclaimed since no-one else is holding on to it any longer.
+                    store.ExistingState.Clear();
+                }
+            }
+        });
+    }
+
     private static partial class Log
     {
         // 100s used for lifecycle stuff
@@ -673,6 +875,15 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(110, LogLevel.Error, "Unhandled error invoking circuit handler type {handlerType}.{handlerMethod}: {Message}", EventName = "CircuitHandlerFailed")]
         private static partial void CircuitHandlerFailed(ILogger logger, Type handlerType, string handlerMethod, string message, Exception exception);
 
+        [LoggerMessage(111, LogLevel.Debug, "Update root components started.", EventName = nameof(UpdateRootComponentsStarted))]
+        public static partial void UpdateRootComponentsStarted(ILogger logger);
+
+        [LoggerMessage(112, LogLevel.Debug, "Update root components succeeded.", EventName = nameof(UpdateRootComponentsSucceeded))]
+        public static partial void UpdateRootComponentsSucceeded(ILogger logger);
+
+        [LoggerMessage(113, LogLevel.Debug, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
+        public static partial void UpdateRootComponentsFailed(ILogger logger, Exception exception);
+
         public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
         {
             CircuitHandlerFailed(
@@ -697,6 +908,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(115, LogLevel.Debug, "An exception occurred on the circuit host '{CircuitId}' while the client is disconnected.", EventName = "UnhandledExceptionClientDisconnected")]
         public static partial void UnhandledExceptionClientDisconnected(ILogger logger, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(116, LogLevel.Debug, "The root component operation of type 'Update' was invalid: {Message}", EventName = nameof(InvalidComponentTypeForUpdate))]
+        public static partial void InvalidComponentTypeForUpdate(ILogger logger, string message);
 
         [LoggerMessage(200, LogLevel.Debug, "Failed to parse the event data when trying to dispatch an event.", EventName = "DispatchEventFailedToParseEventData")]
         public static partial void DispatchEventFailedToParseEventData(ILogger logger, Exception ex);
@@ -728,6 +942,9 @@ internal partial class CircuitHost : IAsyncDisposable
         [LoggerMessage(210, LogLevel.Debug, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
         public static partial void LocationChangeFailed(ILogger logger, string uri, CircuitId circuitId, Exception exception);
 
+        [LoggerMessage(211, LogLevel.Debug, "Location is about to change to {URI} in ciruit '{CircuitId}'.", EventName = "LocationChanging")]
+        public static partial void LocationChanging(ILogger logger, string uri, CircuitId circuitId);
+
         [LoggerMessage(212, LogLevel.Debug, "Failed to complete render batch '{RenderId}' in circuit host '{CircuitId}'.", EventName = "OnRenderCompletedFailed")]
         public static partial void OnRenderCompletedFailed(ILogger logger, long renderId, CircuitId circuitId, Exception e);
 
@@ -758,7 +975,7 @@ internal partial class CircuitHost : IAsyncDisposable
             }
         }
 
-        [LoggerMessage(218, LogLevel.Debug, "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetFailed")]
+        [LoggerMessage(218, LogLevel.Debug, "Failed to invoke static method with identifier '{MethodIdentifier}' on assembly '{Assembly}' with callback id '{CallId}'.", EventName = "BeginInvokeDotNetStaticFailed")]
         private static partial void BeginInvokeDotNetStaticFailed(ILogger logger, string methodIdentifier, string assembly, string callId, Exception exception);
 
         public static void BeginInvokeDotNetFailed(ILogger logger, string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, Exception exception)
@@ -773,7 +990,7 @@ internal partial class CircuitHost : IAsyncDisposable
             }
         }
 
-        [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailed")]
+        [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailedInCircuit")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
     }
 }

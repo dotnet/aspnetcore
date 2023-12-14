@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     [GeneratedCode("TextTemplatingFileGenerator", "")]
     internal partial class RequestHeaders
     {
-	    // Tracks if individual fields have been read from native or set directly.
-		// Once read or set, their presence in the collection is marked by if their StringValues is null or not.
+        // Tracks if individual fields have been read from native or set directly.
+        // Once read or set, their presence in the collection is marked by if their StringValues is null or not.
         private UInt32 _flag0, _flag1;
 
         private StringValues _Accept;
@@ -62,902 +62,984 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         public StringValues Accept
         {
             get
-			{
-			    if (!((_flag0 & 0x1u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Accept);
-					if (nativeValue != null)
-					{
-						_Accept = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x1u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Accept);
+                    if (nativeValue != null)
+                    {
+                        _Accept = nativeValue;
+                    }
                     _flag0 |= 0x1u;
-				}
-			    return _Accept;
-		    }
+                }
+
+                return _Accept.Count > 0 ? _Accept : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x1u;
-                _Accept = value;
+
+                _Accept = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues AcceptCharset
         {
             get
-			{
-			    if (!((_flag0 & 0x2u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptCharset);
-					if (nativeValue != null)
-					{
-						_AcceptCharset = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x2u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptCharset);
+                    if (nativeValue != null)
+                    {
+                        _AcceptCharset = nativeValue;
+                    }
                     _flag0 |= 0x2u;
-				}
-			    return _AcceptCharset;
-		    }
+                }
+
+                return _AcceptCharset.Count > 0 ? _AcceptCharset : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x2u;
-                _AcceptCharset = value;
+
+                _AcceptCharset = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues AcceptEncoding
         {
             get
-			{
-			    if (!((_flag0 & 0x4u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptEncoding);
-					if (nativeValue != null)
-					{
-						_AcceptEncoding = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x4u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptEncoding);
+                    if (nativeValue != null)
+                    {
+                        _AcceptEncoding = nativeValue;
+                    }
                     _flag0 |= 0x4u;
-				}
-			    return _AcceptEncoding;
-		    }
+                }
+
+                return _AcceptEncoding.Count > 0 ? _AcceptEncoding : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x4u;
-                _AcceptEncoding = value;
+
+                _AcceptEncoding = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues AcceptLanguage
         {
             get
-			{
-			    if (!((_flag0 & 0x8u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptLanguage);
-					if (nativeValue != null)
-					{
-						_AcceptLanguage = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x8u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptLanguage);
+                    if (nativeValue != null)
+                    {
+                        _AcceptLanguage = nativeValue;
+                    }
                     _flag0 |= 0x8u;
-				}
-			    return _AcceptLanguage;
-		    }
+                }
+
+                return _AcceptLanguage.Count > 0 ? _AcceptLanguage : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x8u;
-                _AcceptLanguage = value;
+
+                _AcceptLanguage = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Allow
         {
             get
-			{
-			    if (!((_flag0 & 0x10u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Allow);
-					if (nativeValue != null)
-					{
-						_Allow = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x10u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Allow);
+                    if (nativeValue != null)
+                    {
+                        _Allow = nativeValue;
+                    }
                     _flag0 |= 0x10u;
-				}
-			    return _Allow;
-		    }
+                }
+
+                return _Allow.Count > 0 ? _Allow : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x10u;
-                _Allow = value;
+
+                _Allow = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Authorization
         {
             get
-			{
-			    if (!((_flag0 & 0x20u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Authorization);
-					if (nativeValue != null)
-					{
-						_Authorization = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x20u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Authorization);
+                    if (nativeValue != null)
+                    {
+                        _Authorization = nativeValue;
+                    }
                     _flag0 |= 0x20u;
-				}
-			    return _Authorization;
-		    }
+                }
+
+                return _Authorization.Count > 0 ? _Authorization : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x20u;
-                _Authorization = value;
+
+                _Authorization = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues CacheControl
         {
             get
-			{
-			    if (!((_flag0 & 0x40u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.CacheControl);
-					if (nativeValue != null)
-					{
-						_CacheControl = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x40u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.CacheControl);
+                    if (nativeValue != null)
+                    {
+                        _CacheControl = nativeValue;
+                    }
                     _flag0 |= 0x40u;
-				}
-			    return _CacheControl;
-		    }
+                }
+
+                return _CacheControl.Count > 0 ? _CacheControl : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x40u;
-                _CacheControl = value;
+
+                _CacheControl = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Connection
         {
             get
-			{
-			    if (!((_flag0 & 0x80u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Connection);
-					if (nativeValue != null)
-					{
-						_Connection = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x80u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Connection);
+                    if (nativeValue != null)
+                    {
+                        _Connection = nativeValue;
+                    }
                     _flag0 |= 0x80u;
-				}
-			    return _Connection;
-		    }
+                }
+
+                return _Connection.Count > 0 ? _Connection : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x80u;
-                _Connection = value;
+
+                _Connection = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentEncoding
         {
             get
-			{
-			    if (!((_flag0 & 0x100u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentEncoding);
-					if (nativeValue != null)
-					{
-						_ContentEncoding = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x100u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentEncoding);
+                    if (nativeValue != null)
+                    {
+                        _ContentEncoding = nativeValue;
+                    }
                     _flag0 |= 0x100u;
-				}
-			    return _ContentEncoding;
-		    }
+                }
+
+                return _ContentEncoding.Count > 0 ? _ContentEncoding : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x100u;
-                _ContentEncoding = value;
+
+                _ContentEncoding = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentLanguage
         {
             get
-			{
-			    if (!((_flag0 & 0x200u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLanguage);
-					if (nativeValue != null)
-					{
-						_ContentLanguage = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x200u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLanguage);
+                    if (nativeValue != null)
+                    {
+                        _ContentLanguage = nativeValue;
+                    }
                     _flag0 |= 0x200u;
-				}
-			    return _ContentLanguage;
-		    }
+                }
+
+                return _ContentLanguage.Count > 0 ? _ContentLanguage : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x200u;
-                _ContentLanguage = value;
+
+                _ContentLanguage = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentLength
         {
             get
-			{
-			    if (!((_flag0 & 0x400u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLength);
-					if (nativeValue != null)
-					{
-						_ContentLength = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x400u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLength);
+                    if (nativeValue != null)
+                    {
+                        _ContentLength = nativeValue;
+                    }
                     _flag0 |= 0x400u;
-				}
-			    return _ContentLength;
-		    }
+                }
+
+                return _ContentLength.Count > 0 ? _ContentLength : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x400u;
-                _ContentLength = value;
+
+                _ContentLength = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentLocation
         {
             get
-			{
-			    if (!((_flag0 & 0x800u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLocation);
-					if (nativeValue != null)
-					{
-						_ContentLocation = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x800u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLocation);
+                    if (nativeValue != null)
+                    {
+                        _ContentLocation = nativeValue;
+                    }
                     _flag0 |= 0x800u;
-				}
-			    return _ContentLocation;
-		    }
+                }
+
+                return _ContentLocation.Count > 0 ? _ContentLocation : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x800u;
-                _ContentLocation = value;
+
+                _ContentLocation = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentMD5
         {
             get
-			{
-			    if (!((_flag0 & 0x1000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentMd5);
-					if (nativeValue != null)
-					{
-						_ContentMD5 = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x1000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentMd5);
+                    if (nativeValue != null)
+                    {
+                        _ContentMD5 = nativeValue;
+                    }
                     _flag0 |= 0x1000u;
-				}
-			    return _ContentMD5;
-		    }
+                }
+
+                return _ContentMD5.Count > 0 ? _ContentMD5 : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x1000u;
-                _ContentMD5 = value;
+
+                _ContentMD5 = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentRange
         {
             get
-			{
-			    if (!((_flag0 & 0x2000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentRange);
-					if (nativeValue != null)
-					{
-						_ContentRange = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x2000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentRange);
+                    if (nativeValue != null)
+                    {
+                        _ContentRange = nativeValue;
+                    }
                     _flag0 |= 0x2000u;
-				}
-			    return _ContentRange;
-		    }
+                }
+
+                return _ContentRange.Count > 0 ? _ContentRange : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x2000u;
-                _ContentRange = value;
+
+                _ContentRange = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ContentType
         {
             get
-			{
-			    if (!((_flag0 & 0x4000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentType);
-					if (nativeValue != null)
-					{
-						_ContentType = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x4000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentType);
+                    if (nativeValue != null)
+                    {
+                        _ContentType = nativeValue;
+                    }
                     _flag0 |= 0x4000u;
-				}
-			    return _ContentType;
-		    }
+                }
+
+                return _ContentType.Count > 0 ? _ContentType : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x4000u;
-                _ContentType = value;
+
+                _ContentType = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Cookie
         {
             get
-			{
-			    if (!((_flag0 & 0x8000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Cookie);
-					if (nativeValue != null)
-					{
-						_Cookie = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x8000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Cookie);
+                    if (nativeValue != null)
+                    {
+                        _Cookie = nativeValue;
+                    }
                     _flag0 |= 0x8000u;
-				}
-			    return _Cookie;
-		    }
+                }
+
+                return _Cookie.Count > 0 ? _Cookie : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x8000u;
-                _Cookie = value;
+
+                _Cookie = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Date
         {
             get
-			{
-			    if (!((_flag0 & 0x10000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Date);
-					if (nativeValue != null)
-					{
-						_Date = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x10000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Date);
+                    if (nativeValue != null)
+                    {
+                        _Date = nativeValue;
+                    }
                     _flag0 |= 0x10000u;
-				}
-			    return _Date;
-		    }
+                }
+
+                return _Date.Count > 0 ? _Date : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x10000u;
-                _Date = value;
+
+                _Date = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Expect
         {
             get
-			{
-			    if (!((_flag0 & 0x20000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expect);
-					if (nativeValue != null)
-					{
-						_Expect = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x20000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expect);
+                    if (nativeValue != null)
+                    {
+                        _Expect = nativeValue;
+                    }
                     _flag0 |= 0x20000u;
-				}
-			    return _Expect;
-		    }
+                }
+
+                return _Expect.Count > 0 ? _Expect : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x20000u;
-                _Expect = value;
+
+                _Expect = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Expires
         {
             get
-			{
-			    if (!((_flag0 & 0x40000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expires);
-					if (nativeValue != null)
-					{
-						_Expires = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x40000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expires);
+                    if (nativeValue != null)
+                    {
+                        _Expires = nativeValue;
+                    }
                     _flag0 |= 0x40000u;
-				}
-			    return _Expires;
-		    }
+                }
+
+                return _Expires.Count > 0 ? _Expires : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x40000u;
-                _Expires = value;
+
+                _Expires = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues From
         {
             get
-			{
-			    if (!((_flag0 & 0x80000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.From);
-					if (nativeValue != null)
-					{
-						_From = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x80000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.From);
+                    if (nativeValue != null)
+                    {
+                        _From = nativeValue;
+                    }
                     _flag0 |= 0x80000u;
-				}
-			    return _From;
-		    }
+                }
+
+                return _From.Count > 0 ? _From : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x80000u;
-                _From = value;
+
+                _From = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Host
         {
             get
-			{
-			    if (!((_flag0 & 0x100000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Host);
-					if (nativeValue != null)
-					{
-						_Host = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x100000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Host);
+                    if (nativeValue != null)
+                    {
+                        _Host = nativeValue;
+                    }
                     _flag0 |= 0x100000u;
-				}
-			    return _Host;
-		    }
+                }
+
+                return _Host.Count > 0 ? _Host : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x100000u;
-                _Host = value;
+
+                _Host = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues IfMatch
         {
             get
-			{
-			    if (!((_flag0 & 0x200000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfMatch);
-					if (nativeValue != null)
-					{
-						_IfMatch = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x200000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfMatch);
+                    if (nativeValue != null)
+                    {
+                        _IfMatch = nativeValue;
+                    }
                     _flag0 |= 0x200000u;
-				}
-			    return _IfMatch;
-		    }
+                }
+
+                return _IfMatch.Count > 0 ? _IfMatch : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x200000u;
-                _IfMatch = value;
+
+                _IfMatch = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues IfModifiedSince
         {
             get
-			{
-			    if (!((_flag0 & 0x400000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfModifiedSince);
-					if (nativeValue != null)
-					{
-						_IfModifiedSince = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x400000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfModifiedSince);
+                    if (nativeValue != null)
+                    {
+                        _IfModifiedSince = nativeValue;
+                    }
                     _flag0 |= 0x400000u;
-				}
-			    return _IfModifiedSince;
-		    }
+                }
+
+                return _IfModifiedSince.Count > 0 ? _IfModifiedSince : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x400000u;
-                _IfModifiedSince = value;
+
+                _IfModifiedSince = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues IfNoneMatch
         {
             get
-			{
-			    if (!((_flag0 & 0x800000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfNoneMatch);
-					if (nativeValue != null)
-					{
-						_IfNoneMatch = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x800000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfNoneMatch);
+                    if (nativeValue != null)
+                    {
+                        _IfNoneMatch = nativeValue;
+                    }
                     _flag0 |= 0x800000u;
-				}
-			    return _IfNoneMatch;
-		    }
+                }
+
+                return _IfNoneMatch.Count > 0 ? _IfNoneMatch : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x800000u;
-                _IfNoneMatch = value;
+
+                _IfNoneMatch = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues IfRange
         {
             get
-			{
-			    if (!((_flag0 & 0x1000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfRange);
-					if (nativeValue != null)
-					{
-						_IfRange = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x1000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfRange);
+                    if (nativeValue != null)
+                    {
+                        _IfRange = nativeValue;
+                    }
                     _flag0 |= 0x1000000u;
-				}
-			    return _IfRange;
-		    }
+                }
+
+                return _IfRange.Count > 0 ? _IfRange : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x1000000u;
-                _IfRange = value;
+
+                _IfRange = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues IfUnmodifiedSince
         {
             get
-			{
-			    if (!((_flag0 & 0x2000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince);
-					if (nativeValue != null)
-					{
-						_IfUnmodifiedSince = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x2000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince);
+                    if (nativeValue != null)
+                    {
+                        _IfUnmodifiedSince = nativeValue;
+                    }
                     _flag0 |= 0x2000000u;
-				}
-			    return _IfUnmodifiedSince;
-		    }
+                }
+
+                return _IfUnmodifiedSince.Count > 0 ? _IfUnmodifiedSince : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x2000000u;
-                _IfUnmodifiedSince = value;
+
+                _IfUnmodifiedSince = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues KeepAlive
         {
             get
-			{
-			    if (!((_flag0 & 0x4000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.KeepAlive);
-					if (nativeValue != null)
-					{
-						_KeepAlive = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x4000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.KeepAlive);
+                    if (nativeValue != null)
+                    {
+                        _KeepAlive = nativeValue;
+                    }
                     _flag0 |= 0x4000000u;
-				}
-			    return _KeepAlive;
-		    }
+                }
+
+                return _KeepAlive.Count > 0 ? _KeepAlive : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x4000000u;
-                _KeepAlive = value;
+
+                _KeepAlive = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues LastModified
         {
             get
-			{
-			    if (!((_flag0 & 0x8000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.LastModified);
-					if (nativeValue != null)
-					{
-						_LastModified = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x8000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.LastModified);
+                    if (nativeValue != null)
+                    {
+                        _LastModified = nativeValue;
+                    }
                     _flag0 |= 0x8000000u;
-				}
-			    return _LastModified;
-		    }
+                }
+
+                return _LastModified.Count > 0 ? _LastModified : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x8000000u;
-                _LastModified = value;
+
+                _LastModified = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues MaxForwards
         {
             get
-			{
-			    if (!((_flag0 & 0x10000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.MaxForwards);
-					if (nativeValue != null)
-					{
-						_MaxForwards = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x10000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.MaxForwards);
+                    if (nativeValue != null)
+                    {
+                        _MaxForwards = nativeValue;
+                    }
                     _flag0 |= 0x10000000u;
-				}
-			    return _MaxForwards;
-		    }
+                }
+
+                return _MaxForwards.Count > 0 ? _MaxForwards : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x10000000u;
-                _MaxForwards = value;
+
+                _MaxForwards = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Pragma
         {
             get
-			{
-			    if (!((_flag0 & 0x20000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Pragma);
-					if (nativeValue != null)
-					{
-						_Pragma = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x20000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Pragma);
+                    if (nativeValue != null)
+                    {
+                        _Pragma = nativeValue;
+                    }
                     _flag0 |= 0x20000000u;
-				}
-			    return _Pragma;
-		    }
+                }
+
+                return _Pragma.Count > 0 ? _Pragma : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x20000000u;
-                _Pragma = value;
+
+                _Pragma = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues ProxyAuthorization
         {
             get
-			{
-			    if (!((_flag0 & 0x40000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ProxyAuthorization);
-					if (nativeValue != null)
-					{
-						_ProxyAuthorization = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x40000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.ProxyAuthorization);
+                    if (nativeValue != null)
+                    {
+                        _ProxyAuthorization = nativeValue;
+                    }
                     _flag0 |= 0x40000000u;
-				}
-			    return _ProxyAuthorization;
-		    }
+                }
+
+                return _ProxyAuthorization.Count > 0 ? _ProxyAuthorization : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x40000000u;
-                _ProxyAuthorization = value;
+
+                _ProxyAuthorization = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Range
         {
             get
-			{
-			    if (!((_flag0 & 0x80000000u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Range);
-					if (nativeValue != null)
-					{
-						_Range = nativeValue;
-					}
+            {
+                if ((_flag0 & 0x80000000u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Range);
+                    if (nativeValue != null)
+                    {
+                        _Range = nativeValue;
+                    }
                     _flag0 |= 0x80000000u;
-				}
-			    return _Range;
-		    }
+                }
+
+                return _Range.Count > 0 ? _Range : StringValues.Empty;
+            }
             set
             {
                 _flag0 |= 0x80000000u;
-                _Range = value;
+
+                _Range = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Referer
         {
             get
-			{
-			    if (!((_flag1 & 0x1u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Referer);
-					if (nativeValue != null)
-					{
-						_Referer = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x1u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Referer);
+                    if (nativeValue != null)
+                    {
+                        _Referer = nativeValue;
+                    }
                     _flag1 |= 0x1u;
-				}
-			    return _Referer;
-		    }
+                }
+
+                return _Referer.Count > 0 ? _Referer : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x1u;
-                _Referer = value;
+
+                _Referer = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues TE
         {
             get
-			{
-			    if (!((_flag1 & 0x2u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Te);
-					if (nativeValue != null)
-					{
-						_TE = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x2u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Te);
+                    if (nativeValue != null)
+                    {
+                        _TE = nativeValue;
+                    }
                     _flag1 |= 0x2u;
-				}
-			    return _TE;
-		    }
+                }
+
+                return _TE.Count > 0 ? _TE : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x2u;
-                _TE = value;
+
+                _TE = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Trailer
         {
             get
-			{
-			    if (!((_flag1 & 0x4u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Trailer);
-					if (nativeValue != null)
-					{
-						_Trailer = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x4u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Trailer);
+                    if (nativeValue != null)
+                    {
+                        _Trailer = nativeValue;
+                    }
                     _flag1 |= 0x4u;
-				}
-			    return _Trailer;
-		    }
+                }
+
+                return _Trailer.Count > 0 ? _Trailer : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x4u;
-                _Trailer = value;
+
+                _Trailer = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues TransferEncoding
         {
             get
-			{
-			    if (!((_flag1 & 0x8u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.TransferEncoding);
-					if (nativeValue != null)
-					{
-						_TransferEncoding = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x8u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.TransferEncoding);
+                    if (nativeValue != null)
+                    {
+                        _TransferEncoding = nativeValue;
+                    }
                     _flag1 |= 0x8u;
-				}
-			    return _TransferEncoding;
-		    }
+                }
+
+                return _TransferEncoding.Count > 0 ? _TransferEncoding : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x8u;
-                _TransferEncoding = value;
+
+                _TransferEncoding = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Translate
         {
             get
-			{
-			    if (!((_flag1 & 0x10u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Translate);
-					if (nativeValue != null)
-					{
-						_Translate = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x10u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Translate);
+                    if (nativeValue != null)
+                    {
+                        _Translate = nativeValue;
+                    }
                     _flag1 |= 0x10u;
-				}
-			    return _Translate;
-		    }
+                }
+
+                return _Translate.Count > 0 ? _Translate : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x10u;
-                _Translate = value;
+
+                _Translate = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Upgrade
         {
             get
-			{
-			    if (!((_flag1 & 0x20u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Upgrade);
-					if (nativeValue != null)
-					{
-						_Upgrade = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x20u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Upgrade);
+                    if (nativeValue != null)
+                    {
+                        _Upgrade = nativeValue;
+                    }
                     _flag1 |= 0x20u;
-				}
-			    return _Upgrade;
-		    }
+                }
+
+                return _Upgrade.Count > 0 ? _Upgrade : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x20u;
-                _Upgrade = value;
+
+                _Upgrade = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues UserAgent
         {
             get
-			{
-			    if (!((_flag1 & 0x40u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.UserAgent);
-					if (nativeValue != null)
-					{
-						_UserAgent = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x40u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.UserAgent);
+                    if (nativeValue != null)
+                    {
+                        _UserAgent = nativeValue;
+                    }
                     _flag1 |= 0x40u;
-				}
-			    return _UserAgent;
-		    }
+                }
+
+                return _UserAgent.Count > 0 ? _UserAgent : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x40u;
-                _UserAgent = value;
+
+                _UserAgent = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Via
         {
             get
-			{
-			    if (!((_flag1 & 0x80u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Via);
-					if (nativeValue != null)
-					{
-						_Via = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x80u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Via);
+                    if (nativeValue != null)
+                    {
+                        _Via = nativeValue;
+                    }
                     _flag1 |= 0x80u;
-				}
-			    return _Via;
-		    }
+                }
+
+                return _Via.Count > 0 ? _Via : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x80u;
-                _Via = value;
+
+                _Via = value.Count > 0 ? value : default;
             }
         }
 
         public StringValues Warning
         {
             get
-			{
-			    if (!((_flag1 & 0x100u) != 0))
-				{
-					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Warning);
-					if (nativeValue != null)
-					{
-						_Warning = nativeValue;
-					}
+            {
+                if ((_flag1 & 0x100u) == 0)
+                {
+                    string nativeValue = GetKnownHeader(HttpSysRequestHeader.Warning);
+                    if (nativeValue != null)
+                    {
+                        _Warning = nativeValue;
+                    }
                     _flag1 |= 0x100u;
-				}
-			    return _Warning;
-		    }
+                }
+
+                return _Warning.Count > 0 ? _Warning : StringValues.Empty;
+            }
             set
             {
                 _flag1 |= 0x100u;
-                _Warning = value;
+
+                _Warning = value.Count > 0 ? value : default;
             }
         }
 
@@ -970,13 +1052,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return TE.Count > 0;
                     }
-                   break;
+                    break;
                 case 3:
                     if (string.Equals(key, HeaderNames.Via, StringComparison.OrdinalIgnoreCase))
                     {
                         return Via.Count > 0;
                     }
-                   break;
+                    break;
                 case 4:
                     if (string.Equals(key, HeaderNames.Date, StringComparison.OrdinalIgnoreCase))
                     {
@@ -990,7 +1072,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return Host.Count > 0;
                     }
-                   break;
+                    break;
                 case 5:
                     if (string.Equals(key, HeaderNames.Allow, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1000,7 +1082,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return Range.Count > 0;
                     }
-                   break;
+                    break;
                 case 6:
                     if (string.Equals(key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1018,7 +1100,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return Pragma.Count > 0;
                     }
-                   break;
+                    break;
                 case 7:
                     if (string.Equals(key, HeaderNames.Expires, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1040,7 +1122,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return Warning.Count > 0;
                     }
-                   break;
+                    break;
                 case 8:
                     if (string.Equals(key, HeaderNames.IfMatch, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1050,13 +1132,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return IfRange.Count > 0;
                     }
-                   break;
+                    break;
                 case 9:
                     if (string.Equals(key, HeaderNames.Translate, StringComparison.OrdinalIgnoreCase))
                     {
                         return Translate.Count > 0;
                     }
-                   break;
+                    break;
                 case 10:
                     if (string.Equals(key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1070,13 +1152,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return UserAgent.Count > 0;
                     }
-                   break;
+                    break;
                 case 11:
                     if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.OrdinalIgnoreCase))
                     {
                         return ContentMD5.Count > 0;
                     }
-                   break;
+                    break;
                 case 12:
                     if (string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1086,7 +1168,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return MaxForwards.Count > 0;
                     }
-                   break;
+                    break;
                 case 13:
                     if (string.Equals(key, HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1108,7 +1190,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return LastModified.Count > 0;
                     }
-                   break;
+                    break;
                 case 14:
                     if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1118,7 +1200,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return ContentLength.Count > 0;
                     }
-                   break;
+                    break;
                 case 15:
                     if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1128,7 +1210,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return AcceptLanguage.Count > 0;
                     }
-                   break;
+                    break;
                 case 16:
                     if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1142,7 +1224,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return ContentLocation.Count > 0;
                     }
-                   break;
+                    break;
                 case 17:
                     if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1152,7 +1234,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return TransferEncoding.Count > 0;
                     }
-                   break;
+                    break;
                 case 19:
                     if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
@@ -1162,7 +1244,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         return ProxyAuthorization.Count > 0;
                     }
-                   break;
+                    break;
             }
             return false;
         }
@@ -1174,244 +1256,244 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 2:
                     if (string.Equals(key, HeaderNames.TE, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = TE;
-						return value.Count > 0;
+                        value = TE;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 3:
                     if (string.Equals(key, HeaderNames.Via, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Via;
-						return value.Count > 0;
+                        value = Via;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 4:
                     if (string.Equals(key, HeaderNames.Date, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Date;
-						return value.Count > 0;
+                        value = Date;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.From, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = From;
-						return value.Count > 0;
+                        value = From;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Host, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Host;
-						return value.Count > 0;
+                        value = Host;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 5:
                     if (string.Equals(key, HeaderNames.Allow, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Allow;
-						return value.Count > 0;
+                        value = Allow;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Range, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Range;
-						return value.Count > 0;
+                        value = Range;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 6:
                     if (string.Equals(key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Accept;
-						return value.Count > 0;
+                        value = Accept;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Cookie;
-						return value.Count > 0;
+                        value = Cookie;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Expect, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Expect;
-						return value.Count > 0;
+                        value = Expect;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Pragma, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Pragma;
-						return value.Count > 0;
+                        value = Pragma;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 7:
                     if (string.Equals(key, HeaderNames.Expires, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Expires;
-						return value.Count > 0;
+                        value = Expires;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Referer, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Referer;
-						return value.Count > 0;
+                        value = Referer;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Trailer, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Trailer;
-						return value.Count > 0;
+                        value = Trailer;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Upgrade;
-						return value.Count > 0;
+                        value = Upgrade;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.Warning, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Warning;
-						return value.Count > 0;
+                        value = Warning;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 8:
                     if (string.Equals(key, HeaderNames.IfMatch, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = IfMatch;
-						return value.Count > 0;
+                        value = IfMatch;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.IfRange, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = IfRange;
-						return value.Count > 0;
+                        value = IfRange;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 9:
                     if (string.Equals(key, HeaderNames.Translate, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Translate;
-						return value.Count > 0;
+                        value = Translate;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 10:
                     if (string.Equals(key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Connection;
-						return value.Count > 0;
+                        value = Connection;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = KeepAlive;
-						return value.Count > 0;
+                        value = KeepAlive;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = UserAgent;
-						return value.Count > 0;
+                        value = UserAgent;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 11:
                     if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentMD5;
-						return value.Count > 0;
+                        value = ContentMD5;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 12:
                     if (string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentType;
-						return value.Count > 0;
+                        value = ContentType;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = MaxForwards;
-						return value.Count > 0;
+                        value = MaxForwards;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 13:
                     if (string.Equals(key, HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = Authorization;
-						return value.Count > 0;
+                        value = Authorization;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = CacheControl;
-						return value.Count > 0;
+                        value = CacheControl;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.ContentRange, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentRange;
-						return value.Count > 0;
+                        value = ContentRange;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = IfNoneMatch;
-						return value.Count > 0;
+                        value = IfNoneMatch;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.LastModified, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = LastModified;
-						return value.Count > 0;
+                        value = LastModified;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 14:
                     if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = AcceptCharset;
-						return value.Count > 0;
+                        value = AcceptCharset;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentLength;
-						return value.Count > 0;
+                        value = ContentLength;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 15:
                     if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = AcceptEncoding;
-						return value.Count > 0;
+                        value = AcceptEncoding;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = AcceptLanguage;
-						return value.Count > 0;
+                        value = AcceptLanguage;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 16:
                     if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentEncoding;
-						return value.Count > 0;
+                        value = ContentEncoding;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentLanguage;
-						return value.Count > 0;
+                        value = ContentLanguage;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ContentLocation;
-						return value.Count > 0;
+                        value = ContentLocation;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 17:
                     if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = IfModifiedSince;
-						return value.Count > 0;
+                        value = IfModifiedSince;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = TransferEncoding;
-						return value.Count > 0;
+                        value = TransferEncoding;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
                 case 19:
                     if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = IfUnmodifiedSince;
-						return value.Count > 0;
+                        value = IfUnmodifiedSince;
+                        return value.Count > 0;
                     }
                     if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.OrdinalIgnoreCase))
                     {
-					    value = ProxyAuthorization;
-						return value.Count > 0;
+                        value = ProxyAuthorization;
+                        return value.Count > 0;
                     }
-                   break;
+                    break;
             }
-            value = StringValues.Empty;
+            value = default;
             return false;
         }
 
@@ -1422,283 +1504,242 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 2:
                     if (string.Equals(key, HeaderNames.TE, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x2u;
                         TE = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 3:
                     if (string.Equals(key, HeaderNames.Via, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x80u;
                         Via = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 4:
                     if (string.Equals(key, HeaderNames.Date, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x10000u;
                         Date = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.From, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x80000u;
                         From = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Host, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x100000u;
                         Host = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 5:
                     if (string.Equals(key, HeaderNames.Allow, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x10u;
                         Allow = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Range, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x80000000u;
                         Range = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 6:
                     if (string.Equals(key, HeaderNames.Accept, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x1u;
                         Accept = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x8000u;
                         Cookie = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Expect, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x20000u;
                         Expect = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Pragma, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x20000000u;
                         Pragma = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 7:
                     if (string.Equals(key, HeaderNames.Expires, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x40000u;
                         Expires = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Referer, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x1u;
                         Referer = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Trailer, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x4u;
                         Trailer = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Upgrade, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x20u;
                         Upgrade = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.Warning, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x100u;
                         Warning = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 8:
                     if (string.Equals(key, HeaderNames.IfMatch, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x200000u;
                         IfMatch = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.IfRange, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x1000000u;
                         IfRange = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 9:
                     if (string.Equals(key, HeaderNames.Translate, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x10u;
                         Translate = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 10:
                     if (string.Equals(key, HeaderNames.Connection, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x80u;
                         Connection = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x4000000u;
                         KeepAlive = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x40u;
                         UserAgent = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 11:
                     if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x1000u;
                         ContentMD5 = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 12:
                     if (string.Equals(key, HeaderNames.ContentType, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x4000u;
                         ContentType = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x10000000u;
                         MaxForwards = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 13:
                     if (string.Equals(key, HeaderNames.Authorization, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x20u;
                         Authorization = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x40u;
                         CacheControl = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.ContentRange, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x2000u;
                         ContentRange = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x800000u;
                         IfNoneMatch = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.LastModified, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x8000000u;
                         LastModified = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 14:
                     if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x2u;
                         AcceptCharset = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x400u;
                         ContentLength = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 15:
                     if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x4u;
                         AcceptEncoding = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x8u;
                         AcceptLanguage = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 16:
                     if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x100u;
                         ContentEncoding = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x200u;
                         ContentLanguage = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x800u;
                         ContentLocation = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 17:
                     if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x400000u;
                         IfModifiedSince = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag1 |= 0x8u;
                         TransferEncoding = value;
                         return true;
                     }
-                   break;
+                    break;
                 case 19:
                     if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x2000000u;
                         IfUnmodifiedSince = value;
                         return true;
                     }
                     if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.OrdinalIgnoreCase))
                     {
-                        _flag0 |= 0x40000000u;
                         ProxyAuthorization = value;
                         return true;
                     }
-                   break;
+                    break;
             }
             return false;
         }
@@ -1708,326 +1749,449 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if (_TE.Count > 0
-                        && string.Equals(key, HeaderNames.TE, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.TE, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x2u) != 0);
-                        TE = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Te))
+                        {
+                            TE = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 3:
-                    if (_Via.Count > 0
-                        && string.Equals(key, HeaderNames.Via, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Via, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x80u) != 0);
-                        Via = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Via))
+                        {
+                            Via = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 4:
-                    if (_Date.Count > 0
-                        && string.Equals(key, HeaderNames.Date, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Date, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x10000u) != 0);
-                        Date = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Date))
+                        {
+                            Date = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_From.Count > 0
-                        && string.Equals(key, HeaderNames.From, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.From, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x80000u) != 0);
-                        From = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.From))
+                        {
+                            From = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Host.Count > 0
-                        && string.Equals(key, HeaderNames.Host, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Host, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x100000u) != 0);
-                        Host = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Host))
+                        {
+                            Host = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 5:
-                    if (_Allow.Count > 0
-                        && string.Equals(key, HeaderNames.Allow, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Allow, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x10u) != 0);
-                        Allow = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Allow))
+                        {
+                            Allow = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Range.Count > 0
-                        && string.Equals(key, HeaderNames.Range, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Range, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x80000000u) != 0);
-                        Range = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Range))
+                        {
+                            Range = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 6:
-                    if (_Accept.Count > 0
-                        && string.Equals(key, HeaderNames.Accept, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Accept, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x1u) != 0);
-                        Accept = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Accept))
+                        {
+                            Accept = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Cookie.Count > 0
-                        && string.Equals(key, HeaderNames.Cookie, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Cookie, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x8000u) != 0);
-                        Cookie = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Cookie))
+                        {
+                            Cookie = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Expect.Count > 0
-                        && string.Equals(key, HeaderNames.Expect, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Expect, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x20000u) != 0);
-                        Expect = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Expect))
+                        {
+                            Expect = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Pragma.Count > 0
-                        && string.Equals(key, HeaderNames.Pragma, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Pragma, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x20000000u) != 0);
-                        Pragma = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Pragma))
+                        {
+                            Pragma = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 7:
-                    if (_Expires.Count > 0
-                        && string.Equals(key, HeaderNames.Expires, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Expires, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x40000u) != 0);
-                        Expires = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Expires))
+                        {
+                            Expires = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Referer.Count > 0
-                        && string.Equals(key, HeaderNames.Referer, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Referer, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x1u) != 0);
-                        Referer = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Referer))
+                        {
+                            Referer = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Trailer.Count > 0
-                        && string.Equals(key, HeaderNames.Trailer, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Trailer, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x4u) != 0);
-                        Trailer = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Trailer))
+                        {
+                            Trailer = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Upgrade.Count > 0
-                        && string.Equals(key, HeaderNames.Upgrade, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Upgrade, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x20u) != 0);
-                        Upgrade = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Upgrade))
+                        {
+                            Upgrade = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_Warning.Count > 0
-                        && string.Equals(key, HeaderNames.Warning, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.Warning, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x100u) != 0);
-                        Warning = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Warning))
+                        {
+                            Warning = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 8:
-                    if (_IfMatch.Count > 0
-                        && string.Equals(key, HeaderNames.IfMatch, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.IfMatch, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x200000u) != 0);
-                        IfMatch = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfMatch))
+                        {
+                            IfMatch = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_IfRange.Count > 0
-                        && string.Equals(key, HeaderNames.IfRange, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.IfRange, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x1000000u) != 0);
-                        IfRange = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfRange))
+                        {
+                            IfRange = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 9:
-                    if (_Translate.Count > 0
-                        && string.Equals(key, HeaderNames.Translate, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Translate, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x10u) != 0);
-                        Translate = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Translate))
+                        {
+                            Translate = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 10:
-                    if (_Connection.Count > 0
-                        && string.Equals(key, HeaderNames.Connection, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Connection, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x80u) != 0);
-                        Connection = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Connection))
+                        {
+                            Connection = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_KeepAlive.Count > 0
-                        && string.Equals(key, HeaderNames.KeepAlive, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.KeepAlive, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x4000000u) != 0);
-                        KeepAlive = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.KeepAlive))
+                        {
+                            KeepAlive = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_UserAgent.Count > 0
-                        && string.Equals(key, HeaderNames.UserAgent, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.UserAgent, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x40u) != 0);
-                        UserAgent = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.UserAgent))
+                        {
+                            UserAgent = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 11:
-                    if (_ContentMD5.Count > 0
-                        && string.Equals(key, HeaderNames.ContentMD5, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.ContentMD5, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x1000u) != 0);
-                        ContentMD5 = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentMd5))
+                        {
+                            ContentMD5 = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 12:
-                    if (_ContentType.Count > 0
-                        && string.Equals(key, HeaderNames.ContentType, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.ContentType, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x4000u) != 0);
-                        ContentType = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentType))
+                        {
+                            ContentType = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_MaxForwards.Count > 0
-                        && string.Equals(key, HeaderNames.MaxForwards, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.MaxForwards, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x10000000u) != 0);
-                        MaxForwards = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.MaxForwards))
+                        {
+                            MaxForwards = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 13:
-                    if (_Authorization.Count > 0
-                        && string.Equals(key, HeaderNames.Authorization, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.Authorization, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x20u) != 0);
-                        Authorization = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.Authorization))
+                        {
+                            Authorization = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_CacheControl.Count > 0
-                        && string.Equals(key, HeaderNames.CacheControl, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.CacheControl, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x40u) != 0);
-                        CacheControl = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.CacheControl))
+                        {
+                            CacheControl = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_ContentRange.Count > 0
-                        && string.Equals(key, HeaderNames.ContentRange, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentRange, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x2000u) != 0);
-                        ContentRange = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentRange))
+                        {
+                            ContentRange = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_IfNoneMatch.Count > 0
-                        && string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.IfNoneMatch, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x800000u) != 0);
-                        IfNoneMatch = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfNoneMatch))
+                        {
+                            IfNoneMatch = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_LastModified.Count > 0
-                        && string.Equals(key, HeaderNames.LastModified, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.LastModified, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x8000000u) != 0);
-                        LastModified = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.LastModified))
+                        {
+                            LastModified = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 14:
-                    if (_AcceptCharset.Count > 0
-                        && string.Equals(key, HeaderNames.AcceptCharset, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.AcceptCharset, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x2u) != 0);
-                        AcceptCharset = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.AcceptCharset))
+                        {
+                            AcceptCharset = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_ContentLength.Count > 0
-                        && string.Equals(key, HeaderNames.ContentLength, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentLength, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x400u) != 0);
-                        ContentLength = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentLength))
+                        {
+                            ContentLength = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 15:
-                    if (_AcceptEncoding.Count > 0
-                        && string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.AcceptEncoding, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x4u) != 0);
-                        AcceptEncoding = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.AcceptEncoding))
+                        {
+                            AcceptEncoding = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_AcceptLanguage.Count > 0
-                        && string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.AcceptLanguage, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x8u) != 0);
-                        AcceptLanguage = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.AcceptLanguage))
+                        {
+                            AcceptLanguage = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 16:
-                    if (_ContentEncoding.Count > 0
-                        && string.Equals(key, HeaderNames.ContentEncoding, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.ContentEncoding, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x100u) != 0);
-                        ContentEncoding = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentEncoding))
+                        {
+                            ContentEncoding = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_ContentLanguage.Count > 0
-                        && string.Equals(key, HeaderNames.ContentLanguage, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentLanguage, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x200u) != 0);
-                        ContentLanguage = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentLanguage))
+                        {
+                            ContentLanguage = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_ContentLocation.Count > 0
-                        && string.Equals(key, HeaderNames.ContentLocation, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ContentLocation, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x800u) != 0);
-                        ContentLocation = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ContentLocation))
+                        {
+                            ContentLocation = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 17:
-                    if (_IfModifiedSince.Count > 0
-                        && string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.IfModifiedSince, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x400000u) != 0);
-                        IfModifiedSince = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfModifiedSince))
+                        {
+                            IfModifiedSince = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_TransferEncoding.Count > 0
-                        && string.Equals(key, HeaderNames.TransferEncoding, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.TransferEncoding, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x8u) != 0);
-                        TransferEncoding = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.TransferEncoding))
+                        {
+                            TransferEncoding = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
                 case 19:
-                    if (_IfUnmodifiedSince.Count > 0
-                        && string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.Ordinal))
+                    if (string.Equals(key, HeaderNames.IfUnmodifiedSince, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x2000000u) != 0);
-                        IfUnmodifiedSince = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince))
+                        {
+                            IfUnmodifiedSince = default;
+                            return true;
+                        }
+                        return false;
                     }
-                    if (_ProxyAuthorization.Count > 0
-                        && string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.Ordinal))
+
+                    if (string.Equals(key, HeaderNames.ProxyAuthorization, StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x40000000u) != 0);
-                        ProxyAuthorization = StringValues.Empty;
-                        return wasSet;
+                        if (HasKnownHeader(HttpSysRequestHeader.ProxyAuthorization))
+                        {
+                            ProxyAuthorization = default;
+                            return true;
+                        }
+                        return false;
                     }
-                   break;
+
+                    break;
             }
             return false;
         }
@@ -2535,5 +2699,142 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 yield return new KeyValuePair<string, StringValues>(HeaderNames.Warning, Warning);
             }
         }
+
+        private static ReadOnlySpan<HttpSysRequestHeader> HeaderKeys =>
+        [
+            HttpSysRequestHeader.Accept,
+            HttpSysRequestHeader.AcceptCharset,
+            HttpSysRequestHeader.AcceptEncoding,
+            HttpSysRequestHeader.AcceptLanguage,
+            HttpSysRequestHeader.Allow,
+            HttpSysRequestHeader.Authorization,
+            HttpSysRequestHeader.CacheControl,
+            HttpSysRequestHeader.Connection,
+            HttpSysRequestHeader.ContentEncoding,
+            HttpSysRequestHeader.ContentLanguage,
+            HttpSysRequestHeader.ContentLength,
+            HttpSysRequestHeader.ContentLocation,
+            HttpSysRequestHeader.ContentMd5,
+            HttpSysRequestHeader.ContentRange,
+            HttpSysRequestHeader.ContentType,
+            HttpSysRequestHeader.Cookie,
+            HttpSysRequestHeader.Date,
+            HttpSysRequestHeader.Expect,
+            HttpSysRequestHeader.Expires,
+            HttpSysRequestHeader.From,
+            HttpSysRequestHeader.Host,
+            HttpSysRequestHeader.IfMatch,
+            HttpSysRequestHeader.IfModifiedSince,
+            HttpSysRequestHeader.IfNoneMatch,
+            HttpSysRequestHeader.IfRange,
+            HttpSysRequestHeader.IfUnmodifiedSince,
+            HttpSysRequestHeader.KeepAlive,
+            HttpSysRequestHeader.LastModified,
+            HttpSysRequestHeader.MaxForwards,
+            HttpSysRequestHeader.Pragma,
+            HttpSysRequestHeader.ProxyAuthorization,
+            HttpSysRequestHeader.Range,
+            HttpSysRequestHeader.Referer,
+            HttpSysRequestHeader.Te,
+            HttpSysRequestHeader.Trailer,
+            HttpSysRequestHeader.TransferEncoding,
+            HttpSysRequestHeader.Translate,
+            HttpSysRequestHeader.Upgrade,
+            HttpSysRequestHeader.UserAgent,
+            HttpSysRequestHeader.Via,
+            HttpSysRequestHeader.Warning,
+        ];
+
+        private string GetHeaderKeyName(HttpSysRequestHeader header) => header switch
+        {
+            HttpSysRequestHeader.Accept => HeaderNames.Accept,
+            HttpSysRequestHeader.AcceptCharset => HeaderNames.AcceptCharset,
+            HttpSysRequestHeader.AcceptEncoding => HeaderNames.AcceptEncoding,
+            HttpSysRequestHeader.AcceptLanguage => HeaderNames.AcceptLanguage,
+            HttpSysRequestHeader.Allow => HeaderNames.Allow,
+            HttpSysRequestHeader.Authorization => HeaderNames.Authorization,
+            HttpSysRequestHeader.CacheControl => HeaderNames.CacheControl,
+            HttpSysRequestHeader.Connection => HeaderNames.Connection,
+            HttpSysRequestHeader.ContentEncoding => HeaderNames.ContentEncoding,
+            HttpSysRequestHeader.ContentLanguage => HeaderNames.ContentLanguage,
+            HttpSysRequestHeader.ContentLength => HeaderNames.ContentLength,
+            HttpSysRequestHeader.ContentLocation => HeaderNames.ContentLocation,
+            HttpSysRequestHeader.ContentMd5 => HeaderNames.ContentMD5,
+            HttpSysRequestHeader.ContentRange => HeaderNames.ContentRange,
+            HttpSysRequestHeader.ContentType => HeaderNames.ContentType,
+            HttpSysRequestHeader.Cookie => HeaderNames.Cookie,
+            HttpSysRequestHeader.Date => HeaderNames.Date,
+            HttpSysRequestHeader.Expect => HeaderNames.Expect,
+            HttpSysRequestHeader.Expires => HeaderNames.Expires,
+            HttpSysRequestHeader.From => HeaderNames.From,
+            HttpSysRequestHeader.Host => HeaderNames.Host,
+            HttpSysRequestHeader.IfMatch => HeaderNames.IfMatch,
+            HttpSysRequestHeader.IfModifiedSince => HeaderNames.IfModifiedSince,
+            HttpSysRequestHeader.IfNoneMatch => HeaderNames.IfNoneMatch,
+            HttpSysRequestHeader.IfRange => HeaderNames.IfRange,
+            HttpSysRequestHeader.IfUnmodifiedSince => HeaderNames.IfUnmodifiedSince,
+            HttpSysRequestHeader.KeepAlive => HeaderNames.KeepAlive,
+            HttpSysRequestHeader.LastModified => HeaderNames.LastModified,
+            HttpSysRequestHeader.MaxForwards => HeaderNames.MaxForwards,
+            HttpSysRequestHeader.Pragma => HeaderNames.Pragma,
+            HttpSysRequestHeader.ProxyAuthorization => HeaderNames.ProxyAuthorization,
+            HttpSysRequestHeader.Range => HeaderNames.Range,
+            HttpSysRequestHeader.Referer => HeaderNames.Referer,
+            HttpSysRequestHeader.Te => HeaderNames.TE,
+            HttpSysRequestHeader.Trailer => HeaderNames.Trailer,
+            HttpSysRequestHeader.TransferEncoding => HeaderNames.TransferEncoding,
+            HttpSysRequestHeader.Translate => HeaderNames.Translate,
+            HttpSysRequestHeader.Upgrade => HeaderNames.Upgrade,
+            HttpSysRequestHeader.UserAgent => HeaderNames.UserAgent,
+            HttpSysRequestHeader.Via => HeaderNames.Via,
+            HttpSysRequestHeader.Warning => HeaderNames.Warning,
+            _ => throw new NotImplementedException()
+        };
+
+        private bool HasKnownHeader(HttpSysRequestHeader header) => header switch
+        {
+            HttpSysRequestHeader.Accept => (_flag0 & 0x1u) != 0 ? _Accept.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Accept),
+            HttpSysRequestHeader.AcceptCharset => (_flag0 & 0x2u) != 0 ? _AcceptCharset.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptCharset),
+            HttpSysRequestHeader.AcceptEncoding => (_flag0 & 0x4u) != 0 ? _AcceptEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptEncoding),
+            HttpSysRequestHeader.AcceptLanguage => (_flag0 & 0x8u) != 0 ? _AcceptLanguage.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.AcceptLanguage),
+            HttpSysRequestHeader.Allow => (_flag0 & 0x10u) != 0 ? _Allow.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Allow),
+            HttpSysRequestHeader.Authorization => (_flag0 & 0x20u) != 0 ? _Authorization.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Authorization),
+            HttpSysRequestHeader.CacheControl => (_flag0 & 0x40u) != 0 ? _CacheControl.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.CacheControl),
+            HttpSysRequestHeader.Connection => (_flag0 & 0x80u) != 0 ? _Connection.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Connection),
+            HttpSysRequestHeader.ContentEncoding => (_flag0 & 0x100u) != 0 ? _ContentEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentEncoding),
+            HttpSysRequestHeader.ContentLanguage => (_flag0 & 0x200u) != 0 ? _ContentLanguage.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLanguage),
+            HttpSysRequestHeader.ContentLength => (_flag0 & 0x400u) != 0 ? _ContentLength.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLength),
+            HttpSysRequestHeader.ContentLocation => (_flag0 & 0x800u) != 0 ? _ContentLocation.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentLocation),
+            HttpSysRequestHeader.ContentMd5 => (_flag0 & 0x1000u) != 0 ? _ContentMD5.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentMd5),
+            HttpSysRequestHeader.ContentRange => (_flag0 & 0x2000u) != 0 ? _ContentRange.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentRange),
+            HttpSysRequestHeader.ContentType => (_flag0 & 0x4000u) != 0 ? _ContentType.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ContentType),
+            HttpSysRequestHeader.Cookie => (_flag0 & 0x8000u) != 0 ? _Cookie.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Cookie),
+            HttpSysRequestHeader.Date => (_flag0 & 0x10000u) != 0 ? _Date.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Date),
+            HttpSysRequestHeader.Expect => (_flag0 & 0x20000u) != 0 ? _Expect.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Expect),
+            HttpSysRequestHeader.Expires => (_flag0 & 0x40000u) != 0 ? _Expires.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Expires),
+            HttpSysRequestHeader.From => (_flag0 & 0x80000u) != 0 ? _From.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.From),
+            HttpSysRequestHeader.Host => (_flag0 & 0x100000u) != 0 ? _Host.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Host),
+            HttpSysRequestHeader.IfMatch => (_flag0 & 0x200000u) != 0 ? _IfMatch.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfMatch),
+            HttpSysRequestHeader.IfModifiedSince => (_flag0 & 0x400000u) != 0 ? _IfModifiedSince.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfModifiedSince),
+            HttpSysRequestHeader.IfNoneMatch => (_flag0 & 0x800000u) != 0 ? _IfNoneMatch.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfNoneMatch),
+            HttpSysRequestHeader.IfRange => (_flag0 & 0x1000000u) != 0 ? _IfRange.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfRange),
+            HttpSysRequestHeader.IfUnmodifiedSince => (_flag0 & 0x2000000u) != 0 ? _IfUnmodifiedSince.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince),
+            HttpSysRequestHeader.KeepAlive => (_flag0 & 0x4000000u) != 0 ? _KeepAlive.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.KeepAlive),
+            HttpSysRequestHeader.LastModified => (_flag0 & 0x8000000u) != 0 ? _LastModified.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.LastModified),
+            HttpSysRequestHeader.MaxForwards => (_flag0 & 0x10000000u) != 0 ? _MaxForwards.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.MaxForwards),
+            HttpSysRequestHeader.Pragma => (_flag0 & 0x20000000u) != 0 ? _Pragma.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Pragma),
+            HttpSysRequestHeader.ProxyAuthorization => (_flag0 & 0x40000000u) != 0 ? _ProxyAuthorization.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.ProxyAuthorization),
+            HttpSysRequestHeader.Range => (_flag0 & 0x80000000u) != 0 ? _Range.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Range),
+            HttpSysRequestHeader.Referer => (_flag1 & 0x1u) != 0 ? _Referer.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Referer),
+            HttpSysRequestHeader.Te => (_flag1 & 0x2u) != 0 ? _TE.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Te),
+            HttpSysRequestHeader.Trailer => (_flag1 & 0x4u) != 0 ? _Trailer.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Trailer),
+            HttpSysRequestHeader.TransferEncoding => (_flag1 & 0x8u) != 0 ? _TransferEncoding.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.TransferEncoding),
+            HttpSysRequestHeader.Translate => (_flag1 & 0x10u) != 0 ? _Translate.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Translate),
+            HttpSysRequestHeader.Upgrade => (_flag1 & 0x20u) != 0 ? _Upgrade.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Upgrade),
+            HttpSysRequestHeader.UserAgent => (_flag1 & 0x40u) != 0 ? _UserAgent.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.UserAgent),
+            HttpSysRequestHeader.Via => (_flag1 & 0x80u) != 0 ? _Via.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Via),
+            HttpSysRequestHeader.Warning => (_flag1 & 0x100u) != 0 ? _Warning.Count > 0 : _requestMemoryBlob.HasKnownHeader(HttpSysRequestHeader.Warning),
+            _ => throw new NotImplementedException()
+        };
     }
 }

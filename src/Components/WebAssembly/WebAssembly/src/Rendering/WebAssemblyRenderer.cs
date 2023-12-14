@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -16,18 +19,54 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a
 /// web browser, dispatching events to them, and refreshing the UI as required.
 /// </summary>
-internal partial class WebAssemblyRenderer : WebRenderer
+internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
-        // The WebAssembly renderer registers and unregisters itself with the static registry
-        RendererId = RendererRegistry.Add(this);
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
+        DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
+    {
+        var webRootComponentManager = GetOrCreateWebRootComponentManager();
+        for (var i = 0; i < batch.Operations.Length; i++)
+        {
+            var operation = batch.Operations[i];
+            switch (operation.Type)
+            {
+                case RootComponentOperationType.Add:
+                    _ = webRootComponentManager.AddRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker!.Value.Key!,
+                        operation.Descriptor!.Parameters);
+                    break;
+                case RootComponentOperationType.Update:
+                    _ = webRootComponentManager.UpdateRootComponentAsync(
+                        operation.SsrComponentId,
+                        operation.Descriptor!.ComponentType,
+                        operation.Marker?.Key,
+                        operation.Descriptor!.Parameters);
+                    break;
+                case RootComponentOperationType.Remove:
+                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                    break;
+            }
+        }
+
+        NotifyEndUpdateRootComponents(batch.BatchId);
+    }
+
+    public static void NotifyEndUpdateRootComponents(long batchId)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
     }
 
     public override Dispatcher Dispatcher => NullDispatcher.Instance;
@@ -37,6 +76,8 @@ internal partial class WebAssemblyRenderer : WebRenderer
         var componentId = AddRootComponent(componentType, domElementSelector);
         return RenderRootComponentAsync(componentId, parameters);
     }
+
+    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
@@ -51,7 +92,6 @@ internal partial class WebAssemblyRenderer : WebRenderer
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        RendererRegistry.TryRemove(RendererId);
     }
 
     /// <inheritdoc />
@@ -81,12 +121,20 @@ internal partial class WebAssemblyRenderer : WebRenderer
     private void CallBaseProcessPendingRender() => base.ProcessPendingRender();
 
     /// <inheritdoc />
-    protected override Task UpdateDisplayAsync(in RenderBatch batch)
+    protected override unsafe Task UpdateDisplayAsync(in RenderBatch batch)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
-            "Blazor._internal.renderBatch",
-            RendererId,
-            batch);
+        // This is a GC hazard - it would be ideal to pin 'batch' and all its contents to prevent
+        // it from getting moved, or pause the GC for the duration of the 'RenderBatch()' call.
+        // The key mitigation is that the JS-side code always processes renderbatches synchronously
+        // and never calls back into .NET during that process, so GC cannot run (assuming it would
+        // only run on the current thread).
+        // As an early-warning system in case we accidentally introduce bugs and violate that rule,
+        // or for edge cases where user code can be invoked during rendering (e.g., DOM mutation
+        // observers) we further enforce it on the JS side using a notion of "locking the heap"
+        // during rendering, which prevents any JS-to-.NET calls that go through Blazor APIs such
+        // as DotNet.invokeMethod or event handlers.
+        var batchCopy = batch;
+        RenderBatch(RendererId, Unsafe.AsPointer(ref batchCopy));
 
         if (WebAssemblyCallQueue.HasUnstartedWork)
         {
@@ -122,9 +170,19 @@ internal partial class WebAssemblyRenderer : WebRenderer
         }
     }
 
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
+        {
+            InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
+        };
+
     private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         public static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
     }
+
+    [JSImport("Blazor._internal.renderBatch", "blazor-internal")]
+    private static unsafe partial void RenderBatch(int id, void* batch);
 }

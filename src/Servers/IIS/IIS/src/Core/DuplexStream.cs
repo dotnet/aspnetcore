@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 // See https://github.com/aspnet/IISIntegration/issues/426
-internal class DuplexStream : Stream
+internal sealed class DuplexStream : Stream
 {
     private readonly Stream _requestBody;
     private readonly Stream _responseBody;

@@ -28,10 +28,7 @@ public class StringOutputFormatter : TextOutputFormatter
     /// </summary>
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.ObjectType == typeof(string) || context.Object is string)
         {
@@ -45,15 +42,8 @@ public class StringOutputFormatter : TextOutputFormatter
     /// <inheritdoc/>
     public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding encoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var valueAsString = (string?)context.Object;
         if (string.IsNullOrEmpty(valueAsString))

@@ -1,13 +1,13 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Razor Class Library",
-  "description": "A project for creating a Razor class library that targets .NET Standard",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/SupportPagesAndViews/displayName": "Support pages and views",
-  "symbols/SupportPagesAndViews/description": "Whether to support adding traditional Razor pages and Views in addition to components to this library.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
-  "postActions/openInEditor/description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor"
+  "name": "Razor 类库",
+  "description": "用于创建目标为 .NET 的 Razor 类库的项目",
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/Framework/choices/net8.0/description": "目标 net8.0",
+  "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
+  "symbols/SupportPagesAndViews/displayName": "支持页面和视图",
+  "symbols/SupportPagesAndViews/description": "是否支持将传统的 Razor Pages 和视图添加到此库。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\"",
+  "postActions/openInEditor/description": "在编辑器中打开 Areas/MyFeature/Pages/Page1.cshtml"
 }

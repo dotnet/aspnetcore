@@ -195,7 +195,7 @@ internal abstract class BaseCommand : CommandLineApplication
         foreach (var kvp in attributePackages)
         {
             var packageId = kvp.Key;
-            var version = urlPackages != null && urlPackages.ContainsKey(packageId) ? urlPackages[packageId] : kvp.Value;
+            var version = urlPackages != null && urlPackages.TryGetValue(packageId, out var urlPackageVersion) ? urlPackageVersion : kvp.Value;
 
             await TryAddPackage(packageId, version, projectFile);
         }

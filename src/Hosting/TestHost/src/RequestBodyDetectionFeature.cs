@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-internal class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
+internal sealed class RequestBodyDetectionFeature : IHttpRequestBodyDetectionFeature
 {
     public RequestBodyDetectionFeature(bool canHaveBody)
     {

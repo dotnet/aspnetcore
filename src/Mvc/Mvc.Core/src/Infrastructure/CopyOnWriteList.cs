@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Collections;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-internal class CopyOnWriteList<T> : IList<T>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(CopyOnWriteList<>.CopyOnWriteListDebugView))]
+internal sealed class CopyOnWriteList<T> : IList<T>
 {
     private readonly IReadOnlyList<T> _source;
     private List<T>? _copy;
@@ -112,5 +114,13 @@ internal class CopyOnWriteList<T> : IList<T>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    private sealed class CopyOnWriteListDebugView(CopyOnWriteList<T> collection)
+    {
+        private readonly CopyOnWriteList<T> _collection = collection;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _collection.ToArray();
     }
 }

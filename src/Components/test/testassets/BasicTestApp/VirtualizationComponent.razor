@@ -14,18 +14,38 @@
 
 <p>
     Asynchronous:<br />
-    <button id="finish-loading-button" @onclick="FinishLoadingAsync">Finish loading</button><br />
+    <button id="finish-loading-button-empty" @onclick="() => FinishLoadingAsync(0)">Finish loading with total item count = 0</button><br />
+    <button id="finish-loading-button" @onclick="() => FinishLoadingAsync(200)">Finish loading with total item count = 200</button><br />
+    <button id="refresh-data-async" @onclick="() => asyncComponent.RefreshDataAsync()">Call RefreshDataAsync</button><br />
     Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
     <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
+        <Virtualize @ref="asyncComponent" ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <ItemContent>
                 <div @key="context" id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </ItemContent>
             <Placeholder>
                 <div id="async-placeholder" style="height: @(context.Size)px; background-color: orange;">Loading item @context.Index...</div>
             </Placeholder>
+            <EmptyContent>
+                <p id="no-data-async">No data to show</p>
+            </EmptyContent>
         </Virtualize>
     </div>
+</p>
+
+<p>
+    Empty Content:<br />
+<div id="empty-container" style="background-color: #eee; height: 100px; overflow-y: auto">
+    <Virtualize Items="@emptyCollection" ItemSize="itemSize">
+        <ItemContent>
+            <div @key="context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">
+                Item @context</div>
+        </ItemContent>
+        <EmptyContent>
+            <p id="no-data-sync">No data to show</p>
+        </EmptyContent>
+    </Virtualize>
+</div>
 </p>
 
 <p>
@@ -47,12 +67,13 @@
 @code {
     float itemSize = 100;
     ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+    ICollection<int> emptyCollection = Array.Empty<int>();
 
     int asyncTotalItemCount = 200;
     int asyncCancellationCount = 0;
     TaskCompletionSource asyncTcs = new TaskCompletionSource();
 
-    HashSet<int> cachedItems = new HashSet<int>();
+    Virtualize<int> asyncComponent;
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
@@ -67,8 +88,9 @@
         return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), asyncTotalItemCount);
     }
 
-    void FinishLoadingAsync()
+    void FinishLoadingAsync(int totalItemCount)
     {
+        asyncTotalItemCount = totalItemCount;
         asyncTcs.SetResult();
         asyncTcs = new TaskCompletionSource();
     }

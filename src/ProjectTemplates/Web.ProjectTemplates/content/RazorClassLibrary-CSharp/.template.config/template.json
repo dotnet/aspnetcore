@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json.schemastore.org/template",
+  "$schema": "https://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
     "Web",
@@ -8,10 +8,10 @@
   ],
   "name": "Razor Class Library",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a Razor class library that targets .NET Standard",
+  "description": "A project for creating a Razor class library that targets .NET",
   "groupIdentity": "Microsoft.Web.Razor",
-  "precedence": "9000",
-  "identity": "Microsoft.Web.Razor.Library.CSharp.7.0",
+  "precedence": "9900",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.9.0",
   "shortName": "razorclasslib",
   "tags": {
     "language": "C#",
@@ -48,11 +48,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net7.0",
-          "description": "Target net7.0"
+          "choice": "net9.0",
+          "description": "Target net9.0"
         }
       ],
-      "defaultValue": "net7.0"
+      "defaultValue": "net9.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -69,7 +69,7 @@
       "datatype": "bool",
       "defaultValue": "false",
       "displayName": "Support pages and views",
-      "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
+      "description": "Whether to support adding traditional Razor pages and Views to this library."
     }
   },
   "primaryOutputs": [

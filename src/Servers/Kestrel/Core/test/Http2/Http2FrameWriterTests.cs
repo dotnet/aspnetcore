@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
 
@@ -56,7 +56,7 @@ public class Http2FrameWriterTests
     private Http2FrameWriter CreateFrameWriter(Pipe pipe)
     {
         var serviceContext = TestContextFactory.CreateServiceContext(new KestrelServerOptions());
-        return new Http2FrameWriter(pipe.Writer, null, null, null, null, null, null, _dirtyMemoryPool, serviceContext);
+        return new Http2FrameWriter(pipe.Writer, null, null, 1, null, null, null, _dirtyMemoryPool, serviceContext);
     }
 
     [Fact]

@@ -22,10 +22,13 @@
     <Reference Include="System.ComponentModel" />
     <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.AspNetCore.Components.CustomElements" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />
+    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
-    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.wasm" />
   </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->

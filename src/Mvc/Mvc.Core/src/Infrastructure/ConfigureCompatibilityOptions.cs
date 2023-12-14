@@ -29,10 +29,7 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
         ILoggerFactory loggerFactory,
         IOptions<MvcCompatibilityOptions> compatibilityOptions)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         Version = compatibilityOptions.Value.CompatibilityVersion;
         _logger = loggerFactory.CreateLogger<TOptions>();
@@ -52,15 +49,8 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
     /// <inheritdoc />
     public virtual void PostConfigure(string? name, TOptions options)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(options);
 
         // Evaluate DefaultValues once so subclasses don't have to cache.
         var defaultValues = DefaultValues;
@@ -75,30 +65,39 @@ public abstract class ConfigureCompatibilityOptions<TOptions> : IPostConfigureOp
     {
         if (@switch.IsValueSet)
         {
-            _logger.LogDebug(
-                "Compatibility switch {SwitchName} in type {OptionsType} is using explicitly configured value {Value}",
-                @switch.Name,
-                typeof(TOptions).Name,
-                @switch.Value);
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug(
+                    "Compatibility switch {SwitchName} in type {OptionsType} is using explicitly configured value {Value}",
+                    @switch.Name,
+                    typeof(TOptions).Name,
+                    @switch.Value);
+            }
             return;
         }
 
         if (!defaultValues.TryGetValue(@switch.Name, out var value))
         {
-            _logger.LogDebug(
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug(
                 "Compatibility switch {SwitchName} in type {OptionsType} is using default value {Value}",
                 @switch.Name,
                 typeof(TOptions).Name,
                 @switch.Value);
+            }
             return;
         }
 
         @switch.Value = value;
-        _logger.LogDebug(
-            "Compatibility switch {SwitchName} in type {OptionsType} is using compatibility value {Value} for version {Version}",
-            @switch.Name,
-            typeof(TOptions).Name,
-            @switch.Value,
-            Version);
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            _logger.LogDebug(
+                "Compatibility switch {SwitchName} in type {OptionsType} is using compatibility value {Value} for version {Version}",
+                @switch.Name,
+                typeof(TOptions).Name,
+                @switch.Value,
+                Version);
+        }
     }
 }

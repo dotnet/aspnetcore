@@ -5,7 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -85,16 +85,6 @@ public class JSRootComponentsTest : ServerTestBase<ToggleExecutionModeServerFixt
         Browser.Equal("2", () => dynamicRootContainer.FindElement(By.ClassName("click-count")).Text);
 
         AssertGlobalErrorState(false);
-    }
-
-    [Fact]
-    public void CannotAddMultipleRootComponentsToTheSameElementAtTheSameTime()
-    {
-        // Try adding a second without removing the first
-        app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
-        app.FindElement(By.Id("add-root-component-inside-blazor")).Click();
-
-        AssertGlobalErrorState(true);
     }
 
     [Fact]

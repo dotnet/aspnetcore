@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
@@ -159,23 +160,29 @@ public class SharedFxTests
     [Fact]
     public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
     {
-        // Only test managed assemblies from dotnet/aspnetcore.
+        // Assemblies from this repo and dotnet/runtime don't always have identical assembly versions.
         var repoAssemblies = TestData.GetSharedFrameworkBinariesFromRepo()
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
         var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);
+        var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
+        var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
+
         var dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories);
         Assert.NotEmpty(dlls);
 
         Assert.All(dlls, path =>
         {
-            // Unlike dotnet/aspnetcore, dotnet/runtime varies the assembly version while in servicing.
-            if (!repoAssemblies.Contains(Path.GetFileNameWithoutExtension(path)))
+            var name = Path.GetFileNameWithoutExtension(path);
+            if (string.Equals(name, "aspnetcorev2_inprocess", StringComparison.Ordinal))
             {
+                // Skip our native assembly.
                 return;
             }
+
+            var expectedVersion = repoAssemblies.Contains(name) ? aspnetcoreVersion : version;
 
             using var fileStream = File.OpenRead(path);
             using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
@@ -183,8 +190,21 @@ public class SharedFxTests
             var assemblyDefinition = reader.GetAssemblyDefinition();
 
             // Assembly versions should all match Major.Minor.0.0
-            Assert.Equal(version.Major, assemblyDefinition.Version.Major);
-            Assert.Equal(version.Minor, assemblyDefinition.Version.Minor);
+            if (repoAssemblies.Contains(name))
+            {
+                // We always align major.minor in assemblies and packages.
+                Assert.Equal(expectedVersion.Major, assemblyDefinition.Version.Major);
+            }
+            else
+            {
+                // ... but dotnet/runtime has a window between package version and (then) assembly version updates.
+                Assert.True(expectedVersion.Major == assemblyDefinition.Version.Major ||
+                    expectedVersion.Major - 1 == assemblyDefinition.Version.Major,
+                    $"Unexpected Major assembly version '{assemblyDefinition.Version.Major}' is neither " +
+                        $"{expectedVersion.Major - 1}' nor '{expectedVersion.Major}'.");
+            }
+
+            Assert.Equal(expectedVersion.Minor, assemblyDefinition.Version.Minor);
             Assert.Equal(0, assemblyDefinition.Version.Build);
             Assert.Equal(0, assemblyDefinition.Version.Revision);
         });
@@ -304,10 +324,8 @@ public class SharedFxTests
         var packageFolder = SkipOnHelixAttribute.OnHelix() ?
             Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
             TestData.GetPackagesFolder();
-        var sharedFxPath = Path.Combine(
-            packageFolder,
-            "Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg");
-        AssertEx.FileExists(sharedFxPath);
+        var sharedFxPath = Directory.GetFiles(packageFolder, "Microsoft.AspNetCore.App.Runtime.*-*." + TestData.GetSharedFxVersion() + ".nupkg").FirstOrDefault();
+        Assert.NotNull(sharedFxPath);
 
         ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 

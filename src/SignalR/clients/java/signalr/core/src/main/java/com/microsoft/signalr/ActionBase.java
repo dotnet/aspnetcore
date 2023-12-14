@@ -3,8 +3,10 @@
 
 package com.microsoft.signalr;
 
+import io.reactivex.rxjava3.core.Completable;
+
 interface ActionBase {
     // We can't use the @FunctionalInterface annotation because it's only
     // available on Android API Level 24 and above.
-    void invoke(Object ... params);
+    Completable invoke(Object ... params);
 }

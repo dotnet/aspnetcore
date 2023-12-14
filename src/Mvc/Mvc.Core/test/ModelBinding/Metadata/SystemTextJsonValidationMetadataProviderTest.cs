@@ -44,6 +44,22 @@ public class SystemTextJsonValidationMetadataProviderTest
         Assert.Equal(JsonNamingPolicy.CamelCase.ConvertName(propertyName), context.ValidationMetadata.ValidationModelName);
     }
 
+    [Fact]
+    // Test for https://github.com/dotnet/aspnetcore/issues/47835
+    public void CreateValidationMetadata_SetValidationPropertyName_WithNullKeyName()
+    {
+        var metadataProvider = new SystemTextJsonValidationMetadataProvider(JsonNamingPolicy.SnakeCaseLower);
+        var key = ModelMetadataIdentity.ForType(typeof(SampleTestClass));
+        var modelAttributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), Array.Empty<object>());
+        var context = new ValidationMetadataProviderContext(key, modelAttributes);
+
+        // Act
+        metadataProvider.CreateValidationMetadata(context);
+
+        // Assert
+        Assert.Null(context.ValidationMetadata.ValidationModelName);
+    }
+
     [Theory]
     [MemberData(nameof(NamingPolicies))]
     public void CreateValidationMetadata_SetValidationPropertyName_WithJsonNamingPolicy(JsonNamingPolicy namingPolicy)

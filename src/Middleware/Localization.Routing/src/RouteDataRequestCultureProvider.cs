@@ -27,10 +27,7 @@ public class RouteDataRequestCultureProvider : RequestCultureProvider
     /// <inheritdoc />
     public override Task<ProviderCultureResult?> DetermineProviderCultureResult(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         string? culture = null;
         string? uiCulture = null;

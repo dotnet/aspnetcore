@@ -6,10 +6,11 @@ using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3StreamContext : HttpConnectionContext
+internal sealed class Http3StreamContext : HttpConnectionContext
 {
     public Http3StreamContext(
         string connectionId,
@@ -21,19 +22,20 @@ internal class Http3StreamContext : HttpConnectionContext
         MemoryPool<byte> memoryPool,
         IPEndPoint? localEndPoint,
         IPEndPoint? remoteEndPoint,
-        IHttp3StreamLifetimeHandler streamLifetimeHandler,
         ConnectionContext streamContext,
-        Http3PeerSettings clientPeerSettings,
-        Http3PeerSettings serverPeerSettings) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        Http3Connection connection) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint, connection.MetricsContext)
     {
-        StreamLifetimeHandler = streamLifetimeHandler;
+        StreamLifetimeHandler = connection._streamLifetimeHandler;
         StreamContext = streamContext;
-        ClientPeerSettings = clientPeerSettings;
-        ServerPeerSettings = serverPeerSettings;
+        ClientPeerSettings = connection._clientSettings;
+        ServerPeerSettings = connection._serverSettings;
+        Connection = connection;
     }
 
     public IHttp3StreamLifetimeHandler StreamLifetimeHandler { get; }
     public ConnectionContext StreamContext { get; }
     public Http3PeerSettings ClientPeerSettings { get; }
     public Http3PeerSettings ServerPeerSettings { get; }
+    public WebTransportSession? WebTransportSession { get; set; }
+    public Http3Connection Connection { get; }
 }

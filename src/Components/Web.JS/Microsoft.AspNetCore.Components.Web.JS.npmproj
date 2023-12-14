@@ -1,9 +1,19 @@
 <Project DefaultTargets="Build">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <InstallArgs>--check-files</InstallArgs>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+
+    <!-- Npm tests don't run on Helix currently, so we need to set this to false to still run the tests on non-Helix -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <ItemGroup>
     <!--
@@ -12,6 +22,8 @@
     -->
     <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.server.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.server.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.web.js" />
+    <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.web.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.webassembly.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' != 'Debug' " Include="dist\Release\blazor.webassembly.js" />
     <BuildOutputFiles Condition=" '$(Configuration)' == 'Debug' " Include="dist\Debug\blazor.webview.js" />

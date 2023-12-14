@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -12,6 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
+[RequiresDynamicCode("ILEmitTrieFactory uses runtime IL generation.")]
 internal static class ILEmitTrieFactory
 {
     // The algorthm we use only works for ASCII text. If we find non-ASCII text in the input
@@ -416,7 +418,7 @@ internal static class ILEmitTrieFactory
         }
 #endif
 
-    private class Locals
+    private sealed class Locals
     {
         public Locals(ILGenerator il, bool vectorize)
         {
@@ -464,7 +466,7 @@ internal static class ILEmitTrieFactory
         public LocalBuilder Span { get; }
     }
 
-    private class Labels
+    private sealed class Labels
     {
         /// <summary>
         /// Label to goto that will return the default destination (not a match).
@@ -477,7 +479,8 @@ internal static class ILEmitTrieFactory
         public Label ReturnNotAscii { get; set; }
     }
 
-    private class Methods
+    [RequiresDynamicCode("ILEmitTrieFactory uses runtime IL generation.")]
+    private sealed class Methods
     {
         // Caching because the methods won't change, if we're being called once we're likely to
         // be called again.
@@ -485,28 +488,30 @@ internal static class ILEmitTrieFactory
 
         private Methods()
         {
-            // Can't use GetMethod because the parameter is a generic method parameters.
-            Add = typeof(Unsafe)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(m => m.Name == nameof(Unsafe.Add))
-                .Where(m => m.GetGenericArguments().Length == 1)
-                .Where(m => m.GetParameters().Length == 2)
-                .FirstOrDefault()
+            Add = typeof(Unsafe).GetMethod(
+                nameof(Unsafe.Add),
+                genericParameterCount: 1,
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { Type.MakeGenericMethodParameter(0).MakeByRefType(), typeof(int), },
+                modifiers: null)
                 ?.MakeGenericMethod(typeof(byte));
-            if (Add == null)
+
+            if (Add is null)
             {
                 throw new InvalidOperationException("Failed to find Unsafe.Add{T}(ref T, int)");
             }
 
-            // Can't use GetMethod because the parameter is a generic method parameters.
-            As = typeof(Unsafe)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(m => m.Name == nameof(Unsafe.As))
-                .Where(m => m.GetGenericArguments().Length == 2)
-                .Where(m => m.GetParameters().Length == 1)
-                .FirstOrDefault()
-                ?.MakeGenericMethod(typeof(char), typeof(byte));
-            if (Add == null)
+            As = typeof(Unsafe).GetMethod(
+               nameof(Unsafe.As),
+               genericParameterCount: 2,
+               BindingFlags.Public | BindingFlags.Static,
+               binder: null,
+               types: new[] { Type.MakeGenericMethodParameter(0).MakeByRefType(), },
+               modifiers: null)
+               ?.MakeGenericMethod(typeof(char), typeof(byte));
+
+            if (As is null)
             {
                 throw new InvalidOperationException("Failed to find Unsafe.As{TFrom, TTo}(ref TFrom)");
             }
@@ -522,16 +527,15 @@ internal static class ILEmitTrieFactory
                 throw new InvalidOperationException("Failed to find MemoryExtensions.AsSpan(string, int, int)");
             }
 
-            // Can't use GetMethod because the parameter is a generic method parameters.
-            GetReference = typeof(MemoryMarshal)
-                .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(m => m.Name == nameof(MemoryMarshal.GetReference))
-                .Where(m => m.GetGenericArguments().Length == 1)
-                .Where(m => m.GetParameters().Length == 1)
-                // Disambiguate between ReadOnlySpan<> and Span<> - this method is overloaded.
-                .Where(m => m.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(ReadOnlySpan<>))
-                .FirstOrDefault()
+            GetReference = typeof(MemoryMarshal).GetMethod(
+                nameof(MemoryMarshal.GetReference),
+                genericParameterCount: 1,
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(ReadOnlySpan<>).MakeGenericType(Type.MakeGenericMethodParameter(0)), },
+                modifiers: null)
                 ?.MakeGenericMethod(typeof(char));
+
             if (GetReference == null)
             {
                 throw new InvalidOperationException("Failed to find MemoryMarshal.GetReference{T}(ReadOnlySpan{T})");
@@ -583,12 +587,12 @@ internal static class ILEmitTrieFactory
         public MethodInfo GetReference { get; }
 
         /// <summary>
-        /// <see cref="Unsafe.ReadUnaligned{T}(ref byte)"/> - ReadUnaligned[ulong]
+        /// <see cref="Unsafe.ReadUnaligned{T}(ref readonly byte)"/> - ReadUnaligned[ulong]
         /// </summary>
         public MethodInfo ReadUnalignedUInt64 { get; }
 
         /// <summary>
-        /// <see cref="Unsafe.ReadUnaligned{T}(ref byte)"/> - ReadUnaligned[ushort]
+        /// <see cref="Unsafe.ReadUnaligned{T}(ref readonly byte)"/> - ReadUnaligned[ushort]
         /// </summary>
         public MethodInfo ReadUnalignedUInt16 { get; }
     }

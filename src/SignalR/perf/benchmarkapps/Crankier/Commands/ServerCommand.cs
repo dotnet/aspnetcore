@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Crankier.Commands
 {
-    internal class ServerCommand
+    internal sealed class ServerCommand
     {
         public static void Register(CommandLineApplication app)
         {

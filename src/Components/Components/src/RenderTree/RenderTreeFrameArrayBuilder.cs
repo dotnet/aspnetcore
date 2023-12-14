@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// <summary>
 /// A special subclass of <see cref="ArrayBuilder{T}"/> that contains methods optimized for appending <see cref="RenderTreeFrame"/> entries.
 /// </summary>
-internal class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
+internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
 {
     // You may notice a repeated block at the top of each of these methods. This is intentionally inlined into each
     // method because doing so improves intensive rendering scenarios by around 1% (based on the FastGrid benchmark).
@@ -132,6 +132,37 @@ internal class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
         {
             SequenceField = sequence,
             FrameTypeField = RenderTreeFrameType.Region,
+        };
+    }
+
+    public void AppendComponentRenderMode(IComponentRenderMode renderMode)
+    {
+        if (_itemsInUse == _items.Length)
+        {
+            GrowBuffer(_items.Length * 2);
+        }
+
+        _items[_itemsInUse++] = new RenderTreeFrame
+        {
+            SequenceField = 0, // We're only interested in one of these, so it's not useful to optimize diffing over multiple
+            FrameTypeField = RenderTreeFrameType.ComponentRenderMode,
+            ComponentRenderModeField = renderMode,
+        };
+    }
+
+    public void AppendNamedEvent(string eventType, string assignedName)
+    {
+        if (_itemsInUse == _items.Length)
+        {
+            GrowBuffer(_items.Length * 2);
+        }
+
+        _items[_itemsInUse++] = new RenderTreeFrame
+        {
+            SequenceField = 0, // We're only interested in one of these per eventType, so it's not useful to optimize diffing over multiple
+            FrameTypeField = RenderTreeFrameType.NamedEvent,
+            NamedEventTypeField = eventType,
+            NamedEventAssignedNameField = assignedName,
         };
     }
 }

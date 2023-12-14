@@ -18,10 +18,7 @@ public static class GetHttpContextExtensions
     /// <returns>The <see cref="HttpContext"/> for the connection, or <c>null</c> if the connection is not associated with an HTTP request.</returns>
     public static HttpContext? GetHttpContext(this HubCallerContext connection)
     {
-        if (connection == null)
-        {
-            throw new ArgumentNullException(nameof(connection));
-        }
+        ArgumentNullException.ThrowIfNull(connection);
         return connection.Features.Get<IHttpContextFeature>()?.HttpContext;
     }
 
@@ -32,10 +29,7 @@ public static class GetHttpContextExtensions
     /// <returns>The <see cref="HttpContext"/> for the connection, or <c>null</c> if the connection is not associated with an HTTP request.</returns>
     public static HttpContext? GetHttpContext(this HubConnectionContext connection)
     {
-        if (connection == null)
-        {
-            throw new ArgumentNullException(nameof(connection));
-        }
+        ArgumentNullException.ThrowIfNull(connection);
         return connection.Features.Get<IHttpContextFeature>()?.HttpContext;
     }
 }

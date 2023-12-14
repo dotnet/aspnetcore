@@ -1,18 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
-internal partial class RequestHeaders : IHeaderDictionary
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(RequestHeadersDebugView))]
+internal sealed partial class RequestHeaders : IHeaderDictionary
 {
     private IDictionary<string, StringValues>? _extra;
     private readonly NativeRequestContext _requestMemoryBlob;
@@ -69,6 +69,11 @@ internal partial class RequestHeaders : IHeaderDictionary
 
     void IDictionary<string, StringValues>.Add(string key, StringValues value)
     {
+        if (ContainsKey(key))
+        {
+            ThrowDuplicateKeyException();
+        }
+
         if (!PropertiesTrySetValue(key, value))
         {
             Extra.Add(key, value);
@@ -82,7 +87,23 @@ internal partial class RequestHeaders : IHeaderDictionary
 
     public ICollection<string> Keys
     {
-        get { return PropertiesKeys().Concat(Extra.Keys).ToArray(); }
+        get
+        {
+            var destination = new string[Count];
+            int knownHeadersCount = GetKnownHeadersKeys(destination);
+            if (_extra != null)
+            {
+                foreach (var item in _extra)
+                {
+                    destination[knownHeadersCount++] = item.Key;
+                }
+            }
+            else
+            {
+                _requestMemoryBlob.GetUnknownKeys(destination.AsSpan(knownHeadersCount));
+            }
+            return destination;
+        }
     }
 
     ICollection<StringValues> IDictionary<string, StringValues>.Values
@@ -92,7 +113,12 @@ internal partial class RequestHeaders : IHeaderDictionary
 
     public int Count
     {
-        get { return PropertiesKeys().Count() + Extra.Count; }
+        get
+        {
+            int count = GetKnownHeadersCount();
+            count += _extra != null ? _extra.Count : _requestMemoryBlob.CountUnknownHeaders();
+            return count;
+        }
     }
 
     public bool Remove(string key)
@@ -106,6 +132,13 @@ internal partial class RequestHeaders : IHeaderDictionary
     public bool TryGetValue(string key, out StringValues value)
     {
         return PropertiesTryGetValue(key, out value) || Extra.TryGetValue(key, out value);
+    }
+
+    internal void ResetFlags()
+    {
+        _flag0 = 0;
+        _flag1 = 0;
+        _extra = null;
     }
 
     void ICollection<KeyValuePair<string, StringValues>>.Add(KeyValuePair<string, StringValues> item)
@@ -191,7 +224,7 @@ internal partial class RequestHeaders : IHeaderDictionary
         }
         set
         {
-            if (StringValues.IsNullOrEmpty(value))
+            if (value.Count == 0)
             {
                 Remove(key);
             }
@@ -226,6 +259,11 @@ internal partial class RequestHeaders : IHeaderDictionary
         }
     }
 
+    private static void ThrowDuplicateKeyException()
+    {
+        throw new ArgumentException("An item with the same key has already been added.");
+    }
+
     public IEnumerable<string> GetValues(string key)
     {
         StringValues values;
@@ -234,5 +272,41 @@ internal partial class RequestHeaders : IHeaderDictionary
             return HeaderParser.SplitValues(values);
         }
         return HeaderParser.Empty;
+    }
+
+    private int GetKnownHeadersKeys(Span<string> observedHeaders)
+    {
+        int observedHeadersCount = 0;
+        for (int i = 0; i < HeaderKeys.Length; i++)
+        {
+            var header = HeaderKeys[i];
+            if (HasKnownHeader(header))
+            {
+                observedHeaders[observedHeadersCount++] = GetHeaderKeyName(header);
+            }
+        }
+        return observedHeadersCount;
+    }
+
+    private int GetKnownHeadersCount()
+    {
+        int observedHeadersCount = 0;
+        for (int i = 0; i < HeaderKeys.Length; i++)
+        {
+            var header = HeaderKeys[i];
+            if (HasKnownHeader(header))
+            {
+                observedHeadersCount++;
+            }
+        }
+        return observedHeadersCount;
+    }
+
+    private sealed class RequestHeadersDebugView(RequestHeaders dictionary)
+    {
+        private readonly RequestHeaders _dictionary = dictionary;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, string>[] Items => _dictionary.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

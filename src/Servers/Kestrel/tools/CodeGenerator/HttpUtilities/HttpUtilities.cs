@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
@@ -38,7 +35,7 @@ public class HttpUtilities
 
         var methodsInfo = httpMethods.Select(GetMethodStringAndUlongAndMaskLength).ToList();
 
-        var methodsInfoWithoutGet = methodsInfo.Where(m => m.HttpMethod != "Get".ToString()).ToList();
+        var methodsInfoWithoutGet = methodsInfo.Where(m => m.HttpMethod != "Get").ToList();
 
         var methodsAsciiStringAsLong = methodsInfo.Select(m => m.AsciiStringAsLong).ToArray();
 
@@ -136,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             var hexMaskString = HttpUtilitiesGeneratorHelpers.GeHexString(maskArray, "0x", ", ");
             var maskFieldName = GetMaskFieldName(maskBytesLength);
 
-            result.AppendFormat(CultureInfo.InvariantCulture, "        private static readonly ulong {0} = GetMaskAsLong(new byte[]\r\n            {{{1}}});", maskFieldName, hexMaskString);
+            result.AppendFormat(CultureInfo.InvariantCulture, """        private static readonly ulong {0} = GetMaskAsLong([{1}]);""", maskFieldName, hexMaskString);
             result.AppendLine();
             if (index < distinctLengths.Count - 1)
             {
@@ -245,10 +242,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
     private static string GetMethodString(string method)
     {
-        if (method == null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
+        ArgumentNullException.ThrowIfNull(method);
 
         const int length = sizeof(ulong);
 
@@ -276,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         return result;
     }
 
-    private class MethodInfo
+    private sealed class MethodInfo
     {
         public string MethodAsciiString;
         public ulong AsciiStringAsLong;

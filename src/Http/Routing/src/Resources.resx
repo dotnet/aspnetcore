@@ -234,4 +234,22 @@
   <data name="FormatterMapping_MediaTypeInvalid" xml:space="preserve">
     <value>No media type found for format '{0}'.</value>
   </data>
+  <data name="MapGroup_ChangingRoutePatternUnsupported" xml:space="preserve">
+    <value>MapGroup does not support mutating RouteEndpointBuilder.RoutePattern from '{0}' to '{1}' via conventions.</value>
+  </data>
+  <data name="MapGroup_CustomEndpointUnsupported" xml:space="preserve">
+    <value>MapGroup does not support custom Endpoint type '{0}'. Only RouteEndpoints can be grouped.</value>
+  </data>
+  <data name="MapGroup_RepeatedDictionaryEntry" xml:space="preserve">
+    <value>MapGroup cannot build a pattern for '{0}' because the 'RoutePattern.{1}' dictionary key '{2}' has multiple values.</value>
+  </data>
+  <data name="RouteEndpointDataSource_ConventionsCannotBeModifiedAfterBuild" xml:space="preserve">
+    <value>Conventions cannot be added after building the endpoint.</value>
+  </data>
+  <data name="RouteEndpointDataSource_RequestDelegateCannotBeCalledBeforeBuild" xml:space="preserve">
+    <value>This RequestDelegate cannot be called before the final endpoint is built.</value>
+  </data>
+  <data name="RegexRouteContraint_NotConfigured" xml:space="preserve">
+    <value>A route parameter uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure&lt;RouteOptions&gt;(options =&gt; options.SetParameterPolicy&lt;RegexInlineRouteConstraint&gt;("regex"));</value>
+  </data>
 </root>

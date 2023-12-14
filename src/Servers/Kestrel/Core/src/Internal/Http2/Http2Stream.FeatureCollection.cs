@@ -37,10 +37,7 @@ internal partial class Http2Stream : IHttp2StreamIdFeature,
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _userTrailers = value;
         }

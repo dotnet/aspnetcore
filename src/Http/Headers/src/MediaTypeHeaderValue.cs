@@ -25,7 +25,7 @@ public class MediaTypeHeaderValue
     private const char PeriodCharacter = '.';
     private const char PlusCharacter = '+';
 
-    private static readonly char[] PeriodCharacterArray = new char[] { PeriodCharacter };
+    private static readonly char[] PeriodCharacterArray = [PeriodCharacter];
 
     private static readonly HttpHeaderParser<MediaTypeHeaderValue> SingleValueParser
         = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength);
@@ -370,7 +370,7 @@ public class MediaTypeHeaderValue
     /// <summary>
     /// Gets a value indicating whether this <see cref="MediaTypeHeaderValue"/> is a subset of
     /// <paramref name="otherMediaType"/>. A "subset" is defined as the same or a more specific media type
-    /// according to the precedence described in https://www.ietf.org/rfc/rfc2068.txt section 14.1, Accept.
+    /// according to the precedence described in <see href="https://www.ietf.org/rfc/rfc2068.txt"/> section 14.1, Accept.
     /// </summary>
     /// <param name="otherMediaType">The <see cref="MediaTypeHeaderValue"/> to compare.</param>
     /// <returns>
@@ -439,7 +439,7 @@ public class MediaTypeHeaderValue
     /// <summary>
     /// Gets a value indicating whether <paramref name="otherMediaType"/> is a subset of
     /// this <see cref="MediaTypeHeaderValue"/> in terms of type/subType. A "subset" is defined as the same or a more specific media type
-    /// according to the precedence described in https://www.ietf.org/rfc/rfc2068.txt section 14.1, Accept.
+    /// according to the precedence described in <see href="https://www.ietf.org/rfc/rfc2068.txt"/> section 14.1, Accept.
     /// </summary>
     /// <param name="otherMediaType">The <see cref="StringSegment"/> to compare.</param>
     /// <returns>

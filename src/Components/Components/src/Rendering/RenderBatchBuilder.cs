@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// and the intermediate states (such as the queue of components still to
 /// be rendered).
 /// </summary>
-internal class RenderBatchBuilder : IDisposable
+internal sealed class RenderBatchBuilder : IDisposable
 {
     // A value that, if changed, causes expiry of all ParameterView instances issued
     // for this RenderBatchBuilder. This is to prevent invalid reads from arrays that
@@ -22,6 +22,7 @@ internal class RenderBatchBuilder : IDisposable
     public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
     public ArrayBuilder<int> DisposedComponentIds { get; } = new ArrayBuilder<int>();
     public ArrayBuilder<ulong> DisposedEventHandlerIds { get; } = new ArrayBuilder<ulong>();
+    public ArrayBuilder<NamedEventChange>? NamedEventChanges;
 
     // Buffers referenced by UpdatedComponentDiffs
     public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>(64);
@@ -54,6 +55,7 @@ internal class RenderBatchBuilder : IDisposable
         DisposedComponentIds.Clear();
         DisposedEventHandlerIds.Clear();
         AttributeDiffSet.Clear();
+        NamedEventChanges?.Clear();
     }
 
     public RenderBatch ToBatch()
@@ -61,7 +63,8 @@ internal class RenderBatchBuilder : IDisposable
             UpdatedComponentDiffs.ToRange(),
             ReferenceFramesBuffer.ToRange(),
             DisposedComponentIds.ToRange(),
-            DisposedEventHandlerIds.ToRange());
+            DisposedEventHandlerIds.ToRange(),
+            NamedEventChanges?.ToRange());
 
     public void InvalidateParameterViews()
     {
@@ -79,6 +82,18 @@ internal class RenderBatchBuilder : IDisposable
         }
     }
 
+    public void AddNamedEvent(int componentId, int frameIndex, ref RenderTreeFrame frame)
+    {
+        NamedEventChanges ??= new();
+        NamedEventChanges.Append(new NamedEventChange(NamedEventChangeType.Added, componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
+    }
+
+    public void RemoveNamedEvent(int componentId, int frameIndex, ref RenderTreeFrame frame)
+    {
+        NamedEventChanges ??= new();
+        NamedEventChanges.Append(new NamedEventChange(NamedEventChangeType.Removed, componentId, frameIndex, frame.NamedEventType, frame.NamedEventAssignedName));
+    }
+
     public void Dispose()
     {
         EditsBuffer.Dispose();
@@ -86,5 +101,6 @@ internal class RenderBatchBuilder : IDisposable
         UpdatedComponentDiffs.Dispose();
         DisposedComponentIds.Dispose();
         DisposedEventHandlerIds.Dispose();
+        NamedEventChanges?.Dispose();
     }
 }

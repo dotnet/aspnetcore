@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,18 +52,28 @@ public static class HtmlHelperComponentExtensions
         RenderMode renderMode,
         object parameters)
     {
-        if (htmlHelper is null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
+        ArgumentNullException.ThrowIfNull(componentType);
 
-        if (componentType is null)
-        {
-            throw new ArgumentNullException(nameof(componentType));
-        }
+        var parameterView = parameters is null ?
+            ParameterView.Empty :
+            ParameterView.FromDictionary(HtmlHelper.ObjectToDictionary(parameters));
 
-        var viewContext = htmlHelper.ViewContext;
-        var componentRenderer = viewContext.HttpContext.RequestServices.GetRequiredService<IComponentRenderer>();
-        return await componentRenderer.RenderComponentAsync(viewContext, componentType, renderMode, parameters);
+        var httpContext = htmlHelper.ViewContext.HttpContext;
+        var componentRenderer = httpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
+        return await componentRenderer.PrerenderComponentAsync(httpContext, componentType, MapRenderMode(renderMode), parameterView);
     }
+
+    // The tag helper uses a simple enum to represent render mode, whereas Blazor internally has a richer
+    // object-based way to represent render modes. This converts from tag helper enum values to the
+    // object representation.
+    internal static IComponentRenderMode MapRenderMode(RenderMode renderMode) => renderMode switch
+    {
+        RenderMode.Static => null,
+        RenderMode.Server => new InteractiveServerRenderMode(prerender: false),
+        RenderMode.ServerPrerendered => Components.Web.RenderMode.InteractiveServer,
+        RenderMode.WebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false),
+        RenderMode.WebAssemblyPrerendered => Components.Web.RenderMode.InteractiveWebAssembly,
+        _ => throw new ArgumentException($"Unsupported render mode {renderMode}", nameof(renderMode)),
+    };
 }

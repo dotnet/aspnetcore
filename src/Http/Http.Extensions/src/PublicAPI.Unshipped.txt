@@ -1,11 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.get -> System.Collections.Generic.IReadOnlyList<System.Func<Microsoft.AspNetCore.Http.RouteHandlerContext!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!, Microsoft.AspNetCore.Http.RouteHandlerFilterDelegate!>!>?
-Microsoft.AspNetCore.Http.RequestDelegateFactoryOptions.RouteHandlerFilterFactories.init -> void
-Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions
-static Microsoft.Extensions.DependencyInjection.RouteHandlerJsonServiceExtensions.ConfigureRouteHandlerJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Json.JsonOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.AspNetCore.Http.EndpointDescriptionAttribute
-Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.EndpointDescriptionAttribute(string! description) -> void
-Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.Description.get -> string!
-Microsoft.AspNetCore.Http.EndpointSummaryAttribute
-Microsoft.AspNetCore.Http.EndpointSummaryAttribute.EndpointSummaryAttribute(string! summary) -> void
-Microsoft.AspNetCore.Http.EndpointSummaryAttribute.Summary.get -> string!

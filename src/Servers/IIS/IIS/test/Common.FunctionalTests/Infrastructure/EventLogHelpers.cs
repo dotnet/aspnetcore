@@ -88,7 +88,7 @@ public class EventLogHelpers
         var processIdString = $"Process Id: {deploymentResult.HostProcess.Id}.";
 
         // Event log messages round down to the nearest second, so subtract 5 seconds to make sure we get event logs
-        var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
+        var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-10);
         for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
         {
             var eventLogEntry = eventLog.Entries[i];
@@ -260,6 +260,11 @@ public class EventLogHelpers
                 "This most likely means the app is misconfigured, please check the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App that " +
                 "are targeted by the application and are installed on the machine.";
         }
+    }
+
+    public static string InProcessFailedToFindApplication()
+    {
+        return "Provided application path does not exist, or isn't a .dll or .exe.";
     }
 
     public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)

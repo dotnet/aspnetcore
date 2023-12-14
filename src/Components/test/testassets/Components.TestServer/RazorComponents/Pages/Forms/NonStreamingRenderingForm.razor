@@ -1,0 +1,42 @@
+﻿@page "/forms/non-streaming-async-form-handler/{OperationId}"
+@inject AsyncOperationService AsyncOperation
+@inject NavigationManager Navigation;
+@using Components.TestServer.Services;
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Mvc;
+
+<h2>Non streaming async form</h2>
+
+<EditForm Enhance EditContext="_editContext" method="POST" OnValidSubmit="HandleSubmit" FormName="someform">
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitting)
+{
+    <p id="progress">Form submitting!</p>
+}
+else if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code {
+    bool _submitted = false;
+    bool _submitting = false;
+    EditContext _editContext = new EditContext(new object());
+    [Parameter] public string? OperationId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Due to test issues with threads, just register this task ahead of time.
+        _ = AsyncOperation.Start(OperationId);
+    }
+
+    public async Task HandleSubmit()
+    {
+        _submitting = true;
+        await Task.Delay(5000);
+        _submitting = false;
+        _submitted = true;
+    }
+}

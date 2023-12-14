@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -67,7 +68,7 @@ public class Http3HttpProtocolFeatureCollectionTests
         }
     }
 
-    private class TestConnectionFeatures : IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature
+    private class TestConnectionFeatures : IProtocolErrorCodeFeature, IStreamIdFeature, IStreamAbortFeature, IStreamClosedFeature, IConnectionMetricsContextFeature
     {
         public TestConnectionFeatures()
         {
@@ -75,11 +76,14 @@ public class Http3HttpProtocolFeatureCollectionTests
             featureCollection.Set<IProtocolErrorCodeFeature>(this);
             featureCollection.Set<IStreamIdFeature>(this);
             featureCollection.Set<IStreamAbortFeature>(this);
+            featureCollection.Set<IStreamClosedFeature>(this);
+            featureCollection.Set<IConnectionMetricsContextFeature>(this);
 
             FeatureCollection = featureCollection;
         }
 
         public IFeatureCollection FeatureCollection { get; }
+        public ConnectionMetricsContext MetricsContext { get; }
         long IProtocolErrorCodeFeature.Error { get; set; }
         long IStreamIdFeature.StreamId { get; }
 
@@ -89,6 +93,11 @@ public class Http3HttpProtocolFeatureCollectionTests
         }
 
         void IStreamAbortFeature.AbortWrite(long errorCode, ConnectionAbortedException abortReason)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IStreamClosedFeature.OnClosed(Action<object> callback, object state)
         {
             throw new NotImplementedException();
         }

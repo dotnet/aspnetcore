@@ -27,7 +27,7 @@ internal static partial class DefaultHubDispatcherLog
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+            var resultType = objectMethodExecutor.AsyncResultType ?? objectMethodExecutor.MethodReturnType;
             StreamingResult(logger, invocationId, resultType.FullName);
         }
     }
@@ -39,7 +39,7 @@ internal static partial class DefaultHubDispatcherLog
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+            var resultType = objectMethodExecutor.AsyncResultType ?? objectMethodExecutor.MethodReturnType;
             SendingResult(logger, invocationId, resultType.FullName);
         }
     }
@@ -92,8 +92,7 @@ internal static partial class DefaultHubDispatcherLog
     [LoggerMessage(19, LogLevel.Debug, "Stream '{StreamId}' closed with error '{Error}'.", EventName = "ClosingStreamWithBindingError")]
     private static partial void ClosingStreamWithBindingError(ILogger logger, string? streamId, string? error);
 
-    [LoggerMessage(20, LogLevel.Debug, "StreamCompletionMessage received unexpectedly.", EventName = "UnexpectedStreamCompletion")]
-    public static partial void UnexpectedStreamCompletion(ILogger logger);
+    // Retired [20]UnexpectedStreamCompletion, replaced with more generic [24]UnexpectedCompletion
 
     [LoggerMessage(21, LogLevel.Debug, "StreamItemMessage received unexpectedly.", EventName = "UnexpectedStreamItem")]
     public static partial void UnexpectedStreamItem(ILogger logger);
@@ -103,4 +102,19 @@ internal static partial class DefaultHubDispatcherLog
 
     [LoggerMessage(23, LogLevel.Debug, "Invocation ID '{InvocationId}' is already in use.", EventName = "InvocationIdInUse")]
     public static partial void InvocationIdInUse(ILogger logger, string InvocationId);
+
+    [LoggerMessage(24, LogLevel.Debug, "CompletionMessage for invocation ID '{InvocationId}' received unexpectedly.", EventName = "UnexpectedCompletion")]
+    public static partial void UnexpectedCompletion(ILogger logger, string invocationId);
+
+    [LoggerMessage(25, LogLevel.Error, "Invocation ID {InvocationId}: Failed while sending stream items from hub method {HubMethod}.", EventName = "FailedStreaming")]
+    public static partial void FailedStreaming(ILogger logger, string invocationId, string hubMethod, Exception exception);
+
+    [LoggerMessage(26, LogLevel.Trace, "Dropping {MessageType} with ID '{InvocationId}'.", EventName = "DroppingMessage")]
+    public static partial void DroppingMessage(ILogger logger, string messageType, string? invocationId);
+
+    [LoggerMessage(27, LogLevel.Trace, "Received AckMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedAckMessage")]
+     public static partial void ReceivedAckMessage(ILogger logger, long sequenceId);
+
+    [LoggerMessage(28, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
+    public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
 }

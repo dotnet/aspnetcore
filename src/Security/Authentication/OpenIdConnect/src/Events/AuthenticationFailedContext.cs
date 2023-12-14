@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 /// <summary>
-/// A conext for <see cref="OpenIdConnectEvents.AuthenticationFailed"/>.
+/// A context for <see cref="OpenIdConnectEvents.AuthenticationFailed"/>.
 /// </summary>
 public class AuthenticationFailedContext : RemoteAuthenticationContext<OpenIdConnectOptions>
 {

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.NodeServices.Util;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm;
 /// Executes the <c>script</c> entries defined in a <c>package.json</c> file,
 /// capturing any output written to stdio.
 /// </summary>
-internal class NodeScriptRunner : IDisposable
+internal sealed class NodeScriptRunner : IDisposable
 {
     private Process? _npmProcess;
     public EventedStreamReader StdOut { get; }
@@ -75,7 +76,8 @@ internal class NodeScriptRunner : IDisposable
 
         if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.NodeServices.Npm.NpmStarted"))
         {
-            diagnosticSource.Write(
+            WriteDiagnosticEvent(
+                diagnosticSource,
                 "Microsoft.AspNetCore.NodeServices.Npm.NpmStarted",
                 new
                 {
@@ -83,6 +85,11 @@ internal class NodeScriptRunner : IDisposable
                     process = _npmProcess
                 });
         }
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+            Justification = "The values being passed into Write have the commonly used properties being preserved with DynamicDependency.")]
+        static void WriteDiagnosticEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(DiagnosticSource diagnosticSource, string name, TValue value)
+            => diagnosticSource.Write(name, value);
     }
 
     public void AttachToLogger(ILogger logger)
@@ -90,7 +97,7 @@ internal class NodeScriptRunner : IDisposable
         // When the node task emits complete lines, pass them through to the real logger
         StdOut.OnReceivedLine += line =>
         {
-            if (!string.IsNullOrWhiteSpace(line))
+            if (!string.IsNullOrWhiteSpace(line) && logger.IsEnabled(LogLevel.Information))
             {
                 // Node tasks commonly emit ANSI colors, but it wouldn't make sense to forward
                 // those to loggers (because a logger isn't necessarily any kind of terminal)

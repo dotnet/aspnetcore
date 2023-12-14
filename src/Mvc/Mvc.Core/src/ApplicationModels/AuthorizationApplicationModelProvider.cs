@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-internal class AuthorizationApplicationModelProvider : IApplicationModelProvider
+internal sealed class AuthorizationApplicationModelProvider : IApplicationModelProvider
 {
     private readonly MvcOptions _mvcOptions;
     private readonly IAuthorizationPolicyProvider _policyProvider;
@@ -30,10 +30,7 @@ internal class AuthorizationApplicationModelProvider : IApplicationModelProvider
 
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_mvcOptions.EnableEndpointRouting)
         {

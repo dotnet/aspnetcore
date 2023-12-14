@@ -1,22 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Xunit;
+using Microsoft.Extensions.Primitives;
+using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -29,8 +27,31 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ApplicationServices = new ServiceCollection()
             .AddLogging()
             .AddSingleton<IHostEnvironment>(env)
+            .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
+            .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
+            .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
             .BuildServiceProvider();
         return serverOptions;
+    }
+
+    private static Mock<IConfiguration> CreateMockConfiguration() => CreateMockConfiguration(out _);
+
+    private static Mock<IConfiguration> CreateMockConfiguration(out Mock<IChangeToken> mockReloadToken)
+    {
+        var currentConfig = new ConfigurationBuilder().AddInMemoryCollection(new[]
+{
+            new KeyValuePair<string, string>("Endpoints:A:Url", "http://*:5000"),
+            new KeyValuePair<string, string>("Endpoints:B:Url", "http://*:5001"),
+        }).Build();
+
+        mockReloadToken = new Mock<IChangeToken>();
+
+        var mockConfig = new Mock<IConfiguration>();
+        mockConfig.Setup(c => c.GetSection(It.IsAny<string>())).Returns<string>(currentConfig.GetSection);
+        mockConfig.Setup(c => c.GetChildren()).Returns(currentConfig.GetChildren);
+        mockConfig.Setup(c => c.GetReloadToken()).Returns(mockReloadToken.Object);
+
+        return mockConfig;
     }
 
     [Fact]
@@ -47,7 +68,7 @@ public class KestrelConfigurationLoaderTests
             .Endpoint("NotFound", endpointOptions => throw new NotImplementedException())
             .Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
 
         Assert.True(found);
@@ -61,11 +82,11 @@ public class KestrelConfigurationLoaderTests
         serverOptions.Configure()
             .LocalhostEndpoint(5001, endpointOptions => run = true);
 
-        Assert.Empty(serverOptions.ListenOptions);
+        Assert.Empty(serverOptions.GetListenOptions());
 
         serverOptions.ConfigurationLoader.Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
 
         Assert.True(run);
@@ -78,18 +99,18 @@ public class KestrelConfigurationLoaderTests
         var builder = serverOptions.Configure()
             .LocalhostEndpoint(5001);
 
-        Assert.Empty(serverOptions.ListenOptions);
+        Assert.Empty(serverOptions.GetListenOptions());
         Assert.Equal(builder, serverOptions.ConfigurationLoader);
 
         builder.Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
         Assert.NotNull(serverOptions.ConfigurationLoader);
 
         builder.Load();
 
-        Assert.Single(serverOptions.ListenOptions);
+        Assert.Single(serverOptions.GetListenOptions());
         Assert.Equal(5001, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
         Assert.NotNull(serverOptions.ConfigurationLoader);
     }
@@ -106,7 +127,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.Configure(config1)
             .LocalhostEndpoint(5001, endpointOptions => run1 = true);
 
-        Assert.Empty(serverOptions.ListenOptions);
+        Assert.Empty(serverOptions.GetListenOptions());
         Assert.False(run1);
 
         var run2 = false;
@@ -119,7 +140,7 @@ public class KestrelConfigurationLoaderTests
 
         serverOptions.ConfigurationLoader.Load();
 
-        Assert.Equal(2, serverOptions.ListenOptions.Count());
+        Assert.Equal(2, serverOptions.GetListenOptions().Length);
         Assert.Equal(5002, serverOptions.ConfigurationBackedListenOptions[0].IPEndPoint.Port);
         Assert.Equal(5003, serverOptions.CodeBackedListenOptions[0].IPEndPoint.Port);
 
@@ -140,6 +161,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureHttpsDefaults(opt =>
         {
             opt.ServerCertificate = TestResources.GetTestCertificate();
+            opt.ServerCertificateChain = TestResources.GetTestChain();
             opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
         });
 
@@ -155,6 +177,8 @@ public class KestrelConfigurationLoaderTests
                 ran1 = true;
                 Assert.True(opt.IsHttps);
                 Assert.NotNull(opt.HttpsOptions.ServerCertificate);
+                Assert.NotNull(opt.HttpsOptions.ServerCertificateChain);
+                Assert.Equal(2, opt.HttpsOptions.ServerCertificateChain.Count);
                 Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
                 Assert.Equal(HttpProtocols.Http1, opt.ListenOptions.Protocols);
             })
@@ -214,6 +238,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
+    // On helix retry list - inherently flaky (writes to a well-known path)
     [Fact]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
@@ -243,7 +268,283 @@ public class KestrelConfigurationLoaderTests
                 }).Load();
 
             Assert.True(ran1);
-            Assert.NotNull(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void DevelopmentCertificateCanBeRemoved()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+
+            var devCert = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var devCertBytes = devCert.Export(X509ContentType.Pkcs12, "1234");
+            var devCertPath = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(devCertPath));
+            File.WriteAllBytes(devCertPath, devCertBytes);
+
+            var defaultCertPath = TestResources.TestCertificatePath;
+            var defaultCert = TestResources.GetTestCertificate();
+            Assert.NotEqual(devCert.SerialNumber, defaultCert.SerialNumber); // Need to be able to distinguish them
+
+            var endpointConfig = new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            };
+            var devCertConfig = new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            };
+            var defaultCertConfig = new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Default:path", defaultCertPath),
+                new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
+            };
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig)).Build();
+
+            serverOptions.Configure(config).Load();
+
+            CheckCertificates(devCert);
+
+            // Add Default certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig).Concat(defaultCertConfig)).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            // Default is preferred to Development
+            CheckCertificates(defaultCert);
+
+            // Remove Default certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig.Concat(devCertConfig)).Build();
+            _ = serverOptions.ConfigurationLoader.Reload();
+
+            // Back to Development
+            CheckCertificates(devCert);
+
+            // Remove Development certificate
+            serverOptions.ConfigurationLoader.Configuration = new ConfigurationBuilder().AddInMemoryCollection(endpointConfig).Build();
+
+            // With all of the configuration certs removed, the only place left to check is the CertificateManager.
+            // We don't want to depend on machine state, so we cheat and say we already looked.
+            serverOptions.IsDevelopmentCertificateLoaded = true;
+            Assert.Null(serverOptions.DevelopmentCertificate);
+
+            // Since there are no configuration certs and we bypassed the CertificateManager, there will be an
+            // exception about not finding any certs at all.
+            Assert.Throws<InvalidOperationException>(() => serverOptions.ConfigurationLoader.Reload());
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            void CheckCertificates(X509Certificate2 expectedCert)
+            {
+                var httpsOptions = new HttpsConnectionAdapterOptions();
+                serverOptions.ApplyDefaultCertificate(httpsOptions);
+                Assert.Equal(expectedCert.SerialNumber, httpsOptions.ServerCertificate.SerialNumber);
+                Assert.Equal(expectedCert.SerialNumber, serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber);
+            }
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void ConfigureEndpoint_RecoverFromBadPassword()
+    {
+        var serverOptions = CreateServerOptions();
+
+        var configRoot = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", TestResources.TestCertificatePath),
+            new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", "testPassword")
+        }).Build();
+        var configProvider = configRoot.Providers.Single();
+
+        var testCertificate = TestResources.GetTestCertificate();
+
+        var otherCertificatePath = TestResources.GetCertPath("aspnetdevcert.pfx");
+        var otherCertificate = new X509Certificate2(otherCertificatePath, "testPassword");
+
+        serverOptions.Configure(configRoot).Load();
+        CheckListenOptions(testCertificate);
+
+        // Update cert but use incorrect password
+        configProvider.Set("Endpoints:End1:Certificate:Path", otherCertificatePath);
+        configProvider.Set("Endpoints:End1:Certificate:Password", "badPassword");
+
+        // Fails to load certificate because password is bad
+        Assert.ThrowsAny<CryptographicException>(() => serverOptions.ConfigurationLoader.Reload());
+
+        // ConfigurationBackedListenOptions still contains prior value
+        CheckListenOptions(testCertificate);
+
+        // Correct password
+        configProvider.Set("Endpoints:End1:Certificate:Password", "testPassword");
+        _ = serverOptions.ConfigurationLoader.Reload();
+
+        // ConfigurationBackedListenOptions contains new value
+        CheckListenOptions(otherCertificate);
+
+        void CheckListenOptions(X509Certificate2 expectedCert)
+        {
+            var listenOptions = Assert.Single(serverOptions.ConfigurationBackedListenOptions);
+            Assert.Equal(expectedCert.SerialNumber, listenOptions.HttpsOptions!.ServerCertificate.SerialNumber);
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_LoadBeforeUseHttps()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            listenOptions.Build();
+            Assert.Equal(listenOptions.HttpsOptions.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_UseHttpsBeforeLoad()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            // Use Https triggers a load, so the default cert is already set
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            // This Load is a no-op (tested elsewhere)
+            serverOptions.ConfigurationLoader.Load();
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            listenOptions.Build();
+            Assert.Equal(listenOptions.HttpsOptions.ServerCertificate?.SerialNumber, certificate.SerialNumber);
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
+    [Fact]
+    public void LoadDevelopmentCertificate_UseHttpsBeforeConfigure()
+    {
+        try
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var defaultCertificate = TestResources.GetTestCertificate();
+            Assert.NotEqual(certificate.SerialNumber, defaultCertificate.SerialNumber);
+            serverOptions.TestOverrideDefaultCertificate = defaultCertificate;
+
+            var ran1 = false;
+            serverOptions.ListenAnyIP(4545, listenOptions =>
+            {
+                ran1 = true;
+                listenOptions.UseHttps();
+            });
+            Assert.True(ran1);
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            serverOptions.Configure(config);
+
+            Assert.Null(serverOptions.ConfigurationLoader.DefaultCertificate);
+
+            serverOptions.ConfigurationLoader.Load();
+
+            Assert.NotNull(serverOptions.ConfigurationLoader.DefaultCertificate);
+            Assert.Equal(serverOptions.ConfigurationLoader.DefaultCertificate.SerialNumber, certificate.SerialNumber);
+
+            var listenOptions = serverOptions.CodeBackedListenOptions.Single();
+            listenOptions.Build();
+            // In a perfect world, it would match certificate.SerialNumber, but there's no way for an eager UseHttps
+            // to do that before Configure is called.
+            Assert.Equal(listenOptions.HttpsOptions.ServerCertificate?.SerialNumber, defaultCertificate.SerialNumber);
         }
         finally
         {
@@ -392,7 +693,7 @@ public class KestrelConfigurationLoaderTests
             }).Load();
 
         Assert.True(ran1);
-        Assert.NotNull(serverOptions.DefaultCertificate);
+        Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
     }
 
     [Fact]
@@ -416,7 +717,7 @@ public class KestrelConfigurationLoaderTests
                 .Configure(config)
                 .Load();
 
-            Assert.Null(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate);
         }
         finally
         {
@@ -447,7 +748,7 @@ public class KestrelConfigurationLoaderTests
                 .Configure(config)
                 .Load();
 
-            Assert.Null(serverOptions.DefaultCertificate);
+            Assert.Null(serverOptions.DevelopmentCertificate);
         }
         finally
         {
@@ -540,6 +841,178 @@ public class KestrelConfigurationLoaderTests
         Assert.Null(end1.EndpointConfig.SslProtocols);
     }
 
+    // On helix retry list - inherently flaky (FS events)
+    [Theory]
+    [InlineData(true)] // This might be flaky, since it depends on file system events (or polling)
+    [InlineData(false)] // This will be slow (1 seconds)
+    public async Task CertificateChangedOnDisk(bool reloadOnChange)
+    {
+        var certificatePath = GetCertificatePath();
+
+        try
+        {
+            var serverOptions = CreateServerOptions();
+
+            var certificatePassword = "1234";
+
+            var oldCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var oldCertificateBytes = oldCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
+
+            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(certificatePath));
+            File.WriteAllBytes(certificatePath, oldCertificateBytes);
+
+            var endpointConfigurationCallCount = 0;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                    new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", certificatePath),
+                    new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", certificatePassword),
+                }).Build();
+
+            var configLoader = serverOptions
+                .Configure(config, reloadOnChange)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.True(opt.IsHttps);
+                    var expectedSerialNumber = endpointConfigurationCallCount == 0
+                        ? oldCertificate.SerialNumber
+                        : newCertificate.SerialNumber;
+                    Assert.Equal(opt.HttpsOptions.ServerCertificate.SerialNumber, expectedSerialNumber);
+                    endpointConfigurationCallCount++;
+                });
+
+            configLoader.Load();
+
+            var fileTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            if (reloadOnChange) // There's no reload token if !reloadOnChange
+            {
+                configLoader.GetReloadToken().RegisterChangeCallback(_ => fileTcs.SetResult(), state: null);
+            }
+            File.WriteAllBytes(certificatePath, newCertificateBytes);
+
+            if (reloadOnChange)
+            {
+                await fileTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)); // Needs to be meaningfully longer than the polling period - 4 seconds
+            }
+            else
+            {
+                // We can't just check immediately that the callback hasn't fired - we might preempt it
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                Assert.False(fileTcs.Task.IsCompleted);
+            }
+
+            Assert.Equal(1, endpointConfigurationCallCount);
+
+            if (reloadOnChange)
+            {
+                configLoader.Reload();
+
+                Assert.Equal(2, endpointConfigurationCallCount);
+            }
+        }
+        finally
+        {
+            if (File.Exists(certificatePath))
+            {
+                // Note: the watcher will see this event, but we ignore deletions, so it shouldn't matter
+                File.Delete(certificatePath);
+            }
+        }
+    }
+
+    // On helix retry list - inherently flaky (FS events)
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows)] // Windows has poor support for directory symlinks (e.g. https://github.com/dotnet/runtime/issues/27826)
+    public async Task CertificateChangedOnDisk_Symlink()
+    {
+        var tempDir = Directory.CreateTempSubdirectory().FullName;
+
+        try
+        {
+            // temp/
+            //     tls.key -> link/tls.key
+            //     link/ -> old/
+            //     old/
+            //         tls.key
+            //     new/
+            //         tls.key
+
+            var oldDir = Directory.CreateDirectory(Path.Combine(tempDir, "old"));
+            var newDir = Directory.CreateDirectory(Path.Combine(tempDir, "new"));
+            var oldCertPath = Path.Combine(oldDir.FullName, "tls.key");
+            var newCertPath = Path.Combine(newDir.FullName, "tls.key");
+
+            var dirLink = Directory.CreateSymbolicLink(Path.Combine(tempDir, "link"), "./old");
+            var fileLink = File.CreateSymbolicLink(Path.Combine(tempDir, "tls.key"), "./link/tls.key");
+
+            var serverOptions = CreateServerOptions();
+
+            var certificatePassword = "1234";
+
+            var oldCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var oldCertificateBytes = oldCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
+
+            File.WriteAllBytes(oldCertPath, oldCertificateBytes);
+
+            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
+
+            File.WriteAllBytes(newCertPath, newCertificateBytes);
+
+            var endpointConfigurationCallCount = 0;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Path", fileLink.FullName),
+                new KeyValuePair<string, string>("Endpoints:End1:Certificate:Password", certificatePassword),
+            }).Build();
+
+            var configLoader = serverOptions
+                .Configure(config, reloadOnChange: true)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.True(opt.IsHttps);
+                    var expectedSerialNumber = endpointConfigurationCallCount == 0
+                        ? oldCertificate.SerialNumber
+                        : newCertificate.SerialNumber;
+                    Assert.Equal(opt.HttpsOptions.ServerCertificate.SerialNumber, expectedSerialNumber);
+                    endpointConfigurationCallCount++;
+                });
+
+            configLoader.Load();
+
+            var fileTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            configLoader.GetReloadToken().RegisterChangeCallback(_ => fileTcs.SetResult(), state: null);
+
+            // Clobber link/ directory symlink - this will effectively cause the cert to be updated.
+            // Unfortunately, it throws (file exists) if we don't delete the old one first so it's not a single, clean FS operation.
+            dirLink.Delete();
+            dirLink = Directory.CreateSymbolicLink(Path.Combine(tempDir, "link"), "./new");
+
+            // This can fail in local runs where the timeout is 5 seconds and polling period is 4 seconds - just re-run
+            await fileTcs.Task.DefaultTimeout();
+
+            Assert.Equal(1, endpointConfigurationCallCount);
+
+            configLoader.Reload();
+
+            Assert.Equal(2, endpointConfigurationCallCount);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                // Note: the watcher will see this event, but we ignore deletions, so it shouldn't matter
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
+    }
+
     [ConditionalTheory]
     [InlineData("http1", HttpProtocols.Http1)]
     // [InlineData("http2", HttpProtocols.Http2)] // Not supported due to missing ALPN support. https://github.com/dotnet/corefx/issues/33016
@@ -547,6 +1020,15 @@ public class KestrelConfigurationLoaderTests
     [OSSkipCondition(OperatingSystems.Linux)]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
     public void DefaultConfigSectionCanSetProtocols_MacAndWin7(string input, HttpProtocols expected)
+        => DefaultConfigSectionCanSetProtocols(input, expected);
+
+    [ConditionalTheory]
+    [InlineData("http1", HttpProtocols.Http1)]
+    [InlineData("http2", HttpProtocols.Http2)]
+    [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
+    // [InlineData("http1AndHttp2andHttp3", HttpProtocols.Http1AndHttp2AndHttp3)] // HTTP/3 not currently supported on macOS
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+    public void DefaultConfigSectionCanSetProtocols_NonWin7(string input, HttpProtocols expected)
         => DefaultConfigSectionCanSetProtocols(input, expected);
 
     [ConditionalTheory]
@@ -635,7 +1117,7 @@ public class KestrelConfigurationLoaderTests
         serverOptions.ConfigureEndpointDefaults(opt =>
         {
             // Kestrel default.
-            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
             ranDefault = true;
         });
 
@@ -665,14 +1147,14 @@ public class KestrelConfigurationLoaderTests
             .LocalhostEndpoint(5002, opt =>
             {
                 // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+                Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
                 ran2 = true;
             })
             .Load();
         serverOptions.ListenAnyIP(0, opt =>
         {
             // Kestrel default.
-            Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
+            Assert.Equal(ListenOptions.DefaultHttpProtocols, opt.Protocols);
             ran3 = true;
         });
 
@@ -1040,13 +1522,15 @@ public class KestrelConfigurationLoaderTests
 
         var (endpointsToStop, endpointsToStart) = serverOptions.ConfigurationLoader.Reload();
 
-        Assert.Single(endpointsToStop);
-        Assert.Single(endpointsToStart);
+        // NonDefaultProtocol is unchanged and doesn't need to be stopped/started
+        var stopEndpoint = Assert.Single(endpointsToStop);
+        var startEndpoint = Assert.Single(endpointsToStart);
 
-        Assert.Equal(5000, endpointsToStop[0].IPEndPoint.Port);
-        Assert.Equal(HttpProtocols.Http1AndHttp2, endpointsToStop[0].Protocols);
-        Assert.Equal(5000, endpointsToStart[0].IPEndPoint.Port);
-        Assert.Equal(HttpProtocols.Http1, endpointsToStart[0].Protocols);
+        Assert.Equal(5000, stopEndpoint.IPEndPoint.Port);
+        Assert.Equal(ListenOptions.DefaultHttpProtocols, stopEndpoint.Protocols);
+
+        Assert.Equal(5000, startEndpoint.IPEndPoint.Port);
+        Assert.Equal(HttpProtocols.Http1, startEndpoint.Protocols);
     }
 
     [Fact]
@@ -1081,6 +1565,283 @@ public class KestrelConfigurationLoaderTests
 
         Assert.Equal(2, foundChangedCount);
         Assert.Equal(1, foundUnchangedCount);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void MultipleLoads_Consecutive(bool loadInternal, bool reloadOnChange)
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration();
+        serverOptions.Configure(mockConfig.Object, reloadOnChange);
+
+        Action load = loadInternal ? serverOptions.ConfigurationLoader.LoadInternal : serverOptions.ConfigurationLoader.Load;
+
+        load();
+
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockConfig.Invocations.Clear();
+
+        load();
+
+        // In any case, nothing has changed, so nothing is read
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void MultipleLoads_ConfigureBetween(bool loadInternal, bool reloadOnChange)
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration();
+        serverOptions.Configure(mockConfig.Object, reloadOnChange);
+
+        var oldConfigurationLoader = serverOptions.ConfigurationLoader;
+
+        if (loadInternal)
+        {
+            serverOptions.ConfigurationLoader.LoadInternal();
+        }
+        else
+        {
+            serverOptions.ConfigurationLoader.Load();
+        }
+
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockConfig.Invocations.Clear();
+
+        serverOptions.Configure(mockConfig.Object, reloadOnChange: false);
+        var newConfigurationLoader = serverOptions.ConfigurationLoader;
+        Assert.NotSame(oldConfigurationLoader, newConfigurationLoader);
+
+        if (loadInternal)
+        {
+            serverOptions.ConfigurationLoader.LoadInternal();
+        }
+        else
+        {
+            serverOptions.ConfigurationLoader.Load();
+        }
+
+        // In any case, the configuration loader has been replaced, so this is a "first" load
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void MultipleLoadInternals_ConfigurationChanges(bool loadInternal, bool reloadOnChange)
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration(out var mockReloadToken);
+        serverOptions.Configure(mockConfig.Object, reloadOnChange);
+
+        Action load = loadInternal ? serverOptions.ConfigurationLoader.LoadInternal : serverOptions.ConfigurationLoader.Load;
+
+        load();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockReloadToken.SetupGet(t => t.HasChanged).Returns(true);
+
+        mockReloadToken.Invocations.Clear();
+        mockConfig.Invocations.Clear();
+
+        load();
+
+        Func<Times> reloadTimes = loadInternal && reloadOnChange ? Times.AtLeastOnce : Times.Never;
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, reloadTimes);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), reloadTimes);
+    }
+
+    [Fact]
+    public void LoadInternalBeforeLoad()
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration(out var mockReloadToken);
+        serverOptions.Configure(mockConfig.Object, reloadOnChange: true);
+
+        serverOptions.ConfigurationLoader.LoadInternal();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockReloadToken.SetupGet(t => t.HasChanged).Returns(true);
+
+        mockReloadToken.Invocations.Clear();
+        mockConfig.Invocations.Clear();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(5000);
+
+        serverOptions.ConfigurationLoader.Load();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.Never);
+        Assert.Single(serverOptions.CodeBackedListenOptions); // Still have to process endpoints
+    }
+
+    [Fact]
+    public void LoadInternalAfterLoad()
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration(out var mockReloadToken);
+        serverOptions.Configure(mockConfig.Object, reloadOnChange: true);
+
+        serverOptions.ConfigurationLoader.Load();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.Never);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+
+        mockReloadToken.SetupGet(t => t.HasChanged).Returns(true);
+
+        mockReloadToken.Invocations.Clear();
+        mockConfig.Invocations.Clear();
+
+        serverOptions.ConfigurationLoader.LoadInternal();
+
+        mockReloadToken.VerifyGet(t => t.HasChanged, Times.AtLeastOnce);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void ProcessEndpointsToAdd()
+    {
+        int numEndpointsToAdd = 3;
+        int numEndpointsAdded = 0;
+
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure();
+
+        for (int i = 0; i < numEndpointsToAdd; i++)
+        {
+            serverOptions.ConfigurationLoader.LocalhostEndpoint(5000 + i, _ => numEndpointsAdded++);
+        }
+
+        serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
+
+        Assert.Equal(numEndpointsToAdd, numEndpointsAdded);
+        Assert.Equal(numEndpointsToAdd, serverOptions.CodeBackedListenOptions.Count);
+        Assert.Empty(serverOptions.ConfigurationBackedListenOptions);
+
+        // Adding more endpoints and calling again has no effect
+
+        for (int i = 0; i < numEndpointsToAdd; i++)
+        {
+            serverOptions.ConfigurationLoader.LocalhostEndpoint(6000 + i, _ => numEndpointsAdded++);
+        }
+
+        serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
+
+        Assert.Equal(numEndpointsToAdd, numEndpointsAdded);
+        Assert.Equal(numEndpointsToAdd, serverOptions.CodeBackedListenOptions.Count);
+        Assert.Empty(serverOptions.ConfigurationBackedListenOptions);
+    }
+
+    [Fact]
+    public void ProcessEndpointsToAdd_CallbackThrows()
+    {
+        int numEndpointsAdded = 0;
+
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(5000, _ => numEndpointsAdded++);
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(5001, _ => throw new InvalidOperationException());
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(5002, _ => numEndpointsAdded++);
+
+        Assert.Throws<InvalidOperationException>(serverOptions.ConfigurationLoader.ProcessEndpointsToAdd);
+
+        Assert.Equal(1, numEndpointsAdded);
+        Assert.Single(serverOptions.CodeBackedListenOptions);
+        Assert.Empty(serverOptions.ConfigurationBackedListenOptions);
+
+        serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
+
+        // As in success scenarios, the second call has no effect
+        Assert.Equal(1, numEndpointsAdded);
+        Assert.Single(serverOptions.CodeBackedListenOptions);
+        Assert.Empty(serverOptions.ConfigurationBackedListenOptions);
+    }
+
+    [Fact]
+    public void ProcessEndpointsToAddBeforeLoad()
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration();
+        serverOptions.Configure(mockConfig.Object);
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(5000);
+
+        serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
+
+        Assert.Single(serverOptions.CodeBackedListenOptions);
+        mockConfig.Verify(c => c.GetSection(It.IsNotIn("EndpointDefaults")), Times.Never); // It does read the EndpointDefaults sections
+
+        mockConfig.Invocations.Clear();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added after ProcessEndpointsToAdd"));
+
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.Single(serverOptions.CodeBackedListenOptions);
+        mockConfig.Verify(c => c.GetSection(It.IsAny<string>()), Times.AtLeastOnce); // Still need to load, even if endpoints have been processed
+    }
+
+    [Fact]
+    public void ProcessEndpointsToAddAfterLoad()
+    {
+        var serverOptions = CreateServerOptions();
+        var mockConfig = CreateMockConfiguration();
+        serverOptions.Configure(mockConfig.Object);
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(5000);
+
+        serverOptions.ConfigurationLoader.Load();
+
+        Assert.Single(serverOptions.CodeBackedListenOptions);
+
+        mockConfig.Invocations.Clear();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added after Load"));
+
+        Assert.Single(serverOptions.CodeBackedListenOptions);
+        serverOptions.ConfigurationLoader.ProcessEndpointsToAdd();
+    }
+
+    [Fact]
+    public void LoadInternalDoesNotAddEndpoints()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added by LoadInternal"));
+
+        serverOptions.ConfigurationLoader.LoadInternal();
+    }
+
+    [Fact]
+    public void ReloadDoesNotAddEndpoints()
+    {
+        var serverOptions = CreateServerOptions();
+        serverOptions.Configure();
+
+        serverOptions.ConfigurationLoader.Load();
+
+        serverOptions.ConfigurationLoader.LocalhostEndpoint(7000, _ => Assert.Fail("New endpoints should not be added by Reload"));
+
+        _ = serverOptions.ConfigurationLoader.Reload();
     }
 
     private static string GetCertificatePath()

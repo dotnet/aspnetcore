@@ -4,34 +4,27 @@
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
+internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ISslStreamFeature
 {
     private readonly SslStream _sslStream;
+    private readonly ConnectionContext _context;
     private X509Certificate2? _clientCert;
-    private ReadOnlyMemory<byte>? _applicationProtocol;
-    private SslProtocols? _protocol;
-    private CipherAlgorithmType? _cipherAlgorithm;
-    private int? _cipherStrength;
-    private HashAlgorithmType? _hashAlgorithm;
-    private int? _hashStrength;
-    private ExchangeAlgorithmType? _keyExchangeAlgorithm;
-    private int? _keyExchangeStrength;
     private Task<X509Certificate2?>? _clientCertTask;
 
-    public TlsConnectionFeature(SslStream sslStream)
+    public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
     {
-        if (sslStream is null)
-        {
-            throw new ArgumentNullException(nameof(sslStream));
-        }
+        ArgumentNullException.ThrowIfNull(sslStream);
+        ArgumentNullException.ThrowIfNull(context);
 
         _sslStream = sslStream;
+        _context = context;
     }
 
     internal bool AllowDelayedClientCertificateNegotation { get; set; }
@@ -49,57 +42,29 @@ internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProt
         }
     }
 
-    // Used for event source, not part of any of the feature interfaces.
-    public string? HostName { get; set; }
+    public string HostName { get; set; } = string.Empty;
 
-    public ReadOnlyMemory<byte> ApplicationProtocol
-    {
-        get => _applicationProtocol ?? _sslStream.NegotiatedApplicationProtocol.Protocol;
-        set => _applicationProtocol = value;
-    }
+    public ReadOnlyMemory<byte> ApplicationProtocol => _sslStream.NegotiatedApplicationProtocol.Protocol;
 
-    public SslProtocols Protocol
-    {
-        get => _protocol ?? _sslStream.SslProtocol;
-        set => _protocol = value;
-    }
+    public SslProtocols Protocol => _sslStream.SslProtocol;
+
+    public SslStream SslStream => _sslStream;
 
     // We don't store the values for these because they could be changed by a renegotiation.
-    public CipherAlgorithmType CipherAlgorithm
-    {
-        get => _cipherAlgorithm ?? _sslStream.CipherAlgorithm;
-        set => _cipherAlgorithm = value;
-    }
 
-    public int CipherStrength
-    {
-        get => _cipherStrength ?? _sslStream.CipherStrength;
-        set => _cipherStrength = value;
-    }
+    public TlsCipherSuite? NegotiatedCipherSuite => _sslStream.NegotiatedCipherSuite;
 
-    public HashAlgorithmType HashAlgorithm
-    {
-        get => _hashAlgorithm ?? _sslStream.HashAlgorithm;
-        set => _hashAlgorithm = value;
-    }
+    public CipherAlgorithmType CipherAlgorithm => _sslStream.CipherAlgorithm;
 
-    public int HashStrength
-    {
-        get => _hashStrength ?? _sslStream.HashStrength;
-        set => _hashStrength = value;
-    }
+    public int CipherStrength => _sslStream.CipherStrength;
 
-    public ExchangeAlgorithmType KeyExchangeAlgorithm
-    {
-        get => _keyExchangeAlgorithm ?? _sslStream.KeyExchangeAlgorithm;
-        set => _keyExchangeAlgorithm = value;
-    }
+    public HashAlgorithmType HashAlgorithm => _sslStream.HashAlgorithm;
 
-    public int KeyExchangeStrength
-    {
-        get => _keyExchangeStrength ?? _sslStream.KeyExchangeStrength;
-        set => _keyExchangeStrength = value;
-    }
+    public int HashStrength => _sslStream.HashStrength;
+
+    public ExchangeAlgorithmType KeyExchangeAlgorithm => _sslStream.KeyExchangeAlgorithm;
+
+    public int KeyExchangeStrength => _sslStream.KeyExchangeStrength;
 
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
     {
@@ -122,7 +87,28 @@ internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProt
 
     private async Task<X509Certificate2?> GetClientCertificateAsyncCore(CancellationToken cancellationToken)
     {
-        await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+        try
+        {
+#pragma warning disable CA1416 // Validate platform compatibility
+            await _sslStream.NegotiateClientCertificateAsync(cancellationToken);
+#pragma warning restore CA1416 // Validate platform compatibility
+        }
+        catch (PlatformNotSupportedException)
+        {
+            // NegotiateClientCertificateAsync might not be supported on all platforms.
+            // Don't attempt to recover by creating a new connection. Instead, just throw error directly to the app.
+            throw;
+        }
+        catch
+        {
+            // We can't tell which exceptions are fatal or recoverable. Consider them all recoverable only given a new connection
+            // and close the connection gracefully to avoid over-caching and affecting future requests on this connection.
+            // This allows recovery by starting a new connection. The close is graceful to allow the server to
+            // send an error response like 401. https://github.com/dotnet/aspnetcore/issues/41369
+            _context.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
+            throw;
+        }
+
         return ClientCertificate;
     }
 

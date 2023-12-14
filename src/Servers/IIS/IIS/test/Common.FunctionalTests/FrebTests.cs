@@ -10,7 +10,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class FrebTests : IISFunctionalTestBase
 {
     public FrebTests(PublishedSitesFixture fixture) : base(fixture)
@@ -90,10 +91,7 @@ public class FrebTests : IISFunctionalTestBase
         AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_ASYNC_COMPLETION_COMPLETION", "2"));
     }
 
-    // I think this test is flaky due to freb file not being created quickly enough.
-    // Adding extra logging, marking as flaky, and repeating should help
     [ConditionalFact]
-    [Repeat(10)]
     [RequiresIIS(IISCapability.FailedRequestTracingModule)]
     public async Task CheckFrebDisconnect()
     {

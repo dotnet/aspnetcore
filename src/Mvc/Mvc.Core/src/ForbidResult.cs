@@ -56,7 +56,7 @@ public partial class ForbidResult : ActionResult
     /// Initializes a new instance of <see cref="ForbidResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+    /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
     public ForbidResult(string authenticationScheme, AuthenticationProperties? properties)
@@ -68,7 +68,7 @@ public partial class ForbidResult : ActionResult
     /// Initializes a new instance of <see cref="ForbidResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
+    /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
     public ForbidResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
@@ -90,15 +90,12 @@ public partial class ForbidResult : ActionResult
     /// <inheritdoc />
     public override async Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var httpContext = context.HttpContext;
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<ForbidResult>();
+        var logger = loggerFactory.CreateLogger(typeof(ForbidResult));
         Log.ForbidResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)
@@ -124,7 +121,7 @@ public partial class ForbidResult : ActionResult
             }
         }
 
-        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).", EventName = "ForbidResultExecuting", SkipEnabledCheck =  true)]
+        [LoggerMessage(1, LogLevel.Information, $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).", EventName = "ForbidResultExecuting", SkipEnabledCheck = true)]
         private static partial void ForbidResultExecuting(ILogger logger, string[] schemes);
     }
 }

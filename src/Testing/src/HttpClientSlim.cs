@@ -14,7 +14,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Lightweight version of HttpClient implemented using Socket and SslStream.
@@ -144,7 +144,11 @@ public static class HttpClientSlim
             throw new InvalidDataException($"No StatusCode found in '{response}'");
         }
 
+#if NETSTANDARD2_0 || NETFRAMEWORK
         return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength), CultureInfo.InvariantCulture);
+#else
+        return (HttpStatusCode)int.Parse(response.AsSpan(statusStart, statusLength), CultureInfo.InvariantCulture);
+#endif
     }
 
     private static async Task<Stream> GetStream(Uri requestUri, bool validateCertificate)

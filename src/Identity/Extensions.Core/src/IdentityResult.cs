@@ -49,6 +49,16 @@ public class IdentityResult
         return result;
     }
 
+    internal static IdentityResult Failed(List<IdentityError>? errors)
+    {
+        var result = new IdentityResult { Succeeded = false };
+        if (errors != null)
+        {
+            result._errors.AddRange(errors);
+        }
+        return result;
+    }
+
     /// <summary>
     /// Converts the value of the current <see cref="IdentityResult"/> object to its equivalent string representation.
     /// </summary>

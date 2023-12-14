@@ -11,7 +11,7 @@ public class AccessToken
     /// <summary>
     /// Gets or sets the list of granted scopes for the token.
     /// </summary>
-    public IReadOnlyList<string> GrantedScopes { get; set; }
+    public IReadOnlyList<string> GrantedScopes { get; set; } = default!;
 
     /// <summary>
     /// Gets the expiration time of the token.
@@ -21,5 +21,5 @@ public class AccessToken
     /// <summary>
     /// Gets the serialized representation of the token.
     /// </summary>
-    public string Value { get; set; }
+    public string Value { get; set; } = default!;
 }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-class Http3Stream<TContext> : Http3Stream, IHostContextContainer<TContext> where TContext : notnull
+internal sealed class Http3Stream<TContext> : Http3Stream, IHostContextContainer<TContext> where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
 
@@ -20,14 +20,15 @@ class Http3Stream<TContext> : Http3Stream, IHostContextContainer<TContext> where
     public override void Execute()
     {
         KestrelEventSource.Log.RequestQueuedStop(this, AspNetCore.Http.HttpProtocol.Http3);
+        ServiceContext.Metrics.RequestQueuedStop(MetricsContext, KestrelMetrics.Http3);
 
-        if (_requestHeaderParsingState == Http3Stream.RequestHeaderParsingState.Ready)
+        if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
         {
             _ = ProcessRequestAsync(_application);
         }
         else
         {
-            _ = base.ProcessRequestsAsync(_application);
+            _ = ProcessRequestsAsync(_application);
         }
     }
 

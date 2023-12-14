@@ -1,2 +1,8 @@
 ﻿@page "/Other"
+@page "/Other-With-Hyphens"
+@page "/Other.With.Dots"
+@page "/Other_With_Underscores"
+@page "/Other~With~Tildes"
+@inject NavigationManager Navigation
 <div id="test-info">This is another page.</div>
+<div id="test-state">@Navigation.HistoryEntryState</div>

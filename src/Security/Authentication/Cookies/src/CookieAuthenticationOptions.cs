@@ -34,32 +34,20 @@ public class CookieAuthenticationOptions : AuthenticationSchemeOptions
     }
 
     /// <summary>
-    /// <para>
     /// Determines the settings used to create the cookie.
-    /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
-    /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
-    /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
-    /// </para>
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// The default value for cookie <see cref="CookieBuilder.Name"/> is ".AspNetCore.Cookies".
+    /// <list type="bullet">
+    /// <item><description>The default value for cookie <see cref="CookieBuilder.Name"/> is <c>.AspNetCore.Cookies</c>.
     /// This value should be changed if you change the name of the <c>AuthenticationScheme</c>, especially if your
-    /// system uses the cookie authentication handler multiple times.
-    /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.SameSite"/> determines if the browser should allow the cookie to be attached to same-site or cross-site requests.
-    /// The default is <c>Lax</c>, which means the cookie is only allowed to be attached to cross-site requests using safe HTTP methods and same-site requests.
-    /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.HttpOnly"/> determines if the browser should allow the cookie to be accessed by client-side javascript.
-    /// The default is true, which means the cookie will only be passed to http requests and is not made available to script on the page.
-    /// </para>
-    /// <para>
-    /// <see cref="CookieBuilder.Expiration"/> is currently ignored. Use <see cref="ExpireTimeSpan"/> to control lifetime of cookie authentication.
-    /// </para>
+    /// system uses the cookie authentication handler multiple times.</description></item>
+    /// <item><description><see cref="CookieBuilder.SameSite"/> determines if the browser should allow the cookie to be attached to same-site or cross-site requests.
+    /// The default is <c>Lax</c>, which means the cookie is only allowed to be attached to cross-site requests using safe HTTP methods and same-site requests.</description></item>
+    /// <item><description><see cref="CookieBuilder.HttpOnly"/> determines if the browser should allow the cookie to be accessed by client-side JavaScript.
+    /// The default is <c>true</c>, which means the cookie will only be passed to HTTP requests and is not made available to JavaScript on the page.</description></item>
+    /// <item><description><see cref="CookieBuilder.Expiration"/> is currently ignored. Use <see cref="ExpireTimeSpan"/> to control lifetime of cookie authentication.</description></item>
+    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.</description></item>
+    /// </list>
     /// </remarks>
     public CookieBuilder Cookie
     {
@@ -135,7 +123,7 @@ public class CookieAuthenticationOptions : AuthenticationSchemeOptions
 
     /// <summary>
     /// <para>
-    /// Controls how much time the authentication ticket stored in the cookie will remain valid from the point it is created
+    /// Controls how much time the authentication ticket stored in the cookie will remain valid from the point it is created.
     /// The expiration information is stored in the protected cookie ticket. Because of that an expired cookie will be ignored
     /// even if it is passed to the server after the browser should have purged it.
     /// </para>

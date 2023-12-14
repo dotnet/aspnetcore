@@ -15,5 +15,5 @@ internal static partial class LoggingExtensions
     public static partial void CertificateRejected(this ILogger logger, string certificateType, string subject);
 
     [LoggerMessage(2, LogLevel.Warning, "Certificate validation failed, subject was {Subject}. {ChainErrors}", EventName = "CertificateFailedValidation")]
-    public static partial void CertificateFailedValidation(this ILogger logger, string subject, IEnumerable<string> chainErrors);
+    public static partial void CertificateFailedValidation(this ILogger logger, string subject, IList<string> chainErrors);
 }

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 /// <see cref="ViewComponentContext"/> to a public property of a view component marked
 /// with <see cref="ViewComponentContextAttribute"/>.
 /// </remarks>
-internal class DefaultViewComponentActivator : IViewComponentActivator
+internal sealed class DefaultViewComponentActivator : IViewComponentActivator
 {
     private readonly ITypeActivatorCache _typeActivatorCache;
 
@@ -26,10 +26,7 @@ internal class DefaultViewComponentActivator : IViewComponentActivator
     /// </param>
     public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
     {
-        if (typeActivatorCache == null)
-        {
-            throw new ArgumentNullException(nameof(typeActivatorCache));
-        }
+        ArgumentNullException.ThrowIfNull(typeActivatorCache);
 
         _typeActivatorCache = typeActivatorCache;
     }
@@ -37,10 +34,7 @@ internal class DefaultViewComponentActivator : IViewComponentActivator
     /// <inheritdoc />
     public object Create(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var componentType = context.ViewComponentDescriptor.TypeInfo;
 

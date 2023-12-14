@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @*#if (SampleContent)
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    ##endif*@
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="BlazorWeb-CSharp.styles.css" />
+    @*#if (SampleContent)
+    <link rel="icon" type="image/png" href="favicon.png" />
+    ##endif*@
+    @*#if (!InteractiveAtRoot)
+    <HeadOutlet />
+    ##elseif (IndividualLocalAuth)
+    <HeadOutlet @rendermode="@RenderModeForPage" />
+    ##elseif (UseServer && UseWebAssembly)
+    <HeadOutlet @rendermode="@InteractiveAuto" />
+    ##elseif (UseServer)
+    <HeadOutlet @rendermode="@InteractiveServer" />
+    ##else
+    <HeadOutlet @rendermode="@InteractiveWebAssembly" />
+    ##endif*@
+</head>
+
+<body>
+    @*#if (!InteractiveAtRoot)
+    <Routes />
+    ##elseif (IndividualLocalAuth)
+    <Routes @rendermode="@RenderModeForPage" />
+    ##elseif (UseServer && UseWebAssembly)
+    <Routes @rendermode="@InteractiveAuto" />
+    ##elseif (UseServer)
+    <Routes @rendermode="@InteractiveServer" />
+    ##else
+    <Routes @rendermode="@InteractiveWebAssembly" />
+    ##endif*@
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+@*#if (!InteractiveAtRoot || !IndividualLocalAuth)
+#elseif (UseServer && UseWebAssembly)
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : InteractiveAuto;
+}
+#elseif (UseServer)
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : InteractiveServer;
+}
+#else
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+        ? null
+        : InteractiveWebAssembly;
+}
+#endif*@

@@ -55,7 +55,7 @@ public class SingleRouteRouteValuesAddressSchemeBenchmark : EndpointRoutingBench
         });
     }
 
-    private class TestAddressScheme : IEndpointAddressScheme<int>
+    private sealed class TestAddressScheme : IEndpointAddressScheme<int>
     {
         private readonly Endpoint _endpoint;
 

@@ -16,17 +16,15 @@ public class DbContextHealthCheckTest
     {
         // Arrange
         var services = CreateServices();
-        using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
-            var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
+        using var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+        var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
 
-            // Act
-            var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
+        // Act
+        var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
 
-            // Assert
-            Assert.Equal(HealthStatus.Healthy, result.Status);
-        }
+        // Assert
+        Assert.Equal(HealthStatus.Healthy, result.Status);
     }
 
     [Fact]
@@ -38,88 +36,71 @@ public class DbContextHealthCheckTest
             return await c.Blogs.AnyAsync();
         });
 
-        using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
-            var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
+        using var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+        var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
 
-            // Add a blog so that the custom test passes
-            var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
-            context.Add(new Blog());
-            await context.SaveChangesAsync();
+        // Add a blog so that the custom test passes
+        var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
+        context.Add(new Blog());
+        await context.SaveChangesAsync();
 
-            // Act
-            var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
+        // Act
+        var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
 
-            // Assert
-            Assert.Equal(HealthStatus.Healthy, result.Status);
-        }
+        // Assert
+        Assert.Equal(HealthStatus.Healthy, result.Status);
     }
 
-    [Fact]
-    public async Task CheckAsync_CustomTestWithDegradedFailureStatusSpecified_Degraded()
+    [Theory]
+    [InlineData(HealthStatus.Degraded, HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Unhealthy, HealthStatus.Unhealthy)]
+    [InlineData(null, HealthStatus.Unhealthy)]
+    public async Task CheckAsync_CustomTestWithFailureStatusSpecified_Expected(HealthStatus? specifiedFailureStatus, HealthStatus expectedStatus)
     {
         // Arrange
         var services = CreateServices(async (c, ct) =>
         {
             return await c.Blogs.AnyAsync();
-        }, failureStatus: HealthStatus.Degraded);
+        }, failureStatus: specifiedFailureStatus);
 
-        using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
-            var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
+        using var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+        var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
 
-            // Act
-            var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
+        // Act
+        var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
 
-            // Assert
-            Assert.Equal(HealthStatus.Degraded, result.Status);
-        }
+        // Assert
+        Assert.Equal(expectedStatus, result.Status);
     }
 
-    [Fact]
-    public async Task CheckAsync_CustomTestWithUnhealthyFailureStatusSpecified_Unhealthy()
+    [Theory]
+    [InlineData(HealthStatus.Unhealthy)]
+    [InlineData(HealthStatus.Degraded)]
+    [InlineData(HealthStatus.Healthy)]
+    public async Task CheckAsync_CustomTestRegardlessOfFailureStatusSpecified_IfThrowsException_Unhealthy(HealthStatus healthStatus)
     {
         // Arrange
+        const string exceptionMessage = "Something unexpected happened in the testQuery";
+
         var services = CreateServices(async (c, ct) =>
         {
-            return await c.Blogs.AnyAsync();
-        }, failureStatus: HealthStatus.Unhealthy);
+            var any = await c.Blogs.AnyAsync();
+            throw new Exception(exceptionMessage);
+        }, failureStatus: healthStatus);
 
-        using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
-            var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
+        using var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        // var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+        var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
+        var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
 
-            // Act
-            var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
+        // Act
+        var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
 
-            // Assert
-            Assert.Equal(HealthStatus.Unhealthy, result.Status);
-        }
-    }
-
-    [Fact]
-    public async Task CheckAsync_CustomTestWithNoFailureStatusSpecified_Unhealthy()
-    {
-        // Arrange
-        var services = CreateServices(async (c, ct) =>
-        {
-            return await c.Blogs.AnyAsync();
-        }, failureStatus: null);
-
-        using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            var registration = Assert.Single(services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations);
-            var check = ActivatorUtilities.CreateInstance<DbContextHealthCheck<TestDbContext>>(scope.ServiceProvider);
-
-            // Act
-            var result = await check.CheckHealthAsync(new HealthCheckContext() { Registration = registration, });
-
-            // Assert
-            Assert.Equal(HealthStatus.Unhealthy, result.Status);
-        }
+        // Assert
+        Assert.Equal(HealthStatus.Unhealthy, result.Status);
+        Assert.Equal(exceptionMessage, result.Description);
     }
 
     // used to ensure each test uses a unique in-memory database

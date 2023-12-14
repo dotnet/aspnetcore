@@ -1,5 +1,4 @@
 #nullable enable
-~Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions!>! options) -> void
 Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions
 Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions.NewtonsoftJsonHubProtocolOptions() -> void
 Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions.PayloadSerializerSettings.get -> Newtonsoft.Json.JsonSerializerSettings!
@@ -9,6 +8,7 @@ Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.GetMessageBytes(
 Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.IsVersionSupported(int version) -> bool
 Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.Name.get -> string!
 Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol() -> void
+Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions!>! options) -> void
 Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.PayloadSerializer.get -> Newtonsoft.Json.JsonSerializer!
 Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.TransferFormat.get -> Microsoft.AspNetCore.Connections.TransferFormat
 Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol.TryParseMessage(ref System.Buffers.ReadOnlySequence<byte> input, Microsoft.AspNetCore.SignalR.IInvocationBinder! binder, out Microsoft.AspNetCore.SignalR.Protocol.HubMessage? message) -> bool

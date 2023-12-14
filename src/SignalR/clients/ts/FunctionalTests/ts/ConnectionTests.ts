@@ -201,6 +201,9 @@ describe("connection", () => {
                 const connection = new HttpConnection(USED_ECHOENDPOINT_URL + "redirect", {
                     ...commonOptions,
                     httpClient,
+                    // bug in eventsource makes relative redirect URLs throw an unhandled exception which fails the test
+                    // https://github.com/EventSource/eventsource/issues/277
+                    transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling
                 });
 
                 connection.onreceive = async (data: any) => {

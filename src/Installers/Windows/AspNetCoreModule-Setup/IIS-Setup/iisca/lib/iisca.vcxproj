@@ -76,8 +76,6 @@
     <ProjectGuid>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>iisca</RootNamespace>
-    <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.18362.0</WindowsTargetPlatformVersion>
-    <PlatformToolsetVersion>v142</PlatformToolsetVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
@@ -86,9 +84,6 @@
     <PlatformToolset>$(PlatformToolsetVersion)</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <PropertyGroup Label="Configuration">
-    <VCToolsVersion>14.29.30133</VCToolsVersion>
-  </PropertyGroup>
   <PropertyGroup>
     <AdditionalIncludeDirectories>$(IIS-Common)version;$(IIS-Common)Include;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     <PrecompiledHeader>Create</PrecompiledHeader>

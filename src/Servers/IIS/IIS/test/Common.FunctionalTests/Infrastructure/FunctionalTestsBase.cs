@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -21,6 +17,7 @@ public class FunctionalTestsBase : LoggedTest
     }
 
     protected IISDeployerBase _deployer;
+    protected IISDeploymentResult _deploymentResult;
 
     protected ApplicationDeployer CreateDeployer(IISDeploymentParameters parameters)
     {
@@ -36,7 +33,7 @@ public class FunctionalTestsBase : LoggedTest
     protected virtual async Task<IISDeploymentResult> DeployAsync(IISDeploymentParameters parameters)
     {
         _deployer = (IISDeployerBase)CreateDeployer(parameters);
-        return (IISDeploymentResult)await _deployer.DeployAsync();
+        return _deploymentResult = (IISDeploymentResult)await _deployer.DeployAsync();
     }
 
     protected virtual async Task<IISDeploymentResult> StartAsync(IISDeploymentParameters parameters)
@@ -59,6 +56,7 @@ public class FunctionalTestsBase : LoggedTest
 
     public void StopServer(bool gracefulShutdown = true)
     {
+        _deploymentResult?.Dispose();
         _deployer?.Dispose(gracefulShutdown);
         _deployer = null;
     }

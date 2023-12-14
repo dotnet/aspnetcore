@@ -46,7 +46,7 @@ public sealed class ValidationProblemDetailsConverter : JsonConverter
         serializer.Serialize(writer, annotatedProblemDetails);
     }
 
-    private class AnnotatedValidationProblemDetails : AnnotatedProblemDetails
+    private sealed class AnnotatedValidationProblemDetails : AnnotatedProblemDetails
     {
         /// <remarks>
         /// Required for JSON.NET deserialization.

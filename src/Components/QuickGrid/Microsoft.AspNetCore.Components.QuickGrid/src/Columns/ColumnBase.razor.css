@@ -1,0 +1,30 @@
+/* Contains the title text and sort indicator, and expands to fill as much of the col width as it can */
+.col-title {
+    display: flex; /* So that we can make col-title-text expand as much as possible, and still hide overflow with ellipsis */
+    min-width: 0px;
+    flex-grow: 1;
+    padding: 0;
+}
+
+/* If the column is sortable, its title is rendered as a button element for accessibility and to support navigation by tab */
+button.col-title {
+    border: none;
+    background: none;
+    position: relative;
+    cursor: pointer;
+}
+
+.col-justify-center .col-title {
+    justify-content: center;
+}
+
+.col-justify-end .col-title {
+    flex-direction: row-reverse; /* For end-justified cols, the sort indicator should appear before the title text */
+}
+
+/* We put the column title text in its own element primarily so that it can use text-overflow: ellipsis */
+.col-title-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}

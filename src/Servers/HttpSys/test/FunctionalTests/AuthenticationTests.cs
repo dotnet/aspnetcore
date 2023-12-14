@@ -8,12 +8,12 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class AuthenticationTests
+public class AuthenticationTests : LoggedTest
 {
     private static bool AllowAnoymous = true;
     private static bool DenyAnoymous = false;
@@ -33,7 +33,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -51,7 +51,7 @@ public class AuthenticationTests
         using (var server = Utilities.CreateDynamicHost(authType, DenyAnoymous, out var address, httpContext =>
         {
             throw new NotImplementedException();
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -73,7 +73,7 @@ public class AuthenticationTests
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             httpContext.Response.StatusCode = 401;
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -99,7 +99,7 @@ public class AuthenticationTests
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             httpContext.Response.StatusCode = 401;
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -135,7 +135,7 @@ public class AuthenticationTests
             }
             requestId++;
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -156,7 +156,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.True(httpContext.User.Identity.IsAuthenticated);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -182,7 +182,7 @@ public class AuthenticationTests
                 return Task.CompletedTask;
             });
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -208,7 +208,7 @@ public class AuthenticationTests
             var authResults = await httpContext.AuthenticateAsync(HttpSysDefaults.AuthenticationScheme);
             Assert.False(authResults.Succeeded);
             Assert.True(authResults.None);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -231,7 +231,7 @@ public class AuthenticationTests
             Assert.True(httpContext.User.Identity.IsAuthenticated);
             var authResults = await httpContext.AuthenticateAsync(HttpSysDefaults.AuthenticationScheme);
             Assert.True(authResults.Succeeded);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -253,7 +253,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -276,7 +276,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             await httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -294,7 +294,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -320,7 +320,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -338,7 +338,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.False(httpContext.User.Identity.IsAuthenticated);
             return httpContext.ForbidAsync(HttpSysDefaults.AuthenticationScheme);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address);
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -359,7 +359,7 @@ public class AuthenticationTests
             Assert.NotNull(httpContext.User.Identity);
             Assert.True(httpContext.User.Identity.IsAuthenticated);
             return httpContext.ChallengeAsync(HttpSysDefaults.AuthenticationScheme, null);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -393,7 +393,7 @@ public class AuthenticationTests
             Assert.NotNull(authenticateResult.Principal);
             Assert.NotNull(authenticateResult.Principal.Identity);
             Assert.True(authenticateResult.Principal.Identity.IsAuthenticated);
-        }))
+        }, LoggerFactory))
         {
             var response = await SendRequestAsync(address, useDefaultCredentials: true);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

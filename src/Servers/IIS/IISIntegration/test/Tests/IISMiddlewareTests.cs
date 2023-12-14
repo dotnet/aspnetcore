@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +18,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration;
 
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class IISMiddlewareTests
 {
     [Fact]
@@ -135,7 +136,7 @@ public class IISMiddlewareTests
         request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
         var response = await server.CreateClient().SendAsync(request);
 
-        await applicationStoppingFired.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
+        await applicationStoppingFired.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
         Assert.False(requestExecuted.Task.IsCompleted);
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
     }
@@ -195,7 +196,7 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(request);
 
         Assert.False(applicationStoppingFired.Task.IsCompleted);
-        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
+        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(2));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -240,7 +241,7 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(request);
 
         Assert.False(applicationStoppingFired.Task.IsCompleted);
-        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
+        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(2));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -285,7 +286,7 @@ public class IISMiddlewareTests
         var response = await server.CreateClient().SendAsync(request);
 
         Assert.False(applicationStoppingFired.Task.IsCompleted);
-        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
+        await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(2));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 

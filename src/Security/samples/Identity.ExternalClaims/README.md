@@ -4,7 +4,7 @@ AuthSamples.Identity.ExternalClaims
 Sample demonstrating copying over static and dynamic external claims from Google authentication during login:
 
 Steps:
-1. Configure a google OAuth2 project. See https://docs.microsoft.com/aspnet/core/security/authentication/social/google-logins for basic setup using google logins.
+1. Configure a google OAuth2 project. See https://learn.microsoft.com/aspnet/core/security/authentication/social/google-logins for basic setup using google logins.
 2. Update Startup.cs AddGoogle()'s options with ClientId and ClientSecret for your google app.
 3. Run the app and click on the MyClaims tab, this should trigger a redirect to login.
 4. Login via the Google button, this should redirect you to google.

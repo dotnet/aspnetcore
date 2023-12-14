@@ -16,11 +16,7 @@ internal struct StringSegmentAccumulator
     {
         get
         {
-            if (index >= count)
-            {
-                throw new IndexOutOfRangeException();
-            }
-
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, count);
             return count == 1 ? _single : _multiple![index];
         }
     }

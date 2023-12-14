@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>HTTP API for gRPC ASP.NET Core</Description>
+    <PackageTags>gRPC RPC HTTP/2 REST</PackageTags>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Grpc.Microbenchmarks" />
+
+    <Compile Include="..\Shared\Server\BindMethodFinder.cs" Link="Internal\Shared\Server\BindMethodFinder.cs" />
+    <Compile Include="..\Shared\Server\ClientStreamingServerMethodInvoker.cs" Link="Internal\Shared\Server\ClientStreamingServerMethodInvoker.cs" />
+    <Compile Include="..\Shared\Server\DuplexStreamingServerMethodInvoker.cs" Link="Internal\Shared\Server\DuplexStreamingServerMethodInvoker.cs" />
+    <Compile Include="..\Shared\Server\InterceptorPipelineBuilder.cs" Link="Internal\Shared\Server\InterceptorPipelineBuilder.cs" />
+    <Compile Include="..\Shared\Server\MethodOptions.cs" Link="Internal\Shared\Server\MethodOptions.cs" />
+    <Compile Include="..\Shared\Server\ServerMethodInvokerBase.cs" Link="Internal\Shared\Server\ServerMethodInvokerBase.cs" />
+    <Compile Include="..\Shared\Server\ServerStreamingServerMethodInvoker.cs" Link="Internal\Shared\Server\ServerStreamingServerMethodInvoker.cs" />
+    <Compile Include="..\Shared\Server\UnaryServerMethodInvoker.cs" Link="Internal\Shared\Server\UnaryServerMethodInvoker.cs" />
+    <Compile Include="..\Shared\DescriptorRegistry.cs" Link="Internal\Shared\DescriptorRegistry.cs" />
+    <Compile Include="..\Shared\AuthContextHelpers.cs" Link="Internal\Shared\AuthContextHelpers.cs" />
+    <Compile Include="..\Shared\ServiceDescriptorHelpers.cs" Link="Internal\Shared\ServiceDescriptorHelpers.cs" />
+    <Compile Include="..\Shared\X509CertificateHelpers.cs" Link="Internal\Shared\X509CertificateHelpers.cs" />
+    <Compile Include="..\Shared\HttpRoutePattern.cs" Link="Internal\Shared\HttpRoutePattern.cs" />
+    <Compile Include="..\Shared\HttpRoutePatternParser.cs" Link="Internal\Shared\HttpRoutePatternParser.cs" />
+    <Compile Include="..\Shared\Legacy.cs" Link="Internal\Shared\Legacy.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Internal\Shared" />
+
+    <Reference Include="Google.Api.CommonProtos" />
+    <Reference Include="Google.Protobuf" />
+    <Reference Include="Grpc.AspNetCore.Server" />
+
+    <None Update="protos\google\api\*.proto">
+      <Pack>true</Pack>
+      <PackagePath>content</PackagePath>
+    </None>
+    <!-- The build file needs to be in build and buildTransitive. -->
+    <!-- buildTransitive is required so the package reference will work when not directly referenced by the web app. -->
+    <!-- See https://github.com/dotnet/aspnetcore/issues/52006 for more details. -->
+    <None Include="build\*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build;buildTransitive</PackagePath>
+    </None>
+  </ItemGroup>
+</Project>

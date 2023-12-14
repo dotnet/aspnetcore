@@ -19,10 +19,7 @@ public class HttpMethodRouteConstraint : IRouteConstraint
     /// <param name="allowedMethods">The allowed HTTP methods.</param>
     public HttpMethodRouteConstraint(params string[] allowedMethods)
     {
-        if (allowedMethods == null)
-        {
-            throw new ArgumentNullException(nameof(allowedMethods));
-        }
+        ArgumentNullException.ThrowIfNull(allowedMethods);
 
         AllowedMethods = new List<string>(allowedMethods);
     }
@@ -40,24 +37,14 @@ public class HttpMethodRouteConstraint : IRouteConstraint
         RouteValueDictionary values,
         RouteDirection routeDirection)
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         switch (routeDirection)
         {
             case RouteDirection.IncomingRequest:
                 // Only required for constraining incoming requests
-                if (httpContext == null)
-                {
-                    throw new ArgumentNullException(nameof(httpContext));
-                }
+                ArgumentNullException.ThrowIfNull(httpContext);
 
                 return AllowedMethods.Contains(httpContext.Request.Method, StringComparer.OrdinalIgnoreCase);
 

@@ -46,10 +46,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
         ICompositeMetadataDetailsProvider detailsProvider,
         DefaultModelBindingMessageProvider modelBindingMessageProvider)
     {
-        if (detailsProvider == null)
-        {
-            throw new ArgumentNullException(nameof(detailsProvider));
-        }
+        ArgumentNullException.ThrowIfNull(detailsProvider);
 
         DetailsProvider = detailsProvider;
         ModelBindingMessageProvider = modelBindingMessageProvider;
@@ -74,10 +71,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     /// <inheritdoc />
     public override IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var cacheEntry = GetCacheEntry(modelType);
 
@@ -108,15 +102,8 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     /// <inheritdoc />
     public override ModelMetadata GetMetadataForParameter(ParameterInfo parameter, Type modelType)
     {
-        if (parameter == null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
-
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var cacheEntry = GetCacheEntry(parameter, modelType);
 
@@ -126,10 +113,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     /// <inheritdoc />
     public override ModelMetadata GetMetadataForType(Type modelType)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var cacheEntry = GetCacheEntry(modelType);
 
@@ -139,15 +123,8 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     /// <inheritdoc />
     public override ModelMetadata GetMetadataForProperty(PropertyInfo propertyInfo, Type modelType)
     {
-        if (propertyInfo == null)
-        {
-            throw new ArgumentNullException(nameof(propertyInfo));
-        }
-
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(propertyInfo);
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var cacheEntry = GetCacheEntry(propertyInfo, modelType);
 
@@ -157,10 +134,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
     /// <inheritdoc />
     public override ModelMetadata GetMetadataForConstructor(ConstructorInfo constructorInfo, Type modelType)
     {
-        if (constructorInfo is null)
-        {
-            throw new ArgumentNullException(nameof(constructorInfo));
-        }
+        ArgumentNullException.ThrowIfNull(constructorInfo);
 
         var cacheEntry = GetCacheEntry(constructorInfo, modelType);
         return cacheEntry.Metadata;
@@ -168,10 +142,7 @@ public class DefaultModelMetadataProvider : ModelMetadataProvider
 
     private static DefaultModelBindingMessageProvider GetMessageProvider(IOptions<MvcOptions> optionsAccessor)
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
 
         return optionsAccessor.Value.ModelBindingMessageProvider;
     }

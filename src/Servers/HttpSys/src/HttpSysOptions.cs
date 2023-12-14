@@ -38,6 +38,7 @@ public class HttpSysOptions
 
     /// <summary>
     /// The name of the Http.Sys request queue
+    /// The default is `null` (Anonymous queue).
     /// </summary>
     public string? RequestQueueName
     {
@@ -55,8 +56,9 @@ public class HttpSysOptions
     }
 
     /// <summary>
-    /// Indicates if this server instance is responsible for creating and configuring the request queue,
-    /// of if it should attach to an existing queue. The default is to create.
+    /// This indicates whether the server is responsible for creating and configuring the request queue, or if it should attach to an existing queue.
+    /// Most existing configuration options do not apply when attaching to an existing queue.
+    /// The default is `RequestQueueMode.Create`.
     /// </summary>
     public RequestQueueMode RequestQueueMode { get; set; }
 
@@ -68,17 +70,16 @@ public class HttpSysOptions
     public ClientCertificateMethod ClientCertificateMethod { get; set; } = ClientCertificateMethod.AllowCertificate;
 
     /// <summary>
-    /// Gets or sets the number of concurrent workers draining requests from the Http.sys queue.
+    /// The maximum number of concurrent accepts.
+    /// The default is 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
     /// </summary>
-    /// <remarks>
-    /// Defaults to 5 times the number of processors as returned by <see cref="Environment.ProcessorCount" />.
-    /// </remarks>
     public int MaxAccepts { get; set; } = DefaultMaxAccepts;
 
     /// <summary>
-    /// Attempts kernel mode caching for responses with eligible headers. The response may not include
-    /// Set-Cookie, Vary, or Pragma headers. It must include a Cache-Control header with Public and
-    /// either a Shared-Max-Age or Max-Age value, or an Expires header.
+    /// Attempt kernel-mode caching for responses with eligible headers.
+    /// The response may not include Set-Cookie, Vary, or Pragma headers.
+    /// It must include a Cache-Control header that's public and either a shared-max-age or max-age value, or an Expires header.
+    /// The default is `true`.
     /// </summary>
     public bool EnableResponseCaching { get; set; } = true;
 
@@ -104,14 +105,24 @@ public class HttpSysOptions
 
     /// <summary>
     /// Gets or Sets if response body writes that fail due to client disconnects should throw exceptions or
-    /// complete normally. The default is false.
+    /// complete normally.
+    /// The default is `false` (complete normally).
     /// </summary>
     public bool ThrowWriteExceptions { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum number of concurrent connections to accept, -1 for infinite, or null to
-    /// use the machine wide setting from the registry. The default value is null.
-    /// This settings does not apply when attaching to an existing queue.
+    /// Enable buffering of response data in the Kernel. The default value is <code>false</code>.
+    /// It should be used by an application doing synchronous I/O or by an application doing asynchronous I/O with
+    /// no more than one outstanding write at a time, and can significantly improve throughput over high-latency connections.
+    /// Applications that use asynchronous I/O and that may have more than one send outstanding at a time should not use this flag.
+    /// Enabling this can results in higher CPU and memory usage by Http.Sys.
+    /// </summary>
+    public bool EnableKernelResponseBuffering { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
+    /// Set to `null` to use the registry's machine-wide setting.
+    /// The default value is `null` (machine-wide setting).
     /// </summary>
     public long? MaxConnections
     {
@@ -135,6 +146,7 @@ public class HttpSysOptions
     /// <summary>
     /// Gets or sets the maximum number of requests that will be queued up in Http.Sys.
     /// This settings does not apply when attaching to an existing queue.
+    /// The default is 1000.
     /// </summary>
     public long RequestQueueLimit
     {
@@ -149,10 +161,7 @@ public class HttpSysOptions
                 throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
             }
 
-            if (_requestQueue != null)
-            {
-                _requestQueue.SetLengthLimit(_requestQueueLength);
-            }
+            _requestQueue?.SetLengthLimit(_requestQueueLength);
             // Only store it if it succeeds or hasn't started yet
             _requestQueueLength = value;
         }
@@ -163,10 +172,8 @@ public class HttpSysOptions
     /// When set to null, the maximum request body size is unlimited.
     /// This limit has no effect on upgraded connections which are always unlimited.
     /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
+    /// The default is set to 30,000,000 bytes, which is approximately 28.6MB.
     /// </summary>
-    /// <remarks>
-    /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
-    /// </remarks>
     public long? MaxRequestBodySize
     {
         get => _maxRequestBodySize;
@@ -181,7 +188,7 @@ public class HttpSysOptions
     }
 
     /// <summary>
-    /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
+    /// Control whether synchronous input/output is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
     /// The default is `false`.
     /// </summary>
     public bool AllowSynchronousIO { get; set; }
@@ -210,10 +217,7 @@ public class HttpSysOptions
                 throw new ArgumentOutOfRangeException(nameof(value), value, message);
             }
 
-            if (_requestQueue != null)
-            {
-                _requestQueue.SetRejectionVerbosity(value);
-            }
+            _requestQueue?.SetRejectionVerbosity(value);
             // Only store it if it succeeds or hasn't started yet
             _rejectionVebosityLevel = value;
         }
@@ -238,7 +242,7 @@ public class HttpSysOptions
     public bool UseLatin1RequestHeaders { get; set; }
 
     // Not called when attaching to an existing queue.
-    internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
+    internal void Apply(UrlGroup urlGroup, RequestQueue? requestQueue)
     {
         _urlGroup = urlGroup;
         _requestQueue = requestQueue;
@@ -248,14 +252,17 @@ public class HttpSysOptions
             _urlGroup.SetMaxConnections(_maxConnections.Value);
         }
 
-        if (_requestQueueLength != DefaultRequestQueueLength)
+        if (_requestQueue is not null)
         {
-            _requestQueue.SetLengthLimit(_requestQueueLength);
-        }
+            if (_requestQueueLength != DefaultRequestQueueLength)
+            {
+                _requestQueue.SetLengthLimit(_requestQueueLength);
+            }
 
-        if (_rejectionVebosityLevel != DefaultRejectionVerbosityLevel)
-        {
-            _requestQueue.SetRejectionVerbosity(_rejectionVebosityLevel);
+            if (_rejectionVebosityLevel != DefaultRejectionVerbosityLevel)
+            {
+                _requestQueue.SetRejectionVerbosity(_rejectionVebosityLevel);
+            }
         }
 
         Authentication.SetUrlGroupSecurity(urlGroup);

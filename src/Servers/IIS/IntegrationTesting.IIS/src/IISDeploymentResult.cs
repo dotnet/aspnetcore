@@ -7,15 +7,19 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 
-public class IISDeploymentResult : DeploymentResult
+public class IISDeploymentResult : DeploymentResult, IDisposable
 {
     public ILogger Logger { get; set; }
+
     public Process HostProcess { get; }
+
+    public string AppPoolName { get; }
 
     public IISDeploymentResult(ILoggerFactory loggerFactory,
         IISDeploymentParameters deploymentParameters,
         string applicationBaseUri,
         string contentRoot,
+        string appPoolName,
         CancellationToken hostShutdownToken,
         Process hostProcess)
         : base(loggerFactory,
@@ -24,6 +28,7 @@ public class IISDeploymentResult : DeploymentResult
               contentRoot,
               hostShutdownToken)
     {
+        AppPoolName = appPoolName;
         HostProcess = hostProcess;
         Logger = loggerFactory.CreateLogger(deploymentParameters.SiteName);
         HttpClient = CreateClient(new HttpClientHandler());
@@ -33,8 +38,14 @@ public class IISDeploymentResult : DeploymentResult
     {
         return new HttpClient(new LoggingHandler(messageHandler, Logger))
         {
-            BaseAddress = base.HttpClient.BaseAddress
+            BaseAddress = base.HttpClient.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
         };
+    }
+
+    public void Dispose()
+    {
+        HttpClient.Dispose();
     }
 
     public new HttpClient HttpClient { get; set; }

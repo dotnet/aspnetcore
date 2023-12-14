@@ -20,4 +20,8 @@
     <NuspecProperty Include="baseOutputPath=$(BaseOutputPath)" />
     <NuspecProperty Include="configuration=$(Configuration)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.ApiDescription.Client.Tests" />
+  </ItemGroup>
 </Project>

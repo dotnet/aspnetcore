@@ -33,11 +33,8 @@ body:
   attributes:
     label: Steps To Reproduce
     description: |
-      Steps to reproduce the behavior.
+      We ❤ code! Point us to a [minimalistic project which reproduces this issue (repro)](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) hosted in a public GitHub repo.
       
-      We ❤ code! Point us to a minimalistic repro project hosted in a public GitHub repo.
-      For a repro project, create a new ASP.NET Core project using the template of your choice, apply the minimum required code to result in the issue you're observing.
-
       We will close this issue if:
       - The repro project you share with us is complex. We can't investigate custom projects, so don't point us to such, please.
       - If we will not be able to repro the behavior you're reporting.

@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Caching.SqlServer;
 
-internal class SqlQueries
+internal sealed class SqlQueries
 {
     private const string TableInfoFormat =
         "SELECT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE " +

@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -15,13 +17,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 /// <summary>
 /// Deployment helper for IISExpress.
 /// </summary>
-public class IISExpressDeployer : IISDeployerBase
+public partial class IISExpressDeployer : IISDeployerBase
 {
     private const string IISExpressRunningMessage = "IIS Express is running.";
     private const string FailedToInitializeBindingsMessage = "Failed to initialize site bindings";
     private const string UnableToStartIISExpressMessage = "Unable to start iisexpress.";
     private const int MaximumAttempts = 5;
-    private readonly TimeSpan ShutdownTimeSpan = Debugger.IsAttached ? TimeSpan.FromMinutes(60) : TimeSpan.FromMinutes(1);
+    private readonly TimeSpan ShutdownTimeSpan = Debugger.IsAttached ? TimeSpan.FromMinutes(60) : TimeSpan.FromMinutes(2);
     private static readonly Regex UrlDetectorRegex = new Regex(@"^\s*Successfully registered URL ""(?<url>[^""]+)"" for site.*$");
 
     private Process _hostProcess;
@@ -103,6 +105,7 @@ public class IISExpressDeployer : IISDeployerBase
                 applicationBaseUri: actualUri.ToString(),
                 contentRoot: contentRoot,
                 hostShutdownToken: hostExitToken,
+                appPoolName: "IISExpressAppPool",
                 hostProcess: _hostProcess);
         }
     }
@@ -234,10 +237,10 @@ public class IISExpressDeployer : IISDeployerBase
                 }
 
                 // Wait for the app to start
-                // The timeout here is large, because we don't know how long the test could need
-                // We cover a lot of error cases above, but I want to make sure we eventually give up and don't hang the build
+                // The timeout here is large, because we don't know how long the test could need. We cover a lot
+                // of error cases above, but I want to make sure we eventually give up and don't hang the build
                 // just in case we missed one -anurse
-                if (!await started.Task.TimeoutAfter(TimeSpan.FromMinutes(10)))
+                if (!await started.Task.TimeoutAfter(TimeSpan.FromMinutes(15)))
                 {
                     Logger.LogInformation("iisexpress Process {pid} failed to bind to port {port}, trying again", process.Id, port);
 
@@ -440,17 +443,40 @@ public class IISExpressDeployer : IISDeployerBase
         }
     }
 
-    private class WindowsNativeMethods
+    private sealed partial class WindowsNativeMethods
     {
         internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
-        [DllImport("user32.dll")]
-        internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
-        [DllImport("user32.dll")]
-        internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-        [DllImport("user32.dll")]
-        internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern int GetClassName(IntPtr hWnd, char[] lpClassName, int nMaxCount);
+        [LibraryImport("user32.dll")]
+        internal static partial uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
+        [LibraryImport("user32.dll", EntryPoint = "PostMessageW")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool PostMessage([MarshalUsing(typeof(HandleRefMarshaller))] HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
+        [LibraryImport("user32.dll", EntryPoint = "GetClassNameW", SetLastError = true)]
+        internal static partial int GetClassName(IntPtr hWnd, [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U2)] char[] lpClassName, int nMaxCount);
+
+        [CustomMarshaller(typeof(HandleRef), MarshalMode.ManagedToUnmanagedIn, typeof(ManagedToUnmanagedIn))]
+        internal static class HandleRefMarshaller
+        {
+            internal struct ManagedToUnmanagedIn
+            {
+                private HandleRef _handle;
+
+                public void FromManaged(HandleRef handle)
+                {
+                    _handle = handle;
+                }
+
+                public IntPtr ToUnmanaged() => _handle.Handle;
+
+                public void OnInvoked() => GC.KeepAlive(_handle.Wrapper);
+
+                [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This method is part of the marshaller shape and is required to be an instance method.")]
+                public void Free() {}
+            }
+        }
     }
 
     private void SendStopMessageToProcess(int pid)

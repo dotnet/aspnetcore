@@ -5,7 +5,7 @@ using System.Collections;
 
 namespace Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 
-internal class IISRewriteMapCollection : IEnumerable<IISRewriteMap>
+internal sealed class IISRewriteMapCollection : IEnumerable<IISRewriteMap>
 {
     private readonly Dictionary<string, IISRewriteMap> _rewriteMaps = new Dictionary<string, IISRewriteMap>();
 

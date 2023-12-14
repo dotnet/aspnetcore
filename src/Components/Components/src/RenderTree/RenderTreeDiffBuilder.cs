@@ -33,11 +33,12 @@ internal static class RenderTreeDiffBuilder
 
         var editsSegment = editsBuffer.ToSegment(editsBufferStartLength, editsBuffer.Count);
         var result = new RenderTreeDiff(componentId, editsSegment);
+
         return result;
     }
 
-    public static void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
-        => DisposeFramesInRange(batchBuilder, frames.Array, 0, frames.Count);
+    public static void DisposeFrames(RenderBatchBuilder batchBuilder, int componentId, ArrayRange<RenderTreeFrame> frames)
+        => DisposeFramesInRange(batchBuilder, componentId, frames.Array, 0, frames.Count);
 
     private static void AppendDiffEntriesForRange(
         ref DiffContext diffContext,
@@ -428,10 +429,12 @@ internal static class RenderTreeDiffBuilder
 
         while (hasMoreOld || hasMoreNew)
         {
-            var oldSeq = hasMoreOld ? oldTree[oldStartIndex].SequenceField : int.MaxValue;
-            var newSeq = hasMoreNew ? newTree[newStartIndex].SequenceField : int.MaxValue;
-            var oldAttributeName = oldTree[oldStartIndex].AttributeNameField;
-            var newAttributeName = newTree[newStartIndex].AttributeNameField;
+            var (oldSeq, oldAttributeName) = hasMoreOld
+                ? (oldTree[oldStartIndex].SequenceField, oldTree[oldStartIndex].AttributeNameField)
+                : (int.MaxValue, null);
+            var (newSeq, newAttributeName) = hasMoreNew
+                ? (newTree[newStartIndex].SequenceField, newTree[newStartIndex].AttributeNameField)
+                : (int.MaxValue, null);
 
             if (oldSeq == newSeq &&
                 string.Equals(oldAttributeName, newAttributeName, StringComparison.Ordinal))
@@ -531,45 +534,6 @@ internal static class RenderTreeDiffBuilder
 
         // We should have processed any additions at this point. Reset for the next batch.
         diffContext.AttributeDiffSet.Clear();
-    }
-
-    private static void UpdateRetainedChildComponent(
-        ref DiffContext diffContext,
-        int oldComponentIndex,
-        int newComponentIndex)
-    {
-        var oldTree = diffContext.OldTree;
-        var newTree = diffContext.NewTree;
-        ref var oldComponentFrame = ref oldTree[oldComponentIndex];
-        ref var newComponentFrame = ref newTree[newComponentIndex];
-        var componentState = oldComponentFrame.ComponentStateField;
-
-        // Preserve the actual componentInstance
-        newComponentFrame.ComponentStateField = componentState;
-        newComponentFrame.ComponentIdField = componentState.ComponentId;
-
-        // As an important rendering optimization, we want to skip parameter update
-        // notifications if we know for sure they haven't changed/mutated. The
-        // "MayHaveChangedSince" logic is conservative, in that it returns true if
-        // any parameter is of a type we don't know is immutable. In this case
-        // we call SetParameters and it's up to the recipient to implement
-        // whatever change-detection logic they want. Currently we only supply the new
-        // set of parameters and assume the recipient has enough info to do whatever
-        // comparisons it wants with the old values. Later we could choose to pass the
-        // old parameter values if we wanted. By default, components always rerender
-        // after any SetParameters call, which is safe but now always optimal for perf.
-
-        // When performing hot reload, we want to force all components to re-render.
-        // We do this using two mechanisms - we call SetParametersAsync even if the parameters
-        // are unchanged and we ignore ComponentBase.ShouldRender
-
-        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldComponentIndex);
-        var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
-        var newParameters = new ParameterView(newParametersLifetime, newTree, newComponentIndex);
-        if (!newParameters.DefinitelyEquals(oldParameters) || (HotReloadManager.Default.MetadataUpdateSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate))
-        {
-            componentState.SetDirectParameters(newParameters);
-        }
     }
 
     private static int NextSiblingIndex(in RenderTreeFrame frame, int frameIndex)
@@ -699,11 +663,50 @@ internal static class RenderTreeDiffBuilder
                 {
                     if (oldFrame.ComponentTypeField == newFrame.ComponentTypeField)
                     {
-                        UpdateRetainedChildComponent(
-                            ref diffContext,
-                            oldFrameIndex,
-                            newFrameIndex);
-                        diffContext.SiblingIndex++;
+                        // As an important rendering optimization, we want to skip parameter update
+                        // notifications if we know for sure they haven't changed/mutated. The
+                        // "MayHaveChangedSince" logic is conservative, in that it returns true if
+                        // any parameter is of a type we don't know is immutable. In this case
+                        // we call SetParameters and it's up to the recipient to implement
+                        // whatever change-detection logic they want. Currently we only supply the new
+                        // set of parameters and assume the recipient has enough info to do whatever
+                        // comparisons it wants with the old values. Later we could choose to pass the
+                        // old parameter values if we wanted. By default, components always rerender
+                        // after any SetParameters call, which is safe but now always optimal for perf.
+
+                        // When performing hot reload, we want to force all components to re-render.
+                        // We do this using two mechanisms - we call SetParametersAsync even if the parameters
+                        // are unchanged and we ignore ComponentBase.ShouldRender.
+                        // Furthermore, when a hot reload edit removes component parameters, the component should be
+                        // disposed and reinstantiated. This allows the component's construction logic to correctly
+                        // re-initialize the removed parameter properties.
+
+                        var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldFrameIndex);
+                        var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
+                        var newParameters = new ParameterView(newParametersLifetime, newTree, newFrameIndex);
+                        var isHotReload = HotReloadManager.Default.MetadataUpdateSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
+
+                        if (isHotReload && newParameters.HasRemovedDirectParameters(oldParameters))
+                        {
+                            // Components with parameters removed during a hot reload edit should be disposed and reinstantiated
+                            RemoveOldFrame(ref diffContext, oldFrameIndex);
+                            InsertNewFrame(ref diffContext, newFrameIndex);
+                        }
+                        else
+                        {
+                            var componentState = oldFrame.ComponentStateField;
+
+                            // Preserve the actual componentInstance
+                            newFrame.ComponentStateField = componentState;
+                            newFrame.ComponentIdField = componentState.ComponentId;
+
+                            if (!newParameters.DefinitelyEquals(oldParameters) || isHotReload)
+                            {
+                                componentState.SetDirectParameters(newParameters);
+                            }
+
+                            diffContext.SiblingIndex++;
+                        }
                     }
                     else
                     {
@@ -721,6 +724,22 @@ internal static class RenderTreeDiffBuilder
                     // to do something different with the ID. However there's no known use case for
                     // that, so presently the rule is that for any given element, the reference
                     // capture action is only invoked once.
+                    break;
+                }
+
+            case RenderTreeFrameType.NamedEvent:
+                {
+                    // We don't have a use case for the event types changing, so we don't even check that. We assume for a given sequence number
+                    // the event type is always a constant. What can change is the frame index and the assigned name.
+                    if (oldFrameIndex != newFrameIndex
+                        || !string.Equals(oldFrame.NamedEventAssignedName, newFrame.NamedEventAssignedName, StringComparison.Ordinal))
+                    {
+                        // We could track the updates as a concept in its own right, but this situation will be uncommon,
+                        // so it's enough to treat it as a delete+add
+                        diffContext.BatchBuilder.RemoveNamedEvent(diffContext.ComponentId, oldFrameIndex, ref oldFrame);
+                        diffContext.BatchBuilder.AddNamedEvent(diffContext.ComponentId, newFrameIndex, ref newFrame);
+                    }
+
                     break;
                 }
 
@@ -819,6 +838,11 @@ internal static class RenderTreeDiffBuilder
                     InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref newFrame);
                     break;
                 }
+            case RenderTreeFrameType.NamedEvent:
+                {
+                    InitializeNewNamedEvent(ref diffContext, newFrameIndex);
+                    break;
+                }
             default:
                 throw new NotImplementedException($"Unexpected frame type during {nameof(InsertNewFrame)}: {newFrame.FrameTypeField}");
         }
@@ -843,7 +867,7 @@ internal static class RenderTreeDiffBuilder
             case RenderTreeFrameType.Element:
                 {
                     var endIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLengthField;
-                    DisposeFramesInRange(diffContext.BatchBuilder, oldTree, oldFrameIndex, endIndexExcl);
+                    DisposeFramesInRange(diffContext.BatchBuilder, diffContext.ComponentId, oldTree, oldFrameIndex, endIndexExcl);
                     diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
                     break;
                 }
@@ -862,6 +886,11 @@ internal static class RenderTreeDiffBuilder
             case RenderTreeFrameType.Markup:
                 {
                     diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
+                    break;
+                }
+            case RenderTreeFrameType.NamedEvent:
+                {
+                    diffContext.BatchBuilder.RemoveNamedEvent(diffContext.ComponentId, oldFrameIndex, ref diffContext.OldTree[oldFrameIndex]);
                     break;
                 }
             default:
@@ -919,6 +948,9 @@ internal static class RenderTreeDiffBuilder
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     InitializeNewComponentReferenceCaptureFrame(ref diffContext, ref frame);
                     break;
+                case RenderTreeFrameType.NamedEvent:
+                    InitializeNewNamedEvent(ref diffContext, i);
+                    break;
             }
         }
     }
@@ -927,15 +959,8 @@ internal static class RenderTreeDiffBuilder
     {
         var frames = diffContext.NewTree;
         ref var frame = ref frames[frameIndex];
-
-        if (frame.ComponentStateField != null)
-        {
-            throw new InvalidOperationException($"Child component already exists during {nameof(InitializeNewComponentFrame)}");
-        }
-
         var parentComponentId = diffContext.ComponentId;
-        diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame, parentComponentId);
-        var childComponentState = frame.ComponentStateField;
+        var childComponentState = diffContext.Renderer.InstantiateChildComponentOnFrame(frames, frameIndex, parentComponentId);
 
         // Set initial parameters
         var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
@@ -953,7 +978,7 @@ internal static class RenderTreeDiffBuilder
             newFrame.AttributeNameField.Length >= 3 &&
             newFrame.AttributeNameField.StartsWith("on", StringComparison.Ordinal))
         {
-            diffContext.Renderer.AssignEventHandlerId(ref newFrame);
+            diffContext.Renderer.AssignEventHandlerId(diffContext.ComponentId, ref newFrame);
         }
     }
 
@@ -983,7 +1008,12 @@ internal static class RenderTreeDiffBuilder
         newFrame.ComponentReferenceCaptureActionField(componentInstance);
     }
 
-    private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
+    private static void InitializeNewNamedEvent(ref DiffContext diffContext, int newTreeFrameIndex)
+    {
+        diffContext.BatchBuilder.AddNamedEvent(diffContext.ComponentId, newTreeFrameIndex, ref diffContext.NewTree[newTreeFrameIndex]);
+    }
+
+    private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, int componentId, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
     {
         for (var i = startIndex; i < endIndexExcl; i++)
         {
@@ -995,6 +1025,10 @@ internal static class RenderTreeDiffBuilder
             else if (frame.FrameTypeField == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerIdField > 0)
             {
                 batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerIdField);
+            }
+            else if (frame.FrameTypeField == RenderTreeFrameType.NamedEvent)
+            {
+                batchBuilder.RemoveNamedEvent(componentId, i, ref frames[i]);
             }
         }
     }

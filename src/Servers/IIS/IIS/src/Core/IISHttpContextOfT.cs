@@ -4,13 +4,14 @@
 using System.Buffers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
 using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
 
-internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
+internal sealed class IISHttpContextOfT<TContext> : IISHttpContext where TContext : notnull
 {
     private readonly IHttpApplication<TContext> _application;
 
@@ -43,7 +44,15 @@ internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : not
             }
             catch (Exception ex)
             {
-                ReportApplicationError(ex);
+                if ((ex is OperationCanceledException || ex is IOException) && ClientDisconnected)
+                {
+                    ReportRequestAborted();
+                }
+                else
+                {
+                    ReportApplicationError(ex);
+                }
+
                 success = false;
             }
 
@@ -82,9 +91,8 @@ internal class IISHttpContextOfT<TContext> : IISHttpContext where TContext : not
             }
             else if (!HasResponseStarted && _requestRejectedException == null)
             {
-                // If the request was aborted and no response was sent, there's no
-                // meaningful status code to log.
-                StatusCode = 0;
+                // If the request was aborted and no response was sent, we use status code 499 for logging               
+                StatusCode = ClientDisconnected ? StatusCodes.Status499ClientClosedRequest : 0;
                 success = false;
             }
 

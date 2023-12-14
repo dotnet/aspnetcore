@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
-public class TestServer : IDisposable
+public partial class TestServer : IDisposable
 {
     private const string InProcessHandlerDll = "aspnetcorev2_inprocess.dll";
     private const string AspNetCoreModuleDll = "aspnetcorev2.dll";
@@ -45,8 +45,10 @@ public class TestServer : IDisposable
     private readonly Action<IApplicationBuilder> _appBuilder;
     private readonly ILoggerFactory _loggerFactory;
     private readonly hostfxr_main_fn _hostfxrMainFn;
+    private readonly bool _isHttps;
+    private readonly string _protocol;
 
-    private Uri BaseUri => new Uri("http://localhost:" + _currentPort);
+    private Uri BaseUri => new Uri(_protocol + "://localhost:" + _currentPort);
     public HttpClient HttpClient { get; private set; }
     public TestConnection CreateConnection() => new TestConnection(_currentPort);
 
@@ -56,18 +58,20 @@ public class TestServer : IDisposable
     private string _appHostConfigPath;
     private int _currentPort;
 
-    private TestServer(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
+    private TestServer(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, bool isHttps)
     {
         _hostfxrMainFn = Main;
         _appBuilder = appBuilder;
         _loggerFactory = loggerFactory;
+        _isHttps = isHttps;
+        _protocol = isHttps ? "https" : "http";
     }
 
-    public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, IISServerOptions options)
+    public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, IISServerOptions options, bool isHttps = false)
     {
         await WebCoreLock.WaitAsync();
         _options = options;
-        var server = new TestServer(appBuilder, loggerFactory);
+        var server = new TestServer(appBuilder, loggerFactory, isHttps);
         server.Start();
         (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
         await server._startedTaskCompletionSource.Task;
@@ -84,6 +88,11 @@ public class TestServer : IDisposable
         return Create(builder => builder.Run(app), loggerFactory, options);
     }
 
+    public static Task<TestServer> CreateHttps(RequestDelegate app, ILoggerFactory loggerFactory)
+    {
+        return Create(builder => builder.Run(app), loggerFactory, new IISServerOptions(), isHttps: true);
+    }
+
     private void Start()
     {
         LoadLibrary(HostableWebCoreLocation);
@@ -93,7 +102,7 @@ public class TestServer : IDisposable
 
         Retry(() =>
         {
-            _currentPort = TestPortHelper.GetNextPort();
+            _currentPort = _isHttps ? TestPortHelper.GetNextSSLPort() : TestPortHelper.GetNextPort();
 
             InitializeConfig(_currentPort);
 
@@ -106,7 +115,8 @@ public class TestServer : IDisposable
 
         HttpClient = new HttpClient(new LoggingHandler(new SocketsHttpHandler(), _loggerFactory.CreateLogger<TestServer>()))
         {
-            BaseAddress = BaseUri
+            BaseAddress = BaseUri,
+            Timeout = TimeSpan.FromSeconds(200),
         };
     }
 
@@ -121,10 +131,12 @@ public class TestServer : IDisposable
             .RequiredElement("sites")
             .RequiredElement("site");
 
-        siteElement
+        var binding = siteElement
             .RequiredElement("bindings")
-            .RequiredElement("binding")
-            .SetAttributeValue("bindingInformation", $":{port}:localhost");
+            .RequiredElement("binding");
+
+        binding.SetAttributeValue("protocol", _protocol);
+        binding.SetAttributeValue("bindingInformation", $":{port}:localhost");
 
         webHostConfig.Save(_appHostConfigPath);
     }
@@ -177,23 +189,23 @@ public class TestServer : IDisposable
 
     private delegate int hostfxr_main_fn(IntPtr argc, IntPtr argv);
 
-    [DllImport(HWebCoreDll)]
-    private static extern int WebCoreActivate(
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+    [LibraryImport(HWebCoreDll)]
+    private static partial int WebCoreActivate(
+        [MarshalAs(UnmanagedType.LPWStr)]
             string appHostConfigPath,
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+        [MarshalAs(UnmanagedType.LPWStr)]
             string rootWebConfigPath,
-        [In, MarshalAs(UnmanagedType.LPWStr)]
+        [MarshalAs(UnmanagedType.LPWStr)]
             string instanceName);
 
-    [DllImport(HWebCoreDll)]
-    private static extern int WebCoreShutdown(bool immediate);
+    [LibraryImport(HWebCoreDll)]
+    private static partial int WebCoreShutdown([MarshalAs(UnmanagedType.Bool)] bool immediate);
 
-    [DllImport(InProcessHandlerDll)]
-    private static extern int set_main_handler(hostfxr_main_fn main);
+    [LibraryImport(InProcessHandlerDll)]
+    private static partial int set_main_handler(hostfxr_main_fn main);
 
-    [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-    private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+    [LibraryImport("kernel32", EntryPoint = "LoadLibraryW", SetLastError = true)]
+    private static partial IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPWStr)] string lpFileName);
 
     private void Retry(Action func, int attempts)
     {

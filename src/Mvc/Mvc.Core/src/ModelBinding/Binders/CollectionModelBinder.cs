@@ -10,8 +10,8 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -54,15 +54,8 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         ILoggerFactory loggerFactory,
         bool allowValidatingTopLevelNodes)
     {
-        if (elementBinder == null)
-        {
-            throw new ArgumentNullException(nameof(elementBinder));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(elementBinder);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         ElementBinder = elementBinder;
         Logger = loggerFactory.CreateLogger(GetType());
@@ -90,10 +83,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         MvcOptions mvcOptions)
         : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes)
     {
-        if (mvcOptions == null)
-        {
-            throw new ArgumentNullException(nameof(mvcOptions));
-        }
+        ArgumentNullException.ThrowIfNull(mvcOptions);
 
         _maxModelBindingCollectionSize = mvcOptions.MaxModelBindingCollectionSize;
     }
@@ -114,10 +104,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     /// <inheritdoc />
     public virtual async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         Logger.AttemptingToBindModel(bindingContext);
 
@@ -127,10 +114,10 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
             Logger.FoundNoValueInRequest(bindingContext);
 
             // If we failed to find data for a top-level model, then generate a
-            // default 'empty' model (or use existing Model) and return it.
+            // default 'empty' model (or use existing Model when not null or a default value is available) and return it.
             if (bindingContext.IsTopLevelObject)
             {
-                if (model == null)
+                if (model == null && !bindingContext.ModelMetadata.HasDefaultValue)
                 {
                     model = CreateEmptyCollection(bindingContext.ModelType);
                 }
@@ -140,7 +127,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
                     AddErrorIfBindingRequired(bindingContext);
                 }
 
-                bindingContext.Result = ModelBindingResult.Success(model);
+                bindingContext.Result = model == null ? ModelBindingResult.Failed() : ModelBindingResult.Success(model);
             }
 
             Logger.DoneAttemptingToBindModel(bindingContext);
@@ -161,6 +148,13 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         }
 
         var boundCollection = result.Model;
+        if (bindingContext.ModelMetadata.HasDefaultValue && (boundCollection is null || !boundCollection.Any()))
+        {
+            bindingContext.Result = ModelBindingResult.Failed();
+            Logger.DoneAttemptingToBindModel(bindingContext);
+            return;
+        }
+
         if (model == null)
         {
             model = ConvertToCollectionType(bindingContext.ModelType, boundCollection);
@@ -273,16 +267,10 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
         var boundCollection = new List<TElement?>();
 
         var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
+        var valueProvider = bindingContext.ValueProvider;
 
         foreach (var value in values)
         {
-            bindingContext.ValueProvider = new CompositeValueProvider
-                {
-                    // our temporary provider goes at the front of the list
-                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
-                    bindingContext.ValueProvider
-                };
-
             // Enter new scope to change ModelMetadata and isolate element binding operations.
             using (bindingContext.EnterNestedScope(
                 elementMetadata,
@@ -290,6 +278,13 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
                 modelName: bindingContext.ModelName,
                 model: null))
             {
+                bindingContext.ValueProvider = new CompositeValueProvider
+                {
+                    // our temporary provider goes at the front of the list
+                    new ElementalValueProvider(bindingContext.ModelName, value, values.Culture),
+                    valueProvider
+                };
+
                 await ElementBinder.BindModelAsync(bindingContext);
 
                 if (bindingContext.Result.IsModelSet)
@@ -414,9 +409,16 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     }
 
     // Internal for testing.
-    internal record CollectionResult(IEnumerable<TElement?> Model)
+    internal sealed class CollectionResult
     {
+        public IEnumerable<TElement?> Model { get; }
+        
         public IValidationStrategy? ValidationStrategy { get; init; }
+
+        public CollectionResult(IEnumerable<TElement?> model)
+        {
+            Model = model;
+        }
     }
 
     /// <summary>
@@ -464,10 +466,7 @@ public partial class CollectionModelBinder<TElement> : ICollectionModelBinder
     /// </param>
     protected virtual void CopyToModel(object target, IEnumerable<TElement?> sourceCollection)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         var targetCollection = target as ICollection<TElement?>;
         Debug.Assert(targetCollection != null, "This binder is instantiated only for ICollection<T> model types.");

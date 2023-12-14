@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Web", "ASP.NET" ],
+  "name": "API Controller",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "API Controller with or without read/write actions",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "groupIdentity": "Microsoft.AspNetCore.Mvc.ApiController",
+  "precedence": "9900",
+  "identity": "Microsoft.AspNetCore.Mvc.ApiController.9.0",
+  "shortName": "apicontroller",
+  "sourceName": "ValueController",
+  "primaryOutputs": [
+    {
+      "path": "ValueController.cs"
+    }
+  ],
+  "defaultName": "ValueController",
+  "symbols": {
+    "namespace": {
+      "description": "Namespace for the generated code",
+      "replaces": "MyApp.Namespace",
+      "type": "parameter"
+    },
+    "actions": {
+      "description": "Create controller with read/write actions",
+      "displayName": "Add Read/Write Actions",
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "NameIsController": {
+      "type": "computed",
+      "value": "(name == \"ControllerBase\")"
+    }
+  },
+  "postActions": [
+    {
+      "id": "openInEditor",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens the created controller in the editor",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

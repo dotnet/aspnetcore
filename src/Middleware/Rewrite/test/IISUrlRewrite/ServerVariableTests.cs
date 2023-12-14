@@ -26,6 +26,7 @@ public class ServerVariableTests
     [InlineData("REQUEST_URI", "/foo", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
     [InlineData("REQUEST_METHOD", "GET", (int)UriMatchPart.Full)]
+    [InlineData("SERVER_NAME", "example.com", (int)UriMatchPart.Full)]
     public void CheckServerVariableParsingAndApplication(string variable, string expected, int uriMatchPart)
     {
         // Arrange and Act
@@ -52,6 +53,7 @@ public class ServerVariableTests
     [InlineData("REQUEST_URI", "/other-foo", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_URI", "/other-foo", (int)UriMatchPart.Full)]
     [InlineData("REQUEST_METHOD", "POST", (int)UriMatchPart.Full)]
+    [InlineData("SERVER_NAME", "otherexample.com", (int)UriMatchPart.Full)]
     public void CheckServerVariableFeatureHasPrecedenceWhenEnabled(string variable, string expected, int uriMatchPart)
     {
         // Arrange and Act
@@ -72,7 +74,8 @@ public class ServerVariableTests
             ["QUERY_STRING"] = "bar=2",
             ["REQUEST_FILENAME"] = "/other-foo",
             ["REQUEST_URI"] = "/other-foo",
-            ["REQUEST_METHOD"] = "POST"
+            ["REQUEST_METHOD"] = "POST",
+            ["SERVER_NAME"] = "otherexample.com",
         }));
 
         var rewriteContext = CreateTestRewriteContext(httpContext);
@@ -98,6 +101,7 @@ public class ServerVariableTests
     [InlineData("REQUEST_URI", "/foo", (int)UriMatchPart.Path)]
     [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", (int)UriMatchPart.Full)]
     [InlineData("REQUEST_METHOD", "GET", (int)UriMatchPart.Full)]
+    [InlineData("SERVER_NAME", "example.com", (int)UriMatchPart.Full)]
     public void CheckServerVariableFeatureIsntUsedWhenDisabled(string variable, string expected, int uriMatchPart)
     {
         // Arrange and Act

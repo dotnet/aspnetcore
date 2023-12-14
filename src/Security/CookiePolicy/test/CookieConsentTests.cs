@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -244,6 +244,7 @@ public class CookieConsentTests
                 Assert.Equal(Http.SameSiteMode.Strict, context.CookieOptions.SameSite);
                 context.CookieName += "1";
                 context.CookieValue += "1";
+                context.CookieOptions.Extensions.Add("extension");
             };
         },
         requestContext => { },
@@ -270,6 +271,7 @@ public class CookieConsentTests
         Assert.Equal("yes1", consentCookie.Value);
         Assert.Equal(Net.Http.Headers.SameSiteMode.Strict, consentCookie.SameSite);
         Assert.NotNull(consentCookie.Expires);
+        Assert.Contains("extension", consentCookie.Extensions);
     }
 
     [Fact]

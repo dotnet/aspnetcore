@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -44,70 +40,20 @@ public class PersistComponentStateTagHelper : TagHelper
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
-        if (output == null)
+        var componentPrerenderer = ViewContext.HttpContext.RequestServices.GetRequiredService<IComponentPrerenderer>();
+        var serializationMode = PersistenceMode switch
         {
-            throw new ArgumentNullException(nameof(output));
-        }
-
-        var services = ViewContext.HttpContext.RequestServices;
-        var manager = services.GetRequiredService<ComponentStatePersistenceManager>();
-        var renderer = services.GetRequiredService<HtmlRenderer>();
-        var store = PersistenceMode switch
-        {
-            null => ComponentRenderer.GetPersistStateRenderMode(ViewContext) switch
-            {
-                InvokedRenderModes.Mode.None =>
-                    null,
-                InvokedRenderModes.Mode.WebAssembly =>
-                    new PrerenderComponentApplicationStore(),
-                InvokedRenderModes.Mode.Server =>
-                    new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
-                InvokedRenderModes.Mode.ServerAndWebAssembly =>
-                    throw new InvalidOperationException(
-                        Resources.FormatPersistComponentStateTagHelper_FailedToInferComponentPersistenceMode(PersistenceModeName)),
-                _ => throw new InvalidOperationException("Invalid InvokedRenderMode.")
-            },
-            TagHelpers.PersistenceMode.Server =>
-                new ProtectedPrerenderComponentApplicationStore(services.GetRequiredService<IDataProtectionProvider>()),
-            TagHelpers.PersistenceMode.WebAssembly =>
-                new PrerenderComponentApplicationStore(),
-            _ =>
-                throw new InvalidOperationException("Invalid persistence mode.")
+            null => PersistedStateSerializationMode.Infer,
+            TagHelpers.PersistenceMode.Server => PersistedStateSerializationMode.Server,
+            TagHelpers.PersistenceMode.WebAssembly => PersistedStateSerializationMode.WebAssembly,
+            _ => throw new InvalidOperationException("Invalid persistence mode."),
         };
 
+        var content = await componentPrerenderer.PrerenderPersistedStateAsync(ViewContext.HttpContext, serializationMode);
         output.TagName = null;
-        if (store != null)
-        {
-            await manager.PersistStateAsync(store, renderer);
-            output.Content.SetHtmlContent(
-                new HtmlContentBuilder()
-                    .AppendHtml("<!--Blazor-Component-State:")
-                    .AppendHtml(new ComponentStateHtmlContent(store))
-                    .AppendHtml("-->"));
-        }
-    }
-
-    private class ComponentStateHtmlContent : IHtmlContent
-    {
-        private PrerenderComponentApplicationStore _store;
-
-        public ComponentStateHtmlContent(PrerenderComponentApplicationStore store)
-        {
-            _store = store;
-        }
-
-        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-        {
-            if (_store != null)
-            {
-                writer.Write(_store.PersistedState);
-                _store = null;
-            }
-        }
+        output.Content.SetHtmlContent(content);
     }
 }

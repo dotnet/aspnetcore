@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 /// <summary>
 /// The default implementation of <see cref="IValidationStrategy"/> for a complex object.
 /// </summary>
-internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
+internal sealed class DefaultComplexObjectValidationStrategy : IValidationStrategy
 {
     /// <summary>
     /// Gets an instance of <see cref="DefaultComplexObjectValidationStrategy"/>.
@@ -31,7 +31,7 @@ internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
         return new Enumerator(metadata, key, model);
     }
 
-    private class Enumerator : IEnumerator<ValidationEntry>
+    private sealed class Enumerator : IEnumerator<ValidationEntry>
     {
         private readonly string _key;
         private readonly object _model;
@@ -96,7 +96,7 @@ internal class DefaultComplexObjectValidationStrategy : IValidationStrategy
                     if (!_modelMetadata.BoundConstructorParameterMapping.TryGetValue(parameter, out var property))
                     {
                         throw new InvalidOperationException(
-                            Resources.FormatValidationStrategy_MappedPropertyNotFound(parameter, _modelMetadata.ModelType));
+                            Resources.FormatValidationStrategy_MappedPropertyNotFound(parameterName, _modelMetadata.ModelType));
                     }
 
                     _entry = new ValidationEntry(parameter, key, () => GetModel(_model, property));

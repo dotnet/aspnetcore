@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Rewrite.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class RuleBuilder
+internal sealed class RuleBuilder
 {
     private IList<Condition>? _conditions;
     internal IList<UrlAction> _actions = new List<UrlAction>();
@@ -36,7 +36,7 @@ internal class RuleBuilder
         Flags flags;
         if (tokens.Count == 4)
         {
-            flags = new FlagParser().Parse(tokens[3]);
+            flags = FlagParser.Parse(tokens[3]);
         }
         else
         {

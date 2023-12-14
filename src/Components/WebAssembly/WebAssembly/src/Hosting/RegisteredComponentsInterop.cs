@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-internal class RegisteredComponentsInterop
+internal sealed class RegisteredComponentsInterop
 {
     private const string Prefix = "Blazor._internal.registeredComponents.";
 

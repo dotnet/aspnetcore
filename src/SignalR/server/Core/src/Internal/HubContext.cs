@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal class HubContext<THub> : IHubContext, IHubContext<THub> where THub : Hub
+internal sealed class HubContext<THub> : IHubContext, IHubContext<THub> where THub : Hub
 {
     private readonly HubLifetimeManager<THub> _lifetimeManager;
     private readonly IHubClients _clients;
@@ -17,5 +17,5 @@ internal class HubContext<THub> : IHubContext, IHubContext<THub> where THub : Hu
 
     public IHubClients Clients => _clients;
 
-    public virtual IGroupManager Groups { get; }
+    public IGroupManager Groups { get; }
 }

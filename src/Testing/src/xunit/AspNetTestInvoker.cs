@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-internal class AspNetTestInvoker : XunitTestInvoker
+internal sealed class AspNetTestInvoker : XunitTestInvoker
 {
     private readonly TestOutputHelper _testOutputHelper;
 

@@ -53,6 +53,7 @@ public class ContentRangeHeaderValueTest
         Assert.Throws<ArgumentOutOfRangeException>(() => new ContentRangeHeaderValue(0, 1, -1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ContentRangeHeaderValue(2, 1, 3));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ContentRangeHeaderValue(1, 2, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ContentRangeHeaderValue(1, 2, 2));
     }
 
     [Fact]
@@ -164,32 +165,8 @@ public class ContentRangeHeaderValueTest
     }
 
     [Theory]
-    [InlineData("bytes 1-2/3,")] // no character after 'length' allowed
-    [InlineData("x bytes 1-2/3")]
-    [InlineData("bytes 1-2/3.4")]
+    [MemberData(nameof(InvalidContentRangeValueStrings))]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("bytes 3-2/5")]
-    [InlineData("bytes 6-6/5")]
-    [InlineData("bytes 1-6/5")]
-    [InlineData("bytes 1-2/")]
-    [InlineData("bytes 1-2")]
-    [InlineData("bytes 1-/")]
-    [InlineData("bytes 1-")]
-    [InlineData("bytes 1")]
-    [InlineData("bytes ")]
-    [InlineData("bytes a-2/3")]
-    [InlineData("bytes 1-b/3")]
-    [InlineData("bytes 1-2/c")]
-    [InlineData("bytes1-2/3")]
-    // More than 19 digits >>Int64.MaxValue
-    [InlineData("bytes 1-12345678901234567890/3")]
-    [InlineData("bytes 12345678901234567890-3/3")]
-    [InlineData("bytes 1-2/12345678901234567890")]
-    // Exceed Int64.MaxValue, but use 19 digits
-    [InlineData("bytes 1-9999999999999999999/3")]
-    [InlineData("bytes 9999999999999999999-3/3")]
-    [InlineData("bytes 1-2/9999999999999999999")]
     public void Parse_SetOfInvalidValueStrings_Throws(string? input)
     {
         Assert.Throws<FormatException>(() => ContentRangeHeaderValue.Parse(input));
@@ -219,47 +196,54 @@ public class ContentRangeHeaderValueTest
     }
 
     [Theory]
-    [InlineData("bytes 1-2/3,")] // no character after 'length' allowed
-    [InlineData("x bytes 1-2/3")]
-    [InlineData("bytes 1-2/3.4")]
+    [MemberData(nameof(InvalidContentRangeValueStrings))]
     [InlineData(null)]
-    [InlineData("")]
-    [InlineData("bytes 3-2/5")]
-    [InlineData("bytes 6-6/5")]
-    [InlineData("bytes 1-6/5")]
-    [InlineData("bytes 1-2/")]
-    [InlineData("bytes 1-2")]
-    [InlineData("bytes 1-/")]
-    [InlineData("bytes 1-")]
-    [InlineData("bytes 1")]
-    [InlineData("bytes ")]
-    [InlineData("bytes a-2/3")]
-    [InlineData("bytes 1-b/3")]
-    [InlineData("bytes 1-2/c")]
-    [InlineData("bytes1-2/3")]
-    // More than 19 digits >>Int64.MaxValue
-    [InlineData("bytes 1-12345678901234567890/3")]
-    [InlineData("bytes 12345678901234567890-3/3")]
-    [InlineData("bytes 1-2/12345678901234567890")]
-    // Exceed Int64.MaxValue, but use 19 digits
-    [InlineData("bytes 1-9999999999999999999/3")]
-    [InlineData("bytes 9999999999999999999-3/3")]
-    [InlineData("bytes 1-2/9999999999999999999")]
     public void TryParse_SetOfInvalidValueStrings_ReturnsFalse(string? input)
     {
         Assert.False(ContentRangeHeaderValue.TryParse(input, out var result));
         Assert.Null(result);
     }
 
-    private void CheckValidParse(string? input, ContentRangeHeaderValue expectedResult)
+    private static void CheckValidParse(string? input, ContentRangeHeaderValue expectedResult)
     {
         var result = ContentRangeHeaderValue.Parse(input);
         Assert.Equal(expectedResult, result);
     }
 
-    private void CheckValidTryParse(string? input, ContentRangeHeaderValue expectedResult)
+    private static void CheckValidTryParse(string? input, ContentRangeHeaderValue expectedResult)
     {
         Assert.True(ContentRangeHeaderValue.TryParse(input, out var result));
         Assert.Equal(expectedResult, result);
     }
+
+    public static TheoryData<string> InvalidContentRangeValueStrings =>
+        new TheoryData<string>
+        {
+            {"bytes 1-2/3,"}, // no character after 'length' allowed
+            {"x bytes 1-2/3"},
+            {"bytes 1-2/3.4"},
+            {""},
+            {"bytes 3-2/5"},
+            {"bytes 6-6/5"},
+            {"bytes 1-6/5"},
+            {"bytes 1-2/"},
+            {"bytes 1-2"},
+            {"bytes 1-/"},
+            {"bytes 1-"},
+            {"bytes 1"},
+            {"bytes "},
+            {"bytes a-2/3"},
+            {"bytes 1-b/3"},
+            {"bytes 1-2/c"},
+            {"bytes1-2/3"},
+            {"bytes 0-0/0"},
+            // More than 19 digits >>Int64.MaxValue
+            {"bytes 1-12345678901234567890/3"},
+            {"bytes 12345678901234567890-3/3"},
+            {"bytes 1-2/12345678901234567890"},
+            // Exceed Int64.MaxValue, but use 19 digits
+            {"bytes 1-9999999999999999999/3"},
+            {"bytes 9999999999999999999-3/3"},
+            {"bytes 1-2/9999999999999999999"}
+        };
 }

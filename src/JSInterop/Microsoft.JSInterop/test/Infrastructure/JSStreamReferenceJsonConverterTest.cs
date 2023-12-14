@@ -36,7 +36,7 @@ public class JSStreamReferenceJsonConverterTest
 
         // Act & Assert
         var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSStreamReference>(json, JsonSerializerOptions));
-        Assert.Equal("Unexcepted JSON property foo.", ex.Message);
+        Assert.Equal("Unexpected JSON property foo.", ex.Message);
     }
 
     [Fact]

@@ -32,6 +32,7 @@ Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnSigning
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnValidatePrincipal.get -> System.Func<Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.OnValidatePrincipal.set -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler
+Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CookieAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CookieAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.Events.get -> Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents!
 Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.Events.set -> void
@@ -89,15 +90,19 @@ Microsoft.AspNetCore.Authentication.Cookies.ICookieManager.DeleteCookie(Microsof
 Microsoft.AspNetCore.Authentication.Cookies.ICookieManager.GetRequestCookie(Microsoft.AspNetCore.Http.HttpContext! context, string! key) -> string?
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RemoveAsync(string! key) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RemoveAsync(string! key, Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RenewAsync(string! key, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RenewAsync(string! key, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RenewAsync(string! key, Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
+Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key, Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.RetrieveAsync(string! key, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket?>!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket) -> System.Threading.Tasks.Task<string!>!
+Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
 Microsoft.AspNetCore.Authentication.Cookies.ITicketStore.StoreAsync(Microsoft.AspNetCore.Authentication.AuthenticationTicket! ticket, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!
 Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions
-Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options) -> void
+Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions! options) -> void
 Microsoft.AspNetCore.Authentication.Cookies.PostConfigureCookieAuthenticationOptions.PostConfigureCookieAuthenticationOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
 Microsoft.Extensions.DependencyInjection.CookieExtensions
 override Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationHandler.CreateEventsAsync() -> System.Threading.Tasks.Task<object!>!
@@ -117,6 +122,7 @@ static readonly Microsoft.AspNetCore.Authentication.Cookies.CookieAuthentication
 static readonly Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.LoginPath -> Microsoft.AspNetCore.Http.PathString
 static readonly Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.LogoutPath -> Microsoft.AspNetCore.Http.PathString
 static readonly Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.ReturnUrlParameter -> string!
+virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.CheckSlidingExpiration(Microsoft.AspNetCore.Authentication.Cookies.CookieSlidingExpirationContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.RedirectToAccessDenied(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.RedirectToLogin(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationEvents.RedirectToLogout(Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! context) -> System.Threading.Tasks.Task!

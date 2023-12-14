@@ -34,10 +34,7 @@ public abstract class TextInputFormatter : InputFormatter
     /// <inheritdoc />
     public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var selectedEncoding = SelectCharacterEncoding(context);
         if (selectedEncoding == null)
@@ -75,10 +72,7 @@ public abstract class TextInputFormatter : InputFormatter
     /// </returns>
     protected Encoding? SelectCharacterEncoding(InputFormatterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (SupportedEncodings.Count == 0)
         {

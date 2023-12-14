@@ -3,17 +3,19 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
 /// <summary>
 /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
 /// </summary>
-internal partial class HttpSysListener : IDisposable
+internal sealed partial class HttpSysListener : IDisposable
 {
     // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
     // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
@@ -43,21 +45,13 @@ internal partial class HttpSysListener : IDisposable
 
     public HttpSysListener(HttpSysOptions options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         if (!HttpApi.Supported)
         {
             throw new PlatformNotSupportedException();
         }
-
-        Debug.Assert(HttpApi.ApiVersion == HttpApiTypes.HTTP_API_VERSION.Version20, "Invalid Http api version");
 
         Options = options;
 
@@ -77,9 +71,9 @@ internal partial class HttpSysListener : IDisposable
         {
             _serverSession = new ServerSession();
 
-            _urlGroup = new UrlGroup(_serverSession, Logger);
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
 
-            _requestQueue = new RequestQueue(_urlGroup, options.RequestQueueName, options.RequestQueueMode, Logger);
+            _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
         }
@@ -147,12 +141,12 @@ internal partial class HttpSysListener : IDisposable
                     return;
                 }
 
-                // If this instance created the queue then configure it.
-                if (_requestQueue.Created)
+                // Always configure the UrlGroup if the intent was to create, only configure the queue if we actually created it
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
-                    Options.Apply(UrlGroup, RequestQueue);
+                    Options.Apply(UrlGroup, _requestQueue.Created ? RequestQueue : null);
 
-                    _requestQueue.AttachToUrlGroup();
+                    UrlGroup.AttachToQueue();
 
                     // All resources are set up correctly. Now add all prefixes.
                     try
@@ -162,7 +156,7 @@ internal partial class HttpSysListener : IDisposable
                     catch (HttpSysException)
                     {
                         // If an error occurred while adding prefixes, free all resources allocated by previous steps.
-                        _requestQueue.DetachFromUrlGroup();
+                        UrlGroup.DetachFromQueue();
                         throw;
                     }
                 }
@@ -194,11 +188,11 @@ internal partial class HttpSysListener : IDisposable
 
                 Log.ListenerStopping(Logger);
 
-                // If this instance created the queue then remove the URL prefixes before shutting down.
-                if (_requestQueue.Created)
+                // If this instance registered URL prefixes then remove them before shutting down.
+                if (Options.RequestQueueMode == RequestQueueMode.Create || Options.RequestQueueMode == RequestQueueMode.CreateOrAttach)
                 {
                     Options.UrlPrefixes.UnregisterAllPrefixes();
-                    _requestQueue.DetachFromUrlGroup();
+                    UrlGroup.DetachFromQueue();
                 }
 
                 _state = State.Stopped;
@@ -311,116 +305,89 @@ internal partial class HttpSysListener : IDisposable
 
     internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
     {
-        HttpApiTypes.HTTP_RESPONSE_V2 httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
-        httpResponse.Response_V1.Version = new HttpApiTypes.HTTP_VERSION();
-        httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
-        httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
-
-        List<GCHandle>? pinnedHeaders = null;
-        GCHandle gcHandle;
-        try
+        var httpResponse = new HTTP_RESPONSE_V2();
+        httpResponse.Base.Version = new()
         {
-            // Copied from the multi-value headers section of SerializeHeaders
-            if (authChallenges != null && authChallenges.Count > 0)
+            MajorVersion = 1,
+            MinorVersion = 1
+        };
+
+        using UnmanagedBufferAllocator allocator = new();
+
+        byte* bytes;
+        int bytesLength;
+
+        // Copied from the multi-value headers section of SerializeHeaders
+        if (authChallenges != null && authChallenges.Count > 0)
+        {
+            var knownHeaderInfo = allocator.AllocAsPointer<HTTP_RESPONSE_INFO>(1);
+            httpResponse.pResponseInfo = knownHeaderInfo;
+
+            knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+            knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
+                (uint)sizeof(HTTP_MULTIPLE_KNOWN_HEADERS);
+
+            var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+
+            header->HeaderId = HTTP_HEADER_ID.HttpHeaderWwwAuthenticate;
+            header->Flags = PInvoke.HTTP_RESPONSE_INFO_FLAGS_PRESERVE_ORDER; // The docs say this is for www-auth only.
+            header->KnownHeaderCount = 0;
+
+            var nativeHeaderValues = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(authChallenges.Count);
+            header->KnownHeaders = nativeHeaderValues;
+
+            for (var headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
             {
-                pinnedHeaders = new List<GCHandle>(authChallenges.Count + 3);
-
-                HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];
-                gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
-                pinnedHeaders.Add(gcHandle);
-                httpResponse.pResponseInfo = (HttpApiTypes.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
-
-                knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
-                knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-                    (uint)Marshal.SizeOf<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>();
-
-                HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS header = new HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS();
-
-                header.HeaderId = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
-                header.Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
-
-                HttpApiTypes.HTTP_KNOWN_HEADER[] nativeHeaderValues = new HttpApiTypes.HTTP_KNOWN_HEADER[authChallenges.Count];
-                gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
-                pinnedHeaders.Add(gcHandle);
-                header.KnownHeaders = (HttpApiTypes.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
-
-                for (int headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
-                {
-                    // Add Value
-                    string headerValue = authChallenges[headerValueIndex];
-                    byte[] bytes = HeaderEncoding.GetBytes(headerValue);
-                    nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                    gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                    pinnedHeaders.Add(gcHandle);
-                    nativeHeaderValues[header.KnownHeaderCount].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
-                    header.KnownHeaderCount++;
-                }
-
-                // This type is a struct, not an object, so pinning it causes a boxed copy to be created. We can't do that until after all the fields are set.
-                gcHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
-                pinnedHeaders.Add(gcHandle);
-                knownHeaderInfo[0].pInfo = (HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
-
-                httpResponse.ResponseInfoCount = 1;
+                // Add Value
+                var headerValue = authChallenges[headerValueIndex];
+                bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
+                nativeHeaderValues[header->KnownHeaderCount].RawValueLength = checked((ushort)bytesLength);
+                nativeHeaderValues[header->KnownHeaderCount].pRawValue = (PCSTR)bytes;
+                header->KnownHeaderCount++;
             }
 
-            httpResponse.Response_V1.StatusCode = (ushort)httpStatusCode;
-            string? statusDescription = HttpReasonPhrase.Get(httpStatusCode);
-            uint dataWritten = 0;
-            uint statusCode;
-            byte[] byteReason = statusDescription != null ? HeaderEncoding.GetBytes(statusDescription) : Array.Empty<byte>();
-            fixed (byte* pReason = byteReason)
-            {
-                httpResponse.Response_V1.pReason = (byte*)pReason;
-                httpResponse.Response_V1.ReasonLength = (ushort)byteReason.Length;
+            knownHeaderInfo[0].pInfo = header;
 
-                byte[] byteContentLength = new byte[] { (byte)'0' };
-                fixed (byte* pContentLength = byteContentLength)
-                {
-                    (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = (byte*)pContentLength;
-                    (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = (ushort)byteContentLength.Length;
-                    httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
-
-                    statusCode =
-                        HttpApi.HttpSendHttpResponse(
-                            _requestQueue.Handle,
-                            requestId,
-                            0,
-                            &httpResponse,
-                            null,
-                            &dataWritten,
-                            IntPtr.Zero,
-                            0,
-                            SafeNativeOverlapped.Zero,
-                            IntPtr.Zero);
-                }
-            }
-            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-            {
-                // if we fail to send a 401 something's seriously wrong, abort the request
-                HttpApi.HttpCancelHttpRequest(_requestQueue.Handle, requestId, IntPtr.Zero);
-            }
+            httpResponse.ResponseInfoCount = 1;
         }
-        finally
+
+        httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
+        var statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
+        uint dataWritten = 0;
+        uint statusCode;
+
+        bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
+        httpResponse.Base.pReason = (PCSTR)bytes;
+        httpResponse.Base.ReasonLength = checked((ushort)bytesLength);
+
+        const int contentLengthLength = 1;
+        var pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
+        pContentLength[0] = (byte)'0';
+        pContentLength[1] = 0; // null terminator
+
+        var knownHeaders = httpResponse.Base.Headers.KnownHeaders.AsSpan();
+        knownHeaders[(int)HttpSysResponseHeader.ContentLength].pRawValue = (PCSTR)pContentLength;
+        knownHeaders[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
+        httpResponse.Base.Headers.UnknownHeaderCount = 0;
+
+        statusCode = PInvoke.HttpSendHttpResponse(
+            _requestQueue.Handle,
+            requestId,
+            0,
+            httpResponse,
+            null,
+            &dataWritten,
+            null,
+            null);
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
-            if (pinnedHeaders != null)
-            {
-                foreach (GCHandle handle in pinnedHeaders)
-                {
-                    if (handle.IsAllocated)
-                    {
-                        handle.Free();
-                    }
-                }
-            }
+            // if we fail to send a 401 something's seriously wrong, abort the request
+            PInvoke.HttpCancelHttpRequest(_requestQueue.Handle, requestId, default);
         }
     }
 
     private void CheckDisposed()
     {
-        if (_state == State.Disposed)
-        {
-            throw new ObjectDisposedException(this.GetType().FullName);
-        }
+        ObjectDisposedException.ThrowIf(_state == State.Disposed, this);
     }
 }

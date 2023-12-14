@@ -15,10 +15,7 @@ public sealed class RouteAttribute : Attribute
     /// <param name="template">The route template.</param>
     public RouteAttribute(string template)
     {
-        if (template == null)
-        {
-            throw new ArgumentNullException(nameof(template));
-        }
+        ArgumentNullException.ThrowIfNull(template);
 
         Template = template;
     }

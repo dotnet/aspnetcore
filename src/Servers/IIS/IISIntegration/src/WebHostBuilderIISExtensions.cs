@@ -30,10 +30,7 @@ public static class WebHostBuilderIISExtensions
     /// <returns></returns>
     public static IWebHostBuilder UseIISIntegration(this IWebHostBuilder hostBuilder)
     {
-        if (hostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hostBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(hostBuilder);
 
         // Check if `UseIISIntegration` was called already
         if (hostBuilder.GetSetting(nameof(UseIISIntegration)) != null)

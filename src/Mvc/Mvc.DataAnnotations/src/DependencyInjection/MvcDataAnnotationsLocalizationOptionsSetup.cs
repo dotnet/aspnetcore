@@ -9,15 +9,12 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Sets up default options for <see cref="MvcDataAnnotationsLocalizationOptions"/>.
 /// </summary>
-internal class MvcDataAnnotationsLocalizationOptionsSetup : IConfigureOptions<MvcDataAnnotationsLocalizationOptions>
+internal sealed class MvcDataAnnotationsLocalizationOptionsSetup : IConfigureOptions<MvcDataAnnotationsLocalizationOptions>
 {
     /// <inheritdoc />
     public void Configure(MvcDataAnnotationsLocalizationOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.DataAnnotationLocalizerProvider = (modelType, stringLocalizerFactory) =>
             stringLocalizerFactory.Create(modelType);

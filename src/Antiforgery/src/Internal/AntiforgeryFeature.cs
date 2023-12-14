@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// <summary>
 /// Used to hold per-request state.
 /// </summary>
-internal class AntiforgeryFeature : IAntiforgeryFeature
+internal sealed class AntiforgeryFeature : IAntiforgeryFeature
 {
     public bool HaveDeserializedCookieToken { get; set; }
 

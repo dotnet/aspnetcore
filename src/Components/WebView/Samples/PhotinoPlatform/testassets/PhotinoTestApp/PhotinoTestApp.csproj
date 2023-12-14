@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <IsShippingPackage>false</IsShippingPackage>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
-  <Import Project="..\..\..\..\WebView\src\buildTransitive\any\Microsoft.AspNetCore.Components.WebView.props" />
+  <Import Project="..\..\..\..\WebView\src\buildTransitive\Microsoft.AspNetCore.Components.WebView.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />

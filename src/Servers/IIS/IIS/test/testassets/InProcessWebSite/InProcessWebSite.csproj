@@ -4,6 +4,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -12,7 +13,7 @@
     <!-- ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482 -->
     <TestAssetPublishProfile Include="Standalone-x64"
         Condition=" '$(TargetArchitecture)' != 'arm' "
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
+        Properties="SelfContained=true;RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,15 +33,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="System.Private.Uri" />
     <Reference Include="xunit.assert" />
   </ItemGroup>
-
-  <!-- Repeat Build target for win-x64 to allow later Publish w/ NoBuild=true. -->
-  <Target Name="BuildX64"
-      BeforeTargets="Build"
-      Condition=" '$(RuntimeIdentifier)' != 'win-x64' AND '$(TargetArchitecture)' != 'arm' ">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-        Properties="RuntimeIdentifier=win-x64;ReferenceTestTasks=false"
-        Targets="Build" />
-  </Target>
 </Project>

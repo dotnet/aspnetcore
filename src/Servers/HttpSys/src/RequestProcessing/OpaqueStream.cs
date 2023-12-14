@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 // A duplex wrapper around RequestStream and ResponseStream.
 // TODO: Consider merging RequestStream and ResponseStream instead.
-internal class OpaqueStream : Stream
+internal sealed class OpaqueStream : Stream
 {
     private readonly Stream _requestStream;
     private readonly Stream _responseStream;

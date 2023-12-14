@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -39,10 +41,7 @@ public sealed class EphemeralDataProtectionProvider : IDataProtectionProvider
     /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
     public EphemeralDataProtectionProvider(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(loggerFactory);
 
         IKeyRingProvider keyringProvider;
         if (OSVersionUtil.IsWindows())
@@ -67,10 +66,7 @@ public sealed class EphemeralDataProtectionProvider : IDataProtectionProvider
     /// <inheritdoc />
     public IDataProtector CreateProtector(string purpose)
     {
-        if (purpose == null)
-        {
-            throw new ArgumentNullException(nameof(purpose));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         // just forward to the underlying provider
         return _dataProtectionProvider.CreateProtector(purpose);

@@ -1,11 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-internal class ViewDataAttributeApplicationModelProvider : IApplicationModelProvider
+internal sealed class ViewDataAttributeApplicationModelProvider : IApplicationModelProvider
 {
     /// <inheritdoc />
     /// <remarks>This order ensures that <see cref="ViewDataAttributeApplicationModelProvider"/> runs after the <see cref="DefaultApplicationModelProvider"/>.</remarks>
@@ -19,10 +19,7 @@ internal class ViewDataAttributeApplicationModelProvider : IApplicationModelProv
     /// <inheritdoc />
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var controllerModel in context.Result.Controllers)
         {

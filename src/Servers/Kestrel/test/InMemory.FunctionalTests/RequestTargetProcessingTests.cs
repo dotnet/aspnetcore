@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -90,11 +90,10 @@ public class RequestTargetProcessingTests : LoggedTest
     }
 
     [Theory]
-    [InlineData((int)HttpMethod.Options, "*")]
-    [InlineData((int)HttpMethod.Connect, "host")]
-    public async Task NonPathRequestTargetSetInRawTarget(int intMethod, string requestTarget)
+    [InlineData(HttpMethod.Options, "*")]
+    [InlineData(HttpMethod.Connect, "host")]
+    public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)
     {
-        var method = (HttpMethod)intMethod;
         var testContext = new TestServiceContext(LoggerFactory);
 
         await using (var server = new TestServer(async context =>
@@ -104,8 +103,7 @@ public class RequestTargetProcessingTests : LoggedTest
             Assert.Empty(context.Request.PathBase.Value);
             Assert.Empty(context.Request.QueryString.Value);
 
-            context.Response.Headers["Content-Length"] = new[] { "11" };
-            await context.Response.WriteAsync("Hello World");
+            await context.Response.CompleteAsync();
         }, testContext))
         {
             using (var connection = server.CreateConnection())
@@ -119,12 +117,6 @@ public class RequestTargetProcessingTests : LoggedTest
                     $"Host: {host}",
                     "",
                     "");
-                await connection.Receive(
-                    "HTTP/1.1 200 OK",
-                    "Content-Length: 11",
-                    $"Date: {testContext.DateHeaderValue}",
-                    "",
-                    "Hello World");
             }
         }
     }

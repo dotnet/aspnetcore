@@ -1,0 +1,7 @@
+{
+  "Exclusions": [
+    "src\\Installers\\Windows\\AspNetCoreModule-Setup\\setupstrings.wxl",
+    "src\\Installers\\Windows\\SharedFramework\\Strings.wxl",
+    "src\\Installers\\Windows\\TargetingPack\\Strings.wxl"
+  ]
+}

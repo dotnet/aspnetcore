@@ -3,16 +3,18 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-const deferredValuePropname = '_blazorDeferredValue';
+import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-const elementsToClearOnRootComponentRender: { [componentId: number]: LogicalElement } = {};
+const elementsToClearOnRootComponentRender = new Set<LogicalElement>();
 const internalAttributeNamePrefix = '__internal_';
 const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
+const interactiveRootComponentPropname = Symbol();
+const preserveContentOnDisposalPropname = Symbol();
 
 export class BrowserRenderer {
   public eventDelegator: EventDelegator;
@@ -30,15 +32,27 @@ export class BrowserRenderer {
     attachNavigationManagerToEventDelegator(this.eventDelegator);
   }
 
+  public getRootComponentCount(): number {
+    return this.rootComponentIds.size;
+  }
+
   public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement, appendContent: boolean): void {
+    if (isInteractiveRootComponentElement(element)) {
+      throw new Error(`Root component '${componentId}' could not be attached because its target element is already associated with a root component`);
+    }
+
+    // If we want to append content to the end of the element, we create a new logical child container
+    // at the end of the element and treat that as the new parent.
+    if (appendContent) {
+      const indexAfterLastChild = getLogicalChildrenArray(element).length;
+      element = createAndInsertLogicalContainer(element, indexAfterLastChild);
+    }
+
+    markAsInteractiveRootComponentElement(element, true);
     this.attachComponentToElement(componentId, element);
     this.rootComponentIds.add(componentId);
 
-    // If we want to preserve existing HTML content of the root element, we don't apply the mechanism for
-    // clearing existing children. Rendered content will then append rather than replace the existing HTML content.
-    if (!appendContent) {
-      elementsToClearOnRootComponentRender[componentId] = element;
-    }
+    elementsToClearOnRootComponentRender.add(element);
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
@@ -48,15 +62,13 @@ export class BrowserRenderer {
     }
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
-    const rootElementToClear = elementsToClearOnRootComponentRender[componentId];
-    if (rootElementToClear) {
-      const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
-      delete elementsToClearOnRootComponentRender[componentId];
+    if (elementsToClearOnRootComponentRender.delete(element)) {
+      emptyLogicalElement(element);
 
-      if (!rootElementToClearEnd) {
-        clearElement(rootElementToClear as unknown as Element);
-      } else {
-        clearBetween(rootElementToClear as unknown as Node, rootElementToClearEnd as unknown as Comment);
+      if (element instanceof Comment) {
+        // We sanitize start comments by removing all the information from it now that we don't need it anymore
+        // as it adds noise to the DOM.
+        element.textContent = '!';
       }
     }
 
@@ -76,7 +88,14 @@ export class BrowserRenderer {
       // When disposing a root component, the container element won't be removed from the DOM (because there's
       // no parent to remove that child), so we empty it to restore it to the state it was in before the root
       // component was added.
-      emptyLogicalElement(this.childComponentLocations[componentId]);
+      const logicalElement = this.childComponentLocations[componentId];
+      markAsInteractiveRootComponentElement(logicalElement, false);
+
+      if (shouldPreserveContentOnInteractiveComponentDisposal(logicalElement)) {
+        elementsToClearOnRootComponentRender.add(logicalElement);
+      } else {
+        emptyLogicalElement(logicalElement);
+      }
     }
 
     delete this.childComponentLocations[componentId];
@@ -136,13 +155,9 @@ export class BrowserRenderer {
           // disposed event handler IDs are delivered separately (in the 'disposedEventHandlerIds' array)
           const siblingIndex = editReader.siblingIndex(edit);
           const element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
-          if (element instanceof HTMLElement) {
+          if (element instanceof Element) {
             const attributeName = editReader.removedAttributeName(edit)!;
-            // First try to remove any special property we use for this attribute
-            if (!this.tryApplySpecialProperty(batch, element, attributeName, null)) {
-              // If that's not applicable, it's a regular DOM attribute so remove that
-              element.removeAttribute(attributeName);
-            }
+            this.setOrRemoveAttributeOrProperty(element, attributeName, null);
           } else {
             throw new Error('Cannot remove attribute from non-element child');
           }
@@ -229,6 +244,8 @@ export class BrowserRenderer {
       case FrameType.markup:
         this.insertMarkup(batch, parent, childIndex, frame);
         return 1;
+      case FrameType.namedEvent: // Not used on the JS side
+        return 0;
       default: {
         const unknownType: never = frameType; // Compile-time verification that the switch was exhaustive
         throw new Error(`Unknown frame type: ${unknownType}`);
@@ -268,51 +285,7 @@ export class BrowserRenderer {
       insertLogicalChild(newDomElementRaw, parent, childIndex);
     }
 
-    // We handle setting 'value' on a <select> in three different ways:
-    // [1] When inserting a corresponding <option>, in case you're dynamically adding options.
-    //     This is the case below.
-    // [2] After we finish inserting the <select>, in case the descendant options are being
-    //     added as an opaque markup block rather than individually. This is the other case below.
-    // [3] In case the the value of the select and the option value is changed in the same batch.
-    //     We just receive an attribute frame and have to set the select value afterwards.
-
-    // We also defer setting the 'value' property for <input> because certain types of inputs have
-    // default attribute values that may incorrectly constain the specified 'value'.
-    // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
-    // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
-
-    if (newDomElementRaw instanceof HTMLOptionElement) {
-      // Situation 1
-      this.trySetSelectValueFromOptionElement(newDomElementRaw);
-    } else if (deferredValuePropname in newDomElementRaw) {
-      // Situation 2
-      setDeferredElementValue(newDomElementRaw, newDomElementRaw[deferredValuePropname]);
-    }
-  }
-
-  private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
-    const selectElem = this.findClosestAncestorSelectElement(optionElement);
-
-    if (!isBlazorSelectElement(selectElem)) {
-      return false;
-    }
-
-    if (isMultipleSelectElement(selectElem)) {
-      optionElement.selected = selectElem._blazorDeferredValue!.indexOf(optionElement.value) !== -1;
-    } else {
-      if (selectElem._blazorDeferredValue !== optionElement.value) {
-        return false;
-      }
-
-      setSingleSelectElementValue(selectElem, optionElement.value);
-      delete selectElem._blazorDeferredValue;
-    }
-
-    return true;
-
-    function isBlazorSelectElement(selectElem: HTMLSelectElement | null) : selectElem is BlazorHtmlSelectElement {
-      return !!selectElem && (deferredValuePropname in selectElem);
-    }
+    applyAnyDeferredValue(newDomElementRaw);
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -352,121 +325,8 @@ export class BrowserRenderer {
       return;
     }
 
-    // First see if we have special handling for this attribute
-    if (!this.tryApplySpecialProperty(batch, toDomElement, attributeName, attributeFrame)) {
-      // If not, treat it as a regular string-valued attribute
-      toDomElement.setAttribute(
-        attributeName,
-        frameReader.attributeValue(attributeFrame)!
-      );
-    }
-  }
-
-  private tryApplySpecialProperty(batch: RenderBatch, element: Element, attributeName: string, attributeFrame: RenderTreeFrame | null) {
-    switch (attributeName) {
-      case 'value':
-        return this.tryApplyValueProperty(batch, element, attributeFrame);
-      case 'checked':
-        return this.tryApplyCheckedProperty(batch, element, attributeFrame);
-      default: {
-        if (attributeName.startsWith(internalAttributeNamePrefix)) {
-          this.applyInternalAttribute(batch, element, attributeName.substring(internalAttributeNamePrefix.length), attributeFrame);
-          return true;
-        }
-        return false;
-      }
-    }
-  }
-
-  private applyInternalAttribute(batch: RenderBatch, element: Element, internalAttributeName: string, attributeFrame: RenderTreeFrame | null) {
-    const attributeValue = attributeFrame ? batch.frameReader.attributeValue(attributeFrame) : null;
-
-    if (internalAttributeName.startsWith(eventStopPropagationAttributeNamePrefix)) {
-      // Stop propagation
-      const eventName = stripOnPrefix(internalAttributeName.substring(eventStopPropagationAttributeNamePrefix.length));
-      this.eventDelegator.setStopPropagation(element, eventName, attributeValue !== null);
-    } else if (internalAttributeName.startsWith(eventPreventDefaultAttributeNamePrefix)) {
-      // Prevent default
-      const eventName = stripOnPrefix(internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length));
-      this.eventDelegator.setPreventDefault(element, eventName, attributeValue !== null);
-    } else {
-      // The prefix makes this attribute name reserved, so any other usage is disallowed
-      throw new Error(`Unsupported internal attribute '${internalAttributeName}'`);
-    }
-  }
-
-  private tryApplyValueProperty(batch: RenderBatch, element: Element, attributeFrame: RenderTreeFrame | null): boolean {
-    // Certain elements have built-in behaviour for their 'value' property
-    const frameReader = batch.frameReader;
-
-    let value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-
-    if (value && element.tagName === 'INPUT') {
-      value = normalizeInputValue(value, element.getAttribute('type'));
-    }
-
-    switch (element.tagName) {
-      case 'INPUT':
-      case 'SELECT':
-      case 'TEXTAREA': {
-        // <select> is special, in that anything we write to .value will be lost if there
-        // isn't yet a matching <option>. To maintain the expected behavior no matter the
-        // element insertion/update order, preserve the desired value separately so
-        // we can recover it when inserting any matching <option> or after inserting an
-        // entire markup block of descendants.
-
-        // We also defer setting the 'value' property for <input> because certain types of inputs have
-        // default attribute values that may incorrectly constain the specified 'value'.
-        // For example, range inputs have default 'min' and 'max' attributes that may incorrectly
-        // clamp the 'value' property if it is applied before custom 'min' and 'max' attributes.
-
-        if (value && element instanceof HTMLSelectElement && isMultipleSelectElement(element)) {
-          value = JSON.parse(value);
-        }
-
-        setDeferredElementValue(element, value);
-        element[deferredValuePropname] = value;
-
-        return true;
-      }
-      case 'OPTION': {
-        if (value || value === '') {
-          element.setAttribute('value', value);
-        } else {
-          element.removeAttribute('value');
-        }
-
-        // See above for why we have this special handling for <select>/<option>
-        // Situation 3
-        this.trySetSelectValueFromOptionElement(<HTMLOptionElement>element);
-        return true;
-      }
-      default:
-        return false;
-    }
-  }
-
-  private tryApplyCheckedProperty(batch: RenderBatch, element: Element, attributeFrame: RenderTreeFrame | null) {
-    // Certain elements have built-in behaviour for their 'checked' property
-    if (element.tagName === 'INPUT') {
-      const value = attributeFrame ? batch.frameReader.attributeValue(attributeFrame) : null;
-      (element as any).checked = value !== null;
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  private findClosestAncestorSelectElement(element: Element | null) {
-    while (element) {
-      if (element instanceof HTMLSelectElement) {
-        return element;
-      } else {
-        element = element.parentElement;
-      }
-    }
-
-    return null;
+    const value = frameReader.attributeValue(attributeFrame);
+    this.setOrRemoveAttributeOrProperty(toDomElement, attributeName, value);
   }
 
   private insertFrameRange(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {
@@ -482,6 +342,54 @@ export class BrowserRenderer {
 
     return (childIndex - origChildIndex); // Total number of children inserted
   }
+
+  private setOrRemoveAttributeOrProperty(element: Element, name: string, valueOrNullToRemove: string | null) {
+    // First see if we have special handling for this attribute
+    if (!tryApplySpecialProperty(element, name, valueOrNullToRemove)) {
+      // If not, maybe it's one of our internal attributes
+      if (name.startsWith(internalAttributeNamePrefix)) {
+        this.applyInternalAttribute(element, name.substring(internalAttributeNamePrefix.length), valueOrNullToRemove);
+      } else {
+        // If not, treat it as a regular DOM attribute
+        if (valueOrNullToRemove !== null) {
+          element.setAttribute(name, valueOrNullToRemove);
+        } else {
+          element.removeAttribute(name);
+        }
+      }
+    }
+  }
+
+  private applyInternalAttribute(element: Element, internalAttributeName: string, value: string | null) {
+    if (internalAttributeName.startsWith(eventStopPropagationAttributeNamePrefix)) {
+      // Stop propagation
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventStopPropagationAttributeNamePrefix.length));
+      this.eventDelegator.setStopPropagation(element, eventName, value !== null);
+    } else if (internalAttributeName.startsWith(eventPreventDefaultAttributeNamePrefix)) {
+      // Prevent default
+      const eventName = stripOnPrefix(internalAttributeName.substring(eventPreventDefaultAttributeNamePrefix.length));
+      this.eventDelegator.setPreventDefault(element, eventName, value !== null);
+    } else {
+      // The prefix makes this attribute name reserved, so any other usage is disallowed
+      throw new Error(`Unsupported internal attribute '${internalAttributeName}'`);
+    }
+  }
+}
+
+function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
+  element[interactiveRootComponentPropname] = isInteractive;
+}
+
+export function isInteractiveRootComponentElement(element: LogicalElement): boolean | undefined {
+  return element[interactiveRootComponentPropname];
+}
+
+export function setShouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement, shouldPreserve: boolean) {
+  element[preserveContentOnDisposalPropname] = shouldPreserve;
+}
+
+function shouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement): boolean {
+  return element[preserveContentOnDisposalPropname] === true;
 }
 
 export interface ComponentDescriptor {
@@ -495,28 +403,29 @@ function parseMarkup(markup: string, isSvg: boolean) {
     return sharedSvgElemForParsing;
   } else {
     sharedTemplateElemForParsing.innerHTML = markup || ' ';
+
+    // Since this is a markup string, we want to honor the developer's intent to
+    // evaluate any scripts it may contain. Scripts parsed from an innerHTML assignment
+    // won't be executable by default (https://stackoverflow.com/questions/1197575/can-scripts-be-inserted-with-innerhtml)
+    // but that's inconsistent with anything constructed from a sequence like:
+    // - OpenElement("script")
+    // - AddContent(js) or AddMarkupContent(js)
+    // - CloseElement()
+    // It doesn't make sense to have such an inconsistency in Blazor's interactive
+    // renderer, and for back-compat with pre-.NET 8 code (when the Razor compiler always
+    // used OpenElement like above), as well as consistency with static SSR, we need to make it work.
+    sharedTemplateElemForParsing.content.querySelectorAll('script').forEach(oldScriptElem => {
+      const newScriptElem = document.createElement('script');
+      newScriptElem.textContent = oldScriptElem.textContent;
+
+      oldScriptElem.getAttributeNames().forEach(attribName => {
+        newScriptElem.setAttribute(attribName, oldScriptElem.getAttribute(attribName)!);
+      });
+
+      oldScriptElem.parentNode!.replaceChild(newScriptElem, oldScriptElem);
+    });
+
     return sharedTemplateElemForParsing.content;
-  }
-}
-
-function normalizeInputValue(value: string, type: string | null): string {
-  // Time inputs (e.g. 'time' and 'datetime-local') misbehave on chromium-based
-  // browsers when a time is set that includes a seconds value of '00', most notably
-  // when entered from keyboard input. This behavior is not limited to specific
-  // 'step' attribute values, so we always remove the trailing seconds value if the
-  // time ends in '00'.
-
-  switch (type) {
-    case 'time':
-      return value.length === 8 && value.endsWith('00')
-        ? value.substring(0, 5)
-        : value;
-    case 'datetime-local':
-      return value.length === 19 && value.endsWith('00')
-        ? value.substring(0, 16)
-        : value;
-    default:
-      return value;
   }
 }
 
@@ -535,73 +444,10 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
   }
 }
 
-function clearElement(element: Element) {
-  let childNode: Node | null;
-  while ((childNode = element.firstChild)) {
-    element.removeChild(childNode);
-  }
-}
-
-function clearBetween(start: Node, end: Node): void {
-  const logicalParent = getLogicalParent(start as unknown as LogicalElement);
-  if (!logicalParent) {
-    throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
-  }
-  const children = getLogicalChildrenArray(logicalParent);
-  const removeStart = children.indexOf(start as unknown as LogicalElement) + 1;
-  const endIndex = children.indexOf(end as unknown as LogicalElement);
-
-  // We remove the end component comment from the DOM as we don't need it after this point.
-  for (let i = removeStart; i <= endIndex; i++) {
-    removeLogicalChild(logicalParent, removeStart);
-  }
-
-  // We sanitize the start comment by removing all the information from it now that we don't need it anymore
-  // as it adds noise to the DOM.
-  start.textContent = '!';
-}
-
 function stripOnPrefix(attributeName: string) {
   if (attributeName.startsWith('on')) {
     return attributeName.substring(2);
   }
 
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
-}
-
-type BlazorHtmlSelectElement = HTMLSelectElement & { _blazorDeferredValue?: string };
-
-function isMultipleSelectElement(element: HTMLSelectElement) {
-  return element.type === 'select-multiple';
-}
-
-function setSingleSelectElementValue(element: HTMLSelectElement, value: string | null) {
-  // There's no sensible way to represent a select option with value 'null', because
-  // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
-  // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
-  //     *text content* on that <option> element. Trying to suppress that default behavior would involve
-  //     a long chain of special-case hacks, as well as being breaking vs 3.x.
-  // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
-  // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
-  // string in a bound <select>, but that's a limit in the representational power of HTML.
-  element.value = value || '';
-}
-
-function setMultipleSelectElementValue(element: HTMLSelectElement, value: string[] | null) {
-  value ||= [];
-  for (let i = 0; i < element.options.length; i++) {
-    element.options[i].selected = value.indexOf(element.options[i].value) !== -1;
-  }
-}
-
-function setDeferredElementValue(element: Element, value: any) {
-  if (element instanceof HTMLSelectElement) {
-    if (isMultipleSelectElement(element)) {
-      setMultipleSelectElementValue(element, value);
-    } else {
-      setSingleSelectElementValue(element, value);
-    }
-  } else {
-    (element as any).value = value;
-  }
 }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-internal class FieldState
+internal sealed class FieldState
 {
     private readonly FieldIdentifier _fieldIdentifier;
 

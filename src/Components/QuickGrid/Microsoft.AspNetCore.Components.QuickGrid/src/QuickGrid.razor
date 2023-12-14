@@ -1,0 +1,94 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure
+@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@typeparam TGridItem
+<CascadingValue TValue="InternalGridContext<TGridItem>" IsFixed="true" Value="@_internalGridContext">
+    @{ StartCollectingColumns(); }
+    @ChildContent
+    <Defer>
+        @{ FinishCollectingColumns(); }
+        <ColumnsCollectedNotifier TGridItem="TGridItem" />
+
+        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="CloseColumnOptions" @attributes="AdditionalAttributes" class="@GridClass()">
+            <thead>
+                <tr>
+                    @_renderColumnHeaders
+                </tr>
+            </thead>
+            <tbody>
+                @if (Virtualize)
+                {
+                    <Virtualize @ref="@_virtualizeComponent"
+                        TItem="(int RowIndex, TGridItem Data)"
+                        ItemSize="@ItemSize"
+                        ItemsProvider="@ProvideVirtualizedItems"
+                        ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
+                        Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                }
+                else
+                {
+                    @_renderNonVirtualizedRows
+                }
+            </tbody>
+        </table>
+    </Defer>
+</CascadingValue>
+
+@code {
+    private void RenderNonVirtualizedRows(RenderTreeBuilder __builder)
+    {
+        var initialRowIndex = 2; // aria-rowindex is 1-based, plus the first row is the header
+        var rowIndex = initialRowIndex;
+        foreach (var item in _currentNonVirtualizedViewItems)
+        {
+            RenderRow(__builder, rowIndex++, item);
+        }
+
+        // When pagination is enabled, by default ensure we render the exact number of expected rows per page,
+        // even if there aren't enough data items. This avoids the layout jumping on the last page.
+        // Consider making this optional.
+        if (Pagination is not null)
+        {
+            while (rowIndex++ < initialRowIndex + Pagination.ItemsPerPage)
+            {
+                <tr></tr>
+            }
+        }
+    }
+
+    private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
+    {
+        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex">
+            @foreach (var col in _columns)
+            {
+                <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+            }
+        </tr>
+    }
+
+    private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
+    {
+        <tr aria-rowindex="@(placeholderContext.Index + 1)">
+            @foreach (var col in _columns)
+            {
+                <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
+            }
+        </tr>
+    }
+
+    private void RenderColumnHeaders(RenderTreeBuilder __builder)
+    {
+        foreach (var col in _columns)
+        {
+            <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
+                <div class="col-header-content">@col.HeaderContent</div>
+
+                @if (col == _displayOptionsForColumn)
+                {
+                    <div class="col-options">@col.ColumnOptions</div>
+                }
+            </th>
+        }
+    }
+}

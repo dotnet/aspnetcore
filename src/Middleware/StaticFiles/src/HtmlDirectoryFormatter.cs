@@ -25,10 +25,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     /// <param name="encoder">The character encoding representation to use.</param>
     public HtmlDirectoryFormatter(HtmlEncoder encoder)
     {
-        if (encoder == null)
-        {
-            throw new ArgumentNullException(nameof(encoder));
-        }
+        ArgumentNullException.ThrowIfNull(encoder);
         _htmlEncoder = encoder;
     }
 
@@ -37,14 +34,8 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     /// </summary>
     public virtual Task GenerateContentAsync(HttpContext context, IEnumerable<IFileInfo> contents)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-        if (contents == null)
-        {
-            throw new ArgumentNullException(nameof(contents));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(contents);
 
         context.Response.ContentType = TextHtmlUtf8;
 
@@ -112,7 +103,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
     <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
         string cumulativePath = "/";
-        foreach (var segment in requestPath.Value!.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
+        foreach (var segment in requestPath.Value!.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
             cumulativePath = cumulativePath + segment + "/";
             builder.AppendFormat(

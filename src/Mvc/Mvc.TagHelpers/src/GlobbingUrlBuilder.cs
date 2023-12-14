@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
@@ -31,15 +32,8 @@ public class GlobbingUrlBuilder
     /// <param name="requestPathBase">The request path base.</param>
     public GlobbingUrlBuilder(IFileProvider fileProvider, IMemoryCache cache, PathString requestPathBase)
     {
-        if (fileProvider == null)
-        {
-            throw new ArgumentNullException(nameof(fileProvider));
-        }
-
-        if (cache == null)
-        {
-            throw new ArgumentNullException(nameof(cache));
-        }
+        ArgumentNullException.ThrowIfNull(fileProvider);
+        ArgumentNullException.ThrowIfNull(cache);
 
         FileProvider = fileProvider;
         Cache = cache;
@@ -73,7 +67,7 @@ public class GlobbingUrlBuilder
     /// <param name="excludePattern">The file globbing exclude pattern.</param>
     /// <returns>The list of URLs</returns>
     public virtual IReadOnlyList<string> BuildUrlList(
-        string staticUrl,
+        [StringSyntax(StringSyntaxAttribute.Uri)] string staticUrl,
         string includePattern,
         string excludePattern)
     {
@@ -176,7 +170,7 @@ public class GlobbingUrlBuilder
         return (matchedUrls, sizeInBytes);
     }
 
-    private class PathComparer : IComparer<string>
+    private sealed class PathComparer : IComparer<string>
     {
         public int Compare(string x, string y)
         {
@@ -310,15 +304,8 @@ public class GlobbingUrlBuilder
 
     private static bool IsWhiteSpace(string value, int index)
     {
-        for (var i = 0; i < ValidAttributeWhitespaceChars.Length; i++)
-        {
-            if (value[index] == ValidAttributeWhitespaceChars[i])
-            {
-                return true;
-            }
-        }
-
-        return false;
+        var ch = value[index];
+        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
     }
 
     private static StringSegment Trim(StringSegment value)

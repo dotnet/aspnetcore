@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
@@ -25,7 +26,7 @@ public class ActionEndpointFactoryTest
         });
 
         Services = serviceCollection.BuildServiceProvider();
-        Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>());
+        Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), Enumerable.Empty<IRequestDelegateFactory>(), Services);
     }
 
     internal ActionEndpointFactory Factory { get; }
@@ -266,10 +267,19 @@ public class ActionEndpointFactoryTest
         requestDelegateFactory.Setup(m => m.CreateRequestDelegate(action, It.IsAny<RouteValueDictionary>())).Returns(del);
 
         // Act
-        var factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), new[] { requestDelegateFactory.Object });
+        var factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>(), new[] { requestDelegateFactory.Object }, Services);
 
         var endpoints = new List<Endpoint>();
-        factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+        factory.AddEndpoints(
+            endpoints,
+            new HashSet<string>(),
+            action,
+            Array.Empty<ConventionalRouteEntry>(),
+            conventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            createInertEndpoints: false);
 
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
@@ -366,13 +376,22 @@ public class ActionEndpointFactoryTest
     private RouteEndpoint CreateAttributeRoutedEndpoint(ActionDescriptor action)
     {
         var endpoints = new List<Endpoint>();
-        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+        Factory.AddEndpoints(
+            endpoints,
+            new HashSet<string>(),
+            action,
+            Array.Empty<ConventionalRouteEntry>(),
+            conventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            createInertEndpoints: false);
         return Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
     }
 
     private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, string template)
     {
-        return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0, new List<Action<EndpointBuilder>>()));
+        return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0, new List<Action<EndpointBuilder>>(), new List<Action<EndpointBuilder>>()));
     }
 
     private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, ConventionalRouteEntry route)
@@ -380,7 +399,16 @@ public class ActionEndpointFactoryTest
         Assert.NotNull(action.RouteValues);
 
         var endpoints = new List<Endpoint>();
-        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints: false);
+        Factory.AddEndpoints(
+            endpoints,
+            new HashSet<string>(),
+            action,
+            new[] { route, },
+            conventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            createInertEndpoints: false);
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
         // This should be true for all conventional-routed actions.
@@ -397,7 +425,16 @@ public class ActionEndpointFactoryTest
     private IReadOnlyList<Endpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<ConventionalRouteEntry> routes, bool createInertEndpoints = false)
     {
         var endpoints = new List<Endpoint>();
-        Factory.AddEndpoints(endpoints, new HashSet<string>(), action, routes, Array.Empty<Action<EndpointBuilder>>(), createInertEndpoints);
+        Factory.AddEndpoints(
+            endpoints,
+            new HashSet<string>(),
+            action,
+            routes,
+            conventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupConventions: Array.Empty<Action<EndpointBuilder>>(),
+            finallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            groupFinallyConventions: Array.Empty<Action<EndpointBuilder>>(),
+            createInertEndpoints);
         return endpoints.ToList();
     }
 
@@ -408,10 +445,12 @@ public class ActionEndpointFactoryTest
         IDictionary<string, object> constraints = null,
         RouteValueDictionary dataTokens = null,
         int order = 0,
-        List<Action<EndpointBuilder>> conventions = null)
+        List<Action<EndpointBuilder>> conventions = null,
+        List<Action<EndpointBuilder>> finallyConventions = null)
     {
         conventions ??= new List<Action<EndpointBuilder>>();
-        return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, order, conventions);
+        finallyConventions ??= new List<Action<EndpointBuilder>>();
+        return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, order, conventions, finallyConventions);
     }
 
     private ActionDescriptor CreateActionDescriptor(

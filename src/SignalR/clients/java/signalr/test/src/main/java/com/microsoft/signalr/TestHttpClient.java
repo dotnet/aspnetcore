@@ -70,7 +70,7 @@ class TestHttpClient extends HttpClient {
 
     @Override
     public WebSocketWrapper createWebSocket(String url, Map<String, String> headers) {
-        throw new RuntimeException("WebSockets isn't supported in testing currently.");
+        return new TestWebSocketWrapper(url, headers);
     }
 
     @Override

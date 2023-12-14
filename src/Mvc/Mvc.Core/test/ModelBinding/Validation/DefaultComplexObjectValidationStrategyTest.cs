@@ -3,6 +3,8 @@
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 public class DefaultComplexObjectValidationStrategyTest
@@ -156,6 +158,31 @@ public class DefaultComplexObjectValidationStrategyTest
             });
     }
 
+    [Fact]
+    public void GetChildren_ThrowsWhenPropertyIsMissingFromRecord()
+    {
+        // Arrange
+        var model = new PersonRecord(1, 2, "Joey");
+
+        var bindingProvider = new DefaultBindingMetadataProvider();
+        var detailsProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingProvider });
+        var metadataProvider = new ExcludePropertiesDefaultModelMetadataProvider(detailsProvider, property => property.Name == "Age");
+
+        var key = ModelMetadataIdentity.ForType(typeof(PersonRecord));
+        var cache = new DefaultMetadataDetails(key, new ModelAttributes(Array.Empty<object>(), null, null));
+
+        var metadata = new DefaultModelMetadata(metadataProvider, detailsProvider, cache);
+
+        var strategy = DefaultComplexObjectValidationStrategy.Instance;
+
+        // Act
+        var enumerator = strategy.GetChildren(metadata, "prefix", model);
+
+        // Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => BufferEntries(enumerator));
+        Assert.Contains("'Age'", exception.Message);
+    }
+
     private List<ValidationEntry> BufferEntries(IEnumerator<ValidationEntry> enumerator)
     {
         var entries = new List<ValidationEntry>();
@@ -175,6 +202,8 @@ public class DefaultComplexObjectValidationStrategyTest
 
         public string Name { get; set; }
     }
+
+    private record PersonRecord(int Id, int Age, string Name);
 
     private class LazyPerson
     {
@@ -196,5 +225,20 @@ public class DefaultComplexObjectValidationStrategyTest
     {
         public void CreateValidationMetadata(ValidationMetadataProviderContext context)
             => context.ValidationMetadata.ValidationModelName = context.Key.Name?.ToUpperInvariant();
+    }
+
+    private class ExcludePropertiesDefaultModelMetadataProvider : DefaultModelMetadataProvider
+    {
+        private readonly Func<ModelMetadata, bool> _shouldExclude;
+
+        public ExcludePropertiesDefaultModelMetadataProvider(ICompositeMetadataDetailsProvider detailsProvider, Func<ModelMetadata, bool> shouldExclude) : base(detailsProvider)
+        {
+            _shouldExclude = shouldExclude;
+        }
+
+        public override IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
+        {
+            return base.GetMetadataForProperties(modelType).Where(property => !_shouldExclude(property));
+        }
     }
 }

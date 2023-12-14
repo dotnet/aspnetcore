@@ -4,9 +4,12 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
-    <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
-    <SignAssembly>false</SignAssembly>
     <SkipHelixAlpine>true</SkipHelixAlpine>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Required for System.Net.Quic which has a preview API in .NET 7 -->
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <!-- EXTEXP0003: MetricCollector is experimental -->
+    <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,24 +20,22 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IWebHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestConstants.cs" LinkBase="shared" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\HttpEventSourceListener.cs" LinkBase="shared" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Required for QUIC & HTTP/3 in .NET 6 - https://github.com/dotnet/runtime/pull/55332 -->
-    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support" Value="true" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="shared" />
+    <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" LinkBase="shared" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" Link="shared\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\ServerRetryHelper.cs" LinkBase="shared" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
-    <Reference Include="Selenium.WebDriver" />
-    <Reference Include="Selenium.WebDriver.ChromeDriver" />
   </ItemGroup>
 
 </Project>

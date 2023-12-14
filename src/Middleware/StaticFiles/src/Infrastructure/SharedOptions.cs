@@ -29,7 +29,7 @@ public class SharedOptions
         get { return _requestPath; }
         set
         {
-            if (value.HasValue && value.Value!.EndsWith("/", StringComparison.Ordinal))
+            if (value.HasValue && value.Value!.EndsWith('/'))
             {
                 throw new ArgumentException("Request path must not end in a slash");
             }

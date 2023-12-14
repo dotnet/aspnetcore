@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.InternalTesting;
 
 #nullable enable
 
@@ -404,7 +406,7 @@ public class HttpResponseJsonExtensionsTests
     }
 
     [Fact]
-    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerableG_UserPassedTokenThrows()
+    public async Task WriteAsJsonAsyncGeneric_AsyncEnumerable_UserPassedTokenThrows()
     {
         // Arrange
         var body = new MemoryStream();
@@ -435,6 +437,48 @@ public class HttpResponseJsonExtensionsTests
                 yield return i;
             }
         }
+    }
+
+    [Fact]
+    public async Task WriteAsJsonAsyncGeneric_WithJsonTypeInfo_JsonResponse()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+
+        // Act
+        var options = new JsonSerializerOptions();
+        options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        await context.Response.WriteAsJsonAsync(new int[] { 1, 2, 3 }, (JsonTypeInfo<int[]>)options.GetTypeInfo(typeof(int[])));
+
+        // Assert
+        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+
+        var data = Encoding.UTF8.GetString(body.ToArray());
+        Assert.Equal("[1,2,3]", data);
+    }
+
+    [Fact]
+    public async Task WriteAsJsonAsync_NullValue_WithJsonTypeInfo_JsonResponse()
+    {
+        // Arrange
+        var body = new MemoryStream();
+        var context = new DefaultHttpContext();
+        context.Response.Body = body;
+
+        // Act
+        var options = new JsonSerializerOptions();
+        options.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+
+        await context.Response.WriteAsJsonAsync(value : null, options.GetTypeInfo(typeof(Uri)));
+
+        // Assert
+        Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+
+        var data = Encoding.UTF8.GetString(body.ToArray());
+        Assert.Equal("null", data);
     }
 
     public class TestObject

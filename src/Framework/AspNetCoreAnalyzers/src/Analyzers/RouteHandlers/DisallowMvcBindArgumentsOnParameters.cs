@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
+
+using WellKnownType = WellKnownTypeData.WellKnownType;
 
 public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
@@ -18,10 +21,10 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
     {
         foreach (var parameter in methodSymbol.Parameters)
         {
-            var modelBindingAttribute = parameter.GetAttributes(wellKnownTypes.IBinderTypeProviderMetadata).FirstOrDefault() ??
-                parameter.GetAttributes(wellKnownTypes.BindAttribute).FirstOrDefault();
+            var modelBindingAttribute = parameter.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_ModelBinding_IBinderTypeProviderMetadata)).FirstOrDefault() ??
+                parameter.GetAttributes(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_BindAttribute)).FirstOrDefault();
 
-            if (modelBindingAttribute is not null)
+            if (modelBindingAttribute?.AttributeClass is not null)
             {
                 var location = Location.None;
                 if (!parameter.DeclaringSyntaxReferences.IsEmpty)

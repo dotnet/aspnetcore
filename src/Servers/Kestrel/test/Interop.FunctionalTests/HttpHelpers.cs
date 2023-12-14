@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,6 +19,22 @@ namespace Interop.FunctionalTests;
 
 internal static class HttpHelpers
 {
+    public static HttpProtocolException GetProtocolException(this Exception ex)
+    {
+        var current = ex;
+        while (current != null)
+        {
+            if (current is HttpProtocolException httpProtocolException)
+            {
+                return httpProtocolException;
+            }
+
+            current = current.InnerException;
+        }
+
+        throw new Exception($"Couldn't find {nameof(HttpProtocolException)}. Original error: {ex}");
+    }
+
     public static HttpMessageInvoker CreateClient(TimeSpan? idleTimeout = null, TimeSpan? expect100ContinueTimeout = null, bool includeClientCert = false)
     {
         var handler = new SocketsHttpHandler();
@@ -57,7 +73,7 @@ internal static class HttpHelpers
                                 listenOptions.Protocols = protocol ?? HttpProtocols.Http3;
                                 if (!(plaintext ?? false))
                                 {
-                                    listenOptions.UseHttps();
+                                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                                 }
                             });
                         }
@@ -81,7 +97,7 @@ internal static class HttpHelpers
                 }
                 else
                 {
-                    o.ShutdownTimeout = TimeSpan.FromSeconds(1);
+                    o.ShutdownTimeout = TimeSpan.FromSeconds(5);
                 }
             });
     }

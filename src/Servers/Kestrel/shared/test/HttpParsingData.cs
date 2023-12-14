@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class HttpParsingData
 {
@@ -76,7 +76,9 @@ public class HttpParsingData
             var httpVersions = new[]
             {
                     "HTTP/1.0",
-                    "HTTP/1.1"
+                    "HTTP/1.1",
+                    " HTTP/1.1",
+                    "   HTTP/1.1"
                 };
 
             return from method in methods
@@ -91,7 +93,7 @@ public class HttpParsingData
                            $"{path.Item1}",
                            $"{path.Item2}",
                            queryString,
-                           httpVersion
+                           httpVersion.Trim()
                        };
         }
     }
@@ -164,6 +166,12 @@ public class HttpParsingData
                     "GET / HTTP/1.1\n",
                     "GET / HTTP/1.0\rA\n",
                     "GET / HTTP/1.1\ra\n",
+                    "GET  / HTTP/1.1\r\n",
+                    "GET   / HTTP/1.1\r\n",
+                    "GET  /  HTTP/1.1\r\n",
+                    "GET   /   HTTP/1.1\r\n",
+                    "GET / HTTP/1.1 \r\n",
+                    "GET / HTTP/1.1  \r\n",
                     "GET / H\r\n",
                     "GET / HT\r\n",
                     "GET / HTT\r\n",
@@ -195,6 +203,12 @@ public class HttpParsingData
                     "CUSTOM / HTTP/1.1\n",
                     "CUSTOM / HTTP/1.0\rA\n",
                     "CUSTOM / HTTP/1.1\ra\n",
+                    "CUSTOM  / HTTP/1.1\r\n",
+                    "CUSTOM   / HTTP/1.1\r\n",
+                    "CUSTOM  /  HTTP/1.1\r\n",
+                    "CUSTOM   /   HTTP/1.1\r\n",
+                    "CUSTOM / HTTP/1.1 \r\n",
+                    "CUSTOM / HTTP/1.1  \r\n",
                     "CUSTOM / H\r\n",
                     "CUSTOM / HT\r\n",
                     "CUSTOM / HTT\r\n",
@@ -205,7 +219,15 @@ public class HttpParsingData
                     "CUSTOM / HTTP/1.1a\n",
                     "CUSTOM / HTTP/1.1a\r\n",
                     "CUSTOM / HTTP/1.1ab\r\n",
+                    "CUSTOM / H\n",
+                    "CUSTOM / HT\n",
+                    "CUSTOM / HTT\n",
+                    "CUSTOM / HTTP\n",
+                    "CUSTOM / HTTP/\n",
+                    "CUSTOM / HTTP/1\n",
+                    "CUSTOM / HTTP/1.\n",
                     "CUSTOM / hello\r\n",
+                    "CUSTOM / hello\n",
                     "CUSTOM ? HTTP/1.1\r\n",
                     "CUSTOM /a?b=cHTTP/1.1\r\n",
                     "CUSTOM /a%20bHTTP/1.1\r\n",
@@ -214,6 +236,21 @@ public class HttpParsingData
                     "CUSTOM %00 HTTP/1.1\r\n",
                     "CUSTOM /?d=Bad UrlToAccept HTTP/1.1\r\n",
                 }.Concat(MethodWithNonTokenCharData.Select(method => $"{method} / HTTP/1.0\r\n"));
+        }
+    }
+
+    // This list is valid in quirk mode
+    public static IEnumerable<string> RequestLineInvalidDataLineFeedTerminator
+    {
+        get
+        {
+            return new[]
+            {
+                    "GET / HTTP/1.0\n",
+                    "GET / HTTP/1.1\n",
+                    "CUSTOM / HTTP/1.0\n",
+                    "CUSTOM / HTTP/1.1\n",
+                };
         }
     }
 
@@ -364,13 +401,19 @@ public class HttpParsingData
             "8charact",
         };
 
-    public static IEnumerable<object[]> RequestHeaderInvalidData => new[]
+    public static IEnumerable<object[]> RequestHeaderInvalidDataLineFeedTerminator => new[]
     {
             // Missing CR
             new[] { "Header: value\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header: value\x0A") },
             new[] { "Header-1: value1\nHeader-2: value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1: value1\x0A") },
             new[] { "Header-1: value1\r\nHeader-2: value2\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2: value2\x0A") },
 
+            // Empty header name
+            new[] { ":a\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@":a\x0A") },
+        };
+
+    public static IEnumerable<object[]> RequestHeaderInvalidData => new[]
+    {
             // Line folding
             new[] { "Header: line1\r\n line2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@" line2\x0D\x0A") },
             new[] { "Header: line1\r\n\tline2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"\x09line2\x0D\x0A") },
@@ -404,7 +447,7 @@ public class HttpParsingData
             new[] { "Header-1 value1\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1 value1\x0D\x0A") },
             new[] { "Header-1 value1\r\nHeader-2: value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-1 value1\x0D\x0A") },
             new[] { "Header-1: value1\r\nHeader-2 value2\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2 value2\x0D\x0A") },
-            new[] { "\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"\x0A") },
+            new[] { "HeaderValue1\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"HeaderValue1\x0D\x0A") },
 
             // Starting with whitespace
             new[] { " Header: value\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@" Header: value\x0D\x0A") },
@@ -435,11 +478,13 @@ public class HttpParsingData
 
             // Headers not ending in CRLF line
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r\r", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
-            new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF  },
+            new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
             new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r \n", CoreStrings.BadRequest_InvalidRequestHeadersNoCRLF },
+            new[] { "Header-1: value1\r\nHeader-2\t: value2 \n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@"Header-2\x09: value2 \x0A") },
 
             // Empty header name
             new[] { ": value\r\n\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@": value\x0D\x0A") },
+            new[] { ":a\r\n", CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(@":a\x0D\x0A") },
         };
 
     public static TheoryData<string, string> HostHeaderData

@@ -88,13 +88,21 @@ internal
         public ReadOnlyMemory<char> DecodeValue()
             => Decode(EncodedValue);
 
-        private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
+        private static unsafe ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
             // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
             // then we can save some allocations.
-            return chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0
-                ? chars
-                : Uri.UnescapeDataString(SpanHelper.ReplacePlusWithSpace(chars.Span)).AsMemory();
+            if (chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0)
+            {
+                return chars;
+            }
+
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            ReadOnlySpan<char> span = chars.Span;
+            return Uri.UnescapeDataString(
+                string.Create(span.Length,
+                    (IntPtr)(&span), static (dest, ptr) => ((ReadOnlySpan<char>*)ptr)->Replace(dest, '+', ' '))).AsMemory();
+#pragma warning restore CS8500
         }
     }
 
@@ -158,59 +166,6 @@ internal
 
             Current = default;
             return false;
-        }
-    }
-
-    private static class SpanHelper
-    {
-        private static readonly SpanAction<char, IntPtr> s_replacePlusWithSpace = ReplacePlusWithSpaceCore;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe string ReplacePlusWithSpace(ReadOnlySpan<char> span)
-        {
-            fixed (char* ptr = &MemoryMarshal.GetReference(span))
-            {
-                return string.Create(span.Length, (IntPtr)ptr, s_replacePlusWithSpace);
-            }
-        }
-
-        private static unsafe void ReplacePlusWithSpaceCore(Span<char> buffer, IntPtr state)
-        {
-            fixed (char* ptr = &MemoryMarshal.GetReference(buffer))
-            {
-                var input = (ushort*)state.ToPointer();
-                var output = (ushort*)ptr;
-
-                var i = (nint)0;
-                var n = (nint)(uint)buffer.Length;
-
-                if (Sse41.IsSupported && n >= Vector128<ushort>.Count)
-                {
-                    var vecPlus = Vector128.Create((ushort)'+');
-                    var vecSpace = Vector128.Create((ushort)' ');
-
-                    do
-                    {
-                        var vec = Sse2.LoadVector128(input + i);
-                        var mask = Sse2.CompareEqual(vec, vecPlus);
-                        var res = Sse41.BlendVariable(vec, vecSpace, mask);
-                        Sse2.Store(output + i, res);
-                        i += Vector128<ushort>.Count;
-                    } while (i <= n - Vector128<ushort>.Count);
-                }
-
-                for (; i < n; ++i)
-                {
-                    if (input[i] != '+')
-                    {
-                        output[i] = input[i];
-                    }
-                    else
-                    {
-                        output[i] = ' ';
-                    }
-                }
-            }
         }
     }
 }

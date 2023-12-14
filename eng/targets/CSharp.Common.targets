@@ -98,11 +98,6 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
-
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Trimmable)' == 'true'">
-        <_Parameter1>IsTrimmable</_Parameter1>
-        <_Parameter2>True</_Parameter2>
-      </AssemblyAttribute>
     </ItemGroup>
   </Target>
 
@@ -124,10 +119,11 @@
      -->
     <When Condition=" ('$(Nullable)' == 'annotations' OR '$(Nullable)' == 'enable') AND
         '$(SuppressNullableAttributesImport)' != 'true' AND
-        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.0'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+        (('$(TargetFrameworkIdentifier)' == '.NETStandard' AND $([MSBuild]::VersionLessThanOrEquals('$(TargetFrameworkVersion)', '2.1'))) OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
       <PropertyGroup>
         <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
-        <NoWarn>$(NoWarn);nullable</NoWarn>
+        <!-- Repo-specific property to enable nullability warnings for ns2.0 -->
+        <NoWarn Condition=" '$(WarnOnNullable)' != 'true' ">$(NoWarn);nullable</NoWarn>
       </PropertyGroup>
       <ItemGroup>
         <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />

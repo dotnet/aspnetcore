@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
@@ -181,6 +181,27 @@ public class DynamicObjectAdapterTest
         // Assert
         Assert.False(status);
         Assert.Equal($"The value 'test' is invalid for target location.", errorMessage);
+    }
+
+    [Fact]
+    public void TryReplace_UsesCustomConverter()
+    {
+        // Arrange
+        var adapter = new DynamicObjectAdapter();
+        dynamic target = new WriteOnceDynamicTestObject();
+        target.NewProperty = new Rectangle();
+        var segment = "NewProperty";
+        var resolver = new RectangleContractResolver();
+
+        // Act
+        var status = adapter.TryReplace(target, segment, resolver, "new", out string errorMessage);
+
+        // Assert
+        Assert.True(status);
+        Assert.Null(errorMessage);
+        Assert.True(target.NewProperty is Rectangle);
+        var rect = (Rectangle)target.NewProperty;
+        Assert.Equal("new", rect.RectangleProperty);
     }
 
     [Theory]

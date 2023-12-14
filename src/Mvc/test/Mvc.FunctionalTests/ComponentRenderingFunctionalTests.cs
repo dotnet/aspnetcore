@@ -39,7 +39,8 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
     public async Task Renders_RoutingComponent()
     {
         // Arrange & Act
-        var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+        var client = CreateClient(Factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(services => services.AddRazorComponents().AddInteractiveServerComponents())));
 
         var response = await client.GetAsync("http://localhost/components/routable");
 
@@ -69,8 +70,8 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
     public async Task Renders_RoutingComponent_UsingRazorComponents_Prerenderer()
     {
         // Arrange & Act
-        var client = CreateClient(Factory
-            .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+        var client = CreateClient(Factory.WithWebHostBuilder(builder =>
+                builder.ConfigureServices(services => services.AddRazorComponents().AddInteractiveServerComponents())));
 
         var response = await client.GetAsync("http://localhost/components/routable");
 
@@ -85,7 +86,8 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
     public async Task Renders_ThrowingComponent_UsingRazorComponents_Prerenderer()
     {
         // Arrange & Act
-        var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
+        var client = CreateClient(Factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(services => services.AddRazorComponents().AddInteractiveServerComponents())));
 
         var response = await client.GetAsync("http://localhost/components/throws");
 

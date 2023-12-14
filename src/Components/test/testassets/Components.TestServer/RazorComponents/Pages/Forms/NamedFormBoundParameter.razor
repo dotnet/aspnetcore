@@ -1,0 +1,20 @@
+﻿@page "/forms/named-form-bound-parameter"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Named form with bound parameter</h2>
+
+<EditForm Enhance FormName="named-form-handler" Model="Parameter" method="POST" OnValidSubmit="() => _submitted = true" >
+    <InputText @bind-Value="Parameter" />
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Hello @Parameter!</p>
+}
+
+@code{
+    bool _submitted = false;
+
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public string Parameter { get; set; } = "";
+}

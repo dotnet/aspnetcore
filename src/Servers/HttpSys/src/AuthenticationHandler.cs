@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal class AuthenticationHandler : IAuthenticationHandler
+internal sealed class AuthenticationHandler : IAuthenticationHandler
 {
     private RequestContext? _requestContext;
     private AuthenticationScheme? _scheme;

@@ -32,10 +32,7 @@ public class ConflictObjectResult : ObjectResult
     public ConflictObjectResult([ActionResultObjectValue] ModelStateDictionary modelState)
         : base(new SerializableError(modelState))
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         StatusCode = DefaultStatusCode;
     }

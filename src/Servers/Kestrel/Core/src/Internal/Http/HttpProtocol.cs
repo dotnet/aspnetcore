@@ -63,6 +63,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     private string? _requestId;
     private int _requestHeadersParsed;
+    // See MaxRequestHeaderCount, enforced during parsing and may be more relaxed to avoid connection faults.
+    protected int _eagerRequestHeadersParsedLimit;
 
     private long _responseBytesWritten;
 
@@ -107,6 +109,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     public long? MaxRequestBodySize { get; set; }
     public MinDataRate? MinRequestBodyDataRate { get; set; }
     public bool AllowSynchronousIO { get; set; }
+    protected int RequestHeadersParsed => _requestHeadersParsed;
 
     /// <summary>
     /// The request id. <seealso cref="HttpContext.TraceIdentifier"/>
@@ -127,10 +130,14 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     public bool IsUpgradableRequest { get; private set; }
     public bool IsUpgraded { get; set; }
+    public bool IsExtendedConnectRequest { get; set; }
+    public bool IsExtendedConnectAccepted { get; set; }
     public IPAddress? RemoteIpAddress { get; set; }
     public int RemotePort { get; set; }
     public IPAddress? LocalIpAddress { get; set; }
     public int LocalPort { get; set; }
+    // https://datatracker.ietf.org/doc/html/rfc8441 ":protocol"
+    public string? ConnectProtocol { get; set; }
     public string? Scheme { get; set; }
     public HttpMethod Method { get; set; }
     public string MethodText => ((IHttpRequestFeature)this).Method;
@@ -277,7 +284,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                     return new CancellationToken(false);
                 }
 
-                if (_connectionAborted)
+                if (_connectionAborted && _abortedCts == null)
                 {
                     return new CancellationToken(true);
                 }
@@ -355,6 +362,11 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         _httpProtocol = null;
         _statusCode = StatusCodes.Status200OK;
         _reasonPhrase = null;
+        IsUpgraded = false;
+        IsExtendedConnectRequest = false;
+        IsExtendedConnectAccepted = false;
+        IsWebTransportRequest = false;
+        ConnectProtocol = null;
 
         var remoteEndPoint = RemoteEndPoint;
         RemoteIpAddress = remoteEndPoint?.Address;
@@ -408,6 +420,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         Output?.Reset();
 
         _requestHeadersParsed = 0;
+        _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount;
 
         _responseBytesWritten = 0;
 
@@ -457,7 +470,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 if (_abortedCts != null && !_preventRequestAbortedCancellation)
                 {
                     localAbortCts = _abortedCts;
-                    _abortedCts = null;
                 }
             }
 
@@ -539,7 +551,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private void IncrementRequestHeadersCount()
     {
         _requestHeadersParsed++;
-        if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+        if (_requestHeadersParsed > _eagerRequestHeadersParsedLimit)
         {
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
         }
@@ -687,7 +699,14 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
             catch (Exception ex)
             {
-                ReportApplicationError(ex);
+                if ((ex is OperationCanceledException || ex is IOException) && _connectionAborted)
+                {
+                    Log.RequestAborted(ConnectionId, TraceIdentifier);
+                }
+                else
+                {
+                    ReportApplicationError(ex);
+                }
             }
 
             KestrelEventSource.Log.RequestStop(this);
@@ -728,9 +747,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 }
                 else if (!HasResponseStarted)
                 {
-                    // If the request was aborted and no response was sent, there's no
-                    // meaningful status code to log.
-                    StatusCode = 0;
+                    // If the request was aborted and no response was sent, we use status code 499 for logging                    
+                    StatusCode = StatusCodes.Status499ClientClosedRequest;
                 }
             }
 
@@ -1140,7 +1158,31 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         if (!_canWriteResponseBody && hasTransferEncoding)
         {
-            RejectNonBodyTransferEncodingResponse(appCompleted);
+            RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.TransferEncoding);
+        }
+        else if (responseHeaders.ContentLength.HasValue)
+        {
+            if (!CanIncludeResponseContentLengthHeader())
+            {
+                if (responseHeaders.ContentLength.Value == 0)
+                {
+                    // If the response shouldn't include a Content-Length but it's 0
+                    // we'll just get rid of it without throwing an error, since it
+                    // is semantically equivalent to not having a Content-Length.
+                    responseHeaders.ContentLength = null;
+                }
+                else
+                {
+                    RejectInvalidHeaderForNonBodyResponse(appCompleted, HeaderNames.ContentLength);
+                }
+            }
+            else if (StatusCode == StatusCodes.Status205ResetContent && responseHeaders.ContentLength.Value != 0)
+            {
+                // It is valid for a 205 response to have a Content-Length but it must be 0
+                // since 205 implies that no additional content will be provided.
+                // https://httpwg.org/specs/rfc7231.html#rfc.section.6.3.6
+                RejectNonzeroContentLengthOn205Response(appCompleted);
+            }
         }
         else if (StatusCode == StatusCodes.Status101SwitchingProtocols)
         {
@@ -1150,7 +1192,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         {
             if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
             {
-                // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
                 if (CanAutoSetContentLengthZeroResponseHeader())
                 {
                     // Since the app has completed writing or cannot write to the response, we can safely set the Content-Length to 0.
@@ -1212,6 +1253,28 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         return responseHeaders;
     }
 
+    private bool CanIncludeResponseContentLengthHeader()
+    {
+        // Section 4.3.6 of RFC7231
+        if (Is1xxCode(StatusCode) || StatusCode == StatusCodes.Status204NoContent)
+        {
+            // A server MUST NOT send a Content-Length header field in any response
+            // with a status code of 1xx (Informational) or 204 (No Content).
+            return false;
+        }
+        else if (Method == HttpMethod.Connect && Is2xxCode(StatusCode))
+        {
+            // A server MUST NOT send a Content-Length header field in any 2xx
+            // (Successful) response to a CONNECT request.
+            return false;
+        }
+
+        return true;
+
+        static bool Is1xxCode(int code) => code >= StatusCodes.Status100Continue && code < StatusCodes.Status200OK;
+        static bool Is2xxCode(int code) => code >= StatusCodes.Status200OK && code < StatusCodes.Status300MultipleChoices;
+    }
+
     private bool CanWriteResponseBody()
     {
         // List of status codes taken from Microsoft.Net.Http.Server.Response
@@ -1223,9 +1286,12 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
     private bool CanAutoSetContentLengthZeroResponseHeader()
     {
-        return Method != HttpMethod.Head &&
-               StatusCode != StatusCodes.Status204NoContent &&
-               StatusCode != StatusCodes.Status304NotModified;
+        return CanIncludeResponseContentLengthHeader() &&
+            // Responses to HEAD may omit Content-Length (Section 4.3.6 of RFC7231).
+            Method != HttpMethod.Head &&
+            // 304s should only include specific fields, of which Content-Length is
+            // not one (Section 4.1 of RFC7232).
+            StatusCode != StatusCodes.Status304NotModified;
     }
 
     private static void ThrowResponseAlreadyStartedException(string value)
@@ -1233,9 +1299,15 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(value));
     }
 
-    private void RejectNonBodyTransferEncodingResponse(bool appCompleted)
+    private void RejectInvalidHeaderForNonBodyResponse(bool appCompleted, string headerName)
+        => RejectInvalidResponse(appCompleted, CoreStrings.FormatHeaderNotAllowedOnResponse(headerName, StatusCode));
+
+    private void RejectNonzeroContentLengthOn205Response(bool appCompleted)
+        => RejectInvalidResponse(appCompleted, CoreStrings.NonzeroContentLengthNotAllowedOn205);
+
+    private void RejectInvalidResponse(bool appCompleted, string message)
     {
-        var ex = new InvalidOperationException(CoreStrings.FormatHeaderNotAllowedOnResponse("Transfer-Encoding", StatusCode));
+        var ex = new InvalidOperationException(message);
         if (!appCompleted)
         {
             // Back out of header creation surface exception in user code
@@ -1343,10 +1415,17 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         const string badRequestEventName = "Microsoft.AspNetCore.Server.Kestrel.BadRequest";
         if (ServiceContext.DiagnosticSource?.IsEnabled(badRequestEventName) == true)
         {
-            ServiceContext.DiagnosticSource.Write(badRequestEventName, this);
+            WriteDiagnosticEvent(ServiceContext.DiagnosticSource, badRequestEventName, this);
         }
 
         _keepAlive = false;
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write are being consumed by the application already.")]
+    private static void WriteDiagnosticEvent(DiagnosticSource diagnosticSource, string name, HttpProtocol value)
+    {
+        diagnosticSource.Write(name, value);
     }
 
     public void ReportApplicationError(Exception? ex)

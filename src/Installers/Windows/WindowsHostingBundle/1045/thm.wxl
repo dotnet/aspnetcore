@@ -1,55 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[WixBundleName] — instalacja</String>
+  <String Id="Caption">Instalator [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Witamy</String>
-  <String Id="InstallMessage">Instalator zainstaluje pakiet [WixBundleName] na Twoim komputerze. Kliknij pozycję Instaluj, aby kontynuować, pozycję Opcje, aby określić katalog instalacyjny, lub pozycję Zamknij, aby zakończyć.</String>
   <String Id="InstallVersion">Wersja [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
-  <String Id="HelpHeader">Pomoc dotycząca instalacji</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [katalog] - Instaluje, naprawia, odinstalowuje
-   lub tworzy pełną lokalną kopię pakietu w katalogu. Domyślnie jest używany przełącznik install.
+  <String Id="HelpHeader">Instalator — Pomoc</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]katalog[\]] — instaluje, naprawia, odinstalowuje lub
+    tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna.
 
-/passive | /quiet -  Wyświetla ograniczony interfejs użytkownika bez monitów albo nie wyświetla ani interfejsu użytkownika,
-   ani monitów. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
+/passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów albo nie wyświetla żadnego interfejsu użytkownika ani monitów
+.
+   Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
 
-/norestart   - Pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
-/log log.txt - Tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
+/norestart  — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
+/log log.txt — tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zamknij</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Postanowienia licencyjne&lt;/a&gt; dotyczące pakietu [WixBundleName].</String>
-  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się z postanowieniami licencyjnymi</String>
-  <String Id="InstallOptionsButton">&amp;Opcje</String>
+  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się na warunki licencji</String>
   <String Id="InstallInstallButton">&amp;Zainstaluj</String>
   <String Id="InstallCloseButton">&amp;Zamknij</String>
-  <String Id="OptionsHeader">Opcje instalacji</String>
-  <String Id="OptionsLocationLabel">Lokalizacja instalacji:</String>
-  <String Id="OptionsBrowseButton">&amp;Przeglądaj</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Anuluj</String>
   <String Id="ProgressHeader">Postęp instalacji</String>
   <String Id="ProgressLabel">Przetwarzanie:</String>
   <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
   <String Id="ProgressCancelButton">&amp;Anuluj</String>
-  <String Id="ModifyHeader">Modyfikuj instalację</String>
+  <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
   <String Id="ModifyRepairButton">&amp;Napraw</String>
   <String Id="ModifyUninstallButton">&amp;Odinstaluj</String>
   <String Id="ModifyCloseButton">&amp;Zamknij</String>
   <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
-  <String Id="SuccessUninstallHeader">Pomyślnie ukończono dezinstalację</String>
-  <String Id="SuccessInstallHeader">Pomyślnie ukończono instalację</String> 
-  <String Id="SuccessHeader">Pomyślnie ukończono instalację</String>	
+  <String Id="SuccessUninstallHeader">Pomyślnie ukończono operację odinstalowania</String>
+  <String Id="SuccessInstallHeader">Pomyślnie ukończono instalację</String>
+  <String Id="SuccessHeader">Instalacja przebiegła pomyślnie</String>
   <String Id="SuccessLaunchButton">&amp;Uruchom</String>
-  <String Id="SuccessRestartText">Aby móc korzystać z oprogramowania, musisz uruchomić ponownie komputer.</String>
+  <String Id="SuccessRestartText">Aby korzystać z oprogramowania, należy ponownie uruchomić komputer.</String>
   <String Id="SuccessRestartButton">&amp;Uruchom ponownie</String>
   <String Id="SuccessCloseButton">&amp;Zamknij</String>
   <String Id="FailureHeader">Instalacja nie powiodła się</String>
-  <String Id="FailureInstallHeader">Instalacja nie powiodła się</String>
-  <String Id="FailureUninstallHeader">Dezinstalacja nie powiodła się</String>
-  <String Id="FailureRepairHeader">Naprawa nie powiodła się</String> 
-  <String Id="FailureHyperlinkLogText">Co najmniej jeden problem spowodował niepowodzenie instalacji. Rozwiąż problemy, a następnie ponów próbę instalacji. Aby uzyskać więcej informacji, zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Aby ukończyć wycofywanie oprogramowania, musisz uruchomić ponownie komputer.</String>
+  <String Id="FailureInstallHeader">Konfiguracja nie powiodła się</String>
+  <String Id="FailureUninstallHeader">Operacja odinstalowania nie powiodła się</String>
+  <String Id="FailureRepairHeader">Naprawa nie powiodła się</String>
+  <String Id="FailureHyperlinkLogText">Jeden lub więcej problemów spowodował niepowodzenie instalacji. Napraw błędy, a następnie uruchom ponownie instalację. Aby uzyskać więcej informacji zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Należy ponownie uruchomić komputer, aby dokończyć wycofywanie oprogramowania.</String>
   <String Id="FailureRestartButton">&amp;Uruchom ponownie</String>
   <String Id="FailureCloseButton">&amp;Zamknij</String>
   <String Id="FilesInUseHeader">Pliki w użyciu</String>
@@ -61,9 +53,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Witamy w instalatorze produktu [WixBundleName].</String>
-  <String Id="InstallResetIIS">Po zakończeniu instalacji uruchom ponownie usługi IIS. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">Usługi IIS nie są włączone na tej maszynie. Jeśli zamierzasz uruchamiać aplikacje platformy ASP.NET Core za pomocą usług IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Uruchom ponownie usługi IIS po zakończeniu instalacji. Dodatkowe informacje można znaleźć &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">Usługi IIS nie są włączone na tym komputerze. Jeśli zamierzasz uruchamiać aplikacje ASP.NET Core z usługami IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje można znaleźć &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;tutaj&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;postanowienia licencyjne&lt;/a&gt; i &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;oświadczenie o ochronie prywatności&lt;/a&gt;.</String>
-  <String Id="ModifyResetIIS">Po zakończeniu instalacji uruchom ponownie usługi IIS. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">Usługi IIS nie są włączone na tej maszynie. Jeśli zamierzasz uruchamiać aplikacje platformy ASP.NET Core za pomocą usług IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje znajdziesz &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Uruchom ponownie usługi IIS po zakończeniu instalacji. Dodatkowe informacje można znaleźć &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;tutaj&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">Usługi IIS nie są włączone na tym komputerze. Jeśli zamierzasz uruchamiać aplikacje ASP.NET Core z usługami IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje można znaleźć &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;tutaj&lt;/a&gt;.</String>
 </WixLocalization>

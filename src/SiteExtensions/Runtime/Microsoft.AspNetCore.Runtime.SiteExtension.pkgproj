@@ -45,7 +45,7 @@
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" Condition="'$(DotNetAssetRootUrl)' != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" PackagePath="content\%(RecursiveDir)" />
       <Content Include="%(ShimComponents.DllLocation)"
             Pack="true"
             Condition="'%(ShimComponents.Platform)' == '$(TargetArchitecture)'"

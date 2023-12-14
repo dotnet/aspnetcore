@@ -8,16 +8,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
+internal sealed class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
 {
     private readonly AntiforgeryOptions _options;
 
     public DefaultAntiforgeryTokenStore(IOptions<AntiforgeryOptions> optionsAccessor)
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(optionsAccessor);
 
         _options = optionsAccessor.Value;
     }

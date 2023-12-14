@@ -335,7 +335,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(DateTime value, string format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
+    public static string FormatValue(DateTime value, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string format, CultureInfo? culture = null) => FormatDateTimeValueCore(value, format, culture);
 
     private static string FormatDateTimeValueCore(DateTime value, string? format, CultureInfo? culture)
     {
@@ -373,7 +373,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(DateTime? value, string? format, CultureInfo? culture = null) => FormatNullableDateTimeValueCore(value, format, culture);
+    public static string? FormatValue(DateTime? value, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string? format, CultureInfo? culture = null) => FormatNullableDateTimeValueCore(value, format, culture);
 
     private static string? FormatNullableDateTimeValueCore(DateTime? value, string? format, CultureInfo? culture)
     {
@@ -507,7 +507,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(DateOnly value, string format, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format, culture);
+    public static string FormatValue(DateOnly value, [StringSyntax(StringSyntaxAttribute.DateOnlyFormat)] string format, CultureInfo? culture = null) => FormatDateOnlyValueCore(value, format, culture);
 
     private static string FormatDateOnlyValueCore(DateOnly value, string? format, CultureInfo? culture)
     {
@@ -546,7 +546,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(DateOnly? value, string format, CultureInfo? culture = null) => FormatNullableDateOnlyValueCore(value, format, culture);
+    public static string? FormatValue(DateOnly? value, [StringSyntax(StringSyntaxAttribute.DateOnlyFormat)] string format, CultureInfo? culture = null) => FormatNullableDateOnlyValueCore(value, format, culture);
 
     private static string? FormatNullableDateOnlyValueCore(DateOnly? value, string? format, CultureInfo? culture)
     {
@@ -595,7 +595,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string FormatValue(TimeOnly value, string format, CultureInfo? culture = null) => FormatTimeOnlyValueCore(value, format, culture);
+    public static string FormatValue(TimeOnly value, [StringSyntax(StringSyntaxAttribute.TimeOnlyFormat)] string format, CultureInfo? culture = null) => FormatTimeOnlyValueCore(value, format, culture);
 
     private static string FormatTimeOnlyValueCore(TimeOnly value, string? format, CultureInfo? culture)
     {
@@ -634,7 +634,7 @@ public static class BindConverter
     /// </param>
     /// <returns>The formatted value.</returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
-    public static string? FormatValue(TimeOnly? value, string format, CultureInfo? culture = null) => FormatNullableTimeOnlyValueCore(value, format, culture);
+    public static string? FormatValue(TimeOnly? value, [StringSyntax(StringSyntaxAttribute.TimeOnlyFormat)] string format, CultureInfo? culture = null) => FormatNullableTimeOnlyValueCore(value, format, culture);
 
     private static string? FormatNullableTimeOnlyValueCore(TimeOnly? value, string? format, CultureInfo? culture)
     {
@@ -1183,7 +1183,7 @@ public static class BindConverter
     /// <param name="format">The format string to use in conversion.</param>
     /// <param name="value">The converted value.</param>
     /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-    public static bool TryConvertToDateTime(object? obj, CultureInfo? culture, string format, out DateTime value)
+    public static bool TryConvertToDateTime(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string format, out DateTime value)
     {
         return ConvertToDateTimeCore(obj, culture, format, out value);
     }
@@ -1208,7 +1208,7 @@ public static class BindConverter
     /// <param name="format">The format string to use in conversion.</param>
     /// <param name="value">The converted value.</param>
     /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-    public static bool TryConvertToNullableDateTime(object? obj, CultureInfo? culture, string format, out DateTime? value)
+    public static bool TryConvertToNullableDateTime(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.DateTimeFormat)] string format, out DateTime? value)
     {
         return ConvertToNullableDateTimeCore(obj, culture, format, out value);
     }
@@ -1409,7 +1409,7 @@ public static class BindConverter
     /// <param name="format">The format string to use in conversion.</param>
     /// <param name="value">The converted value.</param>
     /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-    public static bool TryConvertToDateOnly(object? obj, CultureInfo? culture, string format, out DateOnly value)
+    public static bool TryConvertToDateOnly(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.DateOnlyFormat)] string format, out DateOnly value)
     {
         return ConvertToDateOnlyCore(obj, culture, format, out value);
     }
@@ -1434,7 +1434,7 @@ public static class BindConverter
     /// <param name="format">The format string to use in conversion.</param>
     /// <param name="value">The converted value.</param>
     /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-    public static bool TryConvertToNullableDateOnly(object? obj, CultureInfo? culture, string format, out DateOnly? value)
+    public static bool TryConvertToNullableDateOnly(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.DateOnlyFormat)] string format, out DateOnly? value)
     {
         return ConvertToNullableDateOnlyCore(obj, culture, format, out value);
     }
@@ -1500,7 +1500,7 @@ public static class BindConverter
     /// <param name="format">The format string to use in conversion.</param>
     /// <param name="value">The converted value.</param>
     /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-    public static bool TryConvertToTimeOnly(object? obj, CultureInfo? culture, string format, out TimeOnly value)
+    public static bool TryConvertToTimeOnly(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.TimeOnlyFormat)] string format, out TimeOnly value)
     {
         return ConvertToTimeOnlyCore(obj, culture, format, out value);
     }
@@ -1525,7 +1525,7 @@ public static class BindConverter
     /// <param name="format">The format string to use in conversion.</param>
     /// <param name="value">The converted value.</param>
     /// <returns><c>true</c> if conversion is successful, otherwise <c>false</c>.</returns>
-    public static bool TryConvertToNullableTimeOnly(object? obj, CultureInfo? culture, string format, out TimeOnly? value)
+    public static bool TryConvertToNullableTimeOnly(object? obj, CultureInfo? culture, [StringSyntax(StringSyntaxAttribute.TimeOnlyFormat)] string format, out TimeOnly? value)
     {
         return ConvertToNullableTimeOnlyCore(obj, culture, format, out value);
     }
@@ -1810,13 +1810,13 @@ public static class BindConverter
                 }
 
                 var builder = new StringBuilder("[\"");
-                builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty));
+                builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty).Value);
                 builder.Append('\"');
 
                 for (var i = 1; i < value.Length; i++)
                 {
                     builder.Append(", \"");
-                    builder.Append(JsonEncodedText.Encode(elementFormatter(value[i], culture)?.ToString() ?? string.Empty));
+                    builder.Append(JsonEncodedText.Encode(elementFormatter(value[i], culture)?.ToString() ?? string.Empty).Value);
                     builder.Append('\"');
                 }
 
@@ -1826,6 +1826,7 @@ public static class BindConverter
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindFormatter<T> MakeTypeConverterFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));
@@ -2028,6 +2029,7 @@ public static class BindConverter
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect unknown underlying types are configured by application code to be retained.")]
         private static BindParser<T> MakeTypeConverterConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConverter = TypeDescriptor.GetConverter(typeof(T));

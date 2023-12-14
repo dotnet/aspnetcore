@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class HostingApplication : IHttpApplication<HostingApplication.Context>
+internal sealed class HostingApplication : IHttpApplication<HostingApplication.Context>
 {
     private readonly RequestDelegate _application;
     private readonly IHttpContextFactory? _httpContextFactory;
@@ -23,10 +23,12 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
         DiagnosticListener diagnosticSource,
         ActivitySource activitySource,
         DistributedContextPropagator propagator,
-        IHttpContextFactory httpContextFactory)
+        IHttpContextFactory httpContextFactory,
+        HostingEventSource eventSource,
+        HostingMetrics metrics)
     {
         _application = application;
-        _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource, propagator);
+        _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource, propagator, eventSource, metrics);
         if (httpContextFactory is DefaultHttpContextFactory factory)
         {
             _defaultHttpContextFactory = factory;
@@ -110,13 +112,13 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
             _httpContextFactory!.Dispose(httpContext);
         }
 
-        HostingApplicationDiagnostics.ContextDisposed(context);
+        _diagnostics.ContextDisposed(context);
 
         // Reset the context as it may be pooled
         context.Reset();
     }
 
-    internal class Context
+    internal sealed class Context
     {
         public HttpContext? HttpContext { get; set; }
         public IDisposable? Scope { get; set; }
@@ -127,7 +129,10 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
             {
                 if (HttpActivityFeature is null)
                 {
-                    HttpActivityFeature = new ActivityFeature(value!);
+                    if (value != null)
+                    {
+                        HttpActivityFeature = new HttpActivityFeature(value);
+                    }
                 }
                 else
                 {
@@ -139,9 +144,11 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
 
         public long StartTimestamp { get; set; }
         internal bool HasDiagnosticListener { get; set; }
+        public bool MetricsEnabled { get; set; }
         public bool EventLogEnabled { get; set; }
 
-        internal IHttpActivityFeature? HttpActivityFeature;
+        internal HttpActivityFeature? HttpActivityFeature;
+        internal HttpMetricsTagsFeature? MetricsTagsFeature;
 
         public void Reset()
         {
@@ -153,7 +160,9 @@ internal class HostingApplication : IHttpApplication<HostingApplication.Context>
 
             StartTimestamp = 0;
             HasDiagnosticListener = false;
+            MetricsEnabled = false;
             EventLogEnabled = false;
+            MetricsTagsFeature?.TagsList.Clear();
         }
     }
 }

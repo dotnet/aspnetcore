@@ -1,0 +1,55 @@
+﻿@using Microsoft.JSInterop;
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<p>Increment amount: <span id=increment-amount-@IdSuffix>@IncrementAmount</span></p>
+<p>Interactive: <span id="is-interactive-@IdSuffix">@_isInteractive</span></p>
+<p>Render mode: <span id="render-mode-@IdSuffix">@_renderMode</span></p>
+<p>Current count: <span id="count-@IdSuffix">@_currentCount</span></p>
+
+<button id="increment-@IdSuffix" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int _currentCount = 0;
+    private bool _isInteractive = false;
+    private string _renderMode = "SSR";
+    private DotNetObjectReference<Counter> _selfReference;
+
+    [Parameter, EditorRequired]
+    public int IncrementAmount { get; set; }
+
+    [Parameter, EditorRequired]
+    public string IdSuffix { get; set; }
+
+    [Parameter]
+    public string DisposeBrowserConsoleMessage { get; set; }
+
+    [JSInvokable]
+    public void IncrementCount()
+    {
+        _currentCount += IncrementAmount;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+            _selfReference = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("enableCounterJsInterop", _selfReference);
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _selfReference?.Dispose();
+
+        if (_isInteractive && DisposeBrowserConsoleMessage is not null)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", DisposeBrowserConsoleMessage);
+        }
+    }
+}

@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
+internal sealed class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
 {
     private readonly ActionEndpointFactory _endpointFactory;
     private readonly OrderedEndpointsSequenceProvider _orderSequence;
@@ -30,7 +31,7 @@ internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
 
         _routes = new List<ConventionalRouteEntry>();
 
-        DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
+        DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions, FinallyConventions);
 
         // IMPORTANT: this needs to be the last thing we do in the constructor.
         // Change notifications can happen immediately!
@@ -55,12 +56,19 @@ internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
         lock (Lock)
         {
             var conventions = new List<Action<EndpointBuilder>>();
-            _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _orderSequence.GetNext(), conventions));
-            return new ControllerActionEndpointConventionBuilder(Lock, conventions);
+            var finallyConventions = new List<Action<EndpointBuilder>>();
+            _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _orderSequence.GetNext(), conventions, finallyConventions));
+            return new ControllerActionEndpointConventionBuilder(Lock, conventions, finallyConventions);
         }
     }
 
-    protected override List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
+    protected override List<Endpoint> CreateEndpoints(
+        RoutePattern? groupPrefix,
+        IReadOnlyList<ActionDescriptor> actions,
+        IReadOnlyList<Action<EndpointBuilder>> conventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupConventions,
+        IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
+        IReadOnlyList<Action<EndpointBuilder>> groupFinallyConventions)
     {
         var endpoints = new List<Endpoint>();
         var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -80,7 +88,16 @@ internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
         {
             if (actions[i] is ControllerActionDescriptor action)
             {
-                _endpointFactory.AddEndpoints(endpoints, routeNames, action, _routes, conventions, CreateInertEndpoints);
+                _endpointFactory.AddEndpoints(endpoints,
+                                              routeNames,
+                                              action,
+                                              _routes,
+                                              conventions: conventions,
+                                              groupConventions: groupConventions,
+                                              finallyConventions: finallyConventions,
+                                              groupFinallyConventions: groupFinallyConventions,
+                                              CreateInertEndpoints,
+                                              groupPrefix: groupPrefix);
 
                 if (_routes.Count > 0)
                 {
@@ -99,7 +116,16 @@ internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
         for (var i = 0; i < _routes.Count; i++)
         {
             var route = _routes[i];
-            _endpointFactory.AddConventionalLinkGenerationRoute(endpoints, routeNames, keys, route, conventions);
+            _endpointFactory.AddConventionalLinkGenerationRoute(
+                endpoints,
+                routeNames,
+                keys,
+                route,
+                groupConventions: groupConventions,
+                conventions: conventions,
+                finallyConventions: finallyConventions,
+                groupFinallyConventions: groupFinallyConventions,
+                groupPrefix: groupPrefix);
         }
 
         return endpoints;

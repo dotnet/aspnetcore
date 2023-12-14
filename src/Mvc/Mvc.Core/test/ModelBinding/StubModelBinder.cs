@@ -59,10 +59,7 @@ public class StubModelBinder : IModelBinder
     {
         BindModelCount += 1;
 
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
         await _callback.Invoke(bindingContext);

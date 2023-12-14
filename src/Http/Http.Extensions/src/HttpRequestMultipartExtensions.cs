@@ -17,10 +17,7 @@ public static class HttpRequestMultipartExtensions
     /// <returns>The multipart boundary.</returns>
     public static string GetMultipartBoundary(this HttpRequest request)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaType))
         {

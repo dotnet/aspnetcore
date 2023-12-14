@@ -11,13 +11,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class RequestBodyTests
+public class RequestBodyTests : LoggedTest
 {
     [ConditionalFact]
     public async Task RequestBody_ReadSync_Success()
@@ -32,7 +33,29 @@ public class RequestBodyTests
             httpContext.Response.ContentLength = read;
             httpContext.Response.Body.Write(input, 0, read);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address, "Hello World");
+            Assert.Equal("Hello World", response);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RequestBody_Read0ByteSync_Success()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            Assert.True(httpContext.Request.CanHaveBody());
+            byte[] input = new byte[100];
+            httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+            int read = httpContext.Request.Body.Read(input, 0, 0);
+            Assert.Equal(0, read);
+            read = httpContext.Request.Body.Read(input, 0, input.Length);
+            httpContext.Response.ContentLength = read;
+            httpContext.Response.Body.Write(input, 0, read);
+            return Task.FromResult(0);
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -50,7 +73,27 @@ public class RequestBodyTests
             int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
             httpContext.Response.ContentLength = read;
             await httpContext.Response.Body.WriteAsync(input, 0, read);
-        }))
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address, "Hello World");
+            Assert.Equal("Hello World", response);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RequestBody_Read0ByteAsync_Success()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, async httpContext =>
+        {
+            Assert.True(httpContext.Request.CanHaveBody());
+            byte[] input = new byte[100];
+            int read = await httpContext.Request.Body.ReadAsync(input, 0, 0);
+            Assert.Equal(0, read);
+            read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
+            httpContext.Response.ContentLength = read;
+            await httpContext.Response.Body.WriteAsync(input, 0, read);
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -68,7 +111,7 @@ public class RequestBodyTests
             httpContext.Response.ContentLength = read;
             httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(input, 0, read, null, null));
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -85,13 +128,12 @@ public class RequestBodyTests
             byte[] input = new byte[100];
             Assert.Throws<ArgumentNullException>("buffer", () => httpContext.Request.Body.Read(null, 0, 1));
             Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, -1, 1));
-            Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, input.Length + 1, 1));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 10, -1));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, 0));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 1, input.Length));
-            Assert.Throws<ArgumentOutOfRangeException>("size", () => httpContext.Request.Body.Read(input, 0, input.Length + 1));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, input.Length + 1, 1));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, 10, -1));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, 1, input.Length));
+            Assert.Throws<ArgumentOutOfRangeException>("count", () => httpContext.Request.Body.Read(input, 0, input.Length + 1));
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal(string.Empty, response);
@@ -113,7 +155,7 @@ public class RequestBodyTests
             read = httpContext.Request.Body.Read(input, 0, input.Length);
             Assert.Equal(5, read);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, content);
             Assert.Equal(string.Empty, response);
@@ -133,7 +175,7 @@ public class RequestBodyTests
             content.Block.Release();
             read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
             Assert.Equal(5, read);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, content);
             Assert.Equal(string.Empty, response);
@@ -153,7 +195,7 @@ public class RequestBodyTests
             Assert.Equal(0, read);
             httpContext.Response.ContentLength = 10;
             await httpContext.Response.Body.WriteAsync(input, 0, 10);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendSocketRequestAsync(address);
             string[] lines = response.Split('\r', '\n');
@@ -187,7 +229,7 @@ public class RequestBodyTests
             int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
             httpContext.Response.ContentLength = read;
             await httpContext.Response.Body.WriteAsync(input, 0, read);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -222,7 +264,7 @@ public class RequestBodyTests
             httpContext.Request.Headers[HeaderNames.ContentLength] = "456";
             CheckHeadersCount(HeaderNames.ContentLength, 1, httpContext.Request);
             Assert.Equal(456, httpContext.Request.ContentLength);
-            httpContext.Request.Headers[HeaderNames.ContentLength] = "";
+            httpContext.Request.Headers[HeaderNames.ContentLength] = StringValues.Empty;
             CheckHeadersCount(HeaderNames.ContentLength, 0, httpContext.Request);
             Assert.Null(httpContext.Request.ContentLength);
             Assert.Equal("", httpContext.Request.Headers[HeaderNames.ContentLength].ToString());
@@ -235,14 +277,14 @@ public class RequestBodyTests
             CheckHeadersCount("Custom-Header", 1, httpContext.Request);
             httpContext.Request.Headers["Custom-Header"] = "bar";
             CheckHeadersCount("Custom-Header", 1, httpContext.Request);
-            httpContext.Request.Headers["Custom-Header"] = "";
+            httpContext.Request.Headers["Custom-Header"] = StringValues.Empty;
             CheckHeadersCount("Custom-Header", 0, httpContext.Request);
             Assert.Equal("", httpContext.Request.Headers["Custom-Header"].ToString());
 
             httpContext.Response.StatusCode = 200;
             requestWasProcessed = true;
             return Task.CompletedTask;
-        }))
+        }, LoggerFactory))
         {
             await SendRequestAsync(address, "Hello World");
             Assert.True(requestWasProcessed);

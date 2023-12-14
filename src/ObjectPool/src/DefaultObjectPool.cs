@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Collections.Concurrent;
 using System.Threading;
 
 namespace Microsoft.Extensions.ObjectPool;
@@ -15,13 +14,13 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <remarks>This implementation keeps a cache of retained objects. This means that if objects are returned when the pool has already reached "maximumRetained" objects they will be available to be Garbage Collected.</remarks>
 public class DefaultObjectPool<T> : ObjectPool<T> where T : class
 {
-    private protected readonly ObjectWrapper[] _items;
-    private protected readonly IPooledObjectPolicy<T> _policy;
-    private protected readonly bool _isDefaultPolicy;
-    private protected T? _firstItem;
+    private readonly Func<T> _createFunc;
+    private readonly Func<T, bool> _returnFunc;
+    private readonly int _maxCapacity;
+    private int _numItems;
 
-    // This class was introduced in 2.1 to avoid the interface call where possible
-    private protected readonly PooledObjectPolicy<T>? _fastPolicy;
+    private protected readonly ConcurrentQueue<T> _items = new();
+    private protected T? _fastItem;
 
     /// <summary>
     /// Creates an instance of <see cref="DefaultObjectPool{T}"/>.
@@ -39,66 +38,62 @@ public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     /// <param name="maximumRetained">The maximum number of objects to retain in the pool.</param>
     public DefaultObjectPool(IPooledObjectPolicy<T> policy, int maximumRetained)
     {
-        _policy = policy ?? throw new ArgumentNullException(nameof(policy));
-        _fastPolicy = policy as PooledObjectPolicy<T>;
-        _isDefaultPolicy = IsDefaultPolicy();
-
-        // -1 due to _firstItem
-        _items = new ObjectWrapper[maximumRetained - 1];
-
-        bool IsDefaultPolicy()
-        {
-            var type = policy.GetType();
-
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(DefaultPooledObjectPolicy<>);
-        }
+        // cache the target interface methods, to avoid interface lookup overhead
+        _createFunc = policy.Create;
+        _returnFunc = policy.Return;
+        _maxCapacity = maximumRetained - 1;  // -1 to account for _fastItem
     }
 
     /// <inheritdoc />
     public override T Get()
     {
-        var item = _firstItem;
-        if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
+        var item = _fastItem;
+        if (item == null || Interlocked.CompareExchange(ref _fastItem, null, item) != item)
         {
-            var items = _items;
-            for (var i = 0; i < items.Length; i++)
+            if (_items.TryDequeue(out item))
             {
-                item = items[i].Element;
-                if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
-                {
-                    return item;
-                }
+                Interlocked.Decrement(ref _numItems);
+                return item;
             }
 
-            item = Create();
+            // no object available, so go get a brand new one
+            return _createFunc();
         }
 
         return item;
     }
 
-    // Non-inline to improve its code quality as uncommon path
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private T Create() => _fastPolicy?.Create() ?? _policy.Create();
-
     /// <inheritdoc />
     public override void Return(T obj)
     {
-        if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))
-        {
-            if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
-            {
-                var items = _items;
-                for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
-                {
-                }
-            }
-        }
+        ReturnCore(obj);
     }
 
-    // PERF: the struct wrapper avoids array-covariance-checks from the runtime when assigning to elements of the array.
-    [DebuggerDisplay("{Element}")]
-    private protected struct ObjectWrapper
+    /// <summary>
+    /// Returns an object to the pool.
+    /// </summary>
+    /// <returns>true if the object was returned to the pool</returns>
+    private protected bool ReturnCore(T obj)
     {
-        public T? Element;
+        if (!_returnFunc(obj))
+        {
+            // policy says to drop this object
+            return false;
+        }
+
+        if (_fastItem != null || Interlocked.CompareExchange(ref _fastItem, obj, null) != null)
+        {
+            if (Interlocked.Increment(ref _numItems) <= _maxCapacity)
+            {
+                _items.Enqueue(obj);
+                return true;
+            }
+
+            // no room, clean up the count and drop the object on the floor
+            Interlocked.Decrement(ref _numItems);
+            return false;
+        }
+
+        return true;
     }
 }

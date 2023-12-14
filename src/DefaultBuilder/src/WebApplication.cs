@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -17,6 +20,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// <summary>
 /// The web application used to configure the HTTP pipeline, and routes.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(WebApplicationDebugView))]
 public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteBuilder, IAsyncDisposable
 {
     internal const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
@@ -85,7 +90,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplication"/> class with preconfigured defaults.
     /// </summary>
-    /// <param name="args">Command line arguments</param>
+    /// <param name="args">The command line arguments.</param>
     /// <returns>The <see cref="WebApplication"/>.</returns>
     public static WebApplication Create(string[]? args = null) =>
         new WebApplicationBuilder(new() { Args = args }).Build();
@@ -98,12 +103,27 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
         new(new());
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with minimal defaults.
+    /// </summary>
+    /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+    public static WebApplicationBuilder CreateSlimBuilder() =>
+        new(new(), slim: true);
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
     /// </summary>
-    /// <param name="args">Command line arguments</param>
+    /// <param name="args">The command line arguments.</param>
     /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
     public static WebApplicationBuilder CreateBuilder(string[] args) =>
         new(new() { Args = args });
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with minimal defaults.
+    /// </summary>
+    /// <param name="args">The command line arguments.</param>
+    /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+    public static WebApplicationBuilder CreateSlimBuilder(string[] args) =>
+        new(new() { Args = args }, slim: true);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with preconfigured defaults.
@@ -112,6 +132,22 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
     public static WebApplicationBuilder CreateBuilder(WebApplicationOptions options) =>
         new(options);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with minimal defaults.
+    /// </summary>
+    /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
+    /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+    public static WebApplicationBuilder CreateSlimBuilder(WebApplicationOptions options) =>
+        new(options, slim: true);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WebApplicationBuilder"/> class with no defaults.
+    /// </summary>
+    /// <param name="options">The <see cref="WebApplicationOptions"/> to configure the <see cref="WebApplicationBuilder"/>.</param>
+    /// <returns>The <see cref="WebApplicationBuilder"/>.</returns>
+    public static WebApplicationBuilder CreateEmptyBuilder(WebApplicationOptions options) =>
+        new(options, slim: false, empty: true);
 
     /// <summary>
     /// Start the application.
@@ -142,7 +178,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <returns>
     /// A <see cref="Task"/> that represents the entire runtime of the <see cref="WebApplication"/> from startup to shutdown.
     /// </returns>
-    public Task RunAsync(string? url = null)
+    public Task RunAsync([StringSyntax(StringSyntaxAttribute.Uri)] string? url = null)
     {
         Listen(url);
         return HostingAbstractionsHostExtensions.RunAsync(this);
@@ -152,7 +188,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// Runs an application and block the calling thread until host shutdown.
     /// </summary>
     /// <param name="url">The URL to listen to if the server hasn't been configured directly.</param>
-    public void Run(string? url = null)
+    public void Run([StringSyntax(StringSyntaxAttribute.Uri)] string? url = null)
     {
         Listen(url);
         HostingAbstractionsHostExtensions.Run(this);
@@ -212,5 +248,63 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
 
         addresses.Clear();
         addresses.Add(url);
+    }
+
+    private string DebuggerToString()
+    {
+        return $@"ApplicationName = ""{Environment.ApplicationName}"", IsRunning = {(IsRunning ? "true" : "false")}";
+    }
+
+    // Web app is running if the app has been started and hasn't been stopped.
+    private bool IsRunning => Lifetime.ApplicationStarted.IsCancellationRequested && !Lifetime.ApplicationStopped.IsCancellationRequested;
+
+    internal sealed class WebApplicationDebugView(WebApplication webApplication)
+    {
+        private readonly WebApplication _webApplication = webApplication;
+
+        public IServiceProvider Services => _webApplication.Services;
+        public IConfiguration Configuration => _webApplication.Configuration;
+        public IWebHostEnvironment Environment => _webApplication.Environment;
+        public IHostApplicationLifetime Lifetime => _webApplication.Lifetime;
+        public ILogger Logger => _webApplication.Logger;
+        public string Urls => string.Join(", ", _webApplication.Urls);
+        public IReadOnlyList<Endpoint> Endpoints
+        {
+            get
+            {
+                var dataSource = _webApplication.Services.GetRequiredService<EndpointDataSource>();
+                if (dataSource is CompositeEndpointDataSource compositeEndpointDataSource)
+                {
+                    // The web app's data sources aren't registered until the routing middleware is. That often happens when the app is run.
+                    // We want endpoints to be available in the debug view before the app starts. Test if all the web app's the data sources are registered.
+                    if (compositeEndpointDataSource.DataSources.Intersect(_webApplication.DataSources).Count() == _webApplication.DataSources.Count)
+                    {
+                        // Data sources are centrally registered.
+                        return dataSource.Endpoints;
+                    }
+                    else
+                    {
+                        // Fallback to just the web app's data sources to support debugging before the web app starts.
+                        return new CompositeEndpointDataSource(_webApplication.DataSources).Endpoints;
+                    }
+                }
+
+                return dataSource.Endpoints;
+            }
+        }
+        public bool IsRunning => _webApplication.IsRunning;
+        public IList<string>? Middleware
+        {
+            get
+            {
+                if (_webApplication.Properties.TryGetValue("__MiddlewareDescriptions", out var value) &&
+                    value is IList<string> descriptions)
+                {
+                    return descriptions;
+                }
+
+                throw new NotSupportedException("Unable to get configured middleware.");
+            }
+        }
     }
 }

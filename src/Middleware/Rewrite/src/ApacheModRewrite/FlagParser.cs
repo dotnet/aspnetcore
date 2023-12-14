@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class FlagParser
+internal static class FlagParser
 {
-    private readonly IDictionary<string, FlagType> _ruleFlagLookup = new Dictionary<string, FlagType>(StringComparer.OrdinalIgnoreCase) {
+    private static readonly IDictionary<string, FlagType> _ruleFlagLookup = new Dictionary<string, FlagType>(StringComparer.OrdinalIgnoreCase) {
             { "b", FlagType.EscapeBackreference},
             { "c", FlagType.Chain },
             { "chain", FlagType.Chain},
@@ -52,7 +52,7 @@ internal class FlagParser
             { "type", FlagType.Type },
         };
 
-    public Flags Parse(string flagString)
+    public static Flags Parse(string flagString)
     {
         if (string.IsNullOrEmpty(flagString))
         {
@@ -70,19 +70,21 @@ internal class FlagParser
         // Invalid syntax to have any spaces.
         var tokens = flagString.Substring(1, flagString.Length - 2).Split(',');
         var flags = new Flags();
+        Span<Range> hasPayload = stackalloc Range[3];
         foreach (var token in tokens)
         {
-            var hasPayload = token.Split('=');
+            var tokenSpan = token.AsSpan();
+            var length = tokenSpan.Split(hasPayload, '=');
 
             FlagType flag;
-            if (!_ruleFlagLookup.TryGetValue(hasPayload[0], out flag))
+            if (!_ruleFlagLookup.TryGetValue(tokenSpan[hasPayload[0]].ToString(), out flag))
             {
-                throw new FormatException($"Unrecognized flag: '{hasPayload[0]}'");
+                throw new FormatException($"Unrecognized flag: '{tokenSpan[hasPayload[0]]}'");
             }
 
-            if (hasPayload.Length == 2)
+            if (length == 2)
             {
-                flags.SetFlag(flag, hasPayload[1]);
+                flags.SetFlag(flag, tokenSpan[hasPayload[1]].ToString());
             }
             else
             {

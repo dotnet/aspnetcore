@@ -1,0 +1,43 @@
+﻿@using Components.TestServer.RazorComponents.Pages.Forms
+@using Microsoft.AspNetCore.Components.Web
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+    <HeadOutlet />
+</head>
+<body>
+    <ServerApp @rendermode="@RenderMode.InteractiveServer" />
+
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
+        sessionStorage.removeItem('suppress-enhanced-navigation');
+
+        function callBlazorStart() {
+            Blazor.start({
+                ssr: {
+                    disableDomPreservation: suppressEnhancedNavigation,
+                },
+                webAssembly: {
+                    loadBootResource: function (type, name, defaultUri, integrity) {
+                        return `WasmMinimal/_framework/${name}`;
+                    },
+                },
+            });
+        }
+
+        if (location.search.indexOf('suppress-autostart') < 0) {
+            callBlazorStart();
+        } else {
+            const startButton = document.createElement('button');
+            startButton.id = 'call-blazor-start';
+            startButton.textContent = 'Call Blazor.start()';
+            startButton.onclick = callBlazorStart;
+            document.body.appendChild(startButton);
+        }
+    </script>
+</body>
+</html>

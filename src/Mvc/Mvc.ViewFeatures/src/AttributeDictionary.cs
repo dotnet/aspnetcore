@@ -20,10 +20,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     {
         get
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullException.ThrowIfNull(key);
 
             var index = Find(key);
             if (index < 0)
@@ -38,10 +35,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
         set
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ArgumentNullException.ThrowIfNull(key);
 
             var item = new KeyValuePair<string, string?>(key, value);
             var index = Find(key);
@@ -154,10 +148,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public void Clear()
     {
-        if (_items != null)
-        {
-            _items.Clear();
-        }
+        _items?.Clear();
     }
 
     /// <inheritdoc />
@@ -186,10 +177,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public void Add(string key, string? value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         Add(new KeyValuePair<string, string?>(key, value));
     }
@@ -220,10 +208,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public bool ContainsKey(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (Count == 0)
         {
@@ -236,14 +221,11 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public void CopyTo(KeyValuePair<string, string?>[] array, int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         if (arrayIndex < 0 || arrayIndex >= array.Length)
         {
-            throw new IndexOutOfRangeException();
+            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
         }
 
         for (var i = 0; i < Count; i++)
@@ -289,10 +271,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public bool Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         var index = Find(key);
         if (index < 0)
@@ -309,10 +288,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
     /// <inheritdoc />
     public bool TryGetValue(string key, out string? value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         var index = Find(key);
         if (index < 0)
@@ -384,7 +360,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
         }
     }
 
-    private class KeyCollection : ICollection<string>
+    private sealed class KeyCollection : ICollection<string>
     {
         private readonly AttributeDictionary _attributes;
 
@@ -409,10 +385,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
         public bool Contains(string item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException(nameof(item));
-            }
+            ArgumentNullException.ThrowIfNull(item);
 
             for (var i = 0; i < _attributes.Count; i++)
             {
@@ -427,14 +400,11 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
         public void CopyTo(string[] array, int arrayIndex)
         {
-            if (array == null)
-            {
-                throw new ArgumentNullException(nameof(array));
-            }
+            ArgumentNullException.ThrowIfNull(array);
 
             if (arrayIndex < 0 || arrayIndex >= array.Length)
             {
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
             for (var i = 0; i < _attributes.Count; i++)
@@ -497,7 +467,7 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
         }
     }
 
-    private class ValueCollection : ICollection<string?>
+    private sealed class ValueCollection : ICollection<string?>
     {
         private readonly AttributeDictionary _attributes;
 
@@ -535,14 +505,11 @@ public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictio
 
         public void CopyTo(string?[] array, int arrayIndex)
         {
-            if (array == null)
-            {
-                throw new ArgumentNullException(nameof(array));
-            }
+            ArgumentNullException.ThrowIfNull(array);
 
             if (arrayIndex < 0 || arrayIndex >= array.Length)
             {
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
             for (var i = 0; i < _attributes.Count; i++)

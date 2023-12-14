@@ -29,10 +29,7 @@ public static class OwinExtensions
     /// <returns>An action used to create the OWIN pipeline.</returns>
     public static AddMiddleware UseOwin(this IApplicationBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddMiddleware add = middleware =>
         {
@@ -75,14 +72,8 @@ public static class OwinExtensions
     /// <returns>The original <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseOwin(this IApplicationBuilder builder, Action<AddMiddleware> pipeline)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-        if (pipeline == null)
-        {
-            throw new ArgumentNullException(nameof(pipeline));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(pipeline);
 
         pipeline(builder.UseOwin());
         return builder;
@@ -106,10 +97,7 @@ public static class OwinExtensions
     /// <returns>An <see cref="IApplicationBuilder"/>.</returns>
     public static IApplicationBuilder UseBuilder(this AddMiddleware app, IServiceProvider serviceProvider)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         // Do not set ApplicationBuilder.ApplicationServices to null. May fail later due to missing services but
         // at least that results in a more useful Exception than a NRE.
@@ -184,21 +172,15 @@ public static class OwinExtensions
     /// <returns>An <see cref="IApplicationBuilder"/>.</returns>
     public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IApplicationBuilder> pipeline, IServiceProvider serviceProvider)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (pipeline == null)
-        {
-            throw new ArgumentNullException(nameof(pipeline));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(pipeline);
 
         var builder = app.UseBuilder(serviceProvider);
         pipeline(builder);
         return app;
     }
 
-    private class EmptyProvider : IServiceProvider
+    private sealed class EmptyProvider : IServiceProvider
     {
         public object GetService(Type serviceType)
         {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlActions;
 
-internal class ChangeCookieAction : UrlAction
+internal sealed class ChangeCookieAction : UrlAction
 {
     private readonly Func<DateTimeOffset> _timeSource;
     private CookieOptions? _cachedOptions;
@@ -18,13 +18,9 @@ internal class ChangeCookieAction : UrlAction
     // for testing
     internal ChangeCookieAction(string name, Func<DateTimeOffset> timeSource)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         _timeSource = timeSource;
-
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
         Name = name;
     }
 

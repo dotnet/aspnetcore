@@ -110,7 +110,7 @@ public class Entry : IEquatable<Entry>
         return true;
     }
 
-    private class NameComparer : IComparer<Entry>
+    private sealed class NameComparer : IComparer<Entry>
     {
         public static NameComparer Instance { get; } = new NameComparer();
 

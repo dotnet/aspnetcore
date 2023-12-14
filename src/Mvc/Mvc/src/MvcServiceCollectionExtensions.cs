@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -26,12 +27,10 @@ public static class MvcServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddMvc(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddControllersWithViews();
         return services.AddRazorPages();
@@ -43,17 +42,11 @@ public static class MvcServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{MvcOptions}"/> to configure the provided <see cref="MvcOptions"/>.</param>
     /// <returns>An <see cref="IMvcBuilder"/> that can be used to further configure the MVC services.</returns>
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddMvc(this IServiceCollection services, Action<MvcOptions> setupAction)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddMvc();
         builder.Services.Configure(setupAction);
@@ -86,12 +79,10 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllers(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddControllersCore(services);
         return new MvcBuilder(builder.Services, builder.PartManager);
@@ -123,12 +114,10 @@ public static class MvcServiceCollectionExtensions
     /// on the resulting builder.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllers(this IServiceCollection services, Action<MvcOptions>? configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         // This method excludes all of the view-related services by default.
         var builder = AddControllersCore(services);
@@ -183,12 +172,10 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddControllersWithViewsCore(services);
         return new MvcBuilder(builder.Services, builder.PartManager);
@@ -218,12 +205,10 @@ public static class MvcServiceCollectionExtensions
     /// To add services for pages call <see cref="AddRazorPages(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("MVC does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddControllersWithViews(this IServiceCollection services, Action<MvcOptions>? configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         // This method excludes all of the view-related services by default.
         var builder = AddControllersWithViewsCore(services);
@@ -268,12 +253,10 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("Razor Pages does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddRazorPagesCore(services);
         return new MvcBuilder(builder.Services, builder.PartManager);
@@ -301,12 +284,10 @@ public static class MvcServiceCollectionExtensions
     /// To add services for controllers with views call <see cref="AddControllersWithViews(IServiceCollection)"/>.
     /// </para>
     /// </remarks>
+    [RequiresUnreferencedCode("Razor Pages does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IMvcBuilder AddRazorPages(this IServiceCollection services, Action<RazorPagesOptions>? configure)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var builder = AddRazorPagesCore(services);
         if (configure != null)
@@ -355,7 +336,7 @@ public static class MvcServiceCollectionExtensions
     }
 
     [DebuggerDisplay("{Name}")]
-    private class FrameworkAssemblyPart : AssemblyPart, ICompilationReferencesProvider
+    private sealed class FrameworkAssemblyPart : AssemblyPart, ICompilationReferencesProvider
     {
         public FrameworkAssemblyPart(Assembly assembly)
             : base(assembly)

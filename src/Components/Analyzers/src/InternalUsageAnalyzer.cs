@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.Extensions.Internal;
 
-internal class InternalUsageAnalyzer
+internal sealed class InternalUsageAnalyzer
 {
     private readonly Func<ISymbol, bool> _isInternalNamespace;
     private readonly Func<ISymbol, bool> _hasInternalAttribute;

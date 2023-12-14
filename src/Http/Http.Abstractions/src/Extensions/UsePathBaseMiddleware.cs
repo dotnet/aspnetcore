@@ -20,10 +20,7 @@ public class UsePathBaseMiddleware
     /// <param name="pathBase">The path base to extract.</param>
     public UsePathBaseMiddleware(RequestDelegate next, PathString pathBase)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(next);
 
         if (!pathBase.HasValue)
         {
@@ -41,10 +38,7 @@ public class UsePathBaseMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Request.Path.StartsWithSegments(_pathBase, out var matchedPath, out var remainingPath))
         {
@@ -53,7 +47,7 @@ public class UsePathBaseMiddleware
         return _next(context);
     }
 
-    private async Task InvokeCore(HttpContext context, string matchedPath, string remainingPath)
+    private async Task InvokeCore(HttpContext context, PathString matchedPath, PathString remainingPath)
     {
         var originalPath = context.Request.Path;
         var originalPathBase = context.Request.PathBase;

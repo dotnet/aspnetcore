@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SpaProxy;
 
-internal class SpaProxyLaunchManager : IDisposable
+internal sealed class SpaProxyLaunchManager : IDisposable
 {
     private readonly SpaDevelopmentServerOptions _options;
     private readonly ILogger<SpaProxyLaunchManager> _logger;
@@ -42,7 +42,10 @@ internal class SpaProxyLaunchManager : IDisposable
         {
             if (_launchTask == null)
             {
-                _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation($"No SPA development server running at {_options.ServerUrl} found.");
+                }
                 _launchTask = UpdateStatus(StartSpaProcessAndProbeForLiveness(cancellationToken));
             }
         }
@@ -71,8 +74,8 @@ internal class SpaProxyLaunchManager : IDisposable
     {
         var httpClient = CreateHttpClient();
 
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(10));
         try
         {
             var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);
@@ -102,8 +105,8 @@ internal class SpaProxyLaunchManager : IDisposable
 
     private async Task<bool> ProbeSpaDevelopmentServerUrl(HttpClient httpClient, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(10));
         try
         {
             var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);
@@ -145,13 +148,19 @@ internal class SpaProxyLaunchManager : IDisposable
 
         if (_spaProcess == null || _spaProcess.HasExited)
         {
-            _logger.LogError($"Couldn't start the SPA development server with command '{_options.LaunchCommand}'.");
+            if (_logger.IsEnabled(LogLevel.Error))
+            {
+                _logger.LogError($"Couldn't start the SPA development server with command '{_options.LaunchCommand}'.");
+            }
         }
         else if (!livenessProbeSucceeded)
         {
-            _logger.LogError($"Unable to connect to the SPA development server at '{_options.ServerUrl}'.");
+            if (_logger.IsEnabled(LogLevel.Error))
+            {
+                _logger.LogError($"Unable to connect to the SPA development server at '{_options.ServerUrl}'.");
+            }
         }
-        else
+        else if (_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation($"SPA development server running at '{_options.ServerUrl}'");
         }
@@ -188,7 +197,7 @@ internal class SpaProxyLaunchManager : IDisposable
                 WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
             };
             _spaProcess = Process.Start(info);
-            if (_spaProcess != null && !_spaProcess.HasExited)
+            if (_spaProcess != null && !_spaProcess.HasExited && !_options.KeepRunning)
             {
                 if (OperatingSystem.IsWindows())
                 {
@@ -237,13 +246,19 @@ catch
         var stopProcess = Process.Start(stopScriptInfo);
         if (stopProcess == null || stopProcess.HasExited)
         {
-            _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
-                $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
-                $" the process tree for {spaProcessId}");
+            if (_logger.IsEnabled(LogLevel.Warning))
+            {
+                _logger.LogWarning($"The SPA process shutdown script '{stopProcess?.Id}' failed to start. The SPA proxy might" +
+                    $" remain open if the dotnet process is terminated ungracefully. Use the operating system commands to kill" +
+                    $" the process tree for {spaProcessId}");
+            }
         }
         else
         {
-            _logger.LogDebug($"Watch process '{stopProcess}' started.");
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug($"Watch process '{stopProcess}' started.");
+            }
         }
     }
 
@@ -251,7 +266,7 @@ catch
     {
         var fileName = Guid.NewGuid().ToString("N") + ".sh";
         var scriptPath = Path.Combine(AppContext.BaseDirectory, fileName);
-        var stopScript = @$"function list_child_processes(){{
+        var stopScript = @$"function list_child_processes () {{
     local ppid=$1;
     local current_children=$(pgrep -P $ppid);
     local local_child;
@@ -282,7 +297,7 @@ do
 done;
 rm {scriptPath};
 ";
-        File.WriteAllText(scriptPath, stopScript);
+        File.WriteAllText(scriptPath, stopScript.ReplaceLineEndings());
 
         var stopScriptInfo = new ProcessStartInfo("/bin/bash", scriptPath)
         {
@@ -305,7 +320,7 @@ rm {scriptPath};
         return Task.CompletedTask;
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposedValue)
         {

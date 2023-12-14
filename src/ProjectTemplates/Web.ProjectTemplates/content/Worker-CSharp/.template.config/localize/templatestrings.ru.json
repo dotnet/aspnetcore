@@ -1,11 +1,15 @@
-{
-  "author": "Microsoft",
+﻿{
+  "author": "Майкрософт",
   "name": "Worker Service",
-  "description": "An empty project template for creating a worker service.",
-  "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net7.0/description": "Target net7.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "description": "Шаблон пустого проекта для создания службы Worker Service.",
+  "symbols/ExcludeLaunchSettings/description": "Следует ли исключить launchSettings.json из созданного шаблона.",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
+  "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
+  "symbols/UseProgramMain/displayName": "Не использовать _операторы верхнего уровня",
+  "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
+  "symbols/NativeAot/displayName": "Включить публикацию _native AOT",
+  "symbols/NativeAot/description": "Включить ли проект для публикации как native AOT.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
 }

@@ -9,7 +9,8 @@
 
     <_BlazorDevServerPath>$(ArtifactsDir)bin/Microsoft.AspNetCore.Components.WebAssembly.DevServer/$(Configuration)/$(DefaultNetCoreTargetFramework)/blazor-devserver.dll</_BlazorDevServerPath>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; --applicationpath &quot;$(TargetPath)&quot; $(AdditionalRunArguments)</RunArguments>
+    <_RunExtraArguments Condition="'$(WasmEnableThreads)' == 'true'">--apply-cop-headers</_RunExtraArguments>
+    <RunArguments>exec &quot;$(_BlazorDevServerPath)&quot; --applicationpath &quot;$(TargetPath)&quot; $(_RunExtraArguments) $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>

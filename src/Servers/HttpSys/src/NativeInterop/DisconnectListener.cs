@@ -3,12 +3,11 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-internal partial class DisconnectListener
+internal sealed partial class DisconnectListener
 {
     private readonly ConcurrentDictionary<ulong, ConnectionCancellation> _connectionCancellationTokens = new();
 
@@ -95,8 +94,8 @@ internal partial class DisconnectListener
             Log.CreateDisconnectTokenError(_logger, exception);
         }
 
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING &&
-            statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        if (statusCode != ErrorCodes.ERROR_IO_PENDING &&
+            statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             // We got an unknown result, assume the connection has been closed.
             boundHandle.FreeNativeOverlapped(nativeOverlapped);
@@ -105,7 +104,7 @@ internal partial class DisconnectListener
             cts.Cancel();
         }
 
-        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
+        if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion
             boundHandle.FreeNativeOverlapped(nativeOverlapped);
@@ -116,7 +115,7 @@ internal partial class DisconnectListener
         return returnToken;
     }
 
-    private class ConnectionCancellation
+    private sealed class ConnectionCancellation
     {
         private readonly DisconnectListener _parent;
         private volatile bool _initialized; // Must be volatile because initialization is synchronized

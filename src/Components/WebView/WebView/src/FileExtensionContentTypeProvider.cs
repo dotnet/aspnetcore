@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebView;
 /// <summary>
 /// Provides a mapping between file extensions and MIME types.
 /// </summary>
-internal class FileExtensionContentTypeProvider : IContentTypeProvider
+internal sealed class FileExtensionContentTypeProvider : IContentTypeProvider
 {
     // Notes:
     // - This table was initially copied from IIS and has many legacy entries we will maintain for backwards compatibility.
@@ -152,7 +152,7 @@ internal class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".jpe", "image/jpeg" },
                 { ".jpeg", "image/jpeg" },
                 { ".jpg", "image/jpeg" },
-                { ".js", "application/javascript" },
+                { ".js", "text/javascript" },
                 { ".json", "application/json" },
                 { ".jsx", "text/jscript" },
                 { ".latex", "application/x-latex" },
@@ -181,6 +181,7 @@ internal class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".mid", "audio/mid" },
                 { ".midi", "audio/mid" },
                 { ".mix", "application/octet-stream" },
+                { ".mjs", "text/javascript" },
                 { ".mmf", "application/x-smaf" },
                 { ".mno", "text/xml" },
                 { ".mny", "application/x-msmoney" },
@@ -419,10 +420,7 @@ internal class FileExtensionContentTypeProvider : IContentTypeProvider
     /// <param name="mapping"></param>
     public FileExtensionContentTypeProvider(IDictionary<string, string> mapping)
     {
-        if (mapping == null)
-        {
-            throw new ArgumentNullException(nameof(mapping));
-        }
+        ArgumentNullException.ThrowIfNull(mapping);
         Mappings = mapping;
     }
 

@@ -115,7 +115,7 @@ public class OAuthTokenResponse : IDisposable
             result.Append(errorUri);
         }
 
-        var exception = new Exception(result.ToString());
+        var exception = new AuthenticationFailureException(result.ToString());
         exception.Data["error"] = error.ToString();
         exception.Data["error_description"] = errorDescription.ToString();
         exception.Data["error_uri"] = errorUri.ToString();

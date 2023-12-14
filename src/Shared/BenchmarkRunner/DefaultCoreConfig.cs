@@ -14,7 +14,7 @@ using BenchmarkDotNet.Validators;
 
 namespace BenchmarkDotNet.Attributes;
 
-internal class DefaultCoreConfig : ManualConfig
+internal sealed class DefaultCoreConfig : ManualConfig
 {
     public DefaultCoreConfig()
     {
@@ -40,6 +40,10 @@ internal class DefaultCoreConfig : ManualConfig
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net6.0", null, ".NET Core 6.0")))
 #elif NET7_0
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net7.0", null, ".NET Core 7.0")))
+#elif NET8_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net8.0", null, ".NET Core 8.0")))
+#elif NET9_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net9.0", null, ".NET Core 9.0")))
 #else
 #error Target frameworks need to be updated.
 #endif

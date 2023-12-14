@@ -35,10 +35,7 @@ public class ProducesAttribute : Attribute, IResultFilter, IOrderedFilter, IApiR
     /// <param name="additionalContentTypes">Additional allowed content types for a response.</param>
     public ProducesAttribute(string contentType, params string[] additionalContentTypes)
     {
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
 
         // We want to ensure that the given provided content types are valid values, so
         // we validate them using the semantics of MediaTypeHeaderValue.
@@ -69,10 +66,7 @@ public class ProducesAttribute : Attribute, IResultFilter, IOrderedFilter, IApiR
     /// <inheritdoc />
     public virtual void OnResultExecuting(ResultExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Result is ObjectResult objectResult)
         {

@@ -4,7 +4,9 @@
 using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -81,7 +83,7 @@ internal abstract class Http1MessageBody : MessageBody
     {
         Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
 
-        _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
+        _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout, TimeoutReason.RequestBodyDrain);
 
         try
         {
@@ -159,6 +161,26 @@ internal abstract class Http1MessageBody : MessageBody
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
             }
 
+            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // A sender MUST NOT send a Content-Length header field in any message
+            // that contains a Transfer-Encoding header field.
+            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // If a message is received with both a Transfer-Encoding and a
+            // Content-Length header field, the Transfer-Encoding overrides the
+            // Content-Length.  Such a message might indicate an attempt to
+            // perform request smuggling (Section 9.5) or response splitting
+            // (Section 9.4) and ought to be handled as an error.  A sender MUST
+            // remove the received Content-Length field prior to forwarding such
+            // a message downstream.
+            // We should remove the Content-Length request header in this case, for compatibility
+            // reasons, include x-Content-Length so that the original Content-Length is still available.
+            if (headers.ContentLength.HasValue)
+            {
+                IHeaderDictionary headerDictionary = headers;
+                headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+                headers.ContentLength = null;
+            }
+
             // TODO may push more into the wrapper rather than just calling into the message body
             // NBD for now.
             return new Http1ChunkedEncodingMessageBody(context, keepAlive);
@@ -204,7 +226,7 @@ internal abstract class Http1MessageBody : MessageBody
         // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
         // response is written after observing the unexpected end of request content instead of just
         // closing the connection without a response as expected.
-        _context.OnInputOrOutputCompleted();
+        ((IHttpOutputAborter)_context).OnInputOrOutputCompleted();
 
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
     }

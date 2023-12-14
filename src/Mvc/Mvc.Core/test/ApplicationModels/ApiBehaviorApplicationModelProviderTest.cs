@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -51,6 +51,7 @@ public class ApiBehaviorApplicationModelProviderTest
         var actionModel = new ActionModel(method, Array.Empty<object>())
         {
             Controller = controllerModel,
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
         };
         controllerModel.Actions.Add(actionModel);
 
@@ -75,6 +76,51 @@ public class ApiBehaviorApplicationModelProviderTest
         Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
         Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
         Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
+        Assert.NotEmpty(actionModel.Selectors);
+        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
+    }
+
+    [Fact]
+    public void OnProvidersExecuting_AppliesConventionsForIResult()
+    {
+        // Arrange
+        var controllerModel = new ControllerModel(typeof(TestApiController).GetTypeInfo(), new[] { new ApiControllerAttribute() })
+        {
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
+        };
+
+        var method = typeof(TestApiController).GetMethod(nameof(TestApiController.TestActionWithIResult));
+
+        var actionModel = new ActionModel(method, Array.Empty<object>())
+        {
+            Controller = controllerModel,
+            Selectors = { new SelectorModel { AttributeRouteModel = new AttributeRouteModel() } },
+        };
+        controllerModel.Actions.Add(actionModel);
+
+        var parameter = method.GetParameters()[0];
+        var parameterModel = new ParameterModel(parameter, Array.Empty<object>())
+        {
+            Action = actionModel,
+        };
+        actionModel.Parameters.Add(parameterModel);
+
+        var context = new ApplicationModelProviderContext(new[] { controllerModel.ControllerType });
+        context.Result.Controllers.Add(controllerModel);
+
+        var provider = GetProvider();
+
+        // Act
+        provider.OnProvidersExecuting(context);
+
+        // Assert
+        // Verify some of the side-effects of executing API behavior conventions.
+        Assert.True(actionModel.ApiExplorer.IsVisible);
+        Assert.NotEmpty(actionModel.Filters.OfType<ModelStateInvalidFilterFactory>());
+        Assert.NotEmpty(actionModel.Filters.OfType<ClientErrorResultFilterFactory>());
+        Assert.Equal(BindingSource.Body, parameterModel.BindingInfo.BindingSource);
+        Assert.NotEmpty(actionModel.Selectors);
+        Assert.Empty(actionModel.Selectors[0].EndpointMetadata);
     }
 
     [Fact]
@@ -178,5 +224,6 @@ public class ApiBehaviorApplicationModelProviderTest
     private class TestApiController : ControllerBase
     {
         public IActionResult TestAction(object value) => null;
+        public IResult TestActionWithIResult(object value) => null;
     }
 }

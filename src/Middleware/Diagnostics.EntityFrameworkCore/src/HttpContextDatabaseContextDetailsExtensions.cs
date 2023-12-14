@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 
 internal static class HttpContextDatabaseContextDetailsExtensions
 {
+    [RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
     public static async ValueTask<DatabaseContextDetails?> GetContextDetailsAsync(this HttpContext httpContext, Type dbcontextType, ILogger logger)
     {
         var context = (DbContext?)httpContext.RequestServices.GetService(dbcontextType);

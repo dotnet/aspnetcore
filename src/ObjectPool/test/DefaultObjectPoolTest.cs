@@ -69,6 +69,34 @@ public class DefaultObjectPoolTest
         Assert.NotSame(list1, list2);
     }
 
+    [Fact]
+    public static void DefaultObjectPool_Honors_IResettable()
+    {
+        var p = new DefaultObjectPool<Resettable>(new DefaultPooledObjectPolicy<Resettable>());
+        var r = new Resettable();
+
+        r.ResetReturnValue = false;
+        p.Return(r);
+        Assert.Equal(1, r.ResetCallCount);
+        Assert.NotSame(r, p.Get());
+
+        r.ResetReturnValue = true;
+        p.Return(r);
+        Assert.Equal(2, r.ResetCallCount);
+        Assert.Same(r, p.Get());
+    }
+
+    private sealed class Resettable : IResettable
+    {
+        public int ResetCallCount { get; set; }
+        public bool ResetReturnValue { get; set; }
+        public bool TryReset()
+        {
+            ResetCallCount++;
+            return ResetReturnValue;
+        }
+    }
+
     private class ListPolicy : IPooledObjectPolicy<List<int>>
     {
         public List<int> Create()

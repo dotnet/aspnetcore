@@ -93,10 +93,7 @@ public class PolicyEvaluator : IPolicyEvaluator
     /// returns  <see cref="PolicyAuthorizationResult.Challenge"/></returns>
     public virtual async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object? resource)
     {
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         var result = await _authorization.AuthorizeAsync(context.User, resource, policy);
         if (result.Succeeded)

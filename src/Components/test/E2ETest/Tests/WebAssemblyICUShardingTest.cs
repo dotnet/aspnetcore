@@ -41,23 +41,28 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal("Bonjour!", localizedDisplay.Text);
     }
 
-    [Fact]
-    public void LoadingApp_KoreanLanguage_Works()
+    [Theory]
+    [InlineData("ko", "ko", "2020. 9. 2. 오전 12:00:00", "안녕하세요")] // ko exists in the CJK data set.
+    [InlineData("ko-KR", "ko-KR", "2020. 9. 2. 오전 12:00:00", "안녕하세요")]// ko-KR exists in the CJK data set.
+    [InlineData("ko-KO", "ko-KO", "2020. 9. 2. 00:00:00", "안녕하세요")] // ko-KO is custom culture and doesn't exist in the CJK data set.
+    [InlineData("ja-JP", "ja-JP", "2020/09/02 0:00:00", "Hello")] // ja-JP exists in the CJK data set, but it doesn't have "Hello" defined in resx file.
+    public void LoadingApp_KoreanLanguage_Works(string code, string expectedCurrentCulture, string expectedDate, string expectedText)
     {
         // Arrange
         // This verifies the CJK icu data set.
-        var culture = new CultureInfo("ko-KO");
+        var culture = new CultureInfo(code);
+        Assert.Equal(culture.ToString(), code);
         Initialize(culture);
 
         var cultureDisplay = Browser.Exists(By.Id("culture"));
-        Assert.Equal(culture.ToString(), cultureDisplay.Text);
+        Assert.Equal(expectedCurrentCulture, cultureDisplay.Text);
 
         var dateDisplay = Browser.Exists(By.Id("dateTime"));
-        Assert.Equal("2020. 9. 2. 오전 12:00:00", dateDisplay.Text);
+        Assert.Equal(expectedDate, dateDisplay.Text);
 
         var localizedDisplay = Browser.Exists(By.Id("localizedString"));
         // The app has a "ko" resx file. This test verifies that we can walk up the culture hierarchy correctly.
-        Assert.Equal("안녕하세요", localizedDisplay.Text);
+        Assert.Equal(expectedText, localizedDisplay.Text);
     }
 
     [Fact]

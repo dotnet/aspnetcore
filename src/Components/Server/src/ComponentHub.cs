@@ -160,6 +160,33 @@ internal sealed partial class ComponentHub : Hub
         }
     }
 
+    public async Task UpdateRootComponents(string serializedComponentOperations, string applicationState)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        if (!_serverComponentSerializer.TryDeserializeRootComponentOperations(
+            serializedComponentOperations,
+            out var operations))
+        {
+            // There was an error, so kill the circuit.
+            await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+            await NotifyClientError(Clients.Caller, "The list of component operations is not valid.");
+            Context.Abort();
+
+            return;
+        }
+
+        var store = !string.IsNullOrEmpty(applicationState) ?
+            new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
+            new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+
+        _ = circuitHost.UpdateRootComponents(operations, store, _serverComponentSerializer, Context.ConnectionAborted);
+    }
+
     public async ValueTask<bool> ConnectCircuit(string circuitIdSecret)
     {
         // TryParseCircuitId will not throw.
@@ -285,7 +312,7 @@ internal sealed partial class ComponentHub : Hub
         _ = circuitHost.OnRenderCompletedAsync(renderId, errorMessageOrNull);
     }
 
-    public async ValueTask OnLocationChanged(string uri, bool intercepted)
+    public async ValueTask OnLocationChanged(string uri, string? state, bool intercepted)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
@@ -293,7 +320,18 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        _ = circuitHost.OnLocationChangedAsync(uri, intercepted);
+        _ = circuitHost.OnLocationChangedAsync(uri, state, intercepted);
+    }
+
+    public async ValueTask OnLocationChanging(int callId, string uri, string? state, bool intercepted)
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return;
+        }
+
+        _ = circuitHost.OnLocationChangingAsync(callId, uri, state, intercepted);
     }
 
     // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime

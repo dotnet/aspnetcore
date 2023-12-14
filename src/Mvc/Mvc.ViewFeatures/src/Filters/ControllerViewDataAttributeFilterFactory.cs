@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
-internal class ControllerViewDataAttributeFilterFactory : IFilterFactory
+internal sealed class ControllerViewDataAttributeFilterFactory : IFilterFactory
 {
     public ControllerViewDataAttributeFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {

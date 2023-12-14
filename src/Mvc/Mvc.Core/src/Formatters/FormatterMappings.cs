@@ -23,15 +23,8 @@ public class FormatterMappings
     /// <param name="contentType">The media type for the format value.</param>
     public void SetMediaTypeMappingForFormat(string format, string contentType)
     {
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
-
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(contentType);
 
         SetMediaTypeMappingForFormat(format, MediaTypeHeaderValue.Parse(contentType));
     }
@@ -44,15 +37,8 @@ public class FormatterMappings
     /// <param name="contentType">The media type for the format value.</param>
     public void SetMediaTypeMappingForFormat(string format, MediaTypeHeaderValue contentType)
     {
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
-
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(contentType);
 
         ValidateContentType(contentType);
         format = RemovePeriodIfPresent(format);
@@ -88,10 +74,7 @@ public class FormatterMappings
     /// <returns><c>true</c> if the format is successfully found and cleared; otherwise, <c>false</c>.</returns>
     public bool ClearMediaTypeMappingForFormat(string format)
     {
-        if (format == null)
-        {
-            throw new ArgumentNullException(nameof(format));
-        }
+        ArgumentNullException.ThrowIfNull(format);
 
         format = RemovePeriodIfPresent(format);
         return _map.Remove(format);
@@ -114,7 +97,7 @@ public class FormatterMappings
             throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(format));
         }
 
-        if (format.StartsWith(".", StringComparison.Ordinal))
+        if (format.StartsWith('.'))
         {
             if (format == ".")
             {

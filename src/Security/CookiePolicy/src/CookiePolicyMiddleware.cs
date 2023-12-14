@@ -62,7 +62,7 @@ public class CookiePolicyMiddleware
         return _next(context);
     }
 
-    private class CookiesWrapperFeature : IResponseCookiesFeature
+    private sealed class CookiesWrapperFeature : IResponseCookiesFeature
     {
         public CookiesWrapperFeature(ResponseCookiesWrapper wrapper)
         {

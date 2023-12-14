@@ -21,14 +21,8 @@ public class AuthenticationMiddleware
     /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
     public AuthenticationMiddleware(RequestDelegate next, IAuthenticationSchemeProvider schemes)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (schemes == null)
-        {
-            throw new ArgumentNullException(nameof(schemes));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(schemes);
 
         _next = next;
         Schemes = schemes;

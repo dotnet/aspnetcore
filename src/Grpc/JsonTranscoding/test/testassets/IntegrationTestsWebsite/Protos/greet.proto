@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+option csharp_namespace = "IntegrationTestsWebsite";
+
+import "google/api/annotations.proto";
+
+package greet;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name}"
+    };
+  }
+  rpc SayHelloPost (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter",
+      body: "*"
+    };
+  }
+  rpc SayHelloComplex (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name=from/*}"
+    };
+  }
+  rpc SayHelloPostEnum (EnumHelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter_enum",
+      body: "*"
+    };
+  }
+  rpc SayHelloComplexCatchAll1 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/{name=v1/greeter/**/b}/c/d/one"
+    };
+  }
+  rpc SayHelloComplexCatchAll2 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/{name=v1/greeter/**/b}/c/d/two"
+    };
+  }
+  rpc SayHelloComplexCatchAll3 (ComplextHelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/{name.last_name}/{name.first_name=complex_greeter/**/b}/c/d/two"
+    };
+  }
+  rpc SayHelloComplexCatchAll4 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name=**}"
+    };
+  }
+  rpc SayHelloCustomVerbOne (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_custom/{name}:one"
+    };
+  }
+  rpc SayHelloCustomVerbTwo (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_custom/{name}:two"
+    };
+  }
+  rpc SayHelloCatchAllCustomVerbOne (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_customcatchall/{name=**}:one"
+    };
+  }
+  rpc SayHelloCatchAllCustomVerbTwo (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_customcatchall/{name=**}:two"
+    };
+  }
+  rpc SayHelloPostCustomVerbOne (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter_custompost:one",
+      body: "*"
+    };
+  }
+  rpc SayHelloPostCustomVerbTwo (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter_custompost:two",
+      body: "*"
+    };
+  }
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+message ComplextHelloRequest {
+  NameDetail name = 1;
+  message NameDetail {
+    string first_name = 1;
+    string last_name = 2;
+  }
+}
+
+message EnumHelloRequest {
+  NameOptions name = 1;
+}
+
+enum NameOptions {
+    JAMES = 0;
+    JOHN = 1;
+    JANE = 2;
+    JESS = 3;
+}
+
+// The response message containing the greetings.
+message HelloReply {
+  string message = 1;
+}

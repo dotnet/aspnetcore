@@ -26,14 +26,14 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ResponseContentTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ResultsHelpers\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsDefaults.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)ProblemDetailsJsonConverter.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)HttpValidationProblemDetailsJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ProblemDetails\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MediaType\ReadOnlyMediaTypeHeaderValue.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)MediaType\HttpTokenParsingRule.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +48,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.OutputCaching" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
@@ -60,4 +61,35 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Cors" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Localization" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Abstractions.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Core.TestCommon" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Cors.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.DataAnnotations.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Formatters.Xml.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Localization.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Views.TestCommon" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

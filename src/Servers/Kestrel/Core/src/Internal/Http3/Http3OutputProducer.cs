@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
-internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
+internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
 {
     private readonly Http3FrameWriter _frameWriter;
     private readonly TimingPipeFlusher _flusher;
@@ -163,7 +163,7 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
 
             if (_streamCompleted)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             if (_startedWritingDataFrames)
@@ -349,7 +349,7 @@ internal class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAborter
             // frame will actually be written causing the headers to be flushed.
             if (_streamCompleted || data.Length == 0)
             {
-                return default;
+                return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
             _startedWritingDataFrames = true;

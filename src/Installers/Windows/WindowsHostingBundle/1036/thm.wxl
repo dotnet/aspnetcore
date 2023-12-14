@@ -3,13 +3,11 @@
   <String Id="Caption">Installation de [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Bienvenue</String>
-  <String Id="InstallMessage">Le programme d'installation va installer [WixBundleName] sur votre ordinateur. Cliquez sur Installer pour continuer, sur Options pour définir le répertoire d'installation ou sur Fermer pour quitter le programme.</String>
-  <String Id="InstallVersion">Version de [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">Voulez-vous vraiment annuler ?</String>
+  <String Id="InstallVersion">Version [WixBundleVersion]</String>
+  <String Id="ConfirmCancelMessage">Êtes-vous sûr de vouloir annuler ?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Version précédente</String>
-  <String Id="HelpHeader">Aide à l'installation</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [répertoire] - installe, répare, désinstalle ou
+  <String Id="HelpHeader">Aide du programme d'installation</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]répertoire[\]] - installe, répare, désinstalle ou
    crée une copie locale complète du bundle dans le répertoire. Install est l'option par défaut.
 
 /passive | /quiet -  affiche une interface utilisateur minimale, sans invite, ou n'affiche 
@@ -18,17 +16,10 @@
 /norestart   - supprime toutes les tentatives de redémarrage. Par défaut, l'interface utilisateur affiche une invite avant le redémarrage.
 /log log.txt - enregistre les informations dans un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Fermer</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;termes du contrat de licence&lt;/a&gt;.</String>
   <String Id="InstallAcceptCheckbox">J'&amp;accepte les conditions générales de la licence</String>
-  <String Id="InstallOptionsButton">&amp;Options</String>
   <String Id="InstallInstallButton">&amp;Installer</String>
   <String Id="InstallCloseButton">&amp;Fermer</String>
-  <String Id="OptionsHeader">Options d'installation</String>
-  <String Id="OptionsLocationLabel">Emplacement de l'installation :</String>
-  <String Id="OptionsBrowseButton">&amp;Parcourir</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Annuler</String>
-  <String Id="ProgressHeader">Progression de l'installation</String>
+  <String Id="ProgressHeader">Progression de l’opération</String>
   <String Id="ProgressLabel">En cours :</String>
   <String Id="OverallProgressPackageText">Initialisation...</String>
   <String Id="ProgressCancelButton">&amp;Annuler</String>
@@ -38,32 +29,32 @@
   <String Id="ModifyCloseButton">&amp;Fermer</String>
   <String Id="SuccessRepairHeader">Réparation terminée avec succès</String>
   <String Id="SuccessUninstallHeader">Désinstallation terminée avec succès</String>
-  <String Id="SuccessInstallHeader">Installation terminée avec succès</String> 
-  <String Id="SuccessHeader">Installation/désinstallation réussie</String>	
+  <String Id="SuccessInstallHeader">Installation terminée avec succès</String>
+  <String Id="SuccessHeader">Opération réussie</String>
   <String Id="SuccessLaunchButton">&amp;Démarrer</String>
   <String Id="SuccessRestartText">Vous devez redémarrer votre ordinateur avant de pouvoir utiliser le logiciel.</String>
   <String Id="SuccessRestartButton">&amp;Redémarrer</String>
   <String Id="SuccessCloseButton">&amp;Fermer</String>
-  <String Id="FailureHeader">Échec de l'installation</String>
+  <String Id="FailureHeader">Échec de l’opération</String>
   <String Id="FailureInstallHeader">Échec de l'installation</String>
   <String Id="FailureUninstallHeader">Échec de la désinstallation</String>
-  <String Id="FailureRepairHeader">Échec de la réparation</String> 
-  <String Id="FailureHyperlinkLogText">Un ou plusieurs problèmes sont à l'origine de l'échec de l'installation. Corrigez ces problèmes, puis recommencez l'installation. Pour plus d'informations, voir le &lt;a href="#"&gt;fichier journal&lt;/a&gt;.</String>
+  <String Id="FailureRepairHeader">Échec de la réparation</String>
+  <String Id="FailureHyperlinkLogText">Le programme d’installation a échoué en raison d’un ou de plusieurs problèmes. Veuillez corriger ces problèmes, puis relancez le programme d’installation. Pour plus d’informations, consultez le &lt;a href="#"&gt;fichier journal&lt;/a&gt;.</String>
   <String Id="FailureRestartText">Vous devez redémarrer votre ordinateur pour terminer l'opération de restauration du logiciel.</String>
   <String Id="FailureRestartButton">&amp;Redémarrer</String>
   <String Id="FailureCloseButton">&amp;Fermer</String>
   <String Id="FilesInUseHeader">Fichiers en cours d'utilisation</String>
-  <String Id="FilesInUseLabel">Les applications suivantes utilisent des fichiers nécessitant une mise à jour :</String>
-  <String Id="FilesInUseCloseRadioButton">&amp;Fermer les applications et tenter de les redémarrer.</String>
+  <String Id="FilesInUseLabel">Les applications suivantes utilisent des fichiers nécessitant une mise à jour :</String>
+  <String Id="FilesInUseCloseRadioButton">&amp;Fermer les applications essayer de les ouvrir de nouveau.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Ne pas fermer les applications. Un redémarrage sera nécessaire.</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Annuler</String>
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Bienvenue dans le programme d'installation de [WixBundleName].</String>
-  <String Id="InstallResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="EulaPrivacy">&lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;Termes du contrat de licence&lt;/a&gt; et &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;déclaration de confidentialité&lt;/a&gt; de [WixBundleName].</String>
-  <String Id="ModifyResetIIS">Redémarrez IIS une fois l'installation effectuée. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">IIS n'est pas activé sur cet ordinateur. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Des informations supplémentaires sont disponibles &lt;a href="https://go.microsoft.com/fwlink/?LinkId=798277"&gt;ici&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Veuillez redémarrer IIS une fois l'installation terminée. Vous trouverez des informations supplémentaires &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">IIS n'est pas activé sur cette machine. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Vous trouverez des informations supplémentaires &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
+  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;termes du contrat de licence&lt;/a&gt; et &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;déclaration de confidentialité&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Veuillez redémarrer IIS une fois l'installation terminée. Vous trouverez des informations supplémentaires &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">IIS n'est pas activé sur cette machine. Si vous avez l'intention d'exécuter des applications ASP.NET Core avec IIS, vous devez installer IIS avant d'exécuter ce programme d'installation. Vous trouverez des informations supplémentaires &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;ici&lt;/a&gt;.</String>
 </WixLocalization>

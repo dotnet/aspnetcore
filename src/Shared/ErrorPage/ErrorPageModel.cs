@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Hosting.Views;
 /// <summary>
 /// Holds data to be displayed on the error page.
 /// </summary>
-internal class ErrorPageModel
+internal sealed class ErrorPageModel
 {
     public ErrorPageModel(IEnumerable<ExceptionDetails> errorDetails, bool showRuntimeDetails, string runtimeDisplayName, string runtimeArchitecture, string clrVersion, string currentAssemblyVesion, string operatingSystemDescription)
     {

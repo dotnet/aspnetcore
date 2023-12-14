@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Diagnostics
     ;
     using System.Threading.Tasks;
 
-    internal class WelcomePage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
+    internal sealed class WelcomePage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
         #line hidden
         public WelcomePage()

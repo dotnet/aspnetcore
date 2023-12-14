@@ -7,6 +7,7 @@ using System.Text;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authentication;
 
@@ -77,4 +78,7 @@ public static class TestExtensions
         return res.Body.WriteAsync(xmlBytes, 0, xmlBytes.Length);
     }
 
+    public static IServiceCollection ConfigureAuthTestServices(this IServiceCollection services)
+        => services.AddOptions()
+                   .AddLogging();
 }

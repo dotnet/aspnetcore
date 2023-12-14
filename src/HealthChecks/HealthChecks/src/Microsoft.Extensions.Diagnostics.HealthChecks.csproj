@@ -11,9 +11,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <Nullable>enable</Nullable>
-    <!-- workaround https://github.com/dotnet/roslyn/issues/52527 -->
-    <NoWarn>$(NoWarn);SYSLIB1006</NoWarn>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +21,11 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
+      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +33,9 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+
+    <!-- See: https://github.com/dotnet/aspnetcore/issues/46683 -->
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
   </ItemGroup>
 
 </Project>

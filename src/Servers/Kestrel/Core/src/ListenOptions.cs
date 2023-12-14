@@ -11,15 +11,16 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
 /// <summary>
-/// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
+/// Describes either an <see cref="System.Net.IPEndPoint"/>, Unix domain socket path, named pipe name, or a file descriptor for an already open
 /// socket that Kestrel should bind to or open.
 /// </summary>
 public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 {
     internal const HttpProtocols DefaultHttpProtocols = HttpProtocols.Http1AndHttp2;
 
-    internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
-    internal readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
+    private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
+    private readonly List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>> _multiplexedMiddleware = new List<Func<MultiplexedConnectionDelegate, MultiplexedConnectionDelegate>>();
+    private HttpProtocols _protocols = DefaultHttpProtocols;
 
     internal ListenOptions(EndPoint endPoint)
     {
@@ -42,7 +43,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     }
 
     /// <summary>
-    /// Gets the <see cref="EndPoint"/>.
+    /// Gets the <see cref="System.Net.EndPoint"/>.
     /// </summary>
     public EndPoint EndPoint { get; internal set; }
 
@@ -51,34 +52,65 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 
     // IPEndPoint is mutable so port 0 can be updated to the bound port.
     /// <summary>
-    /// The <see cref="IPEndPoint"/> to bind to.
-    /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="IPEndPoint"/>.
+    /// Gets the bound <see cref="System.Net.IPEndPoint"/>.
     /// </summary>
+    /// <remarks>
+    /// Only set if the <see cref="ListenOptions"/> is bound to a <see cref="System.Net.IPEndPoint"/>.
+    /// </remarks>
     public IPEndPoint? IPEndPoint => EndPoint as IPEndPoint;
 
     /// <summary>
-    /// The absolute path to a Unix domain socket to bind to.
-    /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="UnixDomainSocketEndPoint"/>.
+    /// Gets the bound absolute path to a Unix domain socket.
     /// </summary>
+    /// <remarks>
+    /// Only set if the <see cref="ListenOptions"/> is bound to a <see cref="UnixDomainSocketEndPoint"/>.
+    /// </remarks>
     public string? SocketPath => (EndPoint as UnixDomainSocketEndPoint)?.ToString();
 
     /// <summary>
-    /// A file descriptor for the socket to open.
-    /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="FileHandleEndPoint"/>.
+    /// Gets the bound pipe name to a name pipe server.
     /// </summary>
+    /// <remarks>
+    /// Only set if the <see cref="ListenOptions"/> is bound to a <see cref="NamedPipeEndPoint"/>.
+    /// </remarks>
+    public string? PipeName => (EndPoint as NamedPipeEndPoint)?.PipeName.ToString();
+
+    /// <summary>
+    /// Gets the bound file descriptor to a socket.
+    /// </summary>
+    /// <remarks>
+    /// Only set if the <see cref="ListenOptions"/> is bound to a <see cref="FileHandleEndPoint"/>.
+    /// </remarks>
     public ulong FileHandle => (EndPoint as FileHandleEndPoint)?.FileHandle ?? 0;
 
     /// <summary>
+    /// Gets the <see cref="Core.KestrelServerOptions"/> for the listener options.
     /// Enables connection middleware to resolve and use services registered by the application during startup.
-    /// Only set if accessed from the callback of a <see cref="KestrelServerOptions"/> Listen* method.
     /// </summary>
+    /// <remarks>
+    /// Only set if accessed from the callback of a <see cref="Core.KestrelServerOptions"/> Listen* method.
+    /// </remarks>
     public KestrelServerOptions KestrelServerOptions { get; internal set; } = default!; // Set via ConfigureKestrel callback
 
     /// <summary>
     /// The protocols enabled on this endpoint.
     /// </summary>
-    /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>
-    public HttpProtocols Protocols { get; set; } = DefaultHttpProtocols;
+    /// <remarks>Defaults to HTTP/1.x, HTTP/2, and HTTP/3.</remarks>
+    public HttpProtocols Protocols
+    {
+        get => _protocols;
+        set
+        {
+            _protocols = value;
+            ProtocolsSetExplicitly = true;
+        }
+    }
+
+    /// <summary>
+    /// Tracks whether <see cref="Protocols"/> has been set explicitly so that we can determine whether
+    /// or not the value reflects the user's intention.
+    /// </summary>
+    internal bool ProtocolsSetExplicitly { get; private set; }
 
     /// <summary>
     /// Gets or sets a value that controls whether the "Alt-Svc" header is included with response headers.
@@ -109,6 +141,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
 
     internal bool IsTls { get; set; }
     internal HttpsConnectionAdapterOptions? HttpsOptions { get; set; }
+    internal TlsHandshakeCallbackOptions? HttpsCallbackOptions { get; set; }
 
     /// <summary>
     /// Gets the name of this endpoint to display on command-line when the web server starts.
@@ -119,6 +152,8 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
         {
             case UnixDomainSocketEndPoint _:
                 return $"{Scheme}://unix:{EndPoint}";
+            case NamedPipeEndPoint namedPipeEndPoint:
+                return $"{Scheme}://pipe:/{namedPipeEndPoint.PipeName}";
             case FileHandleEndPoint _:
                 return $"{Scheme}://<file handle>";
             default:
@@ -188,5 +223,30 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     {
         await AddressBinder.BindEndpointAsync(this, context, cancellationToken).ConfigureAwait(false);
         context.Addresses.Add(GetDisplayName());
+    }
+
+    /// <summary>
+    /// used for cloning to two IPEndpoints
+    /// </summary>
+    /// <remarks>
+    /// Internal for testing
+    /// </remarks>
+    protected internal ListenOptions Clone(IPAddress address)
+    {
+        var options = new ListenOptions(new IPEndPoint(address, IPEndPoint!.Port))
+        {
+            KestrelServerOptions = KestrelServerOptions,
+            _protocols = _protocols, // Avoid side-effects from setting Protocols
+            ProtocolsSetExplicitly = ProtocolsSetExplicitly,
+            DisableAltSvcHeader = DisableAltSvcHeader,
+            IsTls = IsTls,
+            HttpsOptions = HttpsOptions,
+            HttpsCallbackOptions = HttpsCallbackOptions,
+            EndpointConfig = EndpointConfig
+        };
+
+        options._middleware.AddRange(_middleware);
+        options._multiplexedMiddleware.AddRange(_multiplexedMiddleware);
+        return options;
     }
 }

@@ -11,6 +11,6 @@ internal sealed class RazorRuntimeCompilationHostingStartup : IHostingStartup
     public void Configure(IWebHostBuilder builder)
     {
         // Add Razor services
-        builder.ConfigureServices(services => RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services));
+        builder.ConfigureServices(RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices);
     }
 }

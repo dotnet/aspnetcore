@@ -33,10 +33,7 @@ public class CorsOptions
     /// <param name="policy">The <see cref="CorsPolicy"/> policy to be added.</param>
     public void AddDefaultPolicy(CorsPolicy policy)
     {
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         AddPolicy(DefaultPolicyName, policy);
     }
@@ -47,10 +44,7 @@ public class CorsOptions
     /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
     public void AddDefaultPolicy(Action<CorsPolicyBuilder> configurePolicy)
     {
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullException.ThrowIfNull(configurePolicy);
 
         AddPolicy(DefaultPolicyName, configurePolicy);
     }
@@ -62,15 +56,8 @@ public class CorsOptions
     /// <param name="policy">The <see cref="CorsPolicy"/> policy to be added.</param>
     public void AddPolicy(string name, CorsPolicy policy)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(policy);
 
         PolicyMap[name] = (policy, Task.FromResult(policy));
     }
@@ -82,15 +69,8 @@ public class CorsOptions
     /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
     public void AddPolicy(string name, Action<CorsPolicyBuilder> configurePolicy)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        if (configurePolicy == null)
-        {
-            throw new ArgumentNullException(nameof(configurePolicy));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(configurePolicy);
 
         var policyBuilder = new CorsPolicyBuilder();
         configurePolicy(policyBuilder);
@@ -106,10 +86,7 @@ public class CorsOptions
     /// <returns>The <see cref="CorsPolicy"/> if the policy was added.<c>null</c> otherwise.</returns>
     public CorsPolicy? GetPolicy(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         if (PolicyMap.TryGetValue(name, out var result))
         {

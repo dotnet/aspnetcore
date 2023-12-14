@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -15,13 +10,13 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests;
@@ -33,6 +28,46 @@ public class MapConnectionHandlerTests
     public MapConnectionHandlerTests(ITestOutputHelper output)
     {
         _output = output;
+    }
+
+    [Fact]
+    public void MapConnectionHandlerFindsMetadataPolicyOnEndPoint()
+    {
+        var authCount = 0;
+        var policy1 = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+        var req = new TestRequirement();
+        using (var host = BuildWebHost<AuthConnectionHandler>("/auth",
+            options => authCount += options.AuthorizationData.Count,
+            endpoints => endpoints.RequireAuthorization(policy1).RequireAuthorization(pb => pb.Requirements.Add(req))))
+        {
+            host.Start();
+
+            var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+            // We register 2 endpoints (/negotiate and /)
+            Assert.Collection(dataSource.Endpoints,
+                endpoint =>
+                {
+                    Assert.Equal("/auth/negotiate", endpoint.DisplayName);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
+                    var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
+                    Assert.Equal(2, policies.Count);
+                    Assert.Equal(policy1, policies[0]);
+                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Equal(req, policies[1].Requirements.First());
+                },
+                endpoint =>
+                {
+                    Assert.Equal("/auth", endpoint.DisplayName);
+                    Assert.Single(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
+                    var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
+                    Assert.Equal(2, policies.Count);
+                    Assert.Equal(policy1, policies[0]);
+                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Equal(req, policies[1].Requirements.First());
+                });
+        }
+
+        Assert.Equal(0, authCount);
     }
 
     [Fact]
@@ -371,6 +406,27 @@ public class MapConnectionHandlerTests
         Assert.Equal(WebSocketMessageType.Close, result.MessageType);
     }
 
+    [Fact]
+    public void MapConnectionHandlerAddsDisableRequestTimeoutMetadata()
+    {
+        using var host = BuildWebHost<MyConnectionHandler>("/test", o => { });
+        host.Start();
+
+        var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+        // We register 2 endpoints (/negotiate and /)
+        Assert.Collection(dataSource.Endpoints,
+            endpoint =>
+            {
+                Assert.Equal("/test/negotiate", endpoint.DisplayName);
+                Assert.Empty(endpoint.Metadata.GetOrderedMetadata<DisableRequestTimeoutAttribute>());
+            },
+            endpoint =>
+            {
+                Assert.Equal("/test", endpoint.DisplayName);
+                Assert.Single(endpoint.Metadata.GetOrderedMetadata<DisableRequestTimeoutAttribute>());
+            });
+    }
+
     private class MyConnectionHandler : ConnectionHandler
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
@@ -421,6 +477,10 @@ public class MapConnectionHandlerTests
         }
     }
 
+    private class TestRequirement : IAuthorizationRequirement
+    {
+    }
+
     private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
     {
         return new HostBuilder()
@@ -442,7 +502,7 @@ public class MapConnectionHandlerTests
             .Build();
     }
 
-    private IHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
+    private IHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionDispatcherOptions> configureOptions, Action<IEndpointConventionBuilder> configureEndpoints = null) where TConnectionHandler : ConnectionHandler
     {
         return new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
@@ -459,7 +519,11 @@ public class MapConnectionHandlerTests
                     app.UseRouting();
                     app.UseEndpoints(routes =>
                     {
-                        routes.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
+                        var builder = routes.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
+                        if (configureEndpoints != null)
+                        {
+                            configureEndpoints(builder);
+                        }
                     });
                 })
                 .ConfigureLogging(factory =>

@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.PostConfigure(string! name, TOptions! options) -> void
-Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.PostConfigure(string? name, TOptions! options) -> void

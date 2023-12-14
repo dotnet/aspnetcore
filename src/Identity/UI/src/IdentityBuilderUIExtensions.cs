@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -59,7 +59,8 @@ public static class IdentityBuilderUIExtensions
         builder.Services.ConfigureOptions(
             typeof(IdentityDefaultUIConfigureOptions<>)
                 .MakeGenericType(builder.UserType));
-        builder.Services.TryAddTransient<IEmailSender, EmailSender>();
+        builder.Services.TryAddTransient<IEmailSender, NoOpEmailSender>();
+        builder.Services.TryAddTransient(typeof(IEmailSender<>), typeof(DefaultMessageEmailSender<>));
 
         return builder;
     }
@@ -101,7 +102,7 @@ public static class IdentityBuilderUIExtensions
         return true;
     }
 
-    internal class ViewVersionFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
+    internal sealed class ViewVersionFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
     {
         private readonly UIFramework _framework;
 

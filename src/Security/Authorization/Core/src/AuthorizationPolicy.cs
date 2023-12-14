@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -27,15 +28,8 @@ public class AuthorizationPolicy
     /// </param>
     public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> authenticationSchemes)
     {
-        if (requirements == null)
-        {
-            throw new ArgumentNullException(nameof(requirements));
-        }
-
-        if (authenticationSchemes == null)
-        {
-            throw new ArgumentNullException(nameof(authenticationSchemes));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(requirements);
+        ArgumentNullThrowHelper.ThrowIfNull(authenticationSchemes);
 
         if (!requirements.Any())
         {
@@ -67,10 +61,7 @@ public class AuthorizationPolicy
     /// </returns>
     public static AuthorizationPolicy Combine(params AuthorizationPolicy[] policies)
     {
-        if (policies == null)
-        {
-            throw new ArgumentNullException(nameof(policies));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(policies);
 
         return Combine((IEnumerable<AuthorizationPolicy>)policies);
     }
@@ -85,10 +76,7 @@ public class AuthorizationPolicy
     /// </returns>
     public static AuthorizationPolicy Combine(IEnumerable<AuthorizationPolicy> policies)
     {
-        if (policies == null)
-        {
-            throw new ArgumentNullException(nameof(policies));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(policies);
 
         var builder = new AuthorizationPolicyBuilder();
         foreach (var policy in policies)
@@ -108,17 +96,29 @@ public class AuthorizationPolicy
     /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
     /// authorization policies provided by the specified <paramref name="policyProvider"/>.
     /// </returns>
-    public static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
-    {
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
+    public static Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
+        IEnumerable<IAuthorizeData> authorizeData) => CombineAsync(policyProvider, authorizeData,
+            Enumerable.Empty<AuthorizationPolicy>());
 
-        if (authorizeData == null)
-        {
-            throw new ArgumentNullException(nameof(authorizeData));
-        }
+    /// <summary>
+    /// Combines the <see cref="AuthorizationPolicy"/> provided by the specified
+    /// <paramref name="policyProvider"/>.
+    /// </summary>
+    /// <param name="policyProvider">A <see cref="IAuthorizationPolicyProvider"/> which provides the policies to combine.</param>
+    /// <param name="authorizeData">A collection of authorization data used to apply authorization to a resource.</param>
+    /// <param name="policies">A collection of <see cref="AuthorizationPolicy"/> policies to combine.</param>
+    /// <returns>
+    /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
+    /// authorization policies provided by the specified <paramref name="policyProvider"/>.
+    /// </returns>
+    public static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider,
+        IEnumerable<IAuthorizeData> authorizeData,
+        IEnumerable<AuthorizationPolicy> policies)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
+        ArgumentNullThrowHelper.ThrowIfNull(authorizeData);
+
+        var anyPolicies = policies.Any();
 
         // Avoid allocating enumerator if the data is known to be empty
         var skipEnumeratingData = false;
@@ -137,7 +137,7 @@ public class AuthorizationPolicy
                     policyBuilder = new AuthorizationPolicyBuilder();
                 }
 
-                var useDefaultPolicy = true;
+                var useDefaultPolicy = !(anyPolicies);
                 if (!string.IsNullOrWhiteSpace(authorizeDatum.Policy))
                 {
                     var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy).ConfigureAwait(false);
@@ -173,6 +173,16 @@ public class AuthorizationPolicy
                 {
                     policyBuilder.Combine(await policyProvider.GetDefaultPolicyAsync().ConfigureAwait(false));
                 }
+            }
+        }
+
+        if (anyPolicies)
+        {
+            policyBuilder ??= new();
+
+            foreach (var policy in policies)
+            {
+                policyBuilder.Combine(policy);
             }
         }
 

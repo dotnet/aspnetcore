@@ -13,7 +13,6 @@
 
     <StaticWebAssetBasePath>Identity</StaticWebAssetBasePath>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
-    <GenerateStaticWebAssetsPackTargetsDependsOn>_GenerateIdentityUIPackItems;$(GenerateStaticWebAssetsPackTargetsDependsOn)</GenerateStaticWebAssetsPackTargetsDependsOn>
     <DisableStaticWebAssetsBuildPropsFileGeneration>true</DisableStaticWebAssetsBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
     <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
@@ -22,6 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="@(Content)" />
+    <Content Remove="@(Content)" />
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
     <None Include="buildTransitive\*" Pack="true" PackagePath="buildTransitive\" />
@@ -73,7 +78,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateIdentityUIPackItems">
+  <Target Name="_GenerateIdentityUIPackItems" BeforeTargets="GenerateStaticWebAssetsPackFiles">
     <ItemGroup>
       <V4AssetsCandidates Include="assets\V4\**" />
       <V4AssetsCandidates>
@@ -95,25 +100,19 @@
     <GenerateStaticWebAsssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
 
     <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV4Asset" />
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
     <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
-      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackV5Asset" />
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.targets">
+      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)IdentityUI.V4.targets">
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V4.targets</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="%(_PackV4Asset.Identity)">
-        <PackagePath>%(_PackV4Asset.TargetPath)</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(IntermediateOutputPath)IdentityUI.V5.targets">
+      </StaticWebAssetPackageFile>
+      <StaticWebAssetPackageFile Include="$(IntermediateOutputPath)IdentityUI.V5.targets">
         <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.V5.targets</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="%(_PackV5Asset.Identity)">
-        <PackagePath>%(_PackV5Asset.TargetPath)</PackagePath>
-      </TfmSpecificPackageFile>
+      </StaticWebAssetPackageFile>
     </ItemGroup>
   </Target>
 </Project>

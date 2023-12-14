@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.Managed;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -39,10 +40,7 @@ public sealed unsafe class Secret : IDisposable, ISecret
     public Secret(byte[] value)
         : this(new ArraySegment<byte>(value))
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(value);
     }
 
     /// <summary>
@@ -69,10 +67,7 @@ public sealed unsafe class Secret : IDisposable, ISecret
     /// </summary>
     public Secret(ISecret secret)
     {
-        if (secret == null)
-        {
-            throw new ArgumentNullException(nameof(secret));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(secret);
 
         var other = secret as Secret;
         if (other != null)

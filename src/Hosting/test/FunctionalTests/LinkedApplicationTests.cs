@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Hosting.FunctionalTests;
 
 public class LinkedApplicationTests : LoggedTest
 {
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/4030")]
     public async Task LinkedApplicationWorks()
     {
         using (StartLog(out var loggerFactory))

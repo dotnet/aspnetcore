@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Web;
 // Mouse events
 [EventHandler("onmouseover", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseout", typeof(MouseEventArgs), true, true)]
+[EventHandler("onmouseleave", typeof(MouseEventArgs), true, true)]
+[EventHandler("onmouseenter", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmousemove", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmousedown", typeof(MouseEventArgs), true, true)]
 [EventHandler("onmouseup", typeof(MouseEventArgs), true, true)]
@@ -120,7 +122,12 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onreadystatechange", typeof(EventArgs), true, true)]
 [EventHandler("onscroll", typeof(EventArgs), true, true)]
 
+// <details>
 [EventHandler("ontoggle", typeof(EventArgs), true, true)]
+
+// <dialog>
+[EventHandler("oncancel", typeof(EventArgs), false, true)]
+[EventHandler("onclose", typeof(EventArgs), false, true)]
 public static class EventHandlers
 {
 }

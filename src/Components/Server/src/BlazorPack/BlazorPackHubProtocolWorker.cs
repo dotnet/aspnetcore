@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack;
 
 internal sealed class BlazorPackHubProtocolWorker : MessagePackHubProtocolWorker
 {
-    protected override object DeserializeObject(ref MessagePackReader reader, Type type, string field)
+    protected override object? DeserializeObject(ref MessagePackReader reader, Type type, string field)
     {
         try
         {

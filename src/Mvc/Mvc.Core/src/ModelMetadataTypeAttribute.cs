@@ -15,10 +15,7 @@ public class ModelMetadataTypeAttribute : Attribute
     /// <param name="type">The type of metadata class that is associated with a data model class.</param>
     public ModelMetadataTypeAttribute(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         MetadataType = type;
     }

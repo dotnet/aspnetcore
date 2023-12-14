@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Provides abstractions for a loosly coupled collection of features.
-    
+
 Commonly Used Types:
 Microsoft.AspNetCore.Http.Features.IFeatureCollection
 Microsoft.AspNetCore.Http.Features.FeatureCollection
@@ -12,7 +12,13 @@ Microsoft.AspNetCore.Http.Features.FeatureCollection
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <Trimmable>true</Trimmable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentOutOfRangeThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
 
 </Project>

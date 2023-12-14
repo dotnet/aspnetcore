@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class DynamicPageEndpointSelectorCache
+#pragma warning restore CA1852 // Seal internal types
 {
     private readonly ConcurrentDictionary<int, EndpointDataSource> _dataSourceCache = new();
     private readonly ConcurrentDictionary<int, DynamicPageEndpointSelector> _endpointSelectorCache = new();
@@ -31,7 +33,7 @@ internal class DynamicPageEndpointSelectorCache
 
         var dataSourceId = endpoint.Metadata.GetMetadata<PageEndpointDataSourceIdMetadata>();
         Debug.Assert(dataSourceId is not null);
-        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, key => EnsureDataSource(key));
+        return _endpointSelectorCache.GetOrAdd(dataSourceId.Id, EnsureDataSource);
     }
 
     private DynamicPageEndpointSelector EnsureDataSource(int key)

@@ -57,7 +57,7 @@
       <_Command Condition=" '$(ProjectAssetsFile)' != '' ">$(_Command) --assets-file "$(ProjectAssetsFile)"</_Command>
       <_Command Condition=" '$(PlatformTarget)' != '' ">$(_Command) --platform "$(PlatformTarget)"</_Command>
       <_Command Condition=" '$(PlatformTarget)' == '' AND '$(Platform)' != '' ">$(_Command) --platform "$(Platform)"</_Command>
-      <_Command Condition=" '$(RuntimeIdentifier)' != '' ">$(_Command) --runtime "$(RuntimeIdentifier)"</_Command>
+      <_Command Condition=" '$(RuntimeIdentifier)' != '' ">$(_Command) --runtime "$(RuntimeIdentifier) --self-contained"</_Command>
       <_Command>$(_Command) $(OpenApiGenerateDocumentsOptions)</_Command>
     </PropertyGroup>
 

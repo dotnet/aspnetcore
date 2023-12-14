@@ -17,10 +17,7 @@ public static class ApiDescriptionExtensions
     /// <returns>The property or the default value of <typeparamref name="T"/>.</returns>
     public static T? GetProperty<T>(this ApiDescription apiDescription)
     {
-        if (apiDescription == null)
-        {
-            throw new ArgumentNullException(nameof(apiDescription));
-        }
+        ArgumentNullException.ThrowIfNull(apiDescription);
 
         if (apiDescription.Properties.TryGetValue(typeof(T), out var value))
         {
@@ -41,10 +38,7 @@ public static class ApiDescriptionExtensions
     /// <param name="value">The value of the property.</param>
     public static void SetProperty<T>(this ApiDescription apiDescription, T value)
     {
-        if (apiDescription == null)
-        {
-            throw new ArgumentNullException(nameof(apiDescription));
-        }
+        ArgumentNullException.ThrowIfNull(apiDescription);
 
         if (value == null)
         {

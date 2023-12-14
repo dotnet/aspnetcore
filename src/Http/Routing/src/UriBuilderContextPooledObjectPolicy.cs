@@ -6,7 +6,7 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing;
 
-internal class UriBuilderContextPooledObjectPolicy : IPooledObjectPolicy<UriBuildingContext>
+internal sealed class UriBuilderContextPooledObjectPolicy : IPooledObjectPolicy<UriBuildingContext>
 {
     public UriBuildingContext Create()
     {

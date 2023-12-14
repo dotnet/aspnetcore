@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -21,20 +21,21 @@ internal partial class ResourceInvoker
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var routeKeys = action.RouteValues.Keys.ToArray();
-                var routeValues = action.RouteValues.Values.ToArray();
                 var stringBuilder = new StringBuilder();
                 stringBuilder.Append('{');
-                for (var i = 0; i < routeValues.Length; i++)
+                var index = 0;
+                var count = action.RouteValues.Count;
+                foreach (var (key, value) in action.RouteValues)
                 {
-                    if (i == routeValues.Length - 1)
+                    if (index == count - 1)
                     {
-                        stringBuilder.Append(FormattableString.Invariant($"{routeKeys[i]} = \"{routeValues[i]}\""));
+                        stringBuilder.Append(CultureInfo.InvariantCulture, $"{key} = \"{value}\"");
                     }
                     else
                     {
-                        stringBuilder.Append(FormattableString.Invariant($"{routeKeys[i]} = \"{routeValues[i]}\", "));
+                        stringBuilder.Append(CultureInfo.InvariantCulture, $"{key} = \"{value}\", ");
                     }
+                    index++;
                 }
                 stringBuilder.Append('}');
 

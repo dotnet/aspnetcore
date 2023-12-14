@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Rewrite.UrlActions;
 
-internal class RedirectAction : UrlAction
+internal sealed class RedirectAction : UrlAction
 {
     public int StatusCode { get; }
     public bool QueryStringAppend { get; }

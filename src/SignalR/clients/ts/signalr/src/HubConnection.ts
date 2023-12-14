@@ -4,15 +4,17 @@
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
 import { AbortError } from "./Errors";
-import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CloseMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
 import { Arg, getErrorString, Platform } from "./Utils";
+import { MessageBuffer } from "./MessageBuffer";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
+const DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE = 100_000;
 
 /** Describes the current state of the {@link HubConnection} to the server. */
 export enum HubConnectionState {
@@ -36,11 +38,13 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;
+    private readonly _statefulReconnectBufferSize: number;
     private _protocol: IHubProtocol;
     private _handshakeProtocol: HandshakeProtocol;
     private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
-    private _methods: { [name: string]: ((...args: any[]) => void)[] };
+    private _methods: { [name: string]: (((...args: any[]) => void) | ((...args: any[]) => any))[] };
     private _invocationId: number;
+    private _messageBuffer?: MessageBuffer;
 
     private _closedCallbacks: ((error?: Error) => void)[];
     private _reconnectingCallbacks: ((error?: Error) => void)[];
@@ -68,7 +72,7 @@ export class HubConnection {
 
     private _freezeEventListener = () =>
     {
-        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://docs.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
+        this._logger.log(LogLevel.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://learn.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
     };
 
     /** The server timeout in milliseconds.
@@ -92,17 +96,34 @@ export class HubConnection {
     // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
     // be stripped away and the '.d.ts' file would have no constructor, which is interpreted as a
     // public parameter-less constructor.
-    public static create(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy): HubConnection {
-        return new HubConnection(connection, logger, protocol, reconnectPolicy);
+    public static create(
+        connection: IConnection,
+        logger: ILogger,
+        protocol: IHubProtocol,
+        reconnectPolicy?: IRetryPolicy,
+        serverTimeoutInMilliseconds?: number,
+        keepAliveIntervalInMilliseconds?: number,
+        statefulReconnectBufferSize?: number): HubConnection {
+        return new HubConnection(connection, logger, protocol, reconnectPolicy,
+            serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds, statefulReconnectBufferSize);
     }
 
-    private constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy) {
+    private constructor(
+        connection: IConnection,
+        logger: ILogger,
+        protocol: IHubProtocol,
+        reconnectPolicy?: IRetryPolicy,
+        serverTimeoutInMilliseconds?: number,
+        keepAliveIntervalInMilliseconds?: number,
+        statefulReconnectBufferSize?: number) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
 
-        this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
-        this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
+        this.serverTimeoutInMilliseconds = serverTimeoutInMilliseconds ?? DEFAULT_TIMEOUT_IN_MS;
+        this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds ?? DEFAULT_PING_INTERVAL_IN_MS;
+
+        this._statefulReconnectBufferSize = statefulReconnectBufferSize ?? DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE;
 
         this._logger = logger;
         this._protocol = protocol;
@@ -207,9 +228,16 @@ export class HubConnection {
         await this.connection.start(this._protocol.transferFormat);
 
         try {
+            let version = this._protocol.version;
+            if (!this.connection.features.reconnect) {
+                // Stateful Reconnect starts with HubProtocol version 2, newer clients connecting to older servers will fail to connect due to
+                // the handshake only supporting version 1, so we will try to send version 1 during the handshake to keep old servers working.
+                version = 1;
+            }
+
             const handshakeRequest: HandshakeRequestMessage = {
                 protocol: this._protocol.name,
-                version: this._protocol.version,
+                version,
             };
 
             this._logger.log(LogLevel.Debug, "Sending handshake request.");
@@ -235,6 +263,21 @@ export class HubConnection {
                 // eslint-disable-next-line @typescript-eslint/no-throw-literal
                 throw this._stopDuringStartError;
             }
+
+            const useStatefulReconnect = this.connection.features.reconnect || false;
+            if (useStatefulReconnect) {
+                this._messageBuffer = new MessageBuffer(this._protocol, this.connection, this._statefulReconnectBufferSize);
+                this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer);
+                this.connection.features.resend = () => {
+                    if (this._messageBuffer) {
+                        return this._messageBuffer._resend();
+                    }
+                }
+            }
+
+            if (!this.connection.features.inherentKeepAlive) {
+                await this._sendMessage(this._cachedPingMessage);
+            }
         } catch (e) {
             this._logger.log(LogLevel.Debug, `Hub handshake failed with error '${e}' during start(). Stopping HubConnection.`);
 
@@ -255,6 +298,7 @@ export class HubConnection {
     public async stop(): Promise<void> {
         // Capture the start promise before the connection might be restarted in an onclose callback.
         const startPromise = this._startPromise;
+        this.connection.features.reconnect = false;
 
         this._stopPromise = this._stopInternal();
         await this._stopPromise;
@@ -278,6 +322,7 @@ export class HubConnection {
             return this._stopPromise!;
         }
 
+        const state = this._connectionState;
         this._connectionState = HubConnectionState.Disconnecting;
 
         this._logger.log(LogLevel.Debug, "Stopping HubConnection.");
@@ -295,6 +340,11 @@ export class HubConnection {
             return Promise.resolve();
         }
 
+        if (state === HubConnectionState.Connected) {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            this._sendCloseMessage();
+        }
+
         this._cleanupTimeout();
         this._cleanupPingTimer();
         this._stopDuringStartError = error || new AbortError("The connection was stopped before the hub handshake could complete.");
@@ -303,6 +353,14 @@ export class HubConnection {
         // or the onclose callback is invoked. The onclose callback will transition the HubConnection
         // to the disconnected state if need be before HttpConnection.stop() completes.
         return this.connection.stop(error);
+    }
+
+    private async _sendCloseMessage() {
+        try {
+            await this._sendWithProtocol(this._createCloseMessage());
+        } catch {
+            // Ignore, this is a best effort attempt to let the server know the client closed gracefully.
+        }
     }
 
     /** Invokes a streaming hub method on the server using the specified name and arguments.
@@ -369,7 +427,11 @@ export class HubConnection {
      * @param message The js object to serialize and send.
      */
     private _sendWithProtocol(message: any) {
-        return this._sendMessage(this._protocol.writeMessage(message));
+        if (this._messageBuffer) {
+            return this._messageBuffer._send(message);
+        } else {
+            return this._sendMessage(this._protocol.writeMessage(message));
+        }
     }
 
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
@@ -443,6 +505,7 @@ export class HubConnection {
      * @param {string} methodName The name of the hub method to define.
      * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
      */
+    public on(methodName: string, newMethod: (...args: any[]) => any): void
     public on(methodName: string, newMethod: (...args: any[]) => void): void {
         if (!methodName || !newMethod) {
             return;
@@ -544,9 +607,17 @@ export class HubConnection {
             const messages = this._protocol.parseMessages(data, this._logger);
 
             for (const message of messages) {
+                if (this._messageBuffer && !this._messageBuffer._shouldProcessMessage(message)) {
+                    // Don't process the message, we are either waiting for a SequenceMessage or received a duplicate message
+                    continue;
+                }
+
                 switch (message.type) {
                     case MessageType.Invocation:
-                        this._invokeClientMethod(message);
+                        this._invokeClientMethod(message)
+                            .catch((e) => {
+                                this._logger.log(LogLevel.Error, `Invoke client method threw error: ${getErrorString(e)}`)
+                            });
                         break;
                     case MessageType.StreamItem:
                     case MessageType.Completion: {
@@ -584,6 +655,16 @@ export class HubConnection {
 
                         break;
                     }
+                    case MessageType.Ack:
+                        if (this._messageBuffer) {
+                            this._messageBuffer._ack(message);
+                        }
+                        break;
+                    case MessageType.Sequence:
+                        if (this._messageBuffer) {
+                            this._messageBuffer._resetSequence(message);
+                        }
+                        break;
                     default:
                         this._logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
@@ -672,26 +753,62 @@ export class HubConnection {
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
-    private _invokeClientMethod(invocationMessage: InvocationMessage) {
-        const methods = this._methods[invocationMessage.target.toLowerCase()];
-        if (methods) {
-            const methodsCopy = methods.slice();
-            try {
-                methodsCopy.forEach((m) => m.apply(this, invocationMessage.arguments));
-            } catch (e) {
-                this._logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
-            }
+    private async _invokeClientMethod(invocationMessage: InvocationMessage) {
+        const methodName = invocationMessage.target.toLowerCase();
+        const methods = this._methods[methodName];
+        if (!methods) {
+            this._logger.log(LogLevel.Warning, `No client method with the name '${methodName}' found.`);
 
+            // No handlers provided by client but the server is expecting a response still, so we send an error
             if (invocationMessage.invocationId) {
-                // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
-                const message = "Server requested a response, which is not supported in this version of the client.";
-                this._logger.log(LogLevel.Error, message);
-
-                // We don't want to wait on the stop itself.
-                this._stopPromise = this._stopInternal(new Error(message));
+                this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
+                await this._sendWithProtocol(this._createCompletionMessage(invocationMessage.invocationId, "Client didn't provide a result.", null));
             }
+            return;
+        }
+
+        // Avoid issues with handlers removing themselves thus modifying the list while iterating through it
+        const methodsCopy = methods.slice();
+
+        // Server expects a response
+        const expectsResponse = invocationMessage.invocationId ? true : false;
+        // We preserve the last result or exception but still call all handlers
+        let res;
+        let exception;
+        let completionMessage;
+        for (const m of methodsCopy) {
+            try {
+                const prevRes = res;
+                res = await m.apply(this, invocationMessage.arguments);
+                if (expectsResponse && res && prevRes) {
+                    this._logger.log(LogLevel.Error, `Multiple results provided for '${methodName}'. Sending error to server.`);
+                    completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, `Client provided multiple results.`, null);
+                }
+                // Ignore exception if we got a result after, the exception will be logged
+                exception = undefined;
+            } catch (e) {
+                exception = e;
+                this._logger.log(LogLevel.Error, `A callback for the method '${methodName}' threw error '${e}'.`);
+            }
+        }
+        if (completionMessage) {
+            await this._sendWithProtocol(completionMessage);
+        } else if (expectsResponse) {
+            // If there is an exception that means either no result was given or a handler after a result threw
+            if (exception) {
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, `${exception}`, null);
+            } else if (res !== undefined) {
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, null, res);
+            } else {
+                this._logger.log(LogLevel.Warning, `No result given for '${methodName}' method and invocation ID '${invocationMessage.invocationId}'.`);
+                // Client didn't provide a result or throw from a handler, server expects a response so we send an error
+                completionMessage = this._createCompletionMessage(invocationMessage.invocationId!, "Client didn't provide a result.", null);
+            }
+            await this._sendWithProtocol(completionMessage);
         } else {
-            this._logger.log(LogLevel.Warning, `No client method with the name '${invocationMessage.target}' found.`);
+            if (res) {
+                this._logger.log(LogLevel.Error, `Result given for '${methodName}' method but server is not expecting a result.`);
+            }
         }
     }
 
@@ -732,6 +849,10 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
+            if (this._messageBuffer) {
+                this._messageBuffer._dispose(error ?? new Error("Connection closed."));
+                this._messageBuffer = undefined;
+            }
 
             if (Platform.isBrowser) {
                 window.document.removeEventListener("freeze", this._freezeEventListener);
@@ -820,7 +941,7 @@ export class HubConnection {
                     return;
                 }
 
-                retryError = e instanceof Error ? e : new Error(e.toString());
+                retryError = e instanceof Error ? e : new Error((e as any).toString());
                 nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
             }
         }
@@ -875,15 +996,15 @@ export class HubConnection {
         if (nonblocking) {
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
-                    arguments: args,
                     target: methodName,
+                    arguments: args,
                     type: MessageType.Invocation,
                 };
             }
@@ -893,17 +1014,17 @@ export class HubConnection {
 
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             }
@@ -977,17 +1098,17 @@ export class HubConnection {
 
         if (streamIds.length !== 0) {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
                 streamIds,
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         } else {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         }
@@ -1022,5 +1143,9 @@ export class HubConnection {
             result,
             type: MessageType.Completion,
         };
+    }
+
+    private _createCloseMessage(): CloseMessage {
+        return { type: MessageType.Close };
     }
 }

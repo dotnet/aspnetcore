@@ -41,7 +41,7 @@ setTimeout(() => {
     process.exit(1);
 }, 1000 * 60 * 20);
 
-function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<RegExpMatchArray> {
+function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
         const commandDebug = _debug(`${command}`);
         try {
@@ -232,7 +232,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net7.0", "SignalR.Client.FunctionalTestApp.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net9.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";

@@ -112,7 +112,7 @@ function InitializeDotNetCli {
   export DOTNET_MULTILEVEL_LOOKUP=0
 
   # Disable first run since we want to control all package sources
-  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+  export DOTNET_NOLOGO=1
 
   # Disable telemetry on CI
   if [[ $ci == true ]]; then
@@ -165,7 +165,7 @@ function InitializeDotNetCli {
   Write-PipelinePrependPath -path "$dotnet_root"
 
   Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
-  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
+  Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
@@ -184,6 +184,35 @@ function InstallDotNetSdk {
 function InstallDotNet {
   local root=$1
   local version=$2
+  local runtime=$4
+
+  local dotnetVersionLabel="'$runtime v$version'"
+  if [[ -n "${4:-}" ]] && [ "$4" != 'sdk' ]; then
+    runtimePath="$root"
+    runtimePath="$runtimePath/shared"
+    case "$runtime" in
+      dotnet)
+        runtimePath="$runtimePath/Microsoft.NETCore.App"
+        ;;
+      aspnetcore)
+        runtimePath="$runtimePath/Microsoft.AspNetCore.App"
+        ;;
+      windowsdesktop)
+        runtimePath="$runtimePath/Microsoft.WindowsDesktop.App"
+        ;;
+      *)
+        ;;
+    esac
+    runtimePath="$runtimePath/$version"
+
+    dotnetVersionLabel="runtime toolset '$runtime/$architecture v$version'"
+
+    if [ -d "$runtimePath" ]; then
+      echo "  Runtime toolset '$runtime/$architecture v$version' already installed."
+      local installSuccess=1
+      return
+    fi
+  fi
 
   GetDotNetInstallScript "$root"
   local install_script=$_GetDotNetInstallScript
@@ -228,17 +257,17 @@ function InstallDotNet {
   for variationName in "${variations[@]}"; do
     local name="$variationName[@]"
     local variation=("${!name}")
-    echo "Attempting to install dotnet from $variationName."
+    echo "  Attempting to install $dotnetVersionLabel from $variationName."
     bash "$install_script" "${variation[@]}" && installSuccess=1
     if [[ "$installSuccess" -eq 1 ]]; then
       break
     fi
 
-    echo "Failed to install dotnet from $variationName."
+    echo "  Failed to install $dotnetVersionLabel from $variationName."
   done
 
   if [[ "$installSuccess" -eq 0 ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install dotnet SDK from any of the specified locations."
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install $dotnetVersionLabel from any of the specified locations."
     ExitWithExitCode 1
   fi
 }
@@ -281,7 +310,7 @@ function GetDotNetInstallScript {
       curl "$install_script_url" -sSL --retry 10 --create-dirs -o "$install_script" || {
         if command -v openssl &> /dev/null; then
           echo "Curl failed; dumping some information about dotnet.microsoft.com for later investigation"
-          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443
+          echo | openssl s_client -showcerts -servername dotnet.microsoft.com  -connect dotnet.microsoft.com:443 || true
         fi
         echo "Will now retry the same URL with verbose logging."
         with_retries curl "$install_script_url" -sSL --verbose --retry 10 --create-dirs -o "$install_script" || {
@@ -312,7 +341,12 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
   _InitializeBuildToolCommand="msbuild"
-  _InitializeBuildToolFramework="netcoreapp3.1"
+  # use override if it exists - commonly set by source-build
+  if [[ "${_OverrideArcadeInitializeBuildToolFramework:-x}" == "x" ]]; then
+    _InitializeBuildToolFramework="net8.0"
+  else
+    _InitializeBuildToolFramework="${_OverrideArcadeInitializeBuildToolFramework}"
+  fi
 }
 
 # Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
@@ -416,13 +450,6 @@ function MSBuild {
       export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
       Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
       Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-
-      export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
-      export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
-      export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
-      Write-PipelineSetVariable -name "NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY" -value "true"
-      Write-PipelineSetVariable -name "NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT" -value "6"
-      Write-PipelineSetVariable -name "NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS" -value "1000"
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
@@ -435,6 +462,8 @@ function MSBuild {
     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
       if [[ -f $path ]]; then
         selectedPath=$path
@@ -479,7 +508,9 @@ function MSBuild-Core {
       # We should not Write-PipelineTaskError here because that message shows up in the build summary
       # The build already logged an error, that's the reason it failed. Producing an error here only adds noise.
       echo "Build failed with exit code $exit_code. Check errors above."
-      if [[ "$ci" == "true" ]]; then
+
+      # When running on Azure Pipelines, override the returned exit code to avoid double logging.
+      if [[ "$ci" == "true" && -n ${SYSTEM_TEAMPROJECT:-} ]]; then
         Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
         # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
         # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -491,6 +522,17 @@ function MSBuild-Core {
   }
 
   RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+}
+
+function GetDarc {
+    darc_path="$temp_dir/darc"
+    version="$1"
+
+    if [[ -n "$version" ]]; then
+      version="--darcversion $version"
+    fi
+
+    "$eng_root/common/darc-init.sh" --toolpath "$darc_path" $version
 }
 
 ResolvePath "${BASH_SOURCE[0]}"
@@ -511,7 +553,7 @@ global_json_file="${repo_root}global.json"
 # determine if global.json contains a "runtimes" entry
 global_json_has_runtimes=false
 if command -v jq &> /dev/null; then
-  if jq -er '. | select(has("runtimes"))' "$global_json_file" &> /dev/null; then
+  if jq -e '.tools | has("runtimes")' "$global_json_file" &> /dev/null; then
     global_json_has_runtimes=true
   fi
 elif [[ "$(cat "$global_json_file")" =~ \"runtimes\"[[:space:]\:]*\{ ]]; then

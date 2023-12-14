@@ -19,10 +19,7 @@ public class ValidationAttributeAdapterProvider : IValidationAttributeAdapterPro
     /// <returns>An <see cref="IAttributeAdapter"/> for the given attribute.</returns>
     public IAttributeAdapter? GetAttributeAdapter(ValidationAttribute attribute, IStringLocalizer? stringLocalizer)
     {
-        if (attribute == null)
-        {
-            throw new ArgumentNullException(nameof(attribute));
-        }
+        ArgumentNullException.ThrowIfNull(attribute);
 
         var type = attribute.GetType();
 

@@ -35,15 +35,15 @@ export interface AccessToken {
 }
 
 export enum AccessTokenResultStatus {
-    Success = 'success',
-    RequiresRedirect = 'requiresRedirect'
+    Success = 'Success',
+    RequiresRedirect = 'RequiresRedirect'
 }
 
 export enum AuthenticationResultStatus {
-    Redirect = 'redirect',
-    Success = 'success',
-    Failure = 'failure',
-    OperationCompleted = 'operationCompleted'
+    Redirect = 'Redirect',
+    Success = 'Success',
+    Failure = 'Failure',
+    OperationCompleted = 'OperationCompleted'
 };
 
 export interface AuthenticationResult {
@@ -52,28 +52,82 @@ export interface AuthenticationResult {
     message?: string;
 }
 
+export interface AuthenticationContext {
+    state?: unknown;
+    interactiveRequest: InteractiveAuthenticationRequest;
+}
+
+export interface InteractiveAuthenticationRequest {
+    scopes?: string[];
+    additionalRequestParameters?: { [key: string]: any };
+};
+
 export interface AuthorizeService {
     getUser(): Promise<unknown>;
     getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult>;
-    signIn(state: unknown): Promise<AuthenticationResult>;
+    signIn(context: AuthenticationContext): Promise<AuthenticationResult>;
     completeSignIn(state: unknown): Promise<AuthenticationResult>;
-    signOut(state: unknown): Promise<AuthenticationResult>;
+    signOut(context: AuthenticationContext): Promise<AuthenticationResult>;
     completeSignOut(url: string): Promise<AuthenticationResult>;
+}
+
+interface JavaScriptLoggingOptions {
+    debugEnabled: boolean;
+    traceEnabled: boolean;
+}
+
+export class ManagedLogger {
+    public debug: boolean;
+    public trace: boolean;
+    public constructor(options: JavaScriptLoggingOptions) {
+        this.debug = options.debugEnabled;
+        this.trace = options.traceEnabled;
+    }
+
+    log(level: LogLevel, message: string): void {
+        if ((level == LogLevel.Trace && this.trace) ||
+            (level == LogLevel.Debug && this.debug)) {
+            const levelString = level == LogLevel.Trace ? 'trce' : 'dbug';
+            console.debug(
+// Logs in the following format to keep consistency with the way ASP.NET Core logs to the console while avoiding the
+// additional overhead of passing the logger as a JSObjectReference
+// dbug: Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService[0]
+//       <<message>>         
+// trce: Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService[0]
+//       <<message>>
+`${levelString}: Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService[0]
+      ${message}`);
+        }
+    }
+}
+
+// These are the values for the .NET logger LogLevel. 
+// We only use debug and trace
+export enum LogLevel {
+    Trace = 0,
+    Debug = 1
 }
 
 class OidcAuthorizeService implements AuthorizeService {
     private _userManager: UserManager;
+    private _logger: ManagedLogger | undefined;
     private _intialSilentSignIn: Promise<void> | undefined;
-    constructor(userManager: UserManager) {
+    constructor(userManager: UserManager, logger?: ManagedLogger) {
         this._userManager = userManager;
+        this._logger = logger;
     }
 
     async trySilentSignIn() {
         if (!this._intialSilentSignIn) {
             this._intialSilentSignIn = (async () => {
                 try {
+                    this.debug('Beginning initial silent sign in.');
                     await this._userManager.signinSilent();
+                    this.debug('Initial silent sign in succeeded.');
                 } catch (e) {
+                    if (e instanceof Error) {
+                        this.debug(`Initial silent sign in failed '${e.message}'`);
+                    }
                     // It is ok to swallow the exception here.
                     // The user might not be logged in and in that case it
                     // is expected for signinSilent to fail and throw
@@ -88,7 +142,7 @@ class OidcAuthorizeService implements AuthorizeService {
         if (window.parent === window && !window.opener && !window.frameElement && this._userManager.settings.redirect_uri &&
             !location.href.startsWith(this._userManager.settings.redirect_uri)) {
             // If we are not inside a hidden iframe, try authenticating silently.
-            await AuthenticationService.instance.trySilentSignIn();
+            await this.trySilentSignIn();
         }
 
         const user = await this._userManager.getUser();
@@ -96,8 +150,10 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     async getAccessToken(request?: AccessTokenRequestOptions): Promise<AccessTokenResult> {
+        this.trace('getAccessToken', request);
         const user = await this._userManager.getUser();
         if (hasValidAccessToken(user) && hasAllScopes(request, user.scopes)) {
+            this.debug(`Valid access token present expiring at '${getExpiration(user.expires_in).toISOString()}'`)
             return {
                 status: AccessTokenResultStatus.Success,
                 token: {
@@ -111,9 +167,13 @@ class OidcAuthorizeService implements AuthorizeService {
                 const parameters = request && request.scopes ?
                     { scope: request.scopes.join(' ') } : undefined;
 
+                this.debug(`Provisioning a token silently for scopes '${parameters?.scope}'`)
+                this.trace('userManager.signinSilent', parameters);
                 const newUser = await this._userManager.signinSilent(parameters);
 
-                return {
+                this.debug(`Provisioned an access token expiring at '${getExpiration(newUser.expires_in).toISOString()}'`)
+
+                const result = {
                     status: AccessTokenResultStatus.Success,
                     token: {
                         grantedScopes: newUser.scopes,
@@ -122,7 +182,14 @@ class OidcAuthorizeService implements AuthorizeService {
                     }
                 };
 
+                this.trace('getAccessToken-result', result);
+                return result;
+
             } catch (e) {
+                if (e instanceof Error) {
+                    this.debug(`Failed to provision a token silently '${e.message}'`)
+                }
+
                 return {
                     status: AccessTokenResultStatus.RequiresRedirect
                 };
@@ -153,23 +220,43 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    async signIn(state: unknown) {
+    async signIn(context: AuthenticationContext) {
+        this.trace('signIn', context);
+        if (!context.interactiveRequest) {
+            try {
+                this.debug('Silent sign in starting');
+                await this._userManager.clearStaleState();
+                await this._userManager.signinSilent(this.createArguments(undefined, context.interactiveRequest));
+                this.debug('Silent sign in succeeded');
+                return this.success(context.state);
+            } catch (silentError) {
+                if (silentError instanceof Error) {
+                    this.debug(`Silent sign in failed, redirecting to the identity provider '${silentError.message}'.`);
+                }
+                return await this.signInInteractive(context);
+            }
+        } else {
+            this.debug('Interactive sign in starting.');
+            return this.signInInteractive(context);
+        }
+    }
+
+    async signInInteractive(context: AuthenticationContext) {
+        this.trace('signInInteractive', context);
         try {
             await this._userManager.clearStaleState();
-            await this._userManager.signinSilent(this.createArguments());
-            return this.success(state);
-        } catch (silentError) {
-            try {
-                await this._userManager.clearStaleState();
-                await this._userManager.signinRedirect(this.createArguments(state));
-                return this.redirect();
-            } catch (redirectError) {
-                return this.error(this.getExceptionMessage(redirectError));
-            }
+            await this._userManager.signinRedirect(this.createArguments(context.state, context.interactiveRequest));
+            this.debug('Redirect sign in succeeded');
+            return this.redirect();
+        } catch (redirectError) {
+            const message = this.getExceptionMessage(redirectError);
+            this.debug(`Redirect sign in failed '${message}'.`);
+            return this.error(message);
         }
     }
 
     async completeSignIn(url: string) {
+        this.trace('completeSignIn', url);
         const requiresLogin = await this.loginRequired(url);
         const stateExists = await this.stateExists(url);
         try {
@@ -177,6 +264,7 @@ class OidcAuthorizeService implements AuthorizeService {
             if (window.self !== window.top) {
                 return this.operationCompleted();
             } else {
+                this.trace('completeSignIn-result', user);
                 return this.success(user && user.state);
             }
         } catch (error) {
@@ -188,20 +276,24 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    async signOut(state: unknown) {
+    async signOut(context: AuthenticationContext) {
+        this.trace('signOut', context);
         try {
             if (!(await this._userManager.metadataService.getEndSessionEndpoint())) {
                 await this._userManager.removeUser();
-                return this.success(state);
+                return this.success(context.state);
             }
-            await this._userManager.signoutRedirect(this.createArguments(state));
+            await this._userManager.signoutRedirect(this.createArguments(context.state, context.interactiveRequest));
             return this.redirect();
         } catch (redirectSignOutError) {
-            return this.error(this.getExceptionMessage(redirectSignOutError));
+            const message = this.getExceptionMessage(redirectSignOutError);
+            this.debug(`Sign out error '${message}'.`);
+            return this.error(message);
         }
     }
 
     async completeSignOut(url: string) {
+        this.trace('completeSignOut', url);
         try {
             if (await this.stateExists(url)) {
                 const response = await this._userManager.signoutCallback(url);
@@ -210,7 +302,9 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
         } catch (error) {
-            return this.error(this.getExceptionMessage(error));
+            const message = this.getExceptionMessage(error);
+            this.debug(`Complete sign out error '${message}'`);
+            return this.error(message);
         }
     }
 
@@ -251,8 +345,13 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    private createArguments(state?: unknown) {
-        return { useReplaceToNavigate: true, data: state };
+    private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
+        return {
+            useReplaceToNavigate: true,
+            data: state,
+            scope: interactiveRequest?.scopes ? interactiveRequest.scopes.join(' ') : undefined,
+            ...interactiveRequest?.additionalRequestParameters
+        };
     }
 
     private error(message: string) {
@@ -270,6 +369,14 @@ class OidcAuthorizeService implements AuthorizeService {
     private operationCompleted() {
         return { status: AuthenticationResultStatus.OperationCompleted };
     }
+
+    private debug(message: string) {
+        this._logger?.log(LogLevel.Debug, message);
+    }
+
+    private trace(message: string, data: any) {
+        this._logger?.log(LogLevel.Trace, `${message}: ${JSON.stringify(data)}`);
+    }
 }
 
 export class AuthenticationService {
@@ -279,12 +386,12 @@ export class AuthenticationService {
     static instance: OidcAuthorizeService;
     static _pendingOperations: { [key: string]: Promise<AuthenticationResult> | undefined } = {}
 
-    public static init(settings: UserManagerSettings & AuthorizeServiceSettings) {
+    public static init(settings: UserManagerSettings & AuthorizeServiceSettings, logger: any) {
         // Multiple initializations can start concurrently and we want to avoid that.
         // In order to do so, we create an initialization promise and the first call to init
         // tries to initialize the app and sets up a promise other calls can await on.
         if (!AuthenticationService._initialized) {
-            AuthenticationService._initialized = AuthenticationService.initializeCore(settings);
+            AuthenticationService._initialized = AuthenticationService.initializeCore(settings, new ManagedLogger(logger));
         }
 
         return AuthenticationService._initialized;
@@ -294,9 +401,11 @@ export class AuthenticationService {
         return AuthenticationService.initializeCore();
     }
 
-    private static async initializeCore(settings?: UserManagerSettings & AuthorizeServiceSettings) {
+    private static async initializeCore(settings?: UserManagerSettings & AuthorizeServiceSettings, logger?: ManagedLogger) {
         const finalSettings = settings || AuthenticationService.resolveCachedSettings();
-        if (!settings && finalSettings) {
+        const cachedLoggerOptions = AuthenticationService.resolveCachedLoggerOptions();
+        const finalLogger = logger || (cachedLoggerOptions && new ManagedLogger(cachedLoggerOptions))
+        if (!settings && finalSettings && !logger && finalLogger) {
             const userManager = AuthenticationService.createUserManagerCore(finalSettings);
 
             if (window.parent !== window && !window.opener && (window.frameElement && userManager.settings.redirect_uri &&
@@ -304,7 +413,7 @@ export class AuthenticationService {
                 // If we are inside a hidden iframe, try completing the sign in early.
                 // This prevents loading the blazor app inside a hidden iframe, which speeds up the authentication operations
                 // and avoids wasting resources (CPU and memory from bootstrapping the Blazor app)
-                AuthenticationService.instance = new OidcAuthorizeService(userManager);
+                AuthenticationService.instance = new OidcAuthorizeService(userManager, finalLogger);
 
                 // This makes sure that if the blazor app has time to load inside the hidden iframe,
                 // it is not able to perform another auth operation until this operation has completed.
@@ -313,9 +422,12 @@ export class AuthenticationService {
                     return;
                 })();
             }
-        } else if (settings) {
+        } else if (settings && logger) {
             const userManager = await AuthenticationService.createUserManager(settings);
-            AuthenticationService.instance = new OidcAuthorizeService(userManager);
+            AuthenticationService.instance = new OidcAuthorizeService(userManager, logger);
+            window.sessionStorage.setItem(
+                `${AuthenticationService._infrastructureKey}.CachedJSLoggingOptions`,
+                JSON.stringify({debugEnabled: logger.debug, traceEnabled: logger.trace}));
         } else {
             // HandleCallback gets called unconditionally, so we do nothing for normal paths.
             // Cached settings are only used on handling the redirect_uri path and if the settings are not there
@@ -328,6 +440,11 @@ export class AuthenticationService {
         return cachedSettings ? JSON.parse(cachedSettings) : undefined;
     }
 
+    private static resolveCachedLoggerOptions(): JavaScriptLoggingOptions | undefined {
+        const cachedSettings = window.sessionStorage.getItem(`${AuthenticationService._infrastructureKey}.CachedJSLoggingOptions`);
+        return cachedSettings ? JSON.parse(cachedSettings) : undefined;
+    }
+
     public static getUser() {
         return AuthenticationService.instance.getUser();
     }
@@ -336,8 +453,8 @@ export class AuthenticationService {
         return AuthenticationService.instance.getAccessToken(options);
     }
 
-    public static signIn(state: unknown) {
-        return AuthenticationService.instance.signIn(state);
+    public static signIn(context: AuthenticationContext) {
+        return AuthenticationService.instance.signIn(context);
     }
 
     public static async completeSignIn(url: string) {
@@ -351,8 +468,8 @@ export class AuthenticationService {
         return operation;
     }
 
-    public static signOut(state: unknown) {
-        return AuthenticationService.instance.signOut(state);
+    public static signOut(context: AuthenticationContext) {
+        return AuthenticationService.instance.signOut(context);
     }
 
     public static async completeSignOut(url: string) {

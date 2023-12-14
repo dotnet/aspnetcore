@@ -16,10 +16,7 @@ public static class ResponseCachingExtensions
     /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
     public static IApplicationBuilder UseResponseCaching(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<ResponseCachingMiddleware>();
     }

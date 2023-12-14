@@ -8,7 +8,7 @@ using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 
 namespace BenchmarkDotNet.Attributes;
 
-internal class DefaultCoreValidationConfig : ManualConfig
+internal sealed class DefaultCoreValidationConfig : ManualConfig
 {
     public DefaultCoreValidationConfig()
     {

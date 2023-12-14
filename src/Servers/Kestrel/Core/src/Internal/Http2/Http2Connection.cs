@@ -21,8 +21,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
-internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
+internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStreamHeadersHandler, IRequestProcessor
 {
+    // This uses C# compiler's ability to refer to static data directly. For more information see https://vcsjones.dev/2019/02/01/csharp-readonly-span-bytes-static
+    private static ReadOnlySpan<byte> ClientPrefaceBytes => "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> AuthorityBytes => ":authority"u8;
+    private static ReadOnlySpan<byte> MethodBytes => ":method"u8;
+    private static ReadOnlySpan<byte> PathBytes => ":path"u8;
+    private static ReadOnlySpan<byte> SchemeBytes => ":scheme"u8;
+    private static ReadOnlySpan<byte> StatusBytes => ":status"u8;
+    private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
+    private static ReadOnlySpan<byte> TeBytes => "te"u8;
+    private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
+    private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
+    private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
+
     public static ReadOnlySpan<byte> ClientPreface => ClientPrefaceBytes;
     public static byte[]? InvalidHttp1xErrorResponseBytes;
 
@@ -31,18 +44,55 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
     private const int InitialStreamPoolSize = 5;
     private const int MaxStreamPoolSize = 100;
-    private const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
+    private readonly TimeSpan StreamPoolExpiry = TimeSpan.FromSeconds(5);
+
+    /// Increase this value to be more lenient (disconnect fewer clients).
+    /// A non-positive value will disable the limit.
+    /// The default value is 20, which was determined empirically using a toy attack client.
+    /// The count is measured across a (non-configurable) 5 tick (i.e. second) window:
+    /// if the count ever exceeds 5 * the limit, the connection is aborted.
+    /// Note that this means that the limit can kick in before 5 ticks have elapsed.
+    /// See <see cref="EnhanceYourCalmTickWindowCount"/>.
+    /// TODO (https://github.com/dotnet/aspnetcore/issues/51308): make this configurable.
+    private const string MaximumEnhanceYourCalmCountProperty = "Microsoft.AspNetCore.Server.Kestrel.Http2.MaxEnhanceYourCalmCount";
+
+    // Internal for testing.
+    internal static readonly int EnhanceYourCalmMaximumCount = GetMaximumEnhanceYourCalmCount();
+
+    private static int GetMaximumEnhanceYourCalmCount()
+    {
+        var data = AppContext.GetData(MaximumEnhanceYourCalmCountProperty);
+
+        // Programmatically-configured values are usually ints
+        if (data is int count)
+        {
+            return count;
+        }
+
+        // msbuild-configured values are usually strings
+        if (data is string countStr && int.TryParse(countStr, out var parsed))
+        {
+            return parsed;
+        }
+
+        return 20; // Empirically derived
+    }
+
+    // Accumulate _enhanceYourCalmCount over the course of EnhanceYourCalmTickWindowCount ticks.
+    // This should make bursts less likely to trigger disconnects.
+    // Internal for testing.
+    internal const int EnhanceYourCalmTickWindowCount = 5;
+
+    private static bool IsEnhanceYourCalmLimitEnabled => EnhanceYourCalmMaximumCount > 0;
 
     private readonly HttpConnectionContext _context;
+    private readonly ConnectionMetricsContext _metricsContext;
     private readonly Http2FrameWriter _frameWriter;
     private readonly Pipe _input;
-    private readonly Pipe _output;
     private readonly Task _inputTask;
-    private readonly Task _outputTask;
     private readonly int _minAllocBufferSize;
     private readonly HPackDecoder _hpackDecoder;
     private readonly InputFlowControl _inputFlowControl;
-    private readonly OutputFlowControl _outputFlowControl = new OutputFlowControl(new MultipleAwaitableProvider(), Http2PeerSettings.DefaultInitialWindowSize);
 
     private readonly Http2PeerSettings _serverSettings = new Http2PeerSettings();
     private readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
@@ -64,6 +114,11 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     private int _clientActiveStreamCount;
     private int _serverActiveStreamCount;
 
+    // Test hook to force sending EYC on *every* stream creation
+    internal bool SendEnhanceYourCalmOnStartStream { set; private get; }
+    private int _enhanceYourCalmCount;
+    private int _tickCount;
+
     // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
     private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
@@ -74,6 +129,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     internal readonly Http2KeepAlive? _keepAlive;
     internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
     internal PooledStreamStack<Http2Stream> StreamPool;
+    internal IHttp2StreamLifetimeHandler _streamLifetimeHandler;
 
     public Http2Connection(HttpConnectionContext context)
     {
@@ -81,23 +137,13 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         var http2Limits = httpLimits.Http2;
 
         _context = context;
+        _streamLifetimeHandler = this;
+        _metricsContext = context.ConnectionFeatures.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
 
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
         _context.InitialExecutionContext = ExecutionContext.Capture();
 
         _input = new Pipe(GetInputPipeOptions());
-        _output = new Pipe(GetOutputPipeOptions());
-
-        _frameWriter = new Http2FrameWriter(
-            _output.Writer,
-            context.ConnectionContext,
-            this,
-            _outputFlowControl,
-            context.TimeoutControl,
-            httpLimits.MinResponseDataRate,
-            context.ConnectionId,
-            context.MemoryPool,
-            context.ServiceContext);
 
         _minAllocBufferSize = context.MemoryPool.GetMinimumAllocSize();
 
@@ -111,7 +157,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             _keepAlive = new Http2KeepAlive(
                 http2Limits.KeepAlivePingDelay,
                 http2Limits.KeepAlivePingTimeout,
-                context.ServiceContext.SystemClock);
+                context.ServiceContext.TimeProvider);
         }
 
         _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
@@ -126,7 +172,17 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         _scheduleInline = context.ServiceContext.Scheduler == PipeScheduler.Inline;
 
         _inputTask = CopyPipeAsync(_context.Transport.Input, _input.Writer);
-        _outputTask = CopyPipeAsync(_output.Reader, _context.Transport.Output);
+
+        _frameWriter = new Http2FrameWriter(
+            context.Transport.Output,
+            context.ConnectionContext,
+            this,
+            (int)Math.Min(MaxTrackedStreams, int.MaxValue),
+            context.TimeoutControl,
+            httpLimits.MinResponseDataRate,
+            context.ConnectionId,
+            context.MemoryPool,
+            context.ServiceContext);
     }
 
     public string ConnectionId => _context.ConnectionId;
@@ -135,7 +191,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
     public KestrelTrace Log => _context.ServiceContext.Log;
     public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
-    public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
+    public TimeProvider TimeProvider => _context.ServiceContext.TimeProvider;
     public ITimeoutControl TimeoutControl => _context.TimeoutControl;
     public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
@@ -149,7 +205,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     public void OnInputOrOutputCompleted()
     {
         TryClose();
-        _frameWriter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+        var useException = _context.ServiceContext.ServerOptions.FinOnError || _clientActiveStreamCount != 0;
+        _frameWriter.Abort(useException ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
     }
 
     public void Abort(ConnectionAbortedException ex)
@@ -199,7 +256,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             ValidateTlsRequirements();
 
             TimeoutControl.InitializeHttp2(_inputFlowControl);
-            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.SetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
 
             if (!await TryReadPrefaceAsync())
             {
@@ -230,7 +287,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                 if (result.IsCanceled)
                 {
                     // Heartbeat will cancel ReadAsync and trigger expiring unused streams from pool.
-                    StreamPool.RemoveExpired(SystemClock.UtcNowTicks);
+                    StreamPool.RemoveExpired(TimeProvider.GetTimestamp());
                 }
 
                 try
@@ -350,13 +407,18 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                     stream.Abort(new IOException(CoreStrings.Http2StreamAborted, connectionError));
                 }
 
-                // Use the server _serverActiveStreamCount to drain all requests on the server side.
-                // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
-                // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
-                while (_serverActiveStreamCount > 0)
+                // TODO (https://github.com/dotnet/aspnetcore/issues/51307):
+                // For some reason, this loop doesn't terminate when we're trying to abort.
+                if (!IsEnhanceYourCalmLimitEnabled || error is not Http2ConnectionErrorException)
                 {
-                    await _streamCompletionAwaitable;
-                    UpdateCompletedStreams();
+                    // Use the server _serverActiveStreamCount to drain all requests on the server side.
+                    // Can't use _clientActiveStreamCount now as we now decrement that count earlier/
+                    // Can't use _streams.Count as we wait for RST/END_STREAM before removing the stream from the dictionary
+                    while (_serverActiveStreamCount > 0)
+                    {
+                        await _streamCompletionAwaitable;
+                        UpdateCompletedStreams();
+                    }
                 }
 
                 while (StreamPool.TryPop(out var pooledStream))
@@ -378,10 +440,9 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             finally
             {
                 Input.Complete();
-                _output.Writer.Complete();
                 _context.Transport.Input.CancelPendingRead();
                 await _inputTask;
-                await _outputTask;
+                await _frameWriter.ShutdownAsync();
             }
         }
     }
@@ -720,7 +781,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
             if (!_incomingFrame.HeadersEndHeaders)
             {
-                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout.Ticks, TimeoutReason.RequestHeaders);
+                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
             }
 
             // Start a new stream
@@ -752,18 +813,19 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             ConnectionId,
             protocols: default,
             _context.AltSvcHeader,
+            _context.ConnectionContext,
             _context.ServiceContext,
             _context.ConnectionFeatures,
             _context.MemoryPool,
             _context.LocalEndPoint,
             _context.RemoteEndPoint,
             _incomingFrame.StreamId,
-            streamLifetimeHandler: this,
+            _streamLifetimeHandler,
             _clientSettings,
             _serverSettings,
             _frameWriter,
             _inputFlowControl,
-            _outputFlowControl);
+            _metricsContext);
         streamContext.TimeoutControl = _context.TimeoutControl;
         streamContext.InitialExecutionContext = _context.InitialExecutionContext;
 
@@ -935,7 +997,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // Incoming ping resets connection keep alive timeout
         if (TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
         {
-            TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+            TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
         }
 
         if (_incomingFrame.PingAck)
@@ -959,7 +1021,9 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
         }
 
+        // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
         StopProcessingNextRequest(serverInitiated: false);
+        _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
 
         return Task.CompletedTask;
     }
@@ -1120,6 +1184,8 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         try
         {
+            _currentHeadersStream.TotalParsedHeaderSize = _totalParsedHeaderSize;
+
             // This must be initialized before we offload the request or else we may start processing request body frames without it.
             _currentHeadersStream.InputRemaining = _currentHeadersStream.RequestHeaders.ContentLength;
 
@@ -1154,11 +1220,25 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary counts get out of sync.
             // The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
             // Also, we care about the dictionary size for too much memory consumption.
-            if (_streams.Count > MaxTrackedStreams)
+            if (_streams.Count > MaxTrackedStreams || SendEnhanceYourCalmOnStartStream)
             {
                 // Server is getting hit hard with connection resets.
                 // Tell client to calm down.
                 // TODO consider making when to send ENHANCE_YOUR_CALM configurable?
+
+                if (IsEnhanceYourCalmLimitEnabled && Interlocked.Increment(ref _enhanceYourCalmCount) > EnhanceYourCalmTickWindowCount * EnhanceYourCalmMaximumCount)
+                {
+                    Log.Http2TooManyEnhanceYourCalms(_context.ConnectionId, EnhanceYourCalmMaximumCount);
+
+                    // Now that we've logged a useful message, we can put vague text in the exception
+                    // messages in case they somehow make it back to the client (not expected)
+
+                    // This will close the socket - we want to do that right away
+                    Abort(new ConnectionAbortedException(CoreStrings.Http2ConnectionFaulted));
+                    // Throwing an exception as well will help us clean up on our end more quickly by (e.g.) skipping processing of already-buffered input
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ConnectionFaulted, Http2ErrorCode.ENHANCE_YOUR_CALM);
+                }
+
                 throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2TellClientToCalmDown, Http2ErrorCode.ENHANCE_YOUR_CALM);
             }
         }
@@ -1176,6 +1256,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         }
 
         KestrelEventSource.Log.RequestQueuedStart(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
+        _context.ServiceContext.Metrics.RequestQueuedStart(_metricsContext, KestrelMetrics.Http2);
 
         // _scheduleInline is only true in tests
         if (!_scheduleInline)
@@ -1227,9 +1308,15 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         }
     }
 
-    void IRequestProcessor.Tick(DateTimeOffset now)
+    void IRequestProcessor.Tick(long timestamp)
     {
         Input.CancelPendingRead();
+        // We count EYCs over a window of a given length to avoid flagging short-lived bursts.
+        // At the end of each window, reset the count.
+        if (IsEnhanceYourCalmLimitEnabled && ++_tickCount % EnhanceYourCalmTickWindowCount == 0)
+        {
+            Interlocked.Exchange(ref _enhanceYourCalmCount, 0);
+        }
     }
 
     void IHttp2StreamLifetimeHandler.OnStreamCompleted(Http2Stream stream)
@@ -1241,7 +1328,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
     private void UpdateCompletedStreams()
     {
         Http2Stream? firstRequedStream = null;
-        var now = SystemClock.UtcNowTicks;
+        var timestamp = TimeProvider.GetTimestamp();
 
         while (_completedStreams.TryDequeue(out var stream))
         {
@@ -1253,13 +1340,13 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
                 break;
             }
 
-            if (stream.DrainExpirationTicks == default)
+            if (stream.DrainExpirationTimestamp == default)
             {
                 _serverActiveStreamCount--;
-                stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
+                stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(timestamp, Constants.RequestBodyDrainTimeout);
             }
 
-            if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTicks < now)
+            if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTimestamp < timestamp)
             {
                 if (stream == _currentHeadersStream)
                 {
@@ -1290,7 +1377,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             // Pool and reuse the stream if it finished in a graceful state and there is space in the pool.
 
             // This property is used to remove unused streams from the pool
-            stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
+            stream.DrainExpirationTimestamp = TimeProvider.GetTimestamp(StreamPoolExpiry);
 
             StreamPool.Push(stream);
         }
@@ -1308,7 +1395,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         // If we're tracking too many streams, discard the oldest.
         while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
         {
-            if (stream.DrainExpirationTicks == default)
+            if (stream.DrainExpirationTimestamp == default)
             {
                 _serverActiveStreamCount--;
             }
@@ -1349,7 +1436,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             {
                 if (TimeoutControl.TimerReason == TimeoutReason.None)
                 {
-                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
+                    TimeoutControl.SetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
                 }
 
                 // If we're awaiting headers, either a new stream will be started, or there will be a connection
@@ -1402,8 +1489,10 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
 
         // https://tools.ietf.org/html/rfc7540#section-6.5.2
         // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
-        _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
-        if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
+        // We don't include the 32 byte overhead hear so we can accept a little more than the advertised limit.
+        _totalParsedHeaderSize += name.Length + value.Length;
+        // Allow a 2x grace before aborting the connection. We'll check the size limit again later where we can send a 431.
+        if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize * 2)
         {
             throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
         }
@@ -1622,6 +1711,10 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         {
             return PseudoHeaderFields.Authority;
         }
+        else if (name.SequenceEqual(ProtocolBytes))
+        {
+            return PseudoHeaderFields.Protocol;
+        }
         else
         {
             return PseudoHeaderFields.Unknown;
@@ -1661,38 +1754,6 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
             resumeWriterThreshold: 1,
             minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(),
             useSynchronizationContext: false);
-
-    private PipeOptions GetOutputPipeOptions()
-    {
-        // Never write inline because we do not want to hold Http2FramerWriter._writeLock for potentially expensive TLS
-        // write operations. This essentially doubles the MaxResponseBufferSize for HTTP/2 connections compared to
-        // HTTP/1.x. This seems reasonable given HTTP/2's support for many concurrent streams per connection. We don't
-        // want every write to return an incomplete ValueTask now that we're dispatching TLS write operations which
-        // would likely happen with a pauseWriterThreshold of 1, but we still need to respect connection back pressure.
-        var pauseWriterThreshold = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize switch
-        {
-            // null means that we have no back pressure
-            null => 0,
-            // 0 = no buffering so we need to configure the pipe so the writer waits on the reader directly
-            0 => 1,
-            long limit => limit,
-        };
-
-        var resumeWriterThreshold = pauseWriterThreshold switch
-        {
-            // The resumeWriterThreshold must be at least 1 to ever resume after pausing.
-            1 => 1,
-            long limit => limit / 2,
-        };
-
-        return new PipeOptions(pool: _context.MemoryPool,
-            readerScheduler: _context.ServiceContext.Scheduler,
-            writerScheduler: PipeScheduler.Inline,
-            pauseWriterThreshold: pauseWriterThreshold,
-            resumeWriterThreshold: resumeWriterThreshold,
-            minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(),
-            useSynchronizationContext: false);
-    }
 
     private async Task CopyPipeAsync(PipeReader reader, PipeWriter writer)
     {
@@ -1758,6 +1819,7 @@ internal partial class Http2Connection : IHttp2StreamLifetimeHandler, IHttpStrea
         Path = 0x4,
         Scheme = 0x8,
         Status = 0x10,
+        Protocol = 0x20,
         Unknown = 0x40000000
     }
 

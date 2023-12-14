@@ -40,10 +40,7 @@ public class RequireHttpsAttribute : Attribute, IAuthorizationFilter, IOrderedFi
     /// <inheritdoc />
     public virtual void OnAuthorization(AuthorizationFilterContext filterContext)
     {
-        if (filterContext == null)
-        {
-            throw new ArgumentNullException(nameof(filterContext));
-        }
+        ArgumentNullException.ThrowIfNull(filterContext);
 
         if (!filterContext.HttpContext.Request.IsHttps)
         {

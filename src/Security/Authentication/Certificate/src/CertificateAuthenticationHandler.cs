@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate;
 
-internal class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
+internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
 {
     private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
     private ICertificateValidationCache? _cache;
@@ -19,8 +19,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
     public CertificateAuthenticationHandler(
         IOptionsMonitor<CertificateAuthenticationOptions> options,
         ILoggerFactory logger,
-        UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        UrlEncoder encoder) : base(options, logger, encoder)
     {
     }
 
@@ -28,7 +27,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
     /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
     /// If it is not provided a default instance is supplied which does nothing when the methods are called.
     /// </summary>
-    protected new CertificateAuthenticationEvents Events
+    private new CertificateAuthenticationEvents Events
     {
         get { return (CertificateAuthenticationEvents)base.Events!; }
         set { base.Events = value; }
@@ -87,10 +86,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
                 }
             }
 
-            if (_cache != null)
-            {
-                _cache.Put(Context, clientCertificate, result);
-            }
+            _cache?.Put(Context, clientCertificate, result);
             return result;
         }
         catch (Exception ex)
@@ -126,7 +122,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
         {
             Logger.CertificateRejected("Self signed", clientCertificate.Subject);
-            return AuthenticateResult.Fail("Options do not allow self signed certificates.");
+            return AuthenticateResults.NoSelfSigned;
         }
 
         // If we have a chained cert, and they're not allowed, exit early and not bother with
@@ -135,7 +131,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
             !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
         {
             Logger.CertificateRejected("Chained", clientCertificate.Subject);
-            return AuthenticateResult.Fail("Options do not allow chained certificates.");
+            return AuthenticateResults.NoChainedCertificates;
         }
 
         var chainPolicy = BuildChainPolicy(clientCertificate, isCertificateSelfSigned);
@@ -153,7 +149,7 @@ internal class CertificateAuthenticationHandler : AuthenticationHandler<Certific
                 chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
             }
             Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
-            return AuthenticateResult.Fail("Client certificate failed validation.");
+            return AuthenticateResults.InvalidClientCertificate;
         }
 
         var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)

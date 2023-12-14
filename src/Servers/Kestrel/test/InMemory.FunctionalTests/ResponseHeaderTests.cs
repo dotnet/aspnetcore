@@ -7,7 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -99,5 +100,41 @@ public class ResponseHeaderTests : TestApplicationErrorLoggerLoggedTest
             "");
 
         await connection.ReceiveEnd();
+    }
+
+    [Fact]
+    public async Task ResponseHeaders_NullEntriesAreIgnored()
+    {
+        var tag = "Warning";
+
+        await using var server = new TestServer(context =>
+        {
+            Assert.Empty(context.Response.Headers[tag]);
+
+            context.Response.Headers.Add(tag, new StringValues((string)null));
+
+            Assert.Empty(context.Response.Headers[tag]);
+
+            // this should not throw
+            context.Response.Headers.Add(tag, new StringValues("Hello"));
+
+            context.Response.ContentLength = 11;
+            return context.Response.WriteAsync("Hello World");
+        }, new TestServiceContext(LoggerFactory));
+
+        using var connection = server.CreateConnection();
+        await connection.Send(
+            "GET / HTTP/1.1",
+            "Host:",
+            "",
+            "");
+
+        await connection.Receive(
+            $"HTTP/1.1 200 OK",
+            "Content-Length: 11",
+            $"Date: {server.Context.DateHeaderValue}",
+            $"{tag}: Hello",
+            "",
+            "Hello World");
     }
 }

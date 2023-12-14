@@ -11,8 +11,9 @@ using Microsoft.AspNetCore.Http2Cat;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 /// on IIS Express even on the new Windows versions because IIS Express has its own outdated copy of IIS.
 /// </summary>
 [Collection(IISHttpsTestSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Http2TrailerResetTests : FunctionalTestsBase
 {
     private const string WindowsVersionForTrailers = "10.0.20238";
@@ -201,7 +203,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var frame = await h2Connection.ReceiveFrameAsync();
@@ -261,7 +263,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
               {
                   // HTTP/2 filters out the connection header
                   Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
-                  Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                  Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
               });
 
               var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -322,7 +324,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var resetFrame = await h2Connection.ReceiveFrameAsync();
@@ -435,7 +437,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -465,7 +467,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
 
                 await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                 {
-                    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    Assert.Equal("200", decodedHeaders[InternalHeaderNames.Status]);
                 });
 
                 var dataFrame = await h2Connection.ReceiveFrameAsync();
@@ -484,7 +486,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
     {
         var headers = Headers.ToList();
 
-        var kvp = new KeyValuePair<string, string>(HeaderNames.Path, path);
+        var kvp = new KeyValuePair<string, string>(InternalHeaderNames.Path, path);
         headers.Add(kvp);
         return headers;
     }
@@ -493,7 +495,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
     {
         var headers = PostRequestHeaders.ToList();
 
-        var kvp = new KeyValuePair<string, string>(HeaderNames.Path, path);
+        var kvp = new KeyValuePair<string, string>(InternalHeaderNames.Path, path);
         headers.Add(kvp);
         return headers;
     }
@@ -503,7 +505,7 @@ public class Http2TrailerResetTests : FunctionalTestsBase
         var handler = new HttpClientHandler();
         handler.MaxResponseHeadersLength = 128;
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        var client = new HttpClient(handler);
+        var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         return client;
     }
 
@@ -512,16 +514,16 @@ public class Http2TrailerResetTests : FunctionalTestsBase
         var handler = new HttpClientHandler();
         handler.MaxResponseHeadersLength = 128;
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        using var client = new HttpClient(handler);
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(200) };
         client.DefaultRequestVersion = http2 ? HttpVersion.Version20 : HttpVersion.Version11;
         return await client.GetAsync(uri);
     }
 
     private static readonly IEnumerable<KeyValuePair<string, string>> Headers = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:443"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:443"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
@@ -531,8 +533,8 @@ public class Http2TrailerResetTests : FunctionalTestsBase
 
     private static readonly IEnumerable<KeyValuePair<string, string>> PostRequestHeaders = new[]
     {
-            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
-            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "https"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
         };
 }

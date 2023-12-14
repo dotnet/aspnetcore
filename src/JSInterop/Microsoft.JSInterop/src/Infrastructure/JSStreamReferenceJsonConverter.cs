@@ -42,12 +42,12 @@ internal sealed class JSStreamReferenceJsonConverter : JsonConverter<IJSStreamRe
                 }
                 else
                 {
-                    throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                    throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
                 }
             }
             else
             {
-                throw new JsonException($"Unexcepted JSON token {reader.TokenType}");
+                throw new JsonException($"Unexpected JSON token {reader.TokenType}");
             }
         }
 

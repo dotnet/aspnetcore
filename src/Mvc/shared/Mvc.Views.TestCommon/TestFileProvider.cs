@@ -70,9 +70,9 @@ public class TestFileProvider : IFileProvider
 
     public virtual IFileInfo GetFileInfo(string subpath)
     {
-        if (_lookup.ContainsKey(subpath))
+        if (_lookup.TryGetValue(subpath, out var fileInfo))
         {
-            return _lookup[subpath];
+            return fileInfo;
         }
         else
         {
@@ -121,7 +121,7 @@ public class TestFileProvider : IFileProvider
         return filePath;
     }
 
-    private class NotFoundFileInfo : IFileInfo
+    private sealed class NotFoundFileInfo : IFileInfo
     {
         public bool Exists
         {

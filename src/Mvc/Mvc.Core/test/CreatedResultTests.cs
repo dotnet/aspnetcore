@@ -29,6 +29,26 @@ public class CreatedResultTests
     }
 
     [Fact]
+    public void CreatedResult_WithNoArgs_SetsLocationNull()
+    {
+        // Act
+        var result = new CreatedResult();
+
+        // Assert
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
+    public void CreatedResult_SetsLocationNull()
+    {
+        // Act
+        var result = new CreatedResult((string)null, "testInput");
+
+        // Assert
+        Assert.Null(result.Location);
+    }
+
+    [Fact]
     public async Task CreatedResult_ReturnsStatusCode_SetsLocationHeader()
     {
         // Arrange
@@ -43,6 +63,22 @@ public class CreatedResultTests
         // Assert
         Assert.Equal(StatusCodes.Status201Created, httpContext.Response.StatusCode);
         Assert.Equal(location, httpContext.Response.Headers["Location"]);
+    }
+
+    [Fact]
+    public async Task CreatedResult_ReturnsStatusCode_NotSetLocationHeader()
+    {
+        // Arrange        
+        var httpContext = GetHttpContext();
+        var actionContext = GetActionContext(httpContext);
+        var result = new CreatedResult((string)null, "testInput");
+
+        // Act
+        await result.ExecuteResultAsync(actionContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, httpContext.Response.StatusCode);
+        Assert.Empty(httpContext.Response.Headers["Location"]);
     }
 
     [Fact]

@@ -11,9 +11,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.SignalR.Client.SourceGenerator;
 
-internal partial class HubClientProxyGenerator
+internal sealed partial class HubClientProxyGenerator
 {
-    public class Parser
+    public sealed class Parser
     {
         internal static bool IsSyntaxTargetForAttribute(SyntaxNode node) => node is AttributeSyntax
         {

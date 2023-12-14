@@ -6,16 +6,13 @@ using Microsoft.AspNetCore.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
-internal class CompilationFailedException : Exception, ICompilationException
+internal sealed class CompilationFailedException : Exception, ICompilationException
 {
     public CompilationFailedException(
             IEnumerable<CompilationFailure> compilationFailures)
         : base(FormatMessage(compilationFailures))
     {
-        if (compilationFailures == null)
-        {
-            throw new ArgumentNullException(nameof(compilationFailures));
-        }
+        ArgumentNullException.ThrowIfNull(compilationFailures);
 
         CompilationFailures = compilationFailures;
     }

@@ -4,12 +4,12 @@
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -125,10 +125,7 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, X509Certificate2 serverCertificate)
     {
-        if (serverCertificate == null)
-        {
-            throw new ArgumentNullException(nameof(serverCertificate));
-        }
+        ArgumentNullException.ThrowIfNull(serverCertificate);
 
         return listenOptions.UseHttps(options =>
         {
@@ -146,15 +143,8 @@ public static class ListenOptionsHttpsExtensions
     public static ListenOptions UseHttps(this ListenOptions listenOptions, X509Certificate2 serverCertificate,
         Action<HttpsConnectionAdapterOptions> configureOptions)
     {
-        if (serverCertificate == null)
-        {
-            throw new ArgumentNullException(nameof(serverCertificate));
-        }
-
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(serverCertificate);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         return listenOptions.UseHttps(options =>
         {
@@ -171,38 +161,25 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, Action<HttpsConnectionAdapterOptions> configureOptions)
     {
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        // We consider calls to `UseHttps` to be a clear expression of user intent to pull in HTTPS configuration support
+        listenOptions.KestrelServerOptions.EnableHttpsConfiguration();
+
+        // If there's a configuration, load it so that the results will be available to ApplyDefaultCertificate
+        listenOptions.KestrelServerOptions.ConfigurationLoader?.LoadInternal();
 
         var options = new HttpsConnectionAdapterOptions();
         listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
         configureOptions(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
+        listenOptions.KestrelServerOptions.ApplyDefaultCertificate(options);
 
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
+        if (!options.HasServerCertificateOrSelector)
         {
             throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
         }
 
         return listenOptions.UseHttps(options);
-    }
-
-    // Use Https if a default cert is available
-    internal static bool TryUseHttps(this ListenOptions listenOptions)
-    {
-        var options = new HttpsConnectionAdapterOptions();
-        listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
-        listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
-
-        if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
-        {
-            return false;
-        }
-
-        listenOptions.UseHttps(options);
-        return true;
     }
 
     /// <summary>
@@ -214,16 +191,15 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {
-        var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
 
         listenOptions.IsTls = true;
         listenOptions.HttpsOptions = httpsOptions;
 
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
-            httpsOptions.HttpProtocols = listenOptions.Protocols;
-            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, listenOptions.Protocols, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
 
@@ -254,10 +230,6 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
     {
-        if (listenOptions.Protocols.HasFlag(HttpProtocols.Http3))
-        {
-            throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(ServerOptionsSelectionCallback)} is not supported with HTTP/3.");
-        }
         return listenOptions.UseHttps(new TlsHandshakeCallbackOptions()
         {
             OnConnection = context => serverOptionsSelectionCallback(context.SslStream, context.ClientHelloInfo, context.State, context.CancellationToken),
@@ -275,29 +247,26 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, TlsHandshakeCallbackOptions callbackOptions)
     {
-        if (callbackOptions is null)
-        {
-            throw new ArgumentNullException(nameof(callbackOptions));
-        }
+        ArgumentNullException.ThrowIfNull(callbackOptions);
 
         if (callbackOptions.OnConnection is null)
         {
             throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
         }
 
-        if (listenOptions.Protocols.HasFlag(HttpProtocols.Http3))
-        {
-            throw new NotSupportedException($"{nameof(UseHttps)} with {nameof(TlsHandshakeCallbackOptions)} is not supported with HTTP/3.");
-        }
-
-        var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
 
         listenOptions.IsTls = true;
+        listenOptions.HttpsCallbackOptions = callbackOptions;
+
         listenOptions.Use(next =>
         {
-            // Set the list of protocols from listen options
+            // Set the list of protocols from listen options.
+            // Set it inside Use delegate so Protocols and UseHttps can be called out of order.
             callbackOptions.HttpProtocols = listenOptions.Protocols;
-            var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory);
+
+            var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
         });
 

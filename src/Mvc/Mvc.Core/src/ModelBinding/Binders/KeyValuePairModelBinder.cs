@@ -26,20 +26,9 @@ public class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
     {
-        if (keyBinder == null)
-        {
-            throw new ArgumentNullException(nameof(keyBinder));
-        }
-
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(keyBinder);
+        ArgumentNullException.ThrowIfNull(valueBinder);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _keyBinder = keyBinder;
         _valueBinder = valueBinder;
@@ -49,10 +38,7 @@ public class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

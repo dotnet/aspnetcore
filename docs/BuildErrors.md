@@ -60,9 +60,43 @@ Executing `.\restore.cmd` or `.\build.cmd` may produce these errors:
 
 In most cases, this is because the option _Use previews of the .NET Core SDK_ in VS2019 is not checked. Start Visual Studio, go to _Tools > Options_ and check _Use previews of the .NET Core SDK_ under _Environment > Preview Features_.
 
+## Error MSB4019: The imported project Microsoft.Cpp.Default.props was not found.
+
+Executing `.\restore.cmd` or `.\build.cmd` may produce these errors when your development environment is not configured with the correct C++ installation:
+
+```text
+C:\git\aspnetcore\src\Servers\IIS\build\Build.Common.Settings(12,3): error MSB4019: The imported project "C:\git\aspnet
+core\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found. Confirm that the
+ expression in the Import declaration "C:\git\aspnetcore\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\\Microso
+ft.Cpp.Default.props" is correct, and that the file exists on disk. [C:\git\aspnetcore\src\Servers\IIS\AspNetCoreModule
+V2\AspNetCore\AspNetCore.vcxproj]
+C:\git\aspnetcore\src\Servers\IIS\build\Build.Common.Settings(12,3): error MSB4019: The imported project "C:\git\aspnet
+core\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\Microsoft.Cpp.Default.props" was not found. Confirm that the
+ expression in the Import declaration "C:\git\aspnetcore\.tools\msbuild\17.1.0\tools\MSBuild\Microsoft\VC\v170\\Microso
+ft.Cpp.Default.props" is correct, and that the file exists on disk. [C:\git\aspnetcore\src\Servers\IIS\AspNetCoreModule
+V2\IISLib\IISLib.vcxproj]
+```
+
+To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document (namely, the section about running `InstallVisualStudio.ps1`).
+
+## Error MSB4018: The "InstallDotNetCore" task failed unexpectedly.
+
+Executing `.\restore.cmd` or `.\build.cmd` may produce these errors when your development environment is not configured with the correct C++ installation:
+
+```text
+C:\.nuget\packages\microsoft.dotnet.arcade.sdk\8.0.0-beta.23364.2\tools\InstallDotNetCore.targets(15,5):
+error MSB4018: The "InstallDotNetCore" task failed unexpectedly. [C:\.nuget\packages\microsoft.dotnet.a
+rcade.sdk\8.0.0-beta.23364.2\tools\Tools.proj]
+C:\.nuget\packages\microsoft.dotnet.arcade.sdk\8.0.0-beta.23364.2\tools\InstallDotNetCore.targets(15,5):
+error MSB4018: System.MissingMethodException: Method not found: 'System.Text.Json.JsonDocument System.Text.Json.JsonDo
+cument.Parse(System.ReadOnlyMemory`1<Byte>, System.Text.Json.JsonDocumentOptions)'.
+```
+
+To resolve this issue, confirm that you've installed the required C++ components in Visual Studio by following the instructions in the [BuildFromSource](./BuildFromSource.md) document (namely, the section about running `InstallVisualStudio.ps1`).
+
 ## Error: HTTP Error 500.33 - ANCM Request Handler Load Failure
 
-The [ASP.NET Core Module](https://docs.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
+The [ASP.NET Core Module](https://learn.microsoft.com/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
 
 After using `startvs.cmd` to open a solution in Visual Studio, the Kestrel web host option must be used (name of the project) and not IIS Express.
 

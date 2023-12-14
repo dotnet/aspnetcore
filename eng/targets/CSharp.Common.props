@@ -6,19 +6,14 @@
     <Features>strict</Features>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Required to exist in the NuGet package cache to enable code-signing. -->
-    <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
-  </ItemGroup>
-
   <ItemGroup Condition=" $(IsTestProject) ">
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Moq" />
     <Reference Include="NETStandard.Library" />
     <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" Visible="false" />
   </ItemGroup>
 
-  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.Testing.props" Condition=" $(IsTestProject) " />
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.InternalTesting.props" Condition=" $(IsTestProject) " />
 
   <ItemDefinitionGroup Condition=" $(IsTestProject) ">
     <Content>

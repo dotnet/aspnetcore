@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class IISHttpServer : IServer
+internal sealed class IISHttpServer : IServer
 {
     private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
@@ -27,6 +28,7 @@ internal class IISHttpServer : IServer
     private readonly IISServerOptions _options;
     private readonly IISNativeApplication _nativeApplication;
     private readonly ServerAddressesFeature _serverAddressesFeature;
+    private readonly string? _virtualPath;
 
     private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool? _websocketAvailable;
@@ -57,6 +59,7 @@ internal class IISHttpServer : IServer
         IISNativeApplication nativeApplication,
         IHostApplicationLifetime applicationLifetime,
         IAuthenticationSchemeProvider authentication,
+        IConfiguration configuration,
         IOptions<IISServerOptions> options,
         ILogger<IISHttpServer> logger
         )
@@ -66,6 +69,8 @@ internal class IISHttpServer : IServer
         _logger = logger;
         _options = options.Value;
         _serverAddressesFeature = new ServerAddressesFeature();
+        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
+        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
 
         if (_options.ForwardWindowsAuthentication)
         {
@@ -74,11 +79,18 @@ internal class IISHttpServer : IServer
 
         Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
 
+        if (IISEnvironmentFeature.TryCreate(configuration, out var iisEnvFeature))
+        {
+            Features.Set<IIISEnvironmentFeature>(iisEnvFeature);
+        }
+
         if (_options.MaxRequestBodySize > _options.IisMaxRequestSizeLimit)
         {
             _logger.LogWarning(CoreStrings.MaxRequestLimitWarning);
         }
     }
+
+    public string? VirtualPath => _virtualPath;
 
     public unsafe Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {
@@ -259,7 +271,7 @@ internal class IISHttpServer : IServer
         }
     }
 
-    private class IISContextFactory<T> : IISContextFactory where T : notnull
+    private sealed class IISContextFactory<T> : IISContextFactory where T : notnull
     {
         private const string Latin1Suppport = "Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders";
 

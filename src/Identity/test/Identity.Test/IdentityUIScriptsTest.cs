@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -157,7 +157,7 @@ public class IdentityUIScriptsTest : IDisposable
     private static string GetProjectBasePath()
     {
         var projectPath = typeof(IdentityUIScriptsTest).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "Microsoft.AspNetCore.Testing.DefaultUIProjectPath").Value;
+            .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.DefaultUIProjectPath").Value;
         return Directory.Exists(projectPath) ? projectPath : Path.Combine(FindHelixSlnFileDirectory(), "UI");
     }
 

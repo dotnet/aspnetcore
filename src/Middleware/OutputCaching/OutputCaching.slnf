@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "..\\..\\..\\AspNetCore.sln",
+    "projects": [
+      "src\\Middleware\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\\src\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj",
+      "src\\Middleware\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\\test\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests.csproj",
+      "src\\Middleware\\OutputCaching\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OutputCaching.Microbenchmarks.csproj",
+      "src\\Middleware\\OutputCaching\\samples\\OutputCachingSample\\OutputCachingSample.csproj",
+      "src\\Middleware\\OutputCaching\\src\\Microsoft.AspNetCore.OutputCaching.csproj",
+      "src\\Middleware\\OutputCaching\\test\\Microsoft.AspNetCore.OutputCaching.Tests.csproj"
+    ]
+  }
+}

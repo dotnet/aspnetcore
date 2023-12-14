@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to manage JSON Web Tokens in a user application.</Description>
+    <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
+    <PackageTags>configuration;authentication;authorization;jwt</PackageTags>
+    <RootNamespace>Microsoft.AspNetCore.Authentication.JwtBearer.Tools</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(ToolSharedSourceRoot)SecretsHelpers\*.cs" LinkBase="Shared" />
+    <None Include="$(ToolSharedSourceRoot)\SecretsHelpers\assets\SecretManager.targets" Link="assets\SecretManager.targets" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(ToolSharedSourceRoot)\SecretsHelpers\SecretsHelpersResources.resx">
+      <ManifestResourceName>Microsoft.AspNetCore.Tools.SecretsHelpersResources</ManifestResourceName>
+      <Generator></Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.IdentityModel.Tokens.Jwt" />
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests" />
+  </ItemGroup>
+</Project>

@@ -3,8 +3,10 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Shared;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Skip test if running on helix (or a particular helix queue).
@@ -14,10 +16,7 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
 {
     public SkipOnHelixAttribute(string issueUrl)
     {
-        if (string.IsNullOrEmpty(issueUrl))
-        {
-            throw new ArgumentNullException(nameof(issueUrl));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(issueUrl);
         IssueUrl = issueUrl;
     }
 
@@ -57,10 +56,20 @@ public class SkipOnHelixAttribute : Attribute, ITestCondition
             return true;
         }
 
+        if (Queues.Contains("All.Ubuntu") && targetQueue.StartsWith("ubuntu", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (Queues.Contains("All.Linux") && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return true;
+        }
+
         return Queues.ToLowerInvariant().Split(';').Contains(targetQueue);
     }
 
-    public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());
+    public static bool OnHelix() => HelixHelper.OnHelix();
 
-    public static string GetTargetHelixQueue() => Environment.GetEnvironmentVariable("helix");
+    public static string GetTargetHelixQueue() => HelixHelper.GetTargetHelixQueue();
 }

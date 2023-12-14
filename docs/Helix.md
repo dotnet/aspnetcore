@@ -19,7 +19,7 @@ This will restore, and then publish all the test project including some bootstra
 ## Overview of the helix usage in our pipelines
 
 - Required queues: Windows10, OSX, Ubuntu1804
-- Full queue matrix: Windows[10, 11], Ubuntu[1804, 2004], Debian11, Redhat7, Arm64 (Win10, Debian11)
+- Full queue matrix: Windows[10, 11], Ubuntu[1804, 2004], Debian11, AlmaLinux8, Arm64 (Win10, Debian11)
 - The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/main/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
@@ -37,7 +37,6 @@ You can always manually queue pipeline runs by clicking on the link to the pipel
 - The normal PR process has aspnetcore-ci will ensure that the required queues are green.
 - If your changes are likely to have cross platform impact that would affect more than the required queues, you should kick off a manual aspnetcore-helix-matrix pipeline run against your branch before merging your PR. Even though aspnetcore-helix-matrix is not a required checkin gate, if your changes break this pipeline, you must either immediately revert your changes, or quarantine the test, its never ok to leave this pipeline in a broken state.
 
-
 ## How do I look at the results of a helix run on Azure Pipelines?
 
 The easiest way to look at a test failure is via the tests tab in azdo which now should show a summary of the errors and have attachments to the relevant console logs.
@@ -54,7 +53,7 @@ An example of how to get the helix payload to inspect the contents of a test job
 
 There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on Azure Pipelines, near the bottom right that will look something like this:
 
-``` text
+```text
   Sending Job to Ubuntu.1804.Amd64.Open...
   Sent Helix Job; see work items at https://helix.dot.net/api/jobs/c1b425c8-0fef-4cba-9dee-29344d7a61b8/workitems?api-version=2019-06-17
   Sending Job to Windows.11.Amd64.ClientPre.Open...
@@ -70,10 +69,10 @@ There's also a link embedded in the build.cmd log of the Tests: Helix x64 job on
   Stopping Azure Pipelines Test Run Ubuntu.1804.Amd64.Open
   Stopping Azure Pipelines Test Run Windows.11.Amd64.ClientPre.Open
   Stopping Azure Pipelines Test Run OSX.1014.Amd64.Open
-D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Work item Microsoft.AspNetCore.Identity.Test--net7.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed. [D:\a\_work\1\s\eng\helix\helix.proj]
-D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net7.0/console [D:\a\_work\1\s\eng\helix\helix.proj]
-##[error].packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : (NETCORE_ENGINEERING_TELEMETRY=Test) Work item Microsoft.AspNetCore.Identity.Test--net7.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed.
-Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net7.0/console
+D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Work item Microsoft.AspNetCore.Identity.Test--net8.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed. [D:\a\_work\1\s\eng\helix\helix.proj]
+D:\a\_work\1\s\.packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net8.0/console [D:\a\_work\1\s\eng\helix\helix.proj]
+##[error].packages\microsoft.dotnet.helix.sdk\7.0.0-beta.21559.3\tools\Microsoft.DotNet.Helix.Sdk.MultiQueue.targets(78,5): error : (NETCORE_ENGINEERING_TELEMETRY=Test) Work item Microsoft.AspNetCore.Identity.Test--net8.0 in job 53e2ca23-9efd-4299-8a8f-d9271265aeaa has failed.
+Failure log: https://helix.dot.net/api/2019-06-17/jobs/53e2ca23-9efd-4299-8a8f-d9271265aeaa/workitems/Microsoft.AspNetCore.Identity.Test--net8.0/console
 ```
 
 The https://helix.dot.net/ home page displays information about the available public queues (nothing about the related BYOC pools and queues or the internal Helix queues)
@@ -137,3 +136,20 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 - Example PR: dotnet/dotnet-buildtools-prereqs-docker#398
 - Summary is to update [manifest.json](https://github.com/dotnet/dotnet-buildtools-prereqs-docker/blob/main/manifest.json) with an entry for the new dockerfiles, and then add the docker files as well to dotnet-buildtools-prereqs-docker
 - The resulting new docker queue id will be found in: [image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json](https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json)
+
+## Investigating helix run time issues
+
+Kusto has all of the helix job data, using a particular job id, with the following query you can get a breakdown of the test projects that take the longest.  Ideally to take advantage of the largest fan out, we want smaller test projects since the longest running test project will be the gate for finishing the entire helix test job.
+
+https://dataexplorer.azure.com/clusters/engsrvprod/databases/engineeringdata
+
+```text
+WorkItems
+| where JobName == "bc108374-750c-4084-853e-bc5b9b0d553e"
+| where Name != JobName
+| extend RunTime = Finished-Started
+| top 20 by RunTime desc
+| project FriendlyName, RunTime
+```
+
+![image](https://user-images.githubusercontent.com/6537861/144129895-e1e82815-4192-431c-a7b3-dd055b813978.png)

@@ -24,7 +24,9 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
-  disableComponentGovernance: false
+  enableBuildRetry: false
+  disableComponentGovernance: ''
+  componentGovernanceIgnoreDirectories: ''
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
@@ -73,6 +75,10 @@ jobs:
   - ${{ if eq(parameters.enableRichCodeNavigation, 'true') }}:
     - name: EnableRichCodeNavigation
       value: 'true'
+  # Retry signature validation up to three times, waiting 2 seconds between attempts.
+  # See https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu3028#retry-untrusted-root-failures
+  - name: NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY
+    value: 3,2000
   - ${{ each variable in parameters.variables }}:
     # handle name-value variable syntax
     # example:
@@ -81,15 +87,25 @@ jobs:
     - ${{ if ne(variable.name, '') }}:
       - name: ${{ variable.name }}
         value: ${{ variable.value }}
-    
+
     # handle variable groups
     - ${{ if ne(variable.group, '') }}:
       - group: ${{ variable.group }}
 
+    # handle template variable syntax
+    # example:
+    # - template: path/to/template.yml
+    #   parameters:
+    #     [key]: [value]
+    - ${{ if ne(variable.template, '') }}:
+      - template: ${{ variable.template }}
+        ${{ if ne(variable.parameters, '') }}:
+          parameters: ${{ variable.parameters }}
+
     # handle key-value variable syntax.
     # example:
     # - [key]: [value]
-    - ${{ if and(eq(variable.name, ''), eq(variable.group, '')) }}:
+    - ${{ if and(eq(variable.name, ''), eq(variable.group, ''), eq(variable.template, '')) }}:
       - ${{ each pair in variable }}:
         - name: ${{ pair.key }}
           value: ${{ pair.value }}
@@ -122,7 +138,7 @@ jobs:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
     - task: NuGetAuthenticate@0
 
-  - ${{ if or(eq(parameters.artifacts.download, 'true'), ne(parameters.artifacts.download, '')) }}:
+  - ${{ if and(ne(parameters.artifacts.download, 'false'), ne(parameters.artifacts.download, '')) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: current
@@ -138,25 +154,33 @@ jobs:
       displayName: RichCodeNav Upload
       inputs:
         languages: ${{ coalesce(parameters.richCodeNavigationLanguage, 'csharp') }}
-        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'production') }}
+        environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'internal') }}
         richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
+        uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true
 
-  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), ne(parameters.disableComponentGovernance, 'true')) }}:
-      - task: ComponentGovernanceComponentDetection@0
-        continueOnError: true
+  - template: /eng/common/templates/steps/component-governance.yml
+    parameters:
+      ${{ if eq(parameters.disableComponentGovernance, '') }}:
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
+          disableComponentGovernance: false
+        ${{ else }}:
+          disableComponentGovernance: true
+      ${{ else }}:
+        disableComponentGovernance: ${{ parameters.disableComponentGovernance }}
+      componentGovernanceIgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       - task: MicroBuildCleanup@1
-        displayName: Execute Microbuild cleanup tasks  
+        displayName: Execute Microbuild cleanup tasks
         condition: and(always(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
         continueOnError: ${{ parameters.continueOnError }}
         env:
           TeamName: $(_TeamName)
 
   - ${{ if ne(parameters.artifacts.publish, '') }}:
-    - ${{ if or(eq(parameters.artifacts.publish.artifacts, 'true'), ne(parameters.artifacts.publish.artifacts, '')) }}:
+    - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
       - task: CopyFiles@2
         displayName: Gather binaries for publish to artifacts
         inputs:
@@ -177,30 +201,12 @@ jobs:
           ArtifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
         continueOnError: true
         condition: always()
-    - ${{ if or(eq(parameters.artifacts.publish.logs, 'true'), ne(parameters.artifacts.publish.logs, '')) }}:
+    - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
       - publish: artifacts/log
         artifact: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
         displayName: Publish logs
         continueOnError: true
         condition: always()
-    - ${{ if or(eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, '')) }}:
-      - ${{ if and(ne(parameters.enablePublishUsingPipelines, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:    
-        - task: CopyFiles@2
-          displayName: Gather Asset Manifests
-          inputs:
-            SourceFolder: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/AssetManifest'
-            TargetFolder: '$(Build.ArtifactStagingDirectory)/AssetManifests'
-          continueOnError: ${{ parameters.continueOnError }}
-          condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
-
-        - task: PublishBuildArtifacts@1
-          displayName: Push Asset Manifests
-          inputs:
-            PathtoPublish: '$(Build.ArtifactStagingDirectory)/AssetManifests'
-            PublishLocation: Container
-            ArtifactName: AssetManifests
-          continueOnError: ${{ parameters.continueOnError }}
-          condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
 
   - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
     - task: PublishBuildArtifacts@1
@@ -217,7 +223,7 @@ jobs:
       displayName: Publish XUnit Test Results
       inputs:
         testResultsFormat: 'xUnit'
-        testResultsFiles: '*.xml' 
+        testResultsFiles: '*.xml'
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
         mergeTestResults: ${{ parameters.mergeTestResults }}
@@ -228,34 +234,22 @@ jobs:
       displayName: Publish TRX Test Results
       inputs:
         testResultsFormat: 'VSTest'
-        testResultsFiles: '*.trx' 
+        testResultsFiles: '*.trx'
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
       condition: always()
-    
-  - ${{ if and(eq(parameters.enablePublishBuildAssets, true), ne(parameters.enablePublishUsingPipelines, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - task: CopyFiles@2
-      displayName: Gather Asset Manifests
-      inputs:
-        SourceFolder: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/AssetManifest'
-        TargetFolder: '$(Build.StagingDirectory)/AssetManifests'
-      continueOnError: ${{ parameters.continueOnError }}
-      condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
-
-    - task: PublishBuildArtifacts@1
-      displayName: Push Asset Manifests
-      inputs:
-        PathtoPublish: '$(Build.StagingDirectory)/AssetManifests'
-        PublishLocation: Container
-        ArtifactName: AssetManifests
-      continueOnError: ${{ parameters.continueOnError }}
-      condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
     - template: /eng/common/templates/steps/generate-sbom.yml
       parameters:
         PackageVersion: ${{ parameters.packageVersion}}
         BuildDropPath: ${{ parameters.buildDropPath }}
+        IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
+  - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+    - publish: $(Build.SourcesDirectory)\eng\common\BuildConfiguration
+      artifact: BuildConfiguration
+      displayName: Publish build retry configuration
+      continueOnError: true

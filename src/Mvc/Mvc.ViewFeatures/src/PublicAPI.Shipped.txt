@@ -181,7 +181,6 @@
 ~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptorCollection.ViewComponentDescriptorCollection(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentDescriptor> items, int version) -> void
 ~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentFeature.ViewComponents.get -> System.Collections.Generic.IList<System.Reflection.TypeInfo>
 ~Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentFeatureProvider.PopulateFeature(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart> parts, Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentFeature feature) -> void
-~Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.CompositeViewEngine(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! optionsAccessor) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope.CreateWriter(System.IO.TextWriter writer) -> System.IO.TextWriter
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope.GetPage(int pageSize) -> Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue[]
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope.ReturnSegment(Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue[] segment) -> void
@@ -330,7 +329,6 @@
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpressionProvider.CreateModelExpression<TModel>(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel> viewData, string expression) -> Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpressionProvider.GetExpressionText<TModel, TValue>(System.Linq.Expressions.Expression<System.Func<TModel, TValue>> expression) -> string
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpressionProvider.ModelExpressionProvider(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider) -> void
-~Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.PartialViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.SessionStateTempDataProvider.SessionStateTempDataProvider(Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure.TempDataSerializer tempDataSerializer) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionaryFactory.GetTempData(Microsoft.AspNetCore.Http.HttpContext context) -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionaryFactory.TempDataDictionaryFactory(Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider provider) -> void
@@ -342,7 +340,6 @@
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.TemplateInfo.HtmlFieldPrefix.set -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.TemplateInfo.TemplateInfo(Microsoft.AspNetCore.Mvc.ViewFeatures.TemplateInfo original) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.TemplateInfo.Visited(Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer modelExplorer) -> bool
-~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataDictionaryFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionaryControllerPropertyActivator.Activate(Microsoft.AspNetCore.Mvc.ControllerContext actionContext, object controller) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionaryControllerPropertyActivator.GetActivatorDelegate(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor actionDescriptor) -> System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object>
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionaryControllerPropertyActivator.ViewDataDictionaryControllerPropertyActivator(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider) -> void
@@ -353,8 +350,6 @@
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataInfo.ViewDataInfo(object container, object value) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataInfo.ViewDataInfo(object container, System.Reflection.PropertyInfo propertyInfo) -> void
 ~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataInfo.ViewDataInfo(object container, System.Reflection.PropertyInfo propertyInfo, System.Func<object> valueAccessor) -> void
-~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
-~Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 ~override Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultValidationHtmlAttributeProvider.AddValidationAttributes(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext, Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer modelExplorer, System.Collections.Generic.IDictionary<string, string> attributes) -> void
 ~override Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper<TModel>.Contextualize(Microsoft.AspNetCore.Mvc.Rendering.ViewContext viewContext) -> void
 ~static Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionaryExtensions.AddModelError<TModel>(this Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState, System.Linq.Expressions.Expression<System.Func<TModel, object>> expression, string errorMessage) -> void
@@ -681,7 +676,11 @@ Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode.EndOfForm = 2 -> Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode.Inline = 1 -> Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode.None = 0 -> Microsoft.AspNetCore.Mvc.Rendering.CheckBoxHiddenInputRenderMode
+Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
+Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode.AlwaysUseCurrentCulture = 1 -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
+Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode.DetectCultureFromInputType = 0 -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod
+Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Get = 0 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post = 1 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode
@@ -904,6 +903,7 @@ Microsoft.AspNetCore.Mvc.ViewDataAttribute.Key.get -> string?
 Microsoft.AspNetCore.Mvc.ViewDataAttribute.Key.set -> void
 Microsoft.AspNetCore.Mvc.ViewDataAttribute.ViewDataAttribute() -> void
 Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine
+Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.CompositeViewEngine(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! optionsAccessor) -> void
 Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.FindView(Microsoft.AspNetCore.Mvc.ActionContext! context, string! viewName, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
 Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.GetView(string? executingFilePath, string! viewPath, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
 Microsoft.AspNetCore.Mvc.ViewEngines.CompositeViewEngine.ViewEngines.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine!>!
@@ -934,6 +934,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Count.get -> int
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Current.get -> System.Collections.Generic.KeyValuePair<string!, string?>
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Dispose() -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Enumerator(Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary! attributes) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Enumerator.Reset() -> void
@@ -948,6 +949,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.TryGetValue(string! ke
 Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary.Values.get -> System.Collections.Generic.ICollection<string?>!
 Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.IViewBufferScope
 Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue
+Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue.ViewBufferValue() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.CookieTempDataProvider
 Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator
 Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator.AllowRenderingMaxLengthAttribute.get -> bool
@@ -972,6 +974,8 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.CheckBoxHiddenInputRende
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.CheckBoxHiddenInputRenderMode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.ClientValidationEnabled.get -> bool
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.ClientValidationEnabled.set -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.FormInputRenderMode.get -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
+Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.FormInputRenderMode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.Html5DateRenderingMode.get -> Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.Html5DateRenderingMode.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelperOptions.HtmlHelperOptions() -> void
@@ -1003,6 +1007,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpressionProvider
 Microsoft.AspNetCore.Mvc.ViewFeatures.ModelMetadataProviderExtensions
 Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor
 Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.AspNetCore.Mvc.ViewFeatures.PartialViewResultExecutor.PartialViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute
 Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute.CreateInstance(System.IServiceProvider! serviceProvider) -> Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata!
 Microsoft.AspNetCore.Mvc.ViewFeatures.SaveTempDataAttribute.IsReusable.get -> bool
@@ -1041,6 +1046,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.TryGetValueProvider
 Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider
 Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider.ValidationHtmlAttributeProvider() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewComponentResultExecutor.ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataDictionaryFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute.ViewContextAttribute() -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary
@@ -1076,7 +1082,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Micr
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source, object? model, System.Type! declaredModelType) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source, System.Type! declaredModelType) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>
-Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel?
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.get -> TModel
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.Model.set -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelState) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>.ViewDataDictionary(Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary! source) -> void
@@ -1093,11 +1099,13 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ModelMetadataProvider.get -> 
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.TempDataFactory.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory?
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewEngine.get -> Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine!
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.ViewOptions.get -> Microsoft.AspNetCore.Mvc.MvcViewOptions?
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor.WriterFactory.get -> Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory!
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext! context, Microsoft.AspNetCore.Mvc.ViewResult! result) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.AspNetCore.Mvc.ViewFeatures.ViewResultExecutor.ViewResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions!>! viewOptions, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine! viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory! tempDataFactory, System.Diagnostics.DiagnosticListener! diagnosticListener, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider) -> void
 Microsoft.AspNetCore.Mvc.ViewResult
 Microsoft.AspNetCore.Mvc.ViewResult.ContentType.get -> string?
 Microsoft.AspNetCore.Mvc.ViewResult.ContentType.set -> void

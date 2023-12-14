@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -234,6 +234,28 @@ public class TestClientTests
         // No more response content
         length = await responseContent.ReadAsync(buffer).AsTask().DefaultTimeout();
         Assert.Equal(0, length);
+    }
+
+    [Fact]
+    public async Task ClientStreaming_HttpContentException()
+    {
+        var requestCount = 0;
+        RequestDelegate appDelegate = ctx =>
+        {
+            requestCount++;
+            return Task.CompletedTask;
+        };
+
+        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+        var server = new TestServer(builder);
+        var client = server.CreateClient();
+
+        var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+        message.Content = new PushContent(stream => throw new InvalidOperationException("HttpContent exception"));
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.SendAsync(message, CancellationToken.None));
+        Assert.Equal("HttpContent exception", ex.Message);
+        Assert.Equal(0, requestCount);
     }
 
     [Fact]

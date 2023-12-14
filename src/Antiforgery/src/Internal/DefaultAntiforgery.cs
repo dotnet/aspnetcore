@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// Provides access to the antiforgery system, which provides protection against
 /// Cross-site Request Forgery (XSRF, also called CSRF) attacks.
 /// </summary>
-internal class DefaultAntiforgery : IAntiforgery
+internal sealed class DefaultAntiforgery : IAntiforgery
 {
     private readonly AntiforgeryOptions _options;
     private readonly IAntiforgeryTokenGenerator _tokenGenerator;
@@ -39,10 +39,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -79,10 +76,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public AntiforgeryTokenSet GetTokens(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -93,10 +87,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public async Task<bool> IsRequestValidAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -151,10 +142,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public async Task ValidateRequestAsync(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -220,10 +208,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// <inheritdoc />
     public void SetCookieTokenAndHeader(HttpContext httpContext)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         CheckSSLConfig(httpContext);
 
@@ -373,7 +358,7 @@ internal class DefaultAntiforgery : IAntiforgery
     /// Sets the 'Cache-Control' header to 'no-cache, no-store' and 'Pragma' header to 'no-cache' overriding any user set value.
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
-    protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
+    private void SetDoNotCacheHeaders(HttpContext httpContext)
     {
         var logWarning = false;
         var responseHeaders = httpContext.Response.Headers;

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Allows fine grained configuration of essential MVC services.
 /// </summary>
-internal class MvcCoreBuilder : IMvcCoreBuilder
+internal sealed class MvcCoreBuilder : IMvcCoreBuilder
 {
     /// <summary>
     /// Initializes a new <see cref="MvcCoreBuilder"/> instance.
@@ -19,15 +19,8 @@ internal class MvcCoreBuilder : IMvcCoreBuilder
         IServiceCollection services,
         ApplicationPartManager manager)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(manager);
 
         Services = services;
         PartManager = manager;

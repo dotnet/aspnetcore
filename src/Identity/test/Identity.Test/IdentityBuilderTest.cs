@@ -27,6 +27,18 @@ public class IdentityBuilderTest
     }
 
     [Fact]
+    public void IdentityBuilder_ValueTypeUser_Error()
+    {
+        Assert.Throws<ArgumentException>(() => new IdentityBuilder(typeof(int), new ServiceCollection()));
+    }
+
+    [Fact]
+    public void IdentityBuilder_ValueTypeRole_Error()
+    {
+        Assert.Throws<ArgumentException>(() => new IdentityBuilder(typeof(PocoUser), typeof(int), new ServiceCollection()));
+    }
+
+    [Fact]
     public void AddRolesWithoutStoreWillError()
     {
         var services = new ServiceCollection();

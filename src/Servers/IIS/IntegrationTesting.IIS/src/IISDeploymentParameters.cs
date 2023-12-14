@@ -28,9 +28,8 @@ public class IISDeploymentParameters : DeploymentParameters
     public IISDeploymentParameters(DeploymentParameters parameters)
         : base(parameters)
     {
-        if (parameters is IISDeploymentParameters)
+        if (parameters is IISDeploymentParameters tempParameters)
         {
-            var tempParameters = (IISDeploymentParameters)parameters;
             WebConfigActionList = tempParameters.WebConfigActionList;
             ServerConfigActionList = tempParameters.ServerConfigActionList;
             WebConfigBasedEnvironmentVariables = tempParameters.WebConfigBasedEnvironmentVariables;

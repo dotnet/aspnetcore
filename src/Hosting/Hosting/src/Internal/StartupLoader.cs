@@ -5,12 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-internal class StartupLoader
+internal sealed class StartupLoader
 {
     // Creates an <see cref="StartupMethods"/> instance with the actions to run for configuring the application services and the
     // request pipeline of the application.
@@ -54,13 +55,27 @@ internal class StartupLoader
         var type = configureContainerMethod.MethodInfo != null ? configureContainerMethod.GetContainerType() : typeof(object);
 
         var builder = (ConfigureServicesDelegateBuilder)Activator.CreateInstance(
-            typeof(ConfigureServicesDelegateBuilder<>).MakeGenericType(type),
+            CreateConfigureServicesDelegateBuilder(type),
             hostingServiceProvider,
             servicesMethod,
             configureContainerMethod,
             instance)!;
 
         return new StartupMethods(instance, configureMethod.Build(instance), builder.Build());
+
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+            Justification = "There is a runtime check for ValueType startup container. It's unlikely anyone will use a ValueType here.")]
+        static Type CreateConfigureServicesDelegateBuilder(Type type)
+        {
+            // Configure container uses MakeGenericType with the container type. MakeGenericType + struct container type requires IsDynamicCodeSupported.
+            if (type.IsValueType && !RuntimeFeature.IsDynamicCodeSupported)
+            {
+                throw new InvalidOperationException("ValueType startup container isn't supported with AOT.");
+            }
+
+            return typeof(ConfigureServicesDelegateBuilder<>).MakeGenericType(type);
+        }
     }
 
     private abstract class ConfigureServicesDelegateBuilder
@@ -68,7 +83,7 @@ internal class StartupLoader
         public abstract Func<IServiceCollection, IServiceProvider> Build();
     }
 
-    private class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
+    private sealed class ConfigureServicesDelegateBuilder<TContainerBuilder> : ConfigureServicesDelegateBuilder where TContainerBuilder : notnull
     {
         public ConfigureServicesDelegateBuilder(
             IServiceProvider hostingServiceProvider,

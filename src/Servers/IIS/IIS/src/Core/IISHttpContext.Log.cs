@@ -24,5 +24,8 @@ internal abstract partial class IISHttpContext
 
         [LoggerMessage(4, LogLevel.Debug, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""", EventName = nameof(ConnectionBadRequest))]
         private static partial void ConnectionBadRequest(ILogger logger, string connectionId, string message, Microsoft.AspNetCore.Http.BadHttpRequestException ex);
+
+        [LoggerMessage(5, LogLevel.Debug, @"Connection ID ""{ConnectionId}"", Request ID ""{TraceIdentifier}"": The request was aborted by the client.", EventName = "RequestAborted")]
+        public static partial void RequestAborted(ILogger logger, string connectionId, string traceIdentifier);
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 
-internal class ApacheModRewriteRule : IRule
+internal sealed class ApacheModRewriteRule : IRule
 {
     public UrlMatch InitialMatch { get; }
     public IList<Condition>? Conditions { get; }
@@ -18,7 +18,7 @@ internal class ApacheModRewriteRule : IRule
         Actions = urlActions;
     }
 
-    public virtual void ApplyRule(RewriteContext context)
+    public void ApplyRule(RewriteContext context)
     {
         // 1. Figure out which section of the string to match for the initial rule.
         var initMatchRes = InitialMatch.Evaluate(context.HttpContext.Request.Path, context);

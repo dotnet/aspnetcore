@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal class ConfigureMethodVisitor : SymbolVisitor
+internal sealed class ConfigureMethodVisitor : SymbolVisitor
 {
     public static List<IMethodSymbol> FindConfigureMethods(StartupSymbols symbols, IAssemblySymbol assembly)
     {

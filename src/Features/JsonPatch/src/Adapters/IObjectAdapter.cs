@@ -28,7 +28,7 @@ public interface IObjectAdapter
     ///
     /// { "op": "add", "path": "/a/b/c", "value": [ "foo", "bar" ] }
     ///
-    /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-4
+    /// See RFC 6902 <see href="https://tools.ietf.org/html/rfc6902#page-4"/>
     /// </summary>
     /// <param name="operation">The add operation.</param>
     /// <param name="objectToApplyTo">Object to apply the operation to.</param>
@@ -47,7 +47,7 @@ public interface IObjectAdapter
     ///
     ///  { "op": "copy", "from": "/a/b/c", "path": "/a/b/e" }
     ///
-    /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-7
+    /// See RFC 6902 <see href="https://tools.ietf.org/html/rfc6902#page-7"/>
     /// </summary>
     /// <param name="operation">The copy operation.</param>
     /// <param name="objectToApplyTo">Object to apply the operation to.</param>
@@ -68,7 +68,7 @@ public interface IObjectAdapter
     ///
     /// A location cannot be moved into one of its children.
     ///
-    /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-6
+    /// See RFC 6902 <see href="https://tools.ietf.org/html/rfc6902#page-6"/>
     /// </summary>
     /// <param name="operation">The move operation.</param>
     /// <param name="objectToApplyTo">Object to apply the operation to.</param>
@@ -86,7 +86,7 @@ public interface IObjectAdapter
     /// If removing an element from an array, any elements above the
     /// specified index are shifted one position to the left.
     ///
-    /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-6
+    /// See RFC 6902 <see href="https://tools.ietf.org/html/rfc6902#page-6"/>
     /// </summary>
     /// <param name="operation">The remove operation.</param>
     /// <param name="objectToApplyTo">Object to apply the operation to.</param>
@@ -103,7 +103,7 @@ public interface IObjectAdapter
     ///
     /// { "op": "replace", "path": "/a/b/c", "value": 42 }
     ///
-    /// See RFC 6902 https://tools.ietf.org/html/rfc6902#page-6
+    /// See RFC 6902 <see href="https://tools.ietf.org/html/rfc6902#page-6"/>
     /// </summary>
     /// <param name="operation">The replace operation.</param>
     /// <param name="objectToApplyTo">Object to apply the operation to.</param>

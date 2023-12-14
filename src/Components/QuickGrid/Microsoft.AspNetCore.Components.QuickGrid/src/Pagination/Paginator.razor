@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace Microsoft.AspNetCore.Components.QuickGrid
+
+<div class="paginator">
+    @if (State.TotalItemCount.HasValue)
+    {
+        <div class="summary">
+            @if (SummaryTemplate is not null)
+            {
+                @SummaryTemplate
+            }
+            else
+            {
+                <text><strong>@State.TotalItemCount</strong> items</text>
+            }
+        </div>
+        <nav role="navigation">
+            <button class="go-first" type="button" @onclick="GoFirstAsync" disabled="@(!CanGoBack)" title="Go to first page" aria-label="Go to first page"></button>
+            <button class="go-previous" type="button" @onclick="GoPreviousAsync" disabled="@(!CanGoBack)" title="Go to previous page" aria-label="Go to previous page"></button>
+            <div class="pagination-text">
+                Page <strong>@(State.CurrentPageIndex + 1)</strong>
+                of <strong>@(State.LastPageIndex + 1)</strong>
+            </div>
+            <button class="go-next" type="button" @onclick="GoNextAsync" disabled="@(!CanGoForwards)" title="Go to next page" aria-label="Go to next page"></button>
+            <button class="go-last" type="button" @onclick="GoLastAsync" disabled="@(!CanGoForwards)" title="Go to last page" aria-label="Go to last page"></button>
+        </nav>
+    }
+</div>

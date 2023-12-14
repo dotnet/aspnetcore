@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISTestSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class RequestResponseTests
 {
     private readonly IISTestSiteFixture _fixture;
@@ -440,6 +441,13 @@ public class RequestResponseTests
     }
 
     [ConditionalFact]
+    public async Task TestStringValuesEmptyForMissingHeaders()
+    {
+        var result = await _fixture.Client.GetStringAsync($"/TestRequestHeaders");
+        Assert.Equal("Success", result);
+    }
+
+    [ConditionalFact]
     public async Task TestReadOffsetWorks()
     {
         var result = await _fixture.Client.PostAsync($"/TestReadOffsetWorks", new StringContent("Hello World"));
@@ -604,6 +612,28 @@ public class RequestResponseTests
     }
 
     [ConditionalTheory]
+    [InlineData("IIISEnvironmentFeature")]
+    [InlineData("IIISEnvironmentFeatureConfig")]
+    public async Task IISEnvironmentFeatureIsAvailable(string endpoint)
+    {
+        var siteName = _fixture.DeploymentResult.DeploymentParameters.SiteName.ToUpperInvariant();
+    
+        var expected = $"""
+            IIS Version: 10.0
+            ApplicationId: /LM/W3SVC/1/ROOT
+            Application Path: {_fixture.DeploymentResult.ContentRoot}\
+            Application Virtual Path: /
+            Application Config Path: MACHINE/WEBROOT/APPHOST/{siteName}
+            AppPool ID: {_fixture.DeploymentResult.AppPoolName}
+            AppPool Config File: {_fixture.DeploymentResult.DeploymentParameters.ServerConfigLocation}
+            Site ID: 1
+            Site Name: {siteName}
+            """;
+
+        Assert.Equal(expected, await _fixture.Client.GetStringAsync($"/{endpoint}"));
+    }
+
+    [ConditionalTheory]
     [InlineData(65000)]
     [InlineData(1000000)]
     [InlineData(10000000)]
@@ -716,6 +746,47 @@ public class RequestResponseTests
         }
 
         await Task.WhenAll(tasks);
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingHeadersWithMultipleValues()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingHeadersWithMultipleValues HTTP/1.1",
+                "Transfer-Encoding: gzip, chunked",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingAndContentLengthShouldBeRemove HTTP/1.1",
+                "Transfer-Encoding: gzip, chunked",
+                "Content-Length: 5",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
     }
 
     private async Task<(int Status, string Body)> SendSocketRequestAsync(string path)

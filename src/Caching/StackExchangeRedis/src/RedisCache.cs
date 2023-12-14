@@ -4,9 +4,13 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -16,8 +20,11 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// Distributed cache implementation using Redis.
 /// <para>Uses <c>StackExchange.Redis</c> as the Redis client.</para>
 /// </summary>
-public class RedisCache : IDistributedCache, IDisposable
+public partial class RedisCache : IDistributedCache, IDisposable
 {
+    // Note that the "force reconnect" pattern as described https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
+    // can be enabled via the "Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect" app-context switch
+    //
     // -- Explanation of why two kinds of SetScript are used --
     // * Redis 2.0 had HSET key field value for setting individual hash fields,
     // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key).
@@ -48,54 +55,99 @@ public class RedisCache : IDistributedCache, IDisposable
     private const string AbsoluteExpirationKey = "absexp";
     private const string SlidingExpirationKey = "sldexp";
     private const string DataKey = "data";
+
+    // combined keys - same hash keys fetched constantly; avoid allocating an array each time
+    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpirationData = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey, DataKey };
+    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpiration = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey };
+
+    private static RedisValue[] GetHashFields(bool getData) => getData
+        ? _hashMembersAbsoluteExpirationSlidingExpirationData
+        : _hashMembersAbsoluteExpirationSlidingExpiration;
+
     private const long NotPresent = -1;
     private static readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
 
-    private volatile IConnectionMultiplexer? _connection;
-    private IDatabase? _cache;
+    private volatile IDatabase? _cache;
     private bool _disposed;
     private string _setScript = SetScript;
 
     private readonly RedisCacheOptions _options;
-    private readonly string _instance;
+    private readonly RedisKey _instancePrefix;
+    private readonly ILogger _logger;
 
     private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+
+    private long _lastConnectTicks = DateTimeOffset.UtcNow.Ticks;
+    private long _firstErrorTimeTicks;
+    private long _previousErrorTimeTicks;
+
+    // StackExchange.Redis will also be trying to reconnect internally,
+    // so limit how often we recreate the ConnectionMultiplexer instance
+    // in an attempt to reconnect
+
+    // Never reconnect within 60 seconds of the last attempt to connect or reconnect.
+    private readonly TimeSpan ReconnectMinInterval = TimeSpan.FromSeconds(60);
+    // Only reconnect if errors have occurred for at least the last 30 seconds.
+    // This count resets if there are no errors for 30 seconds
+    private readonly TimeSpan ReconnectErrorThreshold = TimeSpan.FromSeconds(30);
+
+    private static DateTimeOffset ReadTimeTicks(ref long field)
+    {
+        var ticks = Volatile.Read(ref field); // avoid torn values
+        return ticks == 0 ? DateTimeOffset.MinValue : new DateTimeOffset(ticks, TimeSpan.Zero);
+    }
+
+    private static void WriteTimeTicks(ref long field, DateTimeOffset value)
+    {
+        var ticks = value == DateTimeOffset.MinValue ? 0L : value.UtcTicks;
+        Volatile.Write(ref field, ticks); // avoid torn values
+    }
 
     /// <summary>
     /// Initializes a new instance of <see cref="RedisCache"/>.
     /// </summary>
     /// <param name="optionsAccessor">The configuration options.</param>
     public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
+        : this(optionsAccessor, Logging.Abstractions.NullLoggerFactory.Instance.CreateLogger<RedisCache>())
     {
-        if (optionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(optionsAccessor));
-        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RedisCache"/>.
+    /// </summary>
+    /// <param name="optionsAccessor">The configuration options.</param>
+    /// <param name="logger">The logger.</param>
+    internal RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILogger logger)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(optionsAccessor);
+        ArgumentNullThrowHelper.ThrowIfNull(logger);
 
         _options = optionsAccessor.Value;
+        _logger = logger;
 
         // This allows partitioning a single backend cache for use with multiple apps/services.
-        _instance = _options.InstanceName ?? string.Empty;
+        var instanceName = _options.InstanceName;
+        if (!string.IsNullOrEmpty(instanceName))
+        {
+            // SE.Redis allows efficient append of key-prefix scenarios, but we can help it
+            // avoid some work/allocations by forcing the key-prefix to be a byte[]; SE.Redis
+            // would do this itself anyway, using UTF8
+            _instancePrefix = (RedisKey)Encoding.UTF8.GetBytes(instanceName);
+        }
     }
 
     /// <inheritdoc />
     public byte[]? Get(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         return GetAndRefresh(key, getData: true);
     }
 
     /// <inheritdoc />
-    public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
+    public async Task<byte[]?> GetAsync(string key, CancellationToken token = default)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -105,176 +157,125 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        Connect();
+        var cache = Connect();
 
         var creationTime = DateTimeOffset.UtcNow;
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        _cache.ScriptEvaluate(_setScript, new RedisKey[] { _instance + key },
-            new RedisValue[]
-            {
+        try
+        {
+            cache.ScriptEvaluate(_setScript, new RedisKey[] { _instancePrefix.Append(key) },
+                new RedisValue[]
+                {
                         absoluteExpiration?.Ticks ?? NotPresent,
                         options.SlidingExpiration?.Ticks ?? NotPresent,
                         GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
                         value
-            });
+                });
+        }
+        catch (Exception ex)
+        {
+            OnRedisError(ex, cache);
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
+    public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         token.ThrowIfCancellationRequested();
 
-        await ConnectAsync(token).ConfigureAwait(false);
-        Debug.Assert(_cache is not null);
+        var cache = await ConnectAsync(token).ConfigureAwait(false);
+        Debug.Assert(cache is not null);
 
         var creationTime = DateTimeOffset.UtcNow;
 
         var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-        await _cache.ScriptEvaluateAsync(_setScript, new RedisKey[] { _instance + key },
-            new RedisValue[]
-            {
+        try
+        {
+            await cache.ScriptEvaluateAsync(_setScript, new RedisKey[] { _instancePrefix.Append(key) },
+                new RedisValue[]
+                {
                 absoluteExpiration?.Ticks ?? NotPresent,
                 options.SlidingExpiration?.Ticks ?? NotPresent,
                 GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
                 value
-            }).ConfigureAwait(false);
+                }).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            OnRedisError(ex, cache);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public void Refresh(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         GetAndRefresh(key, getData: false);
     }
 
     /// <inheritdoc />
-    public async Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
+    public async Task RefreshAsync(string key, CancellationToken token = default)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
         await GetAndRefreshAsync(key, getData: false, token: token).ConfigureAwait(false);
     }
 
-    [MemberNotNull(nameof(_cache), nameof(_connection))]
-    private void Connect()
+    [MemberNotNull(nameof(_cache))]
+    private IDatabase Connect()
     {
         CheckDisposed();
-        if (_cache != null)
+        var cache = _cache;
+        if (cache is not null)
         {
-            Debug.Assert(_connection != null);
-            return;
+            Debug.Assert(_cache is not null);
+            return cache;
         }
 
         _connectionLock.Wait();
         try
         {
-            if (_cache == null)
+            cache = _cache;
+            if (cache is null)
             {
-                if (_options.ConnectionMultiplexerFactory == null)
-                {
-                    if (_options.ConfigurationOptions is not null)
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
-                    }
-                    else
-                    {
-                        _connection = ConnectionMultiplexer.Connect(_options.Configuration);
-                    }
-                }
-                else
-                {
-                    _connection = _options.ConnectionMultiplexerFactory().GetAwaiter().GetResult();
-                }
-
-                PrepareConnection();
-                _cache = _connection.GetDatabase();
-            }
-        }
-        finally
-        {
-            _connectionLock.Release();
-        }
-
-        Debug.Assert(_connection != null);
-    }
-
-    private async Task ConnectAsync(CancellationToken token = default(CancellationToken))
-    {
-        CheckDisposed();
-        token.ThrowIfCancellationRequested();
-
-        if (_cache != null)
-        {
-            Debug.Assert(_connection != null);
-            return;
-        }
-
-        await _connectionLock.WaitAsync(token).ConfigureAwait(false);
-        try
-        {
-            if (_cache == null)
-            {
+                IConnectionMultiplexer connection;
                 if (_options.ConnectionMultiplexerFactory is null)
                 {
                     if (_options.ConfigurationOptions is not null)
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
+                        connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
                     }
                     else
                     {
-                        _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
+                        connection = ConnectionMultiplexer.Connect(_options.Configuration!);
                     }
                 }
                 else
                 {
-                    _connection = await _options.ConnectionMultiplexerFactory().ConfigureAwait(false);
+                    connection = _options.ConnectionMultiplexerFactory().GetAwaiter().GetResult();
                 }
 
-                PrepareConnection();
-                _cache = _connection.GetDatabase();
+                PrepareConnection(connection);
+                cache = _cache = connection.GetDatabase();
             }
+            Debug.Assert(_cache is not null);
+            return cache;
         }
         finally
         {
@@ -282,65 +283,118 @@ public class RedisCache : IDistributedCache, IDisposable
         }
     }
 
-    private void PrepareConnection()
+    private ValueTask<IDatabase> ConnectAsync(CancellationToken token = default)
     {
-        ValidateServerFeatures();
-        TryRegisterProfiler();
+        CheckDisposed();
+        token.ThrowIfCancellationRequested();
+
+        var cache = _cache;
+        if (cache is not null)
+        {
+            Debug.Assert(_cache is not null);
+            return new(cache);
+        }
+        return ConnectSlowAsync(token);
     }
 
-    private void ValidateServerFeatures()
+    private async ValueTask<IDatabase> ConnectSlowAsync(CancellationToken token)
     {
-        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
-
-        foreach (var endPoint in _connection.GetEndPoints())
+        await _connectionLock.WaitAsync(token).ConfigureAwait(false);
+        try
         {
-            if (_connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+            var cache = _cache;
+            if (cache is null)
             {
-                _setScript = SetScriptPreExtendedSetCommand;
-                return;
+                IConnectionMultiplexer connection;
+                if (_options.ConnectionMultiplexerFactory is null)
+                {
+                    connection = await ConnectionMultiplexer.ConnectAsync(_options.GetConfiguredOptions("asp.net DC")).ConfigureAwait(false);
+                }
+                else
+                {
+                    connection = await _options.ConnectionMultiplexerFactory().ConfigureAwait(false);
+                }
+
+                PrepareConnection(connection);
+                cache = _cache = connection.GetDatabase();
             }
+            Debug.Assert(_cache is not null);
+            return cache;
+        }
+        finally
+        {
+            _connectionLock.Release();
         }
     }
 
-    private void TryRegisterProfiler()
+    private void PrepareConnection(IConnectionMultiplexer connection)
     {
-        _ = _connection ?? throw new InvalidOperationException($"{nameof(_connection)} cannot be null.");
+        WriteTimeTicks(ref _lastConnectTicks, DateTimeOffset.UtcNow);
+        ValidateServerFeatures(connection);
+        TryRegisterProfiler(connection);
+    }
 
-        if (_options.ProfilingSession != null)
+    private void ValidateServerFeatures(IConnectionMultiplexer connection)
+    {
+        _ = connection ?? throw new InvalidOperationException($"{nameof(connection)} cannot be null.");
+
+        try
         {
-            _connection.RegisterProfiler(_options.ProfilingSession);
+            foreach (var endPoint in connection.GetEndPoints())
+            {
+                if (connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
+                {
+                    _setScript = SetScriptPreExtendedSetCommand;
+                    return;
+                }
+            }
+        }
+        catch (NotSupportedException ex)
+        {
+            Log.CouldNotDetermineServerVersion(_logger, ex);
+
+            // The GetServer call may not be supported with some configurations, in which
+            // case let's also fall back to using the older command.
+            _setScript = SetScriptPreExtendedSetCommand;
+        }
+    }
+
+    private void TryRegisterProfiler(IConnectionMultiplexer connection)
+    {
+        _ = connection ?? throw new InvalidOperationException($"{nameof(connection)} cannot be null.");
+
+        if (_options.ProfilingSession is not null)
+        {
+            connection.RegisterProfiler(_options.ProfilingSession);
         }
     }
 
     private byte[]? GetAndRefresh(string key, bool getData)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
-        Connect();
+        var cache = Connect();
 
         // This also resets the LRU status as desired.
         // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
         RedisValue[] results;
-        if (getData)
+        try
         {
-            results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+            results = cache.HashGet(_instancePrefix.Append(key), GetHashFields(getData));
         }
-        else
+        catch (Exception ex)
         {
-            results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+            OnRedisError(ex, cache);
+            throw;
         }
 
-        // TODO: Error handling
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            Refresh(_cache, key, absExpr, sldExpr);
+            Refresh(cache, key, absExpr, sldExpr);
         }
 
-        if (results.Length >= 3 && results[2].HasValue)
+        if (results.Length >= 3 && !results[2].IsNull)
         {
             return results[2];
         }
@@ -348,38 +402,35 @@ public class RedisCache : IDistributedCache, IDisposable
         return null;
     }
 
-    private async Task<byte[]?> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default(CancellationToken))
+    private async Task<byte[]?> GetAndRefreshAsync(string key, bool getData, CancellationToken token = default)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
-        await ConnectAsync(token).ConfigureAwait(false);
-        Debug.Assert(_cache is not null);
+        var cache = await ConnectAsync(token).ConfigureAwait(false);
+        Debug.Assert(cache is not null);
 
         // This also resets the LRU status as desired.
         // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
         RedisValue[] results;
-        if (getData)
+        try
         {
-            results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey).ConfigureAwait(false);
+            results = await cache.HashGetAsync(_instancePrefix.Append(key), GetHashFields(getData)).ConfigureAwait(false);
         }
-        else
+        catch (Exception ex)
         {
-            results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey).ConfigureAwait(false);
+            OnRedisError(ex, cache);
+            throw;
         }
 
-        // TODO: Error handling
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            await RefreshAsync(_cache, key, absExpr, sldExpr, token).ConfigureAwait(false);
+            await RefreshAsync(cache, key, absExpr, sldExpr, token).ConfigureAwait(false);
         }
 
-        if (results.Length >= 3 && results[2].HasValue)
+        if (results.Length >= 3 && !results[2].IsNull)
         {
             return results[2];
         }
@@ -390,30 +441,37 @@ public class RedisCache : IDistributedCache, IDisposable
     /// <inheritdoc />
     public void Remove(string key)
     {
-        if (key == null)
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+
+        var cache = Connect();
+        try
         {
-            throw new ArgumentNullException(nameof(key));
+            cache.KeyDelete(_instancePrefix.Append(key));
         }
-
-        Connect();
-
-        _cache.KeyDelete(_instance + key);
-        // TODO: Error handling
+        catch (Exception ex)
+        {
+            OnRedisError(ex, cache);
+            throw;
+        }
     }
 
     /// <inheritdoc />
-    public async Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
+    public async Task RemoveAsync(string key, CancellationToken token = default)
     {
-        if (key == null)
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+
+        var cache = await ConnectAsync(token).ConfigureAwait(false);
+        Debug.Assert(cache is not null);
+
+        try
         {
-            throw new ArgumentNullException(nameof(key));
+            await cache.KeyDeleteAsync(_instancePrefix.Append(key)).ConfigureAwait(false);
         }
-
-        await ConnectAsync(token).ConfigureAwait(false);
-        Debug.Assert(_cache is not null);
-
-        await _cache.KeyDeleteAsync(_instance + key).ConfigureAwait(false);
-        // TODO: Error handling
+        catch (Exception ex)
+        {
+            OnRedisError(ex, cache);
+            throw;
+        }
     }
 
     private static void MapMetadata(RedisValue[] results, out DateTimeOffset? absoluteExpiration, out TimeSpan? slidingExpiration)
@@ -434,10 +492,7 @@ public class RedisCache : IDistributedCache, IDisposable
 
     private void Refresh(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         // Note Refresh has no effect if there is just an absolute expiration (or neither).
         if (sldExpr.HasValue)
@@ -452,17 +507,21 @@ public class RedisCache : IDistributedCache, IDisposable
             {
                 expr = sldExpr;
             }
-            cache.KeyExpire(_instance + key, expr);
-            // TODO: Error handling
+            try
+            {
+                cache.KeyExpire(_instancePrefix.Append(key), expr);
+            }
+            catch (Exception ex)
+            {
+                OnRedisError(ex, cache);
+                throw;
+            }
         }
     }
 
-    private async Task RefreshAsync(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr, CancellationToken token = default(CancellationToken))
+    private async Task RefreshAsync(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr, CancellationToken token = default)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -479,8 +538,15 @@ public class RedisCache : IDistributedCache, IDisposable
             {
                 expr = sldExpr;
             }
-            await cache.KeyExpireAsync(_instance + key, expr).ConfigureAwait(false);
-            // TODO: Error handling
+            try
+            {
+                await cache.KeyExpireAsync(_instancePrefix.Append(key), expr).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                OnRedisError(ex, cache);
+                throw;
+            }
         }
     }
 
@@ -507,10 +573,12 @@ public class RedisCache : IDistributedCache, IDisposable
     {
         if (options.AbsoluteExpiration.HasValue && options.AbsoluteExpiration <= creationTime)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(
                 nameof(DistributedCacheEntryOptions.AbsoluteExpiration),
                 options.AbsoluteExpiration.Value,
                 "The absolute expiration value must be in the future.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         if (options.AbsoluteExpirationRelativeToNow.HasValue)
@@ -530,14 +598,80 @@ public class RedisCache : IDistributedCache, IDisposable
         }
 
         _disposed = true;
-        _connection?.Close();
+        ReleaseConnection(Interlocked.Exchange(ref _cache, null));
+
     }
 
     private void CheckDisposed()
     {
-        if (_disposed)
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
+    }
+
+    private void OnRedisError(Exception exception, IDatabase cache)
+    {
+        if (_options.UseForceReconnect && (exception is RedisConnectionException or SocketException))
         {
-            throw new ObjectDisposedException(this.GetType().FullName);
+            var utcNow = DateTimeOffset.UtcNow;
+            var previousConnectTime = ReadTimeTicks(ref _lastConnectTicks);
+            TimeSpan elapsedSinceLastReconnect = utcNow - previousConnectTime;
+
+            // We want to limit how often we perform this top-level reconnect, so we check how long it's been since our last attempt.
+            if (elapsedSinceLastReconnect < ReconnectMinInterval)
+            {
+                return;
+            }
+
+            var firstErrorTime = ReadTimeTicks(ref _firstErrorTimeTicks);
+            if (firstErrorTime == DateTimeOffset.MinValue)
+            {
+                // note: order/timing here (between the two fields) is not critical
+                WriteTimeTicks(ref _firstErrorTimeTicks, utcNow);
+                WriteTimeTicks(ref _previousErrorTimeTicks, utcNow);
+                return;
+            }
+
+            TimeSpan elapsedSinceFirstError = utcNow - firstErrorTime;
+            TimeSpan elapsedSinceMostRecentError = utcNow - ReadTimeTicks(ref _previousErrorTimeTicks);
+
+            bool shouldReconnect =
+                    elapsedSinceFirstError >= ReconnectErrorThreshold // Make sure we gave the multiplexer enough time to reconnect on its own if it could.
+                    && elapsedSinceMostRecentError <= ReconnectErrorThreshold; // Make sure we aren't working on stale data (e.g. if there was a gap in errors, don't reconnect yet).
+
+            // Update the previousErrorTime timestamp to be now (e.g. this reconnect request).
+            WriteTimeTicks(ref _previousErrorTimeTicks, utcNow);
+
+            if (!shouldReconnect)
+            {
+                return;
+            }
+
+            WriteTimeTicks(ref _firstErrorTimeTicks, DateTimeOffset.MinValue);
+            WriteTimeTicks(ref _previousErrorTimeTicks, DateTimeOffset.MinValue);
+
+            // wipe the shared field, but *only* if it is still the cache we were
+            // thinking about (once it is null, the next caller will reconnect)
+            var tmp = Interlocked.CompareExchange(ref _cache, null, cache);
+            if (ReferenceEquals(tmp, cache))
+            {
+                ReleaseConnection(tmp);
+            }
+        }
+    }
+
+    static void ReleaseConnection(IDatabase? cache)
+    {
+        var connection = cache?.Multiplexer;
+        if (connection is not null)
+        {
+            try
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
     }
 }

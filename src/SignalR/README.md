@@ -4,7 +4,7 @@ ASP.NET Core SignalR is a library for ASP.NET Core developers that makes it incr
 
 You can watch an introductory presentation here - [ASP.NET Core SignalR: Build 2018](https://www.youtube.com/watch?v=Lws0zOaseIM)
 
-Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://docs.microsoft.com/aspnet/core/signalr/introduction) section of the ASP.NET Core Documentation site.
+Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://learn.microsoft.com/aspnet/core/signalr/introduction) section of the ASP.NET Core Documentation site.
 
 ## Description
 

@@ -45,10 +45,7 @@ public class RouteContext
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(RouteData));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _routeData = value;
         }

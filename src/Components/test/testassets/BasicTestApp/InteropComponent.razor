@@ -138,17 +138,61 @@
             ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime).Invoke<int>("returnPrimitive").ToString();
             ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
-        
+
         try
         {
-            // Triger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
-            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown. 
+            // Trigger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown.
             await JSRuntime.InvokeVoidAsync("eval", "window");
             ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = "Success";
         }
         catch (Exception ex)
         {
             ReturnValues["invokeVoidAsyncReturnsWithoutSerializing"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            // Trigger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // InvokeAsync should serialize return values, and thus there should be an exception thrown.
+            var circularStructure = await JSRuntime.InvokeAsync<object>("eval", "window");
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = circularStructure is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var undefinedJsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnUndefined");
+            ReturnValues["invokeAsyncThrowsUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncThrowsUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullJsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnNull");
+            ReturnValues["invokeAsyncThrowsNullJSObjectReference"] = nullJsObjectReference is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncThrowsNullJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncThrowsNullJSObjectReference"] = $"Failure: {ex.Message}";
         }
 
         var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
@@ -159,7 +203,7 @@
         try
         {
             // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
-            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown. 
+            // InvokeVoidAsync shouldn't serialize return values, and thus there shouldn't be any exception thrown.
             await jsObjectReference.InvokeVoidAsync("getWindow");
             ReturnValues["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success";
         }
@@ -175,6 +219,16 @@
         catch (JSException e)
         {
             JSObjectReferenceInvokeNonFunctionException = e;
+        }
+
+        try
+        {
+            await jsObjectReference.DisposeAsync();
+            ReturnValues["disposeJSObjectReferenceAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["disposeJSObjectReferenceAsync"] = $"Failure: {ex.Message}";
         }
 
         var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/testmodule.js");
@@ -225,7 +279,7 @@
 
         var dotNetStreamReferenceWrapper = DotNetStreamReferenceInterop.GetDotNetStreamWrapperReference();
         ReturnValues["dotNetToJSReceiveDotNetStreamWrapperReferenceAsync"] = await JSRuntime.InvokeAsync<string>("jsInteropTests.receiveDotNetStreamWrapperReference", dotNetStreamReferenceWrapper);
-        
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -284,7 +338,7 @@
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
-         try
+        try
         {
             // Fetch a non-serializable Window (https://developer.mozilla.org/en-US/docs/Web/API/Window)
             // InvokeVoid shouldn't serialize return values, and thus there shouldn't be any exception thrown.
@@ -294,6 +348,50 @@
         catch (Exception ex)
         {
             ReturnValues["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            // Trigger a non-serializable WindowProxy (https://developer.mozilla.org/en-US/docs/Web/API/Window)
+            // Invoke should serialize return values, and thus there should be an exception thrown.
+            var circularStructure = inProcRuntime.Invoke<object>("eval", "window");
+            ReturnValues["invokeThrowsSerializingCircularStructure"] = circularStructure is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeThrowsSerializingCircularStructure"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var undefinedJsObjectReference = inProcRuntime.Invoke<IJSObjectReference>("returnUndefined");
+            ReturnValues["invokeThrowsUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeThrowsUndefinedJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeThrowsUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullJsObjectReference = inProcRuntime.Invoke<IJSObjectReference>("returnNull");
+            ReturnValues["invokeThrowsNullJSObjectReference"] = nullJsObjectReference is null ? "Failure: null" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeThrowsNullJSObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeThrowsNullJSObjectReference"] = $"Failure: {ex.Message}";
         }
 
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
@@ -313,12 +411,22 @@
 
         // we should be able to downcast a IJSInProcessObjectReference as a IJSUnmarshalledObjectReference
         var unmarshalledCast = (IJSUnmarshalledObjectReference)jsInProcObjectReference;
+#pragma warning disable CS0618 // Type or member is obsolete
         ReturnValues["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = unmarshalledCast.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
         {
             Message = "Sent from .NET",
             NumberField = 41,
         }).ToString();
 
+        try
+        {
+            jsInProcObjectReference.Dispose();
+            ReturnValues["disposeJSInProcessObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["disposeJSInProcessObjectReference"] = $"Failure: {ex.Message}";
+        }
 
         var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
         var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
@@ -330,6 +438,7 @@
 
 
         var dataReference = unmarshalledRuntime.InvokeUnmarshalled<IJSStreamReference>("jsToDotNetStreamReturnValue");
+#pragma warning restore CS0618 // Type or member is obsolete
         using var dataReferenceStream = await dataReference.OpenReadStreamAsync();
         await ValidateStreamValuesAsync("jsToDotNetStreamReturnValueUnmarshalled", dataReferenceStream);
     }

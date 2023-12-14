@@ -17,8 +17,10 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -50,8 +52,22 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// <param name="htmlEncoder">The <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
     /// <param name="clock">The <see cref="ISystemClock"/>.</param>
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    {
+        HtmlEncoder = htmlEncoder;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="OpenIdConnectHandler"/>.
+    /// </summary>
+    /// <param name="options">A monitor to observe changes to <see cref="OpenIdConnectOptions"/>.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/>.</param>
+    /// <param name="htmlEncoder">The <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/>.</param>
+    public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder)
+        : base(options, logger, encoder)
     {
         HtmlEncoder = htmlEncoder;
     }
@@ -522,8 +538,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     // Not for us?
                     return HandleRequestResult.SkipHandler();
                 }
-                return HandleRequestResult.Fail("An OpenID Connect response cannot contain an " +
-                        "identity token or an access token when using response_mode=query");
+                return HandleRequestResults.UnexpectedParams;
             }
         }
         // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
@@ -548,7 +563,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 // Not for us?
                 return HandleRequestResult.SkipHandler();
             }
-            return HandleRequestResult.Fail("No message.");
+            return HandleRequestResults.NoMessage;
         }
 
         AuthenticationProperties? properties = null;
@@ -636,7 +651,17 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
             {
                 Logger.ReceivedIdToken();
-                user = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+
+                if (!Options.UseSecurityTokenValidator)
+                {
+                    var tokenValidationResult = await ValidateTokenUsingHandlerAsync(authorizationResponse.IdToken, properties, validationParameters);
+                    user = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    jwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
+                }
+                else
+                {
+                    user = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+                }
 
                 nonce = jwt.Payload.Nonce;
                 if (!string.IsNullOrEmpty(nonce))
@@ -704,7 +729,19 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
                 // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
                 // And we'll want to validate the new JWT in ValidateTokenResponse.
-                var tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out var tokenEndpointJwt);
+                ClaimsPrincipal tokenEndpointUser;
+                JwtSecurityToken tokenEndpointJwt;
+
+                if (!Options.UseSecurityTokenValidator)
+                {
+                    var tokenValidationResult = await ValidateTokenUsingHandlerAsync(tokenEndpointResponse.IdToken, properties, validationParameters);
+                    tokenEndpointUser = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                    tokenEndpointJwt = JwtSecurityTokenConverter.Convert(tokenValidationResult.SecurityToken as JsonWebToken);
+                }
+                else
+                {
+                    tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out tokenEndpointJwt);
+                }
 
                 // Avoid reading & deleting the nonce cookie, running the event, etc, if it was already done as part of the authorization response validation.
                 if (user == null)
@@ -842,13 +879,16 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         var responseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
 
         var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
-        if (string.IsNullOrEmpty(contentMediaType))
+        if (Logger.IsEnabled(LogLevel.Debug))
         {
-            Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type header is missing.");
-        }
-        else if (!string.Equals(contentMediaType, "application/json", StringComparison.OrdinalIgnoreCase))
-        {
-            Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type {responseMessage.Content.Headers.ContentType}.");
+            if (string.IsNullOrEmpty(contentMediaType))
+            {
+                Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type header is missing.");
+            }
+            else if (!string.Equals(contentMediaType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type {responseMessage.Content.Headers.ContentType}.");
+            }
         }
 
         // Error handling:
@@ -984,7 +1024,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             if (int.TryParse(message.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value))
             {
-                var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
+                var expiresAt = TimeProvider.GetUtcNow() + TimeSpan.FromSeconds(value);
                 // https://www.w3.org/TR/xmlschema-2/#dateTime
                 // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
                 tokens.Add(new AuthenticationToken { Name = "expires_at", Value = expiresAt.ToString("o", CultureInfo.InvariantCulture) });
@@ -1002,12 +1042,9 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// The value of the cookie is: "N".</remarks>
     private void WriteNonceCookie(string nonce)
     {
-        if (string.IsNullOrEmpty(nonce))
-        {
-            throw new ArgumentNullException(nameof(nonce));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(nonce);
 
-        var cookieOptions = Options.NonceCookie.Build(Context, Clock.UtcNow);
+        var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
 
         Response.Cookies.Append(
             Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
@@ -1038,7 +1075,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     var nonceDecodedValue = Options.StringDataFormat.Unprotect(nonceKey.Substring(Options.NonceCookie.Name.Length, nonceKey.Length - Options.NonceCookie.Name.Length));
                     if (nonceDecodedValue == nonce)
                     {
-                        var cookieOptions = Options.NonceCookie.Build(Context, Clock.UtcNow);
+                        var cookieOptions = Options.NonceCookie.Build(Context, TimeProvider.GetUtcNow());
                         Response.Cookies.Delete(nonceKey, cookieOptions);
                         return nonce;
                     }
@@ -1231,11 +1268,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     // Note this modifies properties if Options.UseTokenLifetime
     private ClaimsPrincipal ValidateToken(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         if (!Options.SecurityTokenValidator.CanReadToken(idToken))
         {
             Logger.UnableToReadIdToken(idToken);
             throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateToken, idToken));
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (_configuration != null)
         {
@@ -1246,7 +1285,9 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 ?? _configuration.SigningKeys;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
+#pragma warning restore CS0618 // Type or member is obsolete
         if (validatedToken is JwtSecurityToken validatedJwt)
         {
             jwt = validatedJwt;
@@ -1281,6 +1322,61 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         return principal;
     }
 
+    // Note this modifies properties if Options.UseTokenLifetime
+    private async Task<TokenValidationResult> ValidateTokenUsingHandlerAsync(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters)
+    {
+        if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+        {
+            validationParameters.ConfigurationManager = baseConfigurationManager;
+        }
+        else if (_configuration != null)
+        {
+            var issuer = new[] { _configuration.Issuer };
+            validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuer) ?? issuer;
+
+            validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys)
+                ?? _configuration.SigningKeys;
+        }
+
+        var validationResult = await Options.TokenHandler.ValidateTokenAsync(idToken, validationParameters);
+
+        if (validationResult.Exception != null)
+        {
+            throw validationResult.Exception;
+        }
+
+        var validatedToken = validationResult.SecurityToken;
+
+        if (!validationResult.IsValid || validatedToken == null)
+        {
+            Logger.UnableToValidateIdTokenFromHandler(idToken);
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateTokenFromHandler, idToken));
+        }
+
+        if (validatedToken is not JsonWebToken)
+        {
+            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken?.GetType());
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJsonWebToken, validatedToken?.GetType()));
+        }
+
+        if (Options.UseTokenLifetime)
+        {
+            var issued = validatedToken.ValidFrom;
+            if (issued != DateTime.MinValue)
+            {
+                properties.IssuedUtc = issued;
+            }
+
+            var expires = validatedToken.ValidTo;
+            if (expires != DateTime.MinValue)
+            {
+                properties.ExpiresUtc = expires;
+            }
+        }
+
+        return validationResult;
+    }
+
     /// <summary>
     /// Build a redirect path if the given path is a relative path.
     /// </summary>
@@ -1291,7 +1387,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             return uri;
         }
 
-        if (!uri.StartsWith("/", StringComparison.Ordinal))
+        if (!uri.StartsWith('/'))
         {
             return uri;
         }

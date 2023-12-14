@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 
@@ -46,21 +47,15 @@ public class MultipartReader
     /// <param name="bufferSize">The minimum buffer size to use.</param>
     public MultipartReader(string boundary, Stream stream, int bufferSize)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
-
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(boundary);
+        ArgumentNullException.ThrowIfNull(stream);
 
         if (bufferSize < boundary.Length + 8) // Size of the boundary + leading and trailing CRLF + leading and trailing '--' markers.
         {
             throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Insufficient buffer space, the buffer must be larger than the boundary: " + boundary);
         }
         _stream = new BufferedReadStream(stream, bufferSize);
+        boundary = HeaderUtilities.RemoveQuotes(new StringSegment(boundary)).ToString();
         _boundary = new MultipartBoundary(boundary, false);
         // This stream will drain any preamble data and remove the first boundary marker.
         // TODO: HeadersLengthLimit can't be modified until after the constructor.
@@ -78,7 +73,8 @@ public class MultipartReader
     public int HeadersLengthLimit { get; set; } = DefaultHeadersLengthLimit;
 
     /// <summary>
-    /// The optional limit for the total response body length.
+    /// The optional limit for the body length of each multipart section.
+    /// The hosting server is responsible for limiting the overall body length.
     /// </summary>
     public long? BodyLengthLimit { get; set; }
 
@@ -100,7 +96,7 @@ public class MultipartReader
             return null;
         }
         var headers = await ReadHeadersAsync(cancellationToken);
-        _boundary.ExpectLeadingCrlf = true;
+        _boundary.ExpectLeadingCrlf();
         _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = BodyLengthLimit };
         long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
         return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
@@ -110,7 +106,7 @@ public class MultipartReader
     {
         int totalSize = 0;
         var accumulator = new KeyValueAccumulator();
-        var line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
+        var line = await _stream.ReadLineAsync(HeadersLengthLimit, cancellationToken);
         while (!string.IsNullOrEmpty(line))
         {
             if (HeadersLengthLimit - totalSize < line.Length)

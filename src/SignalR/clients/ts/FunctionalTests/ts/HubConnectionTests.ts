@@ -198,7 +198,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe(errorMessage);
+                    expect((e as any).message).toBe(errorMessage);
                 }
 
                 await hubConnection.stop();
@@ -216,7 +216,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
+                    expect((e as any).message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
                 }
 
                 await hubConnection.stop();
@@ -234,7 +234,7 @@ describe("hubConnection", () => {
                     // exception expected but none thrown
                     fail();
                 } catch (e) {
-                    expect(e.message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
+                    expect((e as any).message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
                 }
 
                 await hubConnection.stop();
@@ -359,7 +359,8 @@ describe("hubConnection", () => {
                 await closePromise;
             });
 
-            it("closed with error or start fails if hub cannot be created", async () => {
+            // Skipped: https://github.com/dotnet/aspnetcore/issues/44608
+            xit("closed with error or start fails if hub cannot be created", async () => {
                 const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable", { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -376,7 +377,13 @@ describe("hubConnection", () => {
                 try {
                     await hubConnection.start();
                 } catch (error) {
-                    expect(error!.message).toEqual(expectedErrorMessage);
+                    if ((error as any)!.message.includes("404")) {
+                        // SSE can race with the connection closing and the initial ping being successful or failing with a 404.
+                        // LongPolling doesn't have pings and WebSockets is a synchronous API over a single HTTP request so it doesn't have the same issues
+                        expect((error as any)!.message).toEqual("No Connection with that ID: Status code '404'");
+                    } else {
+                        expect((error as any)!.message).toEqual(expectedErrorMessage);
+                    }
                     closePromise.resolve();
                 }
                 await closePromise;
@@ -508,7 +515,61 @@ describe("hubConnection", () => {
                     await resultPromise;
                     expect(false).toBe(true);
                 } catch (err) {
-                    expect(err.message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. Exception: Something bad");
+                    expect((err as any).message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. HubException: Something bad");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+
+            it("can return result to server", async () => {
+                const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
+                    .withHubProtocol(protocol)
+                    .build();
+
+                hubConnection.on("Result", () => {
+                    return 10;
+                });
+
+                await hubConnection.start();
+
+                const response = await httpClient.get(ENDPOINT_BASE_URL + `/clientresult/${hubConnection.connectionId}`);
+
+                expect(response.content).toEqual("10");
+
+                await hubConnection.stop();
+            });
+
+            it("can throw result to server", async () => {
+                const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
+                    .withHubProtocol(protocol)
+                    .build();
+
+                hubConnection.on("Result", () => {
+                    throw new Error("from callback");
+                });
+
+                try {
+                    await hubConnection.start();
+
+                    const response = await httpClient.get(ENDPOINT_BASE_URL + `/clientresult/${hubConnection.connectionId}`);
+
+                    expect(response.content).toEqual("Error: from callback");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+
+            it("returns result error to server when no result given", async () => {
+                const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
+                    .withHubProtocol(protocol)
+                    .build();
+
+                try {
+                    await hubConnection.start();
+
+                    const response = await httpClient.get(ENDPOINT_BASE_URL + `/clientresult/${hubConnection.connectionId}`);
+
+                    expect(response.content).toEqual("Client didn't provide a result.");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -962,29 +1023,6 @@ describe("hubConnection", () => {
         } catch (e) {
             fail(e);
         } finally {
-        }
-    });
-
-    it("populates the Content-Type header when sending XMLHttpRequest", async () => {
-        // Skip test on Node as this header isn't set (it was added for React-Native)
-        if (typeof window === "undefined") {
-            return;
-        }
-        const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
-            .withHubProtocol(new JsonHubProtocol())
-            .build();
-
-        try {
-            await hubConnection.start();
-
-            // Check what transport was used by asking the server to tell us.
-            expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
-            // Check to see that the Content-Type header is set the expected value
-            expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
-
-            await hubConnection.stop();
-        } catch (e) {
-            fail(e);
         }
     });
 

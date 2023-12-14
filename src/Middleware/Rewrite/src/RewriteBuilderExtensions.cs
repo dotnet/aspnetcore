@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,10 +22,7 @@ public static class RewriteBuilderExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseRewriter(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return AddRewriteMiddleware(app, options: null);
     }
@@ -37,15 +35,8 @@ public static class RewriteBuilderExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseRewriter(this IApplicationBuilder app, RewriteOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         // put middleware in pipeline
         return AddRewriteMiddleware(app, Options.Create(options));
@@ -53,9 +44,8 @@ public static class RewriteBuilderExtensions
 
     private static IApplicationBuilder AddRewriteMiddleware(IApplicationBuilder app, IOptions<RewriteOptions>? options)
     {
-        const string globalRouteBuilderKey = "__GlobalEndpointRouteBuilder";
         // Only use this path if there's a global router (in the 'WebApplication' case).
-        if (app.Properties.TryGetValue(globalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
+        if (app.Properties.TryGetValue(RerouteHelper.GlobalRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             return app.Use(next =>
             {
@@ -67,15 +57,8 @@ public static class RewriteBuilderExtensions
                 var webHostEnv = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
                 var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
 
-                // start a new middleware pipeline
-                var builder = app.New();
-                // use the old routing pipeline if it exists so we preserve all the routes and matching logic
-                // ((IApplicationBuilder)WebApplication).New() does not copy globalRouteBuilderKey automatically like it does for all other properties.
-                builder.Properties[globalRouteBuilderKey] = routeBuilder;
-                builder.UseRouting();
-                // apply the next middleware
-                builder.Run(next);
-                options.Value.BranchedNext = builder.Build();
+                var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
+                options.Value.BranchedNext = newNext;
 
                 return new RewriteMiddleware(next, webHostEnv, loggerFactory, options).Invoke;
             });

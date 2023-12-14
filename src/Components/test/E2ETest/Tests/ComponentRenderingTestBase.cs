@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Configuration.Assemblies;
+using System.Globalization;
 using System.Numerics;
 using BasicTestApp;
 using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -401,7 +402,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
 
         // A local helper that gets window.PageYOffset
-        long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset");
+        int getPageYOffset() => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset"), CultureInfo.InvariantCulture);
     }
 
     [Fact]
@@ -427,21 +428,20 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46835")]
     public void CanUseFocusExtensionToFocusElementPreventScroll()
     {
         Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
         var appElement = Browser.MountTestComponent<ElementFocusComponent>();
 
-        // y scroll position before click
-        var pageYOffsetBefore = getPageYOffset();
-
-        var buttonElement = appElement.FindElement(By.Id("focus-button-prevented"));
+        var buttonElement = Browser.Exists(By.Id("focus-button-prevented"));
 
         // Make sure the input element isn't focused when the test begins; we don't want
         // the test to pass just because the input started as the focused element
         Browser.NotEqual("focus-input", getFocusedElementId);
 
         // Click the button whose callback focuses the input element
+        var pageYOffsetBefore = getPageYOffset();
         buttonElement.Click();
 
         // Verify that the input element is focused
@@ -457,7 +457,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
 
         // A local helper that gets window.PageYOffset
-        long getPageYOffset() => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return Math.round(window.pageYOffset)");
+        int getPageYOffset() => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteScript("return window.pageYOffset"), CultureInfo.InvariantCulture);
     }
 
     [Theory]

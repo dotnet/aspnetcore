@@ -35,10 +35,7 @@ public abstract class ParameterPolicyFactory
     /// <returns>The <see cref="IParameterPolicy"/> for the parameter.</returns>
     public IParameterPolicy Create(RoutePatternParameterPart? parameter, RoutePatternParameterPolicyReference reference)
     {
-        if (reference == null)
-        {
-            throw new ArgumentNullException(nameof(reference));
-        }
+        ArgumentNullException.ThrowIfNull(reference);
 
         Debug.Assert(reference.ParameterPolicy != null || reference.Content != null);
 

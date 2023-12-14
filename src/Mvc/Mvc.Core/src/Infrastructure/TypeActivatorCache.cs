@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// Caches <see cref="ObjectFactory"/> instances produced by
 /// <see cref="ActivatorUtilities.CreateFactory(Type, Type[])"/>.
 /// </summary>
-internal class TypeActivatorCache : ITypeActivatorCache
+internal sealed class TypeActivatorCache : ITypeActivatorCache
 {
     private readonly Func<Type, ObjectFactory> _createFactory =
         (type) => ActivatorUtilities.CreateFactory(type, Type.EmptyTypes);
@@ -22,15 +22,8 @@ internal class TypeActivatorCache : ITypeActivatorCache
         IServiceProvider serviceProvider,
         Type implementationType)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        if (implementationType == null)
-        {
-            throw new ArgumentNullException(nameof(implementationType));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(implementationType);
 
         var createFactory = _typeActivatorCache.GetOrAdd(implementationType, _createFactory);
         return (TInstance)createFactory(serviceProvider, arguments: null);

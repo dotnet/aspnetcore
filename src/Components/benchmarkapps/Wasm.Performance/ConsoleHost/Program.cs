@@ -6,7 +6,7 @@ using Wasm.Performance.ConsoleHost.Scenarios;
 
 namespace Wasm.Performance.ConsoleHost;
 
-internal class Program : CommandLineApplication
+internal sealed class Program : CommandLineApplication
 {
     static void Main(string[] args)
     {

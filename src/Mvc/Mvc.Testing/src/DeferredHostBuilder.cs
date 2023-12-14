@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.AspNetCore.Mvc.Testing;
 
 // This host builder captures calls to the IHostBuilder then replays them in the call to ConfigureHostBuilder
-internal class DeferredHostBuilder : IHostBuilder
+internal sealed class DeferredHostBuilder : IHostBuilder
 {
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
@@ -115,7 +115,7 @@ internal class DeferredHostBuilder : IHostBuilder
         _hostFactory = hostFactory;
     }
 
-    private class DeferredHost : IHost, IAsyncDisposable
+    private sealed class DeferredHost : IHost, IAsyncDisposable
     {
         private readonly IHost _host;
         private readonly TaskCompletionSource _hostStartedTcs;

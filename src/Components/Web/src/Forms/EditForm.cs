@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -46,6 +47,15 @@ public class EditForm : ComponentBase
     }
 
     /// <summary>
+    /// If enabled, form submission is performed without fully reloading the page. This is
+    /// equivalent to adding <code>data-enhance</code> to the form.
+    ///
+    /// This flag is only relevant in server-side rendering (SSR) scenarios. For interactive
+    /// rendering, the flag has no effect since there is no full-page reload on submit anyway.
+    /// </summary>
+    [Parameter] public bool Enhance { get; set; }
+
+    /// <summary>
     /// Specifies the top-level model object for the form. An edit context will
     /// be constructed for this model. If using this parameter, do not also supply
     /// a value for <see cref="EditContext"/>.
@@ -76,6 +86,14 @@ public class EditForm : ComponentBase
     /// <see cref="EditContext"/> is determined to be invalid.
     /// </summary>
     [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+
+    [CascadingParameter] private FormMappingContext? MappingContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the form handler name. This is required for posting it to a server-side endpoint.
+    /// It is not used during interactive rendering.
+    /// </summary>
+    [Parameter] public string? FormName { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -120,14 +138,53 @@ public class EditForm : ComponentBase
         builder.OpenRegion(_editContext.GetHashCode());
 
         builder.OpenElement(0, "form");
-        builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
-        builder.OpenComponent<CascadingValue<EditContext>>(3);
-        builder.AddAttribute(4, "IsFixed", true);
-        builder.AddAttribute(5, "Value", _editContext);
-        builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_editContext));
+
+        if (MappingContext != null)
+        {
+            builder.AddAttribute(2, "method", "post");
+        }
+
+        if (Enhance)
+        {
+            builder.AddAttribute(3, "data-enhance", "");
+        }
+
+        builder.AddMultipleAttributes(4, AdditionalAttributes);
+        builder.AddAttribute(5, "onsubmit", _handleSubmitDelegate);
+
+        // In SSR cases, we register onsubmit as a named event and emit other child elements
+        // to include the handler and antiforgery token in the post data
+        if (MappingContext != null)
+        {
+            if (!string.IsNullOrEmpty(FormName))
+            {
+                builder.AddNamedEvent("onsubmit", FormName);
+            }
+
+            RenderSSRFormHandlingChildren(builder, 6);
+        }
+
+        builder.OpenComponent<CascadingValue<EditContext>>(7);
+        builder.AddComponentParameter(7, "IsFixed", true);
+        builder.AddComponentParameter(8, "Value", _editContext);
+        builder.AddComponentParameter(9, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
+
         builder.CloseElement();
+
+        builder.CloseRegion();
+    }
+
+    private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)
+    {
+        builder.OpenRegion(sequence);
+
+        builder.OpenComponent<FormMappingValidator>(1);
+        builder.AddComponentParameter(2, nameof(FormMappingValidator.CurrentEditContext), EditContext);
+        builder.CloseComponent();
+
+        builder.OpenComponent<AntiforgeryToken>(3);
+        builder.CloseComponent();
 
         builder.CloseRegion();
     }

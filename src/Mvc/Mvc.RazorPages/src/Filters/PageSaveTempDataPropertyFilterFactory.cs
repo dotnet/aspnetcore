@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Filters;
 
-internal class PageSaveTempDataPropertyFilterFactory : IFilterFactory
+internal sealed class PageSaveTempDataPropertyFilterFactory : IFilterFactory
 {
     public PageSaveTempDataPropertyFilterFactory(IReadOnlyList<LifecycleProperty> properties)
     {
@@ -19,10 +19,7 @@ internal class PageSaveTempDataPropertyFilterFactory : IFilterFactory
 
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var service = serviceProvider.GetRequiredService<PageSaveTempDataPropertyFilter>();
         service.Properties = Properties;

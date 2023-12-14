@@ -6,7 +6,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.ApiDescription.Tool;
 
-internal class Program : ProgramBase
+internal sealed class Program : ProgramBase
 {
     public Program(IConsole console) : base(console)
     {

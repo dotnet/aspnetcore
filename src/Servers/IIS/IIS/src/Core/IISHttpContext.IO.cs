@@ -155,6 +155,7 @@ internal partial class IISHttpContext
     private async Task WriteBody(bool flush = false)
     {
         Exception? error = null;
+
         try
         {
             while (true)
@@ -162,10 +163,18 @@ internal partial class IISHttpContext
                 var result = await _bodyOutput.Reader.ReadAsync();
 
                 var buffer = result.Buffer;
+
                 try
                 {
+                    if (_bodyOutput.Aborted)
+                    {
+                        break;
+                    }
+
                     if (!buffer.IsEmpty)
                     {
+                        // We are ignoring the result of the write operation here. If we fix this behavior,
+                        // we should also fix AsyncIOEngine.WriteDataOverChunksLimit.
                         await AsyncIO!.WriteAsync(buffer);
                     }
 

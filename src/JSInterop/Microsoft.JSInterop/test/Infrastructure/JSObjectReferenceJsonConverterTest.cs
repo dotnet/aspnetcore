@@ -36,7 +36,7 @@ public class JSObjectReferenceJsonConverterTest
 
         // Act & Assert
         var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions));
-        Assert.Equal("Unexcepted JSON property foo.", ex.Message);
+        Assert.Equal("Unexpected JSON property foo.", ex.Message);
     }
 
     [Fact]

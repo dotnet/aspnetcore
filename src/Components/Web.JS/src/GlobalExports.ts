@@ -8,63 +8,92 @@ import { PageTitle } from './PageTitle';
 import { registerCustomEventType, EventTypeOptions } from './Rendering/Events/EventTypes';
 import { HubConnection } from '@microsoft/signalr';
 import { InputFile } from './InputFile';
+import { NavigationLock } from './NavigationLock';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { Platform, Pointer, System_String, System_Array, System_Object, System_Boolean, System_Byte, System_Int } from './Platform/Platform';
-import { getNextChunk, receiveDotNetDataStream } from './StreamingInterop';
+import { Platform, Pointer } from './Platform/Platform';
+import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
+import { WebStartOptions } from './Platform/WebStartOptions';
+import { RuntimeAPI } from 'dotnet';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 
-interface IBlazor {
+// TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
+// It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
+// e.g., which of these APIs need to account for there being multiple .NET runtimes, and which don't?
+
+// We should consider separating it all out so that we can easily identify the platform requirements of each API.
+// For example:
+// * Blazor.{foo}: public Blazor APIs
+// * Blazor._internal.{foo}: internal, platform-agnostic Blazor APIs
+// * Blazor.platform.{somePlatformName}.{foo}: public, platform-specific Blazor APIs (would be empty at first, so no initial breaking changes)
+// * Blazor.platform.{somePlatformName}.{_internal}.{foo}: internal, platform-specific Blazor APIs
+export interface IBlazor {
   navigateTo: (uri: string, options: NavigationOptions) => void;
   registerCustomEventType: (eventName: string, options: EventTypeOptions) => void;
 
+  addEventListener?: typeof JSEventRegistry.prototype.addEventListener;
+  removeEventListener?: typeof JSEventRegistry.prototype.removeEventListener;
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
   defaultReconnectionHandler?: DefaultReconnectionHandler;
-  start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>);
+  start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>) | ((options?: Partial<WebStartOptions>) => Promise<void>);
   platform?: Platform;
   rootComponents: typeof RootComponentsFunctions;
+  runtime: RuntimeAPI,
 
   _internal: {
-    navigationManager: typeof navigationManagerInternalFunctions | any,
-    domWrapper: typeof domFunctions,
-    Virtualize: typeof Virtualize,
-    PageTitle: typeof PageTitle,
+    navigationManager: typeof navigationManagerInternalFunctions | any;
+    domWrapper: typeof domFunctions;
+    Virtualize: typeof Virtualize;
+    PageTitle: typeof PageTitle;
     forceCloseConnection?: () => Promise<void>;
-    InputFile?: typeof InputFile,
+    InputFile?: typeof InputFile;
+    NavigationLock: typeof NavigationLock;
     invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
-    endInvokeDotNetFromJS?: (callId: System_String, success: System_Boolean, resultJsonOrErrorMessage: System_String) => void;
-    receiveByteArray?: (id: System_Int, data: System_Array<System_Byte>) => void;
-    retrieveByteArray?: () => System_Object;
-    getPersistedState?: () => System_String;
+    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number) => string | null;
+    endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
+    receiveByteArray?: (id: number, data: Uint8Array) => void;
+    getPersistedState?: () => string;
+    getInitialComponentsUpdate?: () => Promise<string>;
+    updateRootComponents?: (operations: string) => void;
+    endUpdateRootComponents?: (batchId: number) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
-      getRegisteredComponentsCount: () => number,
-      getId: (index) => number,
-      getAssembly: (id) => System_String,
-      getTypeName: (id) => System_String,
-      getParameterDefinitions: (id) => System_String,
-      getParameterValues: (id) => any,
+      getRegisteredComponentsCount: () => number;
+      getAssembly: (id) => string;
+      getTypeName: (id) => string;
+      getParameterDefinitions: (id) => string;
+      getParameterValues: (id) => any;
     };
-    renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void,
-    getConfig?: (dotNetFileName: System_String) => System_Object | undefined,
-    getApplicationEnvironment?: () => System_String,
-    readLazyAssemblies?: () => System_Array<System_Object>,
-    readLazyPdbs?: () => System_Array<System_Object>,
-    readSatelliteAssemblies?: () => System_Array<System_Object>,
-    getLazyAssemblies?: any
-    dotNetCriticalError?: any
-    getSatelliteAssemblies?: any,
-    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void,
-    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>,
-    receiveDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void,
-    attachWebRendererInterop?: typeof attachWebRendererInterop,
+    renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void;
+    getConfig?: (fileName: string) => Uint8Array | undefined;
+    getApplicationEnvironment?: () => string;
+    dotNetCriticalError?: any;
+    loadLazyAssembly?: any;
+    loadSatelliteAssemblies?: any;
+    sendJSDataStream?: (data: any, streamId: number, chunkSize: number) => void;
+    getJSDataStreamChunk?: (data: any, position: number, chunkSize: number) => Promise<Uint8Array>;
+    receiveWebAssemblyDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
+    receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
+    attachWebRendererInterop?: typeof attachWebRendererInterop;
+    loadWebAssemblyQuicklyTimeout?: number;
+
+    // JSExport APIs
+    dotNetExports?: {
+      InvokeDotNet: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => string | null;
+      EndInvokeJS: (argsJson: string) => void;
+      BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
+      ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
+      UpdateRootComponentsCore: (operationsJson: string) => void;
+    }
 
     // APIs invoked by hot reload
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void,
-    getApplyUpdateCapabilities?: () => string,
+    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined) => void;
+    getApplyUpdateCapabilities?: () => string;
+    hotReloadApplied?: () => void;
   }
 }
 
@@ -72,6 +101,7 @@ export const Blazor: IBlazor = {
   navigateTo,
   registerCustomEventType,
   rootComponents: RootComponentsFunctions,
+  runtime: {} as RuntimeAPI,
 
   _internal: {
     navigationManager: navigationManagerInternalFunctions,
@@ -79,8 +109,8 @@ export const Blazor: IBlazor = {
     Virtualize,
     PageTitle,
     InputFile,
+    NavigationLock,
     getJSDataStreamChunk: getNextChunk,
-    receiveDotNetDataStream: receiveDotNetDataStream,
     attachWebRendererInterop,
   },
 };

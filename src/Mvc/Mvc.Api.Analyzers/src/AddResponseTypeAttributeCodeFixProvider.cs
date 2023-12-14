@@ -21,18 +21,7 @@ public class AddResponseTypeAttributeCodeFixProvider : CodeFixProvider
 
     public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        if (context.Diagnostics.Length == 0)
-        {
-            return Task.CompletedTask;
-        }
-
         var diagnostic = context.Diagnostics[0];
-        if ((diagnostic.Descriptor.Id != ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id) &&
-            (diagnostic.Descriptor.Id != ApiDiagnosticDescriptors.API1001_ActionReturnsUndocumentedSuccessResult.Id))
-        {
-            return Task.CompletedTask;
-        }
-
         var codeFix = new AddResponseTypeAttributeCodeFixAction(context.Document, diagnostic);
 
         context.RegisterCodeFix(codeFix, diagnostic);

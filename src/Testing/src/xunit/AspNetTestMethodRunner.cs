@@ -4,13 +4,13 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.InternalTesting.xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
-internal class AspNetTestMethodRunner : XunitTestMethodRunner
+internal sealed class AspNetTestMethodRunner : XunitTestMethodRunner
 {
     private readonly object[] _constructorArguments;
     private readonly IMessageSink _diagnosticMessageSink;

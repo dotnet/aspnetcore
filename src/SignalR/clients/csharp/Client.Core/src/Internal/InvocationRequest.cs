@@ -65,12 +65,12 @@ internal abstract partial class InvocationRequest : IDisposable
         _cancellationTokenRegistration.Dispose();
     }
 
-    private class Streaming : InvocationRequest
+    private sealed class Streaming : InvocationRequest
     {
         private readonly Channel<object?> _channel = Channel.CreateUnbounded<object?>();
 
         public Streaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
-            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<Streaming>(), hubConnection)
+            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger(typeof(Streaming)), hubConnection)
         {
         }
 
@@ -125,12 +125,12 @@ internal abstract partial class InvocationRequest : IDisposable
         }
     }
 
-    private class NonStreaming : InvocationRequest
+    private sealed class NonStreaming : InvocationRequest
     {
         private readonly TaskCompletionSource<object?> _completionSource = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
-            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<NonStreaming>(), hubConnection)
+            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger(typeof(NonStreaming)), hubConnection)
         {
         }
 

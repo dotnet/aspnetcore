@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// A facade service for creating application models.
 /// </summary>
-internal class ApplicationModelFactory
+internal sealed class ApplicationModelFactory
 {
     private readonly IApplicationModelProvider[] _applicationModelProviders;
     private readonly IList<IApplicationModelConvention> _conventions;
@@ -23,15 +23,8 @@ internal class ApplicationModelFactory
         IEnumerable<IApplicationModelProvider> applicationModelProviders,
         IOptions<MvcOptions> options)
     {
-        if (applicationModelProviders == null)
-        {
-            throw new ArgumentNullException(nameof(applicationModelProviders));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(applicationModelProviders);
+        ArgumentNullException.ThrowIfNull(options);
 
         _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();
         _conventions = options.Value.Conventions;
@@ -39,10 +32,7 @@ internal class ApplicationModelFactory
 
     public ApplicationModel CreateApplicationModel(IEnumerable<TypeInfo> controllerTypes)
     {
-        if (controllerTypes == null)
-        {
-            throw new ArgumentNullException(nameof(controllerTypes));
-        }
+        ArgumentNullException.ThrowIfNull(controllerTypes);
 
         var context = new ApplicationModelProviderContext(controllerTypes);
 

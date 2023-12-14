@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
-internal class WebViewRenderer : WebRenderer
+internal sealed class WebViewRenderer : WebRenderer
 {
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
@@ -32,13 +31,12 @@ internal class WebViewRenderer : WebRenderer
 
     public override Dispatcher Dispatcher => _dispatcher;
 
+    protected override int GetWebRendererId() => (int)WebRendererId.WebView;
+
     protected override void HandleException(Exception exception)
     {
         // Notify the JS code so it can show the in-app UI
         _ipcSender.NotifyUnhandledException(exception);
-
-        // Also rethrow so the AppDomain's UnhandledException handler gets notified
-        ExceptionDispatchInfo.Capture(exception).Throw();
     }
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
@@ -80,9 +78,10 @@ internal class WebViewRenderer : WebRenderer
         nextUnacknowledgedBatch.CompletionSource.SetResult();
     }
 
-    record UnacknowledgedRenderBatch
+    private sealed class UnacknowledgedRenderBatch
     {
         public long BatchId { get; init; }
+        
         public TaskCompletionSource CompletionSource { get; init; }
     }
 }

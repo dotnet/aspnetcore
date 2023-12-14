@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<button id="render-section-outlet" @onclick="() => SectionOutletIsRendered = true">Render section outlet</button>
+<br />
+<button id="change-section-outlet-id" @onclick="() => SectionOutletId = anotherId">Change section outlet id</button>
+<br />
+<button id="render-first-section-content" @onclick="() => FirstSectionContentIsRendered = true">Render first section content</button>
+<br />
+<button id="dispose-first-section-content" @onclick="() => FirstSectionContentIsRendered = false">Dispose first section content</button>
+<br />
+<button id="render-second-section-content" @onclick="() => SecondSectionContentIsRendered = true">Render second section content</button>
+<br />
+<button id="dispose-second-section-content" @onclick="() => SecondSectionContentIsRendered = false">Dispose seecond section content</button>
+<br />
+<button id="change-second-section-content-id" @onclick="() => SecondSectionContentId = anotherId">Change second section content id</button>
+<br />
+<button id="change-cascading-value" @onclick="() => AdditionalTextForFirstSection = AdditionalTextForSecondSection">Change cascading parameter</button>
+
+@if (SectionOutletIsRendered)
+{
+    <SectionOutlet SectionId=SectionOutletId />
+}
+
+@if (FirstSectionContentIsRendered)
+{
+    <CascadingValue Value="@AdditionalTextForFirstSection">
+        <SectionContent SectionName=@id>
+            <TextComponentWithCascadingParameter Text="First Section" />
+        </SectionContent>
+    </CascadingValue>
+}
+
+@if (SecondSectionContentIsRendered)
+{
+    <CascadingValue Value="@AdditionalTextForSecondSection">
+        <SectionContent SectionId=SecondSectionContentId>
+            <TextComponentWithCascadingParameter Text="Second Section" />
+        </SectionContent>
+    </CascadingValue>
+}
+
+@code {
+    private string AdditionalTextForFirstSection = "with additional text for first section";
+    private string AdditionalTextForSecondSection = "with additional text for second section";
+
+    private bool FirstSectionContentIsRendered = false;
+    private bool SecondSectionContentIsRendered = false;
+    private bool SectionOutletIsRendered = false;
+
+    private static string id = "csc-section-test";
+    private static object anotherId = new();
+
+    private object SectionOutletId = id;
+    private object SecondSectionContentId = id;
+
+}

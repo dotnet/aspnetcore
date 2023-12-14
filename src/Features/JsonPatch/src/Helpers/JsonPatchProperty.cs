@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch;
@@ -16,15 +17,8 @@ public class JsonPatchProperty
     /// </summary>
     public JsonPatchProperty(JsonProperty property, object parent)
     {
-        if (property == null)
-        {
-            throw new ArgumentNullException(nameof(property));
-        }
-
-        if (parent == null)
-        {
-            throw new ArgumentNullException(nameof(parent));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(property);
+        ArgumentNullThrowHelper.ThrowIfNull(parent);
 
         Property = property;
         Parent = parent;

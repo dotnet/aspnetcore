@@ -1,6 +1,6 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "TypeScript file",
-  "description": "A blank TypeScript source file",
-  "postActions/openInEditor/description": "Opens file1.ts in the editor"
+  "name": "TypeScript 파일",
+  "description": "빈 TypeScript 소스 파일",
+  "postActions/openInEditor/description": "편집기에서 file1.ts를 엽니다."
 }

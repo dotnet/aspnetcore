@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Resources;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -36,15 +37,8 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
         IOptions<LocalizationOptions> localizationOptions,
         ILoggerFactory loggerFactory)
     {
-        if (localizationOptions == null)
-        {
-            throw new ArgumentNullException(nameof(localizationOptions));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(localizationOptions);
+        ArgumentNullThrowHelper.ThrowIfNull(loggerFactory);
 
         _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
         _loggerFactory = loggerFactory;
@@ -63,10 +57,7 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     /// <returns>The prefix for resource lookup.</returns>
     protected virtual string GetResourcePrefix(TypeInfo typeInfo)
     {
-        if (typeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(typeInfo));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(typeInfo);
 
         return GetResourcePrefix(typeInfo, GetRootNamespace(typeInfo.Assembly), GetResourcePath(typeInfo.Assembly));
     }
@@ -84,15 +75,8 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     /// </remarks>
     protected virtual string GetResourcePrefix(TypeInfo typeInfo, string? baseNamespace, string? resourcesRelativePath)
     {
-        if (typeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(typeInfo));
-        }
-
-        if (string.IsNullOrEmpty(baseNamespace))
-        {
-            throw new ArgumentNullException(nameof(baseNamespace));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(typeInfo);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(baseNamespace);
 
         if (string.IsNullOrEmpty(typeInfo.FullName))
         {
@@ -119,15 +103,8 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     /// <returns>The prefix for resource lookup.</returns>
     protected virtual string GetResourcePrefix(string baseResourceName, string baseNamespace)
     {
-        if (string.IsNullOrEmpty(baseResourceName))
-        {
-            throw new ArgumentNullException(nameof(baseResourceName));
-        }
-
-        if (string.IsNullOrEmpty(baseNamespace))
-        {
-            throw new ArgumentNullException(nameof(baseNamespace));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(baseResourceName);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(baseNamespace);
 
         var assemblyName = new AssemblyName(baseNamespace);
         var assembly = Assembly.Load(assemblyName);
@@ -148,10 +125,7 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     /// <returns>The <see cref="ResourceManagerStringLocalizer"/>.</returns>
     public IStringLocalizer Create(Type resourceSource)
     {
-        if (resourceSource == null)
-        {
-            throw new ArgumentNullException(nameof(resourceSource));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(resourceSource);
 
         // Get without Add to prevent unnecessary lambda allocation
         if (!_localizerCache.TryGetValue(resourceSource.AssemblyQualifiedName!, out var localizer))
@@ -161,7 +135,7 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
             var assembly = typeInfo.Assembly;
 
             localizer = CreateResourceManagerStringLocalizer(assembly, baseName);
-            
+
             _localizerCache[resourceSource.AssemblyQualifiedName!] = localizer;
         }
 
@@ -176,15 +150,8 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     /// <returns>The <see cref="ResourceManagerStringLocalizer"/>.</returns>
     public IStringLocalizer Create(string baseName, string location)
     {
-        if (baseName == null)
-        {
-            throw new ArgumentNullException(nameof(baseName));
-        }
-
-        if (location == null)
-        {
-            throw new ArgumentNullException(nameof(location));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(baseName);
+        ArgumentNullThrowHelper.ThrowIfNull(location);
 
         return _localizerCache.GetOrAdd($"B={baseName},L={location}", _ =>
         {

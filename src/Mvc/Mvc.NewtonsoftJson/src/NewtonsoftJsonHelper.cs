@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 /// <summary>
 /// Newtonsoft.Json based implementation of <see cref="IJsonHelper"/>.
 /// </summary>
-internal class NewtonsoftJsonHelper : IJsonHelper
+internal sealed class NewtonsoftJsonHelper : IJsonHelper
 {
     // Perf: JsonSerializers are relatively expensive to create, and are thread safe. Cache the serializer
     private readonly JsonSerializer _defaultSettingsJsonSerializer;
@@ -29,15 +29,8 @@ internal class NewtonsoftJsonHelper : IJsonHelper
     /// </param>
     public NewtonsoftJsonHelper(IOptions<MvcNewtonsoftJsonOptions> options, ArrayPool<char> charPool)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (charPool == null)
-        {
-            throw new ArgumentNullException(nameof(charPool));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(charPool);
 
         _defaultSettingsJsonSerializer = CreateHtmlSafeSerializer(options.Value.SerializerSettings);
         _charPool = new JsonArrayPool<char>(charPool);
@@ -50,10 +43,7 @@ internal class NewtonsoftJsonHelper : IJsonHelper
 
     public IHtmlContent Serialize(object value, JsonSerializerSettings serializerSettings)
     {
-        if (serializerSettings == null)
-        {
-            throw new ArgumentNullException(nameof(serializerSettings));
-        }
+        ArgumentNullException.ThrowIfNull(serializerSettings);
 
         var jsonSerializer = CreateHtmlSafeSerializer(serializerSettings);
         return Serialize(value, jsonSerializer);

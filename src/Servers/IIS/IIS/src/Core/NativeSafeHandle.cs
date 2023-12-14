@@ -6,7 +6,7 @@ using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
-internal class NativeSafeHandle : SafeHandle, IValueTaskSource<object?>
+internal sealed class NativeSafeHandle : SafeHandle, IValueTaskSource<object?>
 {
     private ManualResetValueTaskSourceCore<object?> _core; // mutable struct; do not make this readonly
 

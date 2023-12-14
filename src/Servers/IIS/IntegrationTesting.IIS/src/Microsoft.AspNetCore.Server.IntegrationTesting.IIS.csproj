@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -20,11 +20,13 @@
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <!-- Ignore platform compatibility analyzer warnings for test and test infrastructure -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
 
   <ItemGroup>
+    <EmbeddedResource Include="Http.SubApp.config" />
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
@@ -69,6 +71,7 @@
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Security.Cryptography.X509Certificates" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 

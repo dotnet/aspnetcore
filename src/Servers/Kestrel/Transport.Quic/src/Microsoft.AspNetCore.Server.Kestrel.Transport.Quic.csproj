@@ -7,10 +7,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CA1416;CS0436;$(NoWarn)</NoWarn><!-- Conflicts between internal and public Quic APIs; Platform support warnings. -->
-    <NoWarn>$(NoWarn);IDE0060</NoWarn> <!-- This project is work in progress and has incomplete APIs -->
+    <NoWarn>$(NoWarn);CA2252;CA1416</NoWarn><!-- Ignore preview features in System.Net.Quic; Platform support warnings. -->
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,4 +37,8 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Quic.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests" />
+  </ItemGroup>
 </Project>

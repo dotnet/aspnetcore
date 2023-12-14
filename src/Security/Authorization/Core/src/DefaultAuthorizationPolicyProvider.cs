@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization;
@@ -23,10 +24,7 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     /// <param name="options">The options used to configure this instance.</param>
     public DefaultAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         _options = options.Value;
     }
@@ -69,6 +67,13 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
         // MVC caches policies specifically for this class, so this method MUST return the same policy per
         // policyName for every request or it could allow undesired access. It also must return synchronously.
         // A change to either of these behaviors would require shipping a patch of MVC as well.
-        return Task.FromResult(_options.GetPolicy(policyName));
+        return _options.GetPolicyTask(policyName);
     }
+
+#if NETCOREAPP
+    /// <summary>
+    /// Determines if policies from this provider can be cached, which is true only for this type.
+    /// </summary>
+    public virtual bool AllowsCachingPolicies => GetType() == typeof(DefaultAuthorizationPolicyProvider);
+#endif
 }

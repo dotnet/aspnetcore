@@ -1,9 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.FileProviders.Embedded.Manifest;
 using Microsoft.Extensions.Primitives;
 
@@ -62,15 +64,8 @@ public class ManifestEmbeddedFileProvider : IFileProvider
 
     internal ManifestEmbeddedFileProvider(Assembly assembly, EmbeddedFilesManifest manifest, DateTimeOffset lastModified)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
-
-        if (manifest == null)
-        {
-            throw new ArgumentNullException(nameof(manifest));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
+        ArgumentNullThrowHelper.ThrowIfNull(manifest);
 
         Assembly = assembly;
         Manifest = manifest;
@@ -98,7 +93,7 @@ public class ManifestEmbeddedFileProvider : IFileProvider
             return NotFoundDirectoryContents.Singleton;
         }
 
-        return new ManifestDirectoryContents(Assembly, directory, _lastModified);
+        return new ManifestDirectoryInfo(Assembly, directory, _lastModified);
     }
 
     /// <inheritdoc />
@@ -121,23 +116,23 @@ public class ManifestEmbeddedFileProvider : IFileProvider
     /// <inheritdoc />
     public IChangeToken Watch(string filter)
     {
-        if (filter == null)
-        {
-            throw new ArgumentNullException(nameof(filter));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(filter);
 
         return NullChangeToken.Singleton;
     }
 
+    [UnconditionalSuppressMessage("SingleFile", "IL3000:Assembly.Location",
+        Justification = "The code handles if the Assembly.Location is empty. Workaround https://github.com/dotnet/runtime/issues/83607")]
     private static DateTimeOffset ResolveLastModified(Assembly assembly)
     {
         var result = DateTimeOffset.UtcNow;
 
-        if (!string.IsNullOrEmpty(assembly.Location))
+        var assemblyLocation = assembly.Location;
+        if (!string.IsNullOrEmpty(assemblyLocation))
         {
             try
             {
-                result = File.GetLastWriteTimeUtc(assembly.Location);
+                result = File.GetLastWriteTimeUtc(assemblyLocation);
             }
             catch (PathTooLongException)
             {

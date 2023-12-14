@@ -1,11 +1,12 @@
 {
-  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "$schema": "https://json.schemastore.org/ide.host",
   "order": 700,
   "icon": "ide/RazorClassLibrary.ico",
   "symbolInfo": [
     {
       "id": "SupportPagesAndViews",
-      "isVisible": "true"
+      "isVisible": true,
+      "persistenceScope": "templateGroup"
     }
   ]
 }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 
-internal class NullDispatcher : Dispatcher
+internal sealed class NullDispatcher : Dispatcher
 {
     public static readonly Dispatcher Instance = new NullDispatcher();
 
@@ -15,10 +15,7 @@ internal class NullDispatcher : Dispatcher
 
     public override Task InvokeAsync(Action workItem)
     {
-        if (workItem is null)
-        {
-            throw new ArgumentNullException(nameof(workItem));
-        }
+        ArgumentNullException.ThrowIfNull(workItem);
 
         workItem();
         return Task.CompletedTask;
@@ -26,30 +23,21 @@ internal class NullDispatcher : Dispatcher
 
     public override Task InvokeAsync(Func<Task> workItem)
     {
-        if (workItem is null)
-        {
-            throw new ArgumentNullException(nameof(workItem));
-        }
+        ArgumentNullException.ThrowIfNull(workItem);
 
         return workItem();
     }
 
     public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
     {
-        if (workItem is null)
-        {
-            throw new ArgumentNullException(nameof(workItem));
-        }
+        ArgumentNullException.ThrowIfNull(workItem);
 
         return Task.FromResult(workItem());
     }
 
     public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
     {
-        if (workItem is null)
-        {
-            throw new ArgumentNullException(nameof(workItem));
-        }
+        ArgumentNullException.ThrowIfNull(workItem);
 
         return workItem();
     }

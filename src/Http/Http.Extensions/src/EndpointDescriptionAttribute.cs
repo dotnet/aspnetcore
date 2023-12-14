@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Http;
 /// can be used to annotate endpoints with detailed, multiline descriptors of their behavior.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+[DebuggerDisplay("{ToString(),nq}")]
 public sealed class EndpointDescriptionAttribute : Attribute, IEndpointDescriptionMetadata
 {
     /// <summary>
@@ -26,4 +28,10 @@ public sealed class EndpointDescriptionAttribute : Attribute, IEndpointDescripti
 
     /// <inheritdoc />
     public string Description { get; }
+
+    /// <inheritdoc/>>
+    public override string ToString()
+    {
+        return $"Description: {Description ?? "(null)"}";
+    }
 }

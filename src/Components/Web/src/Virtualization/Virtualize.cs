@@ -47,6 +47,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private RenderFragment<PlaceholderContext>? _placeholder;
 
+    private RenderFragment? _emptyContent;
+
+    private bool _loading;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -67,6 +71,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the content to show when <see cref="Items"/> is empty
+    /// or when the <see cref="ItemsProviderResult&lt;TItem&gt;.TotalItemCount"/> is zero.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
 
     /// <summary>
     /// Gets the size of each item in pixels. Defaults to 50px.
@@ -94,6 +105,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public int OverscanCount { get; set; } = 3;
+
+    /// <summary>
+    /// Gets or sets the tag name of the HTML element that will be used as the virtualization spacer.
+    /// One such element will be rendered before the visible items, and one more after them, using
+    /// an explicit "height" style to control the scroll range.
+    ///
+    /// The default value is "div". If you are placing the <see cref="Virtualize{TItem}"/> instance inside
+    /// an element that requires a specific child tag name, consider setting that here. For example when
+    /// rendering inside a "tbody", consider setting <see cref="SpacerElement"/> to the value "tr".
+    /// </summary>
+    [Parameter]
+    public string SpacerElement { get; set; } = "div";
 
     /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
@@ -155,6 +178,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _itemTemplate = ItemContent ?? ChildContent;
         _placeholder = Placeholder ?? DefaultPlaceholder;
+        _emptyContent = EmptyContent;
     }
 
     /// <inheritdoc />
@@ -178,7 +202,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             throw oldRefreshException;
         }
 
-        builder.OpenElement(0, "div");
+        builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
         builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
@@ -201,15 +225,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedItemCount = 0;
 
-        // Render the loaded items.
-        if (_loadedItems != null && _itemTemplate != null)
+        if (_loadedItems != null && !_loading && _itemCount == 0 && _emptyContent != null)
+        {
+            builder.AddContent(4, _emptyContent);
+        }
+        else if (_loadedItems != null && _itemTemplate != null)
         {
             var itemsToShow = _loadedItems
                 .Skip(_itemsBefore - _loadedItemsStartIndex)
                 .Take(lastItemIndex - _loadedItemsStartIndex);
 
-            builder.OpenRegion(4);
+            builder.OpenRegion(5);
 
+            // Render the loaded items.
             foreach (var item in itemsToShow)
             {
                 _itemTemplate(item)(builder);
@@ -223,7 +251,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
-        builder.OpenRegion(5);
+        builder.OpenRegion(6);
 
         // Render the placeholders after the loaded items.
         for (; renderIndex < lastItemIndex; renderIndex++)
@@ -235,15 +263,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
-        builder.OpenElement(6, "div");
-        builder.AddAttribute(7, "style", GetSpacerStyle(itemsAfter));
-        builder.AddElementReferenceCapture(8, elementReference => _spacerAfter = elementReference);
+        builder.OpenElement(7, SpacerElement);
+        builder.AddAttribute(8, "style", GetSpacerStyle(itemsAfter));
+        builder.AddElementReferenceCapture(9, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
 
     private string GetSpacerStyle(int itemsInSpacer)
-        => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px;";
+        => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
@@ -342,6 +370,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             _refreshCts = new CancellationTokenSource();
             cancellationToken = _refreshCts.Token;
+            _loading = true;
         }
 
         var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
@@ -356,6 +385,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = request.StartIndex;
+                _loading = false;
 
                 if (renderOnSuccess)
                 {
@@ -390,7 +420,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px;");
+        builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
         builder.CloseElement();
     };
 

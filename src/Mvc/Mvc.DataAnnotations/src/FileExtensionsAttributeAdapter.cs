@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations;
 
-internal class FileExtensionsAttributeAdapter : AttributeAdapterBase<FileExtensionsAttribute>
+internal sealed class FileExtensionsAttributeAdapter : AttributeAdapterBase<FileExtensionsAttribute>
 {
     private readonly string _extensions;
     private readonly string _formattedExtensions;
@@ -29,10 +29,7 @@ internal class FileExtensionsAttributeAdapter : AttributeAdapterBase<FileExtensi
     /// <inheritdoc />
     public override void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, "data-val-fileextensions", GetErrorMessage(context));
@@ -42,10 +39,7 @@ internal class FileExtensionsAttributeAdapter : AttributeAdapterBase<FileExtensi
     /// <inheritdoc />
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
-        if (validationContext == null)
-        {
-            throw new ArgumentNullException(nameof(validationContext));
-        }
+        ArgumentNullException.ThrowIfNull(validationContext);
 
         return GetErrorMessage(
             validationContext.ModelMetadata,

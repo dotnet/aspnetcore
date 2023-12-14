@@ -14,7 +14,7 @@ setup(){
 @test "manpage generation is identical to lkg file" {
     # Output is file "tool1.1"
     # LKG file is "lkgtestman.1"
-    python $PACKAGIFY_DIR/scripts/manpage_generator.py $PACKAGIFY_DIR/test/test_assets/testdocs.json $PACKAGIFY_DIR/test/test_assets
+    python3 $PACKAGIFY_DIR/scripts/manpage_generator.py $PACKAGIFY_DIR/test/test_assets/testdocs.json $PACKAGIFY_DIR/test/test_assets
 
     # Test Output existence
     [ -f $PACKAGIFY_DIR/test/test_assets/tool1.1 ]

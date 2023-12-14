@@ -33,10 +33,7 @@ public sealed class MediaTypeOptions
 
     internal void AddText(MediaTypeHeaderValue mediaType)
     {
-        if (mediaType == null)
-        {
-            throw new ArgumentNullException(nameof(mediaType));
-        }
+        ArgumentNullException.ThrowIfNull(mediaType);
 
         mediaType.Encoding ??= Encoding.UTF8;
 
@@ -52,10 +49,7 @@ public sealed class MediaTypeOptions
     /// <param name="contentType">The content type to add.</param>
     public void AddText(string contentType)
     {
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
 
         AddText(MediaTypeHeaderValue.Parse(contentType));
     }
@@ -67,15 +61,8 @@ public sealed class MediaTypeOptions
     /// <param name="encoding">The encoding to use.</param>
     public void AddText(string contentType, Encoding encoding)
     {
-        if (contentType == null)
-        {
-            throw new ArgumentNullException(nameof(contentType));
-        }
-
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
+        ArgumentNullException.ThrowIfNull(contentType);
+        ArgumentNullException.ThrowIfNull(encoding);
 
         var mediaType = MediaTypeHeaderValue.Parse(contentType);
         mediaType.Encoding = encoding;

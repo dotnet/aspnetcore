@@ -8,7 +8,7 @@ using Wasm.Performance.TestApp.Pages;
 
 namespace Wasm.Performance.ConsoleHost.Scenarios;
 
-internal class GridScenario : ComponentRenderingScenarioBase
+internal sealed class GridScenario : ComponentRenderingScenarioBase
 {
     readonly CommandOption _gridTypeOption = new CommandOption("--gridtype", CommandOptionType.SingleValue);
 

@@ -14,6 +14,7 @@
 ~static Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions.AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder) -> Microsoft.Extensions.Logging.ILoggingBuilder
 ~static Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions.AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions> configureBlobLoggerOptions) -> Microsoft.Extensions.Logging.ILoggingBuilder
 Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext
+Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext.AzureBlobLoggerContext() -> void
 Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerContext.Timestamp.get -> System.DateTimeOffset
 Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions
 Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions.AzureBlobLoggerOptions() -> void

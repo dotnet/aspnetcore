@@ -13,6 +13,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 /// </summary>
 public class SocketTransportOptions
 {
+    private const string FinOnErrorSwitch = "Microsoft.AspNetCore.Server.Kestrel.FinOnError";
+    private static readonly bool _finOnError;
+
+    static SocketTransportOptions()
+    {
+        AppContext.TryGetSwitch(FinOnErrorSwitch, out _finOnError);
+    }
+
+    // Opt-out flag for back compat. Remove in 9.0 (or make public).
+    internal bool FinOnError { get; set; } = _finOnError;
+
     /// <summary>
     /// The number of I/O queues used to process requests. Set to 0 to directly schedule I/O to the ThreadPool.
     /// </summary>
@@ -41,18 +52,32 @@ public class SocketTransportOptions
     /// The maximum length of the pending connection queue.
     /// </summary>
     /// <remarks>
-    /// Defaults to 512.
+    /// Defaults to 512 pending connections.
     /// </remarks>
     public int Backlog { get; set; } = 512;
 
     /// <summary>
     /// Gets or sets the maximum unconsumed incoming bytes the transport will buffer.
+    /// <para>
+    /// A value of <see langword="null"/> or 0 disables backpressure entirely allowing unlimited buffering.
+    /// Unlimited server buffering is a security risk given untrusted clients.
+    /// </para>
     /// </summary>
+    /// <remarks>
+    /// Defaults to 1 MiB.
+    /// </remarks>
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
     /// <summary>
     /// Gets or sets the maximum outgoing bytes the transport will buffer before applying write backpressure.
+    /// <para>
+    /// A value of <see langword="null"/> or 0 disables backpressure entirely allowing unlimited buffering.
+    /// Unlimited server buffering is a security risk given untrusted clients.
+    /// </para>
     /// </summary>
+    /// <remarks>
+    /// Defaults to 64 KiB.
+    /// </remarks>
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
     /// <summary>
@@ -65,6 +90,9 @@ public class SocketTransportOptions
     /// This setting can make performance worse if there is expensive work that will end up holding onto the IO thread for longer than needed.
     /// Test to make sure this setting helps performance.
     /// </remarks>
+    /// <remarks>
+    /// Defaults to false.
+    /// </remarks>
     public bool UnsafePreferInlineScheduling { get; set; }
 
     /// <summary>
@@ -76,6 +104,9 @@ public class SocketTransportOptions
     /// <see cref="Socket"/>. Please note that <see cref="CreateDefaultBoundListenSocket"/>
     /// calls <see cref="Socket.Bind"/> as part of its implementation, so implementors
     /// using this method do not need to call it again.
+    /// </remarks>
+    /// <remarks>
+    /// Defaults to <see cref="CreateDefaultBoundListenSocket"/>.
     /// </remarks>
     public Func<EndPoint, Socket> CreateBoundListenSocket { get; set; } = CreateDefaultBoundListenSocket;
 
@@ -96,17 +127,13 @@ public class SocketTransportOptions
         switch (endpoint)
         {
             case FileHandleEndPoint fileHandle:
-                // We're passing "ownsHandle: true" here even though we don't necessarily
-                // own the handle because Socket.Dispose will clean-up everything safely.
-                // If the handle was already closed or disposed then the socket will
-                // be torn down gracefully, and if the caller never cleans up their handle
-                // then we'll do it for them.
+                // We're passing "ownsHandle: false" to avoid side-effects on the
+                // handle when disposing the socket.
                 //
-                // If we don't do this then we run the risk of Kestrel hanging because the
-                // the underlying socket is never closed and the transport manager can hang
-                // when it attempts to stop.
+                // When the non-owning SafeSocketHandle gets disposed (on .NET 7+),
+                // on-going async operations are aborted.
                 listenSocket = new Socket(
-                    new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true)
+                    new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: false)
                 );
                 break;
             case UnixDomainSocketEndPoint unix:

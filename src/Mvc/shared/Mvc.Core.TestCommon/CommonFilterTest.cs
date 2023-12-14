@@ -226,7 +226,7 @@ public class CommonFilterTest
         return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
     }
 
-    private class NoOpResult : IActionResult
+    private sealed class NoOpResult : IActionResult
     {
         public Task ExecuteResultAsync(ActionContext context)
         {

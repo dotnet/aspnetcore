@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
+#pragma warning disable CA1852 // Seal internal types
 internal class TypeForwardingActivator : SimpleActivator
+#pragma warning restore CA1852 // Seal internal types
 {
     private const string OldNamespace = "Microsoft.AspNet.DataProtection";
     private const string CurrentNamespace = "Microsoft.AspNetCore.DataProtection";
@@ -24,13 +27,37 @@ internal class TypeForwardingActivator : SimpleActivator
         _logger = loggerFactory.CreateLogger(typeof(TypeForwardingActivator));
     }
 
-    public override object CreateInstance(Type expectedBaseType, string originalTypeName)
+    public override object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type expectedBaseType, string originalTypeName)
         => CreateInstance(expectedBaseType, originalTypeName, out var _);
 
     // for testing
-    internal object CreateInstance(Type expectedBaseType, string originalTypeName, out bool forwarded)
+    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType is only used with forwarded types that are referenced by DataProtection assembly.")]
+    internal object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type expectedBaseType, string originalTypeName, out bool forwarded)
     {
-        var forwardedTypeName = originalTypeName;
+        if (TryForwardTypeName(originalTypeName, out var forwardedTypeName))
+        {
+            var type = Type.GetType(forwardedTypeName, false);
+            if (type != null)
+            {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
+                        originalTypeName,
+                        forwardedTypeName);
+                }
+                forwarded = true;
+                return base.CreateInstance(expectedBaseType, forwardedTypeName);
+            }
+        }
+
+        forwarded = false;
+        return base.CreateInstance(expectedBaseType, originalTypeName);
+    }
+
+    internal static bool TryForwardTypeName(string originalTypeName, out string forwardedTypeName)
+    {
+        forwardedTypeName = originalTypeName;
+
         var candidate = false;
         if (originalTypeName.Contains(OldNamespace))
         {
@@ -44,21 +71,7 @@ internal class TypeForwardingActivator : SimpleActivator
             forwardedTypeName = RemoveVersionFromAssemblyName(forwardedTypeName);
         }
 
-        if (candidate)
-        {
-            var type = Type.GetType(forwardedTypeName, false);
-            if (type != null)
-            {
-                _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
-                    originalTypeName,
-                    forwardedTypeName);
-                forwarded = true;
-                return base.CreateInstance(expectedBaseType, forwardedTypeName);
-            }
-        }
-
-        forwarded = false;
-        return base.CreateInstance(expectedBaseType, originalTypeName);
+        return candidate;
     }
 
     protected static string RemoveVersionFromAssemblyName(string forwardedTypeName)

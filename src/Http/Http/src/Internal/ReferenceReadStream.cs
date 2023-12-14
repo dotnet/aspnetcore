@@ -17,10 +17,7 @@ internal sealed class ReferenceReadStream : Stream
 
     public ReferenceReadStream(Stream inner, long offset, long length)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
 
         _inner = inner;
         _innerOffset = offset;
@@ -150,9 +147,6 @@ internal sealed class ReferenceReadStream : Stream
 
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(ReferenceReadStream));
-        }
+        ObjectDisposedException.ThrowIf(_disposed, nameof(ReferenceReadStream));
     }
 }

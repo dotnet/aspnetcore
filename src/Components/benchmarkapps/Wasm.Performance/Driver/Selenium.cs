@@ -8,16 +8,17 @@ using OpenQA.Selenium.Remote;
 
 namespace Wasm.Performance.Driver;
 
-class Selenium
+internal sealed class Selenium
 {
+    const string SeleniumHost = "127.0.0.1";
     const int SeleniumPort = 4444;
     const bool RunHeadlessBrowser = true;
 
     const bool PoolForBrowserLogs = true;
 
-    private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
+    private static async ValueTask<Uri> WaitForServerAsync(string host, int port, CancellationToken cancellationToken)
     {
-        var uri = new UriBuilder("http", "localhost", port, "/wd/hub/").Uri;
+        var uri = new UriBuilder("http", host, port, "/wd/hub/").Uri;
         var httpClient = new HttpClient
         {
             BaseAddress = uri,
@@ -54,7 +55,7 @@ class Selenium
 
     public static async Task<RemoteWebDriver> CreateBrowser(CancellationToken cancellationToken, bool captureBrowserMemory = false)
     {
-        var uri = await WaitForServerAsync(SeleniumPort, cancellationToken);
+        var uri = await WaitForServerAsync(SeleniumHost, SeleniumPort, cancellationToken);
 
         var options = new ChromeOptions();
 
@@ -68,6 +69,10 @@ class Selenium
             options.AddArgument("--enable-precise-memory-info");
         }
 
+        // Chrome fails to load site resources if it fills up the /dev/shm partition,
+        // so we add this argument to force using a temporary directory for shared memory files.
+        options.AddArgument("--disable-dev-shm-usage");
+
         options.SetLoggingPreference(LogType.Browser, OpenQA.Selenium.LogLevel.All);
 
         var attempt = 0;
@@ -80,7 +85,7 @@ class Selenium
                 // Under heavy load, this can cause issues
                 // To prevent this we let the client attempt several times to connect to the server, increasing
                 // the max allowed timeout for a command on each attempt linearly.
-                var driver = new RemoteWebDriver(
+                var driver = new CustomRemoteWebDriver(
                     uri,
                     options.ToCapabilities(),
                     TimeSpan.FromSeconds(60).Add(TimeSpan.FromSeconds(attempt * 60)));
@@ -118,5 +123,14 @@ class Selenium
         } while (attempt < MaxAttempts);
 
         throw new InvalidOperationException("Couldn't create a Selenium remote driver client. The server is irresponsive");
+    }
+
+    // The WebDriver must implement ISupportsLogs to enable reading browser console logs.
+    private sealed class CustomRemoteWebDriver : RemoteWebDriver, ISupportsLogs
+    {
+        public CustomRemoteWebDriver(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
+            : base(remoteAddress, desiredCapabilities, commandTimeout)
+        {
+        }
     }
 }

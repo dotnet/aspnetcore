@@ -10,7 +10,7 @@ using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
 
-internal class MvcAttributeRouteHandler : IRouter
+internal sealed class MvcAttributeRouteHandler : IRouter
 {
     private readonly IActionInvokerFactory _actionInvokerFactory;
     private readonly IActionSelector _actionSelector;
@@ -33,10 +33,7 @@ internal class MvcAttributeRouteHandler : IRouter
 
     public VirtualPathData? GetVirtualPath(VirtualPathContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // We return null here because we're not responsible for generating the url, the route is.
         return null;
@@ -44,10 +41,7 @@ internal class MvcAttributeRouteHandler : IRouter
 
     public Task RouteAsync(RouteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (Actions == null)
         {

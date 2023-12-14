@@ -505,10 +505,7 @@ public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable 
     /// <param name="client">The <see cref="HttpClient"/> instance getting configured.</param>
     protected virtual void ConfigureClient(HttpClient client)
     {
-        if (client == null)
-        {
-            throw new ArgumentNullException(nameof(client));
-        }
+        ArgumentNullException.ThrowIfNull(client);
 
         client.BaseAddress = new Uri("http://localhost");
     }
@@ -603,7 +600,7 @@ public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable 
         GC.SuppressFinalize(this);
     }
 
-    private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
+    private sealed class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
     {
         private readonly Func<IWebHostBuilder, TestServer> _createServer;
         private readonly Func<IHostBuilder, IHost> _createHost;

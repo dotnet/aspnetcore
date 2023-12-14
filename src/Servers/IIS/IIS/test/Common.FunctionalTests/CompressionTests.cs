@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISCompressionSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class CompressionTests : FixtureLoggedTest
 {
     private readonly IISCompressionSiteFixture _fixture;
@@ -130,6 +131,7 @@ public class CompressionTests : FixtureLoggedTest
         var client = new HttpClient(handler)
         {
             BaseAddress = _fixture.Client.BaseAddress,
+            Timeout = TimeSpan.FromSeconds(200),
         };
         client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
         client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity", 0));
