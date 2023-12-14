@@ -102,7 +102,7 @@ internal static class ILEmitTrieFactory
         // ref byte p = ...
         il.Emit(OpCodes.Stloc_0, locals.P);
 
-        const int binarySearchThreshold = 4;
+        const int binarySearchThreshold = 4; // The number of items above which it makes sense to binary search
         var groups = entries.GroupBy(e => e.text.Length).ToArray();
 
         if (groups.Length >= binarySearchThreshold)
@@ -152,35 +152,21 @@ internal static class ILEmitTrieFactory
                 // Use binary search tree
                 var mid = groups.Length / 2;
 
-                var inside = il.DefineLabel();
-                var checkBranch = il.DefineLabel();
                 var rightBranch = il.DefineLabel();
                 var next = il.DefineLabel();
 
-                // if (length == X) { ... }
-                il.Emit(OpCodes.Ldarg_2);
-                il.Emit(OpCodes.Ldc_I4, groups[mid].Key);
-                il.Emit(OpCodes.Beq, inside);
-                il.Emit(OpCodes.Br, checkBranch);
-
-                // Process the group
-                il.MarkLabel(inside);
-                EmitTable(il, groups[mid].ToArray(), 0, groups[mid].Key, locals, labels, methods);
-                il.Emit(OpCodes.Br, next);
-
-                il.MarkLabel(checkBranch);
-
-                // if (length > X) goto rightBranch
+                // if (length < X) { ... }
                 il.Emit(OpCodes.Ldarg_2);
                 il.Emit(OpCodes.Ldc_I4, groups[mid].Key);
                 il.Emit(OpCodes.Bge, rightBranch);
 
-                // By elimination we check the left branch
                 EmitIfLadder(groups[..mid]);
                 il.Emit(OpCodes.Br, next);
 
+                // else { ... }
                 il.MarkLabel(rightBranch);
-                EmitIfLadder(groups[(mid + 1)..]);
+                EmitIfLadder(groups[mid..]);
+
                 il.MarkLabel(next);
             }
         }
@@ -320,7 +306,7 @@ internal static class ILEmitTrieFactory
         // uint64Value = ...
         il.Emit(OpCodes.Stloc, locals.UInt64Value);
 
-        const int binarySearchThreshold = 4;
+        const int binarySearchThreshold = 4; // The number of items above which it makes sense to binary search
 
         var groups = entries.GroupBy(e => GetUInt64Key(e.text, index)).ToArray();
 
@@ -361,31 +347,21 @@ internal static class ILEmitTrieFactory
                 // Use binary search tree
                 var mid = groups.Length / 2;
 
-                var checkBranch = il.DefineLabel();
                 var rightBranch = il.DefineLabel();
                 var nextGroup = il.DefineLabel();
 
-                // if (uint64Value == 0x.....) { ... }
-                il.Emit(OpCodes.Ldloc, locals.UInt64Value);
-                il.Emit(OpCodes.Ldc_I8, unchecked((long)groups[mid].Key));
-                il.Emit(OpCodes.Bne_Un, checkBranch);
-
-                // Process the group
-                EmitTable(il, groups[mid].ToArray(), index + 4, length, locals, labels, methods);
-                il.Emit(OpCodes.Br, nextGroup);
-                il.MarkLabel(checkBranch);
-
-                // if (uint64Value > 0x.....) goto rightBranch
+                // if (uint64Value < 0x.....) { ... }
                 il.Emit(OpCodes.Ldloc, locals.UInt64Value);
                 il.Emit(OpCodes.Ldc_I8, unchecked((long)groups[mid].Key));
                 il.Emit(OpCodes.Bge_Un, rightBranch);
 
-                // By elimination we check the left branch
                 EmitIfLadder(groups[..mid]);
                 il.Emit(OpCodes.Br, nextGroup);
 
+                // else { ... }
                 il.MarkLabel(rightBranch);
-                EmitIfLadder(groups[(mid + 1)..]);
+                EmitIfLadder(groups[mid..]);
+
                 il.MarkLabel(nextGroup);
             }
         }
