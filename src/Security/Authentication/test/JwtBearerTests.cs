@@ -1065,6 +1065,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         RegisterAuth(builder, _ => { });
         var sp = services.BuildServiceProvider();
 
+        // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudiences, new[] { "http://localhost:5000", "https://localhost:5001" });
     }
