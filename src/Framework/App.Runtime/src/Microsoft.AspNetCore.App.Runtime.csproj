@@ -43,7 +43,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>$(AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder);.r2rmap</AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder>
 
     <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x. -->
-    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' ">false</CrossgenOutput>
+    <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR ('$(DotnetBuildVertical)' == 'true' AND '$(Crossbuild)' == 'true')">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
