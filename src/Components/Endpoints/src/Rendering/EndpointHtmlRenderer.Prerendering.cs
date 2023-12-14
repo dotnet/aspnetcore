@@ -161,8 +161,23 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            // Just wait for quiescence of the non-streaming subtrees
-            await Task.WhenAll(_nonStreamingPendingTasks);
+            await WaitForNonStreamingPendingTasks();
+        }
+    }
+
+    private async Task WaitForNonStreamingPendingTasks()
+    {
+        while (_nonStreamingPendingTasks.Count > 0)
+        {
+            // Create a Task that represents the remaining ongoing work for the rendering process
+            var pendingWork = Task.WhenAll(_nonStreamingPendingTasks);
+
+            // Clear all pending work.
+            _nonStreamingPendingTasks.Clear();
+
+            // new work might be added before we check again as a result of waiting for all
+            // the child components to finish executing SetParametersAsync
+            await pendingWork;
         }
     }
 
