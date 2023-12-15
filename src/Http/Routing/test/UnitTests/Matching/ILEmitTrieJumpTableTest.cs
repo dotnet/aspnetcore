@@ -224,8 +224,11 @@ public abstract class ILEmitTreeJumpTableTestBase : MultipleEntryJumpTableTest
     // Tests for correct branching in binary search
     [Theory]
     [InlineData("hello0 world", "hello1 world", "hello2 world", "hello1 world2")]
-    [InlineData("1111", "2222", "3333", "4444", "5555", "6666", "7777", "8888")]
+    [InlineData("1111", "2222", "3333", "4444", "5555", "6666", "7777", "8888")] // vectorized
     [InlineData("1", "7777777", "22", "88888888", "55555", "666666", "333", "4444")]
+    [InlineData("1", "4", "8", "3", "5", "2", "6", "7")] // non-vectorized
+    [InlineData("1", "a", "4", "B", "8", "C", "3", "d", "5", "e", "2", "F", "6", "g", "7")] // mixed letters and numbers
+    [InlineData("@", "1", "a", "4", "B", "8", "C", "3", "d", "5", "e", "2", "F", "6", "g", "7", "`")] // @ and ` are 0x20 apart which means binary search must be disabled
     public void GetDestination_Found_WithBinarySearch(params string[] segments)
     {
         // Arrange

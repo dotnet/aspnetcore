@@ -422,32 +422,81 @@ internal static class ILEmitTrieFactory
         // uint16ValueLowerCase = ...
         il.Emit(OpCodes.Stloc, locals.UInt16ValueLowerCase);
 
+        const int binarySearchThreshold = 4; // The number of items above which it makes sense to binary search
+
         // Now we generate an 'if' ladder with an entry for each of the unique
         // characters in the group.
-        var groups = entries.GroupBy(e => GetUInt16Key(e.text, index));
-        foreach (var group in groups)
+        var groups = entries.GroupBy(e => GetUInt16Key(e.text, index)).ToArray();
+
+        // We can still apply binary search in most cases. Specifically when besides letters,
+        // there are no two keys which are equal aside from the 0x20 bit. Reasoning is that
+        // if that's the case we can binary search on the (|0x20) version anyway and finally
+        // compare equality with the correct version.
+        var disableBinarySearch = groups.Any(group => groups.Any(otherGroup => otherGroup.Key != group.Key && (otherGroup.Key | 0x20) == (group.Key | 0x20)));
+
+        if (!disableBinarySearch && groups.Length >= binarySearchThreshold)
         {
-            // Choose which variable against which to compare.
-            var comparisonLocal = group.Key >= 'a' && group.Key <= 'z'
-                ? locals.UInt16ValueLowerCase
-                : locals.UInt16Value;
-
-            // if (uint16Value/uint16ValueLowerCase == 'a') { ... }
-            var next = il.DefineLabel();
-            var inside = il.DefineLabel();
-            il.Emit(OpCodes.Ldloc, comparisonLocal);
-            il.Emit(OpCodes.Ldc_I4, unchecked((int)((uint)group.Key)));
-            il.Emit(OpCodes.Beq, inside);
-            il.Emit(OpCodes.Br, next);
-
-            // Process the group
-            il.MarkLabel(inside);
-            EmitTable(il, group.ToArray(), index + 1, length, locals, labels, methods);
-            il.MarkLabel(next);
+            // Only sort if binary search will be used. Sort by the "lower" value - even if not a letter
+            // as with disableBinarySearch we have confirmed that no two keys will conflict.
+            Array.Sort(groups, static (a, b) => (a.Key | 0x20).CompareTo(b.Key | 0x20));
         }
+
+        EmitIfLadder(groups);
 
         // goto: defaultDestination
         il.Emit(OpCodes.Br, labels.ReturnDefault);
+
+        void EmitIfLadder(Span<IGrouping<ushort, (string test, int destination)>> groups)
+        {
+            // Generate an 'if' ladder with an entry for each of the unique 64 bit sections of the text.
+
+            if (disableBinarySearch || groups.Length < binarySearchThreshold)
+            {
+                // Use sequential if statements, starting from the most common segment
+                groups.Sort(static (a, b) => b.Count().CompareTo(a.Count()));
+
+                foreach (var group in groups)
+                {
+                    // Choose which variable against which to compare.
+                    var comparisonLocal = group.Key >= 'a' && group.Key <= 'z'
+                        ? locals.UInt16ValueLowerCase
+                        : locals.UInt16Value;
+
+                    // if (uint16Value/uint16ValueLowerCase == 'a') { ... }
+                    var next = il.DefineLabel();
+                    il.Emit(OpCodes.Ldloc, comparisonLocal);
+                    il.Emit(OpCodes.Ldc_I4, unchecked((int)(uint)group.Key));
+                    il.Emit(OpCodes.Ceq);
+                    il.Emit(OpCodes.Brfalse, next);
+
+                    // Process the group
+                    EmitTable(il, group.ToArray(), index + 1, length, locals, labels, methods);
+                    il.MarkLabel(next);
+                }
+            }
+            else
+            {
+                // Use binary search tree
+                var mid = groups.Length / 2;
+
+                var rightBranch = il.DefineLabel();
+                var nextGroup = il.DefineLabel();
+
+                // if (uint16ValueLowerVase < 0x.....) { ... }
+                il.Emit(OpCodes.Ldloc, locals.UInt16ValueLowerCase);
+                il.Emit(OpCodes.Ldc_I4, unchecked(((int)(uint)groups[mid].Key | 0x20)));
+                il.Emit(OpCodes.Bge_Un, rightBranch);
+
+                EmitIfLadder(groups[..mid]);
+                il.Emit(OpCodes.Br, nextGroup);
+
+                // else { ... }
+                il.MarkLabel(rightBranch);
+                EmitIfLadder(groups[mid..]);
+
+                il.MarkLabel(nextGroup);
+            }
+        }
     }
 
     public static void EmitReturnDestination(ILGenerator il, (string text, int destination)[] entries)
