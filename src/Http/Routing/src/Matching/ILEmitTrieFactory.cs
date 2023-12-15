@@ -414,30 +414,30 @@ internal static class ILEmitTrieFactory
         il.Emit(OpCodes.And);
         il.Emit(OpCodes.Brtrue, labels.ReturnNotAscii);
 
-        // Since we're handling a single character at a time, it's easier to just
-        // generate an 'if' with two comparisons instead of doing complicated conversion
-        // logic.
+        // uint16Value | 0x20
+        il.Emit(OpCodes.Ldloc, locals.UInt16Value);
+        il.Emit(OpCodes.Ldc_I4, 0x20);
+        il.Emit(OpCodes.Or);
+
+        // uint16ValueLowerCase = ...
+        il.Emit(OpCodes.Stloc, locals.UInt16ValueLowerCase);
 
         // Now we generate an 'if' ladder with an entry for each of the unique
         // characters in the group.
         var groups = entries.GroupBy(e => GetUInt16Key(e.text, index));
         foreach (var group in groups)
         {
-            // if (uint16Value == 'A' || uint16Value == 'a') { ... }
+            // Choose which variable against which to compare.
+            var comparisonLocal = group.Key >= 'a' && group.Key <= 'z'
+                ? locals.UInt16ValueLowerCase
+                : locals.UInt16Value;
+
+            // if (uint16Value/uint16ValueLowerCase == 'a') { ... }
             var next = il.DefineLabel();
             var inside = il.DefineLabel();
-            il.Emit(OpCodes.Ldloc, locals.UInt16Value);
+            il.Emit(OpCodes.Ldloc, comparisonLocal);
             il.Emit(OpCodes.Ldc_I4, unchecked((int)((uint)group.Key)));
             il.Emit(OpCodes.Beq, inside);
-
-            var upper = (ushort)char.ToUpperInvariant((char)group.Key);
-            if (upper != group.Key)
-            {
-                il.Emit(OpCodes.Ldloc, locals.UInt16Value);
-                il.Emit(OpCodes.Ldc_I4, unchecked((int)((uint)upper)));
-                il.Emit(OpCodes.Beq, inside);
-            }
-
             il.Emit(OpCodes.Br, next);
 
             // Process the group
@@ -507,6 +507,7 @@ internal static class ILEmitTrieFactory
             Span = il.DeclareLocal(typeof(ReadOnlySpan<char>));
 
             UInt16Value = il.DeclareLocal(typeof(ushort));
+            UInt16ValueLowerCase = il.DeclareLocal(typeof(ushort));
 
             if (vectorize)
             {
@@ -520,6 +521,12 @@ internal static class ILEmitTrieFactory
         /// Holds current character when processing a character at a time.
         /// </summary>
         public LocalBuilder UInt16Value { get; }
+
+        /// <summary>
+        /// Holds current character | 0x20 when processing a character at a time
+        /// in binary search mode.
+        /// </summary>
+        public LocalBuilder UInt16ValueLowerCase { get; }
 
         /// <summary>
         /// Holds current character when processing 4 characters at a time.
