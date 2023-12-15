@@ -300,6 +300,32 @@
         {
             <p>@Resources.ErrorPageHtml_NoEndpoint</p>
         }
+        <h2>@Resources.ErrorPageHtml_Metadata</h2>
+        @if (Model.Endpoint?.Metadata.Count > 0)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>@Resources.ErrorPageHtml_MetadataTypeColumn</th>
+                        <th>@Resources.ErrorPageHtml_MetadataDetail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var metadata in Model.Endpoint.Metadata)
+                    {
+                        <tr>
+                            <td><span title="@metadata.GetType().FullName">@metadata.GetType().Name</span></td>
+                            <td>@HtmlEncodeAndReplaceLineBreaks(metadata.ToString())</td>
+                        </tr>
+
+                        <tr>
+                            <td><span title="@metadata.GetType().FullName">@metadata.GetType().Name</span></td>
+                            <td>@metadata.ToString()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
         <h2>@Resources.ErrorPageHtml_RouteValues</h2>
         @if (Model.RouteValues != null && Model.RouteValues.Any())
         {
@@ -324,31 +350,6 @@
         else
         {
             <p>@Resources.ErrorPageHtml_NoRouteValues</p>
-        }
-        <h2>@Resources.ErrorPageHtml_Metadata</h2>
-        @if (Model.Endpoint?.Metadata != null)
-        {
-            <table>
-                <thead>
-                    <tr>
-                        <th>@Resources.ErrorPageHtml_MetadataTypeColumn</th>
-                        <th>@Resources.ErrorPageHtml_MetadataDetail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var metadata in Model.Endpoint.Metadata)
-                    {
-                        <tr>
-                            <td>@metadata.GetType().Name</td>
-                            <td>@(metadata.ToString())</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-        else
-        {
-            <p>@Resources.ErrorPageHtml_NoMetadata</p>
         }
     </div>
    

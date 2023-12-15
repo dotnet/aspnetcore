@@ -281,15 +281,12 @@
     <value>Name</value>
   </data>
   <data name="ErrorPageHtml_Metadata" xml:space="preserve">
-    <value>Metadata</value>
+    <value>Endpoint Metadata</value>
   </data>
   <data name="ErrorPageHtml_MetadataDetail" xml:space="preserve">
     <value>Detail</value>
   </data>
   <data name="ErrorPageHtml_MetadataTypeColumn" xml:space="preserve">
     <value>Type</value>
-  </data>
-  <data name="ErrorPageHtml_NoMetadata" xml:space="preserve">
-    <value>No metadata.</value>
   </data>
 </root>
