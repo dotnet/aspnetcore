@@ -286,7 +286,7 @@ internal static class ILEmitTrieFactory
         // uint64UpperIndicator = ...
         il.Emit(OpCodes.Stloc, locals.UInt64UpperIndicator);
 
-        // ulongLowerIndicator ^ ulongUpperIndicator
+        // uint64LowerIndicator ^ uint64UpperIndicator
         il.Emit(OpCodes.Ldloc, locals.UInt64LowerIndicator);
         il.Emit(OpCodes.Ldloc, locals.UInt64UpperIndicator);
         il.Emit(OpCodes.Xor);
