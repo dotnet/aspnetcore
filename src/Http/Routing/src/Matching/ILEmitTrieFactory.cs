@@ -270,41 +270,61 @@ internal static class ILEmitTrieFactory
         il.Emit(OpCodes.And);
         il.Emit(OpCodes.Brtrue, labels.ReturnNotAscii);
 
-        // uint64Value + (0x0080008000800080UL - 0x0041004100410041UL)
-        il.Emit(OpCodes.Ldloc, locals.UInt64Value);
-        il.Emit(OpCodes.Ldc_I8, unchecked((long)(0x0080008000800080UL - 0x0041004100410041UL)));
-        il.Emit(OpCodes.Add);
+        if (entries.All(e => IsUInt64KeyAsciiLettersOnly(e.text, index)))
+        {
+            // Here we know that all characters in our keys will all be in the set [a-z]
+            // If we set all the 0x20 bit in the input text, then it does not matter
+            // if we are incorrectly changing e.g. @ to `, as it won't match our letters
+            // anyway. In fact, since we know that the target set is [a-z] then the only
+            // characters to match our target set after having their 0x20 bit set are...
+            // [A-Z] which is exactly what we want to achieve.
 
-        // uint64LowerIndicator = ...
-        il.Emit(OpCodes.Stloc, locals.UInt64LowerIndicator);
+            // uint64Value | 0x0020002000200020UL
+            il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+            il.Emit(OpCodes.Ldc_I8, unchecked((long)0x0020002000200020UL));
+            il.Emit(OpCodes.Or);
 
-        // value + (0x0080008000800080UL - 0x005B005B005B005BUL)
-        il.Emit(OpCodes.Ldloc, locals.UInt64Value);
-        il.Emit(OpCodes.Ldc_I8, unchecked((long)(0x0080008000800080UL - 0x005B005B005B005BUL)));
-        il.Emit(OpCodes.Add);
+            // uint64Value = ...
+            il.Emit(OpCodes.Stloc, locals.UInt64Value);
+        }
+        else
+        {
+            // uint64Value + (0x0080008000800080UL - 0x0041004100410041UL)
+            il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+            il.Emit(OpCodes.Ldc_I8, unchecked((long)(0x0080008000800080UL - 0x0041004100410041UL)));
+            il.Emit(OpCodes.Add);
 
-        // uint64UpperIndicator = ...
-        il.Emit(OpCodes.Stloc, locals.UInt64UpperIndicator);
+            // uint64LowerIndicator = ...
+            il.Emit(OpCodes.Stloc, locals.UInt64LowerIndicator);
 
-        // uint64LowerIndicator ^ uint64UpperIndicator
-        il.Emit(OpCodes.Ldloc, locals.UInt64LowerIndicator);
-        il.Emit(OpCodes.Ldloc, locals.UInt64UpperIndicator);
-        il.Emit(OpCodes.Xor);
+            // value + (0x0080008000800080UL - 0x005B005B005B005BUL)
+            il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+            il.Emit(OpCodes.Ldc_I8, unchecked((long)(0x0080008000800080UL - 0x005B005B005B005BUL)));
+            il.Emit(OpCodes.Add);
 
-        // ... & 0x0080008000800080UL
-        il.Emit(OpCodes.Ldc_I8, unchecked((long)0x0080008000800080UL));
-        il.Emit(OpCodes.And);
+            // uint64UpperIndicator = ...
+            il.Emit(OpCodes.Stloc, locals.UInt64UpperIndicator);
 
-        // ... >> 2;
-        il.Emit(OpCodes.Ldc_I4, 2);
-        il.Emit(OpCodes.Shr_Un);
+            // uint64LowerIndicator ^ uint64UpperIndicator
+            il.Emit(OpCodes.Ldloc, locals.UInt64LowerIndicator);
+            il.Emit(OpCodes.Ldloc, locals.UInt64UpperIndicator);
+            il.Emit(OpCodes.Xor);
 
-        // ...  ^ uint64Value
-        il.Emit(OpCodes.Ldloc, locals.UInt64Value);
-        il.Emit(OpCodes.Xor);
+            // ... & 0x0080008000800080UL
+            il.Emit(OpCodes.Ldc_I8, unchecked((long)0x0080008000800080UL));
+            il.Emit(OpCodes.And);
 
-        // uint64Value = ...
-        il.Emit(OpCodes.Stloc, locals.UInt64Value);
+            // ... >> 2;
+            il.Emit(OpCodes.Ldc_I4, 2);
+            il.Emit(OpCodes.Shr_Un);
+
+            // ...  ^ uint64Value
+            il.Emit(OpCodes.Ldloc, locals.UInt64Value);
+            il.Emit(OpCodes.Xor);
+
+            // uint64Value = ...
+            il.Emit(OpCodes.Stloc, locals.UInt64Value);
+        }
 
         const int binarySearchThreshold = 4; // The number of items above which it makes sense to binary search
 
@@ -504,6 +524,19 @@ internal static class ILEmitTrieFactory
         Debug.Assert(entries.Length == 1, "We should have a single entry");
         il.Emit(OpCodes.Ldc_I4, entries[0].destination);
         il.Emit(OpCodes.Ret);
+    }
+
+    /// <summary>
+    /// Returns true if the key will only contains ascii letters
+    /// </summary>
+    private static bool IsUInt64KeyAsciiLettersOnly(string text, int index)
+    {
+        Debug.Assert(index + 4 <= text.Length);
+        var span = text.AsSpan(index, 4);
+        return char.IsAsciiLetter(span[0])
+            && char.IsAsciiLetter(span[1])
+            && char.IsAsciiLetter(span[2])
+            && char.IsAsciiLetter(span[3]);
     }
 
     private static ulong GetUInt64Key(string text, int index)
