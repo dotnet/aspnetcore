@@ -405,7 +405,7 @@ internal static class ILEmitTrieFactory
         // p = ref ...
         il.Emit(OpCodes.Stloc, locals.P);
 
-        // if ((uInt16Value & ~0x007FUL) == 0)
+        // if ((uint16Value & ~0x007FUL) == 0)
         // {
         //     goto: NotAscii;
         // }
@@ -423,7 +423,7 @@ internal static class ILEmitTrieFactory
         var groups = entries.GroupBy(e => GetUInt16Key(e.text, index));
         foreach (var group in groups)
         {
-            // if (uInt16Value == 'A' || uint16Value == 'a') { ... }
+            // if (uint16Value == 'A' || uint16Value == 'a') { ... }
             var next = il.DefineLabel();
             var inside = il.DefineLabel();
             il.Emit(OpCodes.Ldloc, locals.UInt16Value);
