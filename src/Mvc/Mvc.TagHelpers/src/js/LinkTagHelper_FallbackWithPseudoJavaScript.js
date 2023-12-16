@@ -10,9 +10,9 @@
   * @param {string} cssTestPropertyValue - The value to test the specified CSS property for.
   * @param {string[]} fallbackHrefs - The URLs to the stylesheets to load in the case the test fails.
   * @param {string} extraAttributes - The extra attributes string that should be included on the generated link tags.
-  * @param {string} pseudoElement - A string specifying the pseudo-element to match.
+  * @param {string} pseudoElement - An optional string specifying the CSS pseudo-element to match.
   */
- function loadFallbackStylesheet(cssTestPropertyName, cssTestPropertyValue, fallbackHrefs, extraAttributes) {
+ function loadFallbackStylesheet(cssTestPropertyName, cssTestPropertyValue, fallbackHrefs, extraAttributes, pseudoElement) {
     var doc = document,
         // Find the last script tag on the page which will be this one, as JS executes as it loads
         scriptElements = doc.getElementsByTagName("SCRIPT"),
