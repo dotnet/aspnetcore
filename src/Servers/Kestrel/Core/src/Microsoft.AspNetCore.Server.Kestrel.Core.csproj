@@ -31,6 +31,7 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CancellationTokenSourcePool.cs" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\EnumerableStringValuesDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
   </ItemGroup>
 

@@ -22,6 +22,7 @@
     <Compile Include="$(SharedSourceRoot)Debugger\HttpContextDebugFormatter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\IDictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\EnumerableStringValuesDebugView.cs" LinkBase="Shared" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
     <Compile Include="..\..\..\Shared\Dictionary\AdaptiveCapacityDictionary.cs" LinkBase="Internal" />
   </ItemGroup>

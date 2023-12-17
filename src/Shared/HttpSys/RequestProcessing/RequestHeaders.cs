@@ -12,7 +12,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(RequestHeadersDebugView))]
+[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
 internal sealed partial class RequestHeaders : IHeaderDictionary
 {
     private IDictionary<string, StringValues>? _extra;
@@ -301,13 +301,5 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
             }
         }
         return observedHeadersCount;
-    }
-
-    private sealed class RequestHeadersDebugView(RequestHeaders dictionary)
-    {
-        private readonly RequestHeaders _dictionary = dictionary;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public DictionaryItemDebugView<string, string>[] Items => _dictionary.Select(pair => new DictionaryItemDebugView<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

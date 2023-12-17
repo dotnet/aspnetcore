@@ -16,7 +16,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 [DebuggerDisplay("{DebuggerToString(),nq}")]
-[DebuggerTypeProxy(typeof(HttpHeadersDebugView))]
+[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
     protected long _bits;
@@ -689,13 +689,5 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     private static void ThrowInvalidEmptyHeaderName()
     {
         throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
-    }
-
-    private sealed class HttpHeadersDebugView(HttpHeaders headers)
-    {
-        private readonly HttpHeaders _headers = headers;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public DictionaryItemDebugView<string, string>[] Items => _headers.Select(pair => new DictionaryItemDebugView<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

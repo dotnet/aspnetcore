@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Http;
 /// The HttpRequest query string collection
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(QueryCollectionDebugView))]
+[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
 internal sealed class QueryCollectionInternal : IQueryCollection
 {
     private AdaptiveCapacityDictionary<string, StringValues> Store { get; }
@@ -128,13 +127,5 @@ internal sealed class QueryCollectionInternal : IQueryCollection
                 ((IEnumerator)_dictionaryEnumerator).Reset();
             }
         }
-    }
-
-    private sealed class QueryCollectionDebugView(QueryCollectionInternal collection)
-    {
-        private readonly QueryCollectionInternal _collection = collection;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public DictionaryItemDebugView<string, string>[] Items => _collection.Select(pair => new DictionaryItemDebugView<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }
