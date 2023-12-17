@@ -301,7 +301,7 @@
             <p>@Resources.ErrorPageHtml_NoEndpoint</p>
         }
         <h2>@Resources.ErrorPageHtml_Metadata</h2>
-        @if (Model.Endpoint?.Metadata.Count > 0)
+        @if (Model.Endpoint?.Metadata?.Count > 0)
         {
             <table>
                 <thead>
@@ -314,13 +314,13 @@
                     @foreach (var metadata in Model.Endpoint.Metadata)
                     {
                         <tr>
-                            <td><span title="@metadata.GetType().FullName">@metadata.GetType().Name</span></td>
-                            <td>@HtmlEncodeAndReplaceLineBreaks(metadata.ToString())</td>
+                            <td><span title="@(metadata.GetType().FullName ?? string.Empty)">@metadata.GetType().Name</span></td>
+                            <td>@HtmlEncodeAndReplaceLineBreaks(metadata.ToString() ?? string.Empty)</td>
                         </tr>
 
                         <tr>
-                            <td><span title="@metadata.GetType().FullName">@metadata.GetType().Name</span></td>
-                            <td>@metadata.ToString()</td>
+                            <td><span title="@(metadata.GetType().FullName ?? string.Empty)">@metadata.GetType().Name</span></td>
+                            <td>@(metadata.ToString() ?? string.Empty)</td>
                         </tr>
                     }
                 </tbody>
@@ -352,7 +352,7 @@
             <p>@Resources.ErrorPageHtml_NoRouteValues</p>
         }
     </div>
-   
+
     <script>
         //<!--
         <%$ include: ErrorPage.js %>

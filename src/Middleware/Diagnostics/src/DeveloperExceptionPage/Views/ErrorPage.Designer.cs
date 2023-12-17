@@ -1280,7 +1280,7 @@ WriteAttributeValue("", 11510, exceptionDetailId, 11510, 18, false);
             WriteLiteral("</h2>\r\n");
 #nullable restore
 #line 522 "ErrorPage.cshtml"
-         if (Model.Endpoint?.Metadata.Count > 0)
+         if (Model.Endpoint?.Metadata?.Count > 0)
         {
 
 #line default
@@ -1312,10 +1312,10 @@ WriteAttributeValue("", 11510, exceptionDetailId, 11510, 18, false);
 #line hidden
 #nullable disable
             WriteLiteral("                        <tr>\r\n                            <td><span");
-            BeginWriteAttribute("title", " title=\"", 16836, "\"", 16872, 1);
+            BeginWriteAttribute("title", " title=\"", 16837, "\"", 16891, 1);
 #nullable restore
 #line 535 "ErrorPage.cshtml"
-WriteAttributeValue("", 16844, metadata.GetType().FullName, 16844, 28, false);
+WriteAttributeValue("", 16845, metadata.GetType().FullName ?? string.Empty, 16845, 46, false);
 
 #line default
 #line hidden
@@ -1324,7 +1324,7 @@ WriteAttributeValue("", 16844, metadata.GetType().FullName, 16844, 28, false);
             WriteLiteral(">");
 #nullable restore
 #line 535 "ErrorPage.cshtml"
-                                                                      Write(metadata.GetType().Name);
+                                                                                        Write(metadata.GetType().Name);
 
 #line default
 #line hidden
@@ -1332,17 +1332,17 @@ WriteAttributeValue("", 16844, metadata.GetType().FullName, 16844, 28, false);
             WriteLiteral("</span></td>\r\n                            <td>");
 #nullable restore
 #line 536 "ErrorPage.cshtml"
-                           Write(HtmlEncodeAndReplaceLineBreaks(metadata.ToString()));
+                           Write(HtmlEncodeAndReplaceLineBreaks(metadata.ToString() ?? string.Empty));
 
 #line default
 #line hidden
 #nullable disable
             WriteLiteral("</td>\r\n                        </tr>\r\n");
             WriteLiteral("                        <tr>\r\n                            <td><span");
-            BeginWriteAttribute("title", " title=\"", 17103, "\"", 17139, 1);
+            BeginWriteAttribute("title", " title=\"", 17138, "\"", 17192, 1);
 #nullable restore
 #line 540 "ErrorPage.cshtml"
-WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
+WriteAttributeValue("", 17146, metadata.GetType().FullName ?? string.Empty, 17146, 46, false);
 
 #line default
 #line hidden
@@ -1351,7 +1351,7 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
             WriteLiteral(">");
 #nullable restore
 #line 540 "ErrorPage.cshtml"
-                                                                      Write(metadata.GetType().Name);
+                                                                                        Write(metadata.GetType().Name);
 
 #line default
 #line hidden
@@ -1359,7 +1359,7 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
             WriteLiteral("</span></td>\r\n                            <td>");
 #nullable restore
 #line 541 "ErrorPage.cshtml"
-                           Write(metadata.ToString());
+                            Write(metadata.ToString() ?? string.Empty);
 
 #line default
 #line hidden
@@ -1473,7 +1473,7 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
 #line hidden
 #nullable disable
             WriteLiteral(@"    </div>
-   
+
     <script>
         //<!--
         (function (window, undefined) {
@@ -1509,8 +1509,8 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
             var children = [];
 
             this.each(function (el) {
-                children = children.concat(ns(selector");
-            WriteLiteral(@", el).items);
+                children = children.concat(ns(selector, e");
+            WriteLiteral(@"l).items);
             });
 
             return ns(children);
@@ -1548,8 +1548,8 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
                     el.className = className;
                 } else {
                     classNames = existingClassName.split("" "");
-                    if (classNames.indexOf(clas");
-            WriteLiteral(@"sName) < 0) {
+                    if (classNames.indexOf(classNa");
+            WriteLiteral(@"me) < 0) {
                         el.className = existingClassName + "" "" + className;
                     }
                 }
@@ -1582,8 +1582,8 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
                 return null;
             }
 
-    ");
-            WriteLiteral(@"        return this.items[0].getAttribute(name);
+       ");
+            WriteLiteral(@"     return this.items[0].getAttribute(name);
         },
 
         on: function (eventName, handler) {
@@ -1613,8 +1613,8 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
         },
 
         keypress: function (handler) {
-            return thi");
-            WriteLiteral(@"s.on(""keypress"", handler);
+            return this.o");
+            WriteLiteral(@"n(""keypress"", handler);
         }
     };
 
@@ -1651,8 +1651,8 @@ WriteAttributeValue("", 17111, metadata.GetType().FullName, 17111, 28, false);
             expandCollapseButton(this);
         })
         .keypress(function (e) {
-            if (e.which === ");
-            WriteLiteral(@"13) {
+            if (e.which === 13)");
+            WriteLiteral(@" {
                 expandCollapseButton(this);
             }
         });
