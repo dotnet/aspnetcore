@@ -728,7 +728,6 @@ internal partial class CircuitHost : IAsyncDisposable
     internal Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
-        IServerComponentDeserializer serverComponentDeserializer,
         CancellationToken cancellation)
     {
         Log.UpdateRootComponentsStarted(_logger);
