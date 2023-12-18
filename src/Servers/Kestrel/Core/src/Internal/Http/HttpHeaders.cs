@@ -16,7 +16,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 [DebuggerDisplay("{DebuggerToString(),nq}")]
-[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
     protected long _bits;

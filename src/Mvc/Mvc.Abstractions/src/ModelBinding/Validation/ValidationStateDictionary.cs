@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 /// Used for tracking validation state to customize validation behavior for a model object.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<object, ValidationStateEntry>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<object, ValidationStateEntry>))]
 public class ValidationStateDictionary :
     IDictionary<object, ValidationStateEntry>,
     IReadOnlyDictionary<object, ValidationStateEntry>

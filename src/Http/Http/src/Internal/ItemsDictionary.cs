@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<object, object>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<object, object>))]
 [DebuggerDisplay("Count = {Items.Count}")]
 internal sealed class ItemsDictionary : IDictionary<object, object?>
 {

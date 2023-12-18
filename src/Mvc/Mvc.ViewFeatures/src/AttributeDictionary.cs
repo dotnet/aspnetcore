@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// A dictionary for HTML attributes.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<string, string?>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, string?>))]
 public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictionary<string, string?>
 {
     private List<KeyValuePair<string, string?>>? _items;

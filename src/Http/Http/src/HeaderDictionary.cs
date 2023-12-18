@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Represents a wrapper for RequestHeaders and ResponseHeaders.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString(),nq}")]
-[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 public class HeaderDictionary : IHeaderDictionary
 {
     private static readonly string[] EmptyKeys = Array.Empty<string>();

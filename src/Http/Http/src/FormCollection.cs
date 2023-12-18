@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// Contains the parsed HTTP form values.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 public class FormCollection : IFormCollection
 {
     /// <summary>

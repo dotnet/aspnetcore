@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Shared;
 namespace Microsoft.Extensions.Internal;
 
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<,>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 internal sealed class CopyOnWriteDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
 {
     private readonly IDictionary<TKey, TValue> _sourceDictionary;

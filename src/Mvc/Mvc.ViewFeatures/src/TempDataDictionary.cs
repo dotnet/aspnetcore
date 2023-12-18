@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 /// <inheritdoc />
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<string, object?>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class TempDataDictionary : ITempDataDictionary
 {
     // Perf: Everything here is lazy because the TempDataDictionary is frequently created and passed around

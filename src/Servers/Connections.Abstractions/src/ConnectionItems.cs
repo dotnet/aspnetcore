@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Connections;
 /// The items associated with a given connection.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<object, object?>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<object, object?>))]
 public class ConnectionItems : IDictionary<object, object?>
 {
     /// <summary>

@@ -6,11 +6,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Shared;
 
-internal sealed class EnumerableStringValuesDebugView
+// This type is designed to be a debug proxy for dictionary types.
+// The constructor accepts an enumerable because many of the header collection types implement IHeaderDictionary which doesn't directly implement IDictionary.
+internal sealed class StringValuesDictionaryDebugView
 {
     private readonly IEnumerable<KeyValuePair<string, StringValues>> _enumerable;
 
-    public EnumerableStringValuesDebugView(IEnumerable<KeyValuePair<string, StringValues>> enumerable)
+    public StringValuesDictionaryDebugView(IEnumerable<KeyValuePair<string, StringValues>> enumerable)
     {
         _enumerable = enumerable;
     }

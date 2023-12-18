@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http;
 /// The HttpRequest query string collection
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal sealed class QueryCollectionInternal : IQueryCollection
 {
     private AdaptiveCapacityDictionary<string, StringValues> Store { get; }

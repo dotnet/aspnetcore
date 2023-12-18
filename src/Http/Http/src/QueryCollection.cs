@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// The HttpRequest query string collection
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 public class QueryCollection : IQueryCollection
 {
     /// <summary>

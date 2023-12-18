@@ -6,11 +6,11 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Shared;
 
-internal sealed class IDictionaryDebugView<TKey, TValue> where TKey : notnull
+internal sealed class DictionaryDebugView<TKey, TValue> where TKey : notnull
 {
     private readonly IDictionary<TKey, TValue> _dict;
 
-    public IDictionaryDebugView(IDictionary<TKey, TValue> dictionary)
+    public DictionaryDebugView(IDictionary<TKey, TValue> dictionary)
     {
         _dict = dictionary;
     }

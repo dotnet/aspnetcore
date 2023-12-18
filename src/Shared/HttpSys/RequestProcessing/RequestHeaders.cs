@@ -12,7 +12,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(EnumerableStringValuesDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal sealed partial class RequestHeaders : IHeaderDictionary
 {
     private IDictionary<string, StringValues>? _extra;

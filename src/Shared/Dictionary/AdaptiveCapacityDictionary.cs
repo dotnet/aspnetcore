@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Internal;
 /// An <see cref="IDictionary{String, Object}"/> type to hold a small amount of items (10 or less in the common case).
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<,>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
 {
     // Threshold for size of array to use.

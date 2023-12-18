@@ -20,7 +20,7 @@
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Debugger\IDictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <Import Project="Microsoft.AspNetCore.Components.Routing.targets" />

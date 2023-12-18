@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing;
 /// An <see cref="IDictionary{String, Object}"/> type for route values.
 /// </summary>
 #endif
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<string, object?>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 [DebuggerDisplay("Count = {Count}")]
 #if !COMPONENTS
 public class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDictionary<string, object?>

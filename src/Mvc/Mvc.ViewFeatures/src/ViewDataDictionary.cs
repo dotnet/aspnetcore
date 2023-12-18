@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// A <see cref="IDictionary{TKey, TValue}"/> for view data.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(IDictionaryDebugView<string, object?>))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class ViewDataDictionary : IDictionary<string, object?>
 {
     private readonly IDictionary<string, object?> _data;
