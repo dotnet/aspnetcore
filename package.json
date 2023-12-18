@@ -8,7 +8,10 @@
     "src/SignalR/clients/ts/signalr-protocol-msgpack",
     "src/SignalR/clients/ts/FunctionalTests",
     "src/JSInterop/Microsoft.JSInterop.JS/src",
-    "src/Components/Web.JS/"
+    "src/Components/Web.JS/",
+    "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
+    "src/Components/WebAssembly/Authentication.Msal/src/Interop",
+    "src/ProjectTemplates/test/Templates.Tests"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
