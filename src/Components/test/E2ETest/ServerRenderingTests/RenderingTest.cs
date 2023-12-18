@@ -50,4 +50,11 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
         var response = await new HttpClient().GetAsync(Browser.Url);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
+
+    [Fact]
+    public void RendersEndStateOfComponentsOnSSRPage()
+    {
+        Navigate($"{ServerPathBase}/ssr-page-that-delays-loading");
+        Browser.Equal("loaded child", () => Browser.Exists(By.Id("child")).Text);
+    }
 }
