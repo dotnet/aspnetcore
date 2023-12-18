@@ -159,7 +159,7 @@ internal partial class EndpointHtmlRenderer
             // Full quiescence, i.e., all tasks completed regardless of streaming SSR
             await result.QuiescenceTask;
         }
-        else if (_nonStreamingPendingTasks.Count > 0)
+        else if (_nonStreamingPendingTasks.CurrentCount > 0)
         {
             await WaitForNonStreamingPendingTasks();
         }
@@ -167,13 +167,13 @@ internal partial class EndpointHtmlRenderer
 
     private async Task WaitForNonStreamingPendingTasks()
     {
-        while (_nonStreamingPendingTasks.Count > 0)
+        while (_nonStreamingPendingTasks.CurrentCount > 0)
         {
             // Create a Task that represents the remaining ongoing work for the rendering process
-            var pendingWork = Task.WhenAll(_nonStreamingPendingTasks);
+            var pendingWork = Task.WhenAll(_nonStreamingPendingTasks.CurrentTasks);
 
             // Clear all pending work.
-            _nonStreamingPendingTasks.Clear();
+            _nonStreamingPendingTasks.ClearTasks();
 
             // new work might be added before we check again as a result of waiting for all
             // the child components to finish executing SetParametersAsync
@@ -275,5 +275,26 @@ internal partial class EndpointHtmlRenderer
 
         public Task QuiescenceTask =>
             _htmlToEmitOrNull.HasValue ? _htmlToEmitOrNull.Value.QuiescenceTask : Task.CompletedTask;
+    }
+
+    class NonStreamingPendingTasks
+    {
+        private readonly List<Task> _currentTasks = new List<Task>();
+        private readonly List<Task> _allTasks = new List<Task>();
+
+        public int CurrentCount => _currentTasks.Count;
+        public List<Task> CurrentTasks => new List<Task>(_currentTasks);
+        public List<Task> AllTasks => new List<Task>(_allTasks);
+
+        public void AddTask(Task task)
+        {
+            _currentTasks.Add(task);
+            _allTasks.Add(task);
+        }
+
+        public void ClearTasks()
+        {
+            _currentTasks.Clear();
+        }
     }
 }
