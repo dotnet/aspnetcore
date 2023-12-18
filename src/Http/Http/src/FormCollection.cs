@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using Microsoft.AspNetCore.Shared;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
