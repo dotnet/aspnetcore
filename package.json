@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "src/JSInterop/Microsoft.JSInterop.JS/src",
     "src/SignalR/clients/ts",
     "src/SignalR/clients/ts/signalr",
     "src/SignalR/clients/ts/signalr-protocol-msgpack",
-    "src/SignalR/clients/ts/FunctionalTests"
+    "src/SignalR/clients/ts/FunctionalTests",
+    "src/JSInterop/Microsoft.JSInterop.JS/src",
+    "src/Components/Web.JS/"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
