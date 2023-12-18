@@ -120,6 +120,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     /// <inheritdoc />
     public override void Refresh(bool forceReload = false)
     {
+        if (_jsRuntime == null)
+        {
+            var absoluteUriString = ToAbsoluteUri(Uri).ToString();
+            throw new NavigationException(absoluteUriString);
+        }
+
         _ = RefreshAsync();
 
         async Task RefreshAsync()

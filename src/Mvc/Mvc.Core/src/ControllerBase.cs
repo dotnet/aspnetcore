@@ -1859,13 +1859,34 @@ public abstract class ControllerBase
     /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
     /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
     /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
+    //  8.0 BACKCOMPAT OVERLOAD -- DO NOT TOUCH
+    [NonAction]
+    public virtual ObjectResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type)
+        => Problem(detail, instance, statusCode, title, type, extensions: null);
+
+    /// <summary>
+    /// Creates an <see cref="ObjectResult"/> that produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="ObjectResult"/> for the response.</returns>
     [NonAction]
     public virtual ObjectResult Problem(
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
-        string? type = null)
+        string? type = null,
+        IDictionary<string, object?>? extensions = null)
     {
         ProblemDetails problemDetails;
         if (ProblemDetailsFactory == null)
@@ -1889,6 +1910,14 @@ public abstract class ControllerBase
                 type: type,
                 detail: detail,
                 instance: instance);
+        }
+
+        if (extensions is not null)
+        {
+            foreach (var extension in extensions)
+            {
+                problemDetails.Extensions.Add(extension);
+            }
         }
 
         return new ObjectResult(problemDetails)
@@ -1943,6 +1972,31 @@ public abstract class ControllerBase
     /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.
     /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
     /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
+    // 8.0 BACKCOMPAT OVERLOAD -- DO NOT TOUCH
+    [NonAction]
+    [DefaultStatusCode(StatusCodes.Status400BadRequest)]
+    public virtual ActionResult ValidationProblem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        [ActionResultObjectValue] ModelStateDictionary? modelStateDictionary)
+        => ValidationProblem(detail, instance, statusCode, title, type, modelStateDictionary, extensions: null);
+
+    /// <summary>
+    /// Creates an <see cref="ActionResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+    /// with a <see cref="ValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="modelStateDictionary">The <see cref="ModelStateDictionary"/>.
+    /// When <see langword="null"/> uses <see cref="ModelState"/>.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="ActionResult"/> for the response.</returns>
     [NonAction]
     [DefaultStatusCode(StatusCodes.Status400BadRequest)]
     public virtual ActionResult ValidationProblem(
@@ -1951,7 +2005,8 @@ public abstract class ControllerBase
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        [ActionResultObjectValue] ModelStateDictionary? modelStateDictionary = null)
+        [ActionResultObjectValue] ModelStateDictionary? modelStateDictionary = null,
+        IDictionary<string, object?>? extensions = null)
     {
         modelStateDictionary ??= ModelState;
 
@@ -1970,7 +2025,7 @@ public abstract class ControllerBase
         }
         else
         {
-            validationProblem = ProblemDetailsFactory?.CreateValidationProblemDetails(
+            validationProblem = ProblemDetailsFactory.CreateValidationProblemDetails(
                 HttpContext,
                 modelStateDictionary,
                 statusCode: statusCode,
@@ -1978,6 +2033,14 @@ public abstract class ControllerBase
                 type: type,
                 detail: detail,
                 instance: instance);
+        }
+
+        if (extensions is not null)
+        {
+            foreach (var extension in extensions)
+            {
+                validationProblem.Extensions.Add(extension);
+            }
         }
 
         if (validationProblem is { Status: 400 })

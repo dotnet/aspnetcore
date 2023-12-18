@@ -247,12 +247,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
         // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
         // the endpoint and route values to ensure things are re-calculated.
-        context.SetEndpoint(endpoint: null);
-        var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-        if (routeValuesFeature != null)
-        {
-            routeValuesFeature.RouteValues = null!;
-        }
+        HttpExtensions.ClearEndpoint(context);
     }
 
     private static Task ClearCacheHeaders(object state)

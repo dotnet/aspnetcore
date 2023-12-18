@@ -31,6 +31,8 @@ Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts 
 different bundles that only contain minimal content.
 */
 
+const acceptHeader = 'text/html; blazor-enhanced-nav=on';
+
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
@@ -140,15 +142,28 @@ function onDocumentSubmit(event: SubmitEvent) {
       formData.append(submitterName, submitterValue);
     }
 
+    const urlSearchParams = new URLSearchParams(formData as any).toString();
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
-      url.search = new URLSearchParams(formData as any).toString();
+      url.search = urlSearchParams;
 
       // For forms with method=get, we need to push a URL history entry equivalent to how it
       // would be pushed for a native <form method=get> submission. This is also equivalent to
       // how we push a URL history entry before starting enhanced page load on an <a> click.
       history.pushState(null, /* ignored title */ '', url.toString());
     } else {
-      fetchOptions.body = formData;
+      // Setting request body and content-type header depending on enctype
+      const enctype = event.submitter?.getAttribute('formenctype') || formElem.enctype;
+      if (enctype === 'multipart/form-data') { 
+        // Content-Type header will be set to 'multipart/form-data' 
+        fetchOptions.body = formData;
+      } else {
+        fetchOptions.body = urlSearchParams;
+        fetchOptions.headers = {
+          'content-type': enctype,
+          // Setting Accept header here as well so it wouldn't be lost when coping headers
+          'accept': acceptHeader
+        };
+      }
     }
 
     performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
@@ -174,7 +189,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     headers: {
       // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
       // enhanced nav as a MIME type parameter
-      'accept': 'text/html; blazor-enhanced-nav=on',
+      'accept': acceptHeader,
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
@@ -224,7 +239,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
           history.replaceState(null, '', response.url);
         } else {
           // For non-gets, we're still on the source page, so need to append a whole new history entry
-          history.pushState(null, '', response.url);
+          if (response.url !== location.href) {
+            history.pushState(null, '', response.url);
+          }
         }
         internalDestinationHref = response.url;
       }

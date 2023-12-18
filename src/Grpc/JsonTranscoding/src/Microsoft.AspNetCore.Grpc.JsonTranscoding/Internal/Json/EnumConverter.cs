@@ -26,7 +26,13 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
                 {
                     throw new InvalidOperationException($"Unable to resolve descriptor for {typeToConvert}.");
                 }
-                var valueDescriptor = enumDescriptor.FindValueByName(reader.GetString()!);
+
+                var value = reader.GetString()!;
+                var valueDescriptor = enumDescriptor.FindValueByName(value);
+                if (valueDescriptor == null)
+                {
+                    throw new InvalidOperationException(@$"Error converting value ""{value}"" to enum type {typeToConvert}.");
+                }
 
                 return ConvertFromInteger(valueDescriptor.Number);
             case JsonTokenType.Number:

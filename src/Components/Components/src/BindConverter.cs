@@ -1810,13 +1810,13 @@ public static class BindConverter
                 }
 
                 var builder = new StringBuilder("[\"");
-                builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty));
+                builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty).Value);
                 builder.Append('\"');
 
                 for (var i = 1; i < value.Length; i++)
                 {
                     builder.Append(", \"");
-                    builder.Append(JsonEncodedText.Encode(elementFormatter(value[i], culture)?.ToString() ?? string.Empty));
+                    builder.Append(JsonEncodedText.Encode(elementFormatter(value[i], culture)?.ToString() ?? string.Empty).Value);
                     builder.Append('\"');
                 }
 
