@@ -57,4 +57,14 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
         Navigate($"{ServerPathBase}/ssr-page-that-delays-loading");
         Browser.Equal("loaded child", () => Browser.Exists(By.Id("child")).Text);
     }
+
+    [Fact]
+    public void PostRequestRendersEndStateOfComponentsOnSSRPage()
+    {
+        Navigate($"{ServerPathBase}/forms/post-form-with-component-that-delays-loading");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("loaded child", () => Browser.Exists(By.Id("child")).Text);
+    }
 }

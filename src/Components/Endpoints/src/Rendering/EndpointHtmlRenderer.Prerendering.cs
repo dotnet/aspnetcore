@@ -165,7 +165,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private async Task WaitForNonStreamingPendingTasks()
+    public async Task WaitForNonStreamingPendingTasks()
     {
         while (_nonStreamingPendingTasks.CurrentCount > 0)
         {
