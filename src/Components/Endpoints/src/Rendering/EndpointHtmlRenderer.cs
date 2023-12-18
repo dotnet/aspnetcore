@@ -124,6 +124,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         if (!streamRendering)
         {
             _nonStreamingPendingTasks.Add(task);
+            // For tests only
+            AllNonStreamingPendingTasks.Add(task);
         }
 
         // We still need to determine full quiescence, so always let the base renderer track this task too
@@ -131,7 +133,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     // For tests only
-    internal List<Task> NonStreamingPendingTasks => _nonStreamingPendingTasks;
+    internal List<Task> AllNonStreamingPendingTasks = new List<Task>();
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {

@@ -336,7 +336,7 @@ public class RazorComponentResultTest
     {
         // Arrange
         var testContext = PrepareVaryStreamingScenariosTests();
-        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+        var initialOutputTask = Task.WhenAll(testContext.Renderer.AllNonStreamingPendingTasks);
 
         // Act/Assert: Even if all other blocking tasks complete, we don't produce output until the top-level
         // nonstreaming component completes
@@ -368,7 +368,7 @@ public class RazorComponentResultTest
     {
         // Arrange
         var testContext = PrepareVaryStreamingScenariosTests();
-        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+        var initialOutputTask = Task.WhenAll(testContext.Renderer.AllNonStreamingPendingTasks);
 
         // Act/Assert: Even if all other nonblocking tasks complete, we don't produce output until
         // the component in the nonstreaming subtree is quiescent

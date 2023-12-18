@@ -107,7 +107,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                     return;
                 }
 
-                await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+                await Task.WhenAll(_renderer.AllNonStreamingPendingTasks);
             }
             catch (NavigationException ex)
             {
