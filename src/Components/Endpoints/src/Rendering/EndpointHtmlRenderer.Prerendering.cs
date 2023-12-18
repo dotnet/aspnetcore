@@ -276,25 +276,4 @@ internal partial class EndpointHtmlRenderer
         public Task QuiescenceTask =>
             _htmlToEmitOrNull.HasValue ? _htmlToEmitOrNull.Value.QuiescenceTask : Task.CompletedTask;
     }
-
-    class NonStreamingPendingTasks
-    {
-        private readonly List<Task> _currentTasks = new List<Task>();
-        private readonly List<Task> _allTasks = new List<Task>();
-
-        public int CurrentCount => _currentTasks.Count;
-        public List<Task> CurrentTasks => new List<Task>(_currentTasks);
-        public List<Task> AllTasks => new List<Task>(_allTasks);
-
-        public void AddTask(Task task)
-        {
-            _currentTasks.Add(task);
-            _allTasks.Add(task);
-        }
-
-        public void ClearTasks()
-        {
-            _currentTasks.Clear();
-        }
-    }
 }
