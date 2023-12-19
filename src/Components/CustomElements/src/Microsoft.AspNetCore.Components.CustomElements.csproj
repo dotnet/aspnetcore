@@ -18,7 +18,7 @@
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
-  <Target Name="IncludeCompileJsOutput" BeforeTargets="_ResolveJsModuleInputs" DependsOnTargets="CompileJs">
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="_ResolveJsModuleInputs">
     <ItemGroup>
       <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
     </ItemGroup>
