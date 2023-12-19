@@ -99,7 +99,7 @@ function waitForMatches(command: string, process: ChildProcess, regex: RegExp, m
     });
 }
 
-let configuration = "Debug";
+let configuration = process.env['npm_config_configuration'] || "Debug";
 let spec: string;
 let sauce = false;
 let allBrowsers = false;
