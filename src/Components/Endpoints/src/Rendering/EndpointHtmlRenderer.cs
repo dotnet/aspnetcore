@@ -46,7 +46,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
     // the subset of those that are from the non-streaming subtrees, since we want the response to
     // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
-    private readonly NonStreamingPendingTasks _nonStreamingPendingTasks = new();
+    private readonly List<Task> _nonStreamingPendingTasks = new();
 
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
@@ -123,7 +123,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (!streamRendering)
         {
-            _nonStreamingPendingTasks.AddTask(task);
+            _nonStreamingPendingTasks.Add(task);
         }
 
         // We still need to determine full quiescence, so always let the base renderer track this task too
@@ -131,7 +131,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     // For tests only
-    internal List<Task> AllNonStreamingPendingTasks => _nonStreamingPendingTasks.AllTasks;
+    internal Task? NonStreamingPendingTasksCompletion;
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
@@ -228,27 +228,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _form.GetEnumerator();
-        }
-    }
-
-    private sealed class NonStreamingPendingTasks
-    {
-        private readonly List<Task> _currentTasks = new List<Task>();
-        private readonly List<Task> _allTasks = new List<Task>();
-
-        public int CurrentCount => _currentTasks.Count;
-        public List<Task> CurrentTasks => new List<Task>(_currentTasks);
-        public List<Task> AllTasks => new List<Task>(_allTasks);
-
-        public void AddTask(Task task)
-        {
-            _currentTasks.Add(task);
-            _allTasks.Add(task);
-        }
-
-        public void ClearTasks()
-        {
-            _currentTasks.Clear();
         }
     }
 }

@@ -159,25 +159,30 @@ internal partial class EndpointHtmlRenderer
             // Full quiescence, i.e., all tasks completed regardless of streaming SSR
             await result.QuiescenceTask;
         }
-        else if (_nonStreamingPendingTasks.CurrentCount > 0)
+        else if (_nonStreamingPendingTasks.Count > 0)
         {
             await WaitForNonStreamingPendingTasks();
         }
     }
 
-    public async Task WaitForNonStreamingPendingTasks()
+    public Task WaitForNonStreamingPendingTasks()
     {
-        while (_nonStreamingPendingTasks.CurrentCount > 0)
+        return NonStreamingPendingTasksCompletion ??= Execute();
+
+        async Task Execute()
         {
-            // Create a Task that represents the remaining ongoing work for the rendering process
-            var pendingWork = Task.WhenAll(_nonStreamingPendingTasks.CurrentTasks);
+            while (_nonStreamingPendingTasks.Count > 0)
+            {
+                // Create a Task that represents the remaining ongoing work for the rendering process
+                var pendingWork = Task.WhenAll(_nonStreamingPendingTasks);
 
-            // Clear all pending work.
-            _nonStreamingPendingTasks.ClearTasks();
+                // Clear all pending work.
+                _nonStreamingPendingTasks.Clear();
 
-            // new work might be added before we check again as a result of waiting for all
-            // the child components to finish executing SetParametersAsync
-            await pendingWork;
+                // new work might be added before we check again as a result of waiting for all
+                // the child components to finish executing SetParametersAsync
+                await pendingWork;
+            }
         }
     }
 
