@@ -8,6 +8,7 @@
     "src/SignalR/clients/ts/FunctionalTests",
     "src/SignalR/clients/ts",
     "src/JSInterop/Microsoft.JSInterop.JS/src",
+    "src/Components/Web.JS/@types/dotnet",
     "src/Components/Web.JS/",
     "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
     "src/Components/WebAssembly/Authentication.Msal/src/Interop",
