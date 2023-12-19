@@ -19,9 +19,6 @@ public class AreaAttribute : RouteValueAttribute
     public AreaAttribute(string areaName)
         : base("area", areaName)
     {
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
     }
 }

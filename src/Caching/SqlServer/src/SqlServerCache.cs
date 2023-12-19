@@ -35,21 +35,10 @@ public class SqlServerCache : IDistributedCache
     {
         var cacheOptions = options.Value;
 
-        if (string.IsNullOrEmpty(cacheOptions.ConnectionString))
-        {
-            throw new ArgumentException(
-                $"{nameof(SqlServerCacheOptions.ConnectionString)} cannot be empty or null.");
-        }
-        if (string.IsNullOrEmpty(cacheOptions.SchemaName))
-        {
-            throw new ArgumentException(
-                $"{nameof(SqlServerCacheOptions.SchemaName)} cannot be empty or null.");
-        }
-        if (string.IsNullOrEmpty(cacheOptions.TableName))
-        {
-            throw new ArgumentException(
-                $"{nameof(SqlServerCacheOptions.TableName)} cannot be empty or null.");
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.ConnectionString);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.SchemaName);
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.TableName);
+
         if (cacheOptions.ExpiredItemsDeletionInterval.HasValue &&
             cacheOptions.ExpiredItemsDeletionInterval.Value < MinimumExpiredItemsDeletionInterval)
         {

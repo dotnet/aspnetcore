@@ -97,10 +97,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
             throw new ArgumentOutOfRangeException(nameof(MaxAge), MaxAge.Value, "The value must not be a negative TimeSpan.");
         }
 
-        if (string.IsNullOrEmpty(ClientId))
-        {
-            throw new ArgumentException("Options.ClientId must be provided", nameof(ClientId));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(ClientId);
 
         if (!CallbackPath.HasValue)
         {

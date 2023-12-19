@@ -29,10 +29,7 @@ public sealed class ProvideApplicationPartFactoryAttribute : Attribute
     /// <param name="factoryTypeName">The assembly qualified type name.</param>
     public ProvideApplicationPartFactoryAttribute(string factoryTypeName)
     {
-        if (string.IsNullOrEmpty(factoryTypeName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(factoryTypeName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(factoryTypeName);
 
         _applicationPartFactoryTypeName = factoryTypeName;
     }

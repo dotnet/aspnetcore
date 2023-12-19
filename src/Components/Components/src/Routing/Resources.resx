@@ -159,9 +159,6 @@
   <data name="ArgumentMustBeGreaterThanOrEqualTo" xml:space="preserve">
     <value>Value must be greater than or equal to {0}.</value>
   </data>
-  <data name="Argument_NullOrEmpty" xml:space="preserve">
-    <value>Value cannot be null or empty.</value>
-  </data>
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
   </data>

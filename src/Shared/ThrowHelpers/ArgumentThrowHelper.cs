@@ -38,4 +38,24 @@ internal static partial class ArgumentThrowHelper
     internal static void Throw(string? paramName) =>
         throw new ArgumentException("The value cannot be an empty string.", paramName);
 #endif
+
+    /// <summary>Throws an <see cref="ArgumentNullException"/> if <paramref name="argument"/> is null or an <see cref="ArgumentException"/> if it is empty or whitespace.</summary>
+    /// <param name="argument">The reference type argument to validate as neither null nor empty nor whitespace.</param>
+    /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
+    public static void ThrowIfNullOrWhiteSpace(
+#if INTERNAL_NULLABLE_ATTRIBUTES || NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+        [NotNull]
+#endif
+        string? argument, [CallerArgumentExpression("argument")] string? paramName = null)
+    {
+#if !NET7_0_OR_GREATER || NETSTANDARD || NETFRAMEWORK
+        if (string.IsNullOrWhiteSpace(argument))
+        {
+            ArgumentNullThrowHelper.ThrowIfNull(argument);
+            throw new ArgumentException("The value cannot be an empty or whitespace string.", paramName);
+        }
+#else
+        ArgumentException.ThrowIfNullOrEmpty(argument, paramName);
+#endif
+    }
 }

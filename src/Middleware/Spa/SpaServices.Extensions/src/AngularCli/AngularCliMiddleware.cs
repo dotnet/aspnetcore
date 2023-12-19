@@ -27,15 +27,8 @@ internal static class AngularCliMiddleware
         var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
         var sourcePath = spaBuilder.Options.SourcePath;
         var devServerPort = spaBuilder.Options.DevServerPort;
-        if (string.IsNullOrEmpty(sourcePath))
-        {
-            throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
-        }
-
-        if (string.IsNullOrEmpty(scriptName))
-        {
-            throw new ArgumentException("Cannot be null or empty", nameof(scriptName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(sourcePath);
+        ArgumentException.ThrowIfNullOrEmpty(scriptName);
 
         // Start Angular CLI and attach to middleware pipeline
         var appBuilder = spaBuilder.ApplicationBuilder;

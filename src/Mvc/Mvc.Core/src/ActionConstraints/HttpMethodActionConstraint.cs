@@ -36,10 +36,7 @@ public class HttpMethodActionConstraint : IActionConstraint
 
         foreach (var method in httpMethods)
         {
-            if (string.IsNullOrEmpty(method))
-            {
-                throw new ArgumentException("httpMethod cannot be null or empty");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(method);
 
             methods.Add(method);
         }

@@ -49,11 +49,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
     public RedirectResult([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent, bool preserveMethod)
     {
         ArgumentNullException.ThrowIfNull(url);
-
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         Permanent = permanent;
         PreserveMethod = preserveMethod;
@@ -79,10 +75,7 @@ public class RedirectResult : ActionResult, IKeepTempDataResult
         [MemberNotNull(nameof(_url))]
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
 
             _url = value;
         }
