@@ -23,10 +23,8 @@
   "symbols/iisHttpsPort/description": "Número da porta a ser usada para o ponto de extremidade HTTPS do IIS Express em launchSettings.json. Essa opção só é aplicável quando o parâmetro no-https não é usado (no-https será ignorado se IndividualB2C ou OrganizationalAuth for usado).",
   "symbols/NoHttps/description": "Se o HTTPS deve ser desativado. Essa opção só se aplica se IndividualB2C, SingleOrg ou MultiOrg não forem usados para --auth.",
   "symbols/UseLocalDB/description": "Se deve usar LocalDB em vez de SQLite. Esta opção só se aplica se --auth Individual ou --auth IndividualB2C for especificado.",
-  "symbols/UseMinimalAPIs/description": "Se deve usar APIs mínimas em vez de controladores.",
-  "symbols/UseControllers/description": "Se os controles devem ser usados em vez das APIs mínimas. Esta opção substitui o valor especificado por --minimal.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/CalledApiUrl/description": "URL da API para chamar do aplicativo Web. Essa opção se aplica somente se --auth SingleOrg ou --auth IndividualB2C for especificado.",
   "symbols/CallsMicrosoftGraph/description": "Especifica se o aplicativo Web chama o Microsoft Graph. Esta opção só se aplica se --auth SingleOrg for especificado.",
@@ -34,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "Desabilitar suporte a OpenAPI (Swagger)",
   "symbols/UseProgramMain/displayName": "Não use ins_truções de nível superior",
   "symbols/UseProgramMain/description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior.",
+  "symbols/UseMinimalAPIs/description": "Se deve usar APIs mínimas em vez de controladores.",
+  "symbols/UseControllers/description": "Se os controles devem ser usados em vez das APIs mínimas. Esta opção substitui o valor especificado por --minimal.",
   "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
   "postActions/restore/manualInstructions/default/text": "Executar 'dotnet restore'"
 }
