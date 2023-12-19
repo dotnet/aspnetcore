@@ -3,7 +3,7 @@
   "name": "Blazor Web App",
   "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net8.0/description": "Target net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/UserSecretsId/description": "The ID to use for secrets (use with Individual auth).",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",

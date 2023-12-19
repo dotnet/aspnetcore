@@ -23,10 +23,8 @@
   "symbols/iisHttpsPort/description": "Номер порта, используемый для конечной точки HTTPS IIS Express в launchSettings.json. Этот параметр применим только в том случае, если no-https не используется (при использовании IndividualB2C или OrganizationalAuth no-https игнорируется).",
   "symbols/NoHttps/description": "Следует ли отключить HTTPS. Этот параметр применяется, только если для --auth не используются IndividualB2C, SingleOrg или MultiOrg.",
   "symbols/UseLocalDB/description": "Следует ли использовать LocalDB вместо SQLite. Этот параметр применяется, только если указывается --auth Individual или --auth IndividualB2C.",
-  "symbols/UseMinimalAPIs/description": "Следует ли использовать минимальные API вместо контроллеров.",
-  "symbols/UseControllers/description": "Следует ли использовать контроллеры вместо минимальных API? Этот параметр превышает значение, заданное минимальным параметром --minimal.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net8.0/description": "Целевая net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/CalledApiUrl/description": "URL-адрес API для вызова из веб-приложения. Этот параметр применяется, только если указывается --auth SingleOrg или --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Указывает, вызывает ли веб-приложение Microsoft Graph. Этот параметр применяется, только если указывается --auth SingleOrg.",
@@ -34,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "Отключение поддержки OpenAPI (Swagger)",
   "symbols/UseProgramMain/displayName": "Не использовать _операторы верхнего уровня",
   "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
+  "symbols/UseMinimalAPIs/description": "Следует ли использовать минимальные API вместо контроллеров.",
+  "symbols/UseControllers/description": "Следует ли использовать контроллеры вместо минимальных API? Этот параметр превышает значение, заданное минимальным параметром --minimal.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
 }
