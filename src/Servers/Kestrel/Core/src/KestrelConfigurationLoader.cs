@@ -371,13 +371,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 // Now that defaults have been loaded, we can compare to the currently bound endpoints to see if the config changed.
                 // There's no reason to rerun an EndpointConfigurations callback if nothing changed.
-                var matchingBoundEndpoints = endpointsToStop.Where(o => o.EndpointConfig == endpoint).ToList();
 
-                if (matchingBoundEndpoints.Count > 0)
+                // JIT-91855: Reload everything regardless of whether the configuration changed.
+                // When restoring the app from background, the http server needs to be rebound as the bind port
+                // is shut down on iOS. To accomplish this, we touch the configuration file to signal Kestrel
+                // to reconsider endpoint configuration. By removing the check below (effected by the alwaysReloadEndpoints
+                // boolean), we skip having to change the Kestrel port to something bogus and then back to the correct one.
+                bool alwaysReloadEndpoints = true;
+                if (!alwaysReloadEndpoints)
                 {
-                    endpointsToStop.RemoveAll(o => o.EndpointConfig == endpoint);
-                    Options.ConfigurationBackedListenOptions.AddRange(matchingBoundEndpoints);
-                    continue;
+                    var matchingBoundEndpoints = endpointsToStop.Where(o => o.EndpointConfig == endpoint).ToList();
+
+                    if (matchingBoundEndpoints.Count > 0)
+                    {
+                        endpointsToStop.RemoveAll(o => o.EndpointConfig == endpoint);
+                        Options.ConfigurationBackedListenOptions.AddRange(matchingBoundEndpoints);
+                        continue;
+                    }
                 }
 
                 if (EndpointConfigurations.TryGetValue(endpoint.Name, out var configureEndpoint))
