@@ -19,6 +19,8 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ObjectDisposedThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CodeAnalysis\DynamicallyAccessedMembersAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CodeAnalysis\DynamicallyAccessedMemberTypes.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
