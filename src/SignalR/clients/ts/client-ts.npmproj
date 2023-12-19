@@ -13,10 +13,5 @@
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="signalr\signalr.npmproj" />
-    <ProjectReference Include="signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
-  </ItemGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>

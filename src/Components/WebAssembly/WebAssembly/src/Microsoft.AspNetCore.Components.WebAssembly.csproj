@@ -21,13 +21,6 @@
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
-
-    <ProjectReference Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,7 +52,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
     <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSFile>
     <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
   </PropertyGroup>
@@ -69,7 +61,6 @@
     <Content Include="targets\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 
-  <!-- blazor.webassembly.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. -->
   <Target Name="_CheckBlazorServerJSPath" BeforeTargets="GenerateNuspec" DependsOnTargets="ResolveProjectReferences" Condition=" '$(IsPackable)' == 'true' ">
     <Error Text="'$(BlazorWebAssemblyJSFile)' does not exist. Enable NodeJS to pack this project." Condition=" !EXISTS('$(BlazorWebAssemblyJSFile)') " />
   </Target>

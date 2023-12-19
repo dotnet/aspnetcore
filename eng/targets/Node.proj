@@ -1,0 +1,23 @@
+<Project>
+
+  <Target Name="Restore">
+    <Message Text="Restoring NPM packages..." Importance="high" />
+    <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Build">
+    <Message Text="Building NPM packages..." Importance="high" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Test">
+    <Message Text="Testing NPM packages..." Importance="high" />
+    <Exec Command="npm run test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Pack">
+    <Message Text="Packing NPM packages..." Importance="high" />
+    <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+</Project>

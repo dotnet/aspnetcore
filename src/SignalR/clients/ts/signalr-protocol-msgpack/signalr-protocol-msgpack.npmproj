@@ -8,10 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\signalr\signalr.npmproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BuildOutputFiles Include="dist\browser\signalr-protocol-msgpack.js" />
   </ItemGroup>
 

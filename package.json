@@ -11,6 +11,7 @@
     "src/Components/Web.JS/",
     "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
     "src/Components/WebAssembly/Authentication.Msal/src/Interop",
+    "src/Components/CustomElements/src/js",
     "src/ProjectTemplates/test/Templates.Tests"
   ],
   "scripts": {

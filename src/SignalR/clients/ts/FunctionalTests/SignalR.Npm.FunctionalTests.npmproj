@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="SignalR.Client.FunctionalTestApp.csproj" />
-    <ProjectReference Include="..\client-ts.npmproj" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

@@ -125,9 +125,7 @@
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
-                          $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
-                          $(RepoRoot)src\SignalR\**\*.npmproj;
-                          $(RepoRoot)src\JSInterop\**\*.npmproj;
+                          $(RepoRoot)eng\targets\Node.proj;
                           "
                         AdditionalProperties="BuildInParallel=false"
                         BuildInParallel="false"
@@ -253,4 +251,7 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
+
+  <Import Project="./Build.targets" />
+
 </Project>
