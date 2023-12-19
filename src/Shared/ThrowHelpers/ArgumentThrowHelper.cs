@@ -48,14 +48,23 @@ internal static partial class ArgumentThrowHelper
 #endif
         string? argument, [CallerArgumentExpression("argument")] string? paramName = null)
     {
+        ArgumentNullThrowHelper.ThrowIfNull(argument);
+
 #if !NET8_0_OR_GREATER || NETSTANDARD || NETFRAMEWORK
         if (string.IsNullOrWhiteSpace(argument))
         {
-            ArgumentNullThrowHelper.ThrowIfNull(argument);
-            throw new ArgumentException("The value cannot be an empty or whitespace string.", paramName);
+            ThrowNullOrWhiteSpaceException(paramName);
         }
 #else
         ArgumentException.ThrowIfNullOrWhiteSpace(argument, paramName);
 #endif
     }
+
+#if !NET8_0_OR_GREATER || NETSTANDARD || NETFRAMEWORK
+#if INTERNAL_NULLABLE_ATTRIBUTES || NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
+    [DoesNotReturn]
+#endif
+    internal static void ThrowNullOrWhiteSpaceException(string? paramName) =>
+        throw new ArgumentException("The value cannot be an empty or whitespace string.", paramName);
+#endif
 }
