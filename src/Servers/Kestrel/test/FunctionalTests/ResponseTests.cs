@@ -592,9 +592,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/50403")]
         public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
         {
             const int chunkSize = 1024;
