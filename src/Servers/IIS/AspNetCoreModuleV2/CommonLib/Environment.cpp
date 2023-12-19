@@ -231,7 +231,7 @@ bool Environment::CheckUpToDate(const std::wstring& source, const std::filesyste
             auto sourceInnerDirectory = std::filesystem::directory_entry(path);
             if (sourceInnerDirectory.path() != directoryToIgnore)
             {
-                CheckUpToDate(path.path(), destination / path.path().filename(), extension, directoryToIgnore);
+                CheckUpToDate(/* source */ path.path(), /* destination */ destination / path.path().filename(), extension, directoryToIgnore);
             }
         }
     }
