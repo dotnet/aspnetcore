@@ -1,5 +1,8 @@
 <Project>
 
+  <!-- Import Directory.Build.Props -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+
   <Target Name="Restore">
     <Message Text="Restoring NPM packages..." Importance="high" />
     <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
@@ -17,7 +20,11 @@
 
   <Target Name="Pack">
     <Message Text="Packing NPM packages..." Importance="high" />
-    <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts\pack-workspace.js $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath)" />
   </Target>
+
+  <!-- Import Directory.Build.Props -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.targets" />
 
 </Project>

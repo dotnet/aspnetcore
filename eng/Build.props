@@ -125,7 +125,7 @@
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
-                          $(RepoRoot)eng\targets\Node.proj;
+                          $(RepoRoot)eng\Npm.Workspace.proj;
                           "
                         AdditionalProperties="BuildInParallel=false"
                         BuildInParallel="false"
@@ -135,12 +135,6 @@
         <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
-        <YarnMSBuildProjects Include="
-                          $(RepoRoot)src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj;
-                          $(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj;
-                          $(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj;
-                          "
-                        Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(DotNetBuildFromSource)' == 'true'" Include="@(YarnMSBuildProjects)" />
 
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
