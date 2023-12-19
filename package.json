@@ -18,5 +18,10 @@
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present"
+  },
+  "overrides": {
+    "got": "^11.8.2",
+    "http-cache-semantics": "^4.1.1",
+    "semver-regex": "^3.1.3"
   }
 }
