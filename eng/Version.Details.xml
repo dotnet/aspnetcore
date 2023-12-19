@@ -328,9 +328,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4dffd80c4d77c27e772a0be26e8036af77fbb26e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.23615.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.23618.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>6d4a3674dd97b2be18b3ded0d52ea18d04fde4cc</Sha>
+      <Sha>0c3c5878cd2f204a4335755f753eda78ecab536b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.23615.3">
