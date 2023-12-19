@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "src/SignalR/clients/ts",
     "src/SignalR/clients/ts/signalr",
     "src/SignalR/clients/ts/signalr-protocol-msgpack",
     "src/SignalR/clients/ts/FunctionalTests",
+    "src/SignalR/clients/ts",
     "src/JSInterop/Microsoft.JSInterop.JS/src",
     "src/Components/Web.JS/",
     "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",

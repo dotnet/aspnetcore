@@ -3,11 +3,6 @@
   "version": "1.0.0",
   "description": "Common dependencies used during dev time. DO NOT PUBLISH",
   "private": true,
-  "workspaces": [
-    "signalr",
-    "signalr-protocol-msgpack",
-    "FunctionalTests"
-  ],
   "scripts": {
     "lint-signalr": "eslint -c ./signalr/tests/.eslintrc.js --ext .ts ./signalr/tests ",
     "lint-signalr-msgpack": "eslint -c ./signalr-protocol-msgpack/tests/.eslintrc.js --ext .ts ./signalr-protocol-msgpack/tests ",
