@@ -21,7 +21,10 @@ public class ResponseCachingFeature : IResponseCachingFeature
             {
                 for (var i = 0; i < value.Length; i++)
                 {
-                    ArgumentException.ThrowIfNullOrEmpty(value[i]);
+                    if (string.IsNullOrEmpty(value[i]))
+                    {
+                        throw new ArgumentException($"When {nameof(value)} contains more than one value, it cannot contain a null or empty value.", nameof(value));
+                    }
                 }
             }
             _varyByQueryKeys = value;

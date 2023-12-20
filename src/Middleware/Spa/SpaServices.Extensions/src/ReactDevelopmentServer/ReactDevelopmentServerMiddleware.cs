@@ -27,7 +27,10 @@ internal static class ReactDevelopmentServerMiddleware
         var pkgManagerCommand = spaBuilder.Options.PackageManagerCommand;
         var sourcePath = spaBuilder.Options.SourcePath;
         var devServerPort = spaBuilder.Options.DevServerPort;
-        ArgumentException.ThrowIfNullOrEmpty(sourcePath);
+        if (string.IsNullOrEmpty(sourcePath))
+        {
+            throw new ArgumentException("Property 'SourcePath' cannot be null or empty", nameof(spaBuilder));
+        }
         ArgumentException.ThrowIfNullOrEmpty(scriptName);
 
         // Start create-react-app and attach to middleware pipeline

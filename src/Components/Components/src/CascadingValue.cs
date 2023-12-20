@@ -76,7 +76,10 @@ public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
             else if (parameter.Name.Equals(nameof(Name), StringComparison.OrdinalIgnoreCase))
             {
                 Name = (string)parameter.Value;
-                ArgumentException.ThrowIfNullOrEmpty(Name);
+                if (string.IsNullOrEmpty(Name))
+                {
+                    throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<TValue>)}' does not allow null or empty values.");
+                }
             }
             else if (parameter.Name.Equals(nameof(IsFixed), StringComparison.OrdinalIgnoreCase))
             {
