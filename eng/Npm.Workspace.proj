@@ -24,7 +24,7 @@
     <Exec Command="node $(MSBuildThisFileDirectory)scripts\pack-workspace.js $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath)" />
   </Target>
 
-  <!-- Import Directory.Build.Props -->
+  <!-- Import Directory.Build.targets -->
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.targets" />
 
 </Project>

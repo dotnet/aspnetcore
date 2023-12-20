@@ -244,6 +244,4 @@
     </Otherwise>
   </Choose>
 
-  <Import Project="./Build.targets" />
-
 </Project>

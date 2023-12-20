@@ -1,6 +1,0 @@
-<Project>
-  <Target Name="NpmRestore" AfterTargets="Restore">
-    <Message Text="Restoring NPM packages..." Importance="high" />
-    <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
-  </Target>
-</Project>
