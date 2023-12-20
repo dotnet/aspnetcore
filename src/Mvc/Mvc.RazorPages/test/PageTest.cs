@@ -270,7 +270,7 @@ public class PageTest
         // Act & Assert
         ExceptionAssert.ThrowsArgument(
             () => page.RedirectPermanent(url: url),
-            "localUrl",
+            "url",
             expectedMessage);
     }
 
@@ -285,7 +285,7 @@ public class PageTest
         // Act & Assert
         ExceptionAssert.ThrowsArgument(
             () => page.RedirectPermanentPreserveMethod(url: url),
-            "localUrl",
+            "url",
             expectedMessage);
     }
 
