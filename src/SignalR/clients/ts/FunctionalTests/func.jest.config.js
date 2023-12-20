@@ -8,7 +8,7 @@ module.exports = {
     ],
     reporters: [
         "default",
-        ["jest-junit", { "outputDirectory": "../../../../artifacts/log/", "outputName": `${process.platform}` + ".signalr.junit.xml" }]
+        ["jest-junit", { "outputDirectory": "../../../../../artifacts/log/", "outputName": `${process.platform}` + ".node.functional.junit.xml" }]
     ],
     testEnvironment: "node",
     testRegex: "(Tests)\\.(jsx?|tsx?)$",
