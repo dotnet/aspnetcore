@@ -39,7 +39,7 @@
     "src/**/*"
   ],
   "dependencies": {
-    "@microsoft/signalr": "^5.0.0-dev",
+    "@microsoft/signalr": "*",
     "@msgpack/msgpack": "^2.7.0"
   },
   "overrides": {
