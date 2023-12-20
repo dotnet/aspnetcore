@@ -123,11 +123,6 @@ function InitializeDotNetCli {
   # so it doesn't output warnings to the console.
   export LTTNG_HOME="$HOME"
 
-  # Source Build uses DotNetCoreSdkDir variable
-  if [[ -n "${DotNetCoreSdkDir:-}" ]]; then
-    export DOTNET_INSTALL_DIR="$DotNetCoreSdkDir"
-  fi
-
   # Find the first path on $PATH that contains the dotnet.exe
   if [[ "$use_installed_dotnet_cli" == true && $global_json_has_runtimes == false && -z "${DOTNET_INSTALL_DIR:-}" ]]; then
     local dotnet_path=`command -v dotnet`
@@ -343,7 +338,7 @@ function InitializeBuildTool {
   _InitializeBuildToolCommand="msbuild"
   # use override if it exists - commonly set by source-build
   if [[ "${_OverrideArcadeInitializeBuildToolFramework:-x}" == "x" ]]; then
-    _InitializeBuildToolFramework="net8.0"
+    _InitializeBuildToolFramework="net9.0"
   else
     _InitializeBuildToolFramework="${_OverrideArcadeInitializeBuildToolFramework}"
   fi
@@ -458,12 +453,10 @@ function MSBuild {
     local possiblePaths=()
     possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll" )
-    possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
-    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
     possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.ArcadeLogging.dll" )
     possiblePaths+=( "$toolset_dir/net7.0/Microsoft.DotNet.Arcade.Sdk.dll" )
+    possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.ArcadeLogging.dll" )
+    possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.Arcade.Sdk.dll" )
     for path in "${possiblePaths[@]}"; do
       if [[ -f $path ]]; then
         selectedPath=$path

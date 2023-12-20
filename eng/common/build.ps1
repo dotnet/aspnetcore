@@ -19,6 +19,7 @@ Param(
   [switch] $pack,
   [switch] $publish,
   [switch] $clean,
+  [switch] $verticalBuild,
   [switch][Alias('bl')]$binaryLog,
   [switch][Alias('nobl')]$excludeCIBinarylog,
   [switch] $ci,
@@ -58,6 +59,7 @@ function Print-Usage() {
   Write-Host "  -sign                   Sign build outputs"
   Write-Host "  -publish                Publish artifacts (e.g. symbols)"
   Write-Host "  -clean                  Clean the solution"
+  Write-Host "  -verticalBuild          Run in 'vertical build' infra mode."
   Write-Host ""
 
   Write-Host "Advanced settings:"
@@ -120,6 +122,7 @@ function Build {
     /p:Deploy=$deploy `
     /p:Test=$test `
     /p:Pack=$pack `
+    /p:ArcadeBuildVertical=$verticalBuild `
     /p:IntegrationTest=$integrationTest `
     /p:PerformanceTest=$performanceTest `
     /p:Sign=$sign `
