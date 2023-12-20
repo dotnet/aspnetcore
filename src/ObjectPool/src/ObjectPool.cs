@@ -19,6 +19,7 @@ public abstract class ObjectPool<T> where T : class
     /// Return an object to the pool.
     /// </summary>
     /// <param name="obj">The object to add to the pool.</param>
+    /// <exception cref="System.ArgumentNullException">when <paramref name="obj"/> is null.</exception> 
     public abstract void Return(T obj);
 }
 

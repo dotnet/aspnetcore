@@ -46,6 +46,8 @@ public class LeakTrackingObjectPool<T> : ObjectPool<T> where T : class
     /// <inheritdoc/>
     public override void Return(T obj)
     {
+        ArgumentNullThrowHelper.ThrowIfNull(obj);
+
         if (_trackers.TryGetValue(obj, out var tracker))
         {
             _trackers.Remove(obj);

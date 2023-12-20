@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -84,6 +85,13 @@ public class DefaultObjectPoolTest
         p.Return(r);
         Assert.Equal(2, r.ResetCallCount);
         Assert.Same(r, p.Get());
+    }
+
+    [Fact]
+    public void DefaultObjectPool_Throws_WhenNullReturn()
+    {
+        var pool = new DefaultObjectPool<object>(new DefaultPooledObjectPolicy<object>());
+        Assert.Throws<ArgumentNullException>(() => pool.Return(null!));
     }
 
     private sealed class Resettable : IResettable

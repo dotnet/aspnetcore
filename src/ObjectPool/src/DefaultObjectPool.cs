@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.ObjectPool;
 
@@ -66,6 +67,7 @@ public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     /// <inheritdoc />
     public override void Return(T obj)
     {
+        ArgumentNullThrowHelper.ThrowIfNull(obj);
         ReturnCore(obj);
     }
 
