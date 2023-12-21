@@ -5,6 +5,7 @@
 
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
     <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>

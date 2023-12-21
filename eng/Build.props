@@ -63,10 +63,10 @@
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)"
             Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
-          <BuildInParallel Condition=" '%(Extension)' == '.npmproj' OR '%(Extension)' == '.vcxproj' ">false</BuildInParallel>
-          <RestoreInParallel Condition=" '%(Extension)' == '.npmproj' ">false</RestoreInParallel>
+          <BuildInParallel Condition=" '%(Extension)' == '.nodeproj' OR '%(Extension)' == '.vcxproj' ">false</BuildInParallel>
+          <RestoreInParallel Condition=" '%(Extension)' == '.nodeproj' ">false</RestoreInParallel>
           <!-- Also do not build in parallel w/in npm projects. -->
-          <AdditionalProperties Condition=" '%(Extension)' == '.npmproj' OR '%(Extension)' == '.vcxproj' ">BuildInParallel=false</AdditionalProperties>
+          <AdditionalProperties Condition=" '%(Extension)' == '.nodeproj' OR '%(Extension)' == '.vcxproj' ">BuildInParallel=false</AdditionalProperties>
         </ProjectToBuild>
       </ItemGroup>
     </When>
@@ -124,7 +124,7 @@
         <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
-        <NodeJsProjects Condition="'$(TargetArchitecture)' == 'x64'" Include="$(RepoRoot)eng\Npm.Workspace.proj;"
+        <NodeJsProjects Condition="'$(TargetArchitecture)' == 'x64'" Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;"
                         AdditionalProperties="BuildInParallel=false"
                         BuildInParallel="false"
                         RestoreInParallel="false"
