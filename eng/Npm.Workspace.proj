@@ -5,10 +5,11 @@
 
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
-    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
-    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
-    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+    <ContainsFunctionalTestAssets>false<ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
+    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
   </PropertyGroup>
 
   <Target Name="Restore">
