@@ -132,6 +132,8 @@
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
 
+        <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
+
         <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
