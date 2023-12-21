@@ -1,0 +1,32 @@
+<Project>
+
+  <!-- Import Directory.Build.Props -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <IsIntegrationTestProject>true</IsIntegrationTestProject>
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+  </PropertyGroup>
+
+  <Target Name="_Test" BeforeTargets="Test">
+    <Message Text="Testing NPM packages..." Importance="high" />
+    <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="_IntegrationTest" BeforeTargets="IntegrationTest">
+    <Message Text="Testing NPM packages..." Importance="high" />
+    <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <!-- Import Directory.Build.targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.targets" />
+
+</Project>

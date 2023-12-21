@@ -124,7 +124,9 @@
         <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
-        <NodeJsProjects Condition="'$(TargetArchitecture)' == 'x64'" Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;"
+        <NodeJsProjects Condition="'$(TargetArchitecture)' == 'x64'"
+          Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
+                   $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj;"
                         AdditionalProperties="BuildInParallel=false"
                         BuildInParallel="false"
                         RestoreInParallel="false"
