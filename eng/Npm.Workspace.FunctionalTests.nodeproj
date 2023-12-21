@@ -16,6 +16,10 @@
     <RequiresDelayedBuild>true</RequiresDelayedBuild>
   </PropertyGroup>
 
+  <Target Name="Restore" />
+  <Target Name="Build" />
+  <Target Name="Pack" />
+
   <Target Name="_Test" BeforeTargets="Test">
     <Message Text="Testing NPM packages..." Importance="high" />
     <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
