@@ -3,6 +3,13 @@
   <!-- Import Directory.Build.Props -->
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+  </PropertyGroup>
+
   <Target Name="Restore">
     <Message Text="Restoring NPM packages..." Importance="high" />
     <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
