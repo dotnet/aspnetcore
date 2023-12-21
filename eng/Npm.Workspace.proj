@@ -6,8 +6,9 @@
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
-    <ContainsFunctionalTestAssets>false<ContainsFunctionalTestAssets>
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
     <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
   </PropertyGroup>
