@@ -49,12 +49,12 @@
     "build:inner": "npm run build:lint && npm run build:webpack",
     "build:lint": "eslint . --ext .ts",
     "build:webpack": "webpack-cli",
-    "test": "tsc --noEmit && npm run test:local",
-    "test:inner": "npm run build:inner && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "test:all": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
-    "test:sauce": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
-    "sauce": "npm run test:sauce"
+    "integration-test": "tsc --noEmit && npm run integration-test:local",
+    "integration-test:inner": "npm run build:inner && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "integration-test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "integration-test:all": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
+    "integration-test:sauce": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
+    "sauce": "npm run integration-test:sauce"
   },
   "overrides": {
     "lodash": ">=4.17.21",

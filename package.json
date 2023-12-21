@@ -19,6 +19,7 @@
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
+    "integration-test": "npm run integration-test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present"
   },
   "overrides": {
