@@ -14,6 +14,16 @@ module.exports = {
       "default",
       [path.resolve(ROOT_DIR, "node_modules", "jest-junit", "index.js"), { "outputDirectory": path.resolve(ROOT_DIR, "artifacts", "log"), "outputName": `${process.platform}` + ".components-webjs.junit.xml" }]
   ],
+  transform: {
+    "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+            "tsconfig": "./tsconfig.jest.json",
+            "babelConfig": true,
+            "diagnostics": true
+        }
+    ]
+  },
   testEnvironment: "jsdom",
   transform: {
     '^.+\\.tsx?$': ['@swc/jest'],

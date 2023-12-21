@@ -20,8 +20,8 @@
     "build:production": "cd src && webpack --mode production --config ./webpack.config.js"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.7",
-    "@babel/preset-env": "^7.16.8",
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
     "@jest/globals": "^29.7.0",
     "@microsoft/dotnet-js-interop": "*",
     "@microsoft/signalr": "*",
@@ -31,6 +31,7 @@
     "@types/jsdom": "^16.2.14",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
+    "babel-jest": "^29.7.0",
     "dotnet-runtime": "*",
     "eslint": "^8.16.0",
     "eslint-plugin-header": "^3.1.1",
@@ -38,6 +39,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "jest-junit": "^16.0.0",
+    "ts-jest": "^29.0.5",
     "rimraf": "^3.0.2",
     "terser": "^5.14.2",
     "ts-loader": "^9.5.1",
