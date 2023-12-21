@@ -50,10 +50,10 @@
     "build:lint": "eslint . --ext .ts",
     "build:webpack": "webpack-cli",
     "integration-test": "tsc --noEmit && npm run integration-test:local",
-    "integration-test:inner": "npm run build:inner && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "integration-test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "integration-test:all": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
-    "integration-test:sauce": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
+    "integration-test:inner": "npm run build:inner && npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "integration-test:local": "npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "integration-test:all": "npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
+    "integration-test:sauce": "npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
     "sauce": "npm run integration-test:sauce"
   },
   "overrides": {

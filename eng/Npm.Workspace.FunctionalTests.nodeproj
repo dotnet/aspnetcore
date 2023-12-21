@@ -25,11 +25,6 @@
     <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
   </Target>
 
-  <Target Name="_IntegrationTest" BeforeTargets="IntegrationTest">
-    <Message Text="Testing NPM packages..." Importance="high" />
-    <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
-  </Target>
-
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
     <ItemGroup>
       <!-- Include File name without the extension -->
