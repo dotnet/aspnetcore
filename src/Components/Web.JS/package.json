@@ -22,7 +22,7 @@
   "devDependencies": {
     "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.16.8",
-    "@jest/globals": "^29.5.0",
+    "@jest/globals": "^29.7.0",
     "@microsoft/dotnet-js-interop": "*",
     "@microsoft/signalr": "*",
     "@microsoft/signalr-protocol-msgpack": "*",
