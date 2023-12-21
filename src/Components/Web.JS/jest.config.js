@@ -7,8 +7,6 @@ path = require('path');
 
 const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
 
-console.log('ROOT_DIR: ', ROOT_DIR);
-
 module.exports = {
   // All imported modules in your tests should be mocked automatically
   // automock: false,
@@ -114,7 +112,7 @@ module.exports = {
   // Use this configuration option to add custom reporters to Jest
   reporters: [
       "default",
-      [path.resolve(ROOT_DIR, "node_modules", "jest-junit", "index.js"), { "outputDirectory": path.resolve(ROOT_DIR, "..", "..", "..", "artifacts", "log"), "outputName": `${process.platform}` + ".components-webjs.junit.xml" }]
+      [path.resolve(ROOT_DIR, "node_modules", "jest-junit", "index.js"), { "outputDirectory": path.resolve(ROOT_DIR, "artifacts", "log"), "outputName": `${process.platform}` + ".components-webjs.junit.xml" }]
   ],
 
   // Automatically reset mock state before every test
