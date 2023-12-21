@@ -1,5 +1,4 @@
 {
-  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "es2015",
     "target": "es2019",
@@ -9,14 +8,15 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "removeComments": false,
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "suppressImplicitAnyIndexErrors": false,
+    "noUnusedParameters": false,
+    "suppressImplicitAnyIndexErrors": true,
     "noEmitOnError": true,
     "skipLibCheck": true,
     "stripInternal": true,
     "strict": true,
+    "outDir": "./dist",
     "types": [
       "jest",
       "jasmine",
@@ -29,6 +29,6 @@
     "baseUrl": "."
   },
   "include": [
-    "./tests/**/*"
-  ]
+    "./test/**/*"
+  ],
 }

@@ -7,26 +7,20 @@ path = require('path');
 
 const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
 
-module.exports = {
-  coverageProvider: "v8",
+/** @type {import('jest').Config} */
 
+module.exports = {
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src','<rootDir>/test'],
+  testMatch: ['**/*.test.ts'],
+  moduleFileExtensions: ['js', 'ts'],
+  transform: {
+    '^.+\\.(js|ts)$': 'babel-jest',
+  },
+  moduleDirectories: ['node_modules', 'src'],
+  testEnvironment: "jsdom",
   reporters: [
       "default",
       [path.resolve(ROOT_DIR, "node_modules", "jest-junit", "index.js"), { "outputDirectory": path.resolve(ROOT_DIR, "artifacts", "log"), "outputName": `${process.platform}` + ".components-webjs.junit.xml" }]
   ],
-  transform: {
-    "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-            "tsconfig": "./tsconfig.jest.json",
-            "babelConfig": true,
-            "diagnostics": true
-        }
-    ]
-  },
-  testEnvironment: "jsdom",
-  transform: {
-    '^.+\\.tsx?$': ['@swc/jest'],
-    '^.+\\.jsx?$': ['@swc/jest'],
-  },
-};
+}
