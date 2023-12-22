@@ -83,4 +83,13 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="RestoreNpmPackages"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Exec
+      Command="npm ci"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+  </Target>
+
 </Project>
