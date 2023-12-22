@@ -137,8 +137,6 @@
         <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
 
-        <ProjectToExclude Condition=" '$(DotNetBuildFromSource)' == 'true'" Include="@(YarnMSBuildProjects)" />
-
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
 

@@ -20,7 +20,8 @@
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "integration-test": "npm run integration-test --workspaces --if-present",
-    "coverage": "npm run coverage --workspaces --if-present"
+    "coverage": "npm run coverage --workspaces --if-present",
+    "get-version": "npm run get-version --workspaces --if-present"
   },
   "overrides": {
     "got": "^11.8.2",
