@@ -1,0 +1,53 @@
+<Project>
+
+  <!-- Import Directory.Build.Props -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <IsIntegrationTestProject>true</IsIntegrationTestProject>
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+    <TestGroupName>FunctionalTests</TestGroupName>
+    <RuntimeIdentifier Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">win-x86</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <Target Name="Restore" />
+  <Target Name="Build" />
+  <Target Name="Pack" />
+  <Target Name="Publish" />
+
+  <Target Name="_Test" BeforeTargets="Test">
+    <Message Text="Testing NPM packages..." Importance="high" />
+    <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
+    <ItemGroup>
+      <!-- Include File name without the extension -->
+      <ProvidesReference Include="Npm.Workspace.FunctionalTests">
+        <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
+        <IsPackable>$([MSBuild]::ValueOrDefault($(IsPackable),'false'))</IsPackable>
+        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <IsTrimmable>$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</IsTrimmable>
+        <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
+
+        <!-- True if the project may be referenced using a @(Reference) item. -->
+        <IsProjectReferenceProvider>$([MSBuild]::ValueOrDefault($(IsProjectReferenceProvider),'false'))</IsProjectReferenceProvider>
+
+        <!-- True if project must be restored etc. after App.Ref and App.Runtime are fully built. -->
+        <RequiresDelayedBuild>$([MSBuild]::ValueOrDefault($(RequiresDelayedBuild),'false'))</RequiresDelayedBuild>
+      </ProvidesReference>
+    </ItemGroup>
+  </Target>
+
+  <!-- Import Directory.Build.targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.targets" />
+
+</Project>

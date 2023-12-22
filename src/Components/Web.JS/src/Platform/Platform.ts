@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { MonoObject, MonoString, MonoArray } from 'dotnet/dotnet-legacy';
+import { MonoObject, MonoString, MonoArray } from 'dotnet-runtime/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
-import { MonoConfig } from 'dotnet';
+import { MonoConfig } from 'dotnet-runtime';
 
 export interface Platform {
   load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void>;
