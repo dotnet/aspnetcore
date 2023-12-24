@@ -21,5 +21,6 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
   </ItemGroup>
 </Project>

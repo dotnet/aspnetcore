@@ -336,10 +336,11 @@ public class RazorComponentResultTest
     {
         // Arrange
         var testContext = PrepareVaryStreamingScenariosTests();
-        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+        var initialOutputTask = testContext.Renderer.NonStreamingPendingTasksCompletion;
 
         // Act/Assert: Even if all other blocking tasks complete, we don't produce output until the top-level
         // nonstreaming component completes
+        Assert.NotNull(initialOutputTask);
         testContext.WithinNestedNonstreamingRegionTask.SetResult();
         await Task.Yield(); // Just to show it's still not completed after
         Assert.False(initialOutputTask.IsCompleted);
@@ -368,10 +369,11 @@ public class RazorComponentResultTest
     {
         // Arrange
         var testContext = PrepareVaryStreamingScenariosTests();
-        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+        var initialOutputTask = testContext.Renderer.NonStreamingPendingTasksCompletion;
 
         // Act/Assert: Even if all other nonblocking tasks complete, we don't produce output until
         // the component in the nonstreaming subtree is quiescent
+        Assert.NotNull(initialOutputTask);
         testContext.TopLevelComponentTask.SetResult();
         await Task.Yield(); // Just to show it's still not completed after
         Assert.False(initialOutputTask.IsCompleted);

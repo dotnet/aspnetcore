@@ -40,9 +40,6 @@
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
 
-    <!-- Add a project dependency without reference output assemblies to enforce build order -->
-    <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
-    <ProjectReference Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" Private="false" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,12 +59,10 @@
 
   <PropertyGroup>
     <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
-    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
     <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
     <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
   </PropertyGroup>
 
-  <!-- blazor.web.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. Fall back if not. -->
   <Target Name="_CheckBlazorWebJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebJSFile)') ">
     <Warning Text="'$(BlazorWebJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>

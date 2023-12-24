@@ -39,7 +39,7 @@ To build this specific project from source, follow the instructions [on building
 
 Prior to building `src\Components\Web.JS\`
 
-1. You'll need to install [Node](https://nodejs.org) and [yarn](https://yarnpkg.com) on your machine.
+1. You'll need to install [Node](https://nodejs.org) on your machine.
 
 2. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
