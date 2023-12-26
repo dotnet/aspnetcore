@@ -135,7 +135,7 @@ export function eachHttpClient(action: (transport: HttpClient) => void): void {
 }
 
 // Run test in Node or Chrome, but not on macOS
-export const shouldRunHttpsTests = false &&
+export const shouldRunHttpsTests =
     // Need to have an HTTPS URL
     !!ENDPOINT_BASE_HTTPS_URL &&
 
