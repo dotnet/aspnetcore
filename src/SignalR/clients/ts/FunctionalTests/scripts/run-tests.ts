@@ -216,7 +216,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
     return new Promise<number>((resolve, reject) => {
         const logStream = fs.createWriteStream(path.resolve(LOGS_DIR, "node.functionaltests.log"));
         // Use NODE_TLS_REJECT_UNAUTHORIZED to allow our test cert to be used by the Node tests (NEVER use this environment variable outside of testing)
-        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: `${httpsUrl};${httpUrl}`, NODE_TLS_REJECT_UNAUTHORIZED: "false" }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
+        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: `${httpsUrl};${httpUrl}`, NODE_TLS_REJECT_UNAUTHORIZED: 0 as any }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
             (error: any, stdout, stderr) => {
                 console.log("Finished Node tests.");
                 if (error) {
