@@ -36,6 +36,7 @@
   </Target>
 
   <Target Name="_GetPackageVersionInfo" Returns="@(_NodePackageNameAndVersions)">
+    <!-- 
     <Exec Command="npm run get-version" ConsoleToMsBuild="true">
       <Output TaskParameter="ConsoleOutput" ItemName="_GetNpmVersionOutput" />
     </Exec>
@@ -50,6 +51,12 @@
     </ItemGroup>
 
     <Message Text="Computed package version info: %(_NodePackageNameAndVersions.PackageName)=%(_NodePackageNameAndVersions.PackageVersion)" Importance="high" />
+    -->
+    <ItemGroup>
+      <_NodePackageNameAndVersions>
+        <PackageVersion>$(PackageVersion)</PackageVersion>
+      </_NodePackageNameAndVersions>
+    </ItemGroup>
   </Target>
 
   <!-- Import Directory.Build.targets -->
