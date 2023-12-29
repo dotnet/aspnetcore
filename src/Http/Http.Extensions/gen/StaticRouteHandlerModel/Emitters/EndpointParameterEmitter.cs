@@ -335,6 +335,11 @@ internal static class EndpointParameterEmitter
     {
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
 
+        codeWriter.WriteLine("if (httpContext.RequestServices.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine(@"throw new InvalidOperationException(""This service provider doesn't support keyed services."");");
+        codeWriter.EndBlock();
+
         var assigningCode = endpointParameter.IsOptional ?
             $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey});" :
             $"httpContext.RequestServices.GetRequiredKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey})";
