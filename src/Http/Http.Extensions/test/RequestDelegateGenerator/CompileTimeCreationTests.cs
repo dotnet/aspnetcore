@@ -678,7 +678,7 @@ namespace TestApp
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
             out var diagnostics);
 
-        var diagnosticsR = updatedCompilation.GetDiagnostics();
-        Assert.Empty(diagnosticsR.Where(d => d.Severity >= DiagnosticSeverity.Warning));
+        var diagnostics = updatedCompilation.GetDiagnostics();
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
     }
 }
