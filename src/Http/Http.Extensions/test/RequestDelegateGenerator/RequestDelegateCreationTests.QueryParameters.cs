@@ -125,6 +125,20 @@ app.MapGet("/hello", ([FromQuery]string p1, [FromQuery]string p2) => $"{p1} {p2}
         await VerifyAgainstBaselineUsingFile(compilation);
     }
 
+    [Fact]
+    public async Task MapAction_ExplicitParsableParameter_StringReturn()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/hello", ([FromQuery] int p1 = 10) => $"{p1}");
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "10");
+    }
+
     public static object[][] MapAction_ExplicitQueryParam_NameTest_Data
     {
         get
