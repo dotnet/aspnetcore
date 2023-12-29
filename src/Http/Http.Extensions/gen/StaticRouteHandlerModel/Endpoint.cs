@@ -108,8 +108,13 @@ internal class Endpoint
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
+        if (a == null || b == null)
+        {
+            return false;
+        }
+
         if (!string.Equals(a.Response?.WrappedResponseType, b.Response?.WrappedResponseType, StringComparison.Ordinal) ||
-            !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
+            !string.Equals(a.HttpMethod, b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
         {
             return false;
