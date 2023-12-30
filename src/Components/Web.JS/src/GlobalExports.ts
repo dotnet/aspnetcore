@@ -17,7 +17,7 @@ import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
-import { RuntimeAPI } from 'dotnet';
+import { RuntimeAPI } from 'dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.

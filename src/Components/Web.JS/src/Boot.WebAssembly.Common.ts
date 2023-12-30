@@ -14,7 +14,7 @@ import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethod
 import { WebAssemblyComponentDescriptor, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { MonoConfig } from 'dotnet';
+import { MonoConfig } from 'dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 

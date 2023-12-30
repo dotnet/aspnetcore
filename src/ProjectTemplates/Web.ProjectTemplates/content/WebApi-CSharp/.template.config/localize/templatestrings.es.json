@@ -23,10 +23,8 @@
   "symbols/iisHttpsPort/description": "Número de puerto que se va a usar para el punto de conexión HTTPS de IIS Express en launchSettings.json. Esta opción solo es aplicable cuando no se usa el parámetro no-https (no-https se omitirá si se usa IndividualB2C o OrganizationalAuth).",
   "symbols/NoHttps/description": "Ya sea para desactivar HTTPS. Esta opción solo se aplica si no se utilizan IndividualB2C, SingleOrg o MultiOrg para --auth.",
   "symbols/UseLocalDB/description": "Indica si se va a usar LocalDB en lugar de SQLite. Esta opción solo se aplica si se especifica --auth Individual o --auth IndividualB2C.",
-  "symbols/UseMinimalAPIs/description": "Indica si se deben usar API mínimas en lugar de controladores.",
-  "symbols/UseControllers/description": "Si utilizar controladores en lugar de API mínimas. Esta opción sustituye al valor especificado por --minimalista.",
   "symbols/Framework/description": "Marco de destino del proyecto.",
-  "symbols/Framework/choices/net8.0/description": "net8.0 de destino",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
   "symbols/CalledApiUrl/description": "Dirección URL de la API a la que se va a llamar desde la aplicación web. Esta opción solo se aplica si se especifica --auth SingleOrg o --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Especifica si la aplicación web llama a Microsoft Graph. Esta opción solo se aplica si se especifica --auth SingleOrg.",
@@ -34,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "Deshabilitar la compatibilidad con OpenAPI (Swagger)",
   "symbols/UseProgramMain/displayName": "No usar instrucciones de _nivel superior",
   "symbols/UseProgramMain/description": "Indica si se debe generar una clase Program explícita y un método Main en lugar de instrucciones de nivel superior.",
+  "symbols/UseMinimalAPIs/description": "Indica si se deben usar API mínimas en lugar de controladores.",
+  "symbols/UseControllers/description": "Si utilizar controladores en lugar de API mínimas. Esta opción sustituye al valor especificado por --minimalista.",
   "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
   "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\""
 }

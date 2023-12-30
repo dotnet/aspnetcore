@@ -33,12 +33,6 @@
 
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
-    <ProjectReference Include="..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -106,12 +100,10 @@
 
   <PropertyGroup>
     <BlazorServerJSFilename>blazor.server.js</BlazorServerJSFilename>
-    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
     <BlazorServerJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorServerJSFilename)</BlazorServerJSFile>
     <BlazorServerJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorServerJSFilename)</BlazorServerJSFile>
   </PropertyGroup>
 
-  <!-- blazor.server.js should exist after Microsoft.AspNetCore.Components.Web.JS.npmproj builds. Fall back if not. -->
   <Target Name="_CheckBlazorServerJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorServerJSFile)') ">
     <Warning Text="'$(BlazorServerJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>

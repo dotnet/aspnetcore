@@ -17,6 +17,8 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <Compile Include="$(SharedSourceRoot)\TypeNameHelper\TypeNameHelper.cs" Link="ModelBinding\TypeNameHelper.cs" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

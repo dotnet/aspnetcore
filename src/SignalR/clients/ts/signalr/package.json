@@ -13,17 +13,13 @@
   },
   "sideEffects": false,
   "scripts": {
-    "preclean": "cd ../common && yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
-    "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
-    "prebuild": "yarn run clean && yarn install --mutex network --frozen-lockfile || yarn install --mutex network --frozen-lockfile",
-    "build": "yarn run build:lint && yarn run build:esm && yarn run build:cjs && yarn run build:browser && yarn run build:webworker",
-    "build:lint": "node ../common/node_modules/eslint/bin/eslint ./src --ext .ts --resolve-plugins-relative-to ../common",
-    "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d && node ./build/process-dts.js",
-    "build:cjs": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
-    "build:browser": "node ../common/node_modules/webpack-cli/bin/cli.js",
-    "build:webworker": "node ../common/node_modules/webpack-cli/bin/cli.js --env platform=webworker",
-    "prepack": "node ../build/embed-version.js",
-    "test": "echo \"Run 'yarn test' in the 'clients/ts' folder to test this package\" && exit 1"
+    "clean": "rimraf ./dist",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:webworker",
+    "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
+    "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
+    "build:browser": "webpack-cli",
+    "build:webworker": "webpack-cli --env platform=webworker",
+    "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
   },
   "keywords": [
     "signalr",
@@ -43,13 +39,6 @@
     "dist/**/*",
     "src/**/*"
   ],
-  "devDependencies": {
-    "@types/eventsource": "^1.1.8",
-    "@types/jest": "^26.0.20",
-    "@types/node": "^14.14.31",
-    "@types/tough-cookie": "^4.0.0",
-    "process": "^0.11.10"
-  },
   "dependencies": {
     "abort-controller": "^3.0.0",
     "eventsource": "^2.0.2",
@@ -57,7 +46,7 @@
     "node-fetch": "^2.6.7",
     "ws": "^7.4.5"
   },
-  "resolutions": {
+  "overrides": {
     "ansi-regex": "5.0.1",
     "tough-cookie": ">=4.1.3"
   },

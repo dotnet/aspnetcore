@@ -28,6 +28,8 @@
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" LinkBase="ServerInfrastructure\StringUtilities.cs" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\HttpCharacters.cs" LinkBase="ServerInfrastructure\HttpCharacters.cs" />
     <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
