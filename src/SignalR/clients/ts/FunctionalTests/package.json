@@ -45,7 +45,7 @@
   "scripts": {
     "preclean": "cd .. && npm run build",
     "clean": "rimraf ./wwwroot/dist ./obj/js",
-    "build": "npm run build:inner",
+    "build": "npm cache verify && npm run build:inner",
     "build:inner": "npm run build:lint && npm run build:webpack",
     "build:lint": "eslint . --ext .ts",
     "build:webpack": "webpack-cli",
