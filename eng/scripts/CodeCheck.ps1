@@ -91,11 +91,11 @@ try {
     }
 
     #
-    # Check for unexpected (not from dotnet-public-npm) yarn resolutions in lock files.
+    # Check for unexpected (not from dotnet-public-npm) npm resolutions in lock files.
     #
 
     $registry = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/'
-    Get-ChildItem src\yarn.lock -Recurse |
+    Get-ChildItem src\package-lock.json -Recurse |
     ForEach-Object FullName |
     Where-Object {$_ -NotLike '*\node_modules\*'} |
     ForEach-Object {
@@ -104,7 +104,7 @@ try {
     } |
     ForEach-Object {
         LogError -filePath "${_.Path}" -lineNumber $_.LineNumber `
-            "Packages in yarn.lock file resolved from wrong registry. All dependencies must be resolved from $registry"
+            "Packages in package-lock.json file resolved from wrong registry. All dependencies must be resolved from $registry"
     }
 
     #

@@ -19,10 +19,12 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <Import Project="Microsoft.AspNetCore.Components.Routing.targets" />
-  
+
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />

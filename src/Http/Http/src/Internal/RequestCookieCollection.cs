@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -231,6 +232,6 @@ internal sealed class RequestCookieCollection : IRequestCookieCollection
         private readonly RequestCookieCollection _collection = collection;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _collection.ToArray();
+        public DictionaryItemDebugView<string, string>[] Items => _collection.Select(pair => new DictionaryItemDebugView<string, string>(pair)).ToArray();
     }
 }
