@@ -77,10 +77,7 @@ public class CreatedResult : ObjectResult
     /// <inheritdoc />
     public override void OnFormatting(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         base.OnFormatting(context);
 

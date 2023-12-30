@@ -20,10 +20,7 @@ public static class AnalysisServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddMiddlewareAnalysis(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         // Prevent registering the same implementation of IStartupFilter (AnalysisStartupFilter) multiple times.
         // But allow multiple registrations of different implementation types.

@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
-    <EmbeddedResource Include="thm.wxl" />
     <Content Include="thm.xml" />
   </ItemGroup>
 

@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -88,15 +89,8 @@ internal sealed class ChunkingCookieManager
     /// <returns>The reassembled cookie, if any, or null.</returns>
     public string? GetRequestCookie(HttpContext context, string key)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(key);
 
         var requestCookies = context.Request.Cookies;
         var value = requestCookies[key];
@@ -150,20 +144,9 @@ internal sealed class ChunkingCookieManager
     /// <param name="options"></param>
     public void AppendResponseCookie(HttpContext context, string key, string? value, CookieOptions options)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(options);
 
         var responseCookies = context.Response.Cookies;
 
@@ -175,9 +158,19 @@ internal sealed class ChunkingCookieManager
 
         var templateLength = options.CreateCookieHeader(key, string.Empty).ToString().Length;
 
+        var requestCookies = context.Request.Cookies;
+        var requestCookie = requestCookies[key];
+        var requestChunks = ParseChunksCount(requestCookie);
+
         // Normal cookie
         if (!ChunkSize.HasValue || ChunkSize.Value > templateLength + value.Length)
         {
+            if (requestChunks > 0)
+            {
+                // If the cookie was previously chunked but no longer is, delete the chunks.
+                DeleteChunks(context, requestCookies, options, key, startChunk: 1, endChunk: requestChunks);
+            }
+
             responseCookies.Append(key, value, options);
         }
         else if (ChunkSize.Value < templateLength + 10)
@@ -196,6 +189,12 @@ internal sealed class ChunkingCookieManager
             // Set-Cookie: CookieNameC3="Segment3"; path=/
             var dataSizePerCookie = ChunkSize.Value - templateLength - 3; // Budget 3 chars for the chunkid.
             var cookieChunkCount = (int)Math.Ceiling(value.Length * 1.0 / dataSizePerCookie);
+
+            if (requestChunks > cookieChunkCount)
+            {
+                // If the cookie was previously chunked but is now smaller, delete the chunks.
+                DeleteChunks(context, requestCookies, options, key, startChunk: cookieChunkCount + 1, endChunk: requestChunks);
+            }
 
             var keyValuePairs = new KeyValuePair<string, string>[cookieChunkCount + 1];
             keyValuePairs[0] = KeyValuePair.Create(key, ChunkCountPrefix + cookieChunkCount.ToString(CultureInfo.InvariantCulture));
@@ -225,20 +224,9 @@ internal sealed class ChunkingCookieManager
     public void DeleteCookie(HttpContext context, string key, CookieOptions options)
 #pragma warning restore CA1822 // Mark members as static
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(options);
 
         var keys = new List<string>
         {
@@ -272,11 +260,11 @@ internal sealed class ChunkingCookieManager
         Func<string, bool> predicate = value => keys.Any(k => value.StartsWith(k, StringComparison.OrdinalIgnoreCase));
         if (domainHasValue)
         {
-            rejectPredicate = value => predicate(value) && value.IndexOf("domain=" + options.Domain, StringComparison.OrdinalIgnoreCase) != -1;
+            rejectPredicate = value => predicate(value) && value.Contains("domain=" + options.Domain, StringComparison.OrdinalIgnoreCase);
         }
         else if (pathHasValue)
         {
-            rejectPredicate = value => predicate(value) && value.IndexOf("path=" + options.Path, StringComparison.OrdinalIgnoreCase) != -1;
+            rejectPredicate = value => predicate(value) && value.Contains("path=" + options.Path, StringComparison.OrdinalIgnoreCase);
         }
         else
         {
@@ -317,6 +305,34 @@ internal sealed class ChunkingCookieManager
         {
             Expires = DateTimeOffset.UnixEpoch,
         });
+    }
+
+    // Deletes unneeded cookie chunks, but not the primary cookie.
+    private static void DeleteChunks(HttpContext context, IRequestCookieCollection requestCookies, CookieOptions options, string key, int startChunk, int endChunk)
+    {
+        // Don't pre-allocate, we don't trust the input.
+        var keyValuePairs = new List<KeyValuePair<string, string>>();
+
+        for (var i = startChunk; i <= endChunk; i++)
+        {
+            var subkey = key + ChunkKeySuffix + i.ToString(CultureInfo.InvariantCulture);
+
+            // Only delete cookies we received. We received the chunk count cookie so we should have received the others too.
+            if (string.IsNullOrEmpty(requestCookies[subkey]))
+            {
+                break;
+            }
+
+            keyValuePairs.Add(KeyValuePair.Create(subkey, string.Empty));
+        }
+
+        if (keyValuePairs.Count > 0)
+        {
+            context.Response.Cookies.Append(keyValuePairs.ToArray(), new CookieOptions(options)
+            {
+                Expires = DateTimeOffset.UnixEpoch,
+            });
+        }
     }
 }
 

@@ -124,7 +124,7 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
                     var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
                     var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
                     var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
-                    using var aes = new AesGcm(derivedKey);
+                    using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
                     aes.Decrypt(nonce, encrypted, tag, plaintext);
                     return plaintext;
                 }
@@ -197,7 +197,7 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
                     var nonce = new Span<byte>(retVal, nonceOffset, NONCE_SIZE_IN_BYTES);
                     var tag = new Span<byte>(retVal, tagOffset, TAG_SIZE_IN_BYTES);
                     var encrypted = new Span<byte>(retVal, encryptedDataOffset, plaintext.Count);
-                    using var aes = new AesGcm(derivedKey);
+                    using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
                     aes.Encrypt(nonce, plaintext, encrypted, tag);
 
                     // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }

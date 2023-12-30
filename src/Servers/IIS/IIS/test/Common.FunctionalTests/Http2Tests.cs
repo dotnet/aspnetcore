@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http2Cat;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 /// with newer functionality.
 /// </summary>
 [Collection(IISHttpsTestSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Http2Tests
 {
     public Http2Tests(IISTestSiteFixture fixture)

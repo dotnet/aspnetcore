@@ -21,10 +21,7 @@ internal sealed class CompareAttributeAdapter : AttributeAdapterBase<CompareAttr
 
     public override void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
         MergeAttribute(context.Attributes, "data-val-equalto", GetErrorMessage(context));
@@ -34,10 +31,7 @@ internal sealed class CompareAttributeAdapter : AttributeAdapterBase<CompareAttr
     /// <inheritdoc />
     public override string GetErrorMessage(ModelValidationContextBase validationContext)
     {
-        if (validationContext == null)
-        {
-            throw new ArgumentNullException(nameof(validationContext));
-        }
+        ArgumentNullException.ThrowIfNull(validationContext);
 
         var displayName = validationContext.ModelMetadata.GetDisplayName();
         var otherPropertyDisplayName = CompareAttributeWrapper.GetOtherPropertyDisplayName(

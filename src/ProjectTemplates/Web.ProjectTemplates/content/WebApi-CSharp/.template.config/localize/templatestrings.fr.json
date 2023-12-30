@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "API web ASP.NET Core",
-  "description": "Modèle de projet permettant de créer une application ASP.NET Core avec un exemple de contrôleur pour un service HTTP RESTful. Vous pouvez également utiliser ce modèle pour les vues et contrôleurs ASP.NET Core MVC.",
+  "description": "Modèle de projet pour la création d’une API web RESTful à l’aide de contrôleurs ASP.NET Core ou d’API minimales, avec prise en charge facultative pour OpenAPI et l’authentification.",
   "symbols/auth/choices/None/description": "Aucune authentification",
   "symbols/auth/choices/IndividualB2C/description": "Authentification individuelle avec Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Authentification organisationnelle pour un seul locataire",
@@ -23,9 +23,8 @@
   "symbols/iisHttpsPort/description": "Numéro de port à utiliser pour le point de terminaison HTTPS IIS Express dans launchSettings.json. Cette option s’applique uniquement lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si IndividualB2C ou OrganizationalAuth est utilisé).",
   "symbols/NoHttps/description": "Indique s’il faut désactiver HTTPS. Cette option s’applique uniquement si IndividualB2C, SingleOrg ou MultiOrg ne sont pas utilisés pour --auth.",
   "symbols/UseLocalDB/description": "Indique s’il faut utiliser localDB au lieu de SQLite. Cette option s’applique uniquement si --auth Individual ou --auth IndividualB2C est spécifié.",
-  "symbols/UseMinimalAPIs/description": "Indique s’il faut utiliser des API minimales au lieu de contrôleurs.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net8.0/description": "Cible net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/CalledApiUrl/description": "URL de l’API à appeler à partir de l’application web. Cette option s’applique uniquement si --auth SingleOrg ou --auth IndividualB2C est spécifié.",
   "symbols/CallsMicrosoftGraph/description": "Spécifie si l’application web appelle Microsoft Graph. Cette option s’applique uniquement si --auth SingleOrg est spécifié.",
@@ -33,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "Désactiver la prise en charge d’OpenAPI (Swagger)",
   "symbols/UseProgramMain/displayName": "N’utilisez pas _d’instructions de niveau supérieur.",
   "symbols/UseProgramMain/description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.",
+  "symbols/UseMinimalAPIs/description": "Indique s’il faut utiliser des API minimales au lieu de contrôleurs.",
+  "symbols/UseControllers/description": "Indique s’il faut utiliser des contrôleurs plutôt que des API minimales. Cette option dépasse la valeur spécifiée par --minimal.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »"
 }

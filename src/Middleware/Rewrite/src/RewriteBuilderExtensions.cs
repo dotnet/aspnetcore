@@ -22,10 +22,7 @@ public static class RewriteBuilderExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseRewriter(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return AddRewriteMiddleware(app, options: null);
     }
@@ -38,15 +35,8 @@ public static class RewriteBuilderExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseRewriter(this IApplicationBuilder app, RewriteOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         // put middleware in pipeline
         return AddRewriteMiddleware(app, Options.Create(options));

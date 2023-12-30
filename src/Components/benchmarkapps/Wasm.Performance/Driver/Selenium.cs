@@ -10,14 +10,15 @@ namespace Wasm.Performance.Driver;
 
 internal sealed class Selenium
 {
+    const string SeleniumHost = "127.0.0.1";
     const int SeleniumPort = 4444;
     const bool RunHeadlessBrowser = true;
 
     const bool PoolForBrowserLogs = true;
 
-    private static async ValueTask<Uri> WaitForServerAsync(int port, CancellationToken cancellationToken)
+    private static async ValueTask<Uri> WaitForServerAsync(string host, int port, CancellationToken cancellationToken)
     {
-        var uri = new UriBuilder("http", "localhost", port, "/wd/hub/").Uri;
+        var uri = new UriBuilder("http", host, port, "/wd/hub/").Uri;
         var httpClient = new HttpClient
         {
             BaseAddress = uri,
@@ -54,7 +55,7 @@ internal sealed class Selenium
 
     public static async Task<RemoteWebDriver> CreateBrowser(CancellationToken cancellationToken, bool captureBrowserMemory = false)
     {
-        var uri = await WaitForServerAsync(SeleniumPort, cancellationToken);
+        var uri = await WaitForServerAsync(SeleniumHost, SeleniumPort, cancellationToken);
 
         var options = new ChromeOptions();
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -338,7 +338,7 @@ public class HttpContextBuilderTests
             });
         var server = new TestServer(builder);
 
-        var ex = await Assert.ThrowsAsync<Exception>(() => server.SendAsync(c => { }));
+        var ex = await Assert.ThrowsAsync<OperationCanceledException>(() => server.SendAsync(c => { }));
         Assert.Equal("The application aborted the request.", ex.Message);
         await requestAborted.Task.DefaultTimeout();
     }

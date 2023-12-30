@@ -20,15 +20,8 @@ public readonly struct HeaderPropagationContext
     /// <param name="headerValue">The header value present in the current request.</param>
     public HeaderPropagationContext(HttpContext httpContext, string headerName, StringValues headerValue)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (headerName == null)
-        {
-            throw new ArgumentNullException(nameof(headerName));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(headerName);
 
         HttpContext = httpContext;
         HeaderName = headerName;

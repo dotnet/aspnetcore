@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections;
 
@@ -44,4 +46,11 @@ public class NegotiationResponse
     /// An optional error during the negotiate. If this is not null the other properties on the response can be ignored.
     /// </summary>
     public string? Error { get; set; }
+
+    /// <summary>
+    /// If set, the connection should attempt to reconnect with the same <see cref="BaseConnectionContext.ConnectionId"/> if it disconnects.
+    /// It should also set <see cref="IStatefulReconnectFeature"/> on the <see cref="BaseConnectionContext.Features"/> collection so other layers of the
+    /// application (like SignalR) can react.
+    /// </summary>
+    public bool UseStatefulReconnect { get; set; }
 }

@@ -109,7 +109,8 @@ internal sealed class CreateCommand
         CommandOption claimsOption)
     {
         var isValid = true;
-        var project = DevJwtCliHelpers.GetProject(projectOption.Value());
+        var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
+        var project = finder.FindMsBuildProject(projectOption.Value());
 
         if (project == null)
         {

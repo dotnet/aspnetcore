@@ -30,6 +30,8 @@
     <Compile Include="$(SharedSourceRoot)Hpack\**\*.cs" Link="Shared\Hpack\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CancellationTokenSourcePool.cs" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
   </ItemGroup>
 
@@ -39,6 +41,7 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Net.Http.Headers" />
@@ -58,4 +61,17 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
+    <InternalsVisibleTo Include="Sockets.FunctionalTests" />
+    <InternalsVisibleTo Include="Quic.FunctionalTests" />
+    <InternalsVisibleTo Include="InMemory.FunctionalTests" />
+    <InternalsVisibleTo Include="Sockets.BindTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Core.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

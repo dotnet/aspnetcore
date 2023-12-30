@@ -131,6 +131,23 @@ internal static class JsonUtils
         return Convert.ToInt32(reader.Value, CultureInfo.InvariantCulture);
     }
 
+    public static long? ReadAsInt64(JsonTextReader reader, string propertyName)
+    {
+        reader.Read();
+
+        if (reader.TokenType != JsonToken.Integer)
+        {
+            throw new InvalidDataException($"Expected '{propertyName}' to be of type {JTokenType.Integer}.");
+        }
+
+        if (reader.Value == null)
+        {
+            return null;
+        }
+
+        return Convert.ToInt64(reader.Value, CultureInfo.InvariantCulture);
+    }
+
     public static string? ReadAsString(JsonTextReader reader, string propertyName)
     {
         reader.Read();

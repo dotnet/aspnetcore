@@ -1,6 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>
-Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>
 abstract Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void
 Microsoft.AspNetCore.Authentication.ClaimActionCollectionMapExtensions
 Microsoft.AspNetCore.Authentication.OAuth.Claims.ClaimAction
@@ -57,9 +55,11 @@ Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents.OnCreatingTicket.get -> Sy
 Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents.OnCreatingTicket.set -> void
 Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents.OnRedirectToAuthorizationEndpoint.get -> System.Func<Microsoft.AspNetCore.Authentication.RedirectContext<Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions!>!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents.OnRedirectToAuthorizationEndpoint.set -> void
+Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.Backchannel.get -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.Events.get -> Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents!
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.Events.set -> void
+Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.OAuthHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.OAuth.OAuthHandler<TOptions>.OAuthHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions
 Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions.AuthorizationEndpoint.get -> string!
@@ -96,8 +96,9 @@ Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse.Response.set -> voi
 Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse.TokenType.get -> string?
 Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse.TokenType.set -> void
 Microsoft.Extensions.DependencyInjection.OAuthExtensions
+Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>
 Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.OAuthPostConfigureOptions(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtection) -> void
-Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.PostConfigure(string! name, TOptions! options) -> void
+Microsoft.Extensions.DependencyInjection.OAuthPostConfigureOptions<TOptions, THandler>.PostConfigure(string? name, TOptions! options) -> void
 override Microsoft.AspNetCore.Authentication.OAuth.Claims.CustomJsonClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void
 override Microsoft.AspNetCore.Authentication.OAuth.Claims.DeleteClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void
 override Microsoft.AspNetCore.Authentication.OAuth.Claims.JsonKeyClaimAction.Run(System.Text.Json.JsonElement userData, System.Security.Claims.ClaimsIdentity! identity, string! issuer) -> void

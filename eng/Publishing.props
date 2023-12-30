@@ -17,6 +17,7 @@
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
+    <WixPacksToPublish Include="$(ArtifactsDir)installers\**\*.wixpack.zip" />
 
     <!-- Prepare for _PublishInstallersAndChecksums target. -->
     <_InstallersToPublish Remove="@(_InstallersToPublish)" />
@@ -32,6 +33,8 @@
         Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" />
+    <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
+    <_InstallersToPublish Remove="@(WixPacksToPublish)" Condition="'$(PostBuildSign)' != 'true'" />
     <_ChecksumsToPublish Include="$(ArtifactsDir)installers\**\*.sha512" />
   </ItemGroup>
 
@@ -40,17 +43,21 @@
     DependsOnTargets="_WriteProductVersionFile">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
-      and npm project. We use SignalR.Npm.FunctionalTests.npmproj because it is non-shipping (we need a non-stable
+      and npm project. We use SignalR.Npm.FunctionalTests.nodeproj because it is non-shipping (we need a non-stable
       version string to use as our publish location), non-packed (won't be shipped in the future), and it is _not_ a
       C# or F# project. For now at least, C# and F# projects should not be referenced when using desktop msbuild.
     -->
-    <MSBuild Projects="$(RepoRoot)src\SignalR\clients\ts\FunctionalTests\SignalR.Npm.FunctionalTests.npmproj"
-        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+    <MSBuild Projects="$(RepoRoot)eng\Npm.Workspace.nodeproj"
+        Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 
     <PropertyGroup>
+      <!-- _GetPackageVersionInfo will return all the versions for all public/shipping packages.
+           They are all the same, so we just take the last one.
+           If this changes in the future, we'll have to update this logic.
+       -->
       <_PackageVersion>@(_ResolvedPackageVersionInfo->'%(PackageVersion)')</_PackageVersion>
     </PropertyGroup>
 
@@ -98,19 +105,23 @@
     Name="_WriteProductVersionFile"
     Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
     <!--
-      This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
-      and npm project. We use Microsoft.JSInterop.JS.npmproj because it is shipping (we need a stable
+      This target is defined in eng/targets/Packaging.targets and Npm.Workspace.nodeproj and included in every C#, F#,
+      and JS project. We use Microsoft.JSInterop.JS.nodeproj because it is shipping (we need a stable
       version string to use for productVersion.txt), and because it won't break when the SDK requires a newer
       desktop MSBuild than exists on the build machine.
     -->
-    <MSBuild Projects="$(RepoRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
-        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+    <MSBuild Projects="$(RepoRoot)eng\Npm.Workspace.nodeproj"
+        Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>
 
     <PropertyGroup>
-      <_ProductVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</_ProductVersion>
+      <!-- _GetPackageVersionInfo will return all the versions for all public/shipping packages.
+           They are all the same, so we just take the last one.
+           If this changes in the future, we'll have to update this logic.
+       -->
+      <_ProductVersion>%(_ResolvedProductVersionInfo.PackageVersion)</_ProductVersion>
     </PropertyGroup>
 
     <!-- Generate productVersion.txt containing the value of $(PackageVersion) -->

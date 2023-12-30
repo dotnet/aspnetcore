@@ -1,0 +1,46 @@
+﻿@page "/forms/default-form-bound-primitive-parameter"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with bound parameter</h2>
+
+<form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
+    <input type="text" name="Parameter" value="@(_attemptedValue ?? Parameter.ToString())" />
+    <input id="send" type="submit" value="Send" />
+    <AntiforgeryToken />
+</form>
+
+@if (_submitted)
+{
+    var errors = Context.GetErrors("Parameter");
+    if (errors == null)
+    {
+        <p id="pass">Your number is @Parameter!</p>
+    }else
+    {
+        <p>There were errors:</p>
+        <ul id="errors">
+        @foreach (var error in errors.ErrorMessages)
+        {
+            <li>@error</li>
+        }
+        </ul>
+    }
+}
+@code {
+    bool _submitted = false;
+    string _attemptedValue = null;
+    IReadOnlyList<FormattableString> _errors;
+
+    [SupplyParameterFromForm] public int Parameter { get; set; } = 0;
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _errors = Context.GetErrors(nameof(Parameter))?.ErrorMessages;
+        if (_errors != null)
+        {
+            _attemptedValue = Context.GetAttemptedValue(nameof(Parameter));
+        }
+    }
+}

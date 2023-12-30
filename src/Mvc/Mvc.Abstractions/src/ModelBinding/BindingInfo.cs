@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -27,10 +28,7 @@ public class BindingInfo
     /// <param name="other">The <see cref="BindingInfo"/> to copy.</param>
     public BindingInfo(BindingInfo other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         BindingSource = other.BindingSource;
         BinderModelName = other.BinderModelName;
@@ -38,6 +36,7 @@ public class BindingInfo
         PropertyFilterProvider = other.PropertyFilterProvider;
         RequestPredicate = other.RequestPredicate;
         EmptyBodyBehavior = other.EmptyBodyBehavior;
+        ServiceKey = other.ServiceKey;
     }
 
     /// <summary>
@@ -91,6 +90,11 @@ public class BindingInfo
     /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
     /// </summary>
     public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
+
+    /// <summary>
+    /// Get or sets the value used as the key when looking for a keyed service
+    /// </summary>
+    public object? ServiceKey { get; set; }
 
     /// <summary>
     /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -172,6 +176,19 @@ public class BindingInfo
             break;
         }
 
+        // Keyed services
+        if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } fromKeyedServicesAttribute)
+        {
+            if (bindingInfo.BindingSource != null)
+            {
+                throw new NotSupportedException(
+                    $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IBindingSourceMetadata)}.");
+            }
+            isBindingInfoPresent = true;
+            bindingInfo.BindingSource = BindingSource.Services;
+            bindingInfo.ServiceKey = fromKeyedServicesAttribute.Key;
+        }
+
         return isBindingInfoPresent ? bindingInfo : null;
     }
 
@@ -183,15 +200,8 @@ public class BindingInfo
     /// <returns>A new instance of <see cref="BindingInfo"/> if any binding metadata was discovered; otherwise or <see langword="null"/>.</returns>
     public static BindingInfo? GetBindingInfo(IEnumerable<object> attributes, ModelMetadata modelMetadata)
     {
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
-
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(attributes);
+        ArgumentNullException.ThrowIfNull(modelMetadata);
 
         var bindingInfo = GetBindingInfo(attributes);
         var isBindingInfoPresent = bindingInfo != null;
@@ -217,10 +227,7 @@ public class BindingInfo
     /// <see langword="false"/> otherwise.</returns>
     public bool TryApplyBindingInfo(ModelMetadata modelMetadata)
     {
-        if (modelMetadata == null)
-        {
-            throw new ArgumentNullException(nameof(modelMetadata));
-        }
+        ArgumentNullException.ThrowIfNull(modelMetadata);
 
         var isBindingInfoPresent = false;
         if (BinderModelName == null && modelMetadata.BinderModelName != null)

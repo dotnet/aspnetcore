@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>{TargetFramework}</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RuntimeIdentifier>{RuntimeIdentifier}</RuntimeIdentifier>
+    <PublishAot>{PublishAot}</PublishAot>
+    <MicrosoftNETCoreAppRuntimeVersion>{MicrosoftNETCoreAppRuntimeVersion}</MicrosoftNETCoreAppRuntimeVersion>
+    <MicrosoftNETCoreAppRefVersion>{MicrosoftNETCoreAppRefVersion}</MicrosoftNETCoreAppRefVersion>
+    <RepoRoot>{RepoRoot}</RepoRoot>
+    <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+    <_ExtraTrimmerArgs>{ExtraTrimmerArgs} $(_ExtraTrimmerArgs)</_ExtraTrimmerArgs>
+    {AdditionalProperties}
+  </PropertyGroup>
+
+  <ItemGroup>
+    {RuntimeHostConfigurationOptions}
+  </ItemGroup>
+
+  <ItemGroup>
+    {AdditionalProjectReferences}
+  </ItemGroup>
+  
+</Project>

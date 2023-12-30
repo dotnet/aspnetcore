@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -450,8 +450,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        var expectedRequestHeadersTimeout = _serviceContext.ServerOptions.Limits.RequestHeadersTimeout.Ticks;
-        _timeoutControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutReason.RequestHeaders));
+        _timeoutControl.Verify(cc => cc.ResetTimeout(_serviceContext.ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders));
     }
 
     [Fact]
@@ -570,7 +569,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
-        var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
+        var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout;
         _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
         _http1Connection.StopProcessingNextRequest();

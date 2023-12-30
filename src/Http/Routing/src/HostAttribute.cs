@@ -3,13 +3,14 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// Attribute for providing host metdata that is used during routing.
 /// </summary>
-[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}")]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 public sealed class HostAttribute : Attribute, IHostMetadata
 {
@@ -22,10 +23,7 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     /// </param>
     public HostAttribute(string host) : this(new[] { host })
     {
-        if (host == null)
-        {
-            throw new ArgumentNullException(nameof(host));
-        }
+        ArgumentNullException.ThrowIfNull(host);
     }
 
     /// <summary>
@@ -38,10 +36,7 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     /// </param>
     public HostAttribute(params string[] hosts)
     {
-        if (hosts == null)
-        {
-            throw new ArgumentNullException(nameof(hosts));
-        }
+        ArgumentNullException.ThrowIfNull(hosts);
 
         Hosts = hosts.ToArray();
     }
@@ -53,12 +48,13 @@ public sealed class HostAttribute : Attribute, IHostMetadata
     /// </summary>
     public IReadOnlyList<string> Hosts { get; }
 
-    private string DebuggerToString()
+    /// <inheritdoc/>
+    public override string ToString()
     {
         var hostsDisplay = (Hosts.Count == 0)
             ? "*:*"
             : string.Join(",", Hosts.Select(h => h.Contains(':') ? h : h + ":*"));
 
-        return $"Hosts: {hostsDisplay}";
+        return DebuggerHelpers.GetDebugText(nameof(Hosts), hostsDisplay);
     }
 }

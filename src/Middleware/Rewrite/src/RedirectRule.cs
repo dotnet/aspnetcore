@@ -16,15 +16,8 @@ internal sealed class RedirectRule : IRule
     public int StatusCode { get; }
     public RedirectRule(string regex, string replacement, int statusCode)
     {
-        if (string.IsNullOrEmpty(regex))
-        {
-            throw new ArgumentNullException(nameof(regex));
-        }
-
-        if (string.IsNullOrEmpty(replacement))
-        {
-            throw new ArgumentNullException(nameof(replacement));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(regex);
+        ArgumentException.ThrowIfNullOrEmpty(replacement);
 
         InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
         Replacement = replacement;

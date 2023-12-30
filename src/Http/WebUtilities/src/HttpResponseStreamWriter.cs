@@ -70,10 +70,7 @@ public class HttpResponseStreamWriter : TextWriter
         _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
         _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
 
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         if (!_stream.CanWrite)
         {
             throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));

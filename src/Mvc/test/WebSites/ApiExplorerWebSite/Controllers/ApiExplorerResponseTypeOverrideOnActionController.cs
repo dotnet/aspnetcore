@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ApiExplorerWebSite;
 
 [Produces("application/json", Type = typeof(Product))]
-[ProducesResponseType(typeof(ErrorInfo), 500)]
+[ProducesResponseType<ErrorInfo>(500)]
 [Route("ApiExplorerResponseTypeOverrideOnAction")]
 public class ApiExplorerResponseTypeOverrideOnActionController : Controller
 {
@@ -16,7 +16,7 @@ public class ApiExplorerResponseTypeOverrideOnActionController : Controller
     }
 
     [HttpGet("Action")]
-    [Produces(typeof(Customer))]
+    [Produces<Customer>]
     [ProducesResponseType(typeof(ErrorInfoOverride), 500)] // overriding the type specified on the server
     public object GetAction()
     {
@@ -24,7 +24,7 @@ public class ApiExplorerResponseTypeOverrideOnActionController : Controller
     }
 
     [HttpGet("Action2")]
-    [ProducesResponseType(typeof(Customer), 200, "text/plain")]
+    [ProducesResponseType<Customer>(200, "text/plain")]
     public object GetActionWithContentTypeOverride()
     {
         return null;

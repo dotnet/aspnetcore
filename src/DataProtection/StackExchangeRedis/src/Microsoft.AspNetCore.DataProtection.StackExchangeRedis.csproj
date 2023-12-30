@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Support for storing data protection keys in Redis.</Description>
@@ -12,6 +12,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="StackExchange.Redis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

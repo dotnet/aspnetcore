@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -425,6 +426,40 @@ public class DictionaryModelBinderIntegrationTest
         Assert.True(modelState.IsValid);
     }
 
+    [Fact]
+    public async Task DictionaryModelBinder_BindsDictionaryOfSimpleType_NoData_WithDefaultValue()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameterInfo = typeof(DictionaryModelBinderIntegrationTest)
+            .GetMethod(nameof(SampleMethod_SimpleType), BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetParameters()[0];
+        var parameter = new Controllers.ControllerParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(Dictionary<string, int>),
+            ParameterInfo = parameterInfo
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = new QueryString("?");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.False(modelBindingResult.IsModelSet);
+        Assert.Null(modelBindingResult.Model);
+
+        Assert.Empty(modelState);
+        Assert.Equal(0, modelState.ErrorCount);
+        Assert.True(modelState.IsValid);
+    }
+
     private class Person
     {
         [Range(minimum: 0, maximum: 15, ErrorMessage = "You're out of range.")]
@@ -807,6 +842,40 @@ public class DictionaryModelBinderIntegrationTest
 
         var model = Assert.IsType<Dictionary<string, Person>>(modelBindingResult.Model);
         Assert.Empty(model);
+
+        Assert.Empty(modelState);
+        Assert.Equal(0, modelState.ErrorCount);
+        Assert.True(modelState.IsValid);
+    }
+
+    [Fact]
+    public async Task DictionaryModelBinder_BindsDictionaryOfComplexType_NoData_WithDefaultValue()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameterInfo = typeof(DictionaryModelBinderIntegrationTest)
+            .GetMethod(nameof(SampleMethod_ComplexType), BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetParameters()[0];
+        var parameter = new Controllers.ControllerParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(Dictionary<string, Person>),
+            ParameterInfo = parameterInfo
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = new QueryString("?");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.False(modelBindingResult.IsModelSet);
+        Assert.Null(modelBindingResult.Model);
 
         Assert.Empty(modelState);
         Assert.Equal(0, modelState.ErrorCount);
@@ -1283,6 +1352,79 @@ public class DictionaryModelBinderIntegrationTest
         Assert.False(modelState.IsValid);
     }
 
+    [Fact]
+    public async Task DictionaryModelBinder_BindsDictionaryOfSimpleValueAndEnumKey_WithError()
+    {
+        // Arrange
+        var expectedDictionary = new Dictionary<DayOfWeek, string>
+        {
+            { DayOfWeek.Monday, "hello" },
+            { DayOfWeek.Tuesday, "world" },
+        };
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(Dictionary<DayOfWeek, string>)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = new QueryString("?parameter[Monday]=hello&parameter[Tuesday]=world&parameter[Invalid]=exclamation");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.False(modelBindingResult.IsModelSet);
+
+        Assert.NotEmpty(modelState);
+        Assert.Equal(1, modelState.ErrorCount);
+        Assert.False(modelState.IsValid);
+        Assert.Equal("Invalid is not a valid value for DayOfWeek.", modelState["parameter"].Errors[0].ErrorMessage);
+    }
+
+    [Fact]
+    public async Task DictionaryModelBinder_BindsDictionaryOfSimpleValueAndEnumValue_WithError()
+    {
+        // Arrange
+        var expectedDictionary = new Dictionary<string, DayOfWeek>
+        {
+            { "hello", DayOfWeek.Monday },
+            { "world", DayOfWeek.Tuesday },
+            { "exclamation", DayOfWeek.Sunday },
+        };
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(Dictionary<string, DayOfWeek>)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = new QueryString("?parameter[hello]=Monday&parameter[world]=Tuesday&parameter[exclamation]=BadEnumValue");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+        var model = Assert.IsType<Dictionary<string, DayOfWeek>>(modelBindingResult.Model);
+
+        // Assert
+        Assert.True(modelBindingResult.IsModelSet);
+        // Assert.Equal(expectedDictionary, model);
+
+        Assert.NotEmpty(modelState);
+        Assert.Equal(1, modelState.ErrorCount);
+        Assert.False(modelState.IsValid);
+        Assert.Equal("The value 'BadEnumValue' is not valid for Value.", modelState["parameter[exclamation]"].Errors[0].ErrorMessage);
+    }
+
 #nullable enable
     public class NonNullPersonWithRequiredProperties
     {
@@ -1580,4 +1722,7 @@ public class DictionaryModelBinderIntegrationTest
             return _data.TryGetValue(key, out value);
         }
     }
+
+    private void SampleMethod_ComplexType(Dictionary<string, Person> parameter = null) { }
+    private void SampleMethod_SimpleType(Dictionary<string, int> parameter = null) { }
 }

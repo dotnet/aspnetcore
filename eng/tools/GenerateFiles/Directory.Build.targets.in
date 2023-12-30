@@ -7,23 +7,38 @@
       Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
   </PropertyGroup>
 
-  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 6.0. -->
+  <!-- Workaround when there is no vNext SDK available; copy known apphost/framework reference info from 8.0. -->
   <ItemGroup>
     <KnownAppHostPack
-      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net6.0'))"
+      Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAppHostPack->Count())' != '0' AND
         !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownRuntimePack
-      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net6.0'))"
+      Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownRuntimePack->Count())' != '0' AND
         !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
     <KnownFrameworkReference
-      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net6.0'))"
+      Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownFrameworkReference->Count())' != '0' AND
         !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownILLinkPack
+      Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownILLinkPack->Count())' != '0' AND
+        !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownILCompilerPack
+      Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownILCompilerPack->Count())' != '0' AND
+        !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownWebAssemblySdkPack
+      Include="@(KnownWebAssemblySdkPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownWebAssemblySdkPack->Count())' != '0' AND
+        !(@(KnownWebAssemblySdkPack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +51,10 @@
       Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
+
+    <PackageReference Include="Microsoft.DotNet.ILCompiler"
+      Condition=" '$(PublishAot)' == 'true' "
+      Version="${MicrosoftNETCoreAppRuntimeVersion}" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +89,11 @@
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
+
+    <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack">
+      <WebAssemblySdkPackVersion
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</WebAssemblySdkPackVersion>
+    </KnownWebAssemblySdkPack>
 
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Condition=" '$(PortableBuild)' == 'false' ">
       <Crossgen2PackVersion
@@ -120,5 +144,19 @@
     <Error Text="Dotnet root location '$(_DotNetRoot)' does not exist." Condition=" !EXISTS('$(_DotNetRoot)') " />
     <Warning Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRuntimeVersion} does not exist."
         Condition=" !EXISTS('$(_DotNetRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}') " />
+  </Target>
+
+  <!--
+    Make a netstandard2.1 copy of the .net ILLinkPack to work around a trimming issue.
+    See https://github.com/dotnet/linker/issues/3175
+  -->
+  <Target Name="_FixKnownILLinkPack"
+          BeforeTargets="ProcessFrameworkReferences">
+    <ItemGroup>
+      <KnownILLinkPack Include="@(KnownILLinkPack)"
+                       Condition="'%(TargetFramework)' == 'net7.0'"
+                       TargetFramework="netstandard2.1"
+                       ILLinkPackVersion="%(KnownILLinkPack.ILLinkPackVersion)" />
+    </ItemGroup>
   </Target>
 </Project>

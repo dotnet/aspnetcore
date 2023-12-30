@@ -33,20 +33,9 @@ internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IP
 
     public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory, IOptions<JsonOptions> jsonOptions)
     {
-        if (readerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(readerFactory));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
-
-        if (jsonOptions == null)
-        {
-            throw new ArgumentNullException(nameof(jsonOptions));
-        }
+        ArgumentNullException.ThrowIfNull(readerFactory);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
+        ArgumentNullException.ThrowIfNull(jsonOptions);
 
         _readerFactory = readerFactory;
         _loggerFactory = loggerFactory;
@@ -63,8 +52,8 @@ internal sealed class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>, IP
         options.ModelBinderProviders.Add(new FloatingPointTypeModelBinderProvider());
         options.ModelBinderProviders.Add(new EnumTypeModelBinderProvider(options));
         options.ModelBinderProviders.Add(new DateTimeModelBinderProvider());
-        options.ModelBinderProviders.Add(new TryParseModelBinderProvider());
         options.ModelBinderProviders.Add(new SimpleTypeModelBinderProvider());
+        options.ModelBinderProviders.Add(new TryParseModelBinderProvider());
         options.ModelBinderProviders.Add(new CancellationTokenModelBinderProvider());
         options.ModelBinderProviders.Add(new ByteArrayModelBinderProvider());
         options.ModelBinderProviders.Add(new FormFileModelBinderProvider());

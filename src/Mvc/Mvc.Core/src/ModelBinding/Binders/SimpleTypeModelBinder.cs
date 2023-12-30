@@ -24,15 +24,8 @@ public class SimpleTypeModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public SimpleTypeModelBinder(Type type, ILoggerFactory loggerFactory)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _typeConverter = TypeDescriptor.GetConverter(type);
         _logger = loggerFactory.CreateLogger<SimpleTypeModelBinder>();
@@ -41,10 +34,7 @@ public class SimpleTypeModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 
@@ -62,7 +52,9 @@ public class SimpleTypeModelBinder : IModelBinder
 
         try
         {
-            var value = valueProviderResult.FirstValue;
+            var value = bindingContext.ModelMetadata.IsFlagsEnum
+                ? valueProviderResult.Values.ToString()
+                : valueProviderResult.FirstValue;
 
             object? model;
             if (bindingContext.ModelType == typeof(string))
@@ -91,9 +83,6 @@ public class SimpleTypeModelBinder : IModelBinder
             }
 
             CheckModel(bindingContext, valueProviderResult, model);
-
-            _logger.DoneAttemptingToBindModel(bindingContext);
-            return Task.CompletedTask;
         }
         catch (Exception exception)
         {
@@ -109,10 +98,10 @@ public class SimpleTypeModelBinder : IModelBinder
                 bindingContext.ModelName,
                 exception,
                 bindingContext.ModelMetadata);
-
-            // Were able to find a converter for the type but conversion failed.
-            return Task.CompletedTask;
         }
+
+        _logger.DoneAttemptingToBindModel(bindingContext);
+        return Task.CompletedTask;
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -765,6 +765,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Single(routeEndpointBuilder.RoutePattern.Parameters);
         Assert.True(routeEndpointBuilder.RoutePattern.Parameters[0].IsCatchAll);
         Assert.Equal(int.MaxValue, routeEndpointBuilder.Order);
+        Assert.Contains(FallbackMetadata.Instance, routeEndpointBuilder.Metadata);
     }
 
     [Fact]
@@ -892,6 +893,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(expectedPattern, routeEndpoint.RoutePattern.RawText);
 
         var httpContext = new DefaultHttpContext();
+        httpContext.RequestServices = new ServiceCollection().BuildServiceProvider();
         httpContext.Request.RouteValues["id"] = "2";
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;
@@ -1103,10 +1105,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     {
         public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
         {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
+            ArgumentNullException.ThrowIfNull(contentType);
 
             var contentTypes = new List<string>()
                 {

@@ -28,7 +28,7 @@ internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Http.Connections.Internal.Transports.ServerSentEventsTransport");
     }
 
-    public async Task ProcessRequestAsync(HttpContext context, CancellationToken cancellationToken)
+    public async Task<bool> ProcessRequestAsync(HttpContext context, CancellationToken cancellationToken)
     {
         context.Response.ContentType = "text/event-stream";
         context.Response.Headers.CacheControl = "no-cache,no-store";
@@ -81,6 +81,8 @@ internal sealed partial class ServerSentEventsServerTransport : IHttpTransport
         {
             // Closed connection
         }
+
+        return true;
     }
 
     private static partial class Log

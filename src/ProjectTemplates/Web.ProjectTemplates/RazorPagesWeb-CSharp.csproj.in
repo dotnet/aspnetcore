@@ -4,7 +4,7 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">aspnet-Company.WebApplication1-0ce56475-d1db-490f-8af1-a881ea4fcd2d</UserSecretsId>
+    <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502</UserSecretsId>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
   </PropertyGroup>
@@ -27,8 +27,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="${MicrosoftAspNetCoreAuthenticationNegotiateVersion}" Condition="'$(WindowsAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="${MicrosoftIdentityWebMicrosoftGraphVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
+    <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient" Version="${MicrosoftIdentityWebGraphServiceClientVersion}" Condition=" '$(GenerateGraph)' == 'True' " />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="${MicrosoftIdentityWebDownstreamApiVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
   </ItemGroup>
 
   <!--#endif -->

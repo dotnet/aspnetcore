@@ -27,10 +27,24 @@ public static class RoutingServiceCollectionExtensions
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     public static IServiceCollection AddRouting(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        services.AddRoutingCore();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<RouteOptions>, RegexInlineRouteConstraintSetup>());
+        return services;
+    }
+
+    /// <summary>
+    /// Adds services required for routing requests. This is similar to
+    /// <see cref="AddRouting(IServiceCollection)" /> except that it
+    /// excludes certain options that can be opted in separately, if needed.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddRoutingCore(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        // Required for IMeterFactory dependency.
+        services.AddMetrics();
 
         services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
         services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
@@ -97,6 +111,7 @@ public static class RoutingServiceCollectionExtensions
         //
         services.TryAddSingleton<TemplateBinderFactory, DefaultTemplateBinderFactory>();
         services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
+        services.TryAddSingleton<RoutingMetrics>();
 
         // Set RouteHandlerOptions.ThrowOnBadRequest in development
         services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());
@@ -114,15 +129,8 @@ public static class RoutingServiceCollectionExtensions
         this IServiceCollection services,
         Action<RouteOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
         services.AddRouting();

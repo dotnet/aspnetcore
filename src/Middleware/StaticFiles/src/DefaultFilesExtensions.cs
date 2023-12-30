@@ -24,10 +24,7 @@ public static class DefaultFilesExtensions
     /// </remarks>
     public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseMiddleware<DefaultFilesMiddleware>();
     }
@@ -44,10 +41,7 @@ public static class DefaultFilesExtensions
     /// </remarks>
     public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, string requestPath)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseDefaultFiles(new DefaultFilesOptions
         {
@@ -63,14 +57,8 @@ public static class DefaultFilesExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, DefaultFilesOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         return app.UseMiddleware<DefaultFilesMiddleware>(Options.Create(options));
     }

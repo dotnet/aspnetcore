@@ -16,6 +16,7 @@
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Reroute.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,4 +30,8 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
 </Project>

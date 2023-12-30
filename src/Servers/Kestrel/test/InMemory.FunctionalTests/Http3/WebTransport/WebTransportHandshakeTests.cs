@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
@@ -71,7 +71,7 @@ public class WebTransportHandshakeTests : Http3TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
         var response2 = await requestStream.ExpectHeadersAsync();

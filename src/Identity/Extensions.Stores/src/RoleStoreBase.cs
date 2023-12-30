@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -33,10 +34,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
     public RoleStoreBase(IdentityErrorDescriber describer)
     {
-        if (describer == null)
-        {
-            throw new ArgumentNullException(nameof(describer));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(describer);
 
         ErrorDescriber = describer;
     }
@@ -82,10 +80,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return Task.FromResult(ConvertIdToString(role.Id)!);
     }
 
@@ -99,10 +94,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return Task.FromResult(role.Name);
     }
 
@@ -117,10 +109,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         role.Name = roleName;
         return Task.CompletedTask;
     }
@@ -181,10 +170,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         return Task.FromResult(role.NormalizedName);
     }
 
@@ -199,10 +185,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (role == null)
-        {
-            throw new ArgumentNullException(nameof(role));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(role);
         role.NormalizedName = normalizedName;
         return Task.CompletedTask;
     }
@@ -212,10 +195,7 @@ public abstract class RoleStoreBase<TRole, [DynamicallyAccessedMembers(Dynamical
     /// </summary>
     protected void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     /// <summary>

@@ -21,10 +21,7 @@ public class ApiExplorerModel
     /// <param name="other">The <see cref="ApiExplorerModel"/> to copy.</param>
     public ApiExplorerModel(ApiExplorerModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         GroupName = other.GroupName;
         IsVisible = other.IsVisible;

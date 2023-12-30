@@ -36,7 +36,6 @@ public static class FallbackEndpointRouteBuilderExtensions
     /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, RequestDelegate requestDelegate)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
@@ -66,7 +65,6 @@ public static class FallbackEndpointRouteBuilderExtensions
     /// to exclude requests for static files.
     /// </para>
     /// </remarks>
-    [RequiresUnreferencedCode(EndpointRouteBuilderExtensions.MapEndpointTrimmerWarning)]
     public static IEndpointConventionBuilder MapFallback(
         this IEndpointRouteBuilder endpoints,
         [StringSyntax("Route")] string pattern,
@@ -79,6 +77,7 @@ public static class FallbackEndpointRouteBuilderExtensions
         var conventionBuilder = endpoints.Map(pattern, requestDelegate);
         conventionBuilder.WithDisplayName("Fallback " + pattern);
         conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
+        conventionBuilder.WithMetadata(FallbackMetadata.Instance);
         return conventionBuilder;
     }
 }

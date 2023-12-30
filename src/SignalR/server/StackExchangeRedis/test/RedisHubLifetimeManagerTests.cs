@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Specification.Tests;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -103,7 +103,7 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
             loggerT,
             Options.Create(new RedisOptions()
             {
-                ConnectionFactory = _ => throw new Exception("throw from connect")
+                ConnectionFactory = _ => throw new ApplicationException("throw from connect")
             }),
             new DefaultHubProtocolResolver(new IHubProtocol[]
             {
@@ -113,7 +113,7 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
         {
             var connection = HubConnectionContextUtils.Create(client.Connection);
 
-            var ex = await Assert.ThrowsAsync<Exception>(() => manager.OnConnectedAsync(connection)).DefaultTimeout();
+            var ex = await Assert.ThrowsAsync<ApplicationException>(() => manager.OnConnectedAsync(connection)).DefaultTimeout();
             Assert.Equal("throw from connect", ex.Message);
 
             await manager.OnDisconnectedAsync(connection).DefaultTimeout();
@@ -123,6 +123,26 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
         Assert.Single(logs);
         Assert.Equal("Error connecting to Redis.", logs[0].Message);
         Assert.Equal("throw from connect", logs[0].Exception.Message);
+    }
+
+    // Smoke test that Debug.Asserts in TestSubscriber aren't hit
+    [Fact]
+    public async Task PatternGroupAndUser()
+    {
+        var server = new TestRedisServer();
+        using (var client = new TestClient())
+        {
+            var manager = CreateLifetimeManager(server);
+
+            var connection = HubConnectionContextUtils.Create(client.Connection);
+            connection.UserIdentifier = "*";
+
+            await manager.OnConnectedAsync(connection).DefaultTimeout();
+
+            var groupName = "*";
+
+            await manager.AddToGroupAsync(connection.ConnectionId, groupName).DefaultTimeout();
+        }
     }
 
     public override TestRedisServer CreateBackplane()

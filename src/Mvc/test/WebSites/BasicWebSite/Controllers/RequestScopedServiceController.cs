@@ -17,7 +17,7 @@ public class RequestScopedServiceController : Controller
     }
 
     [HttpGet]
-    [TypeFilter(typeof(RequestScopedFilter))]
+    [TypeFilter<RequestScopedFilter>]
     public void FromFilter()
     {
     }

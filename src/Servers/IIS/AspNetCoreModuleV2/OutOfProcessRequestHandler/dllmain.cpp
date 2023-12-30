@@ -6,7 +6,6 @@
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_outofprocess.dll");
 
-BOOL                g_fNsiApiNotSupported = FALSE;
 BOOL                g_fWebSocketStaticInitialize = FALSE;
 BOOL                g_fEnableReferenceCountTracing = FALSE;
 BOOL                g_fGlobalInitialize = FALSE;
@@ -31,8 +30,6 @@ InitializeGlobalConfiguration(
 {
     HKEY hKey;
     BOOL fLocked = FALSE;
-    DWORD dwSize = 0;
-    DWORD dwResult = 0;
 
     if (!g_fGlobalInitialize)
     {
@@ -90,19 +87,7 @@ InitializeGlobalConfiguration(
             }
         }
 
-        dwResult = GetExtendedTcpTable(NULL,
-            &dwSize,
-            FALSE,
-            AF_INET,
-            TCP_TABLE_OWNER_PID_LISTENER,
-            0);
-        if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
-        {
-            g_fNsiApiNotSupported = TRUE;
-        }
-
         g_fWebSocketStaticInitialize = IsWindows8OrGreater();
-
         g_fGlobalInitialize = TRUE;
     }
 Finished:

@@ -3,9 +3,10 @@
 
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -19,7 +20,8 @@ public class WebAssemblyHostTest
     public async Task RunAsync_CanExitBasedOnCancellationToken()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -38,7 +40,8 @@ public class WebAssemblyHostTest
     public async Task RunAsync_CallingTwiceCausesException()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
 
@@ -59,7 +62,8 @@ public class WebAssemblyHostTest
     public async Task DisposeAsync_CanDisposeAfterCallingRunAsync()
     {
         // Arrange
-        var builder = new WebAssemblyHostBuilder(new TestJSUnmarshalledRuntime(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        builder.Services.AddSingleton(Mock.Of<IJSRuntime>());
         builder.Services.AddSingleton<DisposableService>();
         var host = builder.Build();
         var cultureProvider = new TestSatelliteResourcesLoader();
@@ -95,7 +99,7 @@ public class WebAssemblyHostTest
     private class TestSatelliteResourcesLoader : WebAssemblyCultureProvider
     {
         internal TestSatelliteResourcesLoader()
-            : base(DefaultWebAssemblyJSRuntime.Instance, CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
+            : base(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
         {
         }
 

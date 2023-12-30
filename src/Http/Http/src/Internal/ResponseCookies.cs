@@ -43,10 +43,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(string key, string value, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // SameSite=None cookies must be marked as Secure.
         if (!options.Secure && options.SameSite == SameSiteMode.None)
@@ -70,10 +67,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Append(ReadOnlySpan<KeyValuePair<string, string>> keyValuePairs, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         // SameSite=None cookies must be marked as Secure.
         if (!options.Secure && options.SameSite == SameSiteMode.None)
@@ -93,7 +87,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             }
         }
 
-        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString()[1..];
+        var cookieSuffix = options.CreateCookieHeader(string.Empty, string.Empty).ToString().AsSpan(1);
         var cookies = new string[keyValuePairs.Length];
         var position = 0;
 
@@ -104,7 +98,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
         }
 
         // Can't use += as StringValues does not override operator+
-        // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+        // and the implicit conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
         Headers.SetCookie = StringValues.Concat(Headers.SetCookie, cookies);
     }
 
@@ -117,10 +111,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
     /// <inheritdoc />
     public void Delete(string key, CookieOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var encodedKeyPlusEquals = key + "=";
         var domainHasValue = !string.IsNullOrEmpty(options.Domain);
@@ -131,20 +122,20 @@ internal sealed partial class ResponseCookies : IResponseCookies
         {
             rejectPredicate = (value, encKeyPlusEquals, opts) =>
                 value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
-                    value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1 &&
-                    value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+                    value.Contains($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) &&
+                    value.Contains($"path={opts.Path}", StringComparison.OrdinalIgnoreCase);
         }
         else if (domainHasValue)
         {
             rejectPredicate = (value, encKeyPlusEquals, opts) =>
                 value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
-                    value.IndexOf($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase) != -1;
+                    value.Contains($"domain={opts.Domain}", StringComparison.OrdinalIgnoreCase);
         }
         else if (pathHasValue)
         {
             rejectPredicate = (value, encKeyPlusEquals, opts) =>
                 value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase) &&
-                    value.IndexOf($"path={opts.Path}", StringComparison.OrdinalIgnoreCase) != -1;
+                    value.Contains($"path={opts.Path}", StringComparison.OrdinalIgnoreCase);
         }
         else
         {

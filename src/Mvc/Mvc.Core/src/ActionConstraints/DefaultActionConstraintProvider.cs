@@ -19,10 +19,7 @@ internal sealed class DefaultActionConstraintProvider : IActionConstraintProvide
     /// <inheritdoc />
     public void OnProvidersExecuting(ActionConstraintProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         for (var i = 0; i < context.Results.Count; i++)
         {

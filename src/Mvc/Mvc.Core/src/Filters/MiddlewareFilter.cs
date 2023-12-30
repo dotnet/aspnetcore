@@ -14,10 +14,7 @@ internal sealed class MiddlewareFilter : IAsyncResourceFilter
 
     public MiddlewareFilter(RequestDelegate middlewarePipeline)
     {
-        if (middlewarePipeline == null)
-        {
-            throw new ArgumentNullException(nameof(middlewarePipeline));
-        }
+        ArgumentNullException.ThrowIfNull(middlewarePipeline);
 
         _middlewarePipeline = middlewarePipeline;
     }

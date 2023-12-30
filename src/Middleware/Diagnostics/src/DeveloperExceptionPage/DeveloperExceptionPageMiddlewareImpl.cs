@@ -3,13 +3,17 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
@@ -31,21 +35,13 @@ internal class DeveloperExceptionPageMiddlewareImpl
     private readonly ILogger _logger;
     private readonly IFileProvider _fileProvider;
     private readonly DiagnosticSource _diagnosticSource;
+    private readonly DiagnosticsMetrics _metrics;
     private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
     private readonly Func<ErrorContext, Task> _exceptionHandler;
     private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
+    private readonly ExtensionsExceptionJsonContext _serializationContext;
     private readonly IProblemDetailsService? _problemDetailsService;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
-    /// </summary>
-    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-    /// <param name="options">The options for configuring the middleware.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
-    /// <param name="hostingEnvironment"></param>
-    /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/> used for writing diagnostic messages.</param>
-    /// <param name="filters">The list of registered <see cref="IDeveloperPageExceptionFilter"/>.</param>
-    /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public DeveloperExceptionPageMiddlewareImpl(
         RequestDelegate next,
         IOptions<DeveloperExceptionPageOptions> options,
@@ -53,37 +49,52 @@ internal class DeveloperExceptionPageMiddlewareImpl
         IWebHostEnvironment hostingEnvironment,
         DiagnosticSource diagnosticSource,
         IEnumerable<IDeveloperPageExceptionFilter> filters,
+        IMeterFactory meterFactory,
+        IOptions<JsonOptions>? jsonOptions = null,
         IProblemDetailsService? problemDetailsService = null)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (filters == null)
-        {
-            throw new ArgumentNullException(nameof(filters));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(filters);
 
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
         _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
         _diagnosticSource = diagnosticSource;
+        _metrics = new DiagnosticsMetrics(meterFactory);
         _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _logger, _options.SourceCodeLineCount);
         _exceptionHandler = DisplayException;
+        _serializationContext = CreateSerializationContext(jsonOptions?.Value);
         _problemDetailsService = problemDetailsService;
-
         foreach (var filter in filters.Reverse())
         {
             var nextFilter = _exceptionHandler;
             _exceptionHandler = errorContext => filter.HandleExceptionAsync(errorContext, nextFilter);
         }
+    }
+
+    private static ExtensionsExceptionJsonContext CreateSerializationContext(JsonOptions? jsonOptions)
+    {
+        // Create context from configured options to get settings such as PropertyNamePolicy and DictionaryKeyPolicy.
+        jsonOptions ??= new JsonOptions();
+        return new ExtensionsExceptionJsonContext(new JsonSerializerOptions(jsonOptions.SerializerOptions));
+    }
+
+    private static void SetExceptionHandlerFeatures(ErrorContext errorContext)
+    {
+        var httpContext = errorContext.HttpContext;
+
+        var exceptionHandlerFeature = new ExceptionHandlerFeature()
+        {
+            Error = errorContext.Exception,
+            Path = httpContext.Request.Path.ToString(),
+            Endpoint = httpContext.GetEndpoint(),
+            RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues
+        };
+
+        httpContext.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
+        httpContext.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
     }
 
     /// <summary>
@@ -99,11 +110,27 @@ internal class DeveloperExceptionPageMiddlewareImpl
         }
         catch (Exception ex)
         {
-            _logger.UnhandledException(ex);
+            var exceptionName = ex.GetType().FullName!;
+
+            if ((ex is OperationCanceledException || ex is IOException) && context.RequestAborted.IsCancellationRequested)
+            {
+                _logger.RequestAbortedException();
+                _metrics.RequestException(exceptionName, ExceptionResult.Aborted, handler: null);
+
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
+                }
+
+                return;
+            }
+
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, ex);
 
             if (context.Response.HasStarted)
             {
                 _logger.ResponseStartedErrorPageMiddleware();
+                _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
                 throw;
             }
 
@@ -129,6 +156,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
                     WriteDiagnosticEvent(_diagnosticSource, eventName, new { httpContext = context, exception = ex });
                 }
 
+                _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
                 return;
             }
             catch (Exception ex2)
@@ -136,6 +164,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 // If there's a Exception while generating the error page, re-throw the original exception.
                 _logger.DisplayErrorPageException(ex2);
             }
+
+            _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
             throw;
         }
 
@@ -170,33 +200,17 @@ internal class DeveloperExceptionPageMiddlewareImpl
     {
         var httpContext = errorContext.HttpContext;
 
-        if (_problemDetailsService != null)
+        if (_problemDetailsService is not null)
         {
-            var problemDetails = new ProblemDetails
-            {
-                Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
-                Detail = errorContext.Exception.Message,
-                Status = httpContext.Response.StatusCode
-            };
-
-            problemDetails.Extensions["exception"] = new
-            {
-                Details = errorContext.Exception.ToString(),
-                Headers = httpContext.Request.Headers,
-                Path = httpContext.Request.Path.ToString(),
-                Endpoint = httpContext.GetEndpoint()?.ToString(),
-                RouteValues = httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues,
-            };
-
-            await _problemDetailsService.WriteAsync(new()
-            {
-                HttpContext = httpContext,
-                ProblemDetails = problemDetails
-            });
+            SetExceptionHandlerFeatures(errorContext);
         }
 
-        // If the response has not started, assume the problem details was not written.
-        if (!httpContext.Response.HasStarted)
+        if (_problemDetailsService == null || !await _problemDetailsService.TryWriteAsync(new()
+            {
+                HttpContext = httpContext,
+                ProblemDetails = CreateProblemDetails(errorContext, httpContext), 
+                Exception = errorContext.Exception 
+            }))
         {
             httpContext.Response.ContentType = "text/plain; charset=utf-8";
 
@@ -212,6 +226,29 @@ internal class DeveloperExceptionPageMiddlewareImpl
 
             await httpContext.Response.WriteAsync(sb.ToString());
         }
+    }
+
+    private ProblemDetails CreateProblemDetails(ErrorContext errorContext, HttpContext httpContext)
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = TypeNameHelper.GetTypeDisplayName(errorContext.Exception.GetType()),
+            Detail = errorContext.Exception.Message,
+            Status = httpContext.Response.StatusCode
+        };
+
+        // Problem details source gen serialization doesn't know about IHeaderDictionary or RouteValueDictionary.
+        // Serialize payload to a JsonElement here. Problem details serialization can write JsonElement in extensions dictionary.
+        problemDetails.Extensions["exception"] = JsonSerializer.SerializeToElement(new ExceptionExtensionData
+        (
+            details: errorContext.Exception.ToString(),
+            headers: httpContext.Request.Headers,
+            path: httpContext.Request.Path.ToString(),
+            endpoint: httpContext.GetEndpoint()?.ToString(),
+            routeValues: httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues
+        ), _serializationContext.ExceptionExtensionData);
+
+        return problemDetails;
     }
 
     private Task DisplayCompilationException(
@@ -327,4 +364,27 @@ internal class DeveloperExceptionPageMiddlewareImpl
         var errorPage = new ErrorPage(model);
         return errorPage.ExecuteAsync(context);
     }
+}
+
+internal sealed class ExceptionExtensionData
+{
+    public ExceptionExtensionData(string details, IHeaderDictionary headers, string path, string? endpoint, RouteValueDictionary? routeValues)
+    {
+        Details = details;
+        Headers = headers;
+        Path = path;
+        Endpoint = endpoint;
+        RouteValues = routeValues;
+    }
+
+    public string Details { get; }
+    public IHeaderDictionary Headers { get; }
+    public string Path { get; }
+    public string? Endpoint { get; }
+    public RouteValueDictionary? RouteValues { get; }
+}
+
+[JsonSerializable(typeof(ExceptionExtensionData))]
+internal sealed partial class ExtensionsExceptionJsonContext : JsonSerializerContext
+{
 }

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
@@ -17,11 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal static class StringUtilities
 {
-    private static readonly SpanAction<char, IntPtr> s_getAsciiOrUTF8StringNonNullCharacters = GetAsciiStringNonNullCharactersWithMarker;
-    private static readonly SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
-    private static readonly SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = GetLatin1StringNonNullCharacters;
-    private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = PopulateSpanWithHexSuffix;
-
     public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
     {
         if (span.IsEmpty)
@@ -56,7 +50,7 @@ internal static class StringUtilities
         }
     }
 
-    private static unsafe void GetAsciiStringNonNullCharactersWithMarker(Span<char> buffer, IntPtr state)
+    private static readonly unsafe SpanAction<char, IntPtr> s_getAsciiOrUTF8StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
@@ -68,7 +62,7 @@ internal static class StringUtilities
                 output[0] = '\0';
             }
         }
-    }
+    };
 
     public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
     {
@@ -83,7 +77,7 @@ internal static class StringUtilities
         }
     }
 
-    private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
+    private static readonly unsafe SpanAction<char, IntPtr> s_getAsciiStringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
@@ -94,7 +88,7 @@ internal static class StringUtilities
                 throw new InvalidOperationException();
             }
         }
-    }
+    };
 
     public static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
     {
@@ -109,7 +103,7 @@ internal static class StringUtilities
         }
     }
 
-    private static unsafe void GetLatin1StringNonNullCharacters(Span<char> buffer, IntPtr state)
+    private static readonly unsafe SpanAction<char, IntPtr> s_getLatin1StringNonNullCharacters = (Span<char> buffer, IntPtr state) =>
     {
         fixed (char* output = &MemoryMarshal.GetReference(buffer))
         {
@@ -119,7 +113,7 @@ internal static class StringUtilities
                 throw new InvalidOperationException();
             }
         }
-    }
+    };
 
     [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     public static unsafe bool TryGetAsciiString(byte* input, char* output, int count)
@@ -416,152 +410,13 @@ internal static class StringUtilities
         return isValid;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool BytesOrdinalEqualsStringAndAscii(string previousValue, ReadOnlySpan<byte> newValue)
     {
         // previousValue is a previously materialized string which *must* have already passed validation.
         Debug.Assert(IsValidHeaderString(previousValue));
 
-        // Ascii bytes => Utf-16 chars will be the same length.
-        // The caller should have already compared lengths before calling this method.
-        // However; let's double check, and early exit if they are not the same length.
-        if (previousValue.Length != newValue.Length)
-        {
-            // Lengths don't match, so there cannot be an exact ascii conversion between the two.
-            goto NotEqual;
-        }
-
-        // Note: Pointer comparison is unsigned, so we use the compare pattern (offset + length <= count)
-        // rather than (offset <= count - length) which we'd do with signed comparison to avoid overflow.
-        // This isn't problematic as we know the maximum length is max string length (from test above)
-        // which is a signed value so half the size of the unsigned pointer value so we can safely add
-        // a Vector<byte>.Count to it without overflowing.
-        var count = (nint)newValue.Length;
-        var offset = (nint)0;
-
-        // Get references to the first byte in the span, and the first char in the string.
-        ref var bytes = ref MemoryMarshal.GetReference(newValue);
-        ref var str = ref MemoryMarshal.GetReference(previousValue.AsSpan());
-
-        do
-        {
-            // If Vector not-accelerated or remaining less than vector size
-            if (!Vector.IsHardwareAccelerated || (offset + Vector<byte>.Count) > count)
-            {
-                if (IntPtr.Size == 8) // Use Intrinsic switch for branch elimination
-                {
-                    // 64-bit: Loop longs by default
-                    while ((offset + sizeof(long)) <= count)
-                    {
-                        if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
-                                ref Unsafe.Add(ref str, offset),
-                                Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset))) ||
-                            !WidenFourAsciiBytesToUtf16AndCompareToChars(
-                                ref Unsafe.Add(ref str, offset + 4),
-                                Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset + 4))))
-                        {
-                            goto NotEqual;
-                        }
-
-                        offset += sizeof(long);
-                    }
-                    if ((offset + sizeof(int)) <= count)
-                    {
-                        if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
-                            ref Unsafe.Add(ref str, offset),
-                            Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset))))
-                        {
-                            goto NotEqual;
-                        }
-
-                        offset += sizeof(int);
-                    }
-                }
-                else
-                {
-                    // 32-bit: Loop ints by default
-                    while ((offset + sizeof(int)) <= count)
-                    {
-                        if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
-                            ref Unsafe.Add(ref str, offset),
-                            Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset))))
-                        {
-                            goto NotEqual;
-                        }
-
-                        offset += sizeof(int);
-                    }
-                }
-                if ((offset + sizeof(short)) <= count)
-                {
-                    if (!WidenTwoAsciiBytesToUtf16AndCompareToChars(
-                        ref Unsafe.Add(ref str, offset),
-                        Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref bytes, offset))))
-                    {
-                        goto NotEqual;
-                    }
-
-                    offset += sizeof(short);
-                }
-                if (offset < count)
-                {
-                    var ch = (char)Unsafe.Add(ref bytes, offset);
-                    if (((ch & 0x80) != 0) || Unsafe.Add(ref str, offset) != ch)
-                    {
-                        goto NotEqual;
-                    }
-                }
-
-                // End of input reached, there are no inequalities via widening; so the input bytes are both ascii
-                // and a match to the string if it was converted via Encoding.ASCII.GetString(...)
-                return true;
-            }
-
-            // Create a comparision vector for all bits being equal
-            var AllTrue = new Vector<short>(-1);
-            // do/while as entry condition already checked, remaining length must be Vector<byte>.Count or larger.
-            do
-            {
-                // Read a Vector length from the input as bytes
-                var vector = Unsafe.ReadUnaligned<Vector<sbyte>>(ref Unsafe.Add(ref bytes, offset));
-                if (!CheckBytesInAsciiRange(vector))
-                {
-                    goto NotEqual;
-                }
-                // Widen the bytes directly to chars (ushort) as if they were ascii.
-                // As widening doubles the size we get two vectors back.
-                Vector.Widen(vector, out var vector0, out var vector1);
-                // Read two char vectors from the string to perform the match.
-                var compare0 = Unsafe.ReadUnaligned<Vector<short>>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref str, offset)));
-                var compare1 = Unsafe.ReadUnaligned<Vector<short>>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref str, offset + Vector<ushort>.Count)));
-
-                // If the string is not ascii, then the widened bytes cannot match
-                // as each widened byte element as chars will be in the range 0-255
-                // so cannot match any higher unicode values.
-
-                // Compare to our all bits true comparision vector
-                if (!AllTrue.Equals(
-                    // BitwiseAnd the two equals together
-                    Vector.BitwiseAnd(
-                        // Check equality for the two widened vectors
-                        Vector.Equals(compare0, vector0),
-                        Vector.Equals(compare1, vector1))))
-                {
-                    goto NotEqual;
-                }
-
-                offset += Vector<byte>.Count;
-            } while ((offset + Vector<byte>.Count) <= count);
-
-            // Vector path done, loop back to do non-Vector
-            // If is a exact multiple of vector size, bail now
-        } while (offset < count);
-
-        // If we get here (input is exactly a multiple of Vector length) then there are no inequalities via widening;
-        // so the input bytes are both ascii and a match to the string if it was converted via Encoding.ASCII.GetString(...)
-        return true;
-    NotEqual:
-        return false;
+        return Ascii.Equals(previousValue, newValue);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -583,98 +438,6 @@ internal static class StringUtilities
         }
     }
 
-    /// <summary>
-    /// Given a DWORD which represents a buffer of 4 bytes, widens the buffer into 4 WORDs and
-    /// compares them to the WORD buffer with machine endianness.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private static bool WidenFourAsciiBytesToUtf16AndCompareToChars(ref char charStart, uint value)
-    {
-        if (!AllBytesInUInt32AreAscii(value))
-        {
-            return false;
-        }
-
-        // BMI2 could be used, but this variant is faster on both Intel and AMD.
-        if (Sse2.X64.IsSupported)
-        {
-            var vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
-            var vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt64();
-            return Unsafe.ReadUnaligned<ulong>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                Sse2.X64.ConvertToUInt64(vecWide);
-        }
-        else
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                return charStart == (char)(byte)value &&
-                    Unsafe.Add(ref charStart, 1) == (char)(byte)(value >> 8) &&
-                    Unsafe.Add(ref charStart, 2) == (char)(byte)(value >> 16) &&
-                    Unsafe.Add(ref charStart, 3) == (char)(value >> 24);
-            }
-            else
-            {
-                return Unsafe.Add(ref charStart, 3) == (char)(byte)value &&
-                    Unsafe.Add(ref charStart, 2) == (char)(byte)(value >> 8) &&
-                    Unsafe.Add(ref charStart, 1) == (char)(byte)(value >> 16) &&
-                    charStart == (char)(value >> 24);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Given a WORD which represents a buffer of 2 bytes, widens the buffer into 2 WORDs and
-    /// compares them to the WORD buffer with machine endianness.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    private static bool WidenTwoAsciiBytesToUtf16AndCompareToChars(ref char charStart, ushort value)
-    {
-        if (!AllBytesInUInt16AreAscii(value))
-        {
-            return false;
-        }
-
-        // BMI2 could be used, but this variant is faster on both Intel and AMD.
-        if (Sse2.IsSupported)
-        {
-            var vecNarrow = Sse2.ConvertScalarToVector128UInt32(value).AsByte();
-            var vecWide = Sse2.UnpackLow(vecNarrow, Vector128<byte>.Zero).AsUInt32();
-            return Unsafe.ReadUnaligned<uint>(ref Unsafe.As<char, byte>(ref charStart)) ==
-                Sse2.ConvertToUInt32(vecWide);
-        }
-        else
-        {
-            if (BitConverter.IsLittleEndian)
-            {
-                return charStart == (char)(byte)value &&
-                    Unsafe.Add(ref charStart, 1) == (char)(byte)(value >> 8);
-            }
-            else
-            {
-                return Unsafe.Add(ref charStart, 1) == (char)(byte)value &&
-                    charStart == (char)(byte)(value >> 8);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Returns <see langword="true"/> iff all bytes in <paramref name="value"/> are ASCII.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool AllBytesInUInt32AreAscii(uint value)
-    {
-        return ((value & 0x80808080u) == 0);
-    }
-
-    /// <summary>
-    /// Returns <see langword="true"/> iff all bytes in <paramref name="value"/> are ASCII.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool AllBytesInUInt16AreAscii(ushort value)
-    {
-        return ((value & 0x8080u) == 0);
-    }
-
     private static bool IsValidHeaderString(string value)
     {
         // Method for Debug.Assert to ensure BytesOrdinalEqualsStringAndAscii
@@ -688,9 +451,13 @@ internal static class StringUtilities
             new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetByteCount(value);
             return !value.Contains('\0');
         }
-        catch (DecoderFallbackException)
+        catch (ArgumentOutOfRangeException)
         {
-            return false;
+            return false; // 'value' too large to compute a UTF-8 byte count
+        }
+        catch (EncoderFallbackException)
+        {
+            return false; // 'value' cannot be converted losslessly to UTF-8
         }
     }
 
@@ -712,7 +479,7 @@ internal static class StringUtilities
         return string.Create(length, (str, separator, number), s_populateSpanWithHexSuffix);
     }
 
-    private static void PopulateSpanWithHexSuffix(Span<char> buffer, (string? str, char separator, uint number) tuple)
+    private static readonly SpanAction<char, (string? str, char separator, uint number)> s_populateSpanWithHexSuffix = (Span<char> buffer, (string? str, char separator, uint number) tuple) =>
     {
         var (tupleStr, tupleSeparator, tupleNumber) = tuple;
 
@@ -782,7 +549,7 @@ internal static class StringUtilities
             buffer[1] = (char)hexEncodeMap[(number >> 24) & 0xF];
             buffer[0] = (char)hexEncodeMap[(number >> 28) & 0xF];
         }
-    }
+    };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
     private static bool CheckBytesInAsciiRange(Vector<sbyte> check)

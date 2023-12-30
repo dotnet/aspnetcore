@@ -3,6 +3,7 @@
 
 using System;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -22,10 +23,7 @@ public static class XmlExtensions
     /// </summary>
     public static void MarkAsRequiresEncryption(this XElement element)
     {
-        if (element == null)
-        {
-            throw new ArgumentNullException(nameof(element));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(element);
 
         element.SetAttributeValue(XmlConstants.RequiresEncryptionAttributeName, true);
     }

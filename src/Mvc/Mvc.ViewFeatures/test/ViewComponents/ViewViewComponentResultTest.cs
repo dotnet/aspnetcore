@@ -258,7 +258,7 @@ public class ViewViewComponentResultTest
     public void Execute_DoesNotWrapThrownExceptionsInAggregateExceptions()
     {
         // Arrange
-        var expected = new IndexOutOfRangeException();
+        var expected = new ArgumentOutOfRangeException();
 
         var view = new Mock<IView>();
         view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))

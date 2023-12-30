@@ -13,5 +13,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
   </ItemGroup>
 </Project>

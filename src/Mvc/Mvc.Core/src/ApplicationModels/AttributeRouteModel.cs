@@ -30,10 +30,7 @@ public class AttributeRouteModel
     /// <param name="templateProvider">The <see cref="IRouteTemplateProvider"/>.</param>
     public AttributeRouteModel(IRouteTemplateProvider templateProvider)
     {
-        if (templateProvider == null)
-        {
-            throw new ArgumentNullException(nameof(templateProvider));
-        }
+        ArgumentNullException.ThrowIfNull(templateProvider);
 
         Attribute = templateProvider;
         Template = templateProvider.Template;
@@ -47,10 +44,7 @@ public class AttributeRouteModel
     /// <param name="other">The <see cref="AttributeRouteModel"/> to copy.</param>
     public AttributeRouteModel(AttributeRouteModel other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Attribute = other.Attribute;
         Name = other.Name;

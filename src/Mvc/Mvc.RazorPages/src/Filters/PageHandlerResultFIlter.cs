@@ -14,15 +14,8 @@ internal sealed class PageHandlerResultFilter : IAsyncResultFilter, IOrderedFilt
 
     public Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         var handler = context.Controller;
         if (handler == null)

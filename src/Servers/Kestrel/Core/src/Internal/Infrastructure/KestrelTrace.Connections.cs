@@ -97,6 +97,6 @@ internal sealed partial class KestrelTrace : ILogger
         [LoggerMessage(39, LogLevel.Debug, @"Connection id ""{ConnectionId}"" accepted.", EventName = "ConnectionAccepted")]
         public static partial void ConnectionAccepted(ILogger logger, string connectionId);
 
-        // Highest shared ID is 63. New consecutive IDs start at 64
+        // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)
     }
 }

@@ -218,6 +218,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
         private const string HealthCheckEndText = "Health check {HealthCheckName} with status {HealthStatus} completed after {ElapsedMilliseconds}ms with message '{HealthCheckDescription}'";
 
 #pragma warning disable SYSLIB1006
+#pragma warning disable SYSLIB1025
         [LoggerMessage(EventIds.HealthCheckEndId, LogLevel.Debug, HealthCheckEndText, EventName = EventIds.HealthCheckEndName)]
         private static partial void HealthCheckEndHealthy(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription);
 
@@ -226,6 +227,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
 
         [LoggerMessage(EventIds.HealthCheckEndId, LogLevel.Error, HealthCheckEndText, EventName = EventIds.HealthCheckEndName)]
         private static partial void HealthCheckEndUnhealthy(ILogger logger, string HealthCheckName, HealthStatus HealthStatus, double ElapsedMilliseconds, string? HealthCheckDescription, Exception? exception);
+#pragma warning restore SYSLIB1025
 #pragma warning restore SYSLIB1006
 
         public static void HealthCheckEnd(ILogger logger, HealthCheckRegistration registration, HealthReportEntry entry, TimeSpan duration)
@@ -289,7 +291,7 @@ internal sealed partial class DefaultHealthCheckService : HealthCheckService
             {
                 if (index < 0 || index >= Count)
                 {
-                    throw new IndexOutOfRangeException(nameof(index));
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
                 return _values[index];

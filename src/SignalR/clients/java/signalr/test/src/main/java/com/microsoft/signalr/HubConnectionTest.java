@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -314,7 +315,7 @@ class HubConnectionTest {
         Action action = () -> value.getAndUpdate((val) -> val + 1);
         Action secondAction = () -> {
             value.getAndUpdate((val) -> val + 2);
-            
+
             complete.onComplete();
         };
 
@@ -2797,14 +2798,11 @@ class HubConnectionTest {
                     .create("http://example")
                     .withTransport(TransportEnum.WEBSOCKETS)
                     .shouldSkipNegotiate(true)
+                    .withHandshakeResponseTimeout(1)
                     .withHttpClient(client)
                     .build();
 
-            try {
-                hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
-            } catch (Exception e) {
-                assertEquals("WebSockets isn't supported in testing currently.", e.getMessage());
-            }
+            assertThrows(RuntimeException.class, () -> hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait());
             assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
             assertFalse(negotiateCalled.get());
 
@@ -3961,5 +3959,86 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         assertTrue(close.blockingAwait(30, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void serverTimeoutIsSetThroughBuilder()
+    {
+        long timeout = 60 * 1000;
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withServerTimeout(timeout)
+                .build();
+
+        assertEquals(timeout, hubConnection.getServerTimeout());
+    }
+
+    @Test
+    public void keepAliveIntervalIsSetThroughBuilder()
+    {
+        long interval = 60 * 1000;
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withKeepAliveInterval(interval)
+                .build();
+
+        assertEquals(interval, hubConnection.getKeepAliveInterval());
+    }
+
+    @Test
+    public void WebsocketStopLoggedOnce() {
+        try (TestLogger logger = new TestLogger(WebSocketTransport.class.getName())) {
+            AtomicBoolean negotiateCalled = new AtomicBoolean(false);
+            TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                    (req) -> {
+                        negotiateCalled.set(true);
+                        return Single.just(new HttpResponse(200, "",
+                            TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                    });
+
+            HubConnection hubConnection = HubConnectionBuilder
+                    .create("http://example")
+                    .withTransport(TransportEnum.WEBSOCKETS)
+                    .shouldSkipNegotiate(true)
+                    .withHandshakeResponseTimeout(100)
+                    .withHttpClient(client)
+                    .build();
+
+            Completable startTask = hubConnection.start().timeout(30, TimeUnit.SECONDS);
+            hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+            assertThrows(RuntimeException.class, () -> startTask.blockingAwait());
+            assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+            assertFalse(negotiateCalled.get());
+
+            ILoggingEvent[] logs = logger.getLogs();
+            int count = 0;
+            for (ILoggingEvent iLoggingEvent : logs) {
+                if (iLoggingEvent.getFormattedMessage().startsWith("WebSocket connection stopped.")) {
+                    count++;
+                }
+            }
+
+            assertEquals(1, count);
+        }
+    }
+
+    // https://github.com/dotnet/aspnetcore/issues/49043
+    @Test
+    public void sendsCloseMessageOnStop() throws InterruptedException {
+        MockTransport mockTransport = new MockTransport(true, true);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        hubConnection.stop().timeout(30, TimeUnit.SECONDS).blockingAwait();
+
+        ByteBuffer[] messages = mockTransport.getSentMessages();
+
+        // handshake, close
+        assertEquals(2, messages.length);
+        String message = TestUtils.byteBufferToString(messages[1]);
+        assertEquals("{\"type\":7,\"allowReconnect\":false}" + RECORD_SEPARATOR, message);
     }
 }

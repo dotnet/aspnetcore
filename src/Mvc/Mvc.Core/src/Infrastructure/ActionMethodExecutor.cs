@@ -50,8 +50,7 @@ internal abstract class ActionMethodExecutor
             }
         }
 
-        Debug.Fail("Should not get here");
-        throw new Exception();
+        throw new UnreachableException();
     }
 
     public static ActionMethodExecutor GetFilterExecutor(ControllerActionDescriptor actionDescriptor) =>

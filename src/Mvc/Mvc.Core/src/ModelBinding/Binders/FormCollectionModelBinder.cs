@@ -24,10 +24,7 @@ public class FormCollectionModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public FormCollectionModelBinder(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<FormCollectionModelBinder>();
     }
@@ -35,10 +32,7 @@ public class FormCollectionModelBinder : IModelBinder
     /// <inheritdoc />
     public async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

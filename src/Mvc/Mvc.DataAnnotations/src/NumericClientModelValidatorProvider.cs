@@ -14,10 +14,7 @@ internal sealed class NumericClientModelValidatorProvider : IClientModelValidato
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var typeToValidate = context.ModelMetadata.UnderlyingOrModelType;
 

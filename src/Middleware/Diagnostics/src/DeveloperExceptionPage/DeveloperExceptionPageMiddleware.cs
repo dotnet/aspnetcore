@@ -41,6 +41,7 @@ public class DeveloperExceptionPageMiddleware
             hostingEnvironment,
             diagnosticSource,
             filters,
+            new DummyMeterFactory(),
             problemDetailsService: null);
     }
 

@@ -14,7 +14,7 @@ public sealed class DefaultEndpointFilterInvocationContext : EndpointFilterInvoc
     /// </summary>
     /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
     /// <param name="arguments">A list of parameters provided in the current request.</param>
-    public DefaultEndpointFilterInvocationContext(HttpContext httpContext, params object[] arguments)
+    public DefaultEndpointFilterInvocationContext(HttpContext httpContext, params object?[] arguments)
     {
         HttpContext = httpContext;
         Arguments = arguments;

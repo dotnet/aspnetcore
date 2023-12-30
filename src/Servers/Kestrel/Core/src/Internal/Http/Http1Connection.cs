@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
 {
-    internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => new byte[17] { 0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13 };
+    internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => [0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13];
 
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';
@@ -28,8 +28,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private readonly HttpConnectionContext _context;
     private readonly IHttpParser<Http1ParsingHandler> _parser;
     private readonly Http1OutputProducer _http1Output;
-    protected readonly long _keepAliveTicks;
-    private readonly long _requestHeadersTimeoutTicks;
 
     private volatile bool _requestTimedOut;
     private uint _requestCount;
@@ -55,8 +53,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         _context = context;
         _parser = ServiceContext.HttpParser;
-        _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
-        _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
         _http1Output = new Http1OutputProducer(
             _context.Transport.Output,
@@ -86,6 +82,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         if (IsUpgraded)
         {
             KestrelEventSource.Log.RequestUpgradedStop(this);
+            ServiceContext.Metrics.RequestUpgradedStop(_context.MetricsContext);
 
             ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
         }
@@ -98,7 +95,14 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _http1Output.Dispose();
     }
 
-    public void OnInputOrOutputCompleted()
+    void IRequestProcessor.OnInputOrOutputCompleted()
+    {
+        // Closed gracefully.
+        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
+        CancelRequestAbortedToken();
+    }
+
+    void IHttpOutputAborter.OnInputOrOutputCompleted()
     {
         _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
         CancelRequestAbortedToken();
@@ -165,7 +169,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     break;
                 }
 
-                TimeoutControl.ResetTimeout(_requestHeadersTimeoutTicks, TimeoutReason.RequestHeaders);
+                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
 
                 _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                 goto case RequestProcessingStatus.ParsingRequestLine;
@@ -629,7 +633,15 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 if (!_absoluteRequestTarget.IsDefaultPort
                     || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
                 {
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    if (_context.ServiceContext.ServerOptions.AllowHostHeaderOverride)
+                    {
+                        hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
+                        HttpRequestHeaders.HeaderHost = hostText;
+                    }
+                    else
+                    {
+                        KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    }
                 }
             }
         }
@@ -670,7 +682,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         // Reset the features and timeout.
         Reset();
         _requestCount++;
-        TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
+        TimeoutControl.SetTimeout(ServerOptions.Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
     }
 
     protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
@@ -687,12 +699,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             isConsumed = ParseRequest(ref reader);
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException) when (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
         {
-            if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
-            {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
-            }
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
             throw;
         }
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -789,5 +798,5 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         return base.TryProduceInvalidRequestResponse();
     }
 
-    void IRequestProcessor.Tick(DateTimeOffset now) { }
+    void IRequestProcessor.Tick(long timestamp) { }
 }

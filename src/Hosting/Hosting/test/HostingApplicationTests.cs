@@ -3,11 +3,13 @@
 
 using System.Collections;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Hosting.Server.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using static Microsoft.AspNetCore.Hosting.HostingApplication;
@@ -88,7 +90,6 @@ public class HostingApplicationTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35142")]
     public void IHttpActivityFeatureIsPopulated()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
@@ -112,7 +113,9 @@ public class HostingApplicationTests
         var initialActivity = Activity.Current;
 
         // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
+        using var dummyActivity = dummySource.StartActivity("DummyActivity");
+        Assert.NotNull(dummyActivity);
+        Assert.Equal(Activity.Current, dummyActivity);
 
         Assert.Same(initialActivity, activityFeature.Activity);
         Assert.Null(activityFeature.Activity.ParentId);
@@ -129,8 +132,7 @@ public class HostingApplicationTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38736")]
-    public void IHttpActivityFeatureIsAssignedToIfItExists()
+    public void IHttpActivityFeatureNotUsedFromFeatureCollection()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var dummySource = new ActivitySource(Path.GetRandomFileName());
@@ -144,26 +146,19 @@ public class HostingApplicationTests
 
         var hostingApplication = CreateApplication(activitySource: testSource);
         var httpContext = new DefaultHttpContext();
-        httpContext.Features.Set<IHttpActivityFeature>(new TestHttpActivityFeature());
+
+        // This feature will be overidden by hosting. Hosting is the owner of the feature and is resposible for setting it.
+        var overridenFeature = new TestHttpActivityFeature();
+        httpContext.Features.Set<IHttpActivityFeature>(overridenFeature);
+
         var context = hostingApplication.CreateContext(httpContext.Features);
 
-        var activityFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
-        Assert.NotNull(activityFeature);
-        Assert.IsType<TestHttpActivityFeature>(activityFeature);
-        Assert.NotNull(activityFeature.Activity);
-        Assert.Equal(HostingApplicationDiagnostics.ActivityName, activityFeature.Activity.DisplayName);
-        var initialActivity = Activity.Current;
+        var contextFeature = context.HttpContext.Features.Get<IHttpActivityFeature>();
+        Assert.NotNull(contextFeature);
+        Assert.NotNull(contextFeature.Activity);
+        Assert.Equal(HostingApplicationDiagnostics.ActivityName, contextFeature.Activity.DisplayName);
 
-        // Create nested dummy Activity
-        using var _ = dummySource.StartActivity("DummyActivity");
-
-        Assert.Same(initialActivity, activityFeature.Activity);
-        Assert.Null(activityFeature.Activity.ParentId);
-        Assert.Equal(activityFeature.Activity.Id, Activity.Current.ParentId);
-        Assert.NotEqual(Activity.Current, activityFeature.Activity);
-
-        // Act/Assert
-        hostingApplication.DisposeContext(context, null);
+        Assert.NotEqual(overridenFeature, contextFeature);
     }
 
     [Fact]
@@ -183,7 +178,7 @@ public class HostingApplicationTests
     }
 
     private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,
-        ActivitySource activitySource = null)
+        ActivitySource activitySource = null, IMeterFactory meterFactory = null)
     {
         var services = new ServiceCollection();
         services.AddOptions();
@@ -200,7 +195,9 @@ public class HostingApplicationTests
             new DiagnosticListener("Microsoft.AspNetCore"),
             activitySource ?? new ActivitySource("Microsoft.AspNetCore"),
             DistributedContextPropagator.CreateDefaultPropagator(),
-            httpContextFactory);
+            httpContextFactory,
+            HostingEventSource.Log,
+            new HostingMetrics(meterFactory ?? new TestMeterFactory()));
 
         return hostingApplication;
     }

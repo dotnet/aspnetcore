@@ -17,10 +17,7 @@ internal sealed class MvcRazorRuntimeCompilationOptionsSetup : IConfigureOptions
 
     public void Configure(MvcRazorRuntimeCompilationOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.FileProviders.Add(_hostingEnvironment.ContentRootFileProvider);
     }

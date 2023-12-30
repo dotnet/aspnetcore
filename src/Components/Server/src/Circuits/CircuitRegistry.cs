@@ -411,7 +411,7 @@ internal partial class CircuitRegistry
         [LoggerMessage(114, LogLevel.Error, "Exception handler for {CircuitId} failed.", EventName = "CircuitExceptionHandlerFailed")]
         public static partial void CircuitExceptionHandlerFailed(ILogger logger, CircuitId circuitId, Exception exception);
 
-        [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "FailedToReconnectToCircuit")]
+        [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "ReconnectionSucceeded")]
         public static partial void ReconnectionSucceeded(ILogger logger, CircuitId circuitId);
     }
 }

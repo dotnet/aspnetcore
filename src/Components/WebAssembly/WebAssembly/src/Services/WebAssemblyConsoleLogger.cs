@@ -48,10 +48,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
             return;
         }
 
-        if (formatter == null)
-        {
-            throw new ArgumentNullException(nameof(formatter));
-        }
+        ArgumentNullException.ThrowIfNull(formatter);
 
         var message = formatter(state, exception);
 
@@ -177,6 +174,6 @@ internal static partial class ConsoleLoggerInterop
     public static partial void ConsoleWarn(string message);
     [JSImport("globalThis.console.error")]
     public static partial void ConsoleError(string message);
-    [JSImport("Blazor._internal.dotNetCriticalError")]
+    [JSImport("Blazor._internal.dotNetCriticalError", "blazor-internal")]
     public static partial void DotNetCriticalError(string message);
 }

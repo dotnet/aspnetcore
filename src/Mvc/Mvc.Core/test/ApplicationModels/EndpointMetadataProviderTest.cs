@@ -25,11 +25,13 @@ public class EndpointMetadataProviderTest
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInValueTaskOfActionResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInTaskOfResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInTaskOfActionResult))]
+    [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInFSharpAsyncOfResult))]
+    [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInFSharpAsyncOfActionResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithMetadataInActionResult))]
     public void DiscoversEndpointMetadata_FromReturnTypeImplementingIEndpointMetadataProvider(Type controllerType, string actionName)
     {
-        // Act 
+        // Act
         var endpoint = GetEndpoint(controllerType, actionName);
 
         // Assert
@@ -123,7 +125,8 @@ public class EndpointMetadataProviderTest
             m => Assert.True(m is ControllerActionDescriptor),
             m => Assert.True(m is RouteNameMetadata),
             m => Assert.True(m is SuppressLinkGenerationMetadata),
-            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Finally }));
+            m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Finally }),
+            m => Assert.True(m is IRouteDiagnosticsMetadata { Route: "/{controller}/{action}/{id?}" }));
     }
 
     [Theory]
@@ -131,6 +134,8 @@ public class EndpointMetadataProviderTest
     [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInValueTaskOfActionResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInTaskOfResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInTaskOfActionResult))]
+    [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInFSharpAsyncOfResult))]
+    [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInFSharpAsyncOfActionResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInResult))]
     [InlineData(typeof(TestController), nameof(TestController.ActionWithNoAcceptsMetadataInActionResult))]
     public void AllowsRemovalOfMetadata_ByReturnTypeImplementingIEndpointMetadataProvider(Type controllerType, string actionName)
@@ -314,6 +319,9 @@ public class EndpointMetadataProviderTest
         public Task<AddsCustomEndpointMetadataResult> ActionWithMetadataInTaskOfResult()
             => Task.FromResult<AddsCustomEndpointMetadataResult>(null);
 
+        public FSharp.Control.FSharpAsync<AddsCustomEndpointMetadataResult> ActionWithMetadataInFSharpAsyncOfResult()
+            => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return<AddsCustomEndpointMetadataResult>(null);
+
         [HttpGet("selector1")]
         [HttpGet("selector2")]
         public AddsCustomEndpointMetadataActionResult MultipleSelectorsActionWithMetadataInActionResult() => null;
@@ -326,6 +334,9 @@ public class EndpointMetadataProviderTest
         public Task<AddsCustomEndpointMetadataActionResult> ActionWithMetadataInTaskOfActionResult()
             => Task.FromResult<AddsCustomEndpointMetadataActionResult>(null);
 
+        public FSharp.Control.FSharpAsync<AddsCustomEndpointMetadataActionResult> ActionWithMetadataInFSharpAsyncOfActionResult()
+            => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return<AddsCustomEndpointMetadataActionResult>(null);
+
         public RemovesAcceptsMetadataResult ActionWithNoAcceptsMetadataInResult() => null;
 
         public ValueTask<RemovesAcceptsMetadataResult> ActionWithNoAcceptsMetadataInValueTaskOfResult()
@@ -334,6 +345,9 @@ public class EndpointMetadataProviderTest
         public Task<RemovesAcceptsMetadataResult> ActionWithNoAcceptsMetadataInTaskOfResult()
             => Task.FromResult<RemovesAcceptsMetadataResult>(null);
 
+        public FSharp.Control.FSharpAsync<RemovesAcceptsMetadataResult> ActionWithNoAcceptsMetadataInFSharpAsyncOfResult()
+            => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return<RemovesAcceptsMetadataResult>(null);
+
         public RemovesAcceptsMetadataActionResult ActionWithNoAcceptsMetadataInActionResult() => null;
 
         public ValueTask<RemovesAcceptsMetadataActionResult> ActionWithNoAcceptsMetadataInValueTaskOfActionResult()
@@ -341,6 +355,9 @@ public class EndpointMetadataProviderTest
 
         public Task<RemovesAcceptsMetadataActionResult> ActionWithNoAcceptsMetadataInTaskOfActionResult()
             => Task.FromResult<RemovesAcceptsMetadataActionResult>(null);
+
+        public FSharp.Control.FSharpAsync<RemovesAcceptsMetadataActionResult> ActionWithNoAcceptsMetadataInFSharpAsyncOfActionResult()
+            => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return<RemovesAcceptsMetadataActionResult>(null);
     }
 
     private class CustomEndpointMetadata

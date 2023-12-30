@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.RazorViewEngine(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider! pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator! pageActivator, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions!>! optionsAccessor, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
 abstract Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.BeginContext(int position, int length, bool isLiteral) -> void
 abstract Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.EndContext() -> void
 abstract Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.EnsureRenderedBodyOrSections() -> void
@@ -58,6 +57,8 @@ Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider
 Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.Cache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache!
 Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider.TagHelperMemoryCacheProvider() -> void
 Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute
+Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.Key.get -> object?
+Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.Key.init -> void
 Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute.RazorInjectAttribute() -> void
 Microsoft.AspNetCore.Mvc.Razor.IRazorPage
 Microsoft.AspNetCore.Mvc.Razor.IRazorPage.BodyContent.get -> Microsoft.AspNetCore.Html.IHtmlContent?
@@ -110,7 +111,7 @@ Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSection(string! name, bool requir
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSectionAsync(string! name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString?>!
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSectionAsync(string! name, bool required) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString?>!
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>
-Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.Model.get -> TModel?
+Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.Model.get -> TModel
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.RazorPage() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TModel>!
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.ViewData.set -> void
@@ -148,15 +149,15 @@ Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.TempData.get -> Microsoft.AspNetCor
 Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.ViewBag.get -> dynamic!
 Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.WriteAttributeValue(string! prefix, int prefixOffset, object? value, int valueOffset, int valueLength, bool isLiteral) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult
-Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactoryResult() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactory.get -> System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage!>?
+Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactoryResult() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.RazorPageFactoryResult(Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor! viewDescriptor, System.Func<Microsoft.AspNetCore.Mvc.Razor.IRazorPage!>? razorPageFactory) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.Success.get -> bool
 Microsoft.AspNetCore.Mvc.Razor.RazorPageFactoryResult.ViewDescriptor.get -> Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor?
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult
-Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.RazorPageResult() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.Name.get -> string!
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.Page.get -> Microsoft.AspNetCore.Mvc.Razor.IRazorPage?
+Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.RazorPageResult() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.RazorPageResult(string! name, Microsoft.AspNetCore.Mvc.Razor.IRazorPage! page) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.RazorPageResult(string! name, System.Collections.Generic.IEnumerable<string!>! searchedLocations) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPageResult.SearchedLocations.get -> System.Collections.Generic.IEnumerable<string!>?
@@ -171,6 +172,7 @@ Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.FindView(Microsoft.AspNetCore.Mvc
 Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.GetAbsolutePath(string? executingFilePath, string? pagePath) -> string?
 Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.GetPage(string! executingFilePath, string! pagePath) -> Microsoft.AspNetCore.Mvc.Razor.RazorPageResult
 Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.GetView(string? executingFilePath, string! viewPath, bool isMainPage) -> Microsoft.AspNetCore.Mvc.ViewEngines.ViewEngineResult!
+Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.RazorViewEngine(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider! pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator! pageActivator, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions!>! optionsAccessor, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.ViewLookupCache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache!
 Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
 Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions.AreaPageViewLocationFormats.get -> System.Collections.Generic.IList<string!>!

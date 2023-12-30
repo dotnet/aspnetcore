@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -40,7 +40,8 @@ public partial class CreatedAtRouteResultTests
     {
         // Arrange
         var expectedUrl = "testAction";
-        var httpContext = GetHttpContext(expectedUrl);
+        var linkGenerator = new TestLinkGenerator { Url = expectedUrl };
+        var httpContext = GetHttpContext(linkGenerator);
 
         // Act
         var result = new CreatedAtRoute(routeName: null, routeValues: values);
@@ -49,13 +50,15 @@ public partial class CreatedAtRouteResultTests
         // Assert
         Assert.Equal(StatusCodes.Status201Created, httpContext.Response.StatusCode);
         Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
+        Assert.Equal(new RouteValueDictionary(values), linkGenerator.RouteValuesAddress.ExplicitValues);
     }
 
     [Fact]
     public async Task CreatedAtRouteResult_ThrowsOnNullUrl()
     {
         // Arrange
-        var httpContext = GetHttpContext(expectedUrl: null);
+        var linkGenerator = new TestLinkGenerator();
+        var httpContext = GetHttpContext(linkGenerator);
 
         var result = new CreatedAtRoute(
             routeName: null,
@@ -119,23 +122,20 @@ public partial class CreatedAtRouteResultTests
     private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
 
-    private static HttpContext GetHttpContext(string expectedUrl)
+    private static HttpContext GetHttpContext(LinkGenerator linkGenerator)
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Request.PathBase = new PathString("");
         httpContext.Response.Body = new MemoryStream();
-        httpContext.RequestServices = CreateServices(expectedUrl);
+        httpContext.RequestServices = CreateServices(linkGenerator);
         return httpContext;
     }
 
-    private static IServiceProvider CreateServices(string expectedUrl)
+    private static IServiceProvider CreateServices(LinkGenerator linkGenerator)
     {
         var services = new ServiceCollection();
         services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
-        services.AddSingleton<LinkGenerator>(new TestLinkGenerator
-        {
-            Url = expectedUrl
-        });
+        services.AddSingleton<LinkGenerator>(linkGenerator);
 
         return services.BuildServiceProvider();
     }

@@ -11,6 +11,7 @@
       <_SpaProxyServerLaunchConfigLines Include="{" />
       <_SpaProxyServerLaunchConfigLines Include="  &quot;SpaProxyServer&quot;: {" />
       <_SpaProxyServerLaunchConfigLines Include="    &quot;ServerUrl&quot;: &quot;$(SpaProxyServerUrl)&quot;," />
+      <_SpaProxyServerLaunchConfigLines Include="    &quot;RedirectUrl&quot;: &quot;$(SpaProxyRedirectUrl)&quot;," />
       <_SpaProxyServerLaunchConfigLines Include="    &quot;LaunchCommand&quot;: &quot;$(SpaProxyLaunchCommand)&quot;," />
       <_SpaProxyServerLaunchConfigLines Include="    &quot;WorkingDirectory&quot;: &quot;$(_SpaRootFullPath)&quot;," />
       <_SpaProxyServerLaunchConfigLines Include="    &quot;MaxTimeoutInSeconds&quot;: &quot;$(SpaProxyTimeoutInSeconds)&quot;," />

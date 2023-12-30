@@ -14,15 +14,8 @@ internal sealed class PageHandlerPageFilter : IAsyncPageFilter, IOrderedFilter
 
     public Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(next);
 
         var handlerInstance = context.HandlerInstance;
         if (handlerInstance == null)
@@ -48,10 +41,7 @@ internal sealed class PageHandlerPageFilter : IAsyncPageFilter, IOrderedFilter
 
     public Task OnPageHandlerSelectionAsync(PageHandlerSelectedContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.HandlerInstance is IAsyncPageFilter asyncPageFilter)
         {

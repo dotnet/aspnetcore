@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<LS_SETTINGS_FILE>
+  <LS_SETTINGS_DESCRIPTION>
+    <![CDATA[]]>
+  </LS_SETTINGS_DESCRIPTION>
+  <optionSet id="LSOptions">
+    <optionSet id="Defaults" displayName="Options Defaults">
+      <optionSet id="Espresso" displayName="Espresso"/>
+      <optionSet id="Parsers" displayName="Parsers"/>
+    </optionSet>
+    <optionSet id="User" displayName="User Overrides">
+      <optionSet id="Espresso" displayName="Espresso"/>
+      <optionSet id="Parsers" displayName="Parsers"/>
+    </optionSet>
+    <optionSet id="Project" displayName="Project Overrides">
+      <optionSet id="Espresso" displayName="Espresso"/>
+      <optionSet id="Parsers" displayName="Parsers">
+        <optionSet id="Parser 22" displayName="POMHTML Parser options" helpText="POMHTML Parser options for Localization Studio.">
+          <option id="SetCharsetInfo" displayName="Set or add Charset information when Generating" helpText="Add Charset information to the Generated file. This is in the format &lt;META HTTP-EQUIV=&quot;Content-Type&quot; CONTENT=&quot;text/html; charset=windows-1252&quot;&gt;. This is based on the Project Target Langauge. If the dir attribute value in the HTML tag i.e. &lt;HTML dir=&quot;ltr&quot;&gt; is not localizable or is missing, its value will be set automatically on Generate if the reading order of the target language is different from the source language.">
+            <boolean defaultValue="1" currentValue="0"/>
+          </option>
+          <option id="IncTermNoResId" displayName="Include Terms which have no Resource Identifier" helpText="Include Terms which have no Resource Identifier. Terms without Resource Identifiers cannot be Updated or Uploaded if they change.">
+            <boolean defaultValue="0" currentValue="1"/>
+          </option>
+        </optionSet>
+      </optionSet>
+    </optionSet>
+  </optionSet>
+</LS_SETTINGS_FILE>

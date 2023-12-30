@@ -25,10 +25,7 @@ public class DefaultApplicationPartFactory : ApplicationPartFactory
     /// <returns>The sequence of <see cref="ApplicationPart"/> instances.</returns>
     public static IEnumerable<ApplicationPart> GetDefaultApplicationParts(Assembly assembly)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
 
         yield return new AssemblyPart(assembly);
     }

@@ -46,10 +46,7 @@ public static class MvcCoreServiceCollectionExtensions
     /// </remarks>
     public static IMvcCoreBuilder AddMvcCore(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
         var partManager = GetApplicationPartManager(services, environment);
@@ -119,15 +116,8 @@ public static class MvcCoreServiceCollectionExtensions
         this IServiceCollection services,
         Action<MvcOptions> setupAction)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         var builder = services.AddMvcCore();
         services.Configure(setupAction);
@@ -193,7 +183,7 @@ public static class MvcCoreServiceCollectionExtensions
         //
         // Action Invoker
         //
-        // The IActionInvokerFactory is cachable
+        // The IActionInvokerFactory is cacheable
         services.TryAddSingleton<IActionInvokerFactory, ActionInvokerFactory>();
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());

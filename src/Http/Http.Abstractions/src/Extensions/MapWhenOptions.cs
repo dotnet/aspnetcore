@@ -23,10 +23,7 @@ public class MapWhenOptions
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _predicate = value;
         }

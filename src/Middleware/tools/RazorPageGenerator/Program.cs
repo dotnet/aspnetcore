@@ -145,10 +145,7 @@ dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
 
         public void Configure(RazorCodeGenerationOptionsBuilder options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
 
             options.SuppressChecksum = true;
         }
@@ -160,10 +157,7 @@ dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
 
         public void Configure(RazorCodeGenerationOptionsBuilder options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
 
             options.SuppressMetadataAttributes = true;
         }

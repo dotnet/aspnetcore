@@ -3,8 +3,6 @@
   <String Id="Caption">[BundleNameFull] のセットアップ</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">ようこそ</String>
-  <String Id="InstallMessage">セットアップによって、コンピューターに [WixBundleName] がインストールされます。\[インストール\] をクリックして続行するか、\[オプション\] でインストール ディレクトリを設定するか、\[閉じる\] で終了します。</String>
   <String Id="InstallVersion">バージョン [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
@@ -18,16 +16,9 @@
 /norestart   - 再起動を抑制します。既定では再起動前に確認メッセージが表示されます。
 /log log.txt - 特定のファイルに記録します。ログ ファイルは既定では %TEMP% に作成されます。</String>
   <String Id="HelpCloseButton">閉じる(&amp;C)</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;ライセンス条項&lt;/a&gt;。</String>
   <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
-  <String Id="InstallOptionsButton">オプション(&amp;O)</String>
   <String Id="InstallInstallButton">インストール(&amp;I)</String>
   <String Id="InstallCloseButton">閉じる(&amp;C)</String>
-  <String Id="OptionsHeader">セットアップ オプション</String>
-  <String Id="OptionsLocationLabel">インストール場所:</String>
-  <String Id="OptionsBrowseButton">参照(&amp;B)</String>
-  <String Id="OptionsOkButton">OK(&amp;O)</String>
-  <String Id="OptionsCancelButton">キャンセル(&amp;C)</String>
   <String Id="ProgressHeader">セットアップの進行状況</String>
   <String Id="ProgressLabel">処理中:</String>
   <String Id="OverallProgressPackageText">初期化しています...</String>

@@ -1353,9 +1353,12 @@ public class WebHostBuilderTests
         {
             var startEx = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
             Assert.Equal("Hosted Service throws in StartAsync", startEx.Message);
-            var stopEx = await Assert.ThrowsAsync<AggregateException>(() => host.StopAsync());
-            Assert.Single(stopEx.InnerExceptions);
-            Assert.Equal("Hosted Service throws in StopAsync", stopEx.InnerExceptions[0].Message);
+            var stopEx = await Assert.ThrowsAnyAsync<Exception>(() => host.StopAsync());
+            if (stopEx is AggregateException aggregateException)
+            {
+                stopEx = Assert.Single(aggregateException.InnerExceptions);
+            }
+            Assert.Equal("Hosted Service throws in StopAsync", stopEx.Message);
         }
     }
 
@@ -1376,9 +1379,12 @@ public class WebHostBuilderTests
         var startEx = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
         Assert.Equal("Hosted Service throws in StartAsync", startEx.Message);
 
-        var stopEx = await Assert.ThrowsAsync<AggregateException>(() => host.StopAsync());
-        Assert.Single(stopEx.InnerExceptions);
-        Assert.Equal("Hosted Service throws in StopAsync", stopEx.InnerExceptions[0].Message);
+        var stopEx = await Assert.ThrowsAnyAsync<Exception>(() => host.StopAsync());
+        if (stopEx is AggregateException aggregateException)
+        {
+            stopEx = Assert.Single(aggregateException.InnerExceptions);
+        }
+        Assert.Equal("Hosted Service throws in StopAsync", stopEx.Message);
 
         // This service is never constructed
         Assert.False(service.StartCalled);

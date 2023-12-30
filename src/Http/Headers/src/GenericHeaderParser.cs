@@ -14,10 +14,7 @@ internal sealed class GenericHeaderParser<T> : BaseHeaderParser<T>
     internal GenericHeaderParser(bool supportsMultipleValues, GetParsedValueLengthDelegate getParsedValueLength)
         : base(supportsMultipleValues)
     {
-        if (getParsedValueLength == null)
-        {
-            throw new ArgumentNullException(nameof(getParsedValueLength));
-        }
+        ArgumentNullException.ThrowIfNull(getParsedValueLength);
 
         _getParsedValueLength = getParsedValueLength;
     }

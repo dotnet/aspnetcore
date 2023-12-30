@@ -73,15 +73,8 @@ public class FileBufferingReadStream : Stream
         Func<string> tempFileDirectoryAccessor,
         ArrayPool<byte> bytePool)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
-
-        if (tempFileDirectoryAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(tempFileDirectoryAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(tempFileDirectoryAccessor);
 
         _bytePool = bytePool;
         if (memoryThreshold <= _maxRentedBufferSize)
@@ -132,15 +125,8 @@ public class FileBufferingReadStream : Stream
         string tempFileDirectory,
         ArrayPool<byte> bytePool)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
-
-        if (tempFileDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(tempFileDirectory));
-        }
+        ArgumentNullException.ThrowIfNull(inner);
+        ArgumentNullException.ThrowIfNull(tempFileDirectory);
 
         _bytePool = bytePool;
         if (memoryThreshold <= _maxRentedBufferSize)

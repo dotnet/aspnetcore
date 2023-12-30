@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -32,7 +32,7 @@ public class Http2FrameWriterBenchmark
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
             httpParser: new HttpParser<Http1ParsingHandler>(),
-            dateHeaderValueManager: new DateHeaderValueManager());
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
         _frameWriter = new Http2FrameWriter(
             new NullPipeWriter(),

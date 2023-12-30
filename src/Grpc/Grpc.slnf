@@ -26,7 +26,7 @@
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
       "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj"
     ]
   }
 }

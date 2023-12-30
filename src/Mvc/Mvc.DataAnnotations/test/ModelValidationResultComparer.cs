@@ -26,10 +26,7 @@ public class ModelValidationResultComparer : IEqualityComparer<ModelValidationRe
 
     public int GetHashCode(ModelValidationResult obj)
     {
-        if (obj == null)
-        {
-            throw new ArgumentNullException(nameof(obj));
-        }
+        ArgumentNullException.ThrowIfNull(obj);
 
         return obj.MemberName.GetHashCode();
     }

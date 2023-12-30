@@ -24,7 +24,6 @@ internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDispos
     public SocketConnectionFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;

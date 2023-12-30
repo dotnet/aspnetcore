@@ -2,9 +2,9 @@
 
 ASP.NET Core Servers contains all servers that can be used in ASP.NET Core by default. These include:
 
-- [Kestrel](https://docs.microsoft.com/aspnet/core/fundamentals/servers/kestrel), our cross-platform web server that is included and enabled by default in ASP.NET Core.
-- [IIS Server/ASP.NET Core Module](https://docs.microsoft.com/aspnet/core/host-and-deploy/iis/), a flexible secure managed Web Server to be hosted with IIS on Windows.
-- [HTTP.sys](https://docs.microsoft.com/aspnet/core/fundamentals/servers/httpsys), a web server that uses the [Windows Hypertext Transfer Protocol Stack](https://docs.microsoft.com/iis/get-started/introduction-to-iis/introduction-to-iis-architecture#hypertext-transfer-protocol-stack-httpsys).
+- [Kestrel](https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel), our cross-platform web server that is included and enabled by default in ASP.NET Core.
+- [IIS Server/ASP.NET Core Module](https://learn.microsoft.com/aspnet/core/host-and-deploy/iis/), a flexible secure managed Web Server to be hosted with IIS on Windows.
+- [HTTP.sys](https://learn.microsoft.com/aspnet/core/fundamentals/servers/httpsys), a web server that uses the [Windows Hypertext Transfer Protocol Stack](https://learn.microsoft.com/iis/get-started/introduction-to-iis/introduction-to-iis-architecture#hypertext-transfer-protocol-stack-httpsys).
 
 ## Description
 

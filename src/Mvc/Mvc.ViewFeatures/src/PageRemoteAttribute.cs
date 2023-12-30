@@ -38,10 +38,7 @@ public class PageRemoteAttribute : RemoteAttributeBase
     /// <inheritdoc />
     protected override string GetUrl(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var services = context.ActionContext.HttpContext.RequestServices;
         var factory = services.GetRequiredService<IUrlHelperFactory>();

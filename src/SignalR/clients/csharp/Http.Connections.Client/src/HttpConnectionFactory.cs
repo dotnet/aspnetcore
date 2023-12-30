@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -26,10 +27,7 @@ public class HttpConnectionFactory : IConnectionFactory
     /// <param name="loggerFactory">The logger factory.</param>
     public HttpConnectionFactory(IOptions<HttpConnectionOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         _httpConnectionOptions = options.Value;
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -45,10 +43,7 @@ public class HttpConnectionFactory : IConnectionFactory
     /// </returns>
     public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endPoint, CancellationToken cancellationToken = default)
     {
-        if (endPoint == null)
-        {
-            throw new ArgumentNullException(nameof(endPoint));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(endPoint);
 
         if (!(endPoint is UriEndPoint uriEndPoint))
         {
@@ -93,7 +88,8 @@ public class HttpConnectionFactory : IConnectionFactory
             CloseTimeout = options.CloseTimeout,
             DefaultTransferFormat = options.DefaultTransferFormat,
             ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
-            TransportMaxBufferSize = options.TransportMaxBufferSize
+            TransportMaxBufferSize = options.TransportMaxBufferSize,
+            UseStatefulReconnect = options.UseStatefulReconnect,
         };
 
         if (!OperatingSystem.IsBrowser())

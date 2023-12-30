@@ -12,12 +12,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
-    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CancellationTokenSourcePool.cs" />
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" LinkBase="Shared" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" Link="Internal\StreamCopyOperationInternal.cs" />
     <Compile Include="..\..\Shared\CookieHeaderParserShared.cs" Link="Internal\CookieHeaderParserShared.cs" />
-    <Compile Include="..\..\Shared\HttpRuleParser.cs" LinkBase="Internal" />
-    <Compile Include="..\..\Shared\HttpParseResult.cs" LinkBase="Internal" />
+    <Compile Include="$(SharedSourceRoot)HttpRuleParser.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\HttpContextDebugFormatter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="..\..\WebUtilities\src\AspNetCoreTempDirectory.cs" LinkBase="Internal" />
     <Compile Include="..\..\..\Shared\Dictionary\AdaptiveCapacityDictionary.cs" LinkBase="Internal" />
   </ItemGroup>
@@ -25,10 +30,18 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.MicroBenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Routing.Tests" />
+  </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@ function getChunkFromArrayBufferView(data: ArrayBufferView, position: number, ne
 }
 
 const transmittingDotNetToJSStreams = new Map<number, ReadableStreamController<any>>();
-export function receiveDotNetDataStream(streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {
+export function receiveDotNetDataStream(dispatcher: DotNet.ICallDispatcher, streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {
   let streamController = transmittingDotNetToJSStreams.get(streamId);
   if (!streamController) {
     const readableStream = new ReadableStream({
@@ -34,7 +34,7 @@ export function receiveDotNetDataStream(streamId: number, data: Uint8Array, byte
       },
     });
 
-    DotNet.jsCallDispatcher.supplyDotNetStream(streamId, readableStream);
+    dispatcher.supplyDotNetStream(streamId, readableStream);
   }
 
   if (errorMessage) {

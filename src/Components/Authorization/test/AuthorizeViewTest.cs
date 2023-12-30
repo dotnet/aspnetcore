@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Authorization;
@@ -505,13 +505,13 @@ public class AuthorizeViewTest
         return new TestAuthStateProviderComponent(builder =>
         {
             builder.OpenComponent<AuthorizeView>(0);
-            builder.AddAttribute(1, nameof(AuthorizeView.ChildContent), childContent);
-            builder.AddAttribute(2, nameof(AuthorizeView.Authorized), authorized);
-            builder.AddAttribute(3, nameof(AuthorizeView.NotAuthorized), notAuthorized);
-            builder.AddAttribute(4, nameof(AuthorizeView.Authorizing), authorizing);
-            builder.AddAttribute(5, nameof(AuthorizeView.Policy), policy);
-            builder.AddAttribute(6, nameof(AuthorizeView.Roles), roles);
-            builder.AddAttribute(7, nameof(AuthorizeView.Resource), resource);
+            builder.AddComponentParameter(1, nameof(AuthorizeView.ChildContent), childContent);
+            builder.AddComponentParameter(2, nameof(AuthorizeView.Authorized), authorized);
+            builder.AddComponentParameter(3, nameof(AuthorizeView.NotAuthorized), notAuthorized);
+            builder.AddComponentParameter(4, nameof(AuthorizeView.Authorizing), authorizing);
+            builder.AddComponentParameter(5, nameof(AuthorizeView.Policy), policy);
+            builder.AddComponentParameter(6, nameof(AuthorizeView.Roles), roles);
+            builder.AddComponentParameter(7, nameof(AuthorizeView.Resource), resource);
             builder.CloseComponent();
         });
     }
@@ -531,11 +531,11 @@ public class AuthorizeViewTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<CascadingValue<Task<AuthenticationState>>>(0);
-            builder.AddAttribute(1, nameof(CascadingValue<Task<AuthenticationState>>.Value), AuthenticationState);
-            builder.AddAttribute(2, "ChildContent", (RenderFragment)(builder =>
+            builder.AddComponentParameter(1, nameof(CascadingValue<Task<AuthenticationState>>.Value), AuthenticationState);
+            builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(builder =>
             {
                 builder.OpenComponent<NeverReRenderComponent>(0);
-                builder.AddAttribute(1, "ChildContent", _childContent);
+                builder.AddComponentParameter(1, "ChildContent", _childContent);
                 builder.CloseComponent();
             }));
             builder.CloseComponent();

@@ -12,6 +12,6 @@
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net462\*.*" target="tools\net462" />
     <file src="$artifactsBinDir$\GetDocument.Insider\x86\$configuration$\net462\*.*" target="tools\net462-x86" />
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\netcoreapp2.1\publish\*.*" target="tools\netcoreapp2.1" />
-    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net8.0\publish\*.*" target="tools\net8.0" />
+    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net9.0\publish\*.*" target="tools\net9.0" />
   </files>
 </package>

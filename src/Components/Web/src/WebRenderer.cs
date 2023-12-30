@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// </summary>
 public abstract class WebRenderer : Renderer
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
+    private readonly int _rendererId;
 
     /// <summary>
     /// Constructs an instance of <see cref="WebRenderer"/>.
@@ -34,16 +34,16 @@ public abstract class WebRenderer : Renderer
         JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory)
     {
-        _serviceProvider = serviceProvider;
         _interopMethodsReference = DotNetObjectReference.Create(
             new WebRendererInteropMethods(this, jsonOptions, jsComponentInterop));
+        _rendererId = GetWebRendererId();
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
-        var jsRuntime = _serviceProvider.GetRequiredService<IJSRuntime>();
+        var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
         jsRuntime.InvokeVoidAsync(
             "Blazor._internal.attachWebRendererInterop",
-            RendererId,
+            _rendererId,
             _interopMethodsReference,
             jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
             jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
@@ -52,7 +52,24 @@ public abstract class WebRenderer : Renderer
     /// <summary>
     /// Gets the identifier for the renderer.
     /// </summary>
-    protected int RendererId { get; init; } // Only used on WebAssembly. Will be zero in other cases.
+    protected int RendererId
+    {
+        get => _rendererId;
+
+        [Obsolete($"The renderer ID can be assigned by overriding '{nameof(GetWebRendererId)}'.")]
+        init { /* No-op */ }
+    }
+
+    /// <summary>
+    /// Allocates an identifier for the renderer.
+    /// </summary>
+    protected virtual int GetWebRendererId()
+    {
+        // We return '0' by default, which is reserved so that classes deriving from this
+        // type don't need to worry about allocating an ID unless they're using multiple renderers.
+        // As soon as multiple renderers are used, this needs to return a unique identifier.
+        return 0;
+    }
 
     /// <summary>
     /// Instantiates a root component and attaches it to the browser within the specified element.

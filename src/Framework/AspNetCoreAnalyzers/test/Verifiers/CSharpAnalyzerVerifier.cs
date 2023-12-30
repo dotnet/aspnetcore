@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Analyzers.Verifiers;
 
@@ -31,7 +34,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
     {
         var test = new CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
         {
-            TestCode = source,
+            TestCode = source.ReplaceLineEndings(),
             // We need to set the output type to an exe to properly
             // support top-level programs in the tests. Otherwise,
             // the test infra will assume we are trying to build a library.
@@ -51,15 +54,16 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
                 "NuGet.config") :
             Path.Combine(TestData.GetRepoRoot(), "NuGet.config");
         var net8Ref = new ReferenceAssemblies(
-            "net8.0",
+            "net9.0",
             new PackageIdentity(
                 "Microsoft.NETCore.App.Ref",
                 TestData.GetMicrosoftNETCoreAppRefPackageVersion()),
-            Path.Combine("ref", "net8.0"))
+            Path.Combine("ref", "net9.0"))
         .WithNuGetConfigFilePath(nugetConfigPath);
 
         return net8Ref.AddAssemblies(ImmutableArray.Create(
             TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Authorization.IAuthorizeData).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.BindAttribute).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions).Assembly.Location),
@@ -68,8 +72,13 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.ConfigureHostBuilder).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.ConfigureWebHostBuilder).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.EndpointRoutingApplicationBuilderExtensions).Assembly.Location),
-            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.EndpointRoutingApplicationBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.RateLimiterEndpointConventionBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.CorsEndpointConventionBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.Extensions.DependencyInjection.OutputCacheConventionBuilderExtensions).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.AuthorizationEndpointConventionBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Routing.RouteData).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Components.ParameterAttribute).Assembly.Location),

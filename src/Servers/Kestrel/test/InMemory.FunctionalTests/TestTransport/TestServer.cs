@@ -16,8 +16,9 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -86,6 +87,9 @@ internal class TestServer : IAsyncDisposable, IStartup
 
                 services.AddSingleton<IStartup>(this);
                 services.AddSingleton(context.LoggerFactory);
+                services.AddSingleton(context.Metrics);
+                services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
+                services.AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>();
 
                 services.AddSingleton<IServer>(sp =>
                 {
@@ -94,6 +98,7 @@ internal class TestServer : IAsyncDisposable, IStartup
                     return new KestrelServerImpl(
                         new IConnectionListenerFactory[] { _transportFactory },
                         sp.GetServices<IMultiplexedConnectionListenerFactory>(),
+                        sp.GetRequiredService<IHttpsConfigurationService>(),
                         context);
                 });
             });
@@ -108,9 +113,11 @@ internal class TestServer : IAsyncDisposable, IStartup
 
     public InMemoryHttpClientSlim HttpClientSlim { get; }
 
-    public InMemoryConnection CreateConnection(Encoding encoding = null)
+    public InMemoryConnection CreateConnection(Encoding encoding = null, Action<IFeatureCollection> featuresAction = null)
     {
         var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
+        featuresAction?.Invoke(transportConnection.Features);
+
         _transportFactory.AddConnection(transportConnection);
         return new InMemoryConnection(transportConnection, encoding);
     }

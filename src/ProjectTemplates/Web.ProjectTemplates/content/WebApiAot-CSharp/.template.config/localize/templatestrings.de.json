@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ASP.NET Core Web-API (native AOT)",
+  "description": "Eine Projektvorlage zum Erstellen einer RESTful-Web-API mit ASP.NET Core minimalen APIs, die als native AOT veröffentlicht wurden.",
+  "symbols/ExcludeLaunchSettings/description": "Ob launchSettings.json aus der generierten Vorlage ausgeschlossen werden soll.",
+  "symbols/kestrelHttpPort/description": "Portnummer, die für den HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/iisHttpPort/description": "Portnummer, die für den IIS Express HTTP Endpunkt in launchSettings.json verwendet werden soll.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "symbols/UseProgramMain/displayName": "Keine Anweisungen_der obersten Ebene verwenden",
+  "symbols/UseProgramMain/description": "Gibt an, ob anstelle von Anweisungen der obersten Ebene eine explizite Programmklasse und eine Main-Methode generiert werden soll.",
+  "postActions/restore/description": "„NuGet-Pakete“ wiederherstellen, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
+}

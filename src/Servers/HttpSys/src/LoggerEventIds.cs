@@ -53,4 +53,5 @@ internal static class LoggerEventIds
     public const int ListenerDisposing = 46;
     public const int RequestValidationFailed = 47;
     public const int CreateDisconnectTokenError = 48;
+    public const int RequestAborted = 49;
 }

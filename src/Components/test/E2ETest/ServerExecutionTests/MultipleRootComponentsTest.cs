@@ -76,19 +76,26 @@ public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var expectedComponentSequence = new bool[]
         {
                 // true means it was a prerendered component.
-                true,
-                false,
-                false,
-                false,
-                true,
-                false,
-                true,
-                false,
-                true,
-                false,
-                true,
-                false,
-                true,
+
+                // Layout
+                false, // Server
+                true, // ServerPrerendered
+
+                // Body
+                true, // ServerPrerendered
+                false, // Server
+                false, // Server
+
+                false, // Server
+                true, // ServerPrerendered
+                false, // Server
+                true, // ServerPrerendered
+                false, // Server
+                true, // ServerPrerendered
+
+                // Layout
+                false, // Server
+                true, // ServerPrerendered
         };
         Assert.Equal(expectedComponentSequence, componentSequence);
 
@@ -104,16 +111,16 @@ public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.Single(updatedGreets.Where(g => string.Equals("Hello Abraham", g)));
     }
 
-    private (ServerComponentMarker, ServerComponentMarker)[] ReadMarkers(string content)
+    private (ComponentMarker, ComponentMarker)[] ReadMarkers(string content)
     {
         content = content.Replace("\r\n", "");
         var matches = Regex.Matches(content, MarkerPattern);
-        var markers = matches.Select(s => JsonSerializer.Deserialize<ServerComponentMarker>(
+        var markers = matches.Select(s => JsonSerializer.Deserialize<ComponentMarker>(
             s.Groups[1].Value,
             ServerComponentSerializationSettings.JsonSerializationOptions));
 
         var prerenderMarkers = markers.Where(m => m.PrerenderId != null).GroupBy(p => p.PrerenderId).Select(g => (g.First(), g.Skip(1).First())).ToArray();
-        var nonPrerenderMarkers = markers.Where(m => m.PrerenderId == null).Select(g => (g, (ServerComponentMarker)default)).ToArray();
+        var nonPrerenderMarkers = markers.Where(m => m.PrerenderId == null).Select(g => (g, (ComponentMarker)default)).ToArray();
 
         return prerenderMarkers.Concat(nonPrerenderMarkers).OrderBy(m => m.Item1.Sequence).ToArray();
     }

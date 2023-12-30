@@ -123,7 +123,7 @@ public class CookieAuthenticationOptions : AuthenticationSchemeOptions
 
     /// <summary>
     /// <para>
-    /// Controls how much time the authentication ticket stored in the cookie will remain valid from the point it is created
+    /// Controls how much time the authentication ticket stored in the cookie will remain valid from the point it is created.
     /// The expiration information is stored in the protected cookie ticket. Because of that an expired cookie will be ignored
     /// even if it is passed to the server after the browser should have purged it.
     /// </para>

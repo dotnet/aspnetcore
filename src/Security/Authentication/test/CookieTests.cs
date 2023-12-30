@@ -12,16 +12,17 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
 public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions>
 {
-    private readonly TestClock _clock = new TestClock();
+    private readonly FakeTimeProvider _timeProvider = new();
 
     protected override string DefaultScheme => CookieAuthenticationDefaults.AuthenticationScheme;
     protected override Type HandlerType => typeof(CookieAuthenticationHandler);
@@ -187,9 +188,9 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         var sessionStore = new TestTicketStore();
         using var host = await CreateHostWithServices(s =>
         {
-            s.AddSingleton<ISystemClock>(_clock);
             s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
             {
+                o.TimeProvider = _timeProvider;
                 o.SessionStore = sessionStore;
             });
         }, SignInAsAlice);
@@ -204,7 +205,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
         // Make sure the session is expired
-        _clock.Add(TimeSpan.FromDays(60));
+        _timeProvider.Advance(TimeSpan.FromDays(60));
 
         // Verify that a new session is generated with a new key
         var transaction3 = await SendAsync(server, "http://example.com/signinalice", transaction1.CookieNameValue);
@@ -222,9 +223,9 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         var sessionStore = new TestTicketStore();
         using var host = await CreateHostWithServices(s =>
         {
-            s.AddSingleton<ISystemClock>(_clock);
             s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
             {
+                o.TimeProvider = _timeProvider;
                 o.SessionStore = sessionStore;
             });
         }, SignInAsAlice);
@@ -239,7 +240,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
         // Make sure the session is expired
-        _clock.Add(TimeSpan.FromDays(60));
+        _timeProvider.Advance(TimeSpan.FromDays(60));
 
         // Verify that a new session is generated with a new key
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
@@ -447,11 +448,11 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
 
         var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-        _clock.Add(TimeSpan.FromMinutes(7));
+        _timeProvider.Advance(TimeSpan.FromMinutes(7));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-        _clock.Add(TimeSpan.FromMinutes(7));
+        _timeProvider.Advance(TimeSpan.FromMinutes(7));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
@@ -474,18 +475,18 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         context =>
             context.SignInAsync("Cookies",
                 new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
-                new AuthenticationProperties() { ExpiresUtc = _clock.UtcNow.Add(TimeSpan.FromMinutes(5)) }));
+                new AuthenticationProperties() { ExpiresUtc = _timeProvider.GetUtcNow().Add(TimeSpan.FromMinutes(5)) }));
 
         using var server = host.GetTestServer();
         var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
         var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-        _clock.Add(TimeSpan.FromMinutes(3));
+        _timeProvider.Advance(TimeSpan.FromMinutes(3));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
-        _clock.Add(TimeSpan.FromMinutes(3));
+        _timeProvider.Advance(TimeSpan.FromMinutes(3));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
 
@@ -519,7 +520,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         using var server = host.GetTestServer();
         var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
-        _clock.Add(TimeSpan.FromMinutes(11));
+        _timeProvider.Advance(TimeSpan.FromMinutes(11));
 
         var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction2.SetCookie);
@@ -619,19 +620,19 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotNull(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(5));
+        _timeProvider.Advance(TimeSpan.FromMinutes(5));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.NotNull(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(6));
+        _timeProvider.Advance(TimeSpan.FromMinutes(6));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction4.SetCookie);
         Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(5));
+        _timeProvider.Advance(TimeSpan.FromMinutes(5));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -740,19 +741,19 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotNull(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(5));
+        _timeProvider.Advance(TimeSpan.FromMinutes(5));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.NotNull(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(6));
+        _timeProvider.Advance(TimeSpan.FromMinutes(6));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
         Assert.NotNull(transaction4.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(11));
+        _timeProvider.Advance(TimeSpan.FromMinutes(11));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -796,19 +797,19 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotNull(transaction2.SetCookie);
         Assert.Equal("1", FindClaimValue(transaction2, "counter"));
 
-        _clock.Add(TimeSpan.FromMinutes(5));
+        _timeProvider.Advance(TimeSpan.FromMinutes(5));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.NotNull(transaction3.SetCookie);
         Assert.Equal("11", FindClaimValue(transaction3, "counter"));
 
-        _clock.Add(TimeSpan.FromMinutes(6));
+        _timeProvider.Advance(TimeSpan.FromMinutes(6));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
         Assert.NotNull(transaction4.SetCookie);
         Assert.Equal("111", FindClaimValue(transaction4, "counter"));
 
-        _clock.Add(TimeSpan.FromMinutes(11));
+        _timeProvider.Advance(TimeSpan.FromMinutes(11));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -839,7 +840,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                     }
                     // Causes the expiry time to not be extended because the lifetime is
                     // calculated relative to the issue time.
-                    ctx.Properties.IssuedUtc = _clock.UtcNow;
+                    ctx.Properties.IssuedUtc = _timeProvider.GetUtcNow();
                     return Task.FromResult(0);
                 }
             };
@@ -855,19 +856,19 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotNull(transaction2.SetCookie);
         Assert.Equal("1", FindClaimValue(transaction2, "counter"));
 
-        _clock.Add(TimeSpan.FromMinutes(1));
+        _timeProvider.Advance(TimeSpan.FromMinutes(1));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.NotNull(transaction3.SetCookie);
         Assert.Equal("11", FindClaimValue(transaction3, "counter"));
 
-        _clock.Add(TimeSpan.FromMinutes(1));
+        _timeProvider.Advance(TimeSpan.FromMinutes(1));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
         Assert.NotNull(transaction4.SetCookie);
         Assert.Equal("111", FindClaimValue(transaction4, "counter"));
 
-        _clock.Add(TimeSpan.FromMinutes(9));
+        _timeProvider.Advance(TimeSpan.FromMinutes(9));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -901,19 +902,19 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.NotNull(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(5));
+        _timeProvider.Advance(TimeSpan.FromMinutes(5));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.NotNull(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(6));
+        _timeProvider.Advance(TimeSpan.FromMinutes(6));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction4.SetCookie);
         Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(5));
+        _timeProvider.Advance(TimeSpan.FromMinutes(5));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -959,13 +960,13 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         var firstIssueDate = lastValidateIssuedDate;
         var firstExpiresDate = lastExpiresDate;
 
-        _clock.Add(TimeSpan.FromMinutes(1));
+        _timeProvider.Advance(TimeSpan.FromMinutes(1));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
         Assert.NotNull(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(2));
+        _timeProvider.Advance(TimeSpan.FromMinutes(2));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
         Assert.NotNull(transaction4.SetCookie);
@@ -986,7 +987,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
             {
                 OnSigningIn = context =>
                 {
-                    context.Properties.ExpiresUtc = _clock.UtcNow.Add(TimeSpan.FromMinutes(5));
+                    context.Properties.ExpiresUtc = _timeProvider.GetUtcNow().Add(TimeSpan.FromMinutes(5));
                     return Task.FromResult(0);
                 }
             };
@@ -1000,13 +1001,13 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(3));
+        _timeProvider.Advance(TimeSpan.FromMinutes(3));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(3));
+        _timeProvider.Advance(TimeSpan.FromMinutes(3));
 
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction4.SetCookie);
@@ -1030,20 +1031,20 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         // transaction4 should arrive with a new SetCookie value
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.NotNull(transaction4.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -1076,20 +1077,20 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.Null(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         // transaction4 should arrive with a new SetCookie value
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
         Assert.NotNull(transaction4.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction4.CookieNameValue);
         Assert.Null(transaction5.SetCookie);
@@ -1124,13 +1125,13 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.Null(transaction2.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         var transaction3 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=0&renew=0", transaction1.CookieNameValue);
         Assert.Null(transaction3.SetCookie);
         Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
 
-        _clock.Add(TimeSpan.FromMinutes(4));
+        _timeProvider.Advance(TimeSpan.FromMinutes(4));
 
         // A renewal is now expected, but we've suppressed it
         var transaction4 = await SendAsync(server, "http://example.com/me/Cookies?expectrenew=1&renew=0", transaction1.CookieNameValue);
@@ -1792,8 +1793,11 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     private Task<IHost> CreateHost(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, bool claimsTransform = false)
         => CreateHostWithServices(s =>
         {
-            s.AddSingleton<ISystemClock>(_clock);
-            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(configureOptions);
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.TimeProvider = _timeProvider;
+                configureOptions(o);
+            });
             if (claimsTransform)
             {
                 s.AddSingleton<IClaimsTransformation, ClaimsTransformer>();

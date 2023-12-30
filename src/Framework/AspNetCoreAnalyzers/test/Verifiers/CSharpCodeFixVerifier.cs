@@ -31,7 +31,7 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
     {
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
         {
-            TestCode = source,
+            TestCode = source.ReplaceLineEndings(),
             // We need to set the output type to an exe to properly
             // support top-level programs in the tests. Otherwise,
             // the test infra will assume we are trying to build a library.
@@ -59,11 +59,12 @@ public static partial class CSharpCodeFixVerifier<TAnalyzer, TCodeFix>
             // We need to set the output type to an exe to properly
             // support top-level programs in the tests. Otherwise,
             // the test infra will assume we are trying to build a library.
-            TestState = { Sources = { source }, OutputKind = OutputKind.ConsoleApplication },
-            FixedState = { Sources = { fixedSource } },
+            TestState = { Sources = { source.ReplaceLineEndings() }, OutputKind = OutputKind.ConsoleApplication },
+            FixedState = { Sources = { fixedSource.ReplaceLineEndings() } },
             ReferenceAssemblies = CSharpAnalyzerVerifier<TAnalyzer>.GetReferenceAssemblies(),
             NumberOfFixAllIterations = expectedIterations,
-            CodeActionEquivalenceKey = codeActionEquivalenceKey
+            CodeActionEquivalenceKey = codeActionEquivalenceKey,
+            CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
         };
 
         if (usageSource != null)

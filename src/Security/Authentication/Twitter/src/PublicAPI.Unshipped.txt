@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions! options) -> void
-Microsoft.AspNetCore.Authentication.Twitter.TwitterPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.Twitter.TwitterOptions! options) -> void

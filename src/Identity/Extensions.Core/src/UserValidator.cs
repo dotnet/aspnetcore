@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -38,14 +39,8 @@ public class UserValidator<TUser> : IUserValidator<TUser> where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the validation operation.</returns>
     public virtual async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
     {
-        if (manager == null)
-        {
-            throw new ArgumentNullException(nameof(manager));
-        }
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(manager);
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         var errors = await ValidateUserName(manager, user).ConfigureAwait(false);
         if (manager.Options.User.RequireUniqueEmail)
         {

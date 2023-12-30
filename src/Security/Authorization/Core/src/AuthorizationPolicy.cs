@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -27,15 +28,8 @@ public class AuthorizationPolicy
     /// </param>
     public AuthorizationPolicy(IEnumerable<IAuthorizationRequirement> requirements, IEnumerable<string> authenticationSchemes)
     {
-        if (requirements == null)
-        {
-            throw new ArgumentNullException(nameof(requirements));
-        }
-
-        if (authenticationSchemes == null)
-        {
-            throw new ArgumentNullException(nameof(authenticationSchemes));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(requirements);
+        ArgumentNullThrowHelper.ThrowIfNull(authenticationSchemes);
 
         if (!requirements.Any())
         {
@@ -67,10 +61,7 @@ public class AuthorizationPolicy
     /// </returns>
     public static AuthorizationPolicy Combine(params AuthorizationPolicy[] policies)
     {
-        if (policies == null)
-        {
-            throw new ArgumentNullException(nameof(policies));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(policies);
 
         return Combine((IEnumerable<AuthorizationPolicy>)policies);
     }
@@ -85,10 +76,7 @@ public class AuthorizationPolicy
     /// </returns>
     public static AuthorizationPolicy Combine(IEnumerable<AuthorizationPolicy> policies)
     {
-        if (policies == null)
-        {
-            throw new ArgumentNullException(nameof(policies));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(policies);
 
         var builder = new AuthorizationPolicyBuilder();
         foreach (var policy in policies)
@@ -127,15 +115,8 @@ public class AuthorizationPolicy
         IEnumerable<IAuthorizeData> authorizeData,
         IEnumerable<AuthorizationPolicy> policies)
     {
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
-
-        if (authorizeData == null)
-        {
-            throw new ArgumentNullException(nameof(authorizeData));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(policyProvider);
+        ArgumentNullThrowHelper.ThrowIfNull(authorizeData);
 
         var anyPolicies = policies.Any();
 

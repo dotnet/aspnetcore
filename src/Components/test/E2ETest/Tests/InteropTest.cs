@@ -91,6 +91,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeAsyncThrowsSerializingCircularStructure"] = "Success",
             ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
             ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
+            ["disposeJSObjectReferenceAsync"] = "Success",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -114,9 +115,9 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["result8"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
             ["result9"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
             ["roundTripJSObjectReference"] = @"""successful""",
-            ["invokeDisposedJSObjectReferenceException"] = @"""JS object instance with ID",
-            ["ThrowException"] = @"""System.InvalidOperationException: Threw an exception!",
-            ["ExceptionFromSyncMethod"] = "Function threw an exception!",
+            ["invokeDisposedJSObjectReferenceException"] = @"""Error: JS object instance with ID",
+            ["ThrowException"] = @"""Threw an exception!",
+            ["ExceptionFromSyncMethod"] = "Error: Function threw an exception!",
             ["roundTripByteArrayFromJS"] = @"{""0"":1,""1"":5,""2"":7,""3"":17,""4"":200,""5"":138}",
             ["roundTripByteArrayWrapperObjectFromJS"] = @"{""strVal"":""Some string"",""byteArrayVal"":{""0"":1,""1"":5,""2"":7,""3"":17,""4"":200,""5"":138},""intVal"":42}",
             ["roundTripByteArrayFromDotNet"] = @"1,5,7,15,35,200",
@@ -143,6 +144,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["genericInstanceMethod"] = @"""Updated value 2""",
             ["requestDotNetStreamReference"] = @"""Success""",
             ["requestDotNetStreamWrapperReference"] = @"""Success""",
+            ["disposeJSInProcessObjectReference"] = "Success",
         };
 
         // Include the sync assertions only when running under WebAssembly

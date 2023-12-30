@@ -23,12 +23,11 @@ internal static class JsonRequestHelpers
     public const string JsonContentType = "application/json";
     public const string JsonContentTypeWithCharset = "application/json; charset=utf-8";
 
+    public const string StatusDetailsTrailerName = "grpc-status-details-bin";
+
     public static bool HasJsonContentType(HttpRequest request, out StringSegment charset)
     {
-        if (request == null)
-        {
-            throw new ArgumentNullException(nameof(request));
-        }
+        ArgumentNullException.ThrowIfNull(request);
 
         if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
         {
@@ -85,7 +84,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Status status, JsonSerializerOptions options)
+    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Metadata trailers, Status status, JsonSerializerOptions options)
     {
         if (!response.HasStarted)
         {
@@ -93,13 +92,31 @@ internal static class JsonRequestHelpers
             response.ContentType = MediaType.ReplaceEncoding("application/json", encoding);
         }
 
-        var e = new Google.Rpc.Status
+        var e = GetStatusDetails(trailers) ?? new Google.Rpc.Status
         {
             Message = status.Detail,
             Code = (int)status.StatusCode
         };
 
         await WriteResponseMessage(response, encoding, e, options, CancellationToken.None);
+
+        static Google.Rpc.Status? GetStatusDetails(Metadata trailers)
+        {
+            var statusDetails = trailers.Get(StatusDetailsTrailerName);
+            if (statusDetails?.IsBinary == true)
+            {
+                try
+                {
+                    return Google.Rpc.Status.Parser.ParseFrom(statusDetails.ValueBytes);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Error when parsing the '{StatusDetailsTrailerName}' trailer.", ex);
+                }
+            }
+
+            return null;
+        }
     }
 
     public static int MapStatusCodeToHttpStatus(StatusCode statusCode)
@@ -200,8 +217,16 @@ internal static class JsonRequestHelpers
                             // TODO: JsonSerializer currently doesn't support deserializing values onto an existing object or collection.
                             // Either update this to use new functionality in JsonSerializer or improve work-around perf.
                             type = JsonConverterHelper.GetFieldType(serverCallContext.DescriptorInfo.BodyFieldDescriptor);
-                            type = type.GetGenericArguments()[0];
-                            type = typeof(List<>).MakeGenericType(type);
+
+                            var args = type.GetGenericArguments();
+                            if (serverCallContext.DescriptorInfo.BodyFieldDescriptor.IsMap)
+                            {
+                                type = typeof(Dictionary<,>).MakeGenericType(args[0], args[1]);
+                            }
+                            else
+                            {
+                                type = typeof(List<>).MakeGenericType(args[0]);
+                            }
 
                             GrpcServerLog.DeserializingMessage(serverCallContext.Logger, type);
 
@@ -338,7 +363,7 @@ internal static class JsonRequestHelpers
     {
         return serverCallContext.DescriptorInfo.PathDescriptorsCache.GetOrAdd(path, p =>
         {
-            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p.Split('.'), out var pathDescriptors);
+            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p.Split('.'), allowJsonName: true, out var pathDescriptors);
             return pathDescriptors;
         });
     }

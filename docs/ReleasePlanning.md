@@ -1,3 +1,5 @@
+# Release planning
+
 Throughout the year we add issues to the `Backlog` milestone as is pointed out in our [Triage Process](./TriageProcess.md).
 We review all the issues in that milestone once a year, after the work on an upcoming major release is complete.
 Given the large number of issues, it takes multiple sessions for teams to review and identify candidates for consideration for the next major release.
@@ -39,4 +41,3 @@ So we calculate the capacity of the team in weeks for the upcoming year and use 
 ### Define the cut line
 At this point we have all the candidate issues that we think are worth considering for the upcoming release. This number is quite large, so the teams usually won't have enough capacity to handle all this.
 We start stack ranking issues so the most important work remains on the top of the list. We then draw the cut line and that defines the rough list of things the team will work on during the upcoming release.
-

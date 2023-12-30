@@ -326,6 +326,80 @@ public class TestController
     }
 
     [Fact]
+    public async Task ControllerAction_MatchRouteParameterWithFromRoute_NoDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(@""{id}"")]
+    public object TestAction([FromRoute(Name = ""id"")]string id1)
+    {
+        return null;
+    }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task ControllerAction_MatchRouteParameterWithMultipleFromRoute_NoDiagnostics()
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet(@""{id}"")]
+    public object TestAction([CustomFromRoute(Name = ""id"")][FromRoute(Name = ""custom_id"")]string id1)
+    {
+        return null;
+    }
+}
+
+public class CustomFromRouteAttribute : Attribute, IFromRouteMetadata
+{
+    public string? Name { get; set; }
+}
+");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
     public async Task MapGet_AsParameter_NoResults()
     {
         // Arrange

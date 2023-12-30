@@ -14,10 +14,7 @@ internal sealed class MvcDataAnnotationsLocalizationOptionsSetup : IConfigureOpt
     /// <inheritdoc />
     public void Configure(MvcDataAnnotationsLocalizationOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.DataAnnotationLocalizerProvider = (modelType, stringLocalizerFactory) =>
             stringLocalizerFactory.Create(modelType);

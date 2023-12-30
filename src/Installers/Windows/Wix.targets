@@ -10,7 +10,7 @@
     <Version>$(BundleVersion)</Version>
 
     <!-- ARM64 MSIs require the installer version to be at least 500. -->
-    <!-- See: https://docs.microsoft.com/en-us/windows/win32/msi/64-bit-windows-installer-packages -->
+    <!-- See: https://learn.microsoft.com/en-us/windows/win32/msi/64-bit-windows-installer-packages -->
     <DefineConstants Condition=" '$(Platform)' == 'arm64' ">$(DefineConstants);InstallerVersion=500</DefineConstants>
     <DefineConstants Condition=" '$(Platform)' != 'arm64' ">$(DefineConstants);InstallerVersion=200</DefineConstants>
 

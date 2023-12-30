@@ -102,10 +102,7 @@ public class AuthorizationMessageHandler : DelegatingHandler, IDisposable
             throw new InvalidOperationException("Handler already configured.");
         }
 
-        if (authorizedUrls == null)
-        {
-            throw new ArgumentNullException(nameof(authorizedUrls));
-        }
+        ArgumentNullException.ThrowIfNull(authorizedUrls);
 
         var uris = authorizedUrls.Select(uri => new Uri(uri, UriKind.Absolute)).ToArray();
         if (uris.Length == 0)

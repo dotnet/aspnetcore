@@ -322,5 +322,20 @@ public partial class HubConnection
 
         [LoggerMessage(88, LogLevel.Warning, "Error returning result for invocation '{InvocationId}' for method '{Target}' because the underlying connection is closed.", EventName = "ErrorSendingInvocationResult")]
         public static partial void ErrorSendingInvocationResult(ILogger logger, string invocationId, string target, Exception exception);
+
+        [LoggerMessage(89, LogLevel.Trace, "Error sending Completion message for stream '{StreamId}'.", EventName = "ErrorSendingStreamCompletion")]
+        public static partial void ErrorSendingStreamCompletion(ILogger logger, string streamId, Exception exception);
+
+        [LoggerMessage(90, LogLevel.Trace, "Dropping {MessageType} with ID '{InvocationId}'.", EventName = "DroppingMessage")]
+        public static partial void DroppingMessage(ILogger logger, string messageType, string? invocationId);
+
+        [LoggerMessage(91, LogLevel.Trace, "Received AckMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedAckMessage")]
+        public static partial void ReceivedAckMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(92, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
+        public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(93, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
+        public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
     }
 }

@@ -45,10 +45,7 @@ public class RequestLocalizationOptions
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _defaultRequestCulture = value;
         }

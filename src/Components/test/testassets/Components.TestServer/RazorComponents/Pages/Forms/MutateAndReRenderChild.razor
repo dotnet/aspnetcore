@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Render count: <span id="render-count">@(++renderCount)</span></h2>
+
+<form data-enhance method="post" @formname="mutate-and-notify" @onsubmit="HandleSubmit">
+    <AntiforgeryToken />
+    <p>
+        Simple value:
+        <input id="simple-value" name="SimpleValue" value="@SimpleValue" />
+    </p>
+    <p>
+        Complex value:
+        <input id="complex-value" name="ComplexValue.Text" value="@ComplexValue?.Text" />
+    </p>
+    <button id="mutate-and-notify" name="Scenario" value="mutate" type="submit">Mutate</button>
+    <button id="clear-and-notify" name="Scenario" value="clear" type="submit">Clear</button>
+</form>
+
+@code {
+    int renderCount;
+
+    [Parameter] public EventCallback OnFormDataMutated { get; set; }
+
+    [SupplyParameterFromForm] string Scenario { get; set; }
+    [SupplyParameterFromForm] string SimpleValue { get; set; }
+    [SupplyParameterFromForm] ComplexModel ComplexValue { get; set; }
+
+    async Task HandleSubmit()
+    {
+        switch (Scenario)
+        {
+            case "mutate":
+                SimpleValue += " Modified";
+                ComplexValue!.Text += " Modified";
+                break;
+            case "clear":
+                SimpleValue = null;
+                ComplexValue = new();
+                break;
+        }
+
+        await OnFormDataMutated.InvokeAsync();
+    }
+
+    private class ComplexModel
+    {
+        public string Text { get; set; }
+    }
+}

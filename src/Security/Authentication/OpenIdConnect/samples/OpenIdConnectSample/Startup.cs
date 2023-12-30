@@ -3,10 +3,12 @@
 
 using System.Globalization;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -102,15 +104,18 @@ public class Startup
             o.Authority = Configuration["oidc:authority"];
             */
             // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-            o.ClientId = "hybrid";
+            o.ClientId = "interactive.confidential";
             o.ClientSecret = "secret"; // for code flow
-            o.Authority = "https://demo.identityserver.io/";
+            o.Authority = "https://demo.duendesoftware.com/";
 
-            o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+            o.ResponseType = OpenIdConnectResponseType.Code;
             o.SaveTokens = true;
             o.GetClaimsFromUserInfoEndpoint = true;
             o.AccessDeniedPath = "/access-denied-from-remote";
-            o.MapInboundClaims = false;
+            // o.MapInboundClaims = false;
+            o.ClaimsIssuer = "MyCustomIssuer";
+
+            o.ClaimActions.Add(new IssuerFixupAction());
 
             // o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 
@@ -261,7 +266,7 @@ public class Startup
                     // Persist the new acess token
                     props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
                     props.UpdateTokenValue("refresh_token", payload.RootElement.GetString("refresh_token"));
-                    if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                    if (payload.RootElement.TryGetProperty("expires_in", out var property) && int.TryParse(property.GetString(), out var seconds))
                     {
                         var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
                         props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
@@ -278,7 +283,7 @@ public class Startup
                         await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
 
                         await res.WriteAsync("<h2>Payload:</h2>");
-                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.RootElement.ToString()).Replace(",", ",<br>") + "<br>");
                     });
                 }
 
@@ -352,5 +357,20 @@ public class Startup
 
     private static string HtmlEncode(string content) =>
         string.IsNullOrEmpty(content) ? string.Empty : HtmlEncoder.Default.Encode(content);
+
+    private class IssuerFixupAction : ClaimAction
+    {
+        public IssuerFixupAction() : base(ClaimTypes.NameIdentifier, string.Empty) { }
+
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
+        {
+            var oldClaims = identity.Claims.ToList();
+            foreach (var claim in oldClaims)
+            {
+                identity.RemoveClaim(claim);
+                identity.AddClaim(new Claim(claim.Type, claim.Value, claim.ValueType, issuer, claim.OriginalIssuer, claim.Subject));
+            }
+        }
+    }
 }
 

@@ -340,7 +340,7 @@ public class CollectionModelBinderTest
 
         // Assert
         Assert.Null(bindingContext.Result.Model);
-        Assert.True(bindingContext.Result.IsModelSet);
+        Assert.False(bindingContext.Result.IsModelSet);
         Assert.Equal(0, bindingContext.ModelState.ErrorCount);
     }
 

@@ -32,7 +32,7 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
         {
 <#  foreach (var argumentCount in Enumerable.Range(0, arity)) { #>            <#=argumentCount#> => Arg<#=argumentCount#>,
 <# } #>
-            _ => new IndexOutOfRangeException()
+            _ => new ArgumentOutOfRangeException(nameof(index))
         };
         set
         {
@@ -52,8 +52,8 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
 
     public override IList<object?> Arguments => this;
 
-    <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>public T<#=argumentCount#> Arg<#=argumentCount#> { get; set; }
-    <# } #>
+<# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>    public T<#=argumentCount#> Arg<#=argumentCount#> { get; set; }
+<# } #>
 
     public int Count => <#=arity#>;
 
@@ -73,7 +73,15 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
 
     public bool Contains(object? item)
     {
-        return IndexOf(item) >= 0;
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CopyTo(object?[] array, int arrayIndex)
@@ -98,13 +106,21 @@ internal sealed class EndpointFilterInvocationContext<<# foreach (var argumentCo
         {
 <# foreach (var argumentCount in Enumerable.Range(0, arity)) { #>           <#=argumentCount#> => (T)(object)Arg<#=argumentCount#>!,
 <# } #>
-           _ => throw new IndexOutOfRangeException()
+           _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
     }
 
     public int IndexOf(object? item)
     {
-        return Arguments.IndexOf(item);
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            if (Arguments[i]?.Equals(item) == true)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public void Insert(int index, object? item)

@@ -28,10 +28,7 @@ public abstract class UrlHelperBase : IUrlHelper
     /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
     protected UrlHelperBase(ActionContext actionContext)
     {
-        if (actionContext == null)
-        {
-            throw new ArgumentNullException(nameof(actionContext));
-        }
+        ArgumentNullException.ThrowIfNull(actionContext);
 
         ActionContext = actionContext;
         AmbientValues = actionContext.RouteData.Values;

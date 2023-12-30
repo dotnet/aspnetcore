@@ -23,19 +23,12 @@ public class StatusCodePagesOptions
         HandleAsync = async context =>
         {
             var statusCode = context.HttpContext.Response.StatusCode;
+            var problemDetailsService = context.HttpContext.RequestServices.GetService<IProblemDetailsService>();
 
-            if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
+            if (problemDetailsService == null ||
+                !await problemDetailsService.TryWriteAsync(new() { HttpContext = context.HttpContext, ProblemDetails = { Status = statusCode } }))
             {
-                await problemDetailsService.WriteAsync(new ()
-                {
-                    HttpContext = context.HttpContext,
-                    ProblemDetails = { Status = statusCode }
-                });
-            }
-
-            // TODO: Render with a pre-compiled html razor view.
-            if (!context.HttpContext.Response.HasStarted)
-            {
+                // TODO: Render with a pre-compiled html razor view
                 var body = BuildResponseBody(statusCode);
 
                 context.HttpContext.Response.ContentType = "text/plain";

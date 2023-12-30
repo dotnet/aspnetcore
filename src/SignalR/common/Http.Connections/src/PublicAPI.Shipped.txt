@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder
 Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
 Microsoft.AspNetCore.Builder.ConnectionEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.Http.Connections.ConnectionOptions
 Microsoft.AspNetCore.Http.Connections.ConnectionOptions.ConnectionOptions() -> void
@@ -16,6 +17,8 @@ Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature
 Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature.TransportType.get -> Microsoft.AspNetCore.Http.Connections.HttpTransportType
 Microsoft.AspNetCore.Http.Connections.HttpConnectionContextExtensions
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AllowStatefulReconnects.get -> bool
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AllowStatefulReconnects.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.ApplicationMaxBufferSize.get -> long
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.ApplicationMaxBufferSize.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthorizationData.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizeData!>!

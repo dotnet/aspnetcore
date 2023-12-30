@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
@@ -324,10 +324,8 @@ public class SharedFxTests
         var packageFolder = SkipOnHelixAttribute.OnHelix() ?
             Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
             TestData.GetPackagesFolder();
-        var sharedFxPath = Path.Combine(
-            packageFolder,
-            "Microsoft.AspNetCore.App.Runtime.win-x64." + TestData.GetSharedFxVersion() + ".nupkg");
-        AssertEx.FileExists(sharedFxPath);
+        var sharedFxPath = Directory.GetFiles(packageFolder, "Microsoft.AspNetCore.App.Runtime.*-*." + TestData.GetSharedFxVersion() + ".nupkg").FirstOrDefault();
+        Assert.NotNull(sharedFxPath);
 
         ZipArchive archive = ZipFile.OpenRead(sharedFxPath);
 

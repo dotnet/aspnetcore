@@ -1,23 +1,44 @@
 version: 2
+registries:
+  dev.azure.com:
+    token: ${{secrets.DEPENDABOT_NPM_TOKEN}}
+    type: npm-registry
+    url: https://pkgs.dev.azure.com/
+
 updates:
-  # Keep submodules up to date in 'main'.
-  - package-ecosystem: "gitsubmodule"
+  - package-ecosystem: npm
+    directory: "/"
+    # Perform only security updates of our npm dependencies.
+    open-pull-requests-limit: 0
+    registries:
+    - dev.azure.com
+    # Schedule should be ignored for security updates.
+    schedule:
+      interval: monthly
+
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Weekly interval opens PRs on Monday.
+      day: friday
       interval: "weekly"
-    allow:
-      - dependency-type: "all"
+      time: "05:00"
+      timezone: "America/Los_Angeles"
     commit-message:
       prefix: "[main] "
       include: scope
     labels:
       - area-infrastructure
-  - package-ecosystem: "github-actions"
+
+  # Keep submodules up to date in 'main'.
+  - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
-      # Weekly interval opens PRs on Monday.
+      day: friday
       interval: "weekly"
+      time: "05:00"
+      timezone: "America/Los_Angeles"
+    allow:
+      - dependency-type: "all"
     commit-message:
       prefix: "[main] "
       include: scope
@@ -38,18 +59,6 @@ updates:
     labels:
       - area-infrastructure
     target-branch: "release/2.1"
-  - package-ecosystem: "gitsubmodule"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-    allow:
-      - dependency-type: "all"
-    commit-message:
-      prefix: "[release/3.1] "
-      include: scope
-    labels:
-      - area-infrastructure
-    target-branch: "release/3.1"
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:

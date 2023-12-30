@@ -54,6 +54,10 @@ cpuname=$(uname -m)
 case $cpuname in
   arm64|aarch64)
     buildarch=arm64
+    if [ "$(getconf LONG_BIT)" -lt 64 ]; then
+        # This is 32-bit OS running on 64-bit CPU (for example Raspberry Pi OS)
+        buildarch=arm
+    fi
     ;;
   loongarch64)
     buildarch=loongarch64

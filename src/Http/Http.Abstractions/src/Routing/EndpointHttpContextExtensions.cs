@@ -17,10 +17,7 @@ public static class EndpointHttpContextExtensions
     /// <returns>The <see cref="Endpoint"/>.</returns>
     public static Endpoint? GetEndpoint(this HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         return context.Features.Get<IEndpointFeature>()?.Endpoint;
     }
@@ -32,10 +29,7 @@ public static class EndpointHttpContextExtensions
     /// <param name="endpoint">The <see cref="Endpoint"/>.</param>
     public static void SetEndpoint(this HttpContext context, Endpoint? endpoint)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var feature = context.Features.Get<IEndpointFeature>();
 

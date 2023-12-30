@@ -5,12 +5,15 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests;
 
 public class Startup
 {
-    private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+    private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
     private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
     public void ConfigureServices(IServiceCollection services)
@@ -66,10 +69,14 @@ public class Startup
 
         services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
 
-        // Since tests run in parallel, it's possible multiple servers will startup and read files being written by another test
-        // Use a unique directory per server to avoid this collision
-        services.AddDataProtection()
-            .PersistKeysToFileSystem(Directory.CreateDirectory(Path.GetRandomFileName()));
+        // Since tests run in parallel, it's possible multiple servers will startup,
+        // we use an ephemeral key provider and repository to avoid filesystem contention issues
+        services.AddSingleton<IDataProtectionProvider, EphemeralDataProtectionProvider>();
+
+        services.Configure<KeyManagementOptions>(options =>
+        {
+            options.XmlRepository = new EphemeralXmlRepository();
+        });
     }
 
     public void Configure(IApplicationBuilder app)

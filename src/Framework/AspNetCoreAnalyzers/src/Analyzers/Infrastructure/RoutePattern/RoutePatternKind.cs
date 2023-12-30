@@ -9,7 +9,7 @@ internal enum RoutePatternKind
     EndOfFile,
     Segment,
     CompilationUnit,
-    Seperator,
+    Separator,
     Literal,
     Replacement,
     Parameter,

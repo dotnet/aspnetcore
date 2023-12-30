@@ -14,4 +14,7 @@ Microsoft.AspNetCore.Html.IHtmlContent</Description>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Html.Abstractions.Tests" />
+  </ItemGroup>
 </Project>

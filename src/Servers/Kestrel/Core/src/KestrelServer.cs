@@ -1,9 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -27,7 +33,10 @@ public class KestrelServer : IServer
         _innerKestrelServer = new KestrelServerImpl(
             options,
             new[] { transportFactory ?? throw new ArgumentNullException(nameof(transportFactory)) },
-            loggerFactory);
+            Array.Empty<IMultiplexedConnectionListenerFactory>(),
+            new SimpleHttpsConfigurationService(),
+            loggerFactory,
+            new KestrelMetrics(new DummyMeterFactory()));
     }
 
     /// <inheritdoc />
@@ -56,5 +65,53 @@ public class KestrelServer : IServer
     public void Dispose()
     {
         _innerKestrelServer.Dispose();
+    }
+
+    // This factory used when type is created without DI. For example, via KestrelServer.
+    private sealed class DummyMeterFactory : IMeterFactory
+    {
+        public Meter Create(MeterOptions options) => new Meter(options);
+
+        public void Dispose() { }
+    }
+
+    private sealed class SimpleHttpsConfigurationService : IHttpsConfigurationService
+    {
+        public bool IsInitialized => true;
+
+        public void Initialize(IHostEnvironment hostEnvironment, ILogger<KestrelServer> serverLogger, ILogger<HttpsConnectionMiddleware> httpsLogger)
+        {
+            // Already initialized
+        }
+
+        public void PopulateMultiplexedTransportFeatures(FeatureCollection features, ListenOptions listenOptions)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl, which never provides an IMultiplexedConnectionListenerFactory
+        }
+
+        public ListenOptions UseHttpsWithDefaults(ListenOptions listenOptions)
+        {
+            return HttpsConfigurationService.UseHttpsWithDefaultsWorker(listenOptions);
+        }
+
+        public void ApplyHttpsConfiguration(
+            HttpsConnectionAdapterOptions httpsOptions,
+            EndpointConfig endpoint,
+            KestrelServerOptions serverOptions,
+            CertificateConfig? defaultCertificateConfig,
+            ConfigurationReader configurationReader)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl
+        }
+
+        public ListenOptions UseHttpsWithSni(ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl
+        }
+
+        public CertificateAndConfig? LoadDefaultCertificate(ConfigurationReader configurationReader)
+        {
+            throw new NotImplementedException(); // Not actually required by this impl
+        }
     }
 }

@@ -23,7 +23,7 @@ internal sealed class Http3StreamContext : HttpConnectionContext
         IPEndPoint? localEndPoint,
         IPEndPoint? remoteEndPoint,
         ConnectionContext streamContext,
-        Http3Connection connection) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint)
+        Http3Connection connection) : base(connectionId, protocols, altSvcHeader, connectionContext, serviceContext, connectionFeatures, memoryPool, localEndPoint, remoteEndPoint, connection.MetricsContext)
     {
         StreamLifetimeHandler = connection._streamLifetimeHandler;
         StreamContext = streamContext;

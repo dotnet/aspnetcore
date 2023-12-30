@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -21,15 +22,8 @@ public static class StringLocalizerExtensions
         this IStringLocalizer stringLocalizer,
         string name)
     {
-        if (stringLocalizer == null)
-        {
-            throw new ArgumentNullException(nameof(stringLocalizer));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(stringLocalizer);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return stringLocalizer[name];
     }
@@ -46,15 +40,8 @@ public static class StringLocalizerExtensions
         string name,
         params object[] arguments)
     {
-        if (stringLocalizer == null)
-        {
-            throw new ArgumentNullException(nameof(stringLocalizer));
-        }
-
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(stringLocalizer);
+        ArgumentNullThrowHelper.ThrowIfNull(name);
 
         return stringLocalizer[name, arguments];
     }
@@ -66,10 +53,7 @@ public static class StringLocalizerExtensions
     /// <returns>The string resources.</returns>
     public static IEnumerable<LocalizedString> GetAllStrings(this IStringLocalizer stringLocalizer)
     {
-        if (stringLocalizer == null)
-        {
-            throw new ArgumentNullException(nameof(stringLocalizer));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(stringLocalizer);
 
         return stringLocalizer.GetAllStrings(includeParentCultures: true);
     }

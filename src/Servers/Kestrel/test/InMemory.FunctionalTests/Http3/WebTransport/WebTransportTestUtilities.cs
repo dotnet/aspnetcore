@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.WebTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Moq;
 
@@ -65,7 +66,7 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
             new KeyValuePair<string, string>(HeaderNames.Origin, "server.example.com"),
-            new KeyValuePair<string, string>(WebTransportSession.CurrentSuppportedVersion, "1")
+            new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
         return (WebTransportSession)await appCompletedTcs.Task;
@@ -78,6 +79,7 @@ internal class WebTransportTestUtilities
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(type != WebTransportStreamType.Output, type != WebTransportStreamType.Input));
         features.Set(Mock.Of<IConnectionItemsFeature>());
         features.Set(Mock.Of<IProtocolErrorCodeFeature>());
+        features.Set(Mock.Of<IConnectionMetricsContextFeature>());
 
         var writer = new HttpResponsePipeWriter(new StreamWriterControl(memory));
         writer.StartAcceptingWrites();

@@ -3,8 +3,9 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Skips a test when the value of an environment variable matches any of the supplied values.
@@ -33,18 +34,9 @@ public class EnvironmentVariableSkipConditionAttribute : Attribute, ITestConditi
         string variableName,
         params string[] values)
     {
-        if (environmentVariable == null)
-        {
-            throw new ArgumentNullException(nameof(environmentVariable));
-        }
-        if (variableName == null)
-        {
-            throw new ArgumentNullException(nameof(variableName));
-        }
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(environmentVariable);
+        ArgumentNullThrowHelper.ThrowIfNull(variableName);
+        ArgumentNullThrowHelper.ThrowIfNull(values);
 
         _variableName = variableName;
         _values = values;

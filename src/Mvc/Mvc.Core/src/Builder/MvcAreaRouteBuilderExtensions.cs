@@ -118,10 +118,7 @@ public static class MvcAreaRouteBuilderExtensions
         object? constraints,
         object? dataTokens)
     {
-        if (routeBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(routeBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(routeBuilder);
 
         if (string.IsNullOrEmpty(areaName))
         {

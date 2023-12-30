@@ -30,20 +30,9 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
         ILoggerFactory loggerFactory,
         IOptions<MvcOptions> mvcOptions)
     {
-        if (formatterSelector == null)
-        {
-            throw new ArgumentNullException(nameof(formatterSelector));
-        }
-
-        if (writerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(writerFactory));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(formatterSelector);
+        ArgumentNullException.ThrowIfNull(writerFactory);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         FormatterSelector = formatterSelector;
         WriterFactory = writerFactory.CreateWriter;
@@ -75,15 +64,8 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     /// </returns>
     public virtual Task ExecuteAsync(ActionContext context, ObjectResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         InferContentTypes(context, result);
 
@@ -121,7 +103,7 @@ public partial class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                return problemDetailsService.WriteAsync(new()
+                return problemDetailsService.TryWriteAsync(new()
                 {
                     HttpContext = context.HttpContext,
                     ProblemDetails = { Status = statusCode }

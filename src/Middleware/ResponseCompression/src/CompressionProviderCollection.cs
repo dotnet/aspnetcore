@@ -32,10 +32,7 @@ public class CompressionProviderCollection : Collection<ICompressionProvider>
     /// </remarks>
     public void Add([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type providerType)
     {
-        if (providerType == null)
-        {
-            throw new ArgumentNullException(nameof(providerType));
-        }
+        ArgumentNullException.ThrowIfNull(providerType);
 
         if (!typeof(ICompressionProvider).IsAssignableFrom(providerType))
         {

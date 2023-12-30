@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
@@ -10,6 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Provides correct handling for QueryString value when needed to reconstruct a request or redirect URI string
 /// </summary>
+[DebuggerDisplay("{Value}")]
 public readonly struct QueryString : IEquatable<QueryString>
 {
     /// <summary>
@@ -39,6 +42,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <summary>
     /// True if the query string is not empty
     /// </summary>
+    [MemberNotNullWhen(true, nameof(Value))]
     public bool HasValue => !string.IsNullOrEmpty(Value);
 
     /// <summary>
@@ -61,7 +65,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     public string ToUriComponent()
     {
         // Escape things properly so System.Uri doesn't mis-interpret the data.
-        return !string.IsNullOrEmpty(Value) ? Value!.Replace("#", "%23") : string.Empty;
+        return HasValue ? Value.Replace("#", "%23") : string.Empty;
     }
 
     /// <summary>
@@ -86,10 +90,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The resulting QueryString</returns>
     public static QueryString FromUriComponent(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         string queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
         if (!string.IsNullOrEmpty(queryValue))
@@ -107,10 +108,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The resulting QueryString</returns>
     public static QueryString Create(string name, string value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         if (!string.IsNullOrEmpty(value))
         {
@@ -174,11 +172,11 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The concatenated <see cref="QueryString"/>.</returns>
     public QueryString Add(QueryString other)
     {
-        if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
+        if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
         {
             return other;
         }
-        if (!other.HasValue || other.Value!.Equals("?", StringComparison.Ordinal))
+        if (!other.HasValue || other.Value.Equals("?", StringComparison.Ordinal))
         {
             return this;
         }
@@ -196,12 +194,9 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The concatenated <see cref="QueryString"/>.</returns>
     public QueryString Add(string name, string value)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
-        if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
+        if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
         {
             return Create(name, value);
         }
@@ -245,7 +240,7 @@ public readonly struct QueryString : IEquatable<QueryString>
     /// <returns>The hash code as an <see cref="int"/>.</returns>
     public override int GetHashCode()
     {
-        return (HasValue ? Value!.GetHashCode() : 0);
+        return (HasValue ? Value.GetHashCode() : 0);
     }
 
     /// <summary>

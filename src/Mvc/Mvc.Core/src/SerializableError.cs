@@ -28,10 +28,7 @@ public sealed class SerializableError : Dictionary<string, object>
     public SerializableError(ModelStateDictionary modelState)
         : this()
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         if (modelState.IsValid)
         {

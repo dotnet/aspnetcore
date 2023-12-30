@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Moq;
 
@@ -78,6 +78,9 @@ public class Http2WebSocketTests : Http2TestBase
     {
         await InitializeConnectionAsync(async context =>
         {
+            var requestBodyDetectionFeature = context.Features.Get<IHttpRequestBodyDetectionFeature>();
+            Assert.False(requestBodyDetectionFeature.CanHaveBody);
+
             var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
             Assert.True(connectFeature.IsExtendedConnect);
             Assert.Equal(HttpMethods.Connect, context.Request.Method);
@@ -149,10 +152,8 @@ public class Http2WebSocketTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/42133")]
     public async Task HEADERS_Received_SecondRequest_Accepted()
     {
-        // Add stream to Http2Connection._completedStreams inline with SetResult().
         var appDelegateTcs = new TaskCompletionSource();
         await InitializeConnectionAsync(async context =>
         {
@@ -177,6 +178,19 @@ public class Http2WebSocketTests : Http2TestBase
             await stream.WriteAsync(new byte[] { 0x01 });
             await appDelegateTcs.Task;
         });
+
+        var originalHandler = _connection._streamLifetimeHandler;
+        var tcs = new TaskCompletionSource();
+        var streamLifetimeHandler = new Mock<IHttp2StreamLifetimeHandler>();
+        streamLifetimeHandler.Setup(o => o.OnStreamCompleted(It.IsAny<Http2Stream>())).Callback((Http2Stream stream) =>
+        {
+            // Add stream to Http2Connection._completedStreams.
+            originalHandler.OnStreamCompleted(stream);
+
+            // Unblock test code that will call TriggerTick and return the stream to the pool
+            tcs.TrySetResult();
+        });
+        _connection._streamLifetimeHandler = streamLifetimeHandler.Object;
 
         // HEADERS + END_HEADERS
         // :method = CONNECT
@@ -221,6 +235,7 @@ public class Http2WebSocketTests : Http2TestBase
         Assert.Equal(0x01, dataFrame.Payload.Span[0]);
 
         appDelegateTcs.TrySetResult();
+        await tcs.Task.DefaultTimeout();
 
         dataFrame = await ExpectAsync(Http2FrameType.DATA,
             withLength: 0,
@@ -335,7 +350,7 @@ public class Http2WebSocketTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
 
         // Don't send any more data and advance just to and then past the grace period.
-        AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
+        AdvanceTime(limits.MinRequestBodyDataRate.GracePeriod + TimeSpan.FromTicks(1));
 
         _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
@@ -558,5 +573,136 @@ public class Http2WebSocketTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task HEADERS_Received_SecondRequest_ConnectProtocolReset()
+    {
+        var appDelegateTcs = new TaskCompletionSource();
+        var requestCount = 0;
+        await InitializeConnectionAsync(async context =>
+        {
+            requestCount++;
+
+            var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
+
+            if (requestCount == 1)
+            {
+                Assert.True(connectFeature.IsExtendedConnect);
+                Assert.Equal(HttpMethods.Connect, context.Request.Method);
+                Assert.Equal("websocket", connectFeature.Protocol);
+                context.Response.StatusCode = StatusCodes.Status201Created; // Any 2XX should work
+
+                var stream = await connectFeature.AcceptAsync();
+                await stream.WriteAsync(new byte[] { 0x01 });
+                await appDelegateTcs.Task;
+            }
+            else
+            {
+                if (connectFeature.Protocol != null)
+                {
+                    throw new Exception("ConnectProtocol should be null here. The fact that it is not indicates that we are not resetting properly between requests.");
+                }
+
+                // We've done the test. Now just return the normal echo server behavior.
+                await _echoApplication(context);
+            }
+        });
+
+        var originalHandler = _connection._streamLifetimeHandler;
+        var tcs = new TaskCompletionSource();
+        var streamLifetimeHandler = new Mock<IHttp2StreamLifetimeHandler>();
+        streamLifetimeHandler.Setup(o => o.OnStreamCompleted(It.IsAny<Http2Stream>())).Callback((Http2Stream stream) =>
+        {
+            // Add stream to Http2Connection._completedStreams.
+            originalHandler.OnStreamCompleted(stream);
+
+            if (requestCount == 1)
+            {
+                // Unblock test code that will call TriggerTick and return the stream to the pool
+                tcs.TrySetResult();
+            }
+        });
+        _connection._streamLifetimeHandler = streamLifetimeHandler.Object;
+
+        // HEADERS + END_HEADERS
+        // :method = CONNECT
+        // :protocol = websocket
+        // :scheme = https
+        // :path = /chat
+        // :authority = server.example.com
+        // sec-websocket-protocol = chat, superchat
+        // sec-websocket-extensions = permessage-deflate
+        // sec-websocket-version = 13
+        // origin = http://www.example.com
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "CONNECT"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Protocol, "websocket"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/chat"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "server.example.com"),
+            new KeyValuePair<string, string>(HeaderNames.WebSocketSubProtocols, "chat, superchat"),
+            new KeyValuePair<string, string>(HeaderNames.SecWebSocketExtensions, "permessage-deflate"),
+            new KeyValuePair<string, string>(HeaderNames.SecWebSocketVersion, "13"),
+            new KeyValuePair<string, string>(HeaderNames.Origin, "http://www.example.com"),
+        };
+
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
+        await SendDataAsync(1, Array.Empty<byte>(), endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+            withLength: 1,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+        Assert.Equal(0x01, dataFrame.Payload.Span[0]);
+
+        appDelegateTcs.TrySetResult();
+        await tcs.Task.DefaultTimeout();
+
+        dataFrame = await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        // TriggerTick will trigger the stream to be returned to the pool so we can assert it
+        TriggerTick();
+
+        // Stream has been returned to the pool
+        Assert.Equal(1, _connection.StreamPool.Count);
+        Assert.True(_connection.StreamPool.TryPeek(out var pooledStream));
+
+        // Next is a plain GET.
+        var headers2 = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "example.com"),
+        };
+
+        await StartStreamAsync(3, headers2, endStream: false);
+        await SendDataAsync(3, _helloBytes, endStream: true);
+
+        // If the echo server doesn't give us the expected responses, the test has failed.
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 5,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 3);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 0,
+            withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            withStreamId: 3);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 }

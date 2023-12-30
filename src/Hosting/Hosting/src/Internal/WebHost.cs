@@ -52,20 +52,9 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         IConfiguration config,
         AggregateException? hostingStartupErrors)
     {
-        if (appServices == null)
-        {
-            throw new ArgumentNullException(nameof(appServices));
-        }
-
-        if (hostingServiceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(hostingServiceProvider));
-        }
-
-        if (config == null)
-        {
-            throw new ArgumentNullException(nameof(config));
-        }
+        ArgumentNullException.ThrowIfNull(appServices);
+        ArgumentNullException.ThrowIfNull(hostingServiceProvider);
+        ArgumentNullException.ThrowIfNull(config);
 
         _config = config;
         _hostingStartupErrors = hostingStartupErrors;
@@ -152,7 +141,8 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         var activitySource = _applicationServices.GetRequiredService<ActivitySource>();
         var propagator = _applicationServices.GetRequiredService<DistributedContextPropagator>();
         var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-        var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, propagator, httpContextFactory);
+        var hostingMetrics = _applicationServices.GetRequiredService<HostingMetrics>();
+        var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, propagator, httpContextFactory, HostingEventSource.Log, hostingMetrics);
         await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
         _startedServer = true;
 
@@ -296,16 +286,9 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
 
         Log.Shutdown(_logger);
 
-        using var timeoutCTS = new CancellationTokenSource(Options.ShutdownTimeout);
-        var timeoutToken = timeoutCTS.Token;
-        if (!cancellationToken.CanBeCanceled)
-        {
-            cancellationToken = timeoutToken;
-        }
-        else
-        {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken).Token;
-        }
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(Options.ShutdownTimeout);
+        cancellationToken = cts.Token;
 
         // Fire IApplicationLifetime.Stopping
         _applicationLifetime?.StopApplication();
@@ -350,17 +333,17 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         await DisposeServiceProviderAsync(_hostingServiceProvider).ConfigureAwait(false);
     }
 
-    private static async ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
+    private static ValueTask DisposeServiceProviderAsync(IServiceProvider? serviceProvider)
     {
         switch (serviceProvider)
         {
             case IAsyncDisposable asyncDisposable:
-                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                break;
+                return asyncDisposable.DisposeAsync();
             case IDisposable disposable:
                 disposable.Dispose();
                 break;
         }
+        return default;
     }
 
     private static partial class Log

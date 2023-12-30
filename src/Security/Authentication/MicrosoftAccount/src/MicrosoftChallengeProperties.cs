@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 
 /// <summary>
 /// <see cref="AuthenticationProperties"/> for Microsoft OAuth challenge request.
-/// See <see href="https://docs.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code"/> for reference.
+/// See <see href="https://learn.microsoft.com/azure/active-directory/develop/v2-oauth2-auth-code-flow#request-an-authorization-code"/> for reference.
 /// </summary>
 public class MicrosoftChallengeProperties : OAuthChallengeProperties
 {

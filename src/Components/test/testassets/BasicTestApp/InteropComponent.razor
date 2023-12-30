@@ -221,6 +221,16 @@
             JSObjectReferenceInvokeNonFunctionException = e;
         }
 
+        try
+        {
+            await jsObjectReference.DisposeAsync();
+            ReturnValues["disposeJSObjectReferenceAsync"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["disposeJSObjectReferenceAsync"] = $"Failure: {ex.Message}";
+        }
+
         var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/testmodule.js");
         ReturnValues["jsObjectReferenceModule"] = await module.InvokeAsync<string>("identity", "Returned from module!");
 
@@ -408,6 +418,15 @@
             NumberField = 41,
         }).ToString();
 
+        try
+        {
+            jsInProcObjectReference.Dispose();
+            ReturnValues["disposeJSInProcessObjectReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["disposeJSInProcessObjectReference"] = $"Failure: {ex.Message}";
+        }
 
         var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
         var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");

@@ -9,3 +9,6 @@ dotnet_diagnostic.CA1304.severity = error
 
 # CA1310: Specify StringComparison for correctness
 dotnet_diagnostic.CA1310.severity = error
+
+# TODO: remove this - https://github.com/dotnet/aspnetcore/issues/47912
+dotnet_diagnostic.EnableGenerateDocumentationFile.severity = none

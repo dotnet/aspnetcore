@@ -19,10 +19,7 @@ internal sealed class CorsHttpMethodActionConstraint : HttpMethodActionConstrain
 
     public override bool Accept(ActionConstraintContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var methods = (ReadOnlyCollection<string>)HttpMethods;
         if (methods.Count == 0)

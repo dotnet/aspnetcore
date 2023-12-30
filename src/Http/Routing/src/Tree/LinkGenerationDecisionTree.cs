@@ -104,7 +104,7 @@ internal sealed class LinkGenerationDecisionTree
     //  match.
     //
     // The decision tree uses a tree data structure to execute these rules across all candidates at once.
-    private void Walk(
+    private static void Walk(
         List<OutboundMatchResult> results,
         RouteValueDictionary values,
         RouteValueDictionary ambientValues,
@@ -233,7 +233,7 @@ internal sealed class LinkGenerationDecisionTree
         }
     }
 
-    private void FlattenTree(Stack<string> branchStack, StringBuilder sb, DecisionTreeNode<OutboundMatch> node)
+    private static void FlattenTree(Stack<string> branchStack, StringBuilder sb, DecisionTreeNode<OutboundMatch> node)
     {
         // leaf node
         if (node.Criteria.Count == 0)

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Builder;
@@ -32,20 +33,9 @@ public class MigrationsEndPointMiddleware
         ILogger<MigrationsEndPointMiddleware> logger,
         IOptions<MigrationsEndPointOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _logger = logger;
@@ -57,12 +47,10 @@ public class MigrationsEndPointMiddleware
     /// </summary>
     /// <param name="context">The context for the current request.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+    [RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
     public virtual Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.Request.Path.Equals(_options.Path))
         {
@@ -71,6 +59,7 @@ public class MigrationsEndPointMiddleware
         return _next(context);
     }
 
+    [RequiresDynamicCode("DbContext migrations operations are not supported with NativeAOT")]
     private async Task InvokeCore(HttpContext context)
     {
         _logger.RequestPathMatched(context.Request.Path);

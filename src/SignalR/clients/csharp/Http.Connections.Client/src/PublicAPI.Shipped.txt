@@ -1,5 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions! httpConnectionOptions, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url) -> void
@@ -9,6 +8,7 @@ Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(Microsoft
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.ConnectAsync(System.Net.EndPoint! endPoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext!>
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory.HttpConnectionFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.AccessTokenProvider.get -> System.Func<System.Threading.Tasks.Task<string?>!>?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.AccessTokenProvider.set -> void
@@ -41,6 +41,8 @@ Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.get -> Sy
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.Url.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseDefaultCredentials.get -> bool?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseDefaultCredentials.set -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseStatefulReconnect.get -> bool
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.UseStatefulReconnect.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.get -> System.Action<System.Net.WebSockets.ClientWebSocketOptions!>?
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketConfiguration.set -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions.WebSocketFactory.get -> System.Func<Microsoft.AspNetCore.Http.Connections.Client.WebSocketConnectionContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<System.Net.WebSockets.WebSocket!>>?

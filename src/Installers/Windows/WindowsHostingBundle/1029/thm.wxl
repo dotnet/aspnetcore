@@ -3,8 +3,6 @@
   <String Id="Caption">Instalační program [WixBundleName]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Vítejte</String>
-  <String Id="InstallMessage">Instalační program nainstaluje [WixBundleName] do počítače. Pokud chcete pokračovat, klikněte na Nainstalovat. Pokud chcete nastavit instalační adresář, klikněte na Možnosti. Pokud chcete program ukončit, klikněte na Zavřít.</String>
   <String Id="InstallVersion">Verze [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
@@ -18,16 +16,9 @@
 /norestart   – potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní před restartováním zobrazí výzvu.
 /log log.txt – Uloží protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zavřít</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Licenční podmínky&lt;/a&gt; pro [WixBundleName]</String>
   <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami</String>
-  <String Id="InstallOptionsButton">M&amp;ožnosti</String>
   <String Id="InstallInstallButton">&amp;Instalovat</String>
   <String Id="InstallCloseButton">&amp;Zavřít</String>
-  <String Id="OptionsHeader">Možnosti instalace</String>
-  <String Id="OptionsLocationLabel">Umístění instalace:</String>
-  <String Id="OptionsBrowseButton">&amp;Procházet</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Storno</String>
   <String Id="ProgressHeader">Průběh instalace</String>
   <String Id="ProgressLabel">Probíhá zpracování:</String>
   <String Id="OverallProgressPackageText">Inicializace...</String>
@@ -61,9 +52,9 @@
 
   <!-- Custom UI strings -->
   <String Id="Welcome">Vítá vás instalační program produktu [WixBundleName]</String>
-  <String Id="InstallResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
-  <String Id="InstallNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="InstallResetIIS">Po dokončení instalace restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
+  <String Id="InstallNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
   <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
-  <String Id="ModifyResetIIS">Po dokončení instalace prosím restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
-  <String Id="ModifyNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;here&lt;/a&gt;.</String>
+  <String Id="ModifyResetIIS">Po dokončení instalace restartujte službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
+  <String Id="ModifyNoIIS">Služba IIS není na tomto počítači povolená. Pokud máte v úmyslu spouštět aplikace ASP.NET Core se službou IIS, je nutné před spuštěním tohoto instalačního programu nainstalovat službu IIS. Další informace najdete na &lt;a href="https://aka.ms/aspnet/8.0/host-and-deploy-with-iis"&gt;zde&lt;/a&gt;.</String>
 </WixLocalization>

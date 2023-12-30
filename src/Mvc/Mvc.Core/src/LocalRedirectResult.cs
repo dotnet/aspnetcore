@@ -93,10 +93,7 @@ public class LocalRedirectResult : ActionResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<LocalRedirectResult>>();
         return executor.ExecuteAsync(context, this);

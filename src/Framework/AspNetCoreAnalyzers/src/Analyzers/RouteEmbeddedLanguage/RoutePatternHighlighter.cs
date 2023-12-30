@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.RoutePattern;
 using Microsoft.AspNetCore.Analyzers.Infrastructure.VirtualChars;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -22,7 +21,6 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
     public ImmutableArray<AspNetCoreDocumentHighlights> GetDocumentHighlights(
         SemanticModel semanticModel, SyntaxToken token, int position, CancellationToken cancellationToken)
     {
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
         var routeUsageCache = RouteUsageCache.GetOrCreate(semanticModel.Compilation);
         var routeUsage = routeUsageCache.Get(token, cancellationToken);
         if (routeUsage is null)
@@ -30,19 +28,20 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
             return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
         }
 
-        return GetHighlights(routeUsage.RoutePattern, semanticModel, wellKnownTypes, position, routeUsage.UsageContext.MethodSymbol, cancellationToken);
+        return GetHighlights(routeUsage, semanticModel, position, cancellationToken);
     }
 
     private static ImmutableArray<AspNetCoreDocumentHighlights> GetHighlights(
-        RoutePatternTree tree, SemanticModel semanticModel, WellKnownTypes wellKnownTypes, int position, IMethodSymbol? methodSymbol, CancellationToken cancellationToken)
+        RouteUsageModel routeUsage, SemanticModel semanticModel, int position, CancellationToken cancellationToken)
     {
-        var virtualChar = tree.Text.Find(position);
+        var routePattern = routeUsage.RoutePattern;
+        var virtualChar = routePattern.Text.Find(position);
         if (virtualChar == null)
         {
             return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
         }
 
-        var node = FindParameterNode(tree.Root, virtualChar.Value);
+        var node = FindParameterNode(routePattern.Root, virtualChar.Value);
         if (node == null)
         {
             return ImmutableArray<AspNetCoreDocumentHighlights>.Empty;
@@ -53,21 +52,17 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         // Highlight the parameter in the route string, e.g. "{id}" highlights "id".
         highlightSpans.Add(new AspNetCoreHighlightSpan(node.GetSpan(), AspNetCoreHighlightSpanKind.Reference));
 
-        if (methodSymbol != null)
+        if (routeUsage.UsageContext.MethodSymbol is { } methodSymbol)
         {
             // Resolve possible parameter symbols. Includes properties from AsParametersAttribute.
-            var routeParameters = RoutePatternParametersDetector.ResolvedParameters(methodSymbol, wellKnownTypes);
-            var parameterSymbols = routeParameters.Select(p => p.Symbol).ToArray();
+            var resolvedParameters = routeUsage.UsageContext.ResolvedParameters;
 
             // Match route parameter to method parameter. Parameters in a route aren't case sensitive.
-            // First attempt an exact match, then a case insensitive match.
+            // It's possible to match multiple parameters, either based on parameter name, or [FromRoute(Name = "XXX")] attribute.
             var parameterName = node.ParameterNameToken.Value!.ToString();
-            var matchingParameterSymbol = parameterSymbols.FirstOrDefault(s => s.Name == parameterName)
-                ?? parameterSymbols.FirstOrDefault(s => string.Equals(s.Name, parameterName, StringComparison.OrdinalIgnoreCase));
-
-            if (matchingParameterSymbol != null)
+            foreach (var matchingParameter in resolvedParameters.Where(s => string.Equals(s.RouteParameterName, parameterName, StringComparison.OrdinalIgnoreCase)))
             {
-                HighlightSymbol(semanticModel, methodSymbol, highlightSpans, matchingParameterSymbol, cancellationToken);
+                HighlightSymbol(semanticModel, methodSymbol, highlightSpans, matchingParameter.Symbol, cancellationToken);
             }
         }
 

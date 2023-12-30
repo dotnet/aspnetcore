@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel;
 
 internal interface IPooledStream
 {
-    long PoolExpirationTicks { get; }
+    long PoolExpirationTimestamp { get; }
     void DisposeCore();
 }
 
@@ -87,12 +87,12 @@ internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
         _size++;
     }
 
-    public void RemoveExpired(long now)
+    public void RemoveExpired(long timestamp)
     {
         int size = _size;
         StreamAsValueType[] array = _array;
 
-        var removeCount = CalculateRemoveCount(now, size, array);
+        var removeCount = CalculateRemoveCount(timestamp, size, array);
         if (removeCount == 0)
         {
             return;
@@ -122,12 +122,12 @@ internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
         _size = newSize;
     }
 
-    private static int CalculateRemoveCount(long now, int size, StreamAsValueType[] array)
+    private static int CalculateRemoveCount(long timestamp, int size, StreamAsValueType[] array)
     {
         for (var i = 0; i < size; i++)
         {
             TValue stream = array[i];
-            if (stream.PoolExpirationTicks >= now)
+            if (stream.PoolExpirationTimestamp >= timestamp)
             {
                 // Stream is still valid. All streams after this will have a later expiration.
                 // No reason to keep checking. Return count of streams to remove.

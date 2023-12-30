@@ -1,12 +1,12 @@
 ﻿{
   "author": "Microsoft",
   "name": "Bibliothèque de classes Razor",
-  "description": "Projet de création d'une bibliothèque de classes Razor qui cible .NET Standard",
+  "description": "Projet de création d’une bibliothèque de classes Razor qui cible .NET",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net8.0/description": "Cible net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/SupportPagesAndViews/displayName": "Prendre en charge les pages et les vues",
-  "symbols/SupportPagesAndViews/description": "Indique si l'ajout de pages et de vues Razor classiques en plus des composants de cette bibliothèque doit être pris en charge.",
+  "symbols/SupportPagesAndViews/description": "Indique si l’ajout de pages et de vues Razor classiques à cette bibliothèque.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »",
   "postActions/openInEditor/description": "Ouvre Areas/MyFeature/Pages/Page1.cshtml dans l’éditeur"

@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ASP.NET Core Web API (native AOT)",
+  "description": "Šablona projektu pro vytvoření webového rozhraní RESTful API s využitím minimálních rozhraní API ASP.NET Core publikovaných jako native AOT.",
+  "symbols/ExcludeLaunchSettings/description": "Určuje, jestli se má z vygenerované šablony vyloučit soubor launchSettings.json.",
+  "symbols/kestrelHttpPort/description": "Číslo portu, který se má použít pro koncový bod HTTP v souboru launchSettings.json.",
+  "symbols/iisHttpPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTP v souboru launchSettings.json.",
+  "symbols/Framework/description": "Cílová architektura pro projekt",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
+  "symbols/UseProgramMain/displayName": "Nepoužívat _příkazy nejvyšší úrovně",
+  "symbols/UseProgramMain/description": "Určuje, jestli se má místo příkazů nejvyšší úrovně generovat explicitní třída Program a metoda Main.",
+  "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore"
+}

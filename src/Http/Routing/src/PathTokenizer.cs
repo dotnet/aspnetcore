@@ -5,7 +5,11 @@
 
 using System.Collections;
 using System.Diagnostics;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -68,10 +72,7 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
     {
         get
         {
-            if (index >= Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Count);
 
             var currentSegmentIndex = 0;
             var currentSegmentStart = 1;

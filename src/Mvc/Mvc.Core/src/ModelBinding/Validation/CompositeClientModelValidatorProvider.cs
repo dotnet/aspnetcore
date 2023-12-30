@@ -18,10 +18,7 @@ public class CompositeClientModelValidatorProvider : IClientModelValidatorProvid
     /// </param>
     public CompositeClientModelValidatorProvider(IEnumerable<IClientModelValidatorProvider> providers)
     {
-        if (providers == null)
-        {
-            throw new ArgumentNullException(nameof(providers));
-        }
+        ArgumentNullException.ThrowIfNull(providers);
 
         ValidatorProviders = new List<IClientModelValidatorProvider>(providers);
     }
@@ -34,10 +31,7 @@ public class CompositeClientModelValidatorProvider : IClientModelValidatorProvid
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Perf: Avoid allocations
         for (var i = 0; i < ValidatorProviders.Count; i++)

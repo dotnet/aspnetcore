@@ -23,6 +23,7 @@ public class RouterTest
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
         var serviceProvider = services.BuildServiceProvider();
 
         _renderer = new TestRenderer(serviceProvider);
@@ -181,7 +182,7 @@ public class RouterTest
         // Arrange
         // Current routing prefers exactly-matched patterns over {*someWildcard}, no matter
         // how many segments are in the exact match
-        _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/a/b", false);
+        _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/a/b/c", false);
         var parameters = new Dictionary<string, object>
             {
                 { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
@@ -196,6 +197,72 @@ public class RouterTest
         var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
         Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
         Assert.Equal($"Rendering route matching {typeof(MultiSegmentRouteComponent)}", renderedFrame.TextContent);
+    }
+
+    [Fact]
+    public async Task SetParametersAsyncRefreshesOnce()
+    {
+        //Arrange
+        var parameters = new Dictionary<string, object>
+            {
+                { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+                { nameof(Router.NotFound), (RenderFragment)(builder => { }) },
+            };
+
+        var refreshCalled = 0;
+        _renderer.OnUpdateDisplay = (renderBatch) =>
+        {
+            refreshCalled += 1;
+            return;
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        //Assert
+        Assert.Equal(1, refreshCalled);
+    }
+
+    [Fact]
+    public async Task UsesNotFoundContentIfSpecified()
+    {
+        // Arrange
+        _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/nonexistent", false);
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFound), (RenderFragment)(builder => builder.AddContent(0, "Custom content")) },
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Assert
+        var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
+        Assert.Equal("Custom content", renderedFrame.TextContent);
+    }
+
+    [Fact]
+    public async Task UsesDefaultNotFoundContentIfNotSpecified()
+    {
+        // Arrange
+        _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/nonexistent", false);
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly }
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Assert
+        var renderedFrame = _renderer.Batches.First().ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Text, renderedFrame.FrameType);
+        Assert.Equal("Not found", renderedFrame.TextContent);
     }
 
     internal class TestNavigationManager : NavigationManager
@@ -220,15 +287,23 @@ public class RouterTest
         }
     }
 
+    internal sealed class TestScrollToLocationHash : IScrollToLocationHash
+    {
+        public Task RefreshScrollPositionForHash(string locationAbsolute)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     [Route("feb")]
     public class FebComponent : ComponentBase { }
 
     [Route("jan")]
     public class JanComponent : ComponentBase { }
 
-    [Route("{*matchAnything}")]
+    [Route("a/{*matchAnything}")]
     public class MatchAnythingComponent : ComponentBase { }
 
-    [Route("a/b")]
+    [Route("a/b/c")]
     public class MultiSegmentRouteComponent : ComponentBase { }
 }

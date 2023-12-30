@@ -12,10 +12,7 @@ public class ControllerRouteTokenTransformerConvention : RouteTokenTransformerCo
     public ControllerRouteTokenTransformerConvention(Type controllerType, IOutboundParameterTransformer parameterTransformer)
         : base(parameterTransformer)
     {
-        if (parameterTransformer == null)
-        {
-            throw new ArgumentNullException(nameof(parameterTransformer));
-        }
+        ArgumentNullException.ThrowIfNull(parameterTransformer);
 
         _controllerType = controllerType;
     }

@@ -36,7 +36,6 @@ internal partial class WebSocketsAsyncIOEngine
             base.ResetOperation();
 
             _requestHandler = default;
-            _engine.ReturnOperation(this);
         }
     }
 }

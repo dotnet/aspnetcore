@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers.Http;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class HeaderDictionaryAddAnalyzer : DiagnosticAnalyzer
 {

@@ -18,10 +18,7 @@ public static class DotNetObjectReference
     /// <returns>An instance of <see cref="DotNetObjectReference{TValue}" />.</returns>
     public static DotNetObjectReference<TValue> Create<[DynamicallyAccessedMembers(JSInvokable)] TValue>(TValue value) where TValue : class
     {
-        if (value is null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         return new DotNetObjectReference<TValue>(value);
     }

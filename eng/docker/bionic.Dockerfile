@@ -14,7 +14,7 @@ RUN apt-get update && \
         jq \
         wget \
         locales \
-        python \
+        python3 \
         fakeroot \
         debhelper \
         build-essential \

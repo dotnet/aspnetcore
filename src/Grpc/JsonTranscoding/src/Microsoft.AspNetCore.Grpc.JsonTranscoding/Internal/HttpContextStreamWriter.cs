@@ -41,10 +41,7 @@ internal sealed class HttpContextStreamWriter<TResponse> : IServerStreamWriter<T
 
     private async Task WriteAsyncCore(TResponse message, CancellationToken cancellationToken)
     {
-        if (message == null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
+        ArgumentNullException.ThrowIfNull(message);
 
         // Register cancellation token early to ensure request is canceled if cancellation is requested.
         CancellationTokenRegistration? registration = null;

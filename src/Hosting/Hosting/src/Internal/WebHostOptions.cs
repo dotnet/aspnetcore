@@ -13,10 +13,7 @@ internal sealed class WebHostOptions
 {
     public WebHostOptions(IConfiguration primaryConfiguration, IConfiguration? fallbackConfiguration = null, IHostEnvironment? environment = null)
     {
-        if (primaryConfiguration is null)
-        {
-            throw new ArgumentNullException(nameof(primaryConfiguration));
-        }
+        ArgumentNullException.ThrowIfNull(primaryConfiguration);
 
         string? GetConfig(string key) => primaryConfiguration[key] ?? fallbackConfiguration?[key];
 
@@ -66,7 +63,7 @@ internal sealed class WebHostOptions
 
     public string? ContentRootPath { get; }
 
-    public TimeSpan ShutdownTimeout { get; } = TimeSpan.FromSeconds(5);
+    public TimeSpan ShutdownTimeout { get; } = TimeSpan.FromSeconds(30);
 
     public string? ServerUrls { get; }
 

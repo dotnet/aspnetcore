@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -17,10 +12,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -1628,7 +1622,6 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
         var appEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var delayEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serviceContext = new TestServiceContext(LoggerFactory);
-        var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
         await using (var server = new TestServer(async context =>
         {
@@ -1664,8 +1657,8 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
 
                 await appEvent.Task.DefaultTimeout();
 
-                serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(5);
-                heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                serviceContext.FakeTimeProvider.Advance(TimeSpan.FromSeconds(5));
+                serviceContext.ConnectionManager.OnHeartbeat();
 
                 delayEvent.SetResult();
 

@@ -64,9 +64,9 @@ public partial class RoutePatternParserTests
         <Literal value=""hello"">hello</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""world"">world</Literal>
@@ -92,9 +92,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -129,9 +129,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -167,9 +167,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <EndOfFile />
   </CompilationUnit>
   <Parameters>
@@ -195,9 +195,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -1438,9 +1438,9 @@ public partial class RoutePatternParserTests
         <Literal value=""~"">~</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <EndOfFile />
   </CompilationUnit>
   <Parameters />

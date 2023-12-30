@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -38,6 +40,8 @@ public static class ProblemDetailsServiceCollectionExtensions
         // Adding default services;
         services.TryAddSingleton<IProblemDetailsService, ProblemDetailsService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IProblemDetailsWriter, DefaultProblemDetailsWriter>());
+        // Use IConfigureOptions (instead of post-configure) so the registration gets added/invoked relative to when AddProblemDetails() is called.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, ProblemDetailsJsonOptionsSetup>());
 
         if (configure != null)
         {

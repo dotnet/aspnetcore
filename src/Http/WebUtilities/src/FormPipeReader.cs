@@ -52,7 +52,7 @@ public class FormPipeReader
     /// <param name="encoding">The <see cref="Encoding"/>.</param>
     public FormPipeReader(PipeReader pipeReader, Encoding encoding)
     {
-        // https://docs.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (encoding is Encoding { CodePage: 65000 })
         {
             throw new ArgumentException("UTF7 is unsupported and insecure. Please select a different encoding.");
@@ -395,7 +395,7 @@ public class FormPipeReader
 
             // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
             // We will also create a string from it by the end of the function.
-            var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
+            var span = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(readOnlySpan), readOnlySpan.Length);
 
             try
             {

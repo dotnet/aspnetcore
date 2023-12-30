@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using Microsoft.AspNetCore.Internal;
@@ -60,8 +61,7 @@ public class HttpConnectionsEventSourceTests
         eventListener.EnableEvents(httpConnectionsEventSource, EventLevel.Informational);
 
         // Act
-        var stopWatch = ValueStopwatch.StartNew();
-        httpConnectionsEventSource.ConnectionStop("1", stopWatch);
+        httpConnectionsEventSource.ConnectionStop("1", startTimestamp: Stopwatch.GetTimestamp(), currentTimestamp: Stopwatch.GetTimestamp());
 
         // Assert
         var eventData = eventListener.EventData;

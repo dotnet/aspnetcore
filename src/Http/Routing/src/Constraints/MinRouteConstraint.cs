@@ -2,15 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 
 namespace Microsoft.AspNetCore.Routing.Constraints;
 
+#if !COMPONENTS
 /// <summary>
 /// Constrains a route parameter to be a long with a minimum value.
 /// </summary>
-public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy
+public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchingPolicy, ICachableParameterPolicy
+#else
+internal class MinRouteConstraint : IRouteConstraint
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MinRouteConstraint" /> class.
@@ -28,21 +36,19 @@ public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchin
 
     /// <inheritdoc />
     public bool Match(
+#if !COMPONENTS
         HttpContext? httpContext,
         IRouter? route,
         string routeKey,
         RouteValueDictionary values,
         RouteDirection routeDirection)
+#else
+        string routeKey,
+        RouteValueDictionary values)
+#endif
     {
-        if (routeKey == null)
-        {
-            throw new ArgumentNullException(nameof(routeKey));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(routeKey);
+        ArgumentNullException.ThrowIfNull(values);
 
         if (values.TryGetValue(routeKey, out var value) && value != null)
         {
@@ -62,8 +68,10 @@ public class MinRouteConstraint : IRouteConstraint, IParameterLiteralNodeMatchin
         return false;
     }
 
+#if !COMPONENTS
     bool IParameterLiteralNodeMatchingPolicy.MatchesLiteral(string parameterName, string literal)
     {
         return CheckConstraintCore(literal);
     }
+#endif
 }

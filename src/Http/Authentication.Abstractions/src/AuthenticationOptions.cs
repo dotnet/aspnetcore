@@ -31,14 +31,9 @@ public class AuthenticationOptions
     /// <param name="configureBuilder">Configures the scheme.</param>
     public void AddScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
-        if (configureBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(configureBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(configureBuilder);
+
         if (SchemeMap.ContainsKey(name))
         {
             throw new InvalidOperationException("Scheme already exists: " + name);
@@ -58,24 +53,11 @@ public class AuthenticationOptions
     /// <param name="displayName">The display name for the scheme.</param>
     public void AddScheme<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>(string name, string? displayName) where THandler : IAuthenticationHandler
     {
-        var state = new AddSchemeState(typeof(THandler));
         AddScheme(name, b =>
         {
             b.DisplayName = displayName;
-            b.HandlerType = state.HandlerType;
+            b.HandlerType = typeof(THandler);
         });
-    }
-
-    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
-    private readonly struct AddSchemeState
-    {
-        public AddSchemeState([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
-        {
-            HandlerType = handlerType;
-        }
-
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        public Type HandlerType { get; }
     }
 
     /// <summary>

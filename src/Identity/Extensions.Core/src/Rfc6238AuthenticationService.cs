@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -87,10 +88,7 @@ internal static class Rfc6238AuthenticationService
 
     public static int GenerateCode(byte[] securityToken, string? modifier = null)
     {
-        if (securityToken == null)
-        {
-            throw new ArgumentNullException(nameof(securityToken));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(securityToken);
 
         // Allow a variance of no greater than 9 minutes in either direction
         var currentTimeStep = GetCurrentTimeStepNumber();
@@ -108,10 +106,7 @@ internal static class Rfc6238AuthenticationService
 
     public static bool ValidateCode(byte[] securityToken, int code, string? modifier = null)
     {
-        if (securityToken == null)
-        {
-            throw new ArgumentNullException(nameof(securityToken));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(securityToken);
 
         // Allow a variance of no greater than 9 minutes in either direction
         var currentTimeStep = GetCurrentTimeStepNumber();

@@ -3,9 +3,11 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests;
@@ -354,46 +356,40 @@ public class ResponseCachingMiddlewareTests
     }
 
     [Fact]
-    public void StartResponsegAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
+    public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new FakeTimeProvider();
         var middleware = TestUtils.CreateTestMiddleware(options: new ResponseCachingOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
         context.ResponseTime = null;
 
         middleware.StartResponse(context);
 
-        Assert.Equal(clock.UtcNow, context.ResponseTime);
+        Assert.Equal(timeProvider.GetUtcNow(), context.ResponseTime);
     }
 
     [Fact]
     public void StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new FakeTimeProvider();
         var middleware = TestUtils.CreateTestMiddleware(options: new ResponseCachingOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
-        var initialTime = clock.UtcNow;
+        var initialTime = timeProvider.GetUtcNow();
         context.ResponseTime = null;
 
         middleware.StartResponse(context);
         Assert.Equal(initialTime, context.ResponseTime);
 
-        clock.UtcNow += TimeSpan.FromSeconds(10);
+        timeProvider.Advance(TimeSpan.FromSeconds(10));
 
         middleware.StartResponse(context);
-        Assert.NotEqual(clock.UtcNow, context.ResponseTime);
+        Assert.NotEqual(timeProvider.GetUtcNow(), context.ResponseTime);
         Assert.Equal(initialTime, context.ResponseTime);
     }
 
@@ -448,19 +444,19 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseExpiryIfAvailable()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.MinValue
-        };
+        var timeProvider = new FakeTimeProvider();
+        var now = timeProvider.GetUtcNow();
+        now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, now.Offset).AddSeconds(1); // Round up to seconds.
+        timeProvider.SetUtcNow(now);
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.ResponseTime = timeProvider.GetUtcNow();
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(now + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -471,24 +467,21 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseMaxAgeIfAvailable()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new FakeTimeProvider();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
+        context.ResponseTime = timeProvider.GetUtcNow();
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             MaxAge = TimeSpan.FromSeconds(12)
         }.ToString();
 
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(timeProvider.GetUtcNow() + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 
@@ -499,24 +492,21 @@ public class ResponseCachingMiddlewareTests
     [Fact]
     public void FinalizeCacheHeadersAsync_ResponseValidity_UseSharedMaxAgeIfAvailable()
     {
-        var clock = new TestClock
-        {
-            UtcNow = DateTimeOffset.UtcNow
-        };
+        var timeProvider = new FakeTimeProvider();
         var sink = new TestSink();
         var middleware = TestUtils.CreateTestMiddleware(testSink: sink, options: new ResponseCachingOptions
         {
-            SystemClock = clock
+            TimeProvider = timeProvider
         });
         var context = TestUtils.CreateTestContext();
 
-        context.ResponseTime = clock.UtcNow;
+        context.ResponseTime = timeProvider.GetUtcNow();
         context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
         {
             MaxAge = TimeSpan.FromSeconds(12),
             SharedMaxAge = TimeSpan.FromSeconds(13)
         }.ToString();
-        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(clock.UtcNow + TimeSpan.FromSeconds(11));
+        context.HttpContext.Response.Headers.Expires = HeaderUtilities.FormatDate(timeProvider.GetUtcNow() + TimeSpan.FromSeconds(11));
 
         middleware.FinalizeCacheHeaders(context);
 

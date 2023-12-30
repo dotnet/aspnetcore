@@ -18,10 +18,7 @@ public abstract class SharedOptionsBase
     /// <param name="sharedOptions"></param>
     protected SharedOptionsBase(SharedOptions sharedOptions)
     {
-        if (sharedOptions == null)
-        {
-            throw new ArgumentNullException(nameof(sharedOptions));
-        }
+        ArgumentNullException.ThrowIfNull(sharedOptions);
 
         SharedOptions = sharedOptions;
     }

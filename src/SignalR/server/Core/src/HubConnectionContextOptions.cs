@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Internal;
-
 namespace Microsoft.AspNetCore.SignalR;
 
 /// <summary>
@@ -30,10 +28,15 @@ public class HubConnectionContextOptions
     /// </summary>
     public long? MaximumReceiveMessageSize { get; set; }
 
-    internal ISystemClock SystemClock { get; set; } = default!;
+    internal TimeProvider TimeProvider { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the maximum parallel hub method invocations.
     /// </summary>
     public int MaximumParallelInvocations { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the maximum bytes to buffer per connection when using stateful reconnect.
+    /// </summary>
+    internal long StatefulReconnectBufferSize { get; set; } = 100_000;
 }

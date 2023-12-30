@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -12,6 +13,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
+[RequiresDynamicCode("ILEmitTrieFactory uses runtime IL generation.")]
 internal static class ILEmitTrieFactory
 {
     // The algorthm we use only works for ASCII text. If we find non-ASCII text in the input
@@ -477,6 +479,7 @@ internal static class ILEmitTrieFactory
         public Label ReturnNotAscii { get; set; }
     }
 
+    [RequiresDynamicCode("ILEmitTrieFactory uses runtime IL generation.")]
     private sealed class Methods
     {
         // Caching because the methods won't change, if we're being called once we're likely to
@@ -584,12 +587,12 @@ internal static class ILEmitTrieFactory
         public MethodInfo GetReference { get; }
 
         /// <summary>
-        /// <see cref="Unsafe.ReadUnaligned{T}(ref byte)"/> - ReadUnaligned[ulong]
+        /// <see cref="Unsafe.ReadUnaligned{T}(ref readonly byte)"/> - ReadUnaligned[ulong]
         /// </summary>
         public MethodInfo ReadUnalignedUInt64 { get; }
 
         /// <summary>
-        /// <see cref="Unsafe.ReadUnaligned{T}(ref byte)"/> - ReadUnaligned[ushort]
+        /// <see cref="Unsafe.ReadUnaligned{T}(ref readonly byte)"/> - ReadUnaligned[ushort]
         /// </summary>
         public MethodInfo ReadUnalignedUInt16 { get; }
     }

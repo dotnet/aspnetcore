@@ -21,15 +21,8 @@ internal sealed class MvcDataAnnotationsMvcOptionsSetup : IConfigureOptions<MvcO
         IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
         IOptions<MvcDataAnnotationsLocalizationOptions> dataAnnotationLocalizationOptions)
     {
-        if (validationAttributeAdapterProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
-        }
-
-        if (dataAnnotationLocalizationOptions == null)
-        {
-            throw new ArgumentNullException(nameof(dataAnnotationLocalizationOptions));
-        }
+        ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
+        ArgumentNullException.ThrowIfNull(dataAnnotationLocalizationOptions);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         _dataAnnotationLocalizationOptions = dataAnnotationLocalizationOptions;
@@ -46,10 +39,7 @@ internal sealed class MvcDataAnnotationsMvcOptionsSetup : IConfigureOptions<MvcO
 
     public void Configure(MvcOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(
             options,

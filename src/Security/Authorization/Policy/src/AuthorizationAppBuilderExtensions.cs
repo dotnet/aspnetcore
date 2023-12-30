@@ -25,15 +25,12 @@ public static class AuthorizationAppBuilderExtensions
     /// <returns>A reference to <paramref name="app"/> after the operation has completed.</returns>
     public static IApplicationBuilder UseAuthorization(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         VerifyServicesRegistered(app);
 
         app.Properties[AuthorizationMiddlewareSetKey] = true;
-        return app.UseMiddleware<AuthorizationMiddleware>();
+        return app.UseMiddleware<AuthorizationMiddlewareInternal>();
     }
 
     private static void VerifyServicesRegistered(IApplicationBuilder app)

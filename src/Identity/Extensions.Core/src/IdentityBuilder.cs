@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,6 +22,11 @@ public class IdentityBuilder
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
     public IdentityBuilder(Type user, IServiceCollection services)
     {
+        if (user.IsValueType)
+        {
+            throw new ArgumentException("User type can't be a value type.", nameof(user));
+        }
+
         UserType = user;
         Services = services;
     }
@@ -32,7 +38,14 @@ public class IdentityBuilder
     /// <param name="role">The <see cref="Type"/> to use for the roles.</param>
     /// <param name="services">The <see cref="IServiceCollection"/> to attach to.</param>
     public IdentityBuilder(Type user, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type role, IServiceCollection services) : this(user, services)
-        => RoleType = role;
+    {
+        if (role.IsValueType)
+        {
+            throw new ArgumentException("Role type can't be a value type.", nameof(role));
+        }
+
+        RoleType = role;
+    }
 
     /// <summary>
     /// Gets the <see cref="Type"/> used for users.
@@ -70,6 +83,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TValidator">The user validator type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddUserValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidator>() where TValidator : class
         => AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
@@ -78,6 +92,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TFactory">The type of the claims principal factory.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddClaimsPrincipalFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>() where TFactory : class
         => AddScoped(typeof(IUserClaimsPrincipalFactory<>).MakeGenericType(UserType), typeof(TFactory));
 
@@ -97,6 +112,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TValidator">The validator type used to validate passwords.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddPasswordValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TValidator>() where TValidator : class
         => AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
@@ -105,6 +121,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TStore">The user store type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddUserStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>() where TStore : class
         => AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(TStore));
 
@@ -123,6 +140,7 @@ public class IdentityBuilder
     /// <param name="providerName">The name of the provider to add.</param>
     /// <param name="provider">The type of the <see cref="IUserTwoFactorTokenProvider{TUser}"/> to add.</param>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddTokenProvider(string providerName, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type provider)
     {
         if (!typeof(IUserTwoFactorTokenProvider<>).MakeGenericType(UserType).IsAssignableFrom(provider))
@@ -131,7 +149,17 @@ public class IdentityBuilder
         }
         Services.Configure<IdentityOptions>(options =>
         {
-            options.Tokens.ProviderMap[providerName] = new TokenProviderDescriptor(provider);
+            // Overwrite ProviderType if it exists for backcompat, but keep a reference to the old one in case it's needed
+            // by a SignInManager with a different UserType. We'll continue to just overwrite ProviderInstance until someone asks for a fix though.
+            if (options.Tokens.ProviderMap.TryGetValue(providerName, out var descriptor))
+            {
+                descriptor.ProviderInstance = null;
+                descriptor.AddProviderType(provider);
+            }
+            else
+            {
+                options.Tokens.ProviderMap[providerName] = new TokenProviderDescriptor(provider);
+            }
         });
         Services.AddTransient(provider);
         return this;
@@ -142,6 +170,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TUserManager">The type of the user manager to add.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddUserManager<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUserManager>() where TUserManager : class
     {
         var userManagerType = typeof(UserManager<>).MakeGenericType(UserType);
@@ -162,6 +191,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TRole">The role type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddRoles<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>() where TRole : class
     {
         RoleType = typeof(TRole);
@@ -176,6 +206,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TRole">The role validator type.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because RoleType is a reference type.")]
     public virtual IdentityBuilder AddRoleValidator<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>() where TRole : class
     {
         if (RoleType == null)
@@ -206,6 +237,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TStore">The role store.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because RoleType is a reference type.")]
     public virtual IdentityBuilder AddRoleStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>() where TStore : class
     {
         if (RoleType == null)
@@ -220,6 +252,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TRoleManager">The type of the role manager to add.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because RoleType is a reference type.")]
     public virtual IdentityBuilder AddRoleManager<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRoleManager>() where TRoleManager : class
     {
         if (RoleType == null)
@@ -244,6 +277,7 @@ public class IdentityBuilder
     /// </summary>
     /// <typeparam name="TUserConfirmation">The type of the user confirmation to add.</typeparam>
     /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe because UserType is a reference type.")]
     public virtual IdentityBuilder AddUserConfirmation<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TUserConfirmation>() where TUserConfirmation : class
         => AddScoped(typeof(IUserConfirmation<>).MakeGenericType(UserType), typeof(TUserConfirmation));
 }

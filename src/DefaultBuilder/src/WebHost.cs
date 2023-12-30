@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -222,11 +223,32 @@ public static class WebHost
                 StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment, ctx.Configuration);
             }
         });
-        builder.UseKestrel((builderContext, options) =>
-        {
-            options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
-        })
-        .ConfigureServices((hostingContext, services) =>
+
+        ConfigureWebDefaultsWorker(
+            builder.UseKestrel(ConfigureKestrel),
+            services =>
+            {
+                services.AddRouting();
+            });
+
+        builder
+            .UseIIS()
+            .UseIISIntegration();
+    }
+
+    internal static void ConfigureWebDefaultsSlim(IWebHostBuilder builder)
+    {
+        ConfigureWebDefaultsWorker(builder.UseKestrelCore().ConfigureKestrel(ConfigureKestrel), configureRouting: null);
+    }
+
+    private static void ConfigureKestrel(WebHostBuilderContext builderContext, KestrelServerOptions options)
+    {
+        options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
+    }
+
+    private static void ConfigureWebDefaultsWorker(IWebHostBuilder builder, Action<IServiceCollection>? configureRouting)
+    {
+        builder.ConfigureServices((hostingContext, services) =>
         {
             // Fallback
             services.PostConfigure<HostFilteringOptions>(options =>
@@ -247,10 +269,18 @@ public static class WebHost
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
-            services.AddRouting();
-        })
-        .UseIIS()
-        .UseIISIntegration();
+            // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
+            // A lambda is used here because we don't want to reference AddRouting directly because of trimming.
+            // This avoids the overhead of calling AddRoutingCore multiple times on app startup.
+            if (configureRouting == null)
+            {
+                services.AddRoutingCore();
+            }
+            else
+            {
+                configureRouting(services);
+            }
+        });
     }
 
     /// <summary>

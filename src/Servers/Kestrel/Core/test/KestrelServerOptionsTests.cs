@@ -84,6 +84,7 @@ public class KestrelServerOptionsTests
         serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
         serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
+        serviceCollection.AddSingleton(Mock.Of<IHttpsConfigurationService>());
         options.ApplicationServices = serviceCollection.BuildServiceProvider();
 
         options.Configure();

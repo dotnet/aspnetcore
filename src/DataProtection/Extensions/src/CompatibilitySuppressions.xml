@@ -2,10 +2,10 @@
 <Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Suppression>
     <DiagnosticId>CP1002</DiagnosticId>
-    <Target>System.ServiceModel.Internals.dll</Target>
+    <Target>SMDiagnostics.dll</Target>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP1002</DiagnosticId>
-    <Target>SMDiagnostics.dll</Target>
+    <Target>System.ServiceModel.Internals.dll</Target>
   </Suppression>
 </Suppressions>

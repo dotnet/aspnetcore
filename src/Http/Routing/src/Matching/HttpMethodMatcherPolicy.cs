@@ -38,10 +38,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
     bool INodeBuilderPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         if (ContainsDynamicEndpoints(endpoints))
         {
@@ -53,10 +50,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
 
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         return ContainsDynamicEndpoints(endpoints);
@@ -83,15 +77,8 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
     /// <returns></returns>
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
-
-        if (candidates == null)
-        {
-            throw new ArgumentNullException(nameof(candidates));
-        }
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         // Returning a 405 here requires us to return keep track of all 'seen' HTTP methods. We allocate to
         // keep track of this because we either need to keep track of the HTTP methods or keep track of the
@@ -323,52 +310,31 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
     /// <returns></returns>
     public PolicyJumpTable BuildJumpTable(int exitDestination, IReadOnlyList<PolicyJumpTableEdge> edges)
     {
-        Dictionary<string, int>? destinations = null;
-        Dictionary<string, int>? corsPreflightDestinations = null;
+        List<KeyValuePair<string, int>>? destinations = null;
+        List<KeyValuePair<string, int>>? corsPreflightDestinations = null;
+        var corsPreflightExitDestination = exitDestination;
+
         for (var i = 0; i < edges.Count; i++)
         {
             // We create this data, so it's safe to cast it.
             var key = (EdgeKey)edges[i].State;
+            var destination = edges[i].Destination;
+
             if (key.IsCorsPreflightRequest)
             {
-                if (corsPreflightDestinations == null)
-                {
-                    corsPreflightDestinations = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                }
-
-                corsPreflightDestinations.Add(key.HttpMethod, edges[i].Destination);
+                ProcessEdge(key.HttpMethod, destination, ref corsPreflightExitDestination, ref corsPreflightDestinations);
             }
             else
             {
-                if (destinations == null)
-                {
-                    destinations = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                }
-
-                destinations.Add(key.HttpMethod, edges[i].Destination);
+                ProcessEdge(key.HttpMethod, destination, ref exitDestination, ref destinations);
             }
-        }
-
-        int corsPreflightExitDestination = exitDestination;
-        if (corsPreflightDestinations != null && corsPreflightDestinations.TryGetValue(AnyMethod, out var matchesAnyVerb))
-        {
-            // If we have endpoints that match any HTTP method, use that as the exit.
-            corsPreflightExitDestination = matchesAnyVerb;
-            corsPreflightDestinations.Remove(AnyMethod);
-        }
-
-        if (destinations != null && destinations.TryGetValue(AnyMethod, out matchesAnyVerb))
-        {
-            // If we have endpoints that match any HTTP method, use that as the exit.
-            exitDestination = matchesAnyVerb;
-            destinations.Remove(AnyMethod);
         }
 
         if (destinations?.Count == 1)
         {
             // If there is only a single valid HTTP method then use an optimized jump table.
             // It avoids unnecessary dictionary lookups with the method name.
-            var httpMethodDestination = destinations.Single();
+            var httpMethodDestination = destinations[0];
             var method = httpMethodDestination.Key;
             var destination = httpMethodDestination.Value;
             var supportsCorsPreflight = false;
@@ -377,7 +343,7 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
             if (corsPreflightDestinations?.Count > 0)
             {
                 supportsCorsPreflight = true;
-                corsPreflightDestination = corsPreflightDestinations.Single().Value;
+                corsPreflightDestination = corsPreflightDestinations[0].Value;
             }
 
             return new HttpMethodSingleEntryPolicyJumpTable(
@@ -391,10 +357,23 @@ public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPo
         else
         {
             return new HttpMethodDictionaryPolicyJumpTable(
-                exitDestination,
-                destinations,
-                corsPreflightExitDestination,
-                corsPreflightDestinations);
+                new HttpMethodDestinationsLookup(destinations ?? new(), exitDestination),
+                corsPreflightDestinations != null ? new HttpMethodDestinationsLookup(corsPreflightDestinations, corsPreflightExitDestination) : null);
+        }
+
+        static void ProcessEdge(string httpMethod, int destination, ref int exitDestination, ref List<KeyValuePair<string, int>>? destinations)
+        {
+            // If we have endpoints that match any HTTP method, use that as the exit.
+            if (string.Equals(httpMethod, AnyMethod, StringComparison.OrdinalIgnoreCase))
+            {
+                exitDestination = destination;
+            }
+            else
+            {
+
+                destinations ??= new();
+                destinations.Add(KeyValuePair.Create(httpMethod, destination));
+            }
         }
     }
 

@@ -133,7 +133,7 @@ static async Task handleBidirectionalStream(IWebTransportSession session, Connec
         // write back the data to the stream
         await outputPipe.WriteAsync(outputMemory);
 
-        memory.Span.Fill(0);
+        memory.Span.Clear();
     }
 }
 

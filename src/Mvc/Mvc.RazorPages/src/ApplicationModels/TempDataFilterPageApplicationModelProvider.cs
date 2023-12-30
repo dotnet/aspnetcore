@@ -25,10 +25,7 @@ internal sealed class TempDataFilterPageApplicationModelProvider : IPageApplicat
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var pageApplicationModel = context.PageApplicationModel;
         var handlerType = pageApplicationModel.HandlerType.AsType();

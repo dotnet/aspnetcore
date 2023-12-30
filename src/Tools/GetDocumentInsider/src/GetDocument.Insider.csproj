@@ -19,10 +19,14 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp2.1'">
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
   <ItemGroup>

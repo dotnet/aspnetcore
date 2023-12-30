@@ -15,10 +15,7 @@ internal sealed class ResponseCacheFilterApplicationModelProvider : IPageApplica
 
     public ResponseCacheFilterApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor, ILoggerFactory loggerFactory)
     {
-        if (mvcOptionsAccessor == null)
-        {
-            throw new ArgumentNullException(nameof(mvcOptionsAccessor));
-        }
+        ArgumentNullException.ThrowIfNull(mvcOptionsAccessor);
 
         _mvcOptions = mvcOptionsAccessor.Value;
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -29,10 +26,7 @@ internal sealed class ResponseCacheFilterApplicationModelProvider : IPageApplica
 
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var pageModel = context.PageApplicationModel;
         var responseCacheAttributes = pageModel.HandlerTypeAttributes.OfType<ResponseCacheAttribute>();

@@ -50,7 +50,7 @@ var props = new[]
 var lengths = props.GroupBy(prop=>prop.Key.Length).OrderBy(prop=>prop.Key);
 
 
-Func<int,string> IsRead = Index => "((_flag" + (Index / 32) + " & 0x" + (1<<(Index % 32)).ToString("x") + "u) != 0)";
+Func<int,string> IsReadMask = Index => "(_flag" + (Index / 32) + " & 0x" + (1<<(Index % 32)).ToString("x") + "u)";
 Func<int,string> MarkRead = Index => "_flag" + (Index / 32) + " |= 0x" + (1<<(Index % 32)).ToString("x") + "u";
 Func<int,string> Clear = Index => "_flag" + (Index / 32) + " &= ~0x" + (1<<(Index % 32)).ToString("x") + "u";
 #>
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
             {
-                if (!<#=IsRead(prop.Index)#>)
+                if (<#=IsReadMask(prop.Index)#> == 0)
                 {
                     string nativeValue = GetKnownHeader(<#=prop.ID#>);
                     if (nativeValue != null)
@@ -91,12 +91,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     }
                     <#=MarkRead(prop.Index)#>;
                 }
-                return _<#=prop.Name#>;
+
+                return _<#=prop.Name#>.Count > 0 ? _<#=prop.Name#> : StringValues.Empty;
             }
             set
             {
                 <#=MarkRead(prop.Index)#>;
-                _<#=prop.Name#> = value;
+
+                _<#=prop.Name#> = value.Count > 0 ? value : default;
             }
         }
 
@@ -135,7 +137,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     break;
 <# } #>
             }
-            value = StringValues.Empty;
+            value = default;
             return false;
         }
 
@@ -148,7 +150,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 <# foreach(var prop in length) { #>
                     if (string.Equals(key, HeaderNames.<#=prop.Name#>, StringComparison.OrdinalIgnoreCase))
                     {
-                        <#=MarkRead(prop.Index)#>;
                         <#=prop.Name#> = value;
                         return true;
                     }
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     {
                         if (HasKnownHeader(<#=prop.ID#>))
                         {
-                            <#=prop.Name#> = StringValues.Empty;
+                            <#=prop.Name#> = default;
                             return true;
                         }
                         return false;
@@ -213,12 +214,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 <# } #>
         }
 
-        private static ReadOnlySpan<byte> HeaderKeys => new byte[]
-        {
+        private static ReadOnlySpan<HttpSysRequestHeader> HeaderKeys =>
+        [
 <# foreach(var prop in props) { #>
-            (byte)<#=prop.ID#>,
+            <#=prop.ID#>,
 <# } #>
-        };
+        ];
 
         private string GetHeaderKeyName(HttpSysRequestHeader header) => header switch
         {
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         private bool HasKnownHeader(HttpSysRequestHeader header) => header switch
         {
 <# foreach(var prop in props) { #>
-            <#=prop.ID#> => <#=IsRead(prop.Index)#> ? _<#=prop.Name#>.Count > 0 : _requestMemoryBlob.HasKnownHeader(<#=prop.ID#>),
+            <#=prop.ID#> => <#=IsReadMask(prop.Index)#> != 0 ? _<#=prop.Name#>.Count > 0 : _requestMemoryBlob.HasKnownHeader(<#=prop.ID#>),
 <# } #>
             _ => throw new NotImplementedException()
         };

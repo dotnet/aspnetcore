@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class ProblemResultTests
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+
     [Fact]
     public async Task ExecuteAsync_UsesDefaults_ForProblemDetails()
     {
@@ -34,8 +37,40 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status500InternalServerError, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, SerializerOptions);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", responseDetails.Type);
+        Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
+        Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_UsesDefaultsFromProblemDetailsServoce_ForProblemDetails()
+    {
+        // Arrange
+        var details = new ProblemDetails();
+
+        var result = new ProblemHttpResult(details);
+        var stream = new MemoryStream();
+        var services = CreateServiceCollection()
+            .AddProblemDetails(options => options.CustomizeProblemDetails = x => x.ProblemDetails.Type = null)
+            .BuildServiceProvider();
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = services,
+            Response =
+                {
+                    Body = stream,
+                },
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, httpContext.Response.StatusCode);
+        stream.Position = 0;
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, SerializerOptions);
+        Assert.Null(responseDetails.Type);
         Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
     }
@@ -63,7 +98,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, SerializerOptions);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
         Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
@@ -95,7 +130,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status418ImATeapot, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, SerializerOptions);
         Assert.Null(responseDetails.Type);
         Assert.Equal("I'm a teapot", responseDetails.Title);
         Assert.Equal(StatusCodes.Status418ImATeapot, responseDetails.Status);
@@ -127,7 +162,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream);
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, SerializerOptions);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
         var error = Assert.Single(responseDetails.Errors);
         Assert.Equal("testError", error.Key);
@@ -214,11 +249,17 @@ public class ProblemResultTests
         Assert.Equal("application/problem+json", result.ContentType);
     }
 
-    private static IServiceProvider CreateServices()
+    private static IServiceCollection CreateServiceCollection()
     {
         var services = new ServiceCollection();
         services.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        return services;
+    }
+
+    private static IServiceProvider CreateServices()
+    {
+        var services = CreateServiceCollection();
 
         return services.BuildServiceProvider();
     }

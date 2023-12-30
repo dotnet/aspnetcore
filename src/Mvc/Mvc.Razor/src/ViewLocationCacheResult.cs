@@ -18,10 +18,7 @@ internal sealed class ViewLocationCacheResult
         ViewLocationCacheItem view,
         IReadOnlyList<ViewLocationCacheItem> viewStarts)
     {
-        if (viewStarts == null)
-        {
-            throw new ArgumentNullException(nameof(viewStarts));
-        }
+        ArgumentNullException.ThrowIfNull(viewStarts);
 
         ViewEntry = view;
         ViewStartEntries = viewStarts;
@@ -35,10 +32,7 @@ internal sealed class ViewLocationCacheResult
     /// <param name="searchedLocations">Locations that were searched.</param>
     public ViewLocationCacheResult(IEnumerable<string> searchedLocations)
     {
-        if (searchedLocations == null)
-        {
-            throw new ArgumentNullException(nameof(searchedLocations));
-        }
+        ArgumentNullException.ThrowIfNull(searchedLocations);
 
         SearchedLocations = searchedLocations;
     }

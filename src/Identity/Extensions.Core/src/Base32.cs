@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -49,10 +50,7 @@ internal static class Base32
 
     public static string ToBase32(byte[] input)
     {
-        if (input == null)
-        {
-            throw new ArgumentNullException(nameof(input));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(input);
 
         StringBuilder sb = new StringBuilder();
         for (int offset = 0; offset < input.Length;)
@@ -75,10 +73,7 @@ internal static class Base32
 
     public static byte[] FromBase32(string input)
     {
-        if (input == null)
-        {
-            throw new ArgumentNullException(nameof(input));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(input);
         var trimmedInput = input.AsSpan().TrimEnd('=');
         if (trimmedInput.Length == 0)
         {

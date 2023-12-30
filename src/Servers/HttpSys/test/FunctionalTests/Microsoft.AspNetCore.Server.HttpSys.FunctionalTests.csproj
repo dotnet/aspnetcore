@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2\" />
     <Compile Include="$(SharedSourceRoot)runtime\IHttpStreamHeadersHandler.cs" LinkBase="Shared\IHttpStreamHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)Hpack\Obsoletions.cs" LinkBase="Shared\Obsoletions.cs" />
     <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
@@ -20,10 +21,10 @@
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\DuplexPipe.cs" />
     <Compile Remove="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" />
     <Compile Include="$(SharedSourceRoot)InternalHeaderNames.cs" Linkbase="shared"/>
-    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="shared" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\" />
+    <Compile Include="$(SharedSourceRoot)TransportTestHelpers\HttpSysHttp3SupportedAttribute.cs" LinkBase="shared\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,35 +25,20 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
     /// <inheritdoc />
     protected override string InvokeJS(string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var callInfo = new JSCallInfo
+        try
         {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-            MarshalledCallArgsJson = argsJson ?? "[]",
-            MarshalledCallAsyncHandle = default
-        };
-
-        var result = InternalCalls.InvokeJS<object, object, object, string>(out var exception, ref callInfo, null, null, null);
-
-        return exception != null
-            ? throw new JSException(exception)
-            : result;
+            return InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", 0);
+        }
+        catch (Exception ex)
+        {
+            throw new JSException(ex.Message, ex);
+        }
     }
 
     /// <inheritdoc />
     protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        var callInfo = new JSCallInfo
-        {
-            FunctionIdentifier = identifier,
-            TargetInstanceId = targetInstanceId,
-            ResultType = resultType,
-            MarshalledCallArgsJson = argsJson ?? "[]",
-            MarshalledCallAsyncHandle = asyncHandle
-        };
-
-        InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
+        InternalCalls.InvokeJSJson(identifier, targetInstanceId, (int)resultType, argsJson ?? "[]", asyncHandle);
     }
 
     /// <inheritdoc />
@@ -63,18 +48,13 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         var resultJsonOrErrorMessage = dispatchResult.Success
             ? dispatchResult.ResultJson!
             : dispatchResult.Exception!.ToString();
-#pragma warning disable CS0618 // Type or member is obsolete
-        InvokeUnmarshalled<string?, bool, string, object>("Blazor._internal.endInvokeDotNetFromJS",
-            callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
-#pragma warning restore CS0618 // Type or member is obsolete
+        InternalCalls.EndInvokeDotNetFromJS(callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
     }
 
     /// <inheritdoc />
     protected override void SendByteArray(int id, byte[] data)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        InvokeUnmarshalled<int, byte[], object>("Blazor._internal.receiveByteArray", id, data);
-#pragma warning restore CS0618 // Type or member is obsolete
+        InternalCalls.ReceiveByteArray(id, data);
     }
 
     [Obsolete("This method is obsolete. Use JSImportAttribute instead.")]
@@ -120,7 +100,7 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalled
         var jsStreamReference = JsonSerializer.Deserialize<IJSStreamReference>(serializedStreamReference, JsonSerializerOptions);
         if (jsStreamReference is null)
         {
-            throw new NullReferenceException($"Unable to parse the {nameof(serializedStreamReference)}.");
+            throw new ArgumentException($"Failed to parse as {nameof(IJSStreamReference)}.", nameof(serializedStreamReference));
         }
 
         return jsStreamReference;

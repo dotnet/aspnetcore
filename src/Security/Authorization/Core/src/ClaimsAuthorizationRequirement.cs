@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 
@@ -24,10 +25,7 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
     /// <param name="allowedValues">Optional list of claim values. If specified, the claim must match one or more of these values.</param>
     public ClaimsAuthorizationRequirement(string claimType, IEnumerable<string>? allowedValues)
     {
-        if (claimType == null)
-        {
-            throw new ArgumentNullException(nameof(claimType));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(claimType);
 
         ClaimType = claimType;
         AllowedValues = allowedValues;

@@ -14,8 +14,8 @@ public sealed class HeadOutlet : ComponentBase
 {
     private const string GetAndRemoveExistingTitle = "Blazor._internal.PageTitle.getAndRemoveExistingTitle";
 
-    internal const string HeadSectionOutletName = "head";
-    internal const string TitleSectionOutletName = "title";
+    internal static readonly object HeadSectionId = new();
+    internal static readonly object TitleSectionId = new();
 
     private string? _defaultTitle;
 
@@ -37,22 +37,22 @@ public sealed class HeadOutlet : ComponentBase
     {
         // Render the title content
         builder.OpenComponent<SectionOutlet>(0);
-        builder.AddAttribute(1, nameof(SectionOutlet.Name), TitleSectionOutletName);
+        builder.AddComponentParameter(1, nameof(SectionOutlet.SectionId), TitleSectionId);
         builder.CloseComponent();
 
         // Render the default title if it exists
         if (!string.IsNullOrEmpty(_defaultTitle))
         {
             builder.OpenComponent<SectionContent>(2);
-            builder.AddAttribute(3, nameof(SectionContent.Name), TitleSectionOutletName);
-            builder.AddAttribute(4, nameof(SectionContent.IsDefaultContent), true);
-            builder.AddAttribute(5, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
+            builder.AddComponentParameter(3, nameof(SectionContent.SectionId), TitleSectionId);
+            builder.AddComponentParameter(4, nameof(SectionContent.IsDefaultContent), true);
+            builder.AddComponentParameter(5, nameof(SectionContent.ChildContent), (RenderFragment)BuildDefaultTitleRenderTree);
             builder.CloseComponent();
         }
 
         // Render the rest of the head metadata
         builder.OpenComponent<SectionOutlet>(6);
-        builder.AddAttribute(7, nameof(SectionOutlet.Name), HeadSectionOutletName);
+        builder.AddComponentParameter(7, nameof(SectionOutlet.SectionId), HeadSectionId);
         builder.CloseComponent();
     }
 

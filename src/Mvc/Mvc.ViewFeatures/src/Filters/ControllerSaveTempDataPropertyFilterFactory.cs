@@ -19,10 +19,7 @@ internal sealed class ControllerSaveTempDataPropertyFilterFactory : IFilterFacto
 
     public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         var service = serviceProvider.GetRequiredService<ControllerSaveTempDataPropertyFilter>();
         service.Properties = TempDataProperties;

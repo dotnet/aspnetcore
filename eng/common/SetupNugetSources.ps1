@@ -153,7 +153,7 @@ if ($dotnet31Source -ne $null) {
     AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username $userName -Password $Password
 }
 
-$dotnetVersions = @('5','6','7')
+$dotnetVersions = @('5','6','7','8')
 
 foreach ($dotnetVersion in $dotnetVersions) {
     $feedPrefix = "dotnet" + $dotnetVersion;

@@ -41,7 +41,7 @@ setTimeout(() => {
     process.exit(1);
 }, 1000 * 60 * 20);
 
-function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<RegExpMatchArray> {
+function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
         const commandDebug = _debug(`${command}`);
         try {
@@ -99,7 +99,7 @@ function waitForMatches(command: string, process: ChildProcess, regex: RegExp, m
     });
 }
 
-let configuration = "Debug";
+let configuration = process.env['npm_config_configuration'] || "Debug";
 let spec: string;
 let sauce = false;
 let allBrowsers = false;
@@ -209,14 +209,14 @@ function runJest(httpsUrl: string, httpUrl: string) {
         return 0;
     }
 
-    const jestPath = path.resolve(__dirname, "..", "..", "common", "node_modules", "jest", "bin", "jest.js");
+    const jestPath = path.resolve(__dirname, "..", "..", "..", "..", "..", "..", "node_modules", "jest", "bin", "jest.js");
     const configPath = path.resolve(__dirname, "..", "func.jest.config.js");
 
     console.log("Starting Node tests using Jest.");
     return new Promise<number>((resolve, reject) => {
         const logStream = fs.createWriteStream(path.resolve(LOGS_DIR, "node.functionaltests.log"));
         // Use NODE_TLS_REJECT_UNAUTHORIZED to allow our test cert to be used by the Node tests (NEVER use this environment variable outside of testing)
-        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: `${httpsUrl};${httpUrl}`, NODE_TLS_REJECT_UNAUTHORIZED: 0 }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
+        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: `${httpsUrl};${httpUrl}`, NODE_TLS_REJECT_UNAUTHORIZED: 0 as any }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
             (error: any, stdout, stderr) => {
                 console.log("Finished Node tests.");
                 if (error) {
@@ -232,7 +232,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
 (async () => {
     try {
-        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net8.0", "SignalR.Client.FunctionalTestApp.dll");
+        const serverPath = path.resolve(ARTIFACTS_DIR, "bin", "SignalR.Client.FunctionalTestApp", configuration, "net9.0", "SignalR.Client.FunctionalTestApp.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";

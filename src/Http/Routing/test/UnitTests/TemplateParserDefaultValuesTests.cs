@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -128,7 +129,9 @@ public class TemplateParserDefaultValuesTests
         services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
         services.AddSingleton<RoutingMarkerService>();
         services.AddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
-        services.Configure<RouteOptions>(options => { });
+        services.Configure<RouteOptions>(options => {
+            options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+        });
 
         var applicationBuilder = Mock.Of<IApplicationBuilder>();
         applicationBuilder.ApplicationServices = services.BuildServiceProvider();
@@ -143,6 +146,8 @@ public class TemplateParserDefaultValuesTests
         var services = new ServiceCollection().AddOptions();
         var serviceProvider = services.BuildServiceProvider();
         var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
+        accessor.Value.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+
         return new DefaultInlineConstraintResolver(accessor, serviceProvider);
     }
 }

@@ -63,7 +63,10 @@ internal static class AngularCliMiddleware
         {
             portNumber = TcpPortFinder.FindAvailablePort();
         }
-        logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
+        }
 
         var scriptRunner = new NodeScriptRunner(
             sourcePath, scriptName, $"--port {portNumber}", null, pkgManagerCommand, diagnosticSource, applicationStoppingToken);
@@ -110,9 +113,10 @@ internal static class AngularCliMiddleware
                 try
                 {
                     // If we get any HTTP response, the CLI server is ready
+                    using var cancellationTokenSource = new CancellationTokenSource(timeoutMilliseconds);
                     await client.SendAsync(
                         new HttpRequestMessage(HttpMethod.Head, cliServerUri),
-                        new CancellationTokenSource(timeoutMilliseconds).Token);
+                        cancellationTokenSource.Token);
                     return;
                 }
                 catch (Exception)

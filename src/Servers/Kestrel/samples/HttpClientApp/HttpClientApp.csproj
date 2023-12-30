@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="shared" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

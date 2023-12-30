@@ -62,10 +62,7 @@ public abstract class TextOutputFormatter : OutputFormatter
     /// <returns>The <see cref="Encoding"/> to use when reading the request or writing the response.</returns>
     public virtual Encoding SelectCharacterEncoding(OutputFormatterWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (SupportedEncodings.Count == 0)
         {
@@ -105,10 +102,7 @@ public abstract class TextOutputFormatter : OutputFormatter
     /// <inheritdoc />
     public override Task WriteAsync(OutputFormatterWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var selectedMediaType = context.ContentType;
         if (!selectedMediaType.HasValue)
@@ -138,7 +132,7 @@ public abstract class TextOutputFormatter : OutputFormatter
 
             if (context.HttpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService)
             {
-                return problemDetailsService.WriteAsync(new ()
+                return problemDetailsService.TryWriteAsync(new ()
                 {
                     HttpContext = context.HttpContext,
                     ProblemDetails = { Status = statusCode }

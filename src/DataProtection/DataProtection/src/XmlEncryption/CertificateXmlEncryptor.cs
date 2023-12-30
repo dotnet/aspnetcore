@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -28,15 +30,8 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     public CertificateXmlEncryptor(string thumbprint, ICertificateResolver certificateResolver, ILoggerFactory loggerFactory)
         : this(loggerFactory, encryptor: null)
     {
-        if (thumbprint == null)
-        {
-            throw new ArgumentNullException(nameof(thumbprint));
-        }
-
-        if (certificateResolver == null)
-        {
-            throw new ArgumentNullException(nameof(certificateResolver));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(thumbprint);
+        ArgumentNullThrowHelper.ThrowIfNull(certificateResolver);
 
         _certFactory = CreateCertFactory(thumbprint, certificateResolver);
     }
@@ -48,10 +43,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     public CertificateXmlEncryptor(X509Certificate2 certificate, ILoggerFactory loggerFactory)
         : this(loggerFactory, encryptor: null)
     {
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         _certFactory = () => certificate;
     }
@@ -74,10 +66,7 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintextElement);
 
         // <EncryptedData Type="http://www.w3.org/2001/04/xmlenc#Element" xmlns="http://www.w3.org/2001/04/xmlenc#">
         //   ...
@@ -87,6 +76,10 @@ public sealed class CertificateXmlEncryptor : IInternalCertificateXmlEncryptor, 
         return new EncryptedXmlInfo(encryptedElement, typeof(EncryptedXmlDecryptor));
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode",
+        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not use reflection.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "This usage of EncryptedXml to encrypt an XElement using a X509Certificate2 does not use XSLTs.")]
     private XElement EncryptElement(XElement plaintextElement)
     {
         // EncryptedXml works with XmlDocument, not XLinq. When we perform the conversion

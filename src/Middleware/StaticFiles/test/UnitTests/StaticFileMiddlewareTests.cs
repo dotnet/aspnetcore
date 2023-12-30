@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -412,6 +412,55 @@ public class StaticFileMiddlewareTests : LoggedTest
             Assert.Equal("text/customfortest+plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal(responseText, responseContent);
         }
+    }
+
+    [Fact]
+    public async Task OverrideDefaultStatusCode()
+    {
+        using var host = await StaticFilesTestServer.Create(app =>
+        {
+            app.Use(next => context => 
+            {
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                return next(context);
+            });
+            app.UseStaticFiles();
+        });
+
+        using var server = host.GetTestServer();
+        var response = await server.CreateClient().GetAsync("/");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <remarks>
+    /// Note that the status code *might* be overridden if the static files middleware
+    /// delegates to `next` (e.g. if the file isn't found and hits the 404 middleware).
+    /// </remarks>
+    [Fact]
+    public async Task DontOverrideNonDefaultStatusCode()
+    {
+        const HttpStatusCode errorCode = HttpStatusCode.InsufficientStorage;
+
+        using var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, "."));
+
+        using var host = await StaticFilesTestServer.Create(app =>
+        {
+            app.Use(next => context =>
+            {
+                context.Response.StatusCode = (int)errorCode;
+                return next(context);
+            });
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                RequestPath = new PathString(),
+                FileProvider = fileProvider
+            });
+        });
+
+        using var server = host.GetTestServer();
+        var response = await server.CreateClient().GetAsync("/TestDocument.txt");
+        Assert.Equal(errorCode, response.StatusCode);
     }
 
     [Theory]

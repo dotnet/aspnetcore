@@ -30,6 +30,9 @@ import okhttp3.OkHttpClient;
  * A connection used to invoke hub methods on a SignalR Server.
  */
 public class HubConnection implements AutoCloseable {
+    static final long DEFAULT_SERVER_TIMEOUT = 30 * 1000;
+    static final long DEFAULT_KEEP_ALIVE_INTERVAL = 15 * 1000;
+
     private static final byte RECORD_SEPARATOR = 0x1e;
     private static final List<Type> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
@@ -49,8 +52,8 @@ public class HubConnection implements AutoCloseable {
     // These are all user-settable properties
     private String baseUrl;
     private List<OnClosedCallback> onClosedCallbackList;
-    private long keepAliveInterval = 15 * 1000;
-    private long serverTimeout = 30 * 1000;
+    private long keepAliveInterval = DEFAULT_KEEP_ALIVE_INTERVAL;
+    private long serverTimeout = DEFAULT_SERVER_TIMEOUT;
     private long handshakeResponseTimeout = 15 * 1000;
 
     // Private property, modified for testing
@@ -120,7 +123,7 @@ public class HubConnection implements AutoCloseable {
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient, HubProtocol protocol,
                   Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum,
-                  Action1<OkHttpClient.Builder> configureBuilder) {
+                  Action1<OkHttpClient.Builder> configureBuilder, long serverTimeout, long keepAliveInterval) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -158,6 +161,9 @@ public class HubConnection implements AutoCloseable {
 
         this.headers = headers;
         this.skipNegotiate = skipNegotiate;
+
+        this.serverTimeout = serverTimeout;
+        this.keepAliveInterval = keepAliveInterval;
 
         this.callback = (payload) -> ReceiveLoop(payload);
     }
@@ -425,6 +431,9 @@ public class HubConnection implements AutoCloseable {
                 connectionState.stopError = errorMessage;
                 logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
+                if (this.state.getHubConnectionState() == HubConnectionState.CONNECTED) {
+                    sendHubMessageWithLock(new CloseMessage());
+                }
                 logger.debug("Stopping HubConnection.");
             }
 
@@ -433,15 +442,14 @@ public class HubConnection implements AutoCloseable {
             this.state.unlock();
         }
 
-        Completable stopTask = startTask.onErrorComplete().andThen(Completable.defer(() ->
+        CompletableSubject subject = CompletableSubject.create();
+        startTask.onErrorComplete().subscribe(() ->
         {
             Completable stop = connectionState.transport.stop();
-            stop.onErrorComplete().subscribe();
-            return stop;
-        }));
-        stopTask.onErrorComplete().subscribe();
+            stop.subscribe(() -> subject.onComplete(), e -> subject.onError(e));
+        });
 
-        return stopTask;
+        return subject;
     }
 
     private void ReceiveLoop(ByteBuffer payload)
@@ -469,6 +477,11 @@ public class HubConnection implements AutoCloseable {
                 case INVOCATION_BINDING_FAILURE:
                     InvocationBindingFailureMessage msg = (InvocationBindingFailureMessage)message;
                     logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
+
+                    if (msg.getInvocationId() != null) {
+                        sendHubMessageWithLock(new CompletionMessage(null, msg.getInvocationId(),
+                            null, "Client failed to parse argument(s)."));
+                    }
                     break;
                 case INVOCATION:
                     InvocationMessage invocationMessage = (InvocationMessage) message;

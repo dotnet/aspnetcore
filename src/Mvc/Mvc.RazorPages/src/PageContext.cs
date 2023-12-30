@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages;
 /// <summary>
 /// The context associated with the current request for a Razor page.
 /// </summary>
+[DebuggerDisplay("{DebuggerToString(),nq}")]
 public class PageContext : ActionContext
 {
     private CompiledPageActionDescriptor? _actionDescriptor;
@@ -61,10 +63,7 @@ public class PageContext : ActionContext
         get => _actionDescriptor!;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _actionDescriptor = value;
             base.ActionDescriptor = value;
@@ -87,10 +86,7 @@ public class PageContext : ActionContext
         }
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _valueProviderFactories = value;
         }
@@ -104,10 +100,7 @@ public class PageContext : ActionContext
         get => _viewData!;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _viewData = value;
         }
@@ -121,12 +114,11 @@ public class PageContext : ActionContext
         get => _viewStartFactories!;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _viewStartFactories = value;
         }
     }
+
+    private string DebuggerToString() => ActionDescriptor?.DisplayName ?? $"{{{GetType().FullName}}}";
 }

@@ -40,23 +40,37 @@ public class KnownHeaders
         .Select(h => h.Name)
         .ToArray();
 
-    // These headers are excluded from generated IHeadersDictionary implementaiton.
+    // These headers are excluded from generated IHeadersDictionary implementation.
     public static readonly string[] NonPublicHeaderNames = new[]
     {
         HeaderNames.DNT,
         InternalHeaderNames.AltUsed
     };
 
-    public record InternalHeader(string Identifier, string Name, bool IsPseudoHeader = false);
+    public sealed class InternalHeader
+    {
+        public string Identifier { get; }
+
+        public string Name { get; }
+        
+        public bool IsPseudoHeader { get; }
+
+        public InternalHeader(string identifier, string name, bool isPseudoHeader = false)
+        {
+            Identifier = identifier;
+            Name = name;
+            IsPseudoHeader = isPseudoHeader;
+        }
+    }
 
     public static readonly InternalHeader[] FormattedInternalHeaderNames = new[]
     {
-        new InternalHeader("Authority", InternalHeaderNames.Authority, IsPseudoHeader: true),
-        new InternalHeader("Method", InternalHeaderNames.Method, IsPseudoHeader: true),
-        new InternalHeader("Path", InternalHeaderNames.Path, IsPseudoHeader: true),
-        new InternalHeader("Scheme", InternalHeaderNames.Scheme, IsPseudoHeader: true),
-        new InternalHeader("Status", InternalHeaderNames.Status, IsPseudoHeader: true),
-        new InternalHeader("Protocol", InternalHeaderNames.Protocol, IsPseudoHeader: true),
+        new InternalHeader("Authority", InternalHeaderNames.Authority, isPseudoHeader: true),
+        new InternalHeader("Method", InternalHeaderNames.Method, isPseudoHeader: true),
+        new InternalHeader("Path", InternalHeaderNames.Path, isPseudoHeader: true),
+        new InternalHeader("Scheme", InternalHeaderNames.Scheme, isPseudoHeader: true),
+        new InternalHeader("Status", InternalHeaderNames.Status, isPseudoHeader: true),
+        new InternalHeader("Protocol", InternalHeaderNames.Protocol, isPseudoHeader: true),
         new InternalHeader("AltUsed", InternalHeaderNames.AltUsed)
     };
 
@@ -844,10 +858,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal partial class {loop.ClassName} : IHeaderDictionary
     {{{(loop.Bytes != null ?
         $@"
-        private static ReadOnlySpan<byte> HeaderBytes => new byte[]
-        {{
-            {Each(loop.Bytes, b => $"{b},")}
-        }};"
+        private static ReadOnlySpan<byte> HeaderBytes => [{Each(loop.Bytes, b => $"{b},")}];"
         : "")}
         private HeaderReferences _headers;
 {Each(loop.Headers.Where(header => header.ExistenceCheck), header => $@"
@@ -859,12 +870,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {{{(header.Name == HeaderNames.ContentLength ? $@"
             get
             {{
-                StringValues value = default;
                 if (_contentLength.HasValue)
                 {{
-                    value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    return new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                 }}
-                return value;
+                return StringValues.Empty;
             }}
             set
             {{
@@ -872,24 +882,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}" : $@"
             get
             {{
-                StringValues value = default;
                 if ({header.TestBit()})
                 {{
-                    value = _headers._{header.Identifier};
+                    return _headers._{header.Identifier};
                 }}
-                return value;
+                return StringValues.Empty;
             }}
             set
             {{
                 if (!StringValues.IsNullOrEmpty(value))
                 {{
                     {header.SetBit()};
+                    _headers._{header.Identifier} = value; 
                 }}
                 else
                 {{
                     {header.ClearBit()};
-                }}
-                _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
+                    _headers._{header.Identifier} = default; 
+                }}{(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
             }}")}
         }}")}
@@ -903,7 +913,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return value;
                 }}
-                return default;
+                return StringValues.Empty;
             }}
             set
             {{
@@ -932,7 +942,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 StringValues value = default;
                 if (!TryGetUnknown(HeaderNames.{header}, ref value))
                 {{
-                    value = default;
+                    value = StringValues.Empty;
                 }}
                 return value;
             }}

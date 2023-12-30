@@ -35,7 +35,7 @@ app.MapGet(""/"", () => ""Hello World!"");
     }
 
     [Fact]
-    public async Task DoesNotWarnWhenEnpointRegistrationIsTopLevel_InMain()
+    public async Task DoesNotWarnWhenEndpointRegistrationIsTopLevel_InMain()
     {
         //arrange
         var source = @"
@@ -53,6 +53,48 @@ public static class Program
 ";
         //act
         var diagnostics = await Runner.GetDiagnosticsAsync(source);
+
+        //assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task DoesNotWarnWhenEndpointRegistrationIsNotTopLevel_NoInvocation()
+    {
+        //arrange
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Builder;
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+app.UseRouting();
+app.UseEndpoints(e => { });
+");
+        //act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        //assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task DoesNotWarnWhenEndpointRegistrationIsNotTopLevel_NoInvocation_InMain()
+    {
+        //arrange
+        var source = TestSource.Read(@"
+using Microsoft.AspNetCore.Builder;
+public static class Program
+{
+    public static void Main (string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(e => { });
+    }
+}
+");
+        //act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         //assert
         Assert.Empty(diagnostics);
@@ -226,4 +268,5 @@ app./*MM2*/UseEndpoints(endpoints =>
         AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], diagnostic2.Location);
         Assert.Equal("Suggest using top level route registrations instead of UseEndpoints", diagnostic2.GetMessage(CultureInfo.InvariantCulture));
     }
+
 }

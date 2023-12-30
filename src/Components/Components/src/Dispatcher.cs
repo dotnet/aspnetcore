@@ -85,10 +85,7 @@ public abstract class Dispatcher
     /// <param name="e">The <see cref="UnhandledExceptionEventArgs"/>.</param>
     protected void OnUnhandledException(UnhandledExceptionEventArgs e)
     {
-        if (e is null)
-        {
-            throw new ArgumentNullException(nameof(e));
-        }
+        ArgumentNullException.ThrowIfNull(e);
 
         UnhandledException?.Invoke(this, e);
     }

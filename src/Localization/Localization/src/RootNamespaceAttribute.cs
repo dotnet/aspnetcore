@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -18,10 +19,7 @@ public class RootNamespaceAttribute : Attribute
     /// <param name="rootNamespace">The RootNamespace for this Assembly.</param>
     public RootNamespaceAttribute(string rootNamespace)
     {
-        if (string.IsNullOrEmpty(rootNamespace))
-        {
-            throw new ArgumentNullException(nameof(rootNamespace));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(rootNamespace);
 
         RootNamespace = rootNamespace;
     }

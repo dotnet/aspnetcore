@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization;
@@ -23,10 +24,7 @@ public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     /// <param name="options">The options used to configure this instance.</param>
     public DefaultAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         _options = options.Value;
     }

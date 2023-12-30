@@ -429,4 +429,22 @@ class HubConnectionReturnResultTest {
         String expected = "{\"type\":3,\"invocationId\":\"1\",\"result\":\"bob\"}" + RECORD_SEPARATOR;
         assertEquals(expected, TestUtils.byteBufferToString(message));
     }
+
+    @Test
+    public void clientResultReturnsErrorIfCannotParseArgument() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.onWithResult("inc", (i) -> {
+            return Single.just("bob");
+        }, Integer.class);
+
+        hubConnection.start().timeout(30, TimeUnit.SECONDS).blockingAwait();
+        SingleSubject<ByteBuffer> sendTask = mockTransport.getNextSentMessage();
+        mockTransport.receiveMessage("{\"type\":1,\"invocationId\":\"1\",\"target\":\"inc\",\"arguments\":[\"not int\"]}" + RECORD_SEPARATOR);
+
+        ByteBuffer message = sendTask.timeout(30, TimeUnit.SECONDS).blockingGet();
+        String expected = "{\"type\":3,\"invocationId\":\"1\",\"error\":\"Client failed to parse argument(s).\"}" + RECORD_SEPARATOR;
+        assertEquals(expected, TestUtils.byteBufferToString(message));
+    }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
@@ -20,10 +21,7 @@ internal sealed class EmbeddedFilesManifest
 
     internal EmbeddedFilesManifest(ManifestDirectory rootDirectory)
     {
-        if (rootDirectory == null)
-        {
-            throw new ArgumentNullException(nameof(rootDirectory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(rootDirectory);
 
         _rootDirectory = rootDirectory;
     }

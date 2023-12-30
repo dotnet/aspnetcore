@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
@@ -18,6 +21,7 @@ internal partial class RemoteRenderer : WebRenderer
 
     private readonly CircuitClientProxy _client;
     private readonly CircuitOptions _options;
+    private readonly IServerComponentDeserializer _serverComponentDeserializer;
     private readonly ILogger _logger;
     internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
     private long _nextRenderId = 1;
@@ -36,6 +40,7 @@ internal partial class RemoteRenderer : WebRenderer
         ILoggerFactory loggerFactory,
         CircuitOptions options,
         CircuitClientProxy client,
+        IServerComponentDeserializer serverComponentDeserializer,
         ILogger logger,
         RemoteJSRuntime jsRuntime,
         CircuitJSComponentInterop jsComponentInterop)
@@ -43,6 +48,7 @@ internal partial class RemoteRenderer : WebRenderer
     {
         _client = client;
         _options = options;
+        _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
@@ -56,11 +62,16 @@ internal partial class RemoteRenderer : WebRenderer
         return RenderRootComponentAsync(componentId, parameters);
     }
 
+    protected override int GetWebRendererId() => (int)WebRendererId.Server;
+
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
         var attachComponentTask = _client.SendAsync("JS.AttachComponent", componentId, domElementSelector);
         _ = CaptureAsyncExceptions(attachComponentTask);
     }
+
+    internal Type GetExistingComponentType(int componentId) =>
+        GetComponentState(componentId).Component.GetType();
 
     protected override void ProcessPendingRender()
     {
@@ -284,6 +295,13 @@ internal partial class RemoteRenderer : WebRenderer
             });
         }
     }
+
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => renderMode switch
+        {
+            InteractiveServerRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
+            _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by interactive server-side rendering."),
+        };
 
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
     {

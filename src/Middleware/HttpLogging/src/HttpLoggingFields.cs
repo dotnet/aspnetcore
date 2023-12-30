@@ -21,20 +21,20 @@ public enum HttpLoggingFields : long
     /// <summary>
     /// Flag for logging the HTTP Request Path, which includes both the <see cref="HttpRequest.Path"/>
     /// and <see cref="HttpRequest.PathBase"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Path: /index
     /// PathBase: /app
-    /// </p>
+    /// </para>
     /// </summary>
     RequestPath = 0x1,
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.QueryString"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Query: ?index=1
-    /// </p>
+    /// </para>
     /// RequestQuery contents can contain private information
     /// which may have regulatory concerns under GDPR
     /// and other laws. RequestQuery should not be logged
@@ -45,37 +45,37 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Protocol"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Protocol: HTTP/1.1
-    /// </p>
+    /// </para>
     /// </summary>
     RequestProtocol = 0x4,
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Method"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Method: GET
-    /// </p>
+    /// </para>
     /// </summary>
     RequestMethod = 0x8,
 
     /// <summary>
     /// Flag for logging the HTTP Request <see cref="HttpRequest.Scheme"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Scheme: https
-    /// </p>
+    /// </para>
     /// </summary>
     RequestScheme = 0x10,
 
     /// <summary>
     /// Flag for logging the HTTP Response <see cref="HttpResponse.StatusCode"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// StatusCode: 200
-    /// </p>
+    /// </para>
     /// </summary>
     ResponseStatusCode = 0x20,
 
@@ -84,11 +84,11 @@ public enum HttpLoggingFields : long
     /// Request Headers are logged as soon as the middleware is invoked.
     /// Headers are redacted by default with the character '[Redacted]' unless specified in
     /// the <see cref="HttpLoggingOptions.RequestHeaders"/>.
-    /// <p>
+    /// <para>
     /// For example:
     /// Connection: keep-alive
     /// My-Custom-Request-Header: [Redacted]
-    /// </p>
+    /// </para>
     /// </summary>
     RequestHeaders = 0x40,
 
@@ -97,13 +97,15 @@ public enum HttpLoggingFields : long
     /// Response Headers are logged when the <see cref="HttpResponse.Body"/> is written to
     /// or when <see cref="IHttpResponseBodyFeature.StartAsync(System.Threading.CancellationToken)"/>
     /// is called.
+    /// <para>
     /// Headers are redacted by default with the character '[Redacted]' unless specified in
     /// the <see cref="HttpLoggingOptions.ResponseHeaders"/>.
-    /// <p>
+    /// </para>
+    /// <para>
     /// For example:
     /// Content-Length: 16
     /// My-Custom-Response-Header: [Redacted]
-    /// </p>
+    /// </para>
     /// </summary>
     ResponseHeaders = 0x80,
 
@@ -134,6 +136,11 @@ public enum HttpLoggingFields : long
     ResponseBody = 0x800,
 
     /// <summary>
+    /// Flag for logging how long it took to process the request and response in milliseconds.
+    /// </summary>
+    Duration = 0x1000,
+
+    /// <summary>
     /// Flag for logging a collection of HTTP Request properties,
     /// including <see cref="RequestPath"/>, <see cref="RequestProtocol"/>,
     /// <see cref="RequestMethod"/>, and <see cref="RequestScheme"/>.
@@ -156,7 +163,7 @@ public enum HttpLoggingFields : long
 
     /// <summary>
     /// Flag for logging HTTP Response properties and headers.
-    /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>
+    /// Includes <see cref="ResponseStatusCode"/> and <see cref="ResponseHeaders"/>.
     /// </summary>
     ResponsePropertiesAndHeaders = ResponseStatusCode | ResponseHeaders,
 
@@ -178,11 +185,11 @@ public enum HttpLoggingFields : long
     /// Logging the response body has performance implications, as it requires buffering
     /// the entire response body up to <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
     /// </summary>
-    Response = ResponseStatusCode | ResponseHeaders | ResponseBody,
+    Response = ResponsePropertiesAndHeaders | ResponseBody,
 
     /// <summary>
     /// Flag for logging both the HTTP Request and Response.
-    /// Includes <see cref="Request"/> and <see cref="Response"/>.
+    /// Includes <see cref="Request"/>, <see cref="Response"/>, and <see cref="Duration"/>.
     /// Logging the request and response body has performance implications, as it requires buffering
     /// the entire request and response body up to the <see cref="HttpLoggingOptions.RequestBodyLogLimit"/>
     /// and <see cref="HttpLoggingOptions.ResponseBodyLogLimit"/>.
@@ -191,5 +198,5 @@ public enum HttpLoggingFields : long
     /// The HTTP Request <see cref="HttpRequest.QueryString"/> is not included with this flag as it may contain private information.
     /// If desired, it should be explicitly specified with <see cref="RequestQuery"/>.
     /// </remarks>
-    All = Request | Response
+    All = Request | Response | Duration
 }

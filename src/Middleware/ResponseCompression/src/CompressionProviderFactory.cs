@@ -22,10 +22,7 @@ internal sealed class CompressionProviderFactory : ICompressionProvider
 
     public ICompressionProvider CreateInstance(IServiceProvider serviceProvider)
     {
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        ArgumentNullException.ThrowIfNull(serviceProvider);
 
         return (ICompressionProvider)ActivatorUtilities.CreateInstance(serviceProvider, ProviderType, Type.EmptyTypes);
     }

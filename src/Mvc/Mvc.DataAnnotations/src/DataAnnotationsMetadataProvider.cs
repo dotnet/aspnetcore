@@ -30,15 +30,8 @@ internal sealed class DataAnnotationsMetadataProvider :
         IOptions<MvcDataAnnotationsLocalizationOptions> localizationOptions,
         IStringLocalizerFactory? stringLocalizerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (localizationOptions == null)
-        {
-            throw new ArgumentNullException(nameof(localizationOptions));
-        }
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(localizationOptions);
 
         _options = options;
         _localizationOptions = localizationOptions.Value;
@@ -48,10 +41,7 @@ internal sealed class DataAnnotationsMetadataProvider :
     /// <inheritdoc />
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var editableAttribute = context.Attributes.OfType<EditableAttribute>().FirstOrDefault();
         if (editableAttribute != null)
@@ -63,10 +53,7 @@ internal sealed class DataAnnotationsMetadataProvider :
     /// <inheritdoc />
     public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var attributes = context.Attributes;
         var dataTypeAttribute = attributes.OfType<DataTypeAttribute>().FirstOrDefault();
@@ -310,10 +297,7 @@ internal sealed class DataAnnotationsMetadataProvider :
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // Read interface .Count once rather than per iteration
         var contextAttributes = context.Attributes;

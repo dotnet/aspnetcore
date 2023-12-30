@@ -68,20 +68,9 @@ public class TemplateBinder
         IEnumerable<string>? requiredKeys,
         IEnumerable<(string parameterName, IParameterPolicy policy)>? parameterPolicies)
     {
-        if (urlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(urlEncoder));
-        }
-
-        if (pool == null)
-        {
-            throw new ArgumentNullException(nameof(pool));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(urlEncoder);
+        ArgumentNullException.ThrowIfNull(pool);
+        ArgumentNullException.ThrowIfNull(pattern);
 
         _urlEncoder = urlEncoder;
         _pool = pool;
@@ -98,14 +87,7 @@ public class TemplateBinder
         }
         _filters = filters.ToArray();
 
-        _constraints = parameterPolicies
-            ?.Where(p => p.policy is IRouteConstraint)
-            .Select(p => (p.parameterName, (IRouteConstraint)p.policy))
-            .ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
-        _parameterTransformers = parameterPolicies
-            ?.Where(p => p.policy is IOutboundParameterTransformer)
-            .Select(p => (p.parameterName, (IOutboundParameterTransformer)p.policy))
-            .ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
+        Initialize(parameterPolicies, out _constraints, out _parameterTransformers);
 
         _slots = AssignSlots(_pattern, _filters);
     }
@@ -116,20 +98,9 @@ public class TemplateBinder
         RoutePattern pattern,
         IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
     {
-        if (urlEncoder == null)
-        {
-            throw new ArgumentNullException(nameof(urlEncoder));
-        }
-
-        if (pool == null)
-        {
-            throw new ArgumentNullException(nameof(pool));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(urlEncoder);
+        ArgumentNullException.ThrowIfNull(pool);
+        ArgumentNullException.ThrowIfNull(pattern);
 
         // Parameter policies can be null.
 
@@ -148,16 +119,36 @@ public class TemplateBinder
         }
         _filters = filters.ToArray();
 
-        _constraints = parameterPolicies
-            ?.Where(p => p.policy is IRouteConstraint)
-            .Select(p => (p.parameterName, (IRouteConstraint)p.policy))
-            .ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
-        _parameterTransformers = parameterPolicies
-            ?.Where(p => p.policy is IOutboundParameterTransformer)
-            .Select(p => (p.parameterName, (IOutboundParameterTransformer)p.policy))
-            .ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
+        Initialize(parameterPolicies, out _constraints, out _parameterTransformers);
 
         _slots = AssignSlots(_pattern, _filters);
+    }
+
+    private static void Initialize(
+        IEnumerable<(string parameterName, IParameterPolicy policy)>? parameterPolicies,
+        out (string parameterName, IRouteConstraint constraint)[] constraints,
+        out (string parameterName, IOutboundParameterTransformer transformer)[] parameterTransformers)
+    {
+        List<(string parameterName, IRouteConstraint constraint)>? constraintList = null;
+        List<(string parameterName, IOutboundParameterTransformer transformer)>? parameterTransformerList = null;
+
+        if (parameterPolicies is not null)
+        {
+            foreach (var p in parameterPolicies)
+            {
+                if (p.policy is IRouteConstraint routeConstraint)
+                {
+                    (constraintList ??= new()).Add((p.parameterName, routeConstraint));
+                }
+                if (p.policy is IOutboundParameterTransformer transformer)
+                {
+                    (parameterTransformerList ??= new()).Add((p.parameterName, transformer));
+                }
+            }
+        }
+
+        constraints = constraintList?.ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
+        parameterTransformers = parameterTransformerList?.ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
     }
 
     /// <summary>

@@ -19,10 +19,7 @@ public readonly struct ActionSelectorCandidate
     /// </param>
     public ActionSelectorCandidate(ActionDescriptor action, IReadOnlyList<IActionConstraint>? constraints)
     {
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         Action = action;
         Constraints = constraints;

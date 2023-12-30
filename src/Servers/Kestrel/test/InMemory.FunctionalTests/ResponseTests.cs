@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -294,7 +294,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 return Task.CompletedTask;
             },
             expectedClientStatusCode: null,
-            expectedServerStatusCode: 0);
+            expectedServerStatusCode: (HttpStatusCode)499);
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 throw new Exception();
             },
             expectedClientStatusCode: null,
-            expectedServerStatusCode: 0);
+            expectedServerStatusCode: (HttpStatusCode)499);
     }
 
     [Fact]

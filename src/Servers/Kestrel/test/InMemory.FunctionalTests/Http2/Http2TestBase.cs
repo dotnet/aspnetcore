@@ -16,13 +16,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit.Abstractions;
@@ -118,6 +118,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal readonly DynamicHPackEncoder _hpackEncoder;
     private readonly byte[] _headerEncodingBuffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
 
+    private readonly FakeTimeProvider _timeProvider = new();
     internal readonly TimeoutControl _timeoutControl;
     protected readonly Mock<ConnectionContext> _mockConnectionContext = new Mock<ConnectionContext>();
     internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
@@ -162,7 +163,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _hpackDecoder = new HPackDecoder((int)_clientSettings.HeaderTableSize, MaxRequestHeaderFieldSize);
         _hpackEncoder = new DynamicHPackEncoder();
 
-        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object);
+        _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
         _mockTimeoutControl = new Mock<MockTimeoutControlBase>(_timeoutControl) { CallBase = true };
         _timeoutControl.Debugger = Mock.Of<IDebugger>();
 
@@ -390,6 +391,8 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _serviceContext = new TestServiceContext(LoggerFactory)
         {
             Scheduler = PipeScheduler.Inline,
+            FakeTimeProvider = _timeProvider,
+            TimeProvider = _timeProvider,
         };
 
         TestSink.MessageLogged += context =>
@@ -455,6 +458,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
         var features = new FeatureCollection();
+        features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
         _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
@@ -472,7 +476,12 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         _mockTimeoutHandler.Setup(h => h.OnTimeout(It.IsAny<TimeoutReason>()))
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
-        _timeoutControl.Initialize(_serviceContext.SystemClock.UtcNow.Ticks);
+        _timeoutControl.Initialize();
+    }
+
+    private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
+    {
+        public ConnectionMetricsContext MetricsContext { get; }
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler
@@ -538,7 +547,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         InitializeConnectionWithoutPreface(application, addKestrelFeatures);
 
         // Lose xUnit's AsyncTestSyncContext so middleware always runs inline for better determinism.
-        await ThreadPoolAwaitable.Instance;
+        await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
 
         await SendPreambleAsync();
         await SendSettingsAsync();
@@ -570,7 +579,8 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             new TransportConnectionManager(_serviceContext.ConnectionManager),
             _ => throw new NotImplementedException($"{nameof(_connection.ProcessRequestsAsync)} should invoked instead - hence transport connection manager does not have the connection registered."),
             _mockConnectionContext.Object,
-            new KestrelTrace(_serviceContext.LoggerFactory));
+            new KestrelTrace(_serviceContext.LoggerFactory),
+            TestContextFactory.CreateMetricsContext(_mockConnectionContext.Object));
     }
 
     protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream, bool flushFrame = true)
@@ -716,7 +726,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
         var padding = buffer.Slice(extendedHeaderLength + length, padLength);
-        padding.Fill(0);
+        padding.Clear();
 
         frame.PayloadLength = extendedHeaderLength + length + padLength;
 
@@ -1338,25 +1348,31 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         }
     }
 
-    protected void TriggerTick(DateTimeOffset? nowOrNull = null)
+    protected void TriggerTick(TimeSpan timeSpan)
     {
-        var now = nowOrNull ?? _serviceContext.MockSystemClock.UtcNow;
-        _serviceContext.MockSystemClock.UtcNow = now;
-        _timeoutControl.Tick(now);
-        ((IRequestProcessor)_connection)?.Tick(now);
+        _serviceContext.FakeTimeProvider.Advance(timeSpan);
+        TriggerTick();
     }
 
-    protected void AdvanceClock(TimeSpan timeSpan)
+    protected void TriggerTick()
     {
-        var clock = _serviceContext.MockSystemClock;
-        var endTime = clock.UtcNow + timeSpan;
+        var timestamp = _serviceContext.FakeTimeProvider.GetTimestamp();
+        _timeoutControl.Tick(timestamp);
+        ((IRequestProcessor)_connection)?.Tick(timestamp);
+    }
 
-        while (clock.UtcNow + Heartbeat.Interval < endTime)
+    protected void AdvanceTime(TimeSpan timeSpan)
+    {
+        var timeProvider = _serviceContext.FakeTimeProvider;
+        var endTime = timeProvider.GetTimestamp(timeSpan);
+
+        while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
-            TriggerTick(clock.UtcNow + Heartbeat.Interval);
+            TriggerTick(Heartbeat.Interval);
         }
 
-        TriggerTick(endTime);
+        timeProvider.Advance(timeProvider.GetElapsedTime(timeProvider.GetTimestamp(), endTime));
+        TriggerTick();
     }
 
     private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
@@ -1417,14 +1433,14 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         public virtual TimeoutReason TimerReason => _realTimeoutControl.TimerReason;
 
-        public virtual void SetTimeout(long ticks, TimeoutReason timeoutReason)
+        public virtual void SetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
-            _realTimeoutControl.SetTimeout(ticks, timeoutReason);
+            _realTimeoutControl.SetTimeout(timeout, timeoutReason);
         }
 
-        public virtual void ResetTimeout(long ticks, TimeoutReason timeoutReason)
+        public virtual void ResetTimeout(TimeSpan timeout, TimeoutReason timeoutReason)
         {
-            _realTimeoutControl.ResetTimeout(ticks, timeoutReason);
+            _realTimeoutControl.ResetTimeout(timeout, timeoutReason);
         }
 
         public virtual void CancelTimeout()
@@ -1477,9 +1493,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
             _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
         }
 
-        public virtual void Tick(DateTimeOffset now)
+        public virtual void Tick(long timestamp)
         {
-            _realTimeoutControl.Tick(now);
+            _realTimeoutControl.Tick(timestamp);
         }
 
         public long GetResponseDrainDeadline(long ticks, MinDataRate minRate)

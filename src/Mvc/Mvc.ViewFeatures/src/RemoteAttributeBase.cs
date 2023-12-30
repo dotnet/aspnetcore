@@ -146,10 +146,7 @@ public abstract class RemoteAttributeBase : ValidationAttribute, IClientModelVal
     /// </remarks>
     public virtual void AddValidation(ClientModelValidationContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         MergeAttribute(context.Attributes, "data-val", "true");
 

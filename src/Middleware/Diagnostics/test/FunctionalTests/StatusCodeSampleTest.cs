@@ -45,8 +45,6 @@ public class StatusCodeSampleTest : IClassFixture<TestFixture<StatusCodePagesSam
         //Act
         var response = await Client.SendAsync(request);
 
-        var statusCode = response.StatusCode;
-
         var responseBody = await response.Content.ReadAsStringAsync();
 
         //Assert
@@ -60,11 +58,11 @@ public class StatusCodeSampleTest : IClassFixture<TestFixture<StatusCodePagesSam
         //Arrange
         var httpStatusCode = 400;
         var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost/?statuscode={httpStatusCode}");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
 
         //Act
         var response = await Client.SendAsync(request);
 
-        var statusCode = response.StatusCode;
         var statusCodeReasonPhrase = ReasonPhrases.GetReasonPhrase(httpStatusCode);
 
         var responseBody = await response.Content.ReadAsStringAsync();
@@ -82,6 +80,23 @@ public class StatusCodeSampleTest : IClassFixture<TestFixture<StatusCodePagesSam
         var httpStatusCode = 400;
         var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost?statuscode={httpStatusCode}");
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Act
+        var response = await Client.SendAsync(request);
+
+        // Assert
+        var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.NotNull(body);
+        Assert.Equal(400, body.Status);
+    }
+
+    [Fact]
+    public async Task StatusCodePage_ProducesProblemDetails_WithoutAcceptHeader()
+    {
+        // Arrange
+        var httpStatusCode = 400;
+        var request = new HttpRequestMessage(HttpMethod.Get, $"http://localhost?statuscode={httpStatusCode}");
 
         // Act
         var response = await Client.SendAsync(request);

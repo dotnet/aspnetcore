@@ -15,4 +15,9 @@ Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

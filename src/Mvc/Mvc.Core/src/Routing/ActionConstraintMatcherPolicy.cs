@@ -30,10 +30,7 @@ internal sealed class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSe
 
     public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // We can skip over action constraints when they aren't any for this set
         // of endpoints. This happens once on startup so it removes this component
@@ -154,7 +151,7 @@ internal sealed class ActionConstraintMatcherPolicy : MatcherPolicy, IEndpointSe
         return EvaluateActionConstraintsCore(httpContext, candidateSet, items, startingOrder: null);
     }
 
-    private IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraintsCore(
+    private static IReadOnlyList<(int index, ActionSelectorCandidate candidate)>? EvaluateActionConstraintsCore(
         HttpContext httpContext,
         CandidateSet candidateSet,
         IReadOnlyList<(int index, ActionSelectorCandidate candidate)> items,

@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -341,7 +341,7 @@ public class EndToEndTests : FunctionalTestBase
                 {
                     logger.LogInformation("Receiving message");
                     // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).DefaultTimeout(TimeSpan.FromMinutes(2));
+                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).DefaultTimeout();
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }
@@ -685,7 +685,7 @@ public class EndToEndTests : FunctionalTestBase
     {
         private ITransport _transport;
 
-        public ITransport CreateTransport(HttpTransportType availableServerTransports)
+        public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
         {
             if (_transport == null)
             {

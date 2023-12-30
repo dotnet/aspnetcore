@@ -16,10 +16,7 @@ internal sealed class DefaultValidationMetadataProvider : IValidationMetadataPro
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var attribute in context.Attributes)
         {

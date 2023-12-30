@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ASP.NET Core 웹 API(native AOT)",
+  "description": "native AOT로 게시된 ASP.NET Core 최소 API를 사용하여 RESTful 웹 API를 만들기 위한 프로젝트 템플릿입니다.",
+  "symbols/ExcludeLaunchSettings/description": "생성된 템플릿에서 launchSettings.json을 제외할지 여부입니다.",
+  "symbols/kestrelHttpPort/description": "launchSettings.json의 HTTP 엔드포인트에 사용할 포트 번호입니다.",
+  "symbols/iisHttpPort/description": "launchSettings.json의 IIS Express HTTP 엔드포인트에 사용할 포트 번호입니다.",
+  "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
+  "symbols/UseProgramMain/displayName": "최상위 문 사용 안 함(_T)",
+  "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다.",
+  "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행"
+}

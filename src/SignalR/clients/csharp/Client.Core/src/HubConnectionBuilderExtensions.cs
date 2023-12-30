@@ -63,4 +63,28 @@ public static class HubConnectionBuilderExtensions
         hubConnectionBuilder.Services.AddSingleton(retryPolicy);
         return hubConnectionBuilder;
     }
+
+    /// <summary>
+    /// Configures ServerTimeout for the <see cref="HubConnection" />.
+    /// </summary>
+    /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
+    /// <param name="timeout">ServerTimeout for the <see cref="HubConnection"/>.</param>
+    /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
+    public static IHubConnectionBuilder WithServerTimeout(this IHubConnectionBuilder hubConnectionBuilder, TimeSpan timeout)
+    {
+        hubConnectionBuilder.Services.Configure<HubConnectionOptions>(o => o.ServerTimeout = timeout);
+        return hubConnectionBuilder;
+    }
+
+    /// <summary>
+    /// Configures KeepAliveInterval for the <see cref="HubConnection" />.
+    /// </summary>
+    /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
+    /// <param name="interval">KeepAliveInterval for the <see cref="HubConnection"/>.</param>
+    /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
+    public static IHubConnectionBuilder WithKeepAliveInterval(this IHubConnectionBuilder hubConnectionBuilder, TimeSpan interval)
+    {
+        hubConnectionBuilder.Services.Configure<HubConnectionOptions>(o => o.KeepAliveInterval = interval);
+        return hubConnectionBuilder;
+    }
 }

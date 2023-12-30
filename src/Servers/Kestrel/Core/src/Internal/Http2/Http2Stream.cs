@@ -29,7 +29,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
 
-    internal long DrainExpirationTicks { get; set; }
+    internal long DrainExpirationTimestamp { get; set; }
 
     private StreamCompletionFlags _completionState;
     private readonly object _completionLock = new object();
@@ -42,7 +42,7 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         _completionState = StreamCompletionFlags.None;
         InputRemaining = null;
         RequestBodyStarted = false;
-        DrainExpirationTicks = 0;
+        DrainExpirationTimestamp = 0;
         TotalParsedHeaderSize = 0;
         // Allow up to 2x during parsing, enforce the hard limit after when we can preserve the connection.
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
@@ -82,6 +82,8 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     }
 
     public int StreamId => _context.StreamId;
+    public BaseConnectionContext ConnectionContext => _context.ConnectionContext;
+    public ConnectionMetricsContext MetricsContext => _context.MetricsContext;
 
     public long? InputRemaining { get; internal set; }
 
@@ -723,5 +725,5 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
         Dispose();
     }
 
-    long IPooledStream.PoolExpirationTicks => DrainExpirationTicks;
+    long IPooledStream.PoolExpirationTimestamp => DrainExpirationTimestamp;
 }

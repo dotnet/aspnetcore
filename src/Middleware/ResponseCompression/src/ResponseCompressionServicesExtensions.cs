@@ -19,10 +19,7 @@ public static class ResponseCompressionServicesExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddResponseCompression(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<IResponseCompressionProvider, ResponseCompressionProvider>();
         return services;
@@ -36,14 +33,8 @@ public static class ResponseCompressionServicesExtensions
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddResponseCompression(this IServiceCollection services, Action<ResponseCompressionOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
         services.TryAddSingleton<IResponseCompressionProvider, ResponseCompressionProvider>();

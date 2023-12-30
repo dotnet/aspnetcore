@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
@@ -39,7 +40,8 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         IEnumerable<MatcherPolicy> policies)
     {
         _loggerFactory = loggerFactory;
-        _parameterPolicyFactory = parameterPolicyFactory;
+        // DfaMatcherBuilder is a transient service. Each instance has its own cache of parameter policies.
+        _parameterPolicyFactory = new CachingParameterPolicyFactory(parameterPolicyFactory);
         _selector = selector;
 
         var (nodeBuilderPolicies, endpointComparerPolicies, endpointSelectorPolicies) = ExtractPolicies(policies.OrderBy(p => p.Order));
@@ -109,6 +111,51 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         root.Visit(ApplyPolicies);
 
         return root;
+    }
+
+    private sealed class CachingParameterPolicyFactory : ParameterPolicyFactory
+    {
+        private readonly ParameterPolicyFactory _inner;
+        private readonly Dictionary<string, IParameterPolicy> _cachedParameters;
+
+        public CachingParameterPolicyFactory(ParameterPolicyFactory inner)
+        {
+            _inner = inner;
+            _cachedParameters = new Dictionary<string, IParameterPolicy>(StringComparer.Ordinal);
+        }
+
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText)
+        {
+            // Blindly check the cache to see if it contains a match.
+            // Only cachable parameter policies are in the cache, so a match will only be available if the parameter policy key is configured to a cachable parameter policy.
+            //
+            // Note: Cache key is case sensitive. While the route prefix, e.g. "regex", is case-insensitive, the constraint could care about the case of the argument.
+            if (_cachedParameters.TryGetValue(inlineText, out var parameterPolicy))
+            {
+                return _inner.Create(parameter, parameterPolicy);
+            }
+
+            parameterPolicy = _inner.Create(parameter, inlineText);
+
+            // The created parameter policy can be wrapped in an OptionalRouteConstraint if RoutePatternParameterPart.IsOptional is true.
+            var createdParameterPolicy = (parameterPolicy is OptionalRouteConstraint optionalRouteConstraint)
+                ? optionalRouteConstraint.InnerConstraint
+                : parameterPolicy;
+
+            // Only cache policies in a known allow list. This is indicated by implementing ICachableParameterPolicy.
+            // There is a chance that a user-defined constraint has state, such as an evaluation count. That would break if the constraint is shared between routes, so don't cache.
+            if (createdParameterPolicy is ICachableParameterPolicy)
+            {
+                _cachedParameters[inlineText] = createdParameterPolicy;
+            }
+
+            return parameterPolicy;
+        }
+
+        public override IParameterPolicy Create(RoutePatternParameterPart parameter, IParameterPolicy parameterPolicy)
+        {
+            return _inner.Create(parameter, parameterPolicy);
+        }
     }
 
     private sealed class DfaBuilderWorker
@@ -940,5 +987,26 @@ internal sealed class DfaMatcherBuilder : MatcherBuilder
         return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
     }
 
-    private readonly record struct DfaBuilderWorkerWorkItem(RouteEndpoint Endpoint, int PrecedenceDigit, List<DfaNode> Parents);
+    public readonly struct DfaBuilderWorkerWorkItem
+    {
+        public RouteEndpoint Endpoint { get; }
+
+        public int PrecedenceDigit { get; }
+
+        public List<DfaNode> Parents { get; }
+
+        public DfaBuilderWorkerWorkItem(RouteEndpoint endpoint, int precedenceDigit, List<DfaNode> parents)
+        {
+            Endpoint = endpoint;
+            PrecedenceDigit = precedenceDigit;
+            Parents = parents;
+        }
+
+        public void Deconstruct(out RouteEndpoint endpoint, out int precedenceDigit, out List<DfaNode> parents)
+        {
+            endpoint = Endpoint;
+            precedenceDigit = PrecedenceDigit;
+            parents = Parents;
+        }
+    }
 }

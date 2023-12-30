@@ -28,10 +28,7 @@ internal class DefaultCompositeMetadataDetailsProvider : ICompositeMetadataDetai
     /// <inheritdoc />
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var provider in _providers.OfType<IBindingMetadataProvider>())
         {
@@ -42,10 +39,7 @@ internal class DefaultCompositeMetadataDetailsProvider : ICompositeMetadataDetai
     /// <inheritdoc />
     public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var provider in _providers.OfType<IDisplayMetadataProvider>())
         {
@@ -56,10 +50,7 @@ internal class DefaultCompositeMetadataDetailsProvider : ICompositeMetadataDetai
     /// <inheritdoc />
     public void CreateValidationMetadata(ValidationMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var provider in _providers.OfType<IValidationMetadataProvider>())
         {

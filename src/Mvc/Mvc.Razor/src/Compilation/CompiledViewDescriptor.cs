@@ -24,10 +24,7 @@ public class CompiledViewDescriptor
     /// <param name="item">The <see cref="RazorCompiledItem"/>.</param>
     public CompiledViewDescriptor(RazorCompiledItem item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item);
 
         Item = item;
         RelativePath = ViewPath.NormalizePath(item.Identifier);

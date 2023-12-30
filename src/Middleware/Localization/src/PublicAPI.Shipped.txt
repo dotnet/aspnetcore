@@ -21,7 +21,6 @@
 ~Microsoft.AspNetCore.Localization.RequestCultureFeature.RequestCulture.get -> Microsoft.AspNetCore.Localization.RequestCulture
 ~Microsoft.AspNetCore.Localization.RequestCultureFeature.RequestCultureFeature(Microsoft.AspNetCore.Localization.RequestCulture requestCulture, Microsoft.AspNetCore.Localization.IRequestCultureProvider provider) -> void
 ~Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext context) -> System.Threading.Tasks.Task
-Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.RequestLocalizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.RequestLocalizationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 ~override Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider.DetermineProviderCultureResult(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>
 ~override Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DetermineProviderCultureResult(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>
 ~override Microsoft.AspNetCore.Localization.CustomRequestCultureProvider.DetermineProviderCultureResult(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>
@@ -44,6 +43,8 @@ Microsoft.AspNetCore.Builder.RequestLocalizationOptions.AddSupportedCultures(par
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.AddSupportedUICultures(params string![]! uiCultures) -> Microsoft.AspNetCore.Builder.RequestLocalizationOptions!
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.ApplyCurrentCultureToResponseHeaders.get -> bool
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.ApplyCurrentCultureToResponseHeaders.set -> void
+Microsoft.AspNetCore.Builder.RequestLocalizationOptions.CultureInfoUseUserOverride.get -> bool
+Microsoft.AspNetCore.Builder.RequestLocalizationOptions.CultureInfoUseUserOverride.set -> void
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.DefaultRequestCulture.get -> Microsoft.AspNetCore.Localization.RequestCulture!
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.DefaultRequestCulture.set -> void
 Microsoft.AspNetCore.Builder.RequestLocalizationOptions.FallBackToParentCultures.get -> bool
@@ -104,6 +105,7 @@ Microsoft.AspNetCore.Localization.RequestCultureProvider.Options.set -> void
 Microsoft.AspNetCore.Localization.RequestCultureProvider.RequestCultureProvider() -> void
 Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware
 Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Localization.RequestLocalizationMiddleware.RequestLocalizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.RequestLocalizationOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.Extensions.DependencyInjection.RequestLocalizationServiceCollectionExtensions
 override Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider.DetermineProviderCultureResult(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult?>!
 override Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DetermineProviderCultureResult(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult?>!

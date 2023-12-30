@@ -41,10 +41,7 @@ internal sealed class DefaultPageApplicationModelProvider : IPageApplicationMode
     /// <inheritdoc />
     public void OnProvidersExecuting(PageApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.PageApplicationModel = CreateModel(context.ActionDescriptor, context.PageType);
     }
@@ -64,15 +61,8 @@ internal sealed class DefaultPageApplicationModelProvider : IPageApplicationMode
         PageActionDescriptor actionDescriptor,
         TypeInfo pageTypeInfo)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
-
-        if (pageTypeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(pageTypeInfo));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
+        ArgumentNullException.ThrowIfNull(pageTypeInfo);
 
         if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(pageTypeInfo))
         {

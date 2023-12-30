@@ -10,7 +10,7 @@
     Some supported queues:
     Debian.11.Amd64.Open
     Mariner
-    Redhat.7.Amd64.Open
+    AlmaLinux.8.Amd64.Open
     Ubuntu.2004.Amd64.Open
     OSX.1100.Amd64.Open
     Windows.10.Amd64.Server20H2.Open
@@ -42,6 +42,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
+$NUGET_PACKAGES = $env:NUGET_PACKAGES
+if ($NUGET_PACKAGES -eq $null) {
+    $NUGET_PACKAGES = "$env:HOMEPATH/.nuget/packages/"
+}
+
 Set-StrictMode -Version 1
 
 $env:BUILD_REASON="PullRequest"
@@ -57,4 +62,4 @@ $HelixQueues = $HelixQueues -replace ";", "%3B"
 dotnet msbuild $Project /t:Helix /p:TargetArchitecture="$TargetArchitecture" `
     /p:HelixTargetQueues=$HelixQueues /p:RunQuarantinedTests=$RunQuarantinedTests `
     /p:_UseHelixOpenQueues=true /p:CrossgenOutput=false /p:ASPNETCORE_TEST_LOG_DIR=artifacts/log `
-    /p:DoNotRequireSharedFxHelix=true /p:NUGET_PACKAGES=$env:HOMEPATH/.nuget/packages/ @MSBuildArguments
+    /p:DoNotRequireSharedFxHelix=true /p:NUGET_PACKAGES=$NUGET_PACKAGES @MSBuildArguments

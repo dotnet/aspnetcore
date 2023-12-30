@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)runtime\Http2\**\*.cs" LinkBase="Shared\Http2" />
     <Compile Include="$(SharedSourceRoot)runtime\IHttpStreamHeadersHandler.cs" LinkBase="Shared\IHttpStreamHeadersHandler.cs" />
+    <Compile Include="$(SharedSourceRoot)Hpack\Obsoletions.cs" LinkBase="Shared\Obsoletions.cs" />
     <Compile Include="$(SharedSourceRoot)runtime\SR.cs" LinkBase="Shared\SR.cs" />
     <Compile Include="$(SharedSourceRoot)Http2cat\**\*.cs" LinkBase="Shared\Http2cat" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" LinkBase="Shared\" />
@@ -23,7 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
   </ItemGroup>
 
   <ItemGroup>

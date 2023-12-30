@@ -1,15 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Diagnostics;
+using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// Information about the current routing path.
 /// </summary>
+[DebuggerDisplay("Count = {Values.Count}")]
+[DebuggerTypeProxy(typeof(RouteDataDebugView))]
 public class RouteData
 {
     private RouteValueDictionary? _dataTokens;
@@ -30,10 +32,7 @@ public class RouteData
     /// <param name="other">The other <see cref="RouteData"/> instance to copy.</param>
     public RouteData(RouteData other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         // Perf: Avoid allocating collections unless we need to make a copy.
         if (other._routers != null)
@@ -58,10 +57,7 @@ public class RouteData
     /// <param name="values">The <see cref="RouteValueDictionary"/> values.</param>
     public RouteData(RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         _values = values;
     }
@@ -189,6 +185,14 @@ public class RouteData
         return snapshot;
     }
 
+    private sealed class RouteDataDebugView(RouteData routeData)
+    {
+        private readonly RouteData _routeData = routeData;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public DictionaryItemDebugView<string, object?>[] Items => _routeData.Values.Select(pair => new DictionaryItemDebugView<string, object>(pair)).ToArray();
+    }
+
     /// <summary>
     /// A snapshot of the state of a <see cref="RouteData"/> instance.
     /// </summary>
@@ -212,10 +216,7 @@ public class RouteData
             IList<IRouter>? routers,
             RouteValueDictionary? values)
         {
-            if (routeData == null)
-            {
-                throw new ArgumentNullException(nameof(routeData));
-            }
+            ArgumentNullException.ThrowIfNull(routeData);
 
             _routeData = routeData;
             _dataTokens = dataTokens;

@@ -25,10 +25,7 @@ public class DoubleModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public DoubleModelBinder(NumberStyles supportedStyles, ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _supportedStyles = supportedStyles;
         _logger = loggerFactory.CreateLogger<DoubleModelBinder>();
@@ -37,10 +34,7 @@ public class DoubleModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 

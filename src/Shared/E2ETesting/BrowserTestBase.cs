@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.ExceptionServices;
-using System.Threading;
-using System.Threading.Tasks;
 using OpenQA.Selenium;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.E2ETesting;
@@ -63,22 +59,22 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
         return InitializeAsync("");
     }
 
-    public virtual async Task InitializeAsync(string isolationContext)
+    public virtual Task InitializeAsync(string isolationContext)
     {
-        await InitializeBrowser(isolationContext);
-
+        InitializeBrowser(isolationContext);
         InitializeAsyncCore();
+        return Task.CompletedTask;
     }
 
     protected virtual void InitializeAsyncCore()
     {
     }
 
-    protected async Task InitializeBrowser(string isolationContext)
+    protected void InitializeBrowser(string isolationContext)
     {
         try
         {
-            var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, isolationContext);
+            var (browser, logs) = BrowserFixture.GetOrCreateBrowser(Output, isolationContext);
             _asyncBrowser.Value = browser;
             _logs.Value = logs;
 

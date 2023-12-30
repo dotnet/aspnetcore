@@ -1,15 +1,17 @@
 ﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC 服務",
-  "description": "用來建立 gRPC ASP.NET Core 服務的專案範本。",
+  "description": "使用 ASP.NET Core 建立 gRPC 服務的專案範本，選擇性支援發佈為 Native AOT。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net8.0/description": "目標 net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/ExcludeLaunchSettings/description": "是否要從產生的範本排除 launchSettings.json。",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",
   "symbols/kestrelHttpsPort/description": "launchSettings.json 中 HTTPS 端點要使用的連接埠號碼。只有在未使用參數 no-https 時，才適用此選項 (如果使用 IndividualAuth 或 OrganizationalAuth，則會忽略 no-https)。",
   "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
   "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",
+  "symbols/NativeAot/displayName": "啟用 _native AOT 發佈",
+  "symbols/NativeAot/description": "是否要啟用專案以 native AOT 發佈。",
   "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
   "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
 }

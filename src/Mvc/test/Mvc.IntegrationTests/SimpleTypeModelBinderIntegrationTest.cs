@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests;
@@ -699,6 +702,94 @@ public class SimpleTypeModelBinderIntegrationTest
         Assert.Equal(new[] { "line 1", "line 2" }, entry.RawValue);
     }
 
+    [Fact]
+    public async Task BindParameter_PrefersTypeConverter_OverTryParse()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo(),
+            ParameterType = typeof(SampleModel)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = QueryString.Create("Parameter1", "someValue");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
+
+        // Model
+        var model = Assert.IsType<SampleModel>(modelBindingResult.Model);
+        Assert.Equal("someValue", model.Value);
+        Assert.Equal("Converter", model.Source);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+
+        Assert.Single(modelState.Keys);
+        var key = Assert.Single(modelState.Keys);
+        Assert.Equal("Parameter1", key);
+        Assert.Equal("someValue", modelState[key].AttemptedValue);
+        Assert.Equal("someValue", modelState[key].RawValue);
+        Assert.Empty(modelState[key].Errors);
+        Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+    }
+
+    [Fact]
+    public async Task BindParameter_BindsUsingTryParse()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "Parameter1",
+            BindingInfo = new BindingInfo(),
+            ParameterType = typeof(SampleTryParsableModel)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = QueryString.Create("Parameter1", "someValue");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+
+        // ModelBindingResult
+        Assert.True(modelBindingResult.IsModelSet);
+
+        // Model
+        var model = Assert.IsType<SampleTryParsableModel>(modelBindingResult.Model);
+        Assert.Equal("someValue", model.Value);
+        Assert.Equal("TryParse", model.Source);
+
+        // ModelState
+        Assert.True(modelState.IsValid);
+
+        Assert.Single(modelState.Keys);
+        var key = Assert.Single(modelState.Keys);
+        Assert.Equal("Parameter1", key);
+        Assert.Equal("someValue", modelState[key].AttemptedValue);
+        Assert.Equal("someValue", modelState[key].RawValue);
+        Assert.Empty(modelState[key].Errors);
+        Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+    }
+
     private class Person
     {
         public Address Address { get; set; }
@@ -711,5 +802,48 @@ public class SimpleTypeModelBinderIntegrationTest
         public string[] Lines { get; set; }
 
         public int Zip { get; set; }
+    }
+
+    [TypeConverter(typeof(SampleModelTypeConverter))]
+    private class SampleModel
+    {
+        public string Value { get; set; }
+        public string Source { get; set; }
+
+        public static bool TryParse([NotNullWhen(true)] string s, [MaybeNullWhen(false)] out SampleModel result)
+        {
+            result = new SampleModel() { Value = s, Source = "TryParse" };
+            return true;
+        }
+    }
+
+    private class SampleTryParsableModel
+    {
+        public string Value { get; set; }
+        public string Source { get; set; }
+
+        public static bool TryParse([NotNullWhen(true)] string s, [MaybeNullWhen(false)] out SampleTryParsableModel result)
+        {
+            result = new SampleTryParsableModel() { Value = s, Source = "TryParse" };
+            return true;
+        }
+    }
+
+    private class SampleModelTypeConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            if (value is string s)
+            {
+                return new SampleModel() { Value = s, Source = "Converter" };
+            }
+
+            return base.ConvertFrom(context, culture, value);
+        }
     }
 }

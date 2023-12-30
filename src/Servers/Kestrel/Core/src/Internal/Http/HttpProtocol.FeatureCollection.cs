@@ -276,6 +276,7 @@ internal partial class HttpProtocol
         IsUpgraded = true;
 
         KestrelEventSource.Log.RequestUpgradedStart(this);
+        ServiceContext.Metrics.RequestUpgradedStart(_context.MetricsContext);
 
         ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
 

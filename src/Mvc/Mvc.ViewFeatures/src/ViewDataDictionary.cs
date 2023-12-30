@@ -4,9 +4,11 @@
 #nullable enable
 
 using System.Collections;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -14,6 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// <summary>
 /// A <see cref="IDictionary{TKey, TValue}"/> for view data.
 /// </summary>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class ViewDataDictionary : IDictionary<string, object?>
 {
     private readonly IDictionary<string, object?> _data;
@@ -115,20 +119,9 @@ public class ViewDataDictionary : IDictionary<string, object?>
                data: new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase),
                templateInfo: new TemplateInfo())
     {
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
-
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
-
-        if (declaredModelType == null)
-        {
-            throw new ArgumentNullException(nameof(declaredModelType));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
+        ArgumentNullException.ThrowIfNull(modelState);
+        ArgumentNullException.ThrowIfNull(declaredModelType);
 
         // Base ModelMetadata on the declared type.
         ModelExplorer = _metadataProvider.GetModelExplorerForType(declaredModelType, model: null);
@@ -188,10 +181,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
                data: new CopyOnWriteDictionary<string, object?>(source, StringComparer.OrdinalIgnoreCase),
                templateInfo: new TemplateInfo(source.TemplateInfo))
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         // A non-null Model must always be assignable to both _declaredModelType and ModelMetadata.ModelType.
         //
@@ -531,10 +521,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public void Add(string key, object? value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         _data.Add(key, value);
     }
@@ -542,10 +529,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public bool ContainsKey(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _data.ContainsKey(key);
     }
@@ -553,10 +537,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public bool Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _data.Remove(key);
     }
@@ -564,10 +545,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public bool TryGetValue(string key, out object? value)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _data.TryGetValue(key, out value);
     }
@@ -593,10 +571,7 @@ public class ViewDataDictionary : IDictionary<string, object?>
     /// <inheritdoc />
     public void CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         _data.CopyTo(array, arrayIndex);
     }

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
 [SkipIfNotAdmin]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ClientCertificateTests : IISFunctionalTestBase
 {
     private readonly ClientCertificateFixture _certFixture;

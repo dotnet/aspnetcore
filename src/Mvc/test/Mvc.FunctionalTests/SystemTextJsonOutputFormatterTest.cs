@@ -56,4 +56,18 @@ public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase<For
 
     [Fact]
     public override Task Formatting_PolymorphicModel() => base.Formatting_PolymorphicModel();
+
+    [Fact]
+    public async Task Formatting_PolymorphicModel_WithJsonPolymorphism()
+    {
+        // Arrange
+        var expected = "{\"$type\":\"DerivedModel\",\"address\":\"Some address\",\"id\":10,\"name\":\"test\",\"streetName\":null}";
+
+        // Act
+        var response = await Client.GetAsync($"/SystemTextJsonOutputFormatter/{nameof(SystemTextJsonOutputFormatterController.PolymorphicResult)}");
+
+        // Assert
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal(expected, await response.Content.ReadAsStringAsync());
+    }
 }

@@ -34,10 +34,7 @@ public abstract class BindingSourceValueProvider : IBindingSourceValueProvider
     /// </param>
     public BindingSourceValueProvider(BindingSource bindingSource)
     {
-        if (bindingSource == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
 
         if (bindingSource.IsGreedy)
         {
@@ -72,10 +69,7 @@ public abstract class BindingSourceValueProvider : IBindingSourceValueProvider
     /// <inheritdoc />
     public virtual IValueProvider? Filter(BindingSource bindingSource)
     {
-        if (bindingSource == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
 
         if (bindingSource.CanAcceptDataFrom(BindingSource))
         {

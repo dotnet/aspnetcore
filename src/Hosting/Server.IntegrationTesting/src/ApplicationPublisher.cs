@@ -38,7 +38,7 @@ public class ApplicationPublisher
 
             if (deploymentParameters.ApplicationType == ApplicationType.Standalone)
             {
-                parameters += $" --runtime {GetRuntimeIdentifier(deploymentParameters)}";
+                parameters += $" --self-contained --runtime {GetRuntimeIdentifier(deploymentParameters)}";
             }
             else
             {

@@ -56,10 +56,7 @@ internal sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         string? detail = null,
         string? instance = null)
     {
-        if (modelStateDictionary == null)
-        {
-            throw new ArgumentNullException(nameof(modelStateDictionary));
-        }
+        ArgumentNullException.ThrowIfNull(modelStateDictionary);
 
         statusCode ??= 400;
 

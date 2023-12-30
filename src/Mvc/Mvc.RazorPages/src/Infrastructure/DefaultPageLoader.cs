@@ -37,10 +37,7 @@ internal sealed class DefaultPageLoader : PageLoader
 
     public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor, EndpointMetadataCollection endpointMetadata)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         if (actionDescriptor is CompiledPageActionDescriptor compiledPageActionDescriptor)
         {

@@ -67,6 +67,38 @@ public partial class Startup
 
     private async Task BaseDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(AppContext.BaseDirectory);
 
+    private async Task IIISEnvironmentFeatureConfig(HttpContext ctx)
+    {
+        var config = ctx.RequestServices.GetService<IConfiguration>();
+
+        await ctx.Response.WriteAsync("IIS Version: " + config["IIS_VERSION"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("ApplicationId: " + config["IIS_APPLICATION_ID"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Path: " + config["IIS_PHYSICAL_PATH"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Virtual Path: " + config["IIS_APPLICATION_VIRTUAL_PATH"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Config Path: " + config["IIS_APP_CONFIG_PATH"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool ID: " + config["IIS_APP_POOL_ID"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool Config File: " + config["IIS_APP_POOL_CONFIG_FILE"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site ID: " + config["IIS_SITE_ID"] + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site Name: " + config["IIS_SITE_NAME"]);
+    }
+
+#if !FORWARDCOMPAT
+    private async Task IIISEnvironmentFeature(HttpContext ctx)
+    {
+        var envFeature = ctx.RequestServices.GetService<IServer>().Features.Get<IIISEnvironmentFeature>();
+
+        await ctx.Response.WriteAsync("IIS Version: " + envFeature.IISVersion + Environment.NewLine);
+        await ctx.Response.WriteAsync("ApplicationId: " + envFeature.ApplicationId + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Path: " + envFeature.ApplicationPhysicalPath + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Virtual Path: " + envFeature.ApplicationVirtualPath + Environment.NewLine);
+        await ctx.Response.WriteAsync("Application Config Path: " + envFeature.AppConfigPath + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool ID: " + envFeature.AppPoolId + Environment.NewLine);
+        await ctx.Response.WriteAsync("AppPool Config File: " + envFeature.AppPoolConfigFile + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site ID: " + envFeature.SiteId + Environment.NewLine);
+        await ctx.Response.WriteAsync("Site Name: " + envFeature.SiteName);
+    }
+#endif
+
     private async Task ASPNETCORE_IIS_PHYSICAL_PATH(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
 
     private async Task ServerAddresses(HttpContext ctx)
@@ -423,6 +455,63 @@ public partial class Startup
     {
         ctx.Response.Headers["EmptyHeader"] = "";
         await ctx.Response.WriteAsync("EmptyHeaderShouldBeSkipped");
+    }
+
+    private Task TestRequestHeaders(HttpContext ctx)
+    {
+        // Test optimized and non-optimized headers behave equivalently
+        foreach (var headerName in new[] { "custom", "Content-Type" })
+        {
+            // StringValues.Empty.Equals(default(StringValues)), so we check if the implicit conversion
+            // to string[] returns null or Array.Empty<string>() to tell the difference.
+            if ((string[])ctx.Request.Headers[headerName] != Array.Empty<string>())
+            {
+                return ctx.Response.WriteAsync($"Failure: '{headerName}' indexer");
+            }
+            if (ctx.Request.Headers.TryGetValue(headerName, out var headerValue) || (string[])headerValue is not null)
+            {
+                return ctx.Response.WriteAsync($"Failure: '{headerName}' TryGetValue");
+            }
+
+            // Both default and StringValues.Empty should unset the header, allowing it to be added again.
+            ArgumentException duplicateKeyException = null;
+            ctx.Request.Headers.Add(headerName, "test");
+            ctx.Request.Headers[headerName] = default;
+            ctx.Request.Headers.Add(headerName, "test");
+            ctx.Request.Headers[headerName] = StringValues.Empty;
+            ctx.Request.Headers.Add(headerName, "test");
+
+            try
+            {
+                // Repeated adds should throw.
+                ctx.Request.Headers.Add(headerName, "test");
+            }
+            catch (ArgumentException ex)
+            {
+                duplicateKeyException = ex;
+                ctx.Request.Headers[headerName] = default;
+            }
+
+            if (duplicateKeyException is null)
+            {
+                return ctx.Response.WriteAsync($"Failure: Repeated '{headerName}' Add did not throw");
+            }
+        }
+
+#if !FORWARDCOMPAT
+        if ((string[])ctx.Request.Headers.ContentType != Array.Empty<string>())
+        {
+            return ctx.Response.WriteAsync("Failure: ContentType property");
+        }
+
+        ctx.Request.Headers.ContentType = default;
+        if ((string[])ctx.Request.Headers.ContentType != Array.Empty<string>())
+        {
+            return ctx.Response.WriteAsync("Failure: ContentType property after setting default");
+        }
+#endif
+
+        return ctx.Response.WriteAsync("Success");
     }
 
     private async Task ResponseInvalidOrdering(HttpContext ctx)
@@ -1071,7 +1160,7 @@ public partial class Startup
         try
         {
 #if !FORWARDCOMPAT
-        Assert.True(ctx.Request.CanHaveBody());
+            Assert.True(ctx.Request.CanHaveBody());
 #endif
             Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
             Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);
@@ -1089,7 +1178,7 @@ public partial class Startup
         try
         {
 #if !FORWARDCOMPAT
-        Assert.True(ctx.Request.CanHaveBody());
+            Assert.True(ctx.Request.CanHaveBody());
 #endif
             Assert.True(ctx.Request.Headers.ContainsKey("Transfer-Encoding"));
             Assert.Equal("gzip, chunked", ctx.Request.Headers["Transfer-Encoding"]);

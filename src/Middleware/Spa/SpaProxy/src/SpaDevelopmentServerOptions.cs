@@ -7,6 +7,18 @@ internal sealed class SpaDevelopmentServerOptions
 {
     public string ServerUrl { get; set; } = "";
 
+    public string? RedirectUrl { get; set; }
+
+    internal string GetRedirectUrl()
+    {
+        if (!String.IsNullOrEmpty(RedirectUrl))
+        {
+            return RedirectUrl;
+        }
+
+        return ServerUrl;
+    }
+
     public string LaunchCommand { get; set; } = "";
 
     public int MaxTimeoutInSeconds { get; set; }

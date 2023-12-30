@@ -1,8 +1,8 @@
 # Microsoft.AspNetCore.Authentication.OAuth
 
-This project contains a generic implementation of [OAuth2 Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/social/) for ASP.NET Core. While it can be used directly, it's often easier to use a derived implementation for a specific provider. Adjacent directories contain providers for Facebook, Google, Microsoft Accounts, and Twitter.
+This project contains a generic implementation of [OAuth2 Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/social/) for ASP.NET Core. While it can be used directly, it's often easier to use a derived implementation for a specific provider. Adjacent directories contain providers for Facebook, Google, Microsoft Accounts, and Twitter.
 
-Some community projects related to OAuth for ASP.NET Core are listed in the [documentation](https://docs.microsoft.com/aspnet/core/security/authentication/social/).
+Some community projects related to OAuth for ASP.NET Core are listed in the [documentation](https://learn.microsoft.com/aspnet/core/security/authentication/social/).
 
 ## Development Setup
 

@@ -40,10 +40,7 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
         Value = value;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
 
-        if (locationUri == null)
-        {
-            throw new ArgumentNullException(nameof(locationUri));
-        }
+        ArgumentNullException.ThrowIfNull(locationUri);
 
         if (locationUri.IsAbsoluteUri)
         {
@@ -103,6 +100,6 @@ public sealed class Accepted<TValue> : IResult, IEndpointMetadataProvider, IStat
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(typeof(TValue), StatusCodes.Status202Accepted, "application/json"));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status202Accepted, typeof(TValue), new[] { "application/json" }));
     }
 }

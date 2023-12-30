@@ -38,10 +38,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     /// <param name="policy">Authorization policy to be used.</param>
     public AuthorizeFilter(AuthorizationPolicy policy)
     {
-        if (policy == null)
-        {
-            throw new ArgumentNullException(nameof(policy));
-        }
+        ArgumentNullException.ThrowIfNull(policy);
 
         Policy = policy;
     }
@@ -54,10 +51,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     public AuthorizeFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
         : this(authorizeData)
     {
-        if (policyProvider == null)
-        {
-            throw new ArgumentNullException(nameof(policyProvider));
-        }
+        ArgumentNullException.ThrowIfNull(policyProvider);
 
         PolicyProvider = policyProvider;
     }
@@ -68,10 +62,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     /// <param name="authorizeData">The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.</param>
     public AuthorizeFilter(IEnumerable<IAuthorizeData> authorizeData)
     {
-        if (authorizeData == null)
-        {
-            throw new ArgumentNullException(nameof(authorizeData));
-        }
+        ArgumentNullException.ThrowIfNull(authorizeData);
 
         AuthorizeData = authorizeData;
     }
@@ -167,10 +158,7 @@ public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     /// <inheritdoc />
     public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.IsEffectivePolicy(this))
         {

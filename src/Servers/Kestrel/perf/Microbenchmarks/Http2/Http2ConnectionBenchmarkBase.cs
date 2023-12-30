@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Http2HeadersEnumerator = Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2HeadersEnumerator;
@@ -68,17 +69,19 @@ public abstract class Http2ConnectionBenchmarkBase
 
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
-            dateHeaderValueManager: new DateHeaderValueManager(),
-            systemClock: new MockSystemClock());
-        serviceContext.DateHeaderValueManager.OnHeartbeat(default);
+            dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System),
+            timeProvider: TimeProvider.System);
+        serviceContext.DateHeaderValueManager.OnHeartbeat();
 
+        var featureCollection = new FeatureCollection();
+        featureCollection.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: null,
             transport: _connectionPair.Transport,
             timeoutControl: new MockTimeoutControl(),
             memoryPool: _memoryPool,
-            connectionFeatures: new FeatureCollection());
+            connectionFeatures: featureCollection);
 
         _connection = new Http2Connection(connectionContext);
 
@@ -182,5 +185,10 @@ public abstract class Http2ConnectionBenchmarkBase
         _connectionPair.Application.Output.Complete();
         await _requestProcessingTask;
         _memoryPool?.Dispose();
+    }
+
+    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
+    {
+        public ConnectionMetricsContext MetricsContext { get; }
     }
 }

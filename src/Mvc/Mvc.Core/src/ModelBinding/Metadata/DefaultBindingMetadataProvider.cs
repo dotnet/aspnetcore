@@ -16,10 +16,7 @@ internal sealed class DefaultBindingMetadataProvider : IBindingMetadataProvider
 {
     public void CreateBindingMetadata(BindingMetadataProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // BinderModelName
         foreach (var binderModelNameAttribute in context.Attributes.OfType<IModelNameProvider>())

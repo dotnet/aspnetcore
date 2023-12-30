@@ -36,7 +36,7 @@ internal sealed class RuleBuilder
         Flags flags;
         if (tokens.Count == 4)
         {
-            flags = new FlagParser().Parse(tokens[3]);
+            flags = FlagParser.Parse(tokens[3]);
         }
         else
         {

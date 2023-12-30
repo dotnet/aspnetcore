@@ -1,4 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
-static Microsoft.Extensions.DependencyInjection.JwtBearerExtensions.AddJwtBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!

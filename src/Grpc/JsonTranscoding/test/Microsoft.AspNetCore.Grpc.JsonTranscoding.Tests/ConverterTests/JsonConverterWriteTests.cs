@@ -7,6 +7,7 @@ using Example.Hello;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
@@ -335,6 +336,23 @@ public class JsonConverterWriteTests
     }
 
     [Fact]
+    public void Struct_NullValue()
+    {
+        var helloRequest = new HelloRequest
+        {
+            ValueValue = Value.ForStruct(new Struct
+            {
+                Fields =
+                {
+                    ["prop"] = Value.ForNull()
+                }
+            })
+        };
+
+        AssertWrittenJson(helloRequest);
+    }
+
+    [Fact]
     public void Value_Root()
     {
         var value = Value.ForStruct(new Struct
@@ -347,6 +365,14 @@ public class JsonConverterWriteTests
                     Value.ForString("value2"))
             }
         });
+
+        AssertWrittenJson(value);
+    }
+
+    [Fact]
+    public void Value_Null()
+    {
+        var value = Value.ForNull();
 
         AssertWrittenJson(value);
     }
@@ -481,7 +507,17 @@ public class JsonConverterWriteTests
         AssertWrittenJson(m);
     }
 
-    private void AssertWrittenJson<TValue>(TValue value, GrpcJsonSettings? settings = null, bool? compareRawStrings = null) where TValue : IMessage
+    // See See https://github.com/protocolbuffers/protobuf/issues/11987
+    [Fact]
+    public void JsonNamePriority()
+    {
+        var m = new Issue047349Message { A = 10, B = 20, C = 30 };
+        var json = AssertWrittenJson(m);
+
+        Assert.Equal(@"{""b"":10,""a"":20,""d"":30}", json);
+    }
+
+    private string AssertWrittenJson<TValue>(TValue value, GrpcJsonSettings? settings = null, bool? compareRawStrings = null) where TValue : IMessage
     {
         var typeRegistery = TypeRegistry.FromFiles(
             HelloRequest.Descriptor.File,
@@ -512,6 +548,8 @@ public class JsonConverterWriteTests
 
         var comparer = new JsonElementComparer(maxHashDepth: -1, compareRawStrings: compareRawStrings ?? false);
         Assert.True(comparer.Equals(doc1.RootElement, doc2.RootElement));
+
+        return jsonNew;
     }
 
     private static DescriptorRegistry CreateDescriptorRegistry(Type type)

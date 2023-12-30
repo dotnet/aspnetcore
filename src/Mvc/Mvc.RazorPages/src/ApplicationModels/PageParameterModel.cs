@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 /// <summary>
 /// A model type for reading and manipulation properties and parameters representing a Page Parameter.
 /// </summary>
-[DebuggerDisplay("PageParameterModel: Name={ParameterName}")]
+[DebuggerDisplay("Type = {GetType().Name}, Name = {ParameterName}")]
 public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingModel
 {
     /// <summary>
@@ -22,15 +22,8 @@ public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingMode
         IReadOnlyList<object> attributes)
         : base(parameterInfo.ParameterType, attributes)
     {
-        if (parameterInfo == null)
-        {
-            throw new ArgumentNullException(nameof(parameterInfo));
-        }
-
-        if (attributes == null)
-        {
-            throw new ArgumentNullException(nameof(attributes));
-        }
+        ArgumentNullException.ThrowIfNull(parameterInfo);
+        ArgumentNullException.ThrowIfNull(attributes);
 
         ParameterInfo = parameterInfo;
     }
@@ -42,10 +35,7 @@ public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingMode
     public PageParameterModel(PageParameterModel other)
         : base(other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         Handler = other.Handler;
         ParameterInfo = other.ParameterInfo;

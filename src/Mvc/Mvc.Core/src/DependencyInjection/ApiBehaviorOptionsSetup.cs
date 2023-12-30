@@ -14,10 +14,7 @@ internal sealed class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOpt
 
     public void Configure(ApiBehaviorOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.InvalidModelStateResponseFactory = context =>
         {

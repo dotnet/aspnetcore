@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Routing;
-
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
@@ -14,12 +12,6 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
     private readonly ICollection<Action<EndpointBuilder>>? _conventions;
     private readonly ICollection<Action<EndpointBuilder>>? _finallyConventions;
 
-    /// <summary>
-    /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a ThrowOnAddAfterEndpointBuiltConventionCollection from
-    /// <see cref="RouteEndpointDataSource.AddRouteHandler(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?, bool)"/>.
-    /// </summary>
-    /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource"/>.</param>
-    /// <param name="finallyConventions">The final convention list returned from <see cref="RouteEndpointDataSource"/>.</param>
     internal RouteHandlerBuilder(ICollection<Action<EndpointBuilder>> conventions, ICollection<Action<EndpointBuilder>> finallyConventions)
     {
         _conventions = conventions;

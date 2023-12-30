@@ -35,6 +35,8 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
     [InlineData("afterrender-sync")]
     [InlineData("afterrender-async")]
     [InlineData("while-rendering")]
+    [InlineData("dispatch-sync-exception")]
+    [InlineData("dispatch-async-exception")]
     public void CanHandleExceptions(string triggerId)
     {
         var container = Browser.Exists(By.Id("error-boundary-container"));

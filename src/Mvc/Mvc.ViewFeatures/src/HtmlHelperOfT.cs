@@ -47,10 +47,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <inheritdoc />
     public override void Contextualize(ViewContext viewContext)
     {
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
+        ArgumentNullException.ThrowIfNull(viewContext);
 
         if (viewContext.ViewData == null)
         {
@@ -95,10 +92,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         Expression<Func<TModel, bool>> expression,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateCheckBox(
@@ -115,10 +109,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         string optionLabel,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateDropDown(
@@ -136,10 +127,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         string htmlFieldName,
         object additionalViewData)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateDisplay(
@@ -152,10 +140,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <inheritdoc />
     public string DisplayNameFor<TResult>(Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateDisplayName(modelExpression.ModelExplorer, modelExpression.Name);
@@ -165,10 +150,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     public string DisplayNameForInnerType<TModelItem, TResult>(
         Expression<Func<TModelItem, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = _modelExpressionProvider.CreateModelExpression(
             new ViewDataDictionary<TModelItem>(ViewData, model: null),
@@ -180,10 +162,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <inheritdoc />
     public string DisplayTextFor<TResult>(Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         return GenerateDisplayText(GetModelExplorer(expression));
     }
@@ -195,10 +174,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         string htmlFieldName,
         object additionalViewData)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateEditor(
@@ -213,10 +189,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         Expression<Func<TModel, TResult>> expression,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateHidden(
@@ -230,10 +203,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <inheritdoc />
     public string IdFor<TResult>(Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         return GenerateId(GetExpressionName(expression));
     }
@@ -244,10 +214,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         string labelText,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateLabel(modelExpression.ModelExplorer, modelExpression.Name, labelText, htmlAttributes);
@@ -259,10 +226,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         IEnumerable<SelectListItem> selectList,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         var name = modelExpression.Name;
@@ -273,10 +237,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <inheritdoc />
     public string NameFor<TResult>(Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var expressionName = GetExpressionName(expression);
         return Name(expressionName);
@@ -287,10 +248,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         Expression<Func<TModel, TResult>> expression,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GeneratePassword(
@@ -306,15 +264,8 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         object value,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
+        ArgumentNullException.ThrowIfNull(value);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateRadioButton(
@@ -332,10 +283,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         int columns,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateTextArea(modelExpression.ModelExplorer, modelExpression.Name, rows, columns, htmlAttributes);
@@ -347,10 +295,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         string format,
         object htmlAttributes)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateTextBox(
@@ -373,10 +318,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <returns>The expression name.</returns>
     protected string GetExpressionName<TResult>(Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         return _modelExpressionProvider.GetExpressionText(expression);
     }
@@ -389,10 +331,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <returns>The <see cref="ModelExplorer"/>.</returns>
     protected ModelExplorer GetModelExplorer<TResult>(Expression<Func<TModel, TResult>> expression)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return modelExpression.ModelExplorer;
@@ -405,10 +344,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
         object htmlAttributes,
         string tag)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateValidationMessage(
@@ -422,10 +358,7 @@ public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     /// <inheritdoc />
     public string ValueFor<TResult>(Expression<Func<TModel, TResult>> expression, string format)
     {
-        if (expression == null)
-        {
-            throw new ArgumentNullException(nameof(expression));
-        }
+        ArgumentNullException.ThrowIfNull(expression);
 
         var modelExpression = GetModelExpression(expression);
         return GenerateValue(modelExpression.Name, modelExpression.Model, format, useViewData: false);

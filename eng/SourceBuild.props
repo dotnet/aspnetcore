@@ -1,8 +1,11 @@
+<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+
 <Project>
 
   <PropertyGroup>
     <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+    <SourceBuildTargetFrameworkFilter>netstandard2.0%3bnetstandard2.1%3bnetcoreapp2.1%3bnetcoreapp3.1%3bnet5.0%3bnet6.0%3bnet7.0%3bnet8.0%3bnet9.0</SourceBuildTargetFrameworkFilter>
   </PropertyGroup>
 
   <Target Name="PrepareGlobalJsonForSourceBuild"
@@ -16,7 +19,7 @@
   <!--
     Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
     Leaving the inner will cause all conflicting settings to be ignored.
-    https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options
+    https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options
   -->
   <Target Name="RemoveInnerGlobalConfig"
           DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
@@ -38,6 +41,12 @@
       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeed)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeed $(DotNetRuntimeSourceFeed)</_AdditionalRepoTaskBuildArgs>
       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeedKey)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeedkey $(DotNetRuntimeSourceFeedKey)</_AdditionalRepoTaskBuildArgs>
     </PropertyGroup>
+
+    <ItemGroup>
+      <!-- We need to flow FullAssemblySigningSupported even when building repo tasks because they use full signing -->
+      <InnerBuildEnv Condition="'$(FullAssemblySigningSupported)' != ''" Include="FullAssemblySigningSupported=$(FullAssemblySigningSupported)" />
+      <InnerBuildEnv Include="DotNetBuildFromSource=true" />
+    </ItemGroup>
 
     <!-- Call the build.sh script to build the repo tasks. Set IgnoreStandardErrorWarningFormat
          to true. This avoids fatal errors, because in internal builds there are usually a few failed installation

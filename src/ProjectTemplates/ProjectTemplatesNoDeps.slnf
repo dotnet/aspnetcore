@@ -5,8 +5,6 @@
       "src\\ProjectTemplates\\Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
-      "src\\submodules\\spa-templates\\src\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj",
-      "src\\ProjectTemplates\\test\\Templates.Blazor.Server.Tests\\Templates.Blazor.Server.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.Tests\\Templates.Blazor.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Tests\\Templates.Blazor.WebAssembly.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Auth.Tests\\Templates.Blazor.WebAssembly.Auth.Tests.csproj",

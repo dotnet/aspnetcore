@@ -126,7 +126,7 @@ validate_inputs(){
 }
 
 parse_config_and_set_env_vars(){
-    extract_base_cmd="python $SCRIPT_DIR/scripts/extract_json_value.py"
+    extract_base_cmd="python3 $SCRIPT_DIR/scripts/extract_json_value.py"
 
     # Arguments Take Precedence over Config
     [ -z "$PACKAGE_VERSION" ] && PACKAGE_VERSION="$($extract_base_cmd $CONFIG "release.package_version")"
@@ -232,7 +232,7 @@ package_install_scripts(){
 
 ## Generation Functions ##
 generate_config_templates(){
-    python ${SCRIPT_DIR}/scripts/config_template_generator.py $CONFIG $SCRIPT_DIR/templates/debian $DEBIAN_DIR $PACKAGE_NAME $PACKAGE_VERSION
+    python3 ${SCRIPT_DIR}/scripts/config_template_generator.py $CONFIG $SCRIPT_DIR/templates/debian $DEBIAN_DIR $PACKAGE_NAME $PACKAGE_VERSION
 }
 
 generate_manpages(){
@@ -240,7 +240,7 @@ generate_manpages(){
         mkdir -p $DOCS_DIR
 
         # Generate the manpages from json spec
-        python ${SCRIPT_DIR}/scripts/manpage_generator.py ${DOCS_JSON_PATH} ${DOCS_DIR}
+        python3 ${SCRIPT_DIR}/scripts/manpage_generator.py ${DOCS_JSON_PATH} ${DOCS_DIR}
     fi
 }
 

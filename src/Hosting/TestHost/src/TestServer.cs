@@ -90,10 +90,7 @@ public class TestServer : IServer
     /// <param name="featureCollection"></param>
     public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
 
@@ -209,10 +206,7 @@ public class TestServer : IServer
     /// <returns></returns>
     public async Task<HttpContext> SendAsync(Action<HttpContext> configureContext, CancellationToken cancellationToken = default)
     {
-        if (configureContext == null)
-        {
-            throw new ArgumentNullException(nameof(configureContext));
-        }
+        ArgumentNullException.ThrowIfNull(configureContext);
 
         var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
         builder.Configure((context, reader) =>

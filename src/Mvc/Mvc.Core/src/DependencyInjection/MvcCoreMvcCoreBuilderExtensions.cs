@@ -29,15 +29,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<MvcOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -53,15 +46,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<JsonOptions> configure)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configure == null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
 
         builder.Services.Configure(configure);
         return builder;
@@ -174,15 +160,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddApplicationPart(this IMvcCoreBuilder builder, Assembly assembly)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(assembly);
 
         builder.ConfigureApplicationPartManager(manager =>
         {
@@ -207,15 +186,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<ApplicationPartManager> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         setupAction(builder.PartManager);
 
@@ -232,15 +204,8 @@ public static class MvcCoreMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<ApiBehaviorOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
 
@@ -258,10 +223,7 @@ public static class MvcCoreMvcCoreBuilderExtensions
         UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
     public static IMvcCoreBuilder SetCompatibilityVersion(this IMvcCoreBuilder builder, CompatibilityVersion version)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.Configure<MvcCompatibilityOptions>(o => o.CompatibilityVersion = version);
         return builder;

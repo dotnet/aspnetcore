@@ -1,12 +1,12 @@
 ﻿{
   "author": "Microsoft",
   "name": "Biblioteka klas Razor",
-  "description": "Projekt służący do tworzenia biblioteki klas Razor przeznaczonej dla platformy .NET Standard",
+  "description": "Projekt do tworzenia biblioteki klas Razor przeznaczonej dla platformy .NET Standard",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net8.0/description": "Docelowe środowisko net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/SupportPagesAndViews/displayName": "Strony i widoki pomocy technicznej",
-  "symbols/SupportPagesAndViews/description": "Określa, czy ma być obsługiwane dodawanie tradycyjnych stron i widoków Razor do składników w tej bibliotece.",
+  "symbols/SupportPagesAndViews/description": "Określa, czy obsługiwać dodawanie tradycyjnych stron Razor i wyświetleń do tej biblioteki.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\"",
   "postActions/openInEditor/description": "Otwiera plik Areas/MyFeature/Pages/Page1.cshtml w edytorze"

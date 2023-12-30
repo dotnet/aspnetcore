@@ -46,15 +46,8 @@ public static class PageLinkGeneratorExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, page, handler, values);
         return generator.GetPathByAddress<RouteValuesAddress>(
@@ -95,15 +88,8 @@ public static class PageLinkGeneratorExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(page);
 
         var address = CreateAddress(httpContext: null, page, handler, values);
         return generator.GetPathByAddress(address, address.ExplicitValues, pathBase, fragment, options);
@@ -158,15 +144,8 @@ public static class PageLinkGeneratorExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (httpContext == null)
-        {
-            throw new ArgumentNullException(nameof(httpContext));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(httpContext);
 
         var address = CreateAddress(httpContext, page, handler, values);
         return generator.GetUriByAddress<RouteValuesAddress>(
@@ -217,15 +196,8 @@ public static class PageLinkGeneratorExtensions
         FragmentString fragment = default,
         LinkOptions? options = default)
     {
-        if (generator == null)
-        {
-            throw new ArgumentNullException(nameof(generator));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(page);
 
         var address = CreateAddress(httpContext: null, page, handler, values);
         return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);

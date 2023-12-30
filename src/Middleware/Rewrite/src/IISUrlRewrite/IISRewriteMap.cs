@@ -9,10 +9,7 @@ internal sealed class IISRewriteMap
 
     public IISRewriteMap(string name)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
         Name = name;
     }
 
@@ -26,14 +23,8 @@ internal sealed class IISRewriteMap
         }
         set
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(key);
+            ArgumentException.ThrowIfNullOrEmpty(value);
             _map[key] = value;
         }
     }

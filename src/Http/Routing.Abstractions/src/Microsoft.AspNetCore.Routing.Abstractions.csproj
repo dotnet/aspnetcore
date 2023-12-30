@@ -16,9 +16,15 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>

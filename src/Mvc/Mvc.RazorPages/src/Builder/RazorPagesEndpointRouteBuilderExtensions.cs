@@ -24,10 +24,7 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// <returns>An <see cref="PageActionEndpointConventionBuilder"/> for endpoints associated with Razor Pages.</returns>
     public static PageActionEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder endpoints)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         EnsureRazorPagesServices(endpoints);
 
@@ -60,15 +57,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     /// </remarks>
     public static IEndpointConventionBuilder MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
@@ -124,20 +114,9 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         [StringSyntax("Route")] string pattern,
         string page)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
@@ -190,15 +169,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         string page,
         string area)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
@@ -256,20 +228,9 @@ public static class RazorPagesEndpointRouteBuilderExtensions
         string page,
         string area)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
-
-        if (page == null)
-        {
-            throw new ArgumentNullException(nameof(page));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(page);
 
         PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
@@ -336,15 +297,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object? state)
         where TTransformer : DynamicRouteValueTransformer
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
 
         EnsureRazorPagesServices(endpoints);
 
@@ -377,15 +331,8 @@ public static class RazorPagesEndpointRouteBuilderExtensions
     public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, object state, int order)
         where TTransformer : DynamicRouteValueTransformer
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
 
         EnsureRazorPagesServices(endpoints);
 

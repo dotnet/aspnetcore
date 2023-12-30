@@ -134,6 +134,8 @@ internal abstract class AsyncIOOperation : IValueTaskSource<int>, IValueTaskSour
         _continuation = null;
     }
 
+    public bool InUse() => _continuation is not null;
+
     public readonly struct AsyncContinuation
     {
         public Action<object?> Continuation { get; }

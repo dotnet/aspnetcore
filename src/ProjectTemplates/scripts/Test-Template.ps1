@@ -47,16 +47,18 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         foreach ($projPath in $proj) {
             $projContent = Get-Content -Path $projPath -Raw
             if ($isBlazorWasmHosted) {
-                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net8.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net9.0/TestTemplates"
             }
             else {
-                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net8.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net9.0/TestTemplates"
             }
             $projContent = $projContent -replace ('(?:<Project Sdk="Microsoft.NET.(?<SdkSuffix>Sdk\.\w+)">)', ('<Project Sdk="Microsoft.NET.${SdkSuffix}">
                 <Import Project="' + $importPath + '/Directory.Build.props" />
                 <Import Project="' + $importPath + '/Directory.Build.targets" />
                 <PropertyGroup>
                     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+                    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+                    <TrimmerSingleWarn>false</TrimmerSingleWarn>
                 </PropertyGroup>'))
             $projContent | Set-Content $projPath
         }
@@ -67,8 +69,17 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         if ($templateArgs -match '-au') {
             dotnet.exe ef migrations add Initial
         }
-        dotnet.exe publish --configuration Release
-        Set-Location .\bin\Release\net8.0\publish
+
+        $publishOutputDir = ".\.publish";
+        dotnet.exe publish --configuration Release --output $publishOutputDir
+
+        if (Test-Path $publishOutputDir) {
+            Set-Location $publishOutputDir
+        }
+        else {
+            throw "Publish output directory could not be found";
+        }
+
         if ($isBlazorWasm -eq $false) {
             Invoke-Expression "./$templateName.exe"
         }

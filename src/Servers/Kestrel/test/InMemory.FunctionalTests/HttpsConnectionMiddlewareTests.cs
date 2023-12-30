@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -13,14 +11,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -29,6 +30,22 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
     private static readonly X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
+
+    private static KestrelServerOptions CreateServerOptions()
+    {
+        var env = new Mock<IHostEnvironment>();
+        env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
+        var serverOptions = new KestrelServerOptions();
+        serverOptions.ApplicationServices = new ServiceCollection()
+            .AddLogging()
+            .AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>()
+            .AddSingleton<HttpsConfigurationService.IInitializer, HttpsConfigurationService.Initializer>()
+            .AddSingleton(env.Object)
+            .AddSingleton(new KestrelMetrics(new TestMeterFactory()))
+            .BuildServiceProvider();
+        return serverOptions;
+    }
 
     [Fact]
     public async Task CanReadAndWriteWithHttpsConnectionMiddleware()
@@ -60,16 +77,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             ["Certificates:Default:Password"] = "aspnetcore",
         }).Build();
 
-        var options = new KestrelServerOptions();
-        var env = new Mock<IHostEnvironment>();
-        env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+        var options = CreateServerOptions();
 
-        var serviceProvider = new ServiceCollection().AddLogging().BuildServiceProvider();
-        options.ApplicationServices = serviceProvider;
-
-        var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
-        var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-        var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
+        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), certificatePathWatcher: null, reloadOnChange: false);
+        options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -91,7 +102,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [Fact]
-    public async Task HandshakeDetailsAreAvailable()
+    public async Task SslStreamIsAvailable()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
@@ -100,9 +111,42 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         await using (var server = new TestServer(context =>
         {
+            var feature = context.Features.Get<ISslStreamFeature>();
+            Assert.NotNull(feature);
+            Assert.NotNull(feature.SslStream);
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
+    [Fact]
+    public async Task HandshakeDetailsAreAvailable()
+    {
+        string expectedHostname = null;
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(
+                new HttpsConnectionAdapterOptions
+                {
+                    ServerCertificateSelector = (connection, name) =>
+                    {
+                        expectedHostname = name;
+                        return _x509Certificate2;
+                    }
+                });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
+            Assert.Equal(expectedHostname, tlsFeature.HostName);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
+            Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
             Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
@@ -157,14 +201,14 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public async Task RequireCertificateFailsWhenNoCertificate()
     {
-        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+        await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions =>
         {
-            ServerCertificate = _x509Certificate2,
-            ClientCertificateMode = ClientCertificateMode.RequireCertificate
-        });
-
-        await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                ClientCertificateMode = ClientCertificateMode.RequireCertificate
+            });
+        }))
         {
             await Assert.ThrowsAnyAsync<Exception>(
                 () => server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/"));
@@ -227,9 +271,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public void ThrowsWhenNoServerCertificateIsProvided()
     {
-        Assert.Throws<ArgumentException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask,
-            new HttpsConnectionAdapterOptions())
-            );
+        Assert.Throws<ArgumentException>(() => CreateMiddleware(new HttpsConnectionAdapterOptions(), ListenOptions.DefaultHttpProtocols));
     }
 
     [Fact]
@@ -529,8 +571,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [ConditionalTheory]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure turning on Http/2 doesn't regress HTTP/1
+    [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificate(HttpProtocols httpProtocols)
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -555,6 +598,49 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.NotNull(clientCert);
             Assert.NotNull(tlsFeature.ClientCertificate);
             Assert.NotNull(context.Connection.ClientCertificate);
+
+            await context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+        using var connection = server.CreateConnection();
+        // SslStream is used to ensure the certificate is actually passed to the server
+        // HttpClient might not send the certificate because it is invalid or it doesn't match any
+        // of the certificate authorities sent by the server in the SSL handshake.
+        // Use a random host name to avoid the TLS session resumption cache.
+        var stream = OpenSslStreamWithCert(connection.Stream);
+        await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
+        await AssertConnectionResult(stream, true);
+    }
+
+    [ConditionalFact]
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.Linux, SkipReason = "MacOS only test.")]
+    public async Task CanRenegotiateForClientCertificate_MacOS_PlatformNotSupportedException()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.Protocols = HttpProtocols.Http1;
+            listenOptions.UseHttps(options =>
+            {
+                options.ServerCertificate = _x509Certificate2;
+                options.ClientCertificateMode = ClientCertificateMode.DelayCertificate;
+                options.AllowAnyClientCertificate();
+            });
+        }
+
+        await using var server = new TestServer(async context =>
+        {
+            var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(tlsFeature);
+            Assert.Null(tlsFeature.ClientCertificate);
+            Assert.Null(context.Connection.ClientCertificate);
+
+            await Assert.ThrowsAsync<PlatformNotSupportedException>(() => context.Connection.GetClientCertificateAsync());
+
+            var lifetimeNotificationFeature = context.Features.Get<IConnectionLifetimeNotificationFeature>();
+            Assert.False(
+                lifetimeNotificationFeature.ConnectionClosedRequested.IsCancellationRequested,
+                "GetClientCertificateAsync shouldn't cause the connection to be closed.");
 
             await context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
@@ -611,8 +697,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForTlsCallbackOptions()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -658,8 +745,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificateOnHttp1CanReturnNoCert()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -782,7 +870,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     // TLS 1.2 and lower have to renegotiate the whole connection to get a client cert, and if that hits an error
     // then the connection is aborted.
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [TlsAlpnSupported]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task RenegotiateForClientCertificateOnPostWithoutBufferingThrows()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -824,7 +913,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
+    [TlsAlpnSupported]
     public async Task ServerOptionsSelectionCallback_SetsALPN()
     {
         static void ConfigureListenOptions(ListenOptions listenOptions)
@@ -852,7 +941,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // HTTP/2 requires Win10
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
+    [TlsAlpnSupported]
     public async Task TlsHandshakeCallbackOptionsOverload_SetsALPN()
     {
         static void ConfigureListenOptions(ListenOptions listenOptions)
@@ -884,7 +973,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "ALPN not supported")]
+    [TlsAlpnSupported]
     public async Task TlsHandshakeCallbackOptionsOverload_EmptyAlpnList_DisablesAlpn()
     {
         static void ConfigureListenOptions(ListenOptions listenOptions)
@@ -917,8 +1006,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     }
 
     [ConditionalFact]
+    [TlsAlpnSupported]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task CanRenegotiateForClientCertificateOnPostIfDrained()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -964,7 +1054,8 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.RedhatAmd64)] // Outdated OpenSSL client
+    [TlsAlpnSupported]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
     public async Task RenegotationFailureCausesConnectionClose()
     {
         void ConfigureListenOptions(ListenOptions listenOptions)
@@ -1216,10 +1307,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var cert = new X509Certificate2(certPath, "testPassword");
         Assert.Empty(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
 
-        new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
-        {
-            ServerCertificate = cert,
-        });
+        CreateMiddleware(cert);
     }
 
     [Theory]
@@ -1234,10 +1322,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var eku = Assert.Single(cert.Extensions.OfType<X509EnhancedKeyUsageExtension>());
         Assert.NotEmpty(eku.EnhancedKeyUsages);
 
-        new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
+        CreateMiddleware(new HttpsConnectionAdapterOptions
         {
             ServerCertificate = cert,
-        });
+        },
+        ListenOptions.DefaultHttpProtocols);
     }
 
     [Theory]
@@ -1253,19 +1342,41 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         Assert.NotEmpty(eku.EnhancedKeyUsages);
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            new HttpsConnectionMiddleware(context => Task.CompletedTask, new HttpsConnectionAdapterOptions
+            CreateMiddleware(new HttpsConnectionAdapterOptions
             {
                 ServerCertificate = cert,
-            }));
+            },
+            ListenOptions.DefaultHttpProtocols));
 
         Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
+    }
+
+    [Theory]
+    [InlineData("no_extensions.pfx")]
+    public void LogsForCertificateMissingSubjectAlternativeName(string testCertName)
+    {
+        var certPath = TestResources.GetCertPath(testCertName);
+        TestOutputHelper.WriteLine("Loading " + certPath);
+        var cert = new X509Certificate2(certPath, "testPassword");
+        Assert.False(CertificateLoader.DoesCertificateHaveASubjectAlternativeName(cert));
+
+        var testLogger = new TestApplicationErrorLogger();
+        CreateMiddleware(
+            new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = cert,
+            },
+            ListenOptions.DefaultHttpProtocols,
+            testLogger);
+
+        Assert.Single(testLogger.Messages.Where(log => log.EventId == 9));
     }
 
     [ConditionalTheory]
     [InlineData(HttpProtocols.Http1)]
     [InlineData(HttpProtocols.Http2)]
     [InlineData(HttpProtocols.Http1AndHttp2)]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
     {
@@ -1303,11 +1414,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http1AndHttp2
         };
-        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+        var middleware = CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http1AndHttp2);
 
-        Assert.Equal(HttpProtocols.Http1, httpConnectionAdapterOptions.HttpProtocols);
+        Assert.Equal(HttpProtocols.Http1, middleware._httpProtocols);
     }
 
     [ConditionalFact]
@@ -1318,11 +1428,10 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http1AndHttp2
         };
-        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+        var middleware = CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http1AndHttp2);
 
-        Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
+        Assert.Equal(HttpProtocols.Http1AndHttp2, middleware._httpProtocols);
     }
 
     [ConditionalFact]
@@ -1333,10 +1442,9 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http2
         };
 
-        Assert.Throws<NotSupportedException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions));
+        Assert.Throws<NotSupportedException>(() => CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http2));
     }
 
     [ConditionalFact]
@@ -1347,11 +1455,30 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
         {
             ServerCertificate = _x509Certificate2,
-            HttpProtocols = HttpProtocols.Http2
         };
 
         // Does not throw
-        new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+        CreateMiddleware(httpConnectionAdapterOptions, HttpProtocols.Http2);
+    }
+
+    private static HttpsConnectionMiddleware CreateMiddleware(X509Certificate2 serverCertificate)
+    {
+        return CreateMiddleware(new HttpsConnectionAdapterOptions
+        {
+            ServerCertificate = serverCertificate,
+        },
+        ListenOptions.DefaultHttpProtocols);
+    }
+
+    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols, TestApplicationErrorLogger testLogger = null)
+    {
+        var loggerFactory = testLogger is null ? (ILoggerFactory)NullLoggerFactory.Instance : new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) });
+        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, httpProtocols, loggerFactory, new KestrelMetrics(new TestMeterFactory()));
+    }
+
+    private static HttpsConnectionMiddleware CreateMiddleware(HttpsConnectionAdapterOptions options, HttpProtocols httpProtocols)
+    {
+        return new HttpsConnectionMiddleware(context => Task.CompletedTask, options, httpProtocols, new KestrelMetrics(new TestMeterFactory()));
     }
 
     private static async Task App(HttpContext httpContext)

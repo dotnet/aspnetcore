@@ -19,10 +19,7 @@ internal sealed class DefaultPageModelFactoryProvider : IPageModelFactoryProvide
 
     public Func<PageContext, object>? CreateModelFactory(CompiledPageActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         if (descriptor.ModelTypeInfo == null)
         {
@@ -50,10 +47,7 @@ internal sealed class DefaultPageModelFactoryProvider : IPageModelFactoryProvide
 
     public Action<PageContext, object>? CreateModelDisposer(CompiledPageActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         if (descriptor.ModelTypeInfo == null)
         {
@@ -65,10 +59,7 @@ internal sealed class DefaultPageModelFactoryProvider : IPageModelFactoryProvide
 
     public Func<PageContext, object, ValueTask>? CreateAsyncModelDisposer(CompiledPageActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         if (descriptor.ModelTypeInfo == null)
         {

@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 #if !IIS_FUNCTIONALS
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISSubAppSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class RequestPathBaseTests : FixtureLoggedTest
 {
     private readonly IISSubAppSiteFixture _fixture;
@@ -31,6 +32,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     }
 
     [ConditionalTheory]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [RequiresNewHandler]
     [InlineData("/Sub/App/PathAndPathBase", "/Sub/App/PathAndPathBase", "")]
     [InlineData("/SUb/APp/PathAndPAthBase", "/SUb/APp/PathAndPAthBase", "")]
@@ -51,6 +53,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     }
 
     [ConditionalTheory]
+    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [RequiresNewHandler]
     [InlineData("//Sub/App/PathAndPathBase", "//Sub/App/PathAndPathBase", "")]
     [InlineData(@"/\Sub/App/PathAndPathBase/", @"/\Sub/App/PathAndPathBase", "/")]

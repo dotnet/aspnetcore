@@ -6,7 +6,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -32,7 +32,7 @@ public class DefaultTransportFactoryTests
     [InlineData(HttpTransportType.ServerSentEvents | HttpTransportType.WebSockets)]
     public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient(HttpTransportType transportType)
     {
-        var exception = Assert.Throws<ArgumentNullException>(
+        var exception = Assert.Throws<ArgumentException>(
             () => new DefaultTransportFactory(transportType, new LoggerFactory(), httpClient: null, httpConnectionOptions: null, accessTokenProvider: null));
 
         Assert.Equal("httpClient", exception.ParamName);
@@ -53,7 +53,7 @@ public class DefaultTransportFactoryTests
     {
         var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
         Assert.IsType(expectedTransportType,
-            transportFactory.CreateTransport(AllTransportTypes));
+            transportFactory.CreateTransport(AllTransportTypes, useStatefulReconnect: true));
     }
 
     [Theory]
@@ -66,7 +66,7 @@ public class DefaultTransportFactoryTests
         var transportFactory =
             new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
         var ex = Assert.Throws<InvalidOperationException>(
-            () => transportFactory.CreateTransport(~requestedTransport));
+            () => transportFactory.CreateTransport(~requestedTransport, useStatefulReconnect: true));
 
         Assert.Equal("No requested transports available on the server.", ex.Message);
     }
@@ -77,7 +77,7 @@ public class DefaultTransportFactoryTests
     {
         Assert.IsType<WebSocketsTransport>(
             new DefaultTransportFactory(AllTransportTypes, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null)
-                .CreateTransport(AllTransportTypes));
+                .CreateTransport(AllTransportTypes, useStatefulReconnect: true));
     }
 
     [Theory]
@@ -90,7 +90,7 @@ public class DefaultTransportFactoryTests
         {
             var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
             Assert.IsType(expectedTransportType,
-                transportFactory.CreateTransport(AllTransportTypes));
+                transportFactory.CreateTransport(AllTransportTypes, useStatefulReconnect: true));
         }
     }
 
@@ -103,7 +103,7 @@ public class DefaultTransportFactoryTests
             var transportFactory =
                 new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpConnectionOptions: null, accessTokenProvider: null);
             var ex = Assert.Throws<InvalidOperationException>(
-                () => transportFactory.CreateTransport(AllTransportTypes));
+                () => transportFactory.CreateTransport(AllTransportTypes, useStatefulReconnect: true));
 
             Assert.Equal("No requested transports available on the server.", ex.Message);
         }

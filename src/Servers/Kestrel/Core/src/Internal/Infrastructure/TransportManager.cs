@@ -3,14 +3,9 @@
 
 #nullable enable
 
-using System.IO.Pipelines;
-using System.Linq;
 using System.Net;
-using System.Net.Security;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -20,15 +15,18 @@ internal sealed class TransportManager
 
     private readonly List<IConnectionListenerFactory> _transportFactories;
     private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
+    private readonly IHttpsConfigurationService _httpsConfigurationService;
     private readonly ServiceContext _serviceContext;
 
     public TransportManager(
         List<IConnectionListenerFactory> transportFactories,
         List<IMultiplexedConnectionListenerFactory> multiplexedTransportFactories,
+        IHttpsConfigurationService httpsConfigurationService,
         ServiceContext serviceContext)
     {
         _transportFactories = transportFactories;
         _multiplexedTransportFactories = multiplexedTransportFactories;
+        _httpsConfigurationService = httpsConfigurationService;
         _serviceContext = serviceContext;
     }
 
@@ -53,6 +51,14 @@ internal sealed class TransportManager
             }
         }
 
+        // Special case situation where a named pipe endpoint is specified and there is no matching transport.
+        // The named pipe transport is only registered on Windows. The test is done at this point so there is
+        // the opportunity for the app to register their own transport to handle named pipe endpoints.
+        if (endPoint is NamedPipeEndPoint && !OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException("Named pipes transport requires a Windows operating system.");
+        }
+
         throw new InvalidOperationException($"No registered {nameof(IConnectionListenerFactory)} supports endpoint {endPoint.GetType().Name}: {endPoint}");
     }
 
@@ -65,36 +71,8 @@ internal sealed class TransportManager
 
         var features = new FeatureCollection();
 
-        // HttpsOptions or HttpsCallbackOptions should always be set in production, but it's not set for InMemory tests.
-        // The QUIC transport will check if TlsConnectionCallbackOptions is missing.
-        if (listenOptions.HttpsOptions != null)
-        {
-            var sslServerAuthenticationOptions = HttpsConnectionMiddleware.CreateHttp3Options(listenOptions.HttpsOptions);
-            features.Set(new TlsConnectionCallbackOptions
-            {
-                ApplicationProtocols = sslServerAuthenticationOptions.ApplicationProtocols ?? new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
-                OnConnection = (context, cancellationToken) => ValueTask.FromResult(sslServerAuthenticationOptions),
-                OnConnectionState = null,
-            });
-        }
-        else if (listenOptions.HttpsCallbackOptions != null)
-        {
-            features.Set(new TlsConnectionCallbackOptions
-            {
-                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
-                OnConnection = (context, cancellationToken) =>
-                {
-                    return listenOptions.HttpsCallbackOptions.OnConnection(new TlsHandshakeCallbackContext
-                    {
-                        ClientHelloInfo = context.ClientHelloInfo,
-                        CancellationToken = cancellationToken,
-                        State = context.State,
-                        Connection = new ConnectionContextAdapter(context.Connection),
-                    });
-                },
-                OnConnectionState = listenOptions.HttpsCallbackOptions.OnConnectionState,
-            });
-        }
+        // Will throw an appropriate error if it's not enabled
+        _httpsConfigurationService.PopulateMultiplexedTransportFeatures(features, listenOptions);
 
         foreach (var multiplexedTransportFactory in _multiplexedTransportFactories)
         {
@@ -117,49 +95,6 @@ internal sealed class TransportManager
         return selector?.CanBind(endPoint) ?? true;
     }
 
-    /// <summary>
-    /// TlsHandshakeCallbackContext.Connection is ConnectionContext but QUIC connection only implements BaseConnectionContext.
-    /// </summary>
-    private sealed class ConnectionContextAdapter : ConnectionContext
-    {
-        private readonly BaseConnectionContext _inner;
-
-        public ConnectionContextAdapter(BaseConnectionContext inner) => _inner = inner;
-
-        public override IDuplexPipe Transport
-        {
-            get => throw new NotSupportedException("Not supported by HTTP/3 connections.");
-            set => throw new NotSupportedException("Not supported by HTTP/3 connections.");
-        }
-        public override string ConnectionId
-        {
-            get => _inner.ConnectionId;
-            set => _inner.ConnectionId = value;
-        }
-        public override IFeatureCollection Features => _inner.Features;
-        public override IDictionary<object, object?> Items
-        {
-            get => _inner.Items;
-            set => _inner.Items = value;
-        }
-        public override EndPoint? LocalEndPoint
-        {
-            get => _inner.LocalEndPoint;
-            set => _inner.LocalEndPoint = value;
-        }
-        public override EndPoint? RemoteEndPoint
-        {
-            get => _inner.RemoteEndPoint;
-            set => _inner.RemoteEndPoint = value;
-        }
-        public override CancellationToken ConnectionClosed
-        {
-            get => _inner.ConnectionClosed;
-            set => _inner.ConnectionClosed = value;
-        }
-        public override ValueTask DisposeAsync() => _inner.DisposeAsync();
-    }
-
     private void StartAcceptLoop<T>(IConnectionListener<T> connectionListener, Func<T, Task> connectionDelegate, EndpointConfig? endpointConfig) where T : BaseConnectionContext
     {
         var transportConnectionManager = new TransportConnectionManager(_serviceContext.ConnectionManager);
@@ -171,7 +106,14 @@ internal sealed class TransportManager
 
     public Task StopEndpointsAsync(List<EndpointConfig> endpointsToStop, CancellationToken cancellationToken)
     {
-        var transportsToStop = _transports.Where(t => t.EndpointConfig != null && endpointsToStop.Contains(t.EndpointConfig)).ToList();
+        var transportsToStop = new List<ActiveTransport>();
+        foreach (var t in _transports)
+        {
+            if (t.EndpointConfig is not null && endpointsToStop.Contains(t.EndpointConfig))
+            {
+                transportsToStop.Add(t);
+            }
+        }
         return StopTransportsAsync(transportsToStop, cancellationToken);
     }
 

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -40,27 +40,6 @@ public class HandshakeTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.Windows)]
-    // Mac SslStream is missing ALPN support: https://github.com/dotnet/runtime/issues/27727
-    public void TlsAndHttp2NotSupportedOnMac()
-    {
-        var ex = Assert.Throws<NotSupportedException>(() => new TestServer(context =>
-        {
-            throw new NotImplementedException();
-        }, new TestServiceContext(LoggerFactory),
-        kestrelOptions =>
-        {
-            kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
-            {
-                listenOptions.Protocols = HttpProtocols.Http2;
-                listenOptions.UseHttps(_x509Certificate2);
-            });
-        }));
-
-        Assert.Equal("HTTP/2 over TLS is not supported on macOS due to missing ALPN support.", ex.Message);
-    }
-
-    [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
     // Win7 SslStream is missing ALPN support.
@@ -83,7 +62,7 @@ public class HandshakeTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
     {
@@ -111,7 +90,7 @@ public class HandshakeTests : LoggedTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/runtime/issues/27727")]
+    [TlsAlpnSupported]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public async Task TlsAlpnHandshakeSelectsHttp2()
     {

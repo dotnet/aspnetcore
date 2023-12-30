@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <!-- Disable analyzer warnings for analyzers in test project. -->
+    <NoWarn>$(NoWarn);RS1036;RS2008</NoWarn>
    </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +21,7 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.RateLimiting" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
   </ItemGroup>

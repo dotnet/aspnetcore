@@ -75,8 +75,8 @@ public class BlobLoggerProvider : BatchingLoggerProvider
                 {
                     writer.Write(logEvent.Message);
                 }
+                writer.Flush();
 
-                await writer.FlushAsync().ConfigureAwait(false);
                 var tryGetBuffer = stream.TryGetBuffer(out var buffer);
                 System.Diagnostics.Debug.Assert(tryGetBuffer);
                 await blob.AppendAsync(buffer, cancellationToken).ConfigureAwait(false);

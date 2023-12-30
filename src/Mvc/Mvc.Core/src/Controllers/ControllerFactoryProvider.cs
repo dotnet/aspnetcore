@@ -19,15 +19,8 @@ internal sealed class ControllerFactoryProvider : IControllerFactoryProvider
         IControllerFactory controllerFactory,
         IEnumerable<IControllerPropertyActivator> propertyActivators)
     {
-        if (activatorProvider == null)
-        {
-            throw new ArgumentNullException(nameof(activatorProvider));
-        }
-
-        if (controllerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(controllerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(activatorProvider);
+        ArgumentNullException.ThrowIfNull(controllerFactory);
 
         _activatorProvider = activatorProvider;
 
@@ -44,10 +37,7 @@ internal sealed class ControllerFactoryProvider : IControllerFactoryProvider
 
     public Func<ControllerContext, object> CreateControllerFactory(ControllerActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         var controllerType = descriptor.ControllerTypeInfo?.AsType();
         if (controllerType == null)
@@ -82,10 +72,7 @@ internal sealed class ControllerFactoryProvider : IControllerFactoryProvider
 
     public Action<ControllerContext, object>? CreateControllerReleaser(ControllerActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         var controllerType = descriptor.ControllerTypeInfo?.AsType();
         if (controllerType == null)
@@ -106,10 +93,7 @@ internal sealed class ControllerFactoryProvider : IControllerFactoryProvider
 
     public Func<ControllerContext, object, ValueTask>? CreateAsyncControllerReleaser(ControllerActionDescriptor descriptor)
     {
-        if (descriptor == null)
-        {
-            throw new ArgumentNullException(nameof(descriptor));
-        }
+        ArgumentNullException.ThrowIfNull(descriptor);
 
         var controllerType = descriptor.ControllerTypeInfo?.AsType();
         if (controllerType == null)

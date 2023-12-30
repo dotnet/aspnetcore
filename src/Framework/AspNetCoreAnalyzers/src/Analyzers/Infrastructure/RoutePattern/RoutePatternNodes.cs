@@ -43,11 +43,11 @@ internal sealed class RoutePatternCompilationUnit : RoutePatternNode
 
 internal sealed class RoutePatternSegmentNode : RoutePatternRootPartNode
 {
-    public ImmutableArray<RoutePatternNode> Children { get; }
+    public ImmutableArray<RoutePatternSegmentPartNode> Children { get; }
 
     internal override int ChildCount => Children.Length;
 
-    public RoutePatternSegmentNode(ImmutableArray<RoutePatternNode> children)
+    public RoutePatternSegmentNode(ImmutableArray<RoutePatternSegmentPartNode> children)
         : base(RoutePatternKind.Segment)
     {
         Children = children;
@@ -162,23 +162,23 @@ internal sealed class RoutePatternLiteralNode : RoutePatternSegmentPartNode
         => visitor.Visit(this);
 }
 
-internal sealed class RoutePatternOptionalSeperatorNode : RoutePatternSegmentPartNode
+internal sealed class RoutePatternOptionalSeparatorNode : RoutePatternSegmentPartNode
 {
-    public RoutePatternOptionalSeperatorNode(RoutePatternToken seperatorToken)
-        : base(RoutePatternKind.Seperator)
+    public RoutePatternOptionalSeparatorNode(RoutePatternToken separatorToken)
+        : base(RoutePatternKind.Separator)
     {
-        Debug.Assert(seperatorToken.Kind == RoutePatternKind.DotToken);
-        SeperatorToken = seperatorToken;
+        Debug.Assert(separatorToken.Kind == RoutePatternKind.DotToken);
+        SeparatorToken = separatorToken;
     }
 
-    public RoutePatternToken SeperatorToken { get; }
+    public RoutePatternToken SeparatorToken { get; }
 
     internal override int ChildCount => 1;
 
     internal override RoutePatternNodeOrToken ChildAt(int index)
         => index switch
         {
-            0 => SeperatorToken,
+            0 => SeparatorToken,
             _ => throw new InvalidOperationException(),
         };
 
@@ -186,23 +186,23 @@ internal sealed class RoutePatternOptionalSeperatorNode : RoutePatternSegmentPar
         => visitor.Visit(this);
 }
 
-internal sealed class RoutePatternSegmentSeperatorNode : RoutePatternRootPartNode
+internal sealed class RoutePatternSegmentSeparatorNode : RoutePatternRootPartNode
 {
-    public RoutePatternSegmentSeperatorNode(RoutePatternToken seperatorToken)
-        : base(RoutePatternKind.Seperator)
+    public RoutePatternSegmentSeparatorNode(RoutePatternToken separatorToken)
+        : base(RoutePatternKind.Separator)
     {
-        Debug.Assert(seperatorToken.Kind == RoutePatternKind.SlashToken);
-        SeperatorToken = seperatorToken;
+        Debug.Assert(separatorToken.Kind == RoutePatternKind.SlashToken);
+        SeparatorToken = separatorToken;
     }
 
-    public RoutePatternToken SeperatorToken { get; }
+    public RoutePatternToken SeparatorToken { get; }
 
     internal override int ChildCount => 1;
 
     internal override RoutePatternNodeOrToken ChildAt(int index)
         => index switch
         {
-            0 => SeperatorToken,
+            0 => SeparatorToken,
             _ => throw new InvalidOperationException(),
         };
 

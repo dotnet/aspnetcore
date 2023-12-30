@@ -1,0 +1,31 @@
+{
+  "name": "aspnetcore",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "src/SignalR/clients/ts/signalr",
+    "src/SignalR/clients/ts/signalr-protocol-msgpack",
+    "src/SignalR/clients/ts/FunctionalTests",
+    "src/SignalR/clients/ts",
+    "src/JSInterop/Microsoft.JSInterop.JS/src",
+    "src/Components/dotnet-runtime-js",
+    "src/Components/Web.JS/",
+    "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
+    "src/Components/WebAssembly/Authentication.Msal/src/Interop",
+    "src/Components/CustomElements/src/js",
+    "src/ProjectTemplates/test/Templates.Tests"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "integration-test": "npm run integration-test --workspaces --if-present",
+    "coverage": "npm run coverage --workspaces --if-present",
+    "get-version": "npm run get-version --workspaces --if-present"
+  },
+  "overrides": {
+    "got": "^11.8.2",
+    "http-cache-semantics": "^4.1.1",
+    "semver-regex": "^3.1.3"
+  }
+}

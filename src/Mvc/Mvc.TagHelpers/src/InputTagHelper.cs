@@ -117,6 +117,15 @@ public class InputTagHelper : TagHelper
     public string InputTypeName { get; set; }
 
     /// <summary>
+    /// The name of the associated form
+    /// </summary>
+    /// <remarks>
+    /// Used to associate a hidden checkbox tag to the respecting form when <see cref="CheckBoxHiddenInputRenderMode"/> is not <see cref="CheckBoxHiddenInputRenderMode.None"/>.
+    /// </remarks>
+    [HtmlAttributeName("form")]
+    public string FormName { get; set; }
+
+    /// <summary>
     /// The name of the &lt;input&gt; element.
     /// </summary>
     /// <remarks>
@@ -141,15 +150,8 @@ public class InputTagHelper : TagHelper
     /// </exception>
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         // Pass through attributes that are also well-known HTML attributes. Must be done prior to any copying
         // from a TagBuilder.
@@ -166,6 +168,11 @@ public class InputTagHelper : TagHelper
         if (Value != null)
         {
             output.CopyHtmlAttribute(nameof(Value), context);
+        }
+
+        if (FormName != null)
+        {
+            output.CopyHtmlAttribute("form", context);
         }
 
         // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
@@ -335,6 +342,16 @@ public class InputTagHelper : TagHelper
                     hiddenForCheckboxTag.MergeAttribute("name", Name);
                 }
 
+                if (output.Attributes.TryGetAttribute("form", out var formAttribute))
+                {
+                    // If the original checkbox has a form attribute, the hidden field should respect it and the
+                    // attribute should be passed on
+                    if (formAttribute.Value is string formAttributeString)
+                    {
+                        hiddenForCheckboxTag.MergeAttribute("form", formAttributeString);
+                    }
+                }
+
                 if (ViewContext.CheckBoxHiddenInputRenderMode == CheckBoxHiddenInputRenderMode.EndOfForm && ViewContext.FormContext.CanRenderAtEndOfForm)
                 {
                     ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckboxTag);
@@ -471,7 +488,8 @@ public class InputTagHelper : TagHelper
         else if (ViewContext.Html5DateRenderingMode == Html5DateRenderingMode.Rfc3339 &&
             !modelExplorer.Metadata.HasNonDefaultEditFormat &&
             (typeof(DateTime) == modelExplorer.Metadata.UnderlyingOrModelType ||
-             typeof(DateTimeOffset) == modelExplorer.Metadata.UnderlyingOrModelType))
+             typeof(DateTimeOffset) == modelExplorer.Metadata.UnderlyingOrModelType ||
+             typeof(DateOnly) == modelExplorer.Metadata.UnderlyingOrModelType))
         {
             // Rfc3339 mode _may_ override EditFormatString in a limited number of cases. Happens only when
             // EditFormatString has a default format i.e. came from a [DataType] attribute.

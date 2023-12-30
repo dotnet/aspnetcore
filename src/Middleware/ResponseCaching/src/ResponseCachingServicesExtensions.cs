@@ -19,10 +19,7 @@ public static class ResponseCachingServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddResponseCaching(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
@@ -37,14 +34,8 @@ public static class ResponseCachingServicesExtensions
     /// <returns></returns>
     public static IServiceCollection AddResponseCaching(this IServiceCollection services, Action<ResponseCachingOptions> configureOptions)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
-        if (configureOptions == null)
-        {
-            throw new ArgumentNullException(nameof(configureOptions));
-        }
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
         services.AddResponseCaching();

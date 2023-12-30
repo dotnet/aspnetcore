@@ -92,10 +92,7 @@ public abstract class OutputFormatter : IOutputFormatter, IApiResponseTypeMetada
     /// <inheritdoc />
     public virtual bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (SupportedMediaTypes.Count == 0)
         {
@@ -159,10 +156,7 @@ public abstract class OutputFormatter : IOutputFormatter, IApiResponseTypeMetada
     /// <inheritdoc />
     public virtual Task WriteAsync(OutputFormatterWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         WriteResponseHeaders(context);
         return WriteResponseBodyAsync(context);
@@ -174,10 +168,7 @@ public abstract class OutputFormatter : IOutputFormatter, IApiResponseTypeMetada
     /// <param name="context">The formatter context associated with the call.</param>
     public virtual void WriteResponseHeaders(OutputFormatterWriteContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var response = context.HttpContext.Response;
         response.ContentType = context.ContentType.Value ?? string.Empty;

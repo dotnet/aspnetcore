@@ -57,7 +57,12 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
             };
         }
 
-        using var writer = new FileStream(filePath, FileMode.Open, FileAccess.Write);
+        var streamOptions = new FileStreamOptions { Access = FileAccess.Write, Mode = FileMode.Create };
+        if (!OperatingSystem.IsWindows())
+        {
+            streamOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+        using var writer = new FileStream(filePath, streamOptions);
         JsonSerializer.Serialize(writer, config, _jsonSerializerOptions);
     }
 

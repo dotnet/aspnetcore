@@ -44,7 +44,7 @@ internal sealed class HostingRequestFinishedLog : IReadOnlyList<KeyValuePair<str
                 9 => new KeyValuePair<string, object?>(nameof(request.Path), request.Path.Value),
                 10 => new KeyValuePair<string, object?>(nameof(request.QueryString), request.QueryString.Value),
                 11 => new KeyValuePair<string, object?>("{OriginalFormat}", OriginalFormat),
-                _ => throw new IndexOutOfRangeException(nameof(index)),
+                _ => throw new ArgumentOutOfRangeException(nameof(index)),
             };
         }
     }

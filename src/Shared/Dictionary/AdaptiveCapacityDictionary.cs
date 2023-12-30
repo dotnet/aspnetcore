@@ -8,12 +8,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Internal;
 
 /// <summary>
 /// An <see cref="IDictionary{String, Object}"/> type to hold a small amount of items (10 or less in the common case).
 /// </summary>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
 internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
 {
     // Threshold for size of array to use.
@@ -289,10 +292,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
         KeyValuePair<TKey, TValue>[] array,
         int arrayIndex)
     {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
+        ArgumentNullException.ThrowIfNull(array);
 
         if ((uint)arrayIndex > array.Length || array.Length - arrayIndex < this.Count)
         {
@@ -609,10 +609,7 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
         /// <param name="dictionary">A <see cref="AdaptiveCapacityDictionary{TKey, TValue}"/>.</param>
         public Enumerator(AdaptiveCapacityDictionary<TKey, TValue> dictionary)
         {
-            if (dictionary == null)
-            {
-                throw new ArgumentNullException(nameof(dictionary));
-            }
+            ArgumentNullException.ThrowIfNull(dictionary);
 
             _dictionary = dictionary;
 

@@ -43,10 +43,7 @@ public class RouteCollection : IRouteCollection
     /// <inheritdoc />
     public void Add(IRouter router)
     {
-        if (router == null)
-        {
-            throw new ArgumentNullException(nameof(router));
-        }
+        ArgumentNullException.ThrowIfNull(router);
 
         var namedRouter = router as INamedRouter;
         if (namedRouter != null)

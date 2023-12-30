@@ -35,15 +35,8 @@ public class RewriteMiddleware
         ILoggerFactory loggerFactory,
         IOptions<RewriteOptions> options)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;
@@ -58,10 +51,7 @@ public class RewriteMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var rewriteContext = new RewriteContext
         {

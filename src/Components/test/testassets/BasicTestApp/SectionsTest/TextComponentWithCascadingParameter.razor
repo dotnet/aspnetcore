@@ -1,0 +1,9 @@
+﻿<p>@Text @AdditionalText</p>
+
+@code {
+    [Parameter]
+    public string Text { get; set; }
+
+    [CascadingParameter]
+    public string AdditionalText { get; set; }
+}

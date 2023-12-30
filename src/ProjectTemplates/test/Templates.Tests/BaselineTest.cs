@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
@@ -75,21 +75,20 @@ public class BaselineTest : LoggedTest
         Project = await ProjectFactory.CreateProject(Output);
         await Project.RunDotNetNewRawAsync(arguments);
 
+        expectedFiles = expectedFiles.Select(f => f.Replace("{ProjectName}", Project.ProjectName)).ToArray();
+
         foreach (var file in expectedFiles)
         {
             AssertFileExists(Project.TemplateOutputDir, file, shouldExist: true);
         }
 
-        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories);
+        var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories).ToArray();
         foreach (var file in filesInFolder)
         {
             var relativePath = file.Replace(Project.TemplateOutputDir, "").Replace("\\", "/").Trim('/');
             if (relativePath.EndsWith(".csproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".props", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
-                relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                 relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
@@ -101,7 +100,7 @@ public class BaselineTest : LoggedTest
             }
             Assert.Contains(relativePath, expectedFiles);
 
-            if (relativePath.EndsWith(".cs", StringComparison.Ordinal))
+            if (relativePath.EndsWith(".cs", StringComparison.Ordinal) && !relativePath.EndsWith("Extensions.cs", StringComparison.Ordinal))
             {
                 var namespaceDeclarationPrefix = "namespace ";
                 var namespaceDeclaration = File.ReadLines(file)

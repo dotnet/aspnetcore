@@ -1,0 +1,19 @@
+{
+  "name": "dotnet-runtime",
+  "private": true,
+  "description": ".NET is a developer platform with tools and libraries for building any type of app, including web, mobile, desktop, games, IoT, cloud, and microservices.",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dotnet/runtime.git"
+  },
+  "version": "1.0.0",
+  "main": "dotnet.js",
+  "types": "dotnet.d.ts",
+  "keywords": [
+    "dotnet",
+    "runtime",
+    "wasm"
+  ],
+  "author": "Microsoft",
+  "license": "MIT"
+}

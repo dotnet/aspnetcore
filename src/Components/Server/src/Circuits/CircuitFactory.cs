@@ -47,32 +47,46 @@ internal sealed partial class CircuitFactory : ICircuitFactory
 
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
+        var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
             navigationManager.Initialize(baseUri, uri);
 
             navigationInterception.AttachJSRuntime(jsRuntime);
+            scrollToLocationHash.AttachJSRuntime(jsRuntime);
         }
         else
         {
             navigationManager.Initialize(baseUri, uri);
         }
 
-        var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-        await appLifetime.RestoreStateAsync(store);
+        if (components.Count > 0)
+        {
+            // Skip initializing the state if there are no components.
+            // This is the case on Blazor Web scenarios, which will initialize the state
+            // when the first set of components is provided via an UpdateRootComponents call.
+            var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+            await appLifetime.RestoreStateAsync(store);
+        }
 
+        var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
         var jsComponentInterop = new CircuitJSComponentInterop(_options);
         var renderer = new RemoteRenderer(
             scope.ServiceProvider,
             _loggerFactory,
             _options,
             client,
+            serverComponentDeserializer,
             _loggerFactory.CreateLogger<RemoteRenderer>(),
             jsRuntime,
             jsComponentInterop);
 
-        var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
+        // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
+        // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to
+        // delay creating the handlers until then. Otherwise, a handler would be able to access the state
+        // in the constructor for Blazor Server, but not in Blazor Web.
+        var circuitHandlers = components.Count == 0 ? [] : scope.ServiceProvider.GetServices<CircuitHandler>()
             .OrderBy(h => h.Order)
             .ToArray();
 

@@ -6,7 +6,7 @@ using System.Net.Http;
 using ApiExplorerWebSite;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;

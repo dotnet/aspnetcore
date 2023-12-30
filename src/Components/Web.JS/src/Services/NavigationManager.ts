@@ -4,16 +4,22 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { WebRendererId } from '../Rendering/WebRendererId';
+import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
-let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
-let hasLocationChangingEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
 
-// Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
-let notifyLocationChangingCallback: ((callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
+type NavigationCallbacks = {
+  rendererId: WebRendererId;
+  hasLocationChangingEventListeners: boolean;
+  locationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
+  locationChanging(callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
+};
+
+const navigationCallbacks = new Map<WebRendererId, NavigationCallbacks>();
 
 let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
 let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | null = null;
@@ -21,20 +27,27 @@ let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | nu
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
   listenForNavigationEvents,
-  enableNavigationInterception,
+  enableNavigationInterception: setHasInteractiveRouter,
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
+  refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
+  scrollToElement,
 };
 
 function listenForNavigationEvents(
+  rendererId: WebRendererId,
   locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
   locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
 ): void {
-  notifyLocationChangedCallback = locationChangedCallback;
-  notifyLocationChangingCallback = locationChangingCallback;
+  navigationCallbacks.set(rendererId, {
+    rendererId,
+    hasLocationChangingEventListeners: false,
+    locationChanged: locationChangedCallback,
+    locationChanging: locationChangingCallback,
+  });
 
   if (hasRegisteredNavigationEventListeners) {
     return;
@@ -43,14 +56,29 @@ function listenForNavigationEvents(
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
+
+  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink) => {
+    notifyLocationChanged(interceptedLink, internalDestinationHref);
+  });
 }
 
-function enableNavigationInterception(): void {
-  hasEnabledNavigationInterception = true;
+function setHasLocationChangingListeners(rendererId: WebRendererId, hasListeners: boolean) {
+  const callbacks = navigationCallbacks.get(rendererId);
+  if (!callbacks) {
+    throw new Error(`Renderer with ID '${rendererId}' is not listening for navigation events`);
+  }
+  callbacks.hasLocationChangingEventListeners = hasListeners;
 }
 
-function setHasLocationChangingListeners(hasListeners: boolean) {
-  hasLocationChangingEventListeners = hasListeners;
+export function scrollToElement(identifier: string): boolean {
+  const element = document.getElementById(identifier);
+
+  if (element) {
+    element.scrollIntoView();
+    return true;
+  }
+
+  return false;
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
@@ -58,33 +86,39 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // running its simulated bubbling process so that we can respect any preventDefault requests.
   // So instead of registering our own native event, register using the EventDelegator.
   eventDelegator.notifyAfterClick(event => {
-    if (!hasEnabledNavigationInterception) {
+    if (!hasInteractiveRouter()) {
       return;
     }
 
-    if (event.button !== 0 || eventHasSpecialKey(event)) {
-      // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
-      return;
-    }
-
-    if (event.defaultPrevented) {
-      return;
-    }
-
-    // Intercept clicks on all <a> elements where the href is within the <base href> URI space
-    // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
-    const anchorTarget = findAnchorTarget(event);
-
-    if (anchorTarget && canProcessAnchor(anchorTarget)) {
-      const href = anchorTarget.getAttribute('href')!;
-      const absoluteHref = toAbsoluteUri(href);
-
-      if (isWithinBaseUriSpace(absoluteHref)) {
-        event.preventDefault();
-        performInternalNavigation(absoluteHref, /* interceptedLink */ true, /* replace */ false);
-      }
-    }
+    handleClickForNavigationInterception(event, absoluteInternalHref => {
+      performInternalNavigation(absoluteInternalHref, /* interceptedLink */ true, /* replace */ false);
+    });
   });
+}
+
+function isSamePageWithHash(absoluteHref: string): boolean {
+  const hashIndex = absoluteHref.indexOf('#');
+  return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
+}
+
+function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boolean, state: string | undefined = undefined): void {
+  saveToBrowserHistory(absoluteHref, replace, state);
+
+  const hashIndex = absoluteHref.indexOf('#');
+  if (hashIndex === absoluteHref.length - 1) {
+    return;
+  }
+
+  const identifier = absoluteHref.substring(hashIndex + 1);
+  scrollToElement(identifier);
+}
+
+function refresh(forceReload: boolean): void {
+  if (!forceReload && hasProgrammaticEnhancedNavigationHandler()) {
+    performProgrammaticEnhancedNavigation(location.href, /* replace */ true);
+  } else {
+    location.reload();
+  }
 }
 
 // For back-compat, we need to accept multiple overloads
@@ -110,7 +144,11 @@ function navigateToCore(uri: string, options: NavigationOptions, skipLocationCha
   const absoluteUri = toAbsoluteUri(uri);
 
   if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+    if (shouldUseClientSideRouting()) {
+      performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+    } else {
+      performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+    }
   } else {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
@@ -138,8 +176,14 @@ function performExternalNavigation(uri: string, replace: boolean) {
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
   ignorePendingNavigation();
 
-  if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
-    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
+  if (isSamePageWithHash(absoluteInternalHref)) {
+    performScrollToElementOnTheSamePage(absoluteInternalHref, replace, state);
+    return;
+  }
+
+  const callbacks = getInteractiveRouterNavigationCallbacks();
+  if (!skipLocationChangingCallback && callbacks?.hasLocationChangingEventListeners) {
+    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink, callbacks);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -152,6 +196,12 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
+  saveToBrowserHistory(absoluteInternalHref, replace, state);
+
+  await notifyLocationChanged(interceptedLink);
+}
+
+function saveToBrowserHistory(absoluteInternalHref: string, replace: boolean, state: string | undefined = undefined): void {
   if (!replace) {
     currentHistoryIndex++;
     history.pushState({
@@ -164,8 +214,6 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
       _index: currentHistoryIndex,
     }, /* ignored title */ '', absoluteInternalHref);
   }
-
-  await notifyLocationChanged(interceptedLink);
 }
 
 function navigateHistoryWithoutPopStateCallback(delta: number): Promise<void> {
@@ -188,18 +236,12 @@ function ignorePendingNavigation() {
   }
 }
 
-function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean): Promise<boolean> {
+function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean, callbacks: NavigationCallbacks): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     ignorePendingNavigation();
-
-    if (!notifyLocationChangingCallback) {
-      resolve(false);
-      return;
-    }
-
     currentLocationChangingCallId++;
     resolveCurrentNavigation = resolve;
-    notifyLocationChangingCallback(currentLocationChangingCallId, uri, state, intercepted);
+    callbacks.locationChanging(currentLocationChangingCallId, uri, state, intercepted);
   });
 }
 
@@ -213,7 +255,8 @@ function endLocationChanging(callId: number, shouldContinueNavigation: boolean) 
 async function onBrowserInitiatedPopState(state: PopStateEvent) {
   ignorePendingNavigation();
 
-  if (hasLocationChangingEventListeners) {
+  const callbacks = getInteractiveRouterNavigationCallbacks();
+  if (callbacks?.hasLocationChangingEventListeners) {
     const index = state.state?._index ?? 0;
     const userState = state.state?.userState;
     const delta = index - currentHistoryIndex;
@@ -222,7 +265,7 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
     // Temporarily revert the navigation until we confirm if the navigation should continue.
     await navigateHistoryWithoutPopStateCallback(-delta);
 
-    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false);
+    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false, callbacks);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -233,79 +276,35 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
   await notifyLocationChanged(false);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean) {
-  if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, history.state?.userState, interceptedLink);
-  }
+async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
+  const uri = internalDestinationHref ?? location.href;
+
+  await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
+    if (isRendererAttached(rendererId)) {
+      await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+    }
+  }));
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback) {
+  if (popStateCallback && shouldUseClientSideRouting()) {
     await popStateCallback(state);
   }
 
   currentHistoryIndex = history.state?._index ?? 0;
 }
 
-let testAnchor: HTMLAnchorElement;
-export function toAbsoluteUri(relativeUri: string): string {
-  testAnchor = testAnchor || document.createElement('a');
-  testAnchor.href = relativeUri;
-  return testAnchor.href;
-}
-
-function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
-  // _blazorDisableComposedPath is a temporary escape hatch in case any problems are discovered
-  // in this logic. It can be removed in a later release, and should not be considered supported API.
-  const path = !window['_blazorDisableComposedPath'] && event.composedPath && event.composedPath();
-  if (path) {
-    // This logic works with events that target elements within a shadow root,
-    // as long as the shadow mode is 'open'. For closed shadows, we can't possibly
-    // know what internal element was clicked.
-    for (let i = 0; i < path.length; i++) {
-      const candidate = path[i];
-      if (candidate instanceof Element && candidate.tagName === 'A') {
-        return candidate as HTMLAnchorElement;
-      }
-    }
-    return null;
-  } else {
-    // Since we're adding use of composedPath in a patch, retain compatibility with any
-    // legacy browsers that don't support it by falling back on the older logic, even
-    // though it won't work properly with ShadowDOM. This can be removed in the next
-    // major release.
-    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A');
+function getInteractiveRouterNavigationCallbacks(): NavigationCallbacks | undefined {
+  const interactiveRouterRendererId = getInteractiveRouterRendererId();
+  if (interactiveRouterRendererId === undefined) {
+    return undefined;
   }
+
+  return navigationCallbacks.get(interactiveRouterRendererId);
 }
 
-function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
-  return !element
-    ? null
-    : element.tagName === tagName
-      ? element
-      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
-}
-
-function isWithinBaseUriSpace(href: string) {
-  const baseUriWithoutTrailingSlash = toBaseUriWithoutTrailingSlash(document.baseURI!);
-  const nextChar = href.charAt(baseUriWithoutTrailingSlash.length);
-
-  return href.startsWith(baseUriWithoutTrailingSlash)
-    && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
-}
-
-function toBaseUriWithoutTrailingSlash(baseUri: string) {
-  return baseUri.substring(0, baseUri.lastIndexOf('/'));
-}
-
-function eventHasSpecialKey(event: MouseEvent) {
-  return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
-}
-
-function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
-  const targetAttributeValue = anchorTarget.getAttribute('target');
-  const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
-  return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
+function shouldUseClientSideRouting() {
+  return hasInteractiveRouter() || !hasProgrammaticEnhancedNavigationHandler();
 }
 
 // Keep in sync with Components/src/NavigationOptions.cs

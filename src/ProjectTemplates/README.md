@@ -33,8 +33,6 @@ Some projects in this repository (like SignalR Java Client) require JDK installa
 1. After installation define a new environment variable named `JAVA_HOME` pointing to the root of the latest JDK installation (for Windows it will be something like `c:\Program Files\Java\jdk-12`).
 1. Add the `%JAVA_HOME%\bin` directory to the `PATH` environment variable
 
-Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj contains the Single Page Application templates, including Angular, React. **This is brought in by a submodule from the dotnet/spa-templates repo.**
-
 To build the ProjectTemplates, use one of:
 
 1. Run `eng\build.cmd -all -pack -configuration Release` in the repository root to build and pack all of the repo, including template projects.
@@ -52,24 +50,36 @@ Otherwise, you'll get a test error "Certificate error: Navigation blocked".
 
 Then, use one of:
 
-1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuilddeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
+1. Run `src\ProjectTemplates\build.cmd -test -NoRestore -NoBuild -NoBuildDeps -configuration Release` (or equivalent src\ProjectTemplates\build.sh` command) to run all template tests.
 1. To test specific templates, use the `Run-[Template]-Locally.ps1` scripts in the script folder.
     - These scripts do `dotnet new -i` with your packages, but also apply a series of fixes and tweaks to the created template which keep the fact that you don't have a production `Microsoft.AspNetCore.App` from interfering.
 1. Run templates manually with `custom-hive` and `disable-sdk-templates` to install to a custom location and turn off the built-in templates e.g.
-    - `dotnet new -i Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
+    - `dotnet new -i Microsoft.DotNet.Web.ProjectTemplates.6.0.6.0.0-dev.nupkg --debug:custom-hive C:\TemplateHive\`
     - `dotnet new angular --auth Individual --debug:disable-sdk-templates --debug:custom-hive C:\TemplateHive\`
 1. Install the templates to an existing Visual Studio installation.
     1. Pack the ProjectTemplates: `src\ProjectTemplates\build.cmd -pack -configuration Release`
         - This will produce the `*dev.nupkg` containing the ProjectTemplates at `artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg`
-    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new -i "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
+    2. Install ProjectTemplates in local Visual Studio instance: `dotnet new install "<REPO_PATH>\artifacts\packages\Release\Shipping\Microsoft.DotNet.Web.ProjectTemplates.7.0.7.0.0-dev.nupkg"`
     3. Run Visual Studio and test out templates manually.
-    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new --uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
+    4. Uninstall ProjectTemplates from local Visual Studio instance: `dotnet new uninstall Microsoft.DotNet.Web.ProjectTemplates.7.0`
 
 **Note** ProjectTemplates tests require Visual Studio unless a full build (CI) is performed.
 
 **Note** Because the templates build against the version of `Microsoft.AspNetCore.App` that was built during the
 previous step, it is NOT advised that you install templates created on your local machine using just
 `dotnet new -i [nupkgPath]`.
+
+#### Running Blazor Playwright Template Tests
+
+1. From the root of the repo, build the templates: `.\eng\build.cmd -all -pack`
+2. `cd .\src\ProjectTemplates\test\Templates.Blazor.Tests`
+3. `dotnet test .\Templates.Blazor.Tests.csproj` with optional `--filter` arg to run a specific test.
+
+The requisite browsers should be automatically installed. If you encounter browser errors, the browsers can be manually installed via the following script, replacing `[TFM]` with the current target TFM (ex. `net8.0`).
+
+```cmd
+.\bin\Debug\[TFM]\playwright.ps1 install
+```
 
 #### Conditional tests & skipping test platforms
 
@@ -87,7 +97,7 @@ An entire test project can be configured to skip specific platforms using the `<
 
 ```xml
 <SkipHelixQueues>
-    $(HelixQueueArmDebian11);
+    $(HelixQueueArmDebian12);
 </SkipHelixQueues>
 ```
 

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers;
 /// <summary>
 /// A descriptor for an action of a controller.
 /// </summary>
-[DebuggerDisplay("{DisplayName}")]
+[DebuggerDisplay("{DisplayName,nq}")]
 public class ControllerActionDescriptor : ActionDescriptor
 {
     /// <summary>
@@ -62,10 +62,7 @@ public class ControllerActionDescriptor : ActionDescriptor
 
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             base.DisplayName = value;
         }

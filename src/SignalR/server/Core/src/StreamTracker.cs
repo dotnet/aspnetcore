@@ -70,7 +70,7 @@ internal sealed class StreamTracker
         {
             return false;
         }
-        converter.TryComplete(message.HasResult || message.Error == null ? null : new Exception(message.Error));
+        converter.TryComplete(message.HasResult || message.Error == null ? null : new HubException(message.Error));
         return true;
     }
 

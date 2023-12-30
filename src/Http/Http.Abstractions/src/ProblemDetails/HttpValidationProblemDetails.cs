@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
@@ -9,7 +8,6 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// A <see cref="ProblemDetails"/> for validation errors.
 /// </summary>
-[JsonConverter(typeof(HttpValidationProblemDetailsJsonConverter))]
 public class HttpValidationProblemDetails : ProblemDetails
 {
     /// <summary>
@@ -38,5 +36,5 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// <summary>
     /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
     /// </summary>
-    public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
+    public IDictionary<string, string[]> Errors { get; set; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
 }

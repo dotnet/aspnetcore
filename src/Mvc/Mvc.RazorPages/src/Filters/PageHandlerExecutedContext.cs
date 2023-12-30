@@ -31,10 +31,7 @@ public class PageHandlerExecutedContext : FilterContext
         object handlerInstance)
         : base(pageContext, filters)
     {
-        if (handlerInstance == null)
-        {
-            throw new ArgumentNullException(nameof(handlerInstance));
-        }
+        ArgumentNullException.ThrowIfNull(handlerInstance);
 
         HandlerMethod = handlerMethod;
         HandlerInstance = handlerInstance;

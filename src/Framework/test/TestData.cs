@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore;
 
@@ -20,6 +22,7 @@ public static class TestData
                 "Microsoft.AspNetCore.Antiforgery",
                 "Microsoft.AspNetCore.Authentication",
                 "Microsoft.AspNetCore.Authentication.Abstractions",
+                "Microsoft.AspNetCore.Authentication.BearerToken",
                 "Microsoft.AspNetCore.Authentication.Cookies",
                 "Microsoft.AspNetCore.Authentication.Core",
                 "Microsoft.AspNetCore.Authentication.OAuth",
@@ -27,6 +30,7 @@ public static class TestData
                 "Microsoft.AspNetCore.Authorization.Policy",
                 "Microsoft.AspNetCore.Components",
                 "Microsoft.AspNetCore.Components.Authorization",
+                "Microsoft.AspNetCore.Components.Endpoints",
                 "Microsoft.AspNetCore.Components.Forms",
                 "Microsoft.AspNetCore.Components.Server",
                 "Microsoft.AspNetCore.Components.Web",
@@ -90,6 +94,7 @@ public static class TestData
                 "Microsoft.AspNetCore.Server.Kestrel",
                 "Microsoft.AspNetCore.Server.Kestrel.Core",
                 "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic",
+                "Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes",
                 "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets",
                 "Microsoft.AspNetCore.Session",
                 "Microsoft.AspNetCore.SignalR",
@@ -114,6 +119,8 @@ public static class TestData
                 "Microsoft.Extensions.Configuration.Xml",
                 "Microsoft.Extensions.DependencyInjection",
                 "Microsoft.Extensions.DependencyInjection.Abstractions",
+                "Microsoft.Extensions.Diagnostics",
+                "Microsoft.Extensions.Diagnostics.Abstractions",
                 "Microsoft.Extensions.Diagnostics.HealthChecks",
                 "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions",
                 "Microsoft.Extensions.FileProviders.Abstractions",
@@ -153,10 +160,18 @@ public static class TestData
                 "System.Threading.RateLimiting",
             };
 
+        // System.Diagnostics.EventLog.Messages is only present in the Windows build.
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+            !SkipOnHelixAttribute.OnHelix()) // Helix tests always run against the Windows assets (even on non-Windows)
+        {
+            ListedSharedFxAssemblies.Remove("System.Diagnostics.EventLog.Messages");
+        }
+
         ListedTargetingPackAssemblies = new List<string>
             {
                 { "Microsoft.AspNetCore.Antiforgery" },
                 { "Microsoft.AspNetCore.Authentication.Abstractions" },
+                { "Microsoft.AspNetCore.Authentication.BearerToken" },
                 { "Microsoft.AspNetCore.Authentication.Cookies" },
                 { "Microsoft.AspNetCore.Authentication.Core" },
                 { "Microsoft.AspNetCore.Authentication.OAuth" },
@@ -165,6 +180,7 @@ public static class TestData
                 { "Microsoft.AspNetCore.Authorization" },
                 { "Microsoft.AspNetCore.Components.Authorization" },
                 { "Microsoft.AspNetCore.Components.Forms" },
+                { "Microsoft.AspNetCore.Components.Endpoints" },
                 { "Microsoft.AspNetCore.Components.Server" },
                 { "Microsoft.AspNetCore.Components.Web" },
                 { "Microsoft.AspNetCore.Components" },
@@ -228,6 +244,7 @@ public static class TestData
                 { "Microsoft.AspNetCore.Server.Kestrel.Core" },
                 { "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" },
                 { "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" },
+                { "Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" },
                 { "Microsoft.AspNetCore.Server.Kestrel" },
                 { "Microsoft.AspNetCore.Session" },
                 { "Microsoft.AspNetCore.SignalR.Common" },
@@ -253,6 +270,8 @@ public static class TestData
                 { "Microsoft.Extensions.Configuration" },
                 { "Microsoft.Extensions.DependencyInjection.Abstractions" },
                 { "Microsoft.Extensions.DependencyInjection" },
+                { "Microsoft.Extensions.Diagnostics" },
+                { "Microsoft.Extensions.Diagnostics.Abstractions" },
                 { "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" },
                 { "Microsoft.Extensions.Diagnostics.HealthChecks" },
                 { "Microsoft.Extensions.Features" },

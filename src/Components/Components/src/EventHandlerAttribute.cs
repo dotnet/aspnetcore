@@ -27,15 +27,8 @@ public sealed class EventHandlerAttribute : Attribute
     /// <param name="enablePreventDefault"></param>
     public EventHandlerAttribute(string attributeName, Type eventArgsType, bool enableStopPropagation, bool enablePreventDefault)
     {
-        if (attributeName == null)
-        {
-            throw new ArgumentNullException(nameof(attributeName));
-        }
-
-        if (eventArgsType == null)
-        {
-            throw new ArgumentNullException(nameof(eventArgsType));
-        }
+        ArgumentNullException.ThrowIfNull(attributeName);
+        ArgumentNullException.ThrowIfNull(eventArgsType);
 
         AttributeName = attributeName;
         EventArgsType = eventArgsType;

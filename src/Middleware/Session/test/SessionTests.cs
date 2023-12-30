@@ -463,7 +463,7 @@ public class SessionTests
                         else if (context.Request.Path == new PathString("/AccessSessionData"))
                         {
                             var value = context.Session.GetInt32("Key");
-                            responseData = (value == null) ? "No value found in session." : value.ToString();
+                            responseData = (value == null) ? "No value found in session." : value.Value.ToString(CultureInfo.InvariantCulture);
                         }
                         else if (context.Request.Path == new PathString("/DoNotAccessSessionData"))
                         {

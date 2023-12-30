@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -2416,6 +2416,27 @@ public class ControllerBaseTest
     }
 
     [Fact]
+    public void ValidationProblemDetails_UsesSpecifiedExtensions()
+    {
+        // Arrange
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+        };
+
+        // Act
+        var actionResult = controller.ValidationProblem(extensions: new Dictionary<string, object> { { "ext1", 1 }, { "ext2", 2 } });
+
+        // Assert
+        var objectResult = Assert.IsType<BadRequestObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ValidationProblemDetails>(objectResult.Value);
+        Assert.Equal(1, problemDetails.Extensions["ext1"]);
+        Assert.Equal(2, problemDetails.Extensions["ext2"]);
+    }
+
+    [Fact]
     public void ProblemDetails_Works()
     {
         // Arrange
@@ -2469,6 +2490,27 @@ public class ControllerBaseTest
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal(detail, problemDetails.Detail);
+    }
+
+    [Fact]
+    public void ProblemDetails_UsesPassedInExtensions()
+    {
+        // Arrange
+        var options = GetApiBehaviorOptions();
+
+        var controller = new TestableController
+        {
+            ProblemDetailsFactory = new DefaultProblemDetailsFactory(Options.Create(options)),
+        };
+
+        // Act
+        var actionResult = controller.Problem(extensions: new Dictionary<string, object> { { "ext1", 1 }, { "ext2", 2 } });
+
+        // Assert
+        var badRequestResult = Assert.IsType<ObjectResult>(actionResult);
+        var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
+        Assert.Equal(1, problemDetails.Extensions["ext1"]);
+        Assert.Equal(2, problemDetails.Extensions["ext2"]);
     }
 
     [Fact]

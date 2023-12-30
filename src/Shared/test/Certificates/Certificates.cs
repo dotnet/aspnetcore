@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate;
 
@@ -13,7 +14,7 @@ public static class Certificates
 
     static Certificates()
     {
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var now = TimeProvider.System.GetUtcNow();
 
         SelfSignedPrimaryRoot = MakeCert(
             "CN=Valid Self Signed Client EKU,OU=dev,DC=idunno-dev,DC=org",

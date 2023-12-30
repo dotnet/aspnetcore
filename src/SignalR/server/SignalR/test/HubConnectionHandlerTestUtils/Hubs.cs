@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
@@ -1386,6 +1387,43 @@ public class ServicesHub : TestHub
     }
 }
 
+public class KeyedServicesHub : TestHub
+{
+    public int MultipleSameKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service1")] Service1 service2)
+    {
+        Assert.Same(service, service2);
+        return 445;
+    }
+
+    public int KeyedService([FromKeyedServices("service1")] Service1 service)
+    {
+        return 43;
+    }
+
+    public int KeyedServiceWithParam(int input, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 13 * input;
+    }
+
+    public int KeyedServiceNonKeyedService(Service2 service2, [FromKeyedServices("service1")] Service1 service)
+    {
+        return 11;
+    }
+
+    public int MultipleKeyedServices([FromKeyedServices("service1")] Service1 service, [FromKeyedServices("service2")] Service1 service2)
+    {
+        Assert.NotEqual(service, service2);
+        return 45;
+    }
+}
+
+public class BadServicesHub : Hub
+{
+    public void BadMethod([FromKeyedServices("service1")] [FromService] Service1 service)
+    {
+    }
+}
+
 public class TooManyParamsHub : Hub
 {
     public void ManyParams(int a1, string a2, bool a3, float a4, string a5, int a6, int a7, int a8, int a9, int a10, int a11,
@@ -1395,4 +1433,16 @@ public class TooManyParamsHub : Hub
         int a51, int a52, int a53, int a54, int a55, int a56, int a57, int a58, int a59, int a60, int a61, int a62, int a63,
         int a64, [FromService] Service1 service)
     { }
+}
+
+public class OnConnectedSendToClientHub : Hub
+{
+    public override async Task OnConnectedAsync()
+    {
+        string id = Context.GetHttpContext()?.Request.Query["client"] ?? string.Empty;
+        if (!string.IsNullOrEmpty(id))
+        {
+            await Clients.Client(id).SendAsync("Test", 1);
+        }
+    }
 }

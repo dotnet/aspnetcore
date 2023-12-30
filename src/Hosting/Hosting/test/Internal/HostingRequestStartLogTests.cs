@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Hosting.Tests;
 public class HostingRequestStartLogTests
 {
     [Theory]
-    [InlineData(",XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Request starting GET 1.1 http://,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX//?query - test 0")]
-    [InlineData(" XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Request starting GET 1.1 http:// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX//?query - test 0")]
+    [InlineData(",XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Request starting 1.1 GET http://,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX//?query - test 0")]
+    [InlineData(" XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "Request starting 1.1 GET http:// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX//?query - test 0")]
     public void InvalidHttpContext_DoesNotThrowOnAccessingProperties(string input, string expected)
     {
         var mockRequest = new Mock<HttpRequest>();
-        mockRequest.Setup(request => request.Protocol).Returns("GET");
-        mockRequest.Setup(request => request.Method).Returns("1.1");
+        mockRequest.Setup(request => request.Protocol).Returns("1.1");
+        mockRequest.Setup(request => request.Method).Returns("GET");
         mockRequest.Setup(request => request.Scheme).Returns("http");
         mockRequest.Setup(request => request.Host).Returns(new HostString(input));
         mockRequest.Setup(request => request.PathBase).Returns(new PathString("/"));

@@ -142,10 +142,7 @@ public class WebAssemblyHostConfiguration : IConfiguration, IConfigurationRoot, 
     /// <returns>The same <see cref="IConfigurationBuilder"/>.</returns>
     public IConfigurationBuilder Add(IConfigurationSource source)
     {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
+        ArgumentNullException.ThrowIfNull(source);
 
         // Adds this source and its associated provider to the source
         // and provider references in this class. We make sure to load

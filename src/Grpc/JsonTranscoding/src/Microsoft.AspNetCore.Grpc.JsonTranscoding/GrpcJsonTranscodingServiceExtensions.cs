@@ -3,8 +3,8 @@
 
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -23,10 +23,7 @@ public static class GrpcJsonTranscodingServiceExtensions
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
     public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
@@ -43,10 +40,7 @@ public static class GrpcJsonTranscodingServiceExtensions
     /// <returns>The same instance of the <see cref="IGrpcServerBuilder"/> for chaining.</returns>
     public static IGrpcServerBuilder AddJsonTranscoding(this IGrpcServerBuilder builder, Action<GrpcJsonTranscodingOptions> configureOptions)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.Configure(configureOptions);
 
@@ -64,10 +58,7 @@ public static class GrpcJsonTranscodingServiceExtensions
 
         public void Configure(GrpcJsonTranscodingOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            ArgumentNullException.ThrowIfNull(options);
 
             options.DescriptorRegistry = _descriptorRegistry;
         }

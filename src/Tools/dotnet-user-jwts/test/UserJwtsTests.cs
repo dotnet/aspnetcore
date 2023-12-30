@@ -1,43 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
-using Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
-using Xunit;
 using Xunit.Abstractions;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
-using System.Numerics;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
-public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
+public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output) : IClassFixture<UserJwtsTestFixture>
 {
-    private readonly TestConsole _console;
-    private readonly UserJwtsTestFixture _fixture;
-    private readonly ITestOutputHelper _testOut;
-
-    public UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output)
-    {
-        _fixture = fixture;
-        _testOut = output;
-        _console = new TestConsole(output);
-    }
+    private readonly TestConsole _console = new TestConsole(output);
 
     [Fact]
     public void List_NoTokensForNewProject()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project });
@@ -47,7 +29,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void List_HandlesNoSecretsInProject()
     {
-        var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(false), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project });
@@ -58,7 +40,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_CreatesSecretOnNoSecretInproject()
     {
-        var project = Path.Combine(_fixture.CreateProject(false), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(false), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -71,7 +53,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_WritesGeneratedTokenToDisk()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
@@ -81,9 +63,28 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     }
 
     [Fact]
+    public void Create_CanModifyExistingScheme()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        app.Run(new[] { "create", "--project", project });
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+        var id = matches.SingleOrDefault().Groups[1].Value;
+
+        var appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("dotnet-user-jwts", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+        app.Run(new[] { "create", "--project", project, "--issuer", "new-issuer"  });
+        appSettings = JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(appsettings));
+        Assert.Equal("new-issuer", appSettings["Authentication"]["Schemes"]["Bearer"]["ValidIssuer"].GetValue<string>());
+    }
+
+    [Fact]
     public void Print_ReturnsNothingForMissingToken()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "print", "invalid-id", "--project", project });
@@ -93,7 +94,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void List_ReturnsIdForGeneratedToken()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--scheme", "MyCustomScheme" });
@@ -107,7 +108,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     public void List_ReturnsIdForGeneratedToken_WithJsonFormat()
     {
         var schemeName = "MyCustomScheme";
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--scheme", schemeName });
@@ -128,7 +129,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void List_ReturnsEmptyListWhenNoTokens_WithJsonFormat()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "list", "--project", project, "--output", "json" });
@@ -140,7 +141,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Remove_RemovesGeneratedToken()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
@@ -158,7 +159,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Clear_RemovesGeneratedTokens()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
         var app = new Program(_console);
 
@@ -176,7 +177,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Key_CanResetSigningKey()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -190,9 +191,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public async Task Key_CanResetSigningKey_WhenSecretsHasPrepulatedData()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
         await File.WriteAllTextAsync(secretsFilePath,
 @"{
   ""Foo"": {
@@ -218,7 +219,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Command_ShowsHelpForInvalidCommand()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         var exception = Record.Exception(() => app.Run(new[] { "not-real", "--project", project }));
@@ -230,7 +231,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void CreateCommand_ShowsBasicTokenDetails()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -244,7 +245,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void CreateCommand_SupportsODateTimeFormats()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--expires-on", DateTime.Now.AddDays(2).ToString("O") });
@@ -259,7 +260,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void CreateCommand_ShowsCustomizedTokenDetails()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--scheme", "customScheme" });
@@ -273,7 +274,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void CreateCommand_DisplaysErrorForInvalidExpiresOnCombination()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--expires-on", DateTime.UtcNow.AddDays(2).ToString("O"), "--valid-for", "2h" });
@@ -286,7 +287,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void PrintCommand_ShowsBasicOptions()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -305,7 +306,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void PrintCommand_ShowsBasicOptions_WithJsonFormat()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });
@@ -325,7 +326,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void PrintCommand_ShowsCustomizedOptions()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--role", "foobar" });
@@ -346,7 +347,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void PrintComamnd_ShowsAllOptionsWithShowAll()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--claim", "foo=bar" });
@@ -368,7 +369,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_WithJsonOutput_CanBeSerialized()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "--output", "json" });
@@ -383,7 +384,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_WithTokenOutput_ProducesSingleValue()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project, "-o", "token" });
@@ -396,7 +397,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_GracefullyHandles_NoLaunchSettings()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
         var app = new Program(_console);
         var launchSettingsPath = Path.Combine(projectPath, "Properties", "launchSettings.json");
@@ -412,9 +413,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public async Task Create_GracefullyHandles_PrepopulatedSecrets()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
         await File.WriteAllTextAsync(secretsFilePath,
 @"{
   ""Foo"": {
@@ -439,7 +440,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_GetsAudiencesFromAllIISAndKestrel()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
 
         var app = new Program(_console);
@@ -456,9 +457,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public async Task Create_SupportsSettingACustomIssuerAndScheme()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
 
         var app = new Program(_console);
         app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
@@ -477,9 +478,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public async Task Create_SupportsSettingMutlipleIssuersAndSingleScheme()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
 
         var app = new Program(_console);
         app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
@@ -499,9 +500,9 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public async Task Create_SupportsSettingSingleIssuerAndMultipleSchemes()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
-        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(_fixture.TestSecretsId);
+        var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(fixture.TestSecretsId);
 
         var app = new Program(_console);
         app.Run(new[] { "create", "--project", project, "--issuer", "test-issuer", "--scheme", "test-scheme" });
@@ -524,7 +525,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Key_CanPrintAndReset_BySchemeAndIssuer()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
 
         var app = new Program(_console);
@@ -550,7 +551,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Key_CanPrintWithBase64()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         var project = Path.Combine(projectPath, "TestProject.csproj");
 
         var app = new Program(_console);
@@ -575,7 +576,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
     [Fact]
     public void Create_CanHandleNoProjectOptionProvided()
     {
-        var projectPath = _fixture.CreateProject();
+        var projectPath = fixture.CreateProject();
         Directory.SetCurrentDirectory(projectPath);
 
         var app = new Program(_console);
@@ -594,7 +595,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "create" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
         Assert.DoesNotContain(Resources.CreateCommand_NoAudience_Error, _console.GetOutput());
     }
 
@@ -607,7 +608,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "remove", "some-id" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
 
     [Fact]
@@ -619,7 +620,7 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "clear" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
     }
 
     [Fact]
@@ -631,14 +632,58 @@ public class UserJwtsTests : IClassFixture<UserJwtsTestFixture>
         var app = new Program(_console);
         app.Run(new[] { "list" });
 
-        Assert.Contains("No project found at `-p|--project` path or current directory.", _console.GetOutput());
+        Assert.Contains($"Could not find a MSBuild project file in '{Directory.GetCurrentDirectory()}'. Specify which project to use with the --project option.", _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_CanHandleProjectOptionAsPath()
+    {
+        var projectPath = fixture.CreateProject();
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+
+        var app = new Program(_console);
+        app.Run(new[] { "list", "--project", projectPath });
+
+        Assert.Contains(Path.Combine(projectPath, project), _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_CanHandleRelativePathAsOption()
+    {
+        var projectPath = fixture.CreateProject();
+        var tempPath = Path.GetTempPath();
+        var targetPath = Path.GetRelativePath(tempPath, projectPath);
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        Directory.SetCurrentDirectory(tempPath);
+
+        var app = new Program(_console);
+        app.Run(new[] { "list", "--project", targetPath });
+
+        Assert.DoesNotContain($"The project file '{targetPath}' does not exist.", _console.GetOutput());
+        Assert.Contains(Path.Combine(projectPath, project), _console.GetOutput());
+    }
+
+    [Fact]
+    public void Create_CanHandleRelativePathAsOption()
+    {
+        var projectPath = fixture.CreateProject();
+        var tempPath = Path.GetTempPath();
+        var targetPath = Path.GetRelativePath(tempPath, projectPath);
+        var project = Path.Combine(projectPath, "TestProject.csproj");
+        Directory.SetCurrentDirectory(tempPath);
+
+        var app = new Program(_console);
+        app.Run(new[] { "create", "--project", targetPath });
+
+        Assert.DoesNotContain($"The project file '{targetPath}' does not exist.", _console.GetOutput());
+        Assert.Contains("New JWT saved", _console.GetOutput());
     }
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     public void Create_CreatesFileWithUserOnlyUnixFileMode()
     {
-        var project = Path.Combine(_fixture.CreateProject(), "TestProject.csproj");
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
         var app = new Program(_console);
 
         app.Run(new[] { "create", "--project", project });

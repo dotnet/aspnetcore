@@ -1,0 +1,48 @@
+﻿@page "/forms/named-form-bound-primitive-parameter"
+
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Named form with bound parameter</h2>
+
+<form data-enhance name="my-bound-form" method="post" @onsubmit="() => _submitted = true" @formname="named-form-handler">
+    <input type="text" name="Parameter" value="@(_attemptedValue ?? Parameter.ToString())" />
+    <input id="send" type="submit" value="Send" />
+    <AntiforgeryToken />
+</form>
+
+@if (_submitted)
+{
+    var errors = Context.GetErrors("named-form-handler", nameof(Parameter))?.ErrorMessages;
+    if (errors == null)
+    {
+        <p id="pass">Your number is @Parameter!</p>
+    }
+    else
+    {
+        <p>There were errors:</p>
+        <ul id="errors">
+            @foreach (var error in errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    }
+}
+@code {
+    bool _submitted = false;
+    string _attemptedValue = null;
+    IReadOnlyList<FormattableString> _errors;
+
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public int Parameter { get; set; } = 0;
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _errors = Context.GetErrors("named-form-handler", nameof(Parameter))?.ErrorMessages;
+        if (_errors != null)
+        {
+            _attemptedValue = Context.GetAttemptedValue("named-form-handler", nameof(Parameter));
+        }
+    }
+}

@@ -20,10 +20,7 @@ internal sealed class RazorPagesRazorViewEngineOptionsSetup : IConfigureOptions<
 
     public void Configure(RazorViewEngineOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         var rootDirectory = _pagesOptions.RootDirectory;
         Debug.Assert(!string.IsNullOrEmpty(rootDirectory));

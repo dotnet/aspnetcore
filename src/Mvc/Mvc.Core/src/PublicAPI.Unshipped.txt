@@ -1,52 +1,7 @@
 #nullable enable
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string! name, TOptions! options) -> void
-Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! finalConvention) -> void
-Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServicesParameters.get -> bool
-Microsoft.AspNetCore.Mvc.ApiBehaviorOptions.DisableImplicitFromServicesParameters.set -> void
-Microsoft.AspNetCore.Mvc.ApplicationModels.InferParameterBindingInfoConvention.InferParameterBindingInfoConvention(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider! modelMetadataProvider, Microsoft.Extensions.DependencyInjection.IServiceProviderIsService! serviceProviderIsService) -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider! valueProvider, params System.Linq.Expressions.Expression<System.Func<TModel!, object!>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
-*REMOVED*Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object!>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
-Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider! valueProvider, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
-Microsoft.AspNetCore.Mvc.ControllerBase.TryUpdateModelAsync<TModel>(TModel! model, string! prefix, params System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>![]! includeExpressions) -> System.Threading.Tasks.Task<bool>!
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult() -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(string! location, object? value) -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(System.Uri! location, object? value) -> void
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(string? location, object? value) -> void
-Microsoft.AspNetCore.Mvc.CreatedResult.CreatedResult(System.Uri? location, object? value) -> void
-*REMOVED*Microsoft.AspNetCore.Mvc.CreatedResult.Location.get -> string!
-Microsoft.AspNetCore.Mvc.CreatedResult.Location.get -> string?
-Microsoft.AspNetCore.Mvc.ProblemDetails (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Detail.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.get -> System.Collections.Generic.IDictionary<string!, object?>! (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Instance.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.ProblemDetails() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Status.get -> int? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Status.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Title.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Title.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Type.get -> string? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ProblemDetails.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider
-Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
-Microsoft.AspNetCore.Mvc.ModelBinding.Binders.TryParseModelBinderProvider.TryParseModelBinderProvider() -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateDisplayMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DisplayMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext! context) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider() -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.SystemTextJsonValidationMetadataProvider.SystemTextJsonValidationMetadataProvider(System.Text.Json.JsonNamingPolicy! namingPolicy) -> void
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.get -> string?
-Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata.ValidationModelName.set -> void
-override Microsoft.AspNetCore.Mvc.ModelBinding.JQueryFormValueProvider.GetValue(string! key) -> Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created() -> Microsoft.AspNetCore.Mvc.CreatedResult!
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string! uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri! uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(string? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Created(System.Uri? uri, object? value) -> Microsoft.AspNetCore.Mvc.CreatedResult!
-virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
-static Microsoft.AspNetCore.Mvc.ControllerBase.Empty.get -> Microsoft.AspNetCore.Mvc.EmptyResult!
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.ModelBinding.DefaultPropertyFilterProvider<TModel>.PropertyIncludeExpressions.get -> System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<TModel!, object!>!>!>?
-virtual Microsoft.AspNetCore.Mvc.ModelBinding.DefaultPropertyFilterProvider<TModel>.PropertyIncludeExpressions.get -> System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<TModel!, object?>!>!>?
-*REMOVED*static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! action, string! controller, object? values, string? scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
-static Microsoft.AspNetCore.Routing.ControllerLinkGeneratorExtensions.GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator! generator, string! action, string! controller, object? values, string! scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) -> string?
+*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
+*REMOVED*virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null) -> Microsoft.AspNetCore.Mvc.ActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail, string? instance, int? statusCode, string? title, string? type) -> Microsoft.AspNetCore.Mvc.ObjectResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail, string? instance, int? statusCode, string? title, string? type, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary) -> Microsoft.AspNetCore.Mvc.ActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ActionResult!

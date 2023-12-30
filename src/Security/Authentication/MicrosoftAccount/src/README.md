@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Authentication.MicrosoftAccount
 
-This project contains an implementation of OAuth2 [Microsoft Account Authentication](https://docs.microsoft.com/aspnet/core/security/authentication/social/microsoft-logins) for ASP.NET Core.
+This project contains an implementation of OAuth2 [Microsoft Account Authentication](https://learn.microsoft.com/aspnet/core/security/authentication/social/microsoft-logins) for ASP.NET Core.
 
 ## Development Setup
 

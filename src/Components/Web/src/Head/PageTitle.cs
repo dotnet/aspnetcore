@@ -21,8 +21,8 @@ public sealed class PageTitle : ComponentBase
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenComponent<SectionContent>(0);
-        builder.AddAttribute(1, nameof(SectionContent.Name), HeadOutlet.TitleSectionOutletName);
-        builder.AddAttribute(2, nameof(SectionContent.ChildContent), (RenderFragment)BuildTitleRenderTree);
+        builder.AddComponentParameter(1, nameof(SectionContent.SectionId), HeadOutlet.TitleSectionId);
+        builder.AddComponentParameter(2, nameof(SectionContent.ChildContent), (RenderFragment)BuildTitleRenderTree);
         builder.CloseComponent();
     }
 

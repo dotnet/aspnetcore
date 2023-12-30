@@ -287,6 +287,18 @@ public class ModelAttributesTest
             attribute => Assert.IsType<ClassValidator>(attribute));
     }
 
+    [Fact]
+    public void GetAttributeForProperty_WithModelType_HandlesMultipleAttributesOnType()
+    {
+        // Arrange
+        var modelType = typeof(InvalidBaseViewModel);
+        var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.RouteValue));
+
+        // Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => ModelAttributes.GetAttributesForProperty(modelType, property));
+        Assert.Equal("Only one ModelMetadataType attribute is permitted per type.", exception.Message);
+    }
+
     [ClassValidator]
     private class BaseModel
     {
@@ -322,7 +334,7 @@ public class ModelAttributesTest
     {
     }
 
-    [ModelMetadataType(typeof(BaseModel))]
+    [ModelMetadataType<BaseModel>]
     private class BaseViewModel
     {
         [Range(0, 10)]
@@ -335,7 +347,11 @@ public class ModelAttributesTest
         public string RouteValue { get; set; }
     }
 
-    [ModelMetadataType(typeof(DerivedModel))]
+    [ModelMetadataType<BaseModel>]
+    [ModelMetadataType(typeof(BaseModel))]
+    private class InvalidBaseViewModel : BaseViewModel { }
+
+    [ModelMetadataType<DerivedModel>]
     private class DerivedViewModel : BaseViewModel
     {
         [StringLength(2)]
@@ -358,7 +374,7 @@ public class ModelAttributesTest
         }
     }
 
-    [ModelMetadataType(typeof(MergedAttributesMetadata))]
+    [ModelMetadataType<MergedAttributesMetadata>]
     private class MergedAttributes
     {
         [Required]

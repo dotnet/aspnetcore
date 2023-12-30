@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
-    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
     <RootNamespace>Microsoft.AspNetCore.Http.Result</RootNamespace>
   </PropertyGroup>
 
@@ -18,7 +18,8 @@
     <Compile Include="$(SharedSourceRoot)RangeHelper\RangeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)RouteValueDictionaryTrimmerWarning.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

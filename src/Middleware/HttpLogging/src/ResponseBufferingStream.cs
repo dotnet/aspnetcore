@@ -4,52 +4,44 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using static Microsoft.AspNetCore.HttpLogging.MediaTypeOptions;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
-/// <summary>
-/// Stream that buffers reads
-/// </summary>
 internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
 {
     private readonly IHttpResponseBodyFeature _innerBodyFeature;
-    private readonly int _limit;
+    private int _limit;
     private PipeWriter? _pipeAdapter;
 
-    private readonly HttpContext _context;
-    private readonly List<MediaTypeState> _encodings;
+    private readonly HttpLoggingInterceptorContext _logContext;
     private readonly HttpLoggingOptions _options;
+    private readonly IHttpLoggingInterceptor[] _interceptors;
+    private bool _logBody;
     private Encoding? _encoding;
 
     private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
     internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
-        int limit,
         ILogger logger,
-        HttpContext context,
-        List<MediaTypeState> encodings,
-        HttpLoggingOptions options)
+        HttpLoggingInterceptorContext logContext,
+        HttpLoggingOptions options,
+        IHttpLoggingInterceptor[] interceptors)
         : base(innerBodyFeature.Stream, logger)
     {
         _innerBodyFeature = innerBodyFeature;
         _innerStream = innerBodyFeature.Stream;
-        _limit = limit;
-        _context = context;
-        _encodings = encodings;
+        _logContext = logContext;
         _options = options;
+        _interceptors = interceptors;
     }
 
-    public bool FirstWrite { get; private set; }
+    public bool HeadersWritten { get; private set; }
 
     public Stream Stream => this;
 
     public PipeWriter Writer => _pipeAdapter ??= PipeWriter.Create(Stream, _pipeWriterOptions);
-
-    public Encoding? Encoding { get => _encoding; }
 
     public override void Write(byte[] buffer, int offset, int count)
     {
@@ -68,24 +60,8 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     public override void Write(ReadOnlySpan<byte> span)
     {
-        var remaining = _limit - _bytesBuffered;
-        var innerCount = Math.Min(remaining, span.Length);
-
-        OnFirstWrite();
-
-        if (innerCount > 0)
-        {
-            if (span.Slice(0, innerCount).TryCopyTo(_tailMemory.Span))
-            {
-                _tailBytesBuffered += innerCount;
-                _bytesBuffered += innerCount;
-                _tailMemory = _tailMemory.Slice(innerCount);
-            }
-            else
-            {
-                BuffersExtensions.Write(this, span.Slice(0, innerCount));
-            }
-        }
+        OnFirstWriteSync();
+        CommonWrite(span);
 
         _innerStream.Write(span);
     }
@@ -97,39 +73,71 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
+        await OnFirstWriteAsync();
+        CommonWrite(buffer.Span);
+
+        await _innerStream.WriteAsync(buffer, cancellationToken);
+    }
+
+    private void CommonWrite(ReadOnlySpan<byte> span)
+    {
         var remaining = _limit - _bytesBuffered;
-        var innerCount = Math.Min(remaining, buffer.Length);
+        var innerCount = Math.Min(remaining, span.Length);
 
-        OnFirstWrite();
-
-        if (innerCount > 0)
+        if (_logBody && innerCount > 0)
         {
-            if (_tailMemory.Length - innerCount > 0)
+            var slice = span.Slice(0, innerCount);
+            if (slice.TryCopyTo(_tailMemory.Span))
             {
-                buffer.Slice(0, innerCount).CopyTo(_tailMemory);
                 _tailBytesBuffered += innerCount;
                 _bytesBuffered += innerCount;
                 _tailMemory = _tailMemory.Slice(innerCount);
             }
             else
             {
-                BuffersExtensions.Write(this, buffer.Span);
+                BuffersExtensions.Write(this, slice);
+            }
+        }
+    }
+
+    private void OnFirstWriteSync()
+    {
+        if (!HeadersWritten)
+        {
+            // Log headers as first write occurs (headers locked now)
+            HttpLoggingMiddleware.LogResponseHeadersSync(_logContext, _options, _interceptors, _logger);
+            OnFirstWriteCore();
+        }
+    }
+
+    private async ValueTask OnFirstWriteAsync()
+    {
+        if (!HeadersWritten)
+        {
+            // Log headers as first write occurs (headers locked now)
+            await HttpLoggingMiddleware.LogResponseHeadersAsync(_logContext, _options, _interceptors, _logger);
+            OnFirstWriteCore();
+        }
+    }
+
+    private void OnFirstWriteCore()
+    {
+        // The callback in LogResponseHeaders could disable body logging or adjust limits.
+        if (_logContext.LoggingFields.HasFlag(HttpLoggingFields.ResponseBody) && _logContext.ResponseBodyLogLimit > 0)
+        {
+            if (MediaTypeHelpers.TryGetEncodingForMediaType(_logContext.HttpContext.Response.ContentType,
+                _options.MediaTypeOptions.MediaTypeStates, out _encoding))
+            {
+                _logBody = true;
+                _limit = _logContext.ResponseBodyLogLimit;
+            }
+            else
+            {
+                _logger.UnrecognizedMediaType("response");
             }
         }
 
-        await _innerStream.WriteAsync(buffer, cancellationToken);
-    }
-
-    private void OnFirstWrite()
-    {
-        if (!FirstWrite)
-        {
-            // Log headers as first write occurs (headers locked now)
-            HttpLoggingMiddleware.LogResponseHeaders(_context.Response, _options, _logger);
-
-            MediaTypeHelpers.TryGetEncodingForMediaType(_context.Response.ContentType, _encodings, out _encoding);
-            FirstWrite = true;
-        }
+        HeadersWritten = true;
     }
 
     public void DisableBuffering()
@@ -137,32 +145,50 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         _innerBodyFeature.DisableBuffering();
     }
 
-    public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+    public async Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
     {
-        OnFirstWrite();
-        return _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
+        await OnFirstWriteAsync();
+        await _innerBodyFeature.SendFileAsync(path, offset, count, cancellation);
     }
 
-    public Task StartAsync(CancellationToken token = default)
+    public async Task StartAsync(CancellationToken token = default)
     {
-        OnFirstWrite();
-        return _innerBodyFeature.StartAsync(token);
+        await OnFirstWriteAsync();
+        await _innerBodyFeature.StartAsync(token);
     }
 
     public async Task CompleteAsync()
     {
+        await OnFirstWriteAsync();
         await _innerBodyFeature.CompleteAsync();
     }
 
     public override void Flush()
     {
-        OnFirstWrite();
+        OnFirstWriteSync();
         base.Flush();
     }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
+    public override async Task FlushAsync(CancellationToken cancellationToken)
     {
-        OnFirstWrite();
-        return base.FlushAsync(cancellationToken);
+        await OnFirstWriteAsync();
+        await base.FlushAsync(cancellationToken);
+    }
+
+    public void LogResponseBody()
+    {
+        if (_logBody)
+        {
+            var responseBody = GetString(_encoding!);
+            _logger.ResponseBody(responseBody);
+        }
+    }
+
+    public void LogResponseBody(HttpLoggingInterceptorContext logContext)
+    {
+        if (_logBody)
+        {
+            logContext.AddParameter("ResponseBody", GetString(_encoding!));
+        }
     }
 }

@@ -28,9 +28,6 @@ public class HttpOptionsAttribute : HttpMethodAttribute
     public HttpOptionsAttribute([StringSyntax("Route")] string template)
         : base(_supportedMethods, template)
     {
-        if (template == null)
-        {
-            throw new ArgumentNullException(nameof(template));
-        }
+        ArgumentNullException.ThrowIfNull(template);
     }
 }

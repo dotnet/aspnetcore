@@ -6,6 +6,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);CA2200</NoWarn>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />

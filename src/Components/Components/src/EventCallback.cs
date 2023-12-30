@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -69,4 +71,14 @@ public readonly struct EventCallback : IEventCallback
     {
         return RequiresExplicitReceiver ? (object)this : Delegate;
     }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => HashCode.Combine(RuntimeHelpers.GetHashCode(Receiver), RuntimeHelpers.GetHashCode(Delegate));
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is EventCallback other
+        && ReferenceEquals(Receiver, other.Receiver)
+        && ReferenceEquals(Delegate, other.Delegate);
 }

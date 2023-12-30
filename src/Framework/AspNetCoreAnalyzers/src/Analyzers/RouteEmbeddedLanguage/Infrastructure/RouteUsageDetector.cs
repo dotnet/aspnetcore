@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 internal enum RouteUsageType
 {
     Other,
@@ -22,17 +24,20 @@ internal enum RouteUsageType
     Component
 }
 
-internal record struct ParameterSymbol(ISymbol Symbol, ISymbol? TopLevelSymbol = null)
+// RouteParameterName can be different from parameter name using FromRouteAttribute. e.g. [FromRoute(Name = "custom_name")]
+internal record struct ParameterSymbol(string RouteParameterName, ISymbol Symbol, ISymbol? TopLevelSymbol = null)
 {
     public bool IsNested => TopLevelSymbol != null;
 }
 
 internal readonly record struct RouteUsageContext(
+    SyntaxToken RouteToken,
     IMethodSymbol? MethodSymbol,
     SyntaxNode? MethodSyntax,
     RouteUsageType UsageType,
     ImmutableArray<ISymbol> Parameters,
-    ImmutableArray<ParameterSymbol> ResolvedParameters)
+    ImmutableArray<ParameterSymbol> ResolvedParameters,
+    ImmutableArray<string> HttpMethods)
 {
     public RoutePatternOptions RoutePatternOptions => UsageType switch
     {
@@ -54,11 +59,13 @@ internal static class RouteUsageDetector
         if (routeOptions == RouteOptions.Component)
         {
             return new(
+                RouteToken: token,
                 MethodSymbol: null,
                 MethodSyntax: null,
                 UsageType: RouteUsageType.Component,
                 Parameters: ImmutableArray<ISymbol>.Empty,
-                ResolvedParameters: ImmutableArray<ParameterSymbol>.Empty);
+                ResolvedParameters: ImmutableArray<ParameterSymbol>.Empty,
+                HttpMethods: default);
         }
 
         if (token.Parent is not LiteralExpressionSyntax)
@@ -91,11 +98,13 @@ internal static class RouteUsageDetector
             var parameterSymbols = RoutePatternParametersDetector.GetParameterSymbols(mapMethodSymbol);
             var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(mapMethodSymbol, wellKnownTypes);
             return new(
+                RouteToken: token,
                 MethodSymbol: mapMethodSymbol,
                 MethodSyntax: mapMethodParts.Value.DelegateExpression,
                 UsageType: RouteUsageType.MinimalApi,
                 Parameters: parameterSymbols,
-                ResolvedParameters: resolvedParameterSymbols);
+                ResolvedParameters: resolvedParameterSymbols,
+                HttpMethods: CalculateHttpMethods(wellKnownTypes, mapMethodParts.Value.Method));
         }
         else if (container.Parent.IsKind(SyntaxKind.AttributeArgument))
         {
@@ -113,24 +122,67 @@ internal static class RouteUsageDetector
 
                 var parameterSymbols = RoutePatternParametersDetector.GetParameterSymbols(actionMethodSymbol);
                 var resolvedParameterSymbols = RoutePatternParametersDetector.ResolvedParameters(actionMethodSymbol, wellKnownTypes);
+
+                // TODO: Find HttpMethods for MVC actions.
                 return new(
+                    RouteToken: token,
                     MethodSymbol: actionMethodSymbol,
                     MethodSyntax: methodDeclarationSyntax,
                     UsageType: RouteUsageType.MvcAction,
                     Parameters: parameterSymbols,
-                    ResolvedParameters: resolvedParameterSymbols);
+                    ResolvedParameters: resolvedParameterSymbols,
+                    HttpMethods: default);
             }
             else if (attributeParent is ClassDeclarationSyntax classDeclarationSyntax)
             {
                 var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax, cancellationToken);
                 var usageType = MvcDetector.IsController(classSymbol, wellKnownTypes) ? RouteUsageType.MvcController : RouteUsageType.Other;
                 return new(
+                    RouteToken: token,
                     MethodSymbol: null,
                     MethodSyntax: null,
                     UsageType: usageType,
                     Parameters: ImmutableArray<ISymbol>.Empty,
-                    ResolvedParameters: ImmutableArray<ParameterSymbol>.Empty);
+                    ResolvedParameters: ImmutableArray<ParameterSymbol>.Empty,
+                    HttpMethods: default);
             }
+        }
+
+        return default;
+    }
+
+    private static ImmutableArray<string> CalculateHttpMethods(WellKnownTypes wellKnownTypes, IMethodSymbol mapMethodSymbol)
+    {
+        if (SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Builder_EndpointRouteBuilderExtensions), mapMethodSymbol.ContainingType))
+        {
+            var httpMethodsBuilder = ImmutableArray.CreateBuilder<string>();
+            // TODO: Support MapMethods.
+            switch (mapMethodSymbol.Name)
+            {
+                case "MapGet":
+                    httpMethodsBuilder.Add("GET");
+                    break;
+                case "MapPost":
+                    httpMethodsBuilder.Add("POST");
+                    break;
+                case "MapPut":
+                    httpMethodsBuilder.Add("PUT");
+                    break;
+                case "MapDelete":
+                    httpMethodsBuilder.Add("DELETE");
+                    break;
+                case "MapPatch":
+                    httpMethodsBuilder.Add("PATCH");
+                    break;
+                case "Map":
+                    // No HTTP methods.
+                    break;
+                default:
+                    // Unknown/unsupported method.
+                    return default;
+            }
+
+            return httpMethodsBuilder.ToImmutable();
         }
 
         return default;

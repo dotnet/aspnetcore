@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 
 /// <summary>
-/// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/>
-/// which requires the current user must be authenticated.
+/// Implements an <see cref="IAuthorizationHandler"/> and <see cref="IAuthorizationRequirement"/> which requires the current user must be authenticated.
+/// This calls <see cref="AuthorizationHandlerContext.Succeed(IAuthorizationRequirement)"/> for authenticated users. Like all built-in requirements,
+/// it never calls <see cref="AuthorizationHandlerContext.Fail()"/>. The <see cref="DefaultAuthorizationEvaluator"/> produces a failed <see cref="AuthorizationResult" /> 
+/// when any requirement has not succeeded even if other requirements have succeeded, and no requirement has explicitly failed.
 /// </summary>
 public class DenyAnonymousAuthorizationRequirement : AuthorizationHandler<DenyAnonymousAuthorizationRequirement>, IAuthorizationRequirement
 {

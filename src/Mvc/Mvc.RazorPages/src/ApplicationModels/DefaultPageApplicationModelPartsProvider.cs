@@ -32,10 +32,7 @@ internal sealed class DefaultPageApplicationModelPartsProvider : IPageApplicatio
     /// <returns>The <see cref="PageHandlerModel"/>.</returns>
     public PageHandlerModel? CreateHandlerModel(MethodInfo method)
     {
-        if (method == null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
+        ArgumentNullException.ThrowIfNull(method);
 
         if (!IsHandler(method))
         {
@@ -77,10 +74,7 @@ internal sealed class DefaultPageApplicationModelPartsProvider : IPageApplicatio
     /// <returns>The <see cref="PageParameterModel"/>.</returns>
     public PageParameterModel CreateParameterModel(ParameterInfo parameter)
     {
-        if (parameter == null)
-        {
-            throw new ArgumentNullException(nameof(parameter));
-        }
+        ArgumentNullException.ThrowIfNull(parameter);
 
         var attributes = parameter.GetCustomAttributes(inherit: true);
 
@@ -109,10 +103,7 @@ internal sealed class DefaultPageApplicationModelPartsProvider : IPageApplicatio
     /// <returns>The <see cref="PagePropertyModel"/>.</returns>
     public PagePropertyModel CreatePropertyModel(PropertyInfo property)
     {
-        if (property == null)
-        {
-            throw new ArgumentNullException(nameof(property));
-        }
+        ArgumentNullException.ThrowIfNull(property);
 
         var propertyAttributes = property.GetCustomAttributes(inherit: true);
 

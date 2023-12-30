@@ -51,6 +51,6 @@ public sealed class Conflict : IResult, IEndpointMetadataProvider, IStatusCodeHt
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status409Conflict));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status409Conflict, typeof(void)));
     }
 }

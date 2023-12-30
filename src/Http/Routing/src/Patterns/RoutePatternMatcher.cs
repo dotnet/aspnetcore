@@ -4,7 +4,11 @@
 #nullable disable
 
 using System.Diagnostics;
+#if !COMPONENTS
 using Microsoft.AspNetCore.Http;
+#else
+using Microsoft.AspNetCore.Components.Routing;
+#endif
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Primitives;
 
@@ -20,10 +24,7 @@ internal sealed class RoutePatternMatcher
         RoutePattern pattern,
         RouteValueDictionary defaults)
     {
-        if (pattern == null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern);
 
         RoutePattern = pattern;
         Defaults = defaults ?? new RouteValueDictionary();
@@ -61,10 +62,7 @@ internal sealed class RoutePatternMatcher
 
     public bool TryMatch(PathString path, RouteValueDictionary values)
     {
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(values);
 
         var i = 0;
         var pathTokenizer = new PathTokenizer(path);

@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>PhotinoTestApp</title>
-    <base href="/" />
+    <base href="/subdir/" />
     <link href="css/app.css" rel="stylesheet" />
 
     <!-- Used by ExternalContentPackage -->
@@ -22,8 +22,8 @@
     <!-- Explicit display:none required so StartupErrorNotificationTest can observe it change -->
     <div id="blazor-error-ui" style="display: none;">
         An unhandled error has occurred.
-        <a href class='reload'>Reload</a>
-        <a class='dismiss' style="cursor: pointer;">🗙</a>
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
     </div>
 
     <!-- Used for specific test cases -->

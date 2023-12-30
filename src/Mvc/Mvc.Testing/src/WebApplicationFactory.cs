@@ -505,10 +505,7 @@ public class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable 
     /// <param name="client">The <see cref="HttpClient"/> instance getting configured.</param>
     protected virtual void ConfigureClient(HttpClient client)
     {
-        if (client == null)
-        {
-            throw new ArgumentNullException(nameof(client));
-        }
+        ArgumentNullException.ThrowIfNull(client);
 
         client.BaseAddress = new Uri("http://localhost");
     }

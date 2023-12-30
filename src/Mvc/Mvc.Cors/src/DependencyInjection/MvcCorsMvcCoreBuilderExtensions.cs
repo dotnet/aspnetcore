@@ -20,10 +20,7 @@ public static class MvcCorsMvcCoreBuilderExtensions
     /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
     public static IMvcCoreBuilder AddCors(this IMvcCoreBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         AddCorsServices(builder.Services);
         return builder;
@@ -39,15 +36,8 @@ public static class MvcCorsMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<CorsOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         AddCorsServices(builder.Services);
         builder.Services.Configure(setupAction);
@@ -65,15 +55,8 @@ public static class MvcCorsMvcCoreBuilderExtensions
         this IMvcCoreBuilder builder,
         Action<CorsOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;

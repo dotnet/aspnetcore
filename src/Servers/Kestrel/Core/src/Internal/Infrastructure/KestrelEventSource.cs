@@ -55,10 +55,10 @@ internal sealed class KestrelEventSource : EventSource
     [NonEvent]
     public void ConnectionStart(BaseConnectionContext connection)
     {
-        // avoid allocating strings unless this event source is enabled
         Interlocked.Increment(ref _totalConnections);
         Interlocked.Increment(ref _currentConnections);
 
+        // avoid allocating strings unless this event source is enabled
         if (IsEnabled(EventLevel.Informational, EventKeywords.None))
         {
             ConnectionStart(

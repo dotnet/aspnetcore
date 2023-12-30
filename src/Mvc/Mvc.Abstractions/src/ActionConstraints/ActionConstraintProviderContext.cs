@@ -22,20 +22,9 @@ public class ActionConstraintProviderContext
         ActionDescriptor action,
         IList<ActionConstraintItem> items)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
-
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(items);
 
         HttpContext = context;
         Action = action;

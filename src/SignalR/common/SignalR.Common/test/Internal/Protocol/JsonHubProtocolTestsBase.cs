@@ -89,6 +89,10 @@ public abstract class JsonHubProtocolTestsBase
             new JsonProtocolTestData("CloseMessage_HasAllowReconnect", new CloseMessage(error: null, allowReconnect: true), true, true, "{\"type\":7,\"allowReconnect\":true}"),
             new JsonProtocolTestData("CloseMessage_HasErrorAndAllowReconnect", new CloseMessage("Error!", allowReconnect: true), true, true, "{\"type\":7,\"error\":\"Error!\",\"allowReconnect\":true}"),
 
+            new JsonProtocolTestData("AckMessage", new AckMessage(102020), true, true, "{\"type\":8,\"sequenceId\":102020}"),
+
+            new JsonProtocolTestData("SequenceMessage", new SequenceMessage(98764321), true, true, "{\"type\":9,\"sequenceId\":98764321}"),
+
         }.ToDictionary(t => t.Name);
 
     public static IEnumerable<object[]> ProtocolTestDataNames => ProtocolTestData.Keys.Select(name => new object[] { name });
@@ -179,6 +183,10 @@ public abstract class JsonHubProtocolTestsBase
     [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":{}}", "Expected 'arguments' to be of type Array.")]
 
     [InlineData("{\"type\":3,\"invocationId\":\"42\",\"error\":\"foo\",\"result\":true}", "The 'error' and 'result' properties are mutually exclusive.")]
+
+    [InlineData("{\"type\":8}", "Missing required property 'sequenceId'.")]
+
+    [InlineData("{\"type\":9}", "Missing required property 'sequenceId'.")]
     public void InvalidMessages(string input, string expectedMessage)
     {
         input = Frame(input);

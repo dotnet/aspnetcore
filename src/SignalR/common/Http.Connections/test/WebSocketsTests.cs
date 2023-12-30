@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -31,7 +31,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger("HttpConnectionContext1"), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair, loggerName: "HttpConnectionContext1");
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -78,7 +78,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger("HttpConnectionContext1"), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair, loggerName: "HttpConnectionContext1");
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -108,13 +108,19 @@ public class WebSocketsTests : VerifiableLoggedTest
         }
     }
 
+    private HttpConnectionContext CreateHttpConnectionContext(DuplexPipe.DuplexPipePair pair, string loggerName = null)
+    {
+        return new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(loggerName ?? nameof(HttpConnectionContext)),
+            metricsContext: default, pair.Transport, pair.Application, new(), useStatefulReconnect: false);
+    }
+
     [Fact]
     public async Task TransportCommunicatesErrorToApplicationWhenClientDisconnectsAbnormally()
     {
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger("HttpConnectionContext1"), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair, loggerName: "HttpConnectionContext1");
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -166,7 +172,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -197,7 +203,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -231,7 +237,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -265,7 +271,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -304,7 +310,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {
@@ -346,7 +352,7 @@ public class WebSocketsTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(nameof(HttpConnectionContext)), pair.Transport, pair.Application, new());
+            var connection = CreateHttpConnectionContext(pair);
 
             using (var feature = new TestWebSocketConnectionFeature())
             {

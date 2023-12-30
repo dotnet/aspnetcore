@@ -37,4 +37,8 @@
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Quic.FunctionalTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests" />
+  </ItemGroup>
 </Project>

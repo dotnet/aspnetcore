@@ -22,7 +22,7 @@ public:
 
     static
     HRESULT
-    EnsureDirectoryPathExist(
+    EnsureDirectoryPathExists(
         _In_  LPCWSTR pszPath
     );
 
@@ -40,7 +40,7 @@ private:
     HRESULT
     IsPathUnc(
         __in  LPCWSTR       pszPath,
-        __out BOOL *        pfIsUnc
+        __out bool *        pfIsUnc
     );
 };
 

@@ -1,16 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +23,72 @@ namespace Interop.FunctionalTests.Http2;
 [Collection(nameof(NoParallelCollection))]
 public class Http2RequestTests : LoggedTest
 {
+    [Fact]
+    public async Task GET_Metrics_HttpProtocolAndTlsSet()
+    {
+        // Arrange
+        var protocolTcs = new TaskCompletionSource<SslProtocols>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var builder = CreateHostBuilder(
+            c =>
+            {
+                protocolTcs.SetResult(c.Features.Get<ISslStreamFeature>().SslStream.SslProtocol);
+                return Task.CompletedTask;
+            },
+            configureKestrel: o =>
+            {
+                // Test IPv6 endpoint with metrics.
+                o.Listen(IPAddress.IPv6Loopback, 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(TestResources.GetTestCertificate(), https =>
+                    {
+                        https.SslProtocols = SslProtocols.Tls12;
+                    });
+                });
+            });
+
+        using (var host = builder.Build())
+        {
+            var meterFactory = host.Services.GetRequiredService<IMeterFactory>();
+
+            using var connectionDuration = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+            await host.StartAsync();
+            var client = HttpHelpers.CreateClient();
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://[::1]:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version20;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+
+            var protocol = await protocolTcs.Task.DefaultTimeout();
+
+            // Dispose the client to end the connection.
+            client.Dispose();
+            // Wait for measurement to be available.
+            await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+            // Assert
+            Assert.Collection(connectionDuration.GetMeasurementSnapshot(),
+                m =>
+                {
+                    Assert.True(m.Value > 0);
+                    Assert.Equal("http", (string)m.Tags["network.protocol.name"]);
+                    Assert.Equal("2", (string)m.Tags["network.protocol.version"]);
+                    Assert.Equal("tcp", (string)m.Tags["network.transport"]);
+                    Assert.Equal("ipv6", (string)m.Tags["network.type"]);
+                    Assert.Equal("::1", (string)m.Tags["server.address"]);
+                    Assert.Equal(host.GetPort(), (int)m.Tags["server.port"]);
+                    Assert.Equal("1.2", (string)m.Tags["tls.protocol.version"]);
+                });
+
+            await host.StopAsync();
+        }
+    }
+
     [Fact]
     public async Task GET_NoTLS_Http11RequestToHttp2Endpoint_400Result()
     {
@@ -115,6 +185,7 @@ public class Http2RequestTests : LoggedTest
     private static async Task<(byte[], HttpResponseHeaders)> StartLongRunningRequestAsync(ILogger logger, IHost host, HttpMessageInvoker client)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:{host.GetPort()}/");
+        request.Headers.Host = "localhost2";
         request.Version = HttpVersion.Version20;
         request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 

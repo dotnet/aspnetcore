@@ -1,2 +1,2 @@
 #nullable enable
-Microsoft.AspNetCore.HttpLogging.W3CLoggerOptions.AdditionalRequestHeaders.get -> System.Collections.Generic.ISet<string!>!
+static Microsoft.Extensions.DependencyInjection.HttpLoggingServicesExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

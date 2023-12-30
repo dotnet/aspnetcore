@@ -7,7 +7,7 @@
                                                     SuppressDowngradeFailure="yes"
                                                     SuppressOptionsUI="yes"
                                                     ThemeFile="thm.xml"
-                                                    LocalizationFile="thm.wxl"/>
+                                                    LocalizationFile="1033\thm.wxl"/>
             <PayloadGroupRef Id="PG_Resources"/>
         </BootstrapperApplicationRef>
 

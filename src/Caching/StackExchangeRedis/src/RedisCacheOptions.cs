@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using StackExchange.Redis.Configuration;
 using StackExchange.Redis.Profiling;
 
 namespace Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -44,5 +45,32 @@ public class RedisCacheOptions : IOptions<RedisCacheOptions>
     RedisCacheOptions IOptions<RedisCacheOptions>.Value
     {
         get { return this; }
+    }
+
+    private bool? _useForceReconnect;
+    internal bool UseForceReconnect
+    {
+        get
+        {
+            return _useForceReconnect ??= GetDefaultValue();
+            static bool GetDefaultValue() =>
+                AppContext.TryGetSwitch("Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect", out var value) && value;
+        }
+        set => _useForceReconnect = value;
+    }
+
+    internal ConfigurationOptions GetConfiguredOptions(string libSuffix)
+    {
+        var options = ConfigurationOptions?.Clone() ?? ConfigurationOptions.Parse(Configuration!);
+
+        // we don't want an initially unavailable server to prevent DI creating the service itself
+        options.AbortOnConnectFail = false;
+
+        if (!string.IsNullOrWhiteSpace(libSuffix))
+        {
+            var provider = DefaultOptionsProvider.GetProvider(options.EndPoints);
+            options.LibraryName = $"{provider.LibraryName} {libSuffix}";
+        }
+        return options;
     }
 }

@@ -5,13 +5,14 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class NewHandlerTests : IISFunctionalTestBase
 {
     public NewHandlerTests(PublishedSitesFixture fixture) : base(fixture)

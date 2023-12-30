@@ -1,12 +1,11 @@
 # Identity
 
-ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user. You can find additional information in the [ASP.NET Core Documentation](https://docs.microsoft.com/aspnet/core/security/authentication/identity).
+ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user. You can find additional information in the [ASP.NET Core Documentation](https://learn.microsoft.com/aspnet/core/security/authentication/identity).
 
 ## Description
 
 The following contains a description of each sub-directory in the `Identity` directory.
 
-* `ApiAuthorization.IdentityServer`: Contains IdentityServer based support for API Authorization.
 * `Core`: Contains the main abstractions and types for providing support for Identity in ASP.NET Core applications.
 * `EntityFrameworkCore`: Contains implementations for Identity stores based on EntityFrameworkCore.
 * `Extensions.Core`: Contains the abstractions and types for general Identity concerns.

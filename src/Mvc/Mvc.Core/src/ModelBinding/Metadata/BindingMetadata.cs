@@ -87,10 +87,7 @@ public class BindingMetadata
         get => _messageProvider;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _messageProvider = value;
         }

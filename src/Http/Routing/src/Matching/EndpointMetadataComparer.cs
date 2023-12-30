@@ -23,10 +23,7 @@ public sealed class EndpointMetadataComparer : IComparer<Endpoint>
     // using IServiceProvider to break the cycle.
     internal EndpointMetadataComparer(IServiceProvider services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         _services = services;
     }
@@ -50,15 +47,8 @@ public sealed class EndpointMetadataComparer : IComparer<Endpoint>
 
     int IComparer<Endpoint>.Compare(Endpoint? x, Endpoint? y)
     {
-        if (x == null)
-        {
-            throw new ArgumentNullException(nameof(x));
-        }
-
-        if (y == null)
-        {
-            throw new ArgumentNullException(nameof(y));
-        }
+        ArgumentNullException.ThrowIfNull(x);
+        ArgumentNullException.ThrowIfNull(y);
 
         var comparers = Comparers;
         for (var i = 0; i < comparers.Length; i++)
@@ -103,15 +93,8 @@ public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> 
     /// </returns>
     public int Compare(Endpoint? x, Endpoint? y)
     {
-        if (x == null)
-        {
-            throw new ArgumentNullException(nameof(x));
-        }
-
-        if (y == null)
-        {
-            throw new ArgumentNullException(nameof(y));
-        }
+        ArgumentNullException.ThrowIfNull(x);
+        ArgumentNullException.ThrowIfNull(y);
 
         return CompareMetadata(GetMetadata(x), GetMetadata(y));
     }

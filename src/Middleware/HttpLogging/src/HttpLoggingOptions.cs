@@ -17,7 +17,7 @@ public sealed class HttpLoggingOptions
 
     /// <summary>
     /// Request header values that are allowed to be logged.
-    /// <p>
+    /// <para>
     /// If a request header is not present in the <see cref="RequestHeaders"/>,
     /// the header name will be logged with a redacted value.
     /// Request headers can contain authentication tokens,
@@ -25,7 +25,7 @@ public sealed class HttpLoggingOptions
     /// under GDPR and other laws. Arbitrary request headers
     /// should not be logged unless logs are secure and
     /// access controlled and the privacy impact assessed.
-    /// </p>
+    /// </para>
     /// </summary>
     public ISet<string> RequestHeaders => _internalRequestHeaders;
 
@@ -61,14 +61,14 @@ public sealed class HttpLoggingOptions
 
     /// <summary>
     /// Response header values that are allowed to be logged.
-    /// <p>
+    /// <para>
     /// If a response header is not present in the <see cref="ResponseHeaders"/>,
     /// the header name will be logged with a redacted value.
-    /// </p>
+    /// </para>
     /// </summary>
     public ISet<string> ResponseHeaders => _internalResponseHeaders;
 
-    internal HashSet<string> _internalResponseHeaders = new HashSet<string>(20, StringComparer.OrdinalIgnoreCase)
+    internal HashSet<string> _internalResponseHeaders = new HashSet<string>(19, StringComparer.OrdinalIgnoreCase)
         {
             HeaderNames.AcceptRanges,
             HeaderNames.Age,
@@ -93,10 +93,10 @@ public sealed class HttpLoggingOptions
 
     /// <summary>
     /// Options for configuring encodings for a specific media type.
-    /// <p>
+    /// <para>
     /// If the request or response do not match the supported media type,
     /// the response body will not be logged.
-    /// </p>
+    /// </para>
     /// </summary>
     public MediaTypeOptions MediaTypeOptions { get; } = MediaTypeOptions.BuildDefaultMediaTypeOptions();
 
@@ -109,4 +109,10 @@ public sealed class HttpLoggingOptions
     /// Maximum response body size to log (in bytes). Defaults to 32 KB.
     /// </summary>
     public int ResponseBodyLogLimit { get; set; } = 32 * 1024;
+
+    /// <summary>
+    /// Gets or sets if the middleware will combine the request, request body, response, response body,
+    /// and duration logs into a single log entry. The default is <see langword="false"/>.
+    /// </summary>
+    public bool CombineLogs { get; set; }
 }

@@ -5,6 +5,8 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -20,6 +22,8 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     public SystemTextJsonOutputFormatter(JsonSerializerOptions jsonSerializerOptions)
     {
         SerializerOptions = jsonSerializerOptions;
+
+        jsonSerializerOptions.MakeReadOnly();
 
         SupportedEncodings.Add(Encoding.UTF8);
         SupportedEncodings.Add(Encoding.Unicode);
@@ -56,30 +60,43 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
     /// <inheritdoc />
     public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (selectedEncoding == null)
-        {
-            throw new ArgumentNullException(nameof(selectedEncoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var httpContext = context.HttpContext;
 
         // context.ObjectType reflects the declared model type when specified.
         // For polymorphic scenarios where the user declares a return type, but returns a derived type,
         // we want to serialize all the properties on the derived type. This keeps parity with
-        // the behavior you get when the user does not declare the return type and with Json.Net at least at the top level.
-        var objectType = context.Object?.GetType() ?? context.ObjectType ?? typeof(object);
+        // the behavior you get when the user does not declare the return type.
+        // To enable this our best option is to check if the JsonTypeInfo for the declared type is valid,
+        // if it is use it. If it isn't, serialize the value as 'object' and let JsonSerializer serialize it as necessary.
+        JsonTypeInfo? jsonTypeInfo = null;
+        if (context.ObjectType is not null)
+        {
+            var declaredTypeJsonInfo = SerializerOptions.GetTypeInfo(context.ObjectType);
+
+            var runtimeType = context.Object?.GetType();
+            if (declaredTypeJsonInfo.ShouldUseWith(runtimeType))
+            {
+                jsonTypeInfo = declaredTypeJsonInfo;
+            }
+        }
 
         var responseStream = httpContext.Response.Body;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(responseStream, context.Object, objectType, SerializerOptions, httpContext.RequestAborted);
+                if (jsonTypeInfo is not null)
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, context.Object, jsonTypeInfo, httpContext.RequestAborted);
+                }
+                else
+                {
+                    await JsonSerializer.SerializeAsync(responseStream, context.Object, SerializerOptions, httpContext.RequestAborted);
+                }
+
                 await responseStream.FlushAsync(httpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
@@ -93,7 +110,15 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             ExceptionDispatchInfo? exceptionDispatchInfo = null;
             try
             {
-                await JsonSerializer.SerializeAsync(transcodingStream, context.Object, objectType, SerializerOptions);
+                if (jsonTypeInfo is not null)
+                {
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, jsonTypeInfo);
+                }
+                else
+                {
+                    await JsonSerializer.SerializeAsync(transcodingStream, context.Object, SerializerOptions);
+                }
+
                 await transcodingStream.FlushAsync();
             }
             catch (Exception ex)

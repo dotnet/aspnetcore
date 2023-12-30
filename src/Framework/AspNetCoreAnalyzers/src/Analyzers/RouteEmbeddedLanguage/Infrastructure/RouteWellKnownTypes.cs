@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 
+using WellKnownType = WellKnownTypeData.WellKnownType;
+
 internal static class RouteWellKnownTypes
 {
     // Cache well known type keys rather than symbol instances.

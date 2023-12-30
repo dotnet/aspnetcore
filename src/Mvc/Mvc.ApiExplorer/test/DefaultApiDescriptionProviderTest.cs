@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -525,7 +526,7 @@ public class DefaultApiDescriptionProviderTest
     {
         // Arrange
         var action = CreateActionDescriptor(methodName);
-        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(200, typeof(Product)) };
 
         // Act
         var descriptions = GetApiDescriptions(action);
@@ -544,7 +545,7 @@ public class DefaultApiDescriptionProviderTest
     {
         // Arrange
         var action = CreateActionDescriptor(methodName);
-        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(typeof(Product), 200) };
+        action.EndpointMetadata = new List<object>() { new ProducesResponseTypeMetadata(200, typeof(Product)) };
         action.FilterDescriptors = new List<FilterDescriptor>{
             new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(Customer), 200), FilterScope.Action)
         };
@@ -2456,7 +2457,7 @@ public class DefaultApiDescriptionProviderTest
     }
 
     // This will show up as source = unknown
-    private void AcceptsProduct_Custom([ModelBinder(BinderType = typeof(BodyModelBinder))] Product product)
+    private void AcceptsProduct_Custom([ModelBinder<BodyModelBinder>] Product product)
     {
     }
 
@@ -2472,7 +2473,7 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
-    private void AcceptsFormatters_Services([FromServices] ITestService tempDataProvider)
+    private void AcceptsFormatters_Services([FromServices] ITestService tempDataProvider, [FromKeyedServices("foo")] ITestService keyedTempDataProvider)
     {
     }
 
@@ -2556,7 +2557,7 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
-    private void FromCustom([ModelBinder(typeof(BodyModelBinder))] int id)
+    private void FromCustom([ModelBinder<BodyModelBinder>] int id)
     {
     }
 

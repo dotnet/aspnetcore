@@ -20,10 +20,7 @@ public class ContentViewComponentResult : IViewComponentResult
     /// <param name="content">Content to write. The content will be HTML encoded when written.</param>
     public ContentViewComponentResult(string content)
     {
-        if (content == null)
-        {
-            throw new ArgumentNullException(nameof(content));
-        }
+        ArgumentNullException.ThrowIfNull(content);
 
         Content = content;
     }
@@ -39,10 +36,7 @@ public class ContentViewComponentResult : IViewComponentResult
     /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
     public void Execute(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.HtmlEncoder.Encode(context.Writer, Content);
     }

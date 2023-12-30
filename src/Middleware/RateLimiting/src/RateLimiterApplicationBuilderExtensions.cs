@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Resources = Microsoft.AspNetCore.RateLimiting.Resources;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -20,6 +22,8 @@ public static class RateLimiterApplicationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
+        VerifyServicesAreRegistered(app);
+
         return app.UseMiddleware<RateLimitingMiddleware>();
     }
 
@@ -34,6 +38,19 @@ public static class RateLimiterApplicationBuilderExtensions
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(options);
 
+        VerifyServicesAreRegistered(app);
+
         return app.UseMiddleware<RateLimitingMiddleware>(Options.Create(options));
+    }
+
+    private static void VerifyServicesAreRegistered(IApplicationBuilder app)
+    {
+        var serviceProviderIsService = app.ApplicationServices.GetService<IServiceProviderIsService>();
+        if (serviceProviderIsService != null && !serviceProviderIsService.IsService(typeof(RateLimitingMetrics)))
+        {
+            throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                nameof(IServiceCollection),
+                nameof(RateLimiterServiceCollectionExtensions.AddRateLimiter)));
+        }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
@@ -58,10 +59,12 @@ public class SqlServerCache : IDistributedCache
         }
         if (cacheOptions.DefaultSlidingExpiration <= TimeSpan.Zero)
         {
+#pragma warning disable CA2208 // Instantiate argument exceptions correctly
             throw new ArgumentOutOfRangeException(
                 nameof(cacheOptions.DefaultSlidingExpiration),
                 cacheOptions.DefaultSlidingExpiration,
                 "The sliding expiration value must be positive.");
+#pragma warning restore CA2208 // Instantiate argument exceptions correctly
         }
 
         _systemClock = cacheOptions.SystemClock ?? new SystemClock();
@@ -80,10 +83,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public byte[]? Get(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         var value = _dbOperations.GetCacheItem(key);
 
@@ -95,10 +95,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public async Task<byte[]?> GetAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -112,10 +109,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public void Refresh(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         _dbOperations.RefreshCacheItem(key);
 
@@ -125,10 +119,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public async Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -140,10 +131,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public void Remove(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         _dbOperations.DeleteCacheItem(key);
 
@@ -153,10 +141,7 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public async Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
@@ -168,20 +153,9 @@ public class SqlServerCache : IDistributedCache
     /// <inheritdoc />
     public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         GetOptions(ref options);
 
@@ -197,20 +171,9 @@ public class SqlServerCache : IDistributedCache
         DistributedCacheEntryOptions options,
         CancellationToken token = default(CancellationToken))
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(key);
+        ArgumentNullThrowHelper.ThrowIfNull(value);
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         token.ThrowIfCancellationRequested();
 

@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Http;
 /// of arbitrary types. The metadata items are stored as an ordered collection with
 /// items arranged in ascending order of precedence.
 /// </remarks>
+[DebuggerTypeProxy(typeof(EndpointMetadataCollectionDebugView))]
+[DebuggerDisplay("Count = {Count}")]
 public sealed class EndpointMetadataCollection : IReadOnlyList<object>
 {
     /// <summary>
@@ -32,10 +35,7 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
     /// <param name="items">The metadata items.</param>
     public EndpointMetadataCollection(IEnumerable<object> items)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
+        ArgumentNullException.ThrowIfNull(items);
 
         _items = items.ToArray();
         _cache = new ConcurrentDictionary<Type, object[]>();
@@ -216,6 +216,29 @@ public sealed class EndpointMetadataCollection : IReadOnlyList<object>
         {
             _index = 0;
             _current = null;
+        }
+    }
+
+    private sealed class EndpointMetadataCollectionDebugView
+    {
+        private readonly EndpointMetadataCollection _collection;
+
+        public EndpointMetadataCollectionDebugView(EndpointMetadataCollection collection)
+        {
+            ArgumentNullException.ThrowIfNull(collection);
+
+            _collection = collection;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public object[] Items
+        {
+            get
+            {
+                var items = new object[_collection.Count];
+                _collection._items.CopyTo(items, 0);
+                return items;
+            }
         }
     }
 }

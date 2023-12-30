@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests;
 
@@ -499,15 +500,13 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/37862")]
     public async Task StreamPool_Heartbeat_ExpiredStreamRemoved()
     {
         // Arrange
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
 
-        var now = new DateTimeOffset(2021, 7, 6, 12, 0, 0, TimeSpan.Zero);
-        var testSystemClock = new TestSystemClock { UtcNow = now };
-        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, testSystemClock);
+        var timeProvider = new FakeTimeProvider();
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory, timeProvider);
 
         var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
         await using var clientConnection = await QuicConnection.ConnectAsync(options);
@@ -526,10 +525,9 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         QuicStreamContext pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
+        Assert.Equal(timeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * timeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
 
-        now = now.AddMilliseconds(100);
-        testSystemClock.UtcNow = now;
+        timeProvider.Advance(TimeSpan.FromSeconds(0.1));
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
@@ -539,18 +537,16 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
         pooledStream = quicConnectionContext.StreamPool._array[0];
         Assert.Same(stream1, pooledStream);
-        Assert.Equal(now.Ticks + QuicConnectionContext.StreamPoolExpiryTicks, pooledStream.PoolExpirationTicks);
+        Assert.Equal(timeProvider.GetTimestamp() + QuicConnectionContext.StreamPoolExpirySeconds * timeProvider.TimestampFrequency, pooledStream.PoolExpirationTimestamp);
 
         Assert.Same(stream1, stream2);
 
-        now = now.AddTicks(QuicConnectionContext.StreamPoolExpiryTicks);
-        testSystemClock.UtcNow = now;
+        timeProvider.Advance(TimeSpan.FromSeconds(QuicConnectionContext.StreamPoolExpirySeconds));
         testHeartbeatFeature.RaiseHeartbeat();
         // Not removed.
         Assert.Equal(1, quicConnectionContext.StreamPool.Count);
 
-        now = now.AddTicks(1);
-        testSystemClock.UtcNow = now;
+        timeProvider.Advance(TimeSpan.FromTicks(1));
         testHeartbeatFeature.RaiseHeartbeat();
         // Removed.
         Assert.Equal(0, quicConnectionContext.StreamPool.Count);
@@ -633,7 +629,6 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38998")]
     public async Task PersistentState_StreamsReused_StatePersisted()
     {
         using var httpEventSource = new HttpEventSourceListener(LoggerFactory);
@@ -719,11 +714,6 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
     {
         public int ActiveConcurrentConnections { get; set; }
     };
-
-    private class TestSystemClock : ISystemClock
-    {
-        public DateTimeOffset UtcNow { get; set; }
-    }
 
     private class TestHeartbeatFeature : IConnectionHeartbeatFeature
     {

@@ -13,4 +13,13 @@
     <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -134,4 +134,35 @@ internal sealed class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame
             FrameTypeField = RenderTreeFrameType.Region,
         };
     }
+
+    public void AppendComponentRenderMode(IComponentRenderMode renderMode)
+    {
+        if (_itemsInUse == _items.Length)
+        {
+            GrowBuffer(_items.Length * 2);
+        }
+
+        _items[_itemsInUse++] = new RenderTreeFrame
+        {
+            SequenceField = 0, // We're only interested in one of these, so it's not useful to optimize diffing over multiple
+            FrameTypeField = RenderTreeFrameType.ComponentRenderMode,
+            ComponentRenderModeField = renderMode,
+        };
+    }
+
+    public void AppendNamedEvent(string eventType, string assignedName)
+    {
+        if (_itemsInUse == _items.Length)
+        {
+            GrowBuffer(_items.Length * 2);
+        }
+
+        _items[_itemsInUse++] = new RenderTreeFrame
+        {
+            SequenceField = 0, // We're only interested in one of these per eventType, so it's not useful to optimize diffing over multiple
+            FrameTypeField = RenderTreeFrameType.NamedEvent,
+            NamedEventTypeField = eventType,
+            NamedEventAssignedNameField = assignedName,
+        };
+    }
 }

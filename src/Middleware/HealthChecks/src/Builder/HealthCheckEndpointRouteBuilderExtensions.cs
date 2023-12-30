@@ -27,10 +27,7 @@ public static class HealthCheckEndpointRouteBuilderExtensions
        this IEndpointRouteBuilder endpoints,
        [StringSyntax("Route")] string pattern)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         return MapHealthChecksCore(endpoints, pattern, null);
     }
@@ -47,15 +44,8 @@ public static class HealthCheckEndpointRouteBuilderExtensions
        [StringSyntax("Route")] string pattern,
        HealthCheckOptions options)
     {
-        if (endpoints == null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(options);
 
         return MapHealthChecksCore(endpoints, pattern, options);
     }

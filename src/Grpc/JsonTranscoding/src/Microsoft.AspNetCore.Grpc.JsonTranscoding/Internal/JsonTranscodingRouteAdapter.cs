@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Http;
 
@@ -55,6 +56,8 @@ internal sealed class JsonTranscodingRouteAdapter
         var rewriteActions = new List<Action<HttpContext>>();
 
         var tempSegments = pattern.Segments.ToList();
+        var haveCatchAll = false;
+
         var i = 0;
         while (i < tempSegments.Count)
         {
@@ -63,8 +66,16 @@ internal sealed class JsonTranscodingRouteAdapter
             {
                 var fullPath = string.Join(".", segmentVariable.FieldPath);
 
-                var segmentCount = segmentVariable.EndSegment - segmentVariable.StartSegment;
-                if (segmentCount == 1)
+                var remainingSegmentCount = segmentVariable.EndSegment - segmentVariable.StartSegment;
+
+                // Handle situation where the last segment is catch all but there is a verb.
+                if (remainingSegmentCount == 1 && segmentVariable.HasCatchAllPath && pattern.Verb != null)
+                {
+                    // Move past the catch all so the regex added below just includes the verb.
+                    remainingSegmentCount++;
+                }
+
+                if (remainingSegmentCount == 1)
                 {
                     // Single segment parameter. Include in route with its default name.
                     tempSegments[i] = segmentVariable.HasCatchAllPath
@@ -77,7 +88,6 @@ internal sealed class JsonTranscodingRouteAdapter
                     var routeParameterParts = new List<string>();
                     var routeValueFormatTemplateParts = new List<string>();
                     var variableParts = new List<string>();
-                    var haveCatchAll = false;
                     var catchAllSuffix = string.Empty;
 
                     while (i < segmentVariable.EndSegment && !haveCatchAll)
@@ -101,15 +111,15 @@ internal sealed class JsonTranscodingRouteAdapter
                             case SegmentType.CatchAll:
                                 {
                                     var parameterName = $"__Complex_{fullPath}_{i}";
-                                    var suffix = string.Join("/", tempSegments.Skip(i + 1));
-                                    catchAllSuffix = string.Join("/", tempSegments.Skip(i + segmentCount - 1));
+                                    var suffix = BuildSuffix(tempSegments.Skip(i + 1), pattern.Verb);
+                                    catchAllSuffix = BuildSuffix(tempSegments.Skip(i + remainingSegmentCount - 1), pattern.Verb);
 
                                     // It's possible to have multiple routes with catch-all parameters that have different suffixes.
                                     // For example:
                                     // - /{name=v1/**/b}/one
                                     // - /{name=v1/**/b}/two
                                     // The suffix is added as a route constraint to avoid matching multiple routes to a request.
-                                    var constraint = suffix.Length > 0 ? $":regex({suffix}$)" : string.Empty;
+                                    var constraint = suffix.Length > 0 ? $":regex({Regex.Escape(suffix)}$)" : string.Empty;
                                     tempSegments[i] = $"{{**{parameterName}{constraint}}}";
 
                                     routeValueFormatTemplateParts.Add($"{{{variableParts.Count}}}");
@@ -145,7 +155,7 @@ internal sealed class JsonTranscodingRouteAdapter
                         // the entire remainder of the URL in the route value, we must trim the suffix from that route value.
                         if (!string.IsNullOrEmpty(catchAllSuffix))
                         {
-                            finalValue = finalValue.Substring(0, finalValue.Length - catchAllSuffix.Length - 1);
+                            finalValue = finalValue[..^catchAllSuffix.Length];
                         }
                         context.Request.RouteValues[fullPath] = finalValue;
                     });
@@ -169,7 +179,15 @@ internal sealed class JsonTranscodingRouteAdapter
                         break;
                     case SegmentType.CatchAll:
                         // Ignore remaining segment values.
-                        tempSegments[i] = $"{{**__Discard_{i}}}";
+                        if (pattern.Verb != null)
+                        {
+                            tempSegments[i] = $"{{**__Discard_{i}:regex({Regex.Escape($":{pattern.Verb}")}$)}}";
+                        }
+                        else
+                        {
+                            tempSegments[i] = $"{{**__Discard_{i}}}";
+                        }
+                        haveCatchAll = true;
                         break;
                 }
 
@@ -177,7 +195,27 @@ internal sealed class JsonTranscodingRouteAdapter
             }
         }
 
-        return new JsonTranscodingRouteAdapter(pattern, "/" + string.Join("/", tempSegments), rewriteActions);
+        string resolvedRoutePattern = "/" + string.Join("/", tempSegments);
+        // If the route has a catch all then the verb is included in the catch all regex constraint.
+        if (pattern.Verb != null && !haveCatchAll)
+        {
+            resolvedRoutePattern += ":" + pattern.Verb;
+        }
+        return new JsonTranscodingRouteAdapter(pattern, resolvedRoutePattern, rewriteActions);
+
+        static string BuildSuffix(IEnumerable<string> segments, string? verb)
+        {
+            var pattern = string.Join("/", segments);
+            if (!string.IsNullOrEmpty(pattern))
+            {
+                pattern = "/" + pattern;
+            }
+            if (verb != null)
+            {
+                pattern += ":" + verb;
+            }
+            return pattern;
+        }
     }
 
     private static SegmentType GetSegmentType(string segment)

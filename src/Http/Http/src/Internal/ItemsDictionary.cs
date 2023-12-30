@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
 
+[DebuggerTypeProxy(typeof(DictionaryDebugView<object, object>))]
+[DebuggerDisplay("Count = {Items.Count}")]
 internal sealed class ItemsDictionary : IDictionary<object, object?>
 {
     private IDictionary<object, object?>? _items;
@@ -138,7 +142,7 @@ internal sealed class ItemsDictionary : IDictionary<object, object?>
 
     private sealed class EmptyEnumerator : IEnumerator<KeyValuePair<object, object?>>
     {
-        // In own class so only initalized if GetEnumerator is called on an empty ItemsDictionary
+        // In own class so only initialized if GetEnumerator is called on an empty ItemsDictionary
         public static readonly IEnumerator<KeyValuePair<object, object?>> Instance = new EmptyEnumerator();
         public KeyValuePair<object, object?> Current => default;
 
@@ -155,7 +159,7 @@ internal sealed class ItemsDictionary : IDictionary<object, object?>
 
     private static class EmptyDictionary
     {
-        // In own class so only initalized if CopyTo is called on an empty ItemsDictionary
+        // In own class so only initialized if CopyTo is called on an empty ItemsDictionary
         public static readonly IDictionary<object, object?> Dictionary = new Dictionary<object, object?>();
         public static ICollection<KeyValuePair<object, object?>> Collection => Dictionary;
     }

@@ -67,6 +67,11 @@ public sealed class EditContext
     public EditContextProperties Properties { get; }
 
     /// <summary>
+    /// Gets whether field identifiers should be generated for &lt;input&gt; elements.
+    /// </summary>
+    public bool ShouldUseFieldIdentifiers { get; set; } = !OperatingSystem.IsBrowser();
+
+    /// <summary>
     /// Signals that the value for the specified field has changed.
     /// </summary>
     /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
@@ -189,6 +194,21 @@ public sealed class EditContext
     /// <returns>True if the field has been modified; otherwise false.</returns>
     public bool IsModified(Expression<Func<object>> accessor)
         => IsModified(FieldIdentifier.Create(accessor));
+
+    /// <summary>
+    /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.
+    /// </summary>
+    /// <returns>True if the field has no associated validation messages after validation; otherwise false.</returns>
+    public bool IsValid(in FieldIdentifier fieldIdentifier)
+        => !GetValidationMessages(fieldIdentifier).Any();
+
+    /// <summary>
+    /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.
+    /// </summary>
+    /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
+    /// <returns>True if the field has no associated validation messages after validation; otherwise false.</returns>
+    public bool IsValid(Expression<Func<object>> accessor)
+        => IsValid(FieldIdentifier.Create(accessor));
 
     /// <summary>
     /// Validates this <see cref="EditContext"/>.

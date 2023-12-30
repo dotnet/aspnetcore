@@ -185,10 +185,7 @@ public class DefaultModelBindingContextTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
 
             throw new NotImplementedException();
         }

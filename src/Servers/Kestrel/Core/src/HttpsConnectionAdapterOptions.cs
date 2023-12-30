@@ -56,6 +56,11 @@ public class HttpsConnectionAdapterOptions
     public Func<ConnectionContext?, string?, X509Certificate2?>? ServerCertificateSelector { get; set; }
 
     /// <summary>
+    /// Convenient shorthand for a common check.
+    /// </summary>
+    internal bool HasServerCertificateOrSelector => ServerCertificate is not null || ServerCertificateSelector is not null;
+
+    /// <summary>
     /// Specifies the client certificate requirements for a HTTPS connection. Defaults to <see cref="ClientCertificateMode.NoCertificate"/>.
     /// </summary>
     public ClientCertificateMode ClientCertificateMode { get; set; }
@@ -71,12 +76,6 @@ public class HttpsConnectionAdapterOptions
     /// and to block protocols that are not secure. Unless your app has a specific reason not to, you should use this default.
     /// </summary>
     public SslProtocols SslProtocols { get; set; }
-
-    /// <summary>
-    /// The protocols enabled on this endpoint.
-    /// </summary>
-    /// <remarks>Defaults to HTTP/1.x only.</remarks>
-    internal HttpProtocols HttpProtocols { get; set; }
 
     /// <summary>
     /// Specifies whether the certificate revocation list is checked during authentication.

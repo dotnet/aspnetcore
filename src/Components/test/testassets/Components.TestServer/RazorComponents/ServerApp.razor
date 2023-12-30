@@ -1,0 +1,7 @@
+﻿<Router AppAssembly="@typeof(ServerApp).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>There's nothing here</NotFound>
+</Router>

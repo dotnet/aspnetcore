@@ -1,16 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(HeaderCollectionDebugView))]
 internal sealed class HeaderCollection : IHeaderDictionary
 {
     // https://tools.ietf.org/html/rfc7230#section-4.1.2
@@ -288,5 +290,13 @@ internal sealed class HeaderCollection : IHeaderDictionary
         {
             throw new InvalidOperationException($"The '{key}' header is not allowed in HTTP trailers.");
         }
+    }
+
+    private sealed class HeaderCollectionDebugView(HeaderCollection collection)
+    {
+        private readonly HeaderCollection _collection = collection;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public KeyValuePair<string, string>[] Items => _collection.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

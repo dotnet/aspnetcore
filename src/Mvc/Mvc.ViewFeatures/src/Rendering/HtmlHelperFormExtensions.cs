@@ -21,10 +21,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginForm(this IHtmlHelper htmlHelper)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         // Generates <form action="{current url}" method="post">.
         return htmlHelper.BeginForm(
@@ -54,10 +51,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginForm(this IHtmlHelper htmlHelper, bool? antiforgery)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         // Generates <form action="{current url}" method="post">.
         return htmlHelper.BeginForm(
@@ -83,10 +77,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginForm(this IHtmlHelper htmlHelper, FormMethod method)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName: null,
@@ -119,10 +110,7 @@ public static class HtmlHelperFormExtensions
         FormMethod method,
         object htmlAttributes)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName: null,
@@ -162,10 +150,7 @@ public static class HtmlHelperFormExtensions
         bool? antiforgery,
         object htmlAttributes)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName: null,
@@ -196,10 +181,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginForm(this IHtmlHelper htmlHelper, object routeValues)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName: null,
@@ -228,10 +210,7 @@ public static class HtmlHelperFormExtensions
         string actionName,
         string controllerName)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName,
@@ -268,10 +247,7 @@ public static class HtmlHelperFormExtensions
         string controllerName,
         object routeValues)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName,
@@ -302,10 +278,7 @@ public static class HtmlHelperFormExtensions
         string controllerName,
         FormMethod method)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName,
@@ -344,10 +317,7 @@ public static class HtmlHelperFormExtensions
         object routeValues,
         FormMethod method)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName,
@@ -384,10 +354,7 @@ public static class HtmlHelperFormExtensions
         FormMethod method,
         object htmlAttributes)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginForm(
             actionName,
@@ -418,10 +385,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginRouteForm(this IHtmlHelper htmlHelper, object routeValues)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName: null,
@@ -456,10 +420,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginRouteForm(this IHtmlHelper htmlHelper, object routeValues, bool? antiforgery)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName: null,
@@ -483,10 +444,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginRouteForm(this IHtmlHelper htmlHelper, string routeName)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName,
@@ -515,10 +473,7 @@ public static class HtmlHelperFormExtensions
     /// </remarks>
     public static MvcForm BeginRouteForm(this IHtmlHelper htmlHelper, string routeName, bool? antiforgery)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName,
@@ -552,10 +507,7 @@ public static class HtmlHelperFormExtensions
         string routeName,
         object routeValues)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName,
@@ -583,10 +535,7 @@ public static class HtmlHelperFormExtensions
         string routeName,
         FormMethod method)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName,
@@ -622,10 +571,7 @@ public static class HtmlHelperFormExtensions
         object routeValues,
         FormMethod method)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName,
@@ -659,10 +605,7 @@ public static class HtmlHelperFormExtensions
         FormMethod method,
         object htmlAttributes)
     {
-        if (htmlHelper == null)
-        {
-            throw new ArgumentNullException(nameof(htmlHelper));
-        }
+        ArgumentNullException.ThrowIfNull(htmlHelper);
 
         return htmlHelper.BeginRouteForm(
             routeName,

@@ -62,10 +62,7 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public XmlSerializerOutputFormatter(XmlWriterSettings writerSettings, ILoggerFactory loggerFactory)
     {
-        if (writerSettings == null)
-        {
-            throw new ArgumentNullException(nameof(writerSettings));
-        }
+        ArgumentNullException.ThrowIfNull(writerSettings);
 
         SupportedEncodings.Add(Encoding.UTF8);
         SupportedEncodings.Add(Encoding.Unicode);
@@ -103,10 +100,7 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
     /// <returns>The original or wrapped type provided by any <see cref="IWrapperProvider"/>.</returns>
     protected virtual Type GetSerializableType(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         var wrapperProvider = WrapperProviderFactories.GetWrapperProvider(new WrapperProviderContext(
             type,
@@ -133,10 +127,7 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
     /// <returns>A new instance of <see cref="XmlSerializer"/></returns>
     protected virtual XmlSerializer? CreateSerializer(Type type)
     {
-        if (type == null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         try
         {
@@ -168,15 +159,8 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
         TextWriter writer,
         XmlWriterSettings xmlWriterSettings)
     {
-        if (writer == null)
-        {
-            throw new ArgumentNullException(nameof(writer));
-        }
-
-        if (xmlWriterSettings == null)
-        {
-            throw new ArgumentNullException(nameof(xmlWriterSettings));
-        }
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(xmlWriterSettings);
 
         // We always close the TextWriter, so the XmlWriter shouldn't.
         xmlWriterSettings.CloseOutput = false;
@@ -207,15 +191,8 @@ public partial class XmlSerializerOutputFormatter : TextOutputFormatter
     /// <inheritdoc />
     public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (selectedEncoding == null)
-        {
-            throw new ArgumentNullException(nameof(selectedEncoding));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var writerSettings = WriterSettings.Clone();
         writerSettings.Encoding = selectedEncoding;

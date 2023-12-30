@@ -1,0 +1,202 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<h1>Parent Component</h1>
+
+@if (FirstSectionOutletExists)
+{
+    <SectionOutlet SectionId="FirstSectionId" />
+}
+
+<p>Text between two section outlets</p>
+
+@if (SecondSectionOutletExists)
+{
+    <SectionOutlet SectionName="@SecondSectionName" />
+}
+
+<p>Text between two section outlets</p>
+
+<SectionOutlet SectionId="ThirdSectionName" />
+
+<button id="section-outlet-dispose"
+        @onclick="@(() => FirstSectionOutletExists = false)">
+    Dispose first SectionOutlet
+</button>
+
+<br/>
+
+<button id="second-section-outlet-dispose"
+        @onclick="@(() => SecondSectionOutletExists = false)">
+    Dispose second SectionOutlet
+</button>
+
+@if (SectionOutletWithSameSectionIdExists)
+{
+    <SectionOutlet SectionId="FirstSectionId" />
+}
+
+<button id="section-outlet-same-id"
+        @onclick="@(() => SectionOutletWithSameSectionIdExists = true)">
+    Render SectionOutlet with same SectionId
+</button><br />
+
+@if (SectionOutletWithSameSectionNameExists)
+{
+    <SectionOutlet SectionName="test1" />
+    <SectionOutlet SectionName="test1" />
+}
+
+<button id="section-outlet-same-name"
+        @onclick="@(() => SectionOutletWithSameSectionNameExists = true)">
+    Render SectionOutlets with same SectionName
+</button><br />
+
+@if (SectionOutletWithEqualSectionNameToSectionIdExist)
+{
+    <SectionOutlet SectionId="@("test2")" />
+    <SectionOutlet SectionName="test2" />
+}
+
+<button id="section-outlet-equal-name-id"
+        @onclick="@(() => SectionOutletWithEqualSectionNameToSectionIdExist = true)">
+    Render SectionOutlets with equal SectionName and SectionId
+</button><br />
+
+@if (SectionOutletWithSectionNameAndSectionIdExists)
+{
+    <SectionOutlet SectionName="test3" SectionId="new()" />
+}
+
+<button id="section-outlet-with-name-id"
+        @onclick="@(() => SectionOutletWithSectionNameAndSectionIdExists = true)">
+    Render SectionOutlet with SectionName and SectionId
+</button><br />
+
+@if (SectionOutletWithoutSectionNameAndSectionIdExists)
+{
+    <SectionOutlet />
+}
+
+<button id="section-outlet-without-name-id"
+        @onclick="@(() => SectionOutletWithoutSectionNameAndSectionIdExists = true)">
+    Render SectionOutlet without SectionName and SectionId
+</button><br />
+
+@if (SectionContentWithSectionNameAndSectionIdExists)
+{
+    <SectionContent SectionName="test4" SectionId="new()">
+        <p>Test4</p>
+    </SectionContent>
+}
+
+<button id="section-content-with-name-id"
+        @onclick="@(() => SectionContentWithSectionNameAndSectionIdExists = true)">
+    Render SectionContent with SectionName and SectionId
+</button><br />
+
+@if (SectionContentWithoutSectionNameAndSectionIdExists)
+{
+    <SectionContent>
+        <p>Test5</p>
+    </SectionContent>
+}
+
+<button id="section-content-without-name-id"
+        @onclick="@(() => SectionContentWithoutSectionNameAndSectionIdExists = true)">
+    Render SectionContent without SectionName and SectionId
+</button><br />
+
+@if (SectionContentWithSectionNameExists)
+{
+    <SectionContent SectionName="@TestSectionContentName">
+        <p id="test6">Test6</p>
+    </SectionContent>
+}
+
+<button id="section-content-with-name"
+        @onclick="@(() => SectionContentWithSectionNameExists = true)">
+    Render SectionContent with SectionName
+</button><br />
+
+<button id="section-content-with-name-change-name"
+        @onclick="@(() => TestSectionContentName = ThirdSectionName)">
+    Change SectionContent SectionName
+</button><br />
+
+<button id="section-content-with-name-dispose"
+        @onclick="@(() => SectionContentWithSectionNameExists = false)">
+    Dispose SectionContent SectionName
+</button><br />
+
+<Counter
+    SectionContentExists="CounterSectionContentExists"
+    SectionId="CounterSectionContentId">
+</Counter>
+
+<br />
+
+<button id="counter-render-section-content"
+    @onclick="@(() => CounterSectionContentExists = true)">
+    Render Counter SectionContent
+</button><br />
+
+<button id="counter-dispose-section-content"
+        @onclick="@(() => CounterSectionContentExists = false)">
+    Dispose Counter SectionContent
+</button><br />
+
+<button id="counter-change-section-content-id"
+        @onclick="@(() => CounterSectionContentId = SecondSectionName)">
+        Change Counter SectionContent Id
+</button><br />
+
+<button id="counter-change-section-content-id-nonexisting"
+        @onclick="@(() => CounterSectionContentId = 123)">
+    Change Counter SectionContent Id to non existing
+</button><br />
+
+<button id="counter-remove-section-content-id"
+        @onclick="@(() => CounterSectionContentId = null)">
+    Remove Counter SectionContent Id to
+</button>
+<br />
+
+<TextComponent
+    SectionContentExists="TextComponentSectionContentExists"
+    SectionId="TextComponentSectionContentId">
+</TextComponent>
+
+<button id="text-render-section-content"
+        @onclick="@(() => TextComponentSectionContentExists= true)">
+    Render TextComponent SectionContent
+</button><br />
+
+<button id="text-dispose-section-content"
+        @onclick="@(() => TextComponentSectionContentExists = false)">
+    Dispose TextComponent SectionContent
+</button><br />
+
+@code {
+    private bool FirstSectionOutletExists = true;
+    private bool SecondSectionOutletExists = true;
+    private bool SectionOutletWithSameSectionIdExists = false;
+    private bool SectionOutletWithSameSectionNameExists = false;
+    private bool SectionOutletWithEqualSectionNameToSectionIdExist = false;
+    private bool SectionOutletWithSectionNameAndSectionIdExists = false;
+    private bool SectionOutletWithoutSectionNameAndSectionIdExists = false;
+
+    private bool SectionContentWithSectionNameAndSectionIdExists = false;
+    private bool SectionContentWithoutSectionNameAndSectionIdExists = false;
+    private bool SectionContentWithSectionNameExists = false;
+
+    private static object FirstSectionId = new();
+    private static string SecondSectionName = "second-section";
+    private static string ThirdSectionName = "thrird-section";
+
+    private bool CounterSectionContentExists = false;
+    private bool TextComponentSectionContentExists = false;
+
+    private object CounterSectionContentId = FirstSectionId;
+    private object TextComponentSectionContentId = FirstSectionId;
+    private string TestSectionContentName = SecondSectionName;
+}

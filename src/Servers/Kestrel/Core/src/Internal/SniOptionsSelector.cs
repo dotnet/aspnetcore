@@ -20,6 +20,7 @@ internal sealed class SniOptionsSelector
     private const string WildcardPrefix = "*.";
 
     private readonly string _endpointName;
+    private readonly ILogger<HttpsConnectionMiddleware> _logger;
 
     private readonly Func<ConnectionContext, string?, X509Certificate2?>? _fallbackServerCertificateSelector;
     private readonly Action<ConnectionContext, SslServerAuthenticationOptions>? _onAuthenticateCallback;
@@ -37,6 +38,7 @@ internal sealed class SniOptionsSelector
         ILogger<HttpsConnectionMiddleware> logger)
     {
         _endpointName = endpointName;
+        _logger = logger;
 
         _fallbackServerCertificateSelector = fallbackHttpsOptions.ServerCertificateSelector;
         _onAuthenticateCallback = fallbackHttpsOptions.OnAuthenticate;
@@ -54,7 +56,7 @@ internal sealed class SniOptionsSelector
 
             if (sslOptions.ServerCertificate is null)
             {
-                if (fallbackHttpsOptions.ServerCertificate is null && _fallbackServerCertificateSelector is null)
+                if (!fallbackHttpsOptions.HasServerCertificateOrSelector)
                 {
                     throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
                 }
@@ -75,7 +77,7 @@ internal sealed class SniOptionsSelector
 
             if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
             {
-                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2);
+                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2, logger);
             }
 
             var clientCertificateMode = sniConfig.ClientCertificateMode ?? fallbackHttpsOptions.ClientCertificateMode;
@@ -158,7 +160,7 @@ internal sealed class SniOptionsSelector
 
             if (fallbackCertificate != null)
             {
-                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(fallbackCertificate);
+                HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(fallbackCertificate, _logger);
             }
 
             sslOptions.ServerCertificate = fallbackCertificate;
@@ -197,6 +199,7 @@ internal sealed class SniOptionsSelector
             ServerCertificateContext = sslOptions.ServerCertificateContext,
             ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
             CertificateChainPolicy = sslOptions.CertificateChainPolicy,
+            AllowTlsResume = sslOptions.AllowTlsResume,
         };
 
     private sealed class SniOptions

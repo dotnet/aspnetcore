@@ -366,6 +366,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
         IsExtendedConnectRequest = false;
         IsExtendedConnectAccepted = false;
         IsWebTransportRequest = false;
+        ConnectProtocol = null;
 
         var remoteEndPoint = RemoteEndPoint;
         RemoteIpAddress = remoteEndPoint?.Address;
@@ -698,7 +699,14 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             }
             catch (Exception ex)
             {
-                ReportApplicationError(ex);
+                if ((ex is OperationCanceledException || ex is IOException) && _connectionAborted)
+                {
+                    Log.RequestAborted(ConnectionId, TraceIdentifier);
+                }
+                else
+                {
+                    ReportApplicationError(ex);
+                }
             }
 
             KestrelEventSource.Log.RequestStop(this);
@@ -739,9 +747,8 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 }
                 else if (!HasResponseStarted)
                 {
-                    // If the request was aborted and no response was sent, there's no
-                    // meaningful status code to log.
-                    StatusCode = 0;
+                    // If the request was aborted and no response was sent, we use status code 499 for logging                    
+                    StatusCode = StatusCodes.Status499ClientClosedRequest;
                 }
             }
 

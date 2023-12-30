@@ -111,6 +111,15 @@ public class HttpSysOptions
     public bool ThrowWriteExceptions { get; set; }
 
     /// <summary>
+    /// Enable buffering of response data in the Kernel. The default value is <code>false</code>.
+    /// It should be used by an application doing synchronous I/O or by an application doing asynchronous I/O with
+    /// no more than one outstanding write at a time, and can significantly improve throughput over high-latency connections.
+    /// Applications that use asynchronous I/O and that may have more than one send outstanding at a time should not use this flag.
+    /// Enabling this can results in higher CPU and memory usage by Http.Sys.
+    /// </summary>
+    public bool EnableKernelResponseBuffering { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
     /// Set to `null` to use the registry's machine-wide setting.
     /// The default value is `null` (machine-wide setting).

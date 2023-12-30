@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ASP.NET 核心 Web API (Native AOT)",
+  "description": "此專案範本可用於使用發佈為 Native AOT 的 ASP.NET Core 最小 API 來建立 RESTful Web API。",
+  "symbols/ExcludeLaunchSettings/description": "是否要從產生的範本排除 launchSettings.json。",
+  "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",
+  "symbols/iisHttpPort/description": "launchSettings.json 中 IIS Express HTTP 端點要使用的連接埠號碼。",
+  "symbols/Framework/description": "專案的目標 Framework。",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
+  "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
+  "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",
+  "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
+  "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
+}

@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -15,7 +17,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
-public class ResultsTests
+public partial class ResultsTests
 {
     [Fact]
     public void Accepted_WithUrlAndValue_ResultHasCorrectValues()
@@ -93,6 +95,38 @@ public class ResultsTests
     }
 
     [Fact]
+    public void AcceptedAtRoute_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        object value = new { };
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.AcceptedAtRoute(null, null) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
     public void AcceptedAtRouteOfT_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -108,6 +142,52 @@ public class ResultsTests
         Assert.Equal(routeName, result.RouteName);
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
         Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.AcceptedAtRoute(routeName, routeValues, value) as AcceptedAtRoute<Todo>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithNullRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.AcceptedAtRoute<object>(null, null, null) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void AcceptedAtRouteOfT_WithNullRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.AcceptedAtRoute(null, null, null) as AcceptedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
     [Fact]
@@ -641,6 +721,52 @@ public class ResultsTests
     }
 
     [Fact]
+    public void CreatedAtRoute_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        object value = new { };
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.CreatedAtRoute(null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void CreatedAtRoute_WithNullRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.CreatedAtRoute(null, null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
     public void CreatedAtRouteOfT_WithRouteNameAndRouteValuesAndValue_ResultHasCorrectValues()
     {
         // Arrange
@@ -655,6 +781,24 @@ public class ResultsTests
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
         Assert.Equal(routeName, result.RouteName);
         Assert.Equal(new RouteValueDictionary(routeValues), result.RouteValues);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteOfT_WithRouteNameAndRouteValueDictionaryAndValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.CreatedAtRoute(routeName, routeValues, value) as CreatedAtRoute<Todo>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
         Assert.Equal(value, result.Value);
     }
 
@@ -690,6 +834,20 @@ public class ResultsTests
         Assert.Equal(routeName, result.RouteName);
         Assert.Equal(new RouteValueDictionary(), result.RouteValues);
         Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void CreatedAtRouteOfT_WithNullRouteNameAndRouteValues_ResultHasCorrectValues()
+    {
+        // Arrange
+
+        // Act
+        var result = Results.CreatedAtRoute<object>(null, null, null) as CreatedAtRoute;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
     [Fact]
@@ -778,6 +936,100 @@ public class ResultsTests
         Assert.Null(result.JsonSerializerOptions);
         Assert.Null(result.ContentType);
         Assert.Null(result.StatusCode);
+    }
+
+    [Fact]
+    public void Json_WithTypeInfo_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null, StringJsonContext.Default.String as JsonTypeInfo) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.Equal(StringJsonContext.Default.String, result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void Json_WithJsonContext_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null, typeof(string), StringJsonContext.Default) as JsonHttpResult<object>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.IsAssignableFrom<JsonTypeInfo<string>>(result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void JsonOfT_WithTypeInfo_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json(null, StringJsonContext.Default.String) as JsonHttpResult<string>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.Equal(StringJsonContext.Default.String, result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void JsonOfT_WithJsonContext_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.Json<string>(null, StringJsonContext.Default) as JsonHttpResult<string>;
+
+        // Assert
+        Assert.Null(result.Value);
+        Assert.Null(result.JsonSerializerOptions);
+        Assert.Null(result.ContentType);
+        Assert.Null(result.StatusCode);
+        Assert.IsAssignableFrom<JsonTypeInfo<string>>(result.JsonTypeInfo);
+    }
+
+    [Fact]
+    public void JsonOfT_WithNullSerializerContext_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("context", () => Results.Json<object>(null, context: null));
+    }
+
+    [Fact]
+    public void Json_WithNullSerializerContext_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("context", () => Results.Json(null, type: typeof(object), context: null));
+    }
+
+    [Fact]
+    public void Json_WithInvalidSerializerContext_ThrowsInvalidOperationException()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => Results.Json(null, type: typeof(Todo), context: StringJsonContext.Default));
+        Assert.Equal(ex.Message, $"Unable to obtain the JsonTypeInfo for type 'Microsoft.AspNetCore.Http.HttpResults.ResultsTests+Todo' from the context '{typeof(StringJsonContext).FullName}'.");
+    }
+
+    [Fact]
+    public void JsonOfT_WithInvalidSerializerContext_ThrowsInvalidOperationException()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => Results.Json<Todo>(null, context: StringJsonContext.Default));
+        Assert.Equal(ex.Message, $"Unable to obtain the JsonTypeInfo for type 'Microsoft.AspNetCore.Http.HttpResults.ResultsTests+Todo' from the context '{typeof(StringJsonContext).FullName}'.");
+    }
+
+    [Fact]
+    public void Json_WithNullTypeInfo_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("jsonTypeInfo", () => Results.Json(null, jsonTypeInfo: null));
+    }
+
+    [Fact]
+    public void JsonOfT_WithNullTypeInfo_ThrowsArgException()
+    {
+        Assert.Throws<ArgumentNullException>("jsonTypeInfo", () => Results.Json<object>(null, jsonTypeInfo: null));
     }
 
     [Fact]
@@ -980,7 +1232,7 @@ public class ResultsTests
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
-    [InlineData(499, null, null)]
+    [InlineData(498, null, null)]
     public void Problem_WithOnlyHttpStatus_ResultHasCorrectValues(
         int statusCode,
         string title,
@@ -988,7 +1240,6 @@ public class ResultsTests
     {
         // Act
         var result = Results.Problem(statusCode: statusCode) as ProblemHttpResult;
-
         // Assert
         Assert.Null(result.ProblemDetails.Detail);
         Assert.Null(result.ProblemDetails.Instance);
@@ -1165,6 +1416,25 @@ public class ResultsTests
     }
 
     [Fact]
+    public void RedirectToRoute_WithRouteNameAndRouteValueDictionaryAndFragment_ResultHasCorrectValues()
+    {
+        // Arrange
+        var routeName = "routeName";
+        var routeValues = new RouteValueDictionary { ["foo"] = 123 };
+        var fragment = "test";
+
+        // Act
+        var result = Results.RedirectToRoute(routeName, routeValues, true, true, fragment) as RedirectToRouteHttpResult;
+
+        // Assert
+        Assert.Equal(routeName, result.RouteName);
+        Assert.Equal(routeValues, result.RouteValues);
+        Assert.True(result.Permanent);
+        Assert.True(result.PreserveMethod);
+        Assert.Equal(fragment, result.Fragment);
+    }
+
+    [Fact]
     public void RedirectToRoute_WithNoArgs_ResultHasCorrectValues()
     {
         // Act
@@ -1172,7 +1442,18 @@ public class ResultsTests
 
         // Assert
         Assert.Null(result.RouteName);
-        Assert.Null(result.RouteValues);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
+    }
+
+    [Fact]
+    public void RedirectToRoute_WithNoArgs_RouteValueDictionary_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.RedirectToRoute(null, null) as RedirectToRouteHttpResult;
+
+        // Assert
+        Assert.Null(result.RouteName);
+        Assert.Equal(new RouteValueDictionary(), result.RouteValues);
     }
 
     [Fact]
@@ -1330,6 +1611,8 @@ public class ResultsTests
     {
         (() => Results.Accepted(null, null), typeof(Accepted)),
         (() => Results.Accepted(null, new()), typeof(Accepted<object>)),
+        (() => Results.AcceptedAtRoute("routeName", (object)null, null), typeof(AcceptedAtRoute)),
+        (() => Results.AcceptedAtRoute("routeName", (object)null, new()), typeof(AcceptedAtRoute<object>)),
         (() => Results.AcceptedAtRoute("routeName", null, null), typeof(AcceptedAtRoute)),
         (() => Results.AcceptedAtRoute("routeName", null, new()), typeof(AcceptedAtRoute<object>)),
         (() => Results.BadRequest(null), typeof(BadRequest)),
@@ -1343,6 +1626,8 @@ public class ResultsTests
         (() => Results.Created("/path", null), typeof(Created)),
         (() => Results.Created(), typeof(Created)),
         (() => Results.Created("/path", new()), typeof(Created<object>)),
+        (() => Results.CreatedAtRoute("routeName", (object)null, null), typeof(CreatedAtRoute)),
+        (() => Results.CreatedAtRoute("routeName", (object)null, new()), typeof(CreatedAtRoute<object>)),
         (() => Results.CreatedAtRoute("routeName", null, null), typeof(CreatedAtRoute)),
         (() => Results.CreatedAtRoute("routeName", null, new()), typeof(CreatedAtRoute<object>)),
         (() => Results.Empty, typeof(EmptyHttpResult)),
@@ -1351,7 +1636,7 @@ public class ResultsTests
         (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
-        (() => Results.Json(new(), null, null, null), typeof(JsonHttpResult<object>)),
+        (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),
         (() => Results.NotFound(new()), typeof(NotFound<object>)),
@@ -1364,6 +1649,7 @@ public class ResultsTests
         (() => Results.Text("content", null, null, null), typeof(ContentHttpResult)),
         (() => Results.Redirect("/path", false, false), typeof(RedirectHttpResult)),
         (() => Results.LocalRedirect("/path", false, false), typeof(RedirectHttpResult)),
+        (() => Results.RedirectToRoute("routeName", (object)null, false, false, null), typeof(RedirectToRouteHttpResult)),
         (() => Results.RedirectToRoute("routeName", null, false, false, null), typeof(RedirectToRouteHttpResult)),
         (() => Results.SignIn(new(), null, null), typeof(SignInHttpResult)),
         (() => Results.SignOut(new(), null), typeof(SignOutHttpResult)),
@@ -1377,4 +1663,8 @@ public class ResultsTests
     public static IEnumerable<object[]> FactoryMethodsFromTuples() => FactoryMethodsTuples.Select(t => new object[] { t.Item1, t.Item2 });
 
     private record Todo(int Id);
+
+    [JsonSerializable(typeof(string))]
+    private partial class StringJsonContext : JsonSerializerContext
+    { }
 }

@@ -39,9 +39,12 @@ internal class TypeForwardingActivator : SimpleActivator
             var type = Type.GetType(forwardedTypeName, false);
             if (type != null)
             {
-                _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
-                    originalTypeName,
-                    forwardedTypeName);
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Forwarded activator type request from {FromType} to {ToType}",
+                        originalTypeName,
+                        forwardedTypeName);
+                }
                 forwarded = true;
                 return base.CreateInstance(expectedBaseType, forwardedTypeName);
             }

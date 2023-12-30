@@ -18,6 +18,9 @@
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextReader.cs" Link="Internal\Utf8BufferTextReader.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ReusableUtf8JsonWriter.cs" Link="Internal\ReusableUtf8JsonWriter.cs" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

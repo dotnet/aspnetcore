@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -24,6 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.CustomElements" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />
@@ -40,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
-    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.wasm" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.wasm" />
   </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->

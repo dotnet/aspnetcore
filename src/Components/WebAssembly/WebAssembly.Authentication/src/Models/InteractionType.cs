@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <summary>
 /// The type of authentication request.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter<InteractionType>))]
 public enum InteractionType
 {
     /// <summary>

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -142,7 +143,7 @@ public class WsFederationTest
     {
         var httpClient = await CreateClient();
         var form = CreateSignInContent("WsFederation/ValidToken.xml", suppressWctx: true);
-        var exception = await Assert.ThrowsAsync<Exception>(() => httpClient.PostAsync(httpClient.BaseAddress + "signin-wsfed", form));
+        var exception = await Assert.ThrowsAsync<AuthenticationFailureException>(() => httpClient.PostAsync(httpClient.BaseAddress + "signin-wsfed", form));
         Assert.Contains("Unsolicited logins are not allowed.", exception.InnerException.Message);
     }
 
@@ -287,11 +288,14 @@ public class WsFederationTest
                     .AddCookie()
                     .AddWsFederation(options =>
                     {
+                        options.UseSecurityTokenHandlers = true;
                         options.Wtrealm = "http://Automation1";
                         options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
                         options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
                         options.StateDataFormat = new CustomStateDataFormat();
+#pragma warning disable CS0618 // Type or member is obsolete
                         options.SecurityTokenHandlers = new List<ISecurityTokenValidator>() { new TestSecurityTokenValidator() };
+#pragma warning restore CS0618 // Type or member is obsolete
                         options.UseTokenLifetime = false;
                         options.AllowUnsolicitedLogins = allowUnsolicited;
                         options.Events = new WsFederationEvents()

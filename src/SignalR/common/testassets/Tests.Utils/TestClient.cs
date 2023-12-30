@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 #if TESTUTILS
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 #else
 using System.Threading.Tasks.Extensions;
 #endif
@@ -166,6 +166,12 @@ internal
                     return completion;
                 case PingMessage _:
                     // Pings are ignored
+                    break;
+                case AckMessage _:
+                    // Ignored for now
+                    break;
+                case SequenceMessage _:
+                    // Ignored for now
                     break;
                 default:
                     // Message implement ToString so this should be helpful.

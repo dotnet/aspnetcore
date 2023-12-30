@@ -10,6 +10,8 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
+// These tests are for Blazor Server and Webassembly implementations
+// For Blazor Web, check StatePersistenceTest.cs
 public class SaveStateTest : ServerTestBase<AspNetSiteServerFixture>
 {
     public SaveStateTest(

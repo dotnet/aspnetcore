@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Razor 檢視",
+  "description": "空白的 Razor 檢視",
+  "postActions/openInEditor/description": "在編輯器中開啟建立的檢視"
+}

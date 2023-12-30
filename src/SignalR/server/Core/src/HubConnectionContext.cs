@@ -8,9 +8,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -29,14 +29,15 @@ public partial class HubConnectionContext
     private readonly ILogger _logger;
     private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
     private readonly TaskCompletionSource _abortCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-    private readonly long _keepAliveInterval;
-    private readonly long _clientTimeoutInterval;
+    private readonly TimeSpan _keepAliveInterval;
+    private readonly TimeSpan _clientTimeoutInterval;
     private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
     private readonly object _receiveMessageTimeoutLock = new object();
-    private readonly ISystemClock _systemClock;
+    private readonly TimeProvider _timeProvider;
     private readonly CancellationTokenRegistration _closedRegistration;
     private readonly CancellationTokenRegistration? _closedRequestedRegistration;
 
+    private MessageBuffer? _messageBuffer;
     private StreamTracker? _streamTracker;
     private long _lastSendTick;
     private ReadOnlyMemory<byte> _cachedPingMessage;
@@ -45,10 +46,15 @@ public partial class HubConnectionContext
     private volatile bool _allowReconnect = true;
     private readonly int _streamBufferCapacity;
     private readonly long? _maxMessageSize;
+    private readonly long _statefulReconnectBufferSize;
     private bool _receivedMessageTimeoutEnabled;
-    private long _receivedMessageElapsedTicks;
+    private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private ClaimsPrincipal? _user;
+    private bool _useStatefulReconnect;
+
+    [MemberNotNullWhen(true, nameof(_messageBuffer))]
+    internal bool UsingStatefulReconnect() => _useStatefulReconnect;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -58,10 +64,12 @@ public partial class HubConnectionContext
     /// <param name="contextOptions">The options to configure the HubConnectionContext.</param>
     public HubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
     {
-        _keepAliveInterval = (long)contextOptions.KeepAliveInterval.TotalMilliseconds;
-        _clientTimeoutInterval = (long)contextOptions.ClientTimeoutInterval.TotalMilliseconds;
+        _timeProvider = contextOptions.TimeProvider ?? TimeProvider.System;
+        _keepAliveInterval = contextOptions.KeepAliveInterval;
+        _clientTimeoutInterval = contextOptions.ClientTimeoutInterval;
         _streamBufferCapacity = contextOptions.StreamBufferCapacity;
         _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
+        _statefulReconnectBufferSize = contextOptions.StatefulReconnectBufferSize;
 
         _connectionContext = connectionContext;
         _logger = loggerFactory.CreateLogger<HubConnectionContext>();
@@ -76,8 +84,7 @@ public partial class HubConnectionContext
 
         HubCallerContext = new DefaultHubCallerContext(this);
 
-        _systemClock = contextOptions.SystemClock ?? new SystemClock();
-        _lastSendTick = _systemClock.CurrentTicks;
+        _lastSendTick = _timeProvider.GetTimestamp();
 
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
         ActiveInvocationLimit = new ChannelBasedSemaphore(maxInvokeLimit);
@@ -100,6 +107,8 @@ public partial class HubConnectionContext
     internal HubCallerContext HubCallerContext { get; }
 
     internal Exception? CloseException { get; private set; }
+
+    internal CloseMessage? CloseMessage { get; set; }
 
     internal ChannelBasedSemaphore ActiveInvocationLimit { get; }
 
@@ -255,11 +264,18 @@ public partial class HubConnectionContext
     {
         try
         {
-            // We know that we are only writing this message to one receiver, so we can
-            // write it without caching.
-            Protocol.WriteMessage(message, _connectionContext.Transport.Output);
+            if (UsingStatefulReconnect())
+            {
+                return _messageBuffer.WriteAsync(message, cancellationToken);
+            }
+            else
+            {
+                // We know that we are only writing this message to one receiver, so we can
+                // write it without caching.
+                Protocol.WriteMessage(message, _connectionContext.Transport.Output);
 
-            return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+                return _connectionContext.Transport.Output.FlushAsync(cancellationToken);
+            }
         }
         catch (Exception ex)
         {
@@ -276,10 +292,18 @@ public partial class HubConnectionContext
     {
         try
         {
-            // Grab a preserialized buffer for this protocol.
-            var buffer = message.GetSerializedMessage(Protocol);
+            if (UsingStatefulReconnect())
+            {
+                Debug.Assert(_messageBuffer is not null);
+                return _messageBuffer.WriteAsync(message, cancellationToken);
+            }
+            else
+            {
+                // Grab a potentially pre-serialized buffer for this protocol.
+                var buffer = message.GetSerializedMessage(Protocol);
 
-            return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
+                return _connectionContext.Transport.Output.WriteAsync(buffer, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
@@ -430,6 +454,13 @@ public partial class HubConnectionContext
     /// </summary>
     public virtual void Abort()
     {
+#pragma warning disable CA2252 // This API requires opting into preview features
+        if (_useStatefulReconnect && _connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+        {
+            feature.DisableReconnect();
+        }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
         _allowReconnect = false;
         AbortAllowReconnect();
     }
@@ -548,9 +579,27 @@ public partial class HubConnectionContext
                                     Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
                                 }
 
+#pragma warning disable CA2252 // This API requires opting into preview features
+                                if (_connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                                {
+                                    if (handshakeRequestMessage.Version < 2)
+                                    {
+                                        Log.DisablingReconnect(_logger, handshakeRequestMessage.Protocol, handshakeRequestMessage.Version);
+                                        feature.DisableReconnect();
+                                    }
+                                    else
+                                    {
+                                        _useStatefulReconnect = true;
+                                        _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize, _logger, _timeProvider);
+                                        feature.OnReconnected(_messageBuffer.ResendAsync);
+                                    }
+                                }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
                                 Log.HandshakeComplete(_logger, Protocol.Name);
 
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
+
                                 return true;
                             }
                             else if (overLength)
@@ -614,7 +663,8 @@ public partial class HubConnectionContext
 
     private void KeepAliveTick()
     {
-        var currentTime = _systemClock.CurrentTicks;
+        var currentTime = _timeProvider.GetTimestamp();
+        var elapsed = _timeProvider.GetElapsedTime(Volatile.Read(ref _lastSendTick), currentTime);
 
         // Implements the keep-alive tick behavior
         // Each tick, we check if the time since the last send is larger than the keep alive duration (in ticks).
@@ -622,7 +672,7 @@ public partial class HubConnectionContext
         // true "ping rate" of the server could be (_hubOptions.KeepAliveInterval + HubEndPoint.KeepAliveTimerInterval),
         // because if the interval elapses right after the last tick of this timer, it won't be detected until the next tick.
 
-        if (currentTime - Volatile.Read(ref _lastSendTick) > _keepAliveInterval)
+        if (elapsed > _keepAliveInterval)
         {
             // Haven't sent a message for the entire keep-alive duration, so send a ping.
             // If the transport channel is full, this will fail, but that's OK because
@@ -648,7 +698,7 @@ public partial class HubConnectionContext
 
     private void CheckClientTimeout()
     {
-        if (Debugger.IsAttached)
+        if (Debugger.IsAttached || _connectionAborted)
         {
             return;
         }
@@ -657,11 +707,12 @@ public partial class HubConnectionContext
         {
             if (_receivedMessageTimeoutEnabled)
             {
-                _receivedMessageElapsedTicks = _systemClock.CurrentTicks - _receivedMessageTick;
+                _receivedMessageElapsed = _timeProvider.GetElapsedTime(_receivedMessageTick);
 
-                if (_receivedMessageElapsedTicks >= _clientTimeoutInterval)
+                if (_receivedMessageElapsed >= _clientTimeoutInterval)
                 {
-                    Log.ClientTimeout(_logger, TimeSpan.FromMilliseconds(_clientTimeoutInterval));
+                    CloseException ??= new OperationCanceledException($"Client hasn't sent a message/ping within the configured {nameof(HubConnectionContextOptions.ClientTimeoutInterval)}.");
+                    Log.ClientTimeout(_logger, _clientTimeoutInterval);
                     AbortAllowReconnect();
                 }
             }
@@ -707,7 +758,7 @@ public partial class HubConnectionContext
         lock (_receiveMessageTimeoutLock)
         {
             _receivedMessageTimeoutEnabled = true;
-            _receivedMessageTick = _systemClock.CurrentTicks;
+            _receivedMessageTick = _timeProvider.GetTimestamp();
         }
     }
 
@@ -717,7 +768,7 @@ public partial class HubConnectionContext
         {
             // we received a message so stop the timer and reset it
             // it will resume after the message has been processed
-            _receivedMessageElapsedTicks = 0;
+            _receivedMessageElapsed = TimeSpan.Zero;
             _receivedMessageTick = 0;
             _receivedMessageTimeoutEnabled = false;
         }
@@ -725,10 +776,30 @@ public partial class HubConnectionContext
 
     internal void Cleanup()
     {
+        _messageBuffer?.Dispose();
         _closedRegistration.Dispose();
         _closedRequestedRegistration?.Dispose();
 
         // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
+    }
+
+    internal Task AckAsync(AckMessage ackMessage)
+    {
+        if (UsingStatefulReconnect())
+        {
+            return _messageBuffer.AckAsync(ackMessage);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    internal bool ShouldProcessMessage(HubMessage message)
+    {
+        if (UsingStatefulReconnect())
+        {
+            return _messageBuffer.ShouldProcessMessage(message);
+        }
+        return true;
     }
 }

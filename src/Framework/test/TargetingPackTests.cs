@@ -7,7 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using NuGet.Versioning;
 using Xunit.Abstractions;
 
@@ -212,7 +212,10 @@ public class TargetingPackTests
 
             Assert.True(hasRefAssemblyAttribute, $"{path} should have {nameof(ReferenceAssemblyAttribute)}");
 #pragma warning disable SYSLIB0037 // AssemblyName.ProcessorArchitecture is obsolete
-            Assert.Equal(ProcessorArchitecture.None, assemblyName.ProcessorArchitecture);
+            // MSIL and None represent platform neutral assemblies such that reference assemblies can always be loaded.
+            Assert.True(assemblyName.ProcessorArchitecture == ProcessorArchitecture.MSIL ||
+                assemblyName.ProcessorArchitecture == ProcessorArchitecture.None
+                );
 #pragma warning restore SYSLIB0037
         });
     }

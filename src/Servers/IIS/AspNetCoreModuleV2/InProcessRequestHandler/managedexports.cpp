@@ -611,4 +611,35 @@ http_response_set_need_goaway(
     pHttpResponse->SetNeedGoAway();
     return 0;
 }
+
+EXTERN_C __declspec(dllexport)
+HRESULT
+http_query_request_property(
+    _In_ HTTP_OPAQUE_ID requestId,
+    _In_ HTTP_REQUEST_PROPERTY propertyId,
+    _In_reads_bytes_opt_(qualifierSize) PVOID pQualifier,
+    _In_ ULONG qualifierSize,
+    _Out_writes_bytes_to_opt_(outputBufferSize, *pcbBytesReturned) PVOID pOutput,
+    _In_ ULONG outputBufferSize,
+    _Out_opt_ PULONG pcbBytesReturned,
+    _In_ LPOVERLAPPED pOverlapped
+)
+{
+    IHttpServer3* httpServer3;
+    HRESULT hr = HttpGetExtendedInterface<IHttpServer, IHttpServer3>(g_pHttpServer, g_pHttpServer, &httpServer3);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+    return httpServer3->QueryRequestProperty(
+        requestId,
+        propertyId,
+        pQualifier,
+        qualifierSize,
+        pOutput,
+        outputBufferSize,
+        pcbBytesReturned,
+        pOverlapped);
+}
 // End of export

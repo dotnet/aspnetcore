@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -33,14 +34,8 @@ public partial class WebSocketMiddleware
     /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
     public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options, ILoggerFactory loggerFactory)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next;
         _options = options.Value;
@@ -77,7 +72,10 @@ public partial class WebSocketMiddleware
                     // Check allowed origins to see if request is allowed
                     if (!_allowedOrigins.Contains(originHeader.ToString(), StringComparer.Ordinal))
                     {
-                        _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader.ToString());
+                        if (_logger.IsEnabled(LogLevel.Debug))
+                        {
+                            _logger.LogDebug("Request origin {Origin} is not in the list of allowed origins.", originHeader.ToString());
+                        }
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         return Task.CompletedTask;
                     }
@@ -207,13 +205,18 @@ public partial class WebSocketMiddleware
                 opaqueTransport = await _upgradeFeature!.UpgradeAsync(); // Sets status code to 101
             }
 
-            return WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
+            // Disable request timeout, if there is one, after the websocket has been accepted
+            _context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+
+            var wrappedSocket = WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
             {
                 IsServer = true,
                 KeepAliveInterval = keepAliveInterval,
                 SubProtocol = subProtocol,
                 DangerousDeflateOptions = deflateOptions
             });
+
+            return new ServerWebSocket(wrappedSocket, _context);
         }
 
         public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)

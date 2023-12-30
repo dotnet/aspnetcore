@@ -10,10 +10,8 @@
     <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.RateLimiting" />
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
 </Project>

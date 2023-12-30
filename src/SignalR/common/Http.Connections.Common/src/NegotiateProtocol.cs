@@ -34,8 +34,9 @@ public static class NegotiateProtocol
     private static readonly JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
     private const string NegotiateVersionPropertyName = "negotiateVersion";
     private static readonly JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
+    private const string StatefulReconnectPropertyName = "useStatefulReconnect";
+    private static readonly JsonEncodedText StatefulReconnectPropertyNameBytes = JsonEncodedText.Encode(StatefulReconnectPropertyName);
 
-    // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
     // Used to detect ASP.NET SignalR Server connection attempt
     private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => "ProtocolVersion"u8;
 
@@ -62,6 +63,11 @@ public static class NegotiateProtocol
                 writer.Flush();
                 Debug.Assert(writer.CurrentDepth == 0);
                 return;
+            }
+
+            if (response.UseStatefulReconnect)
+            {
+                writer.WriteBoolean(StatefulReconnectPropertyNameBytes, true);
             }
 
             writer.WriteNumber(NegotiateVersionPropertyNameBytes, response.Version);
@@ -153,6 +159,7 @@ public static class NegotiateProtocol
             List<AvailableTransport>? availableTransports = null;
             string? error = null;
             int version = 0;
+            bool useStatefulReconnect = false;
 
             var completed = false;
             while (!completed && reader.CheckRead())
@@ -206,6 +213,10 @@ public static class NegotiateProtocol
                         {
                             throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                         }
+                        else if (reader.ValueTextEquals(StatefulReconnectPropertyNameBytes.EncodedUtf8Bytes))
+                        {
+                            useStatefulReconnect = reader.ReadAsBoolean(StatefulReconnectPropertyName);
+                        }
                         else
                         {
                             reader.Skip();
@@ -249,7 +260,8 @@ public static class NegotiateProtocol
                 AccessToken = accessToken,
                 AvailableTransports = availableTransports,
                 Error = error,
-                Version = version
+                Version = version,
+                UseStatefulReconnect = useStatefulReconnect,
             };
         }
         catch (Exception ex)

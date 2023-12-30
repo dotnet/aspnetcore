@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core.IO;
 
-internal sealed partial class AsyncIOEngine : IAsyncIOEngine
+internal sealed partial class AsyncIOEngine : IAsyncIOEngine, IDisposable
 {
     private const ushort ResponseMaxChunks = 65533;
 
@@ -55,7 +55,7 @@ internal sealed partial class AsyncIOEngine : IAsyncIOEngine
     }
 
     // In case the number of chunks is bigger than responseMaxChunks we need to make multiple calls
-    // to the native api https://docs.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpresponse-writeentitychunks-method
+    // to the native api https://learn.microsoft.com/en-us/iis/web-development-reference/native-code-api-reference/ihttpresponse-writeentitychunks-method
     // Despite the documentation states that feeding the function with more than 65535 chunks will cause the function to throw an exception,
     // it actually seems that 65534 is the maximum number of chunks allowed.
     // Also, there seems to be a problem when slicing a ReadOnlySequence on segment borders tracked here https://github.com/dotnet/runtime/issues/67607
@@ -243,5 +243,10 @@ internal sealed partial class AsyncIOEngine : IAsyncIOEngine
     private void ReturnOperation(AsyncFlushOperation operation)
     {
         Volatile.Write(ref _cachedAsyncFlushOperation, operation);
+    }
+
+    public void Dispose()
+    {
+        _stopped = true;
     }
 }

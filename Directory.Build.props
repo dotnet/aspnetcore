@@ -1,5 +1,9 @@
-﻿<Project>
+<Project>
   <Import Project="eng\Common.props" />
+
+  <PropertyGroup>
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- $(RepoRoot) is normally set globally and Arcade overrides it to ensure a trailing slash. -->
@@ -30,6 +34,9 @@
           $(MSBuildProjectName.EndsWith('.Test')) OR
           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
     <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
+    <IsTrimmingTestProject Condition="$(MSBuildProjectName.EndsWith('.TrimmingTests'))">true</IsTrimmingTestProject>
+    <IsNativeAotTestProject Condition="$(MSBuildProjectName.EndsWith('.NativeAotTests'))">true</IsNativeAotTestProject>
+    <IsPublishedAppTestProject Condition="'$(IsTrimmingTestProject)' == 'true' or '$(IsNativeAotTestProject)' == 'true'">true</IsPublishedAppTestProject>
     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) OR $(MSBuildProjectName.Contains('TestCommon'))">true</IsTestAssetProject>
     <IsProjectTemplateProject Condition=" ($(RepoRelativeProjectDir.Contains('ProjectTemplates')) OR $(MSBuildProjectName.Contains('ProjectTemplates')) ) AND
         '$(IsUnitTestProject)' != 'true' AND
@@ -39,6 +46,7 @@
     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
         '$(IsTestAssetProject)' == 'true' OR
         '$(IsBenchmarkProject)' == 'true' OR
+        '$(IsPublishedAppTestProject)' == 'true' OR
         $(IsUnitTestProject) ">false</IsShipping>
 
     <!--
@@ -122,6 +130,9 @@
 
     <!-- don't warn about unnecessary trim warning suppressions. can be removed with preview 6. -->
     <NoWarn>$(NoWarn);IL2121</NoWarn>
+
+    <!-- // Temporary diagnostic code from https://github.com/dotnet/extensions/pull/4130 for metrics APIs used in test. -->
+    <NoWarn>$(NoWarn);TBD</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
@@ -144,36 +155,15 @@
     <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
-
-    <!--
-      Archives and installers using this prefix are intended for internal use only.
-      For example, this .zip is used to handoff bits to partner teams who then incorporate our shared frameworks
-      into their own installers.
-    -->
-    <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
 
-    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
-    <SupportedRuntimeIdentifiers>
-      win-x64;
-      win-x86;
-      win-arm;
-      win-arm64;
-      osx-x64;
-      osx-arm64;
-      linux-musl-x64;
-      linux-musl-arm;
-      linux-musl-arm64;
-      linux-x64;
-      linux-arm;
-      linux-arm64;
-      freebsd-x64
-    </SupportedRuntimeIdentifiers>
-
+    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework.
+         The list is a semicolon separated list of RIDs. Whitespace may not be added to the property. -->
+    <SupportedRuntimeIdentifiers>win-x64;win-x86;win-arm;win-arm64;osx-x64;osx-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;freebsd-x64</SupportedRuntimeIdentifiers>
     <SupportedRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
 
     <!-- Playwright provides binaries for Windows (x86 and x64), macOS (x64) and Linux (x64, non musl). We can't use it on other architectures. -->
@@ -240,6 +230,12 @@
     <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Set the arcade before common targets so we compute ExcludeFromBuild before arcade uses it. -->
+    <CustomBeforeMicrosoftCommonTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonTargets>
+    <CustomBeforeMicrosoftCommonCrossTargetingTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonCrossTargetingTargets>
+  </PropertyGroup>
+
   <Import Project="eng\Workarounds.props" />
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
@@ -247,11 +243,17 @@
   <Import Project="eng\RequiresDelayedBuildProjects.props" />
   <Import Project="eng\SharedFramework.Local.props" />
   <Import Project="eng\SharedFramework.External.props" />
+  <Import Project="eng\ShippingAssemblies.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
-  <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\Java.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\testing\linker\trimmingTests.props" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
   <Import Project="eng\targets\Helix.props" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestWithAssets.props" Condition=" $(IsTestProject) " />
+
+  <!-- Keys used by InternalsVisibleTo attributes. -->
+  <PropertyGroup>
+    <MoqPublicKey>0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7</MoqPublicKey>
+  </PropertyGroup>
 </Project>

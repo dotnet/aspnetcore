@@ -7,11 +7,12 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -193,7 +194,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that InvokeAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -212,7 +213,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that SendAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -222,7 +223,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         using (StartVerifiableLog())
         {
             // Use pause threshold to block FlushAsync when writing 100+ bytes
-            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false));
+            var connection = new TestConnection(pipeOptions: new PipeOptions(readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, pauseWriterThreshold: 100, useSynchronizationContext: false, resumeWriterThreshold: 50));
             var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
             await hubConnection.StartAsync().DefaultTimeout();
@@ -254,7 +255,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that StreamAsChannelAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -273,7 +274,7 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             await hubConnection.StopAsync().DefaultTimeout();
 
             // Assert that StreamAsync didn't send a message
-            Assert.Null(await connection.ReadSentTextMessageAsync().DefaultTimeout());
+            Assert.Equal("{\"type\":7}", await connection.ReadSentTextMessageAsync().DefaultTimeout());
         }
     }
 
@@ -304,6 +305,40 @@ public partial class HubConnectionTests : VerifiableLoggedTest
             }
             // Cancel after stream is completed but before the AsyncEnumerator is disposed
             cts.Cancel();
+        }
+    }
+
+    [Fact]
+    public async Task CanCancelTokenDuringStream_SendsCancelInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            using var cts = new CancellationTokenSource();
+            var asyncEnumerable = hubConnection.StreamAsync<int>("Stream", 1, cts.Token);
+
+            await using var e = asyncEnumerable.GetAsyncEnumerator(cts.Token);
+            var task = e.MoveNextAsync();
+
+            var item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            var invocationId = item["invocationId"];
+            await connection.ReceiveJsonMessage(
+                new { type = HubProtocolConstants.StreamItemMessageType, invocationId, item = 1 }
+                ).DefaultTimeout();
+
+            await task.DefaultTimeout();
+            cts.Cancel();
+
+            item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, item["type"]);
+            Assert.Equal(invocationId, item["invocationId"]);
+
+            // Stream on client-side completes on cancellation
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await e.MoveNextAsync()).DefaultTimeout();
         }
     }
 
@@ -844,6 +879,70 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         mockConnection.Verify(c => c.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    [Fact]
+    public async Task DisableReconnectCalledWhenCloseMessageReceived()
+    {
+        var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+        var innerConnection = new TestConnection();
+        var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+        var delegateConnectionFactory = new DelegateConnectionFactory(
+            endPoint => innerConnection.StartAsync());
+        builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        var hubConnection = builder.Build();
+        var closedEventTcs = new TaskCompletionSource<Exception>();
+        hubConnection.Closed += e =>
+        {
+            closedEventTcs.SetResult(e);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync().DefaultTimeout();
+
+        await innerConnection.ReceiveJsonMessage(new { type = HubProtocolConstants.CloseMessageType });
+
+        var exception = await closedEventTcs.Task.DefaultTimeout();
+        Assert.Null(exception);
+
+        await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task DisableReconnectCalledWhenSendingCloseMessage()
+    {
+        var builder = new HubConnectionBuilder().WithUrl("http://example.com");
+        var innerConnection = new TestConnection();
+        var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+        innerConnection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+        var delegateConnectionFactory = new DelegateConnectionFactory(
+            endPoint => innerConnection.StartAsync());
+        builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
+
+        var hubConnection = builder.Build();
+        var closedEventTcs = new TaskCompletionSource<Exception>();
+        hubConnection.Closed += e =>
+        {
+            closedEventTcs.SetResult(e);
+            return Task.CompletedTask;
+        };
+
+        await hubConnection.StartAsync().DefaultTimeout();
+
+        await hubConnection.StopAsync().DefaultTimeout();
+
+        var exception = await closedEventTcs.Task.DefaultTimeout();
+        Assert.Null(exception);
+
+        await reconnectFeature.DisableReconnectCalled.DefaultTimeout();
+    }
+
     private class SampleObject
     {
         public SampleObject(string foo, int bar)
@@ -926,6 +1025,26 @@ public partial class HubConnectionTests : VerifiableLoggedTest
         public ReadOnlyMemory<byte> GetMessageBytes(HubMessage message)
         {
             return HubProtocolExtensions.GetMessageBytes(this, message);
+        }
+    }
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+    private sealed class TestReconnectFeature : IStatefulReconnectFeature
+#pragma warning restore CA2252 // This API requires opting into preview features
+    {
+        private TaskCompletionSource _disableReconnect = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task DisableReconnectCalled => _disableReconnect.Task;
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+        public void OnReconnected(Func<PipeWriter, Task> notifyOnReconnected) { }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+        public void DisableReconnect()
+#pragma warning restore CA2252 // This API requires opting into preview features
+        {
+            _disableReconnect.TrySetResult();
         }
     }
 }

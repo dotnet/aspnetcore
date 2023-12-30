@@ -31,7 +31,6 @@ public sealed class SocketConnectionContextFactory : IDisposable
     public SocketConnectionContextFactory(SocketConnectionFactoryOptions options, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(options);
-
         ArgumentNullException.ThrowIfNull(logger);
 
         _options = options;
@@ -97,7 +96,8 @@ public sealed class SocketConnectionContextFactory : IDisposable
             setting.SocketSenderPool,
             setting.InputOptions,
             setting.OutputOptions,
-            waitForData: _options.WaitForDataBeforeAllocatingBuffer);
+            waitForData: _options.WaitForDataBeforeAllocatingBuffer,
+            finOnError: _options.FinOnError);
 
         connection.Start();
         return connection;

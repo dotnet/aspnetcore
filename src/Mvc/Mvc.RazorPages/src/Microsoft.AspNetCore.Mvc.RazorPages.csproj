@@ -13,4 +13,11 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.IntegrationTests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.RazorPages.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test" />
+  </ItemGroup>
 </Project>

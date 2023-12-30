@@ -27,10 +27,7 @@ internal sealed class DefaultRazorPageFactoryProvider : IRazorPageFactoryProvide
     /// <inheritdoc />
     public RazorPageFactoryResult CreateFactory(string relativePath)
     {
-        if (relativePath == null)
-        {
-            throw new ArgumentNullException(nameof(relativePath));
-        }
+        ArgumentNullException.ThrowIfNull(relativePath);
 
         if (relativePath.StartsWith("~/", StringComparison.Ordinal))
         {

@@ -191,10 +191,7 @@ internal static class SpaProxy
 
     private static Uri ToWebSocketScheme(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         var uriBuilder = new UriBuilder(uri);
         if (string.Equals(uriBuilder.Scheme, "https", StringComparison.OrdinalIgnoreCase))
@@ -211,15 +208,8 @@ internal static class SpaProxy
 
     private static async Task<bool> AcceptProxyWebSocketRequest(HttpContext context, Uri destinationUri, CancellationToken cancellationToken)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (destinationUri == null)
-        {
-            throw new ArgumentNullException(nameof(destinationUri));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(destinationUri);
 
         using (var client = new ClientWebSocket())
         {
@@ -281,10 +271,7 @@ internal static class SpaProxy
 
     private static async Task PumpWebSocket(WebSocket source, WebSocket destination, int bufferSize, CancellationToken cancellationToken)
     {
-        if (bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(bufferSize));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
 
         var buffer = new byte[bufferSize];
 

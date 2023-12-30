@@ -7,8 +7,13 @@
   <ItemGroup>
     <Protobuf Include="Proto\httpbody.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\transcoding.proto" GrpcServices="Both" />
+
     <Protobuf Include="Proto\Issue045270\hello.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\Issue045270\country.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\Issue047349\message.proto" GrpcServices="Both" />    
+    <Protobuf Include="Proto\Issue048192\hello.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\Issue048192\customhttp.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\Issue048192\customannotations.proto" GrpcServices="Both" />
 
     <Compile Include="..\Shared\TestGrpcServiceActivator.cs" Link="Infrastructure\TestGrpcServiceActivator.cs" />
 

@@ -25,10 +25,7 @@ public class DistributedCacheTagHelperStorage : IDistributedCacheTagHelperStorag
     /// <inheritdoc />
     public Task<byte[]> GetAsync(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         return _distributedCache.GetAsync(key);
     }
@@ -36,15 +33,8 @@ public class DistributedCacheTagHelperStorage : IDistributedCacheTagHelperStorag
     /// <inheritdoc />
     public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
-
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
 
         return _distributedCache.SetAsync(key, value, options);
     }

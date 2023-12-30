@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization;
 
@@ -21,10 +22,7 @@ public class DefaultAuthorizationHandlerProvider : IAuthorizationHandlerProvider
     /// <param name="handlers">The <see cref="IAuthorizationHandler"/>s.</param>
     public DefaultAuthorizationHandlerProvider(IEnumerable<IAuthorizationHandler> handlers)
     {
-        if (handlers == null)
-        {
-            throw new ArgumentNullException(nameof(handlers));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(handlers);
 
         _handlersTask = Task.FromResult(handlers);
     }

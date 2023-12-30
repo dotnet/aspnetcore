@@ -41,11 +41,6 @@ internal static partial class SendUtils
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
 
-#if NETSTANDARD2_1_OR_GREATER || NET7_0_OR_GREATER
-                        // HttpClient gracefully falls back to HTTP/1.1, so it's fine to set the preferred version to a higher version
-                        request.Version = HttpVersion.Version20;
-#endif
-
                         request.Content = new ReadOnlySequenceContent(buffer);
 
                         // ResponseHeadersRead instructs SendAsync to return once headers are read

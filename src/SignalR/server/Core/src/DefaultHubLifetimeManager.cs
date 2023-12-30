@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -34,15 +33,8 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task AddToGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
-
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var connection = _connections[connectionId];
         if (connection == null)
@@ -63,15 +55,8 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task RemoveFromGroupAsync(string connectionId, string groupName, CancellationToken cancellationToken = default)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
-
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var connection = _connections[connectionId];
         if (connection == null)
@@ -176,10 +161,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendConnectionAsync(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
 
         var connection = _connections[connectionId];
 
@@ -198,10 +180,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendGroupAsync(string groupName, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var group = _groups[groupName];
         if (group != null)
@@ -253,10 +232,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task SendGroupExceptAsync(string groupName, string methodName, object?[] args, IReadOnlyList<string> excludedConnectionIds, CancellationToken cancellationToken = default)
     {
-        if (groupName == null)
-        {
-            throw new ArgumentNullException(nameof(groupName));
-        }
+        ArgumentNullException.ThrowIfNull(groupName);
 
         var group = _groups[groupName];
         if (group != null)
@@ -328,10 +304,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc/>
     public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {
-        if (connectionId == null)
-        {
-            throw new ArgumentNullException(nameof(connectionId));
-        }
+        ArgumentNullException.ThrowIfNull(connectionId);
 
         var connection = _connections[connectionId];
 
@@ -340,7 +313,10 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             throw new IOException($"Connection '{connectionId}' does not exist.");
         }
 
-        var invocationId = Interlocked.Increment(ref _lastInvocationId).ToString(NumberFormatInfo.InvariantInfo);
+        var id = Interlocked.Increment(ref _lastInvocationId);
+        // prefix the client result ID with 's' for server, so that it won't conflict with other CompletionMessage's from the client
+        // e.g. Stream IDs when completing
+        var invocationId = $"s{id}";
 
         using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken,
             connection.ConnectionAborted, out var linkedToken);

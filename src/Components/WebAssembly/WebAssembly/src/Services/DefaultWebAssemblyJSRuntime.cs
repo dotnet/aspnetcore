@@ -3,24 +3,31 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
+internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
+    private readonly RootComponentTypeCache _rootComponentCache = new();
     internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
+    public event Action<RootComponentOperationBatch>? OnUpdateRootComponents;
+
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
     [DynamicDependency(nameof(BeginInvokeDotNet))]
-    [DynamicDependency(nameof(NotifyByteArrayAvailable))]
+    [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
+    [DynamicDependency(nameof(UpdateRootComponentsCore))]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
@@ -29,14 +36,20 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
-    // The following methods are invoke via Mono's JS interop mechanism (invoke_method)
-    public static string? InvokeDotNet(string assemblyName, string methodIdentifier, string dotNetObjectId, string argsJson)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static string? InvokeDotNet(
+        string? assemblyName,
+        string methodIdentifier,
+        [JSMarshalAs<JSType.Number>] long dotNetObjectId,
+        string argsJson)
     {
-        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId == null ? default : long.Parse(dotNetObjectId, CultureInfo.InvariantCulture), callId: null);
+        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId: null);
         return DotNetDispatcher.Invoke(Instance, callInfo, argsJson);
     }
 
-    // Invoked via Mono's JS interop mechanism (invoke_method)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
     public static void EndInvokeJS(string argsJson)
     {
         WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
@@ -47,8 +60,9 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         });
     }
 
-    // Invoked via Mono's JS interop mechanism (invoke_method)
-    public static void BeginInvokeDotNet(string callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
     {
         // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
         // We only need one for any given call. This helps to work around the limitation that we can
@@ -75,21 +89,66 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         });
     }
 
-    /// <summary>
-    /// Invoked via Mono's JS interop mechanism (invoke_method)
-    ///
-    /// Notifies .NET of an array that's available for transfer from JS to .NET
-    ///
-    /// Ideally that byte array would be transferred directly as a parameter on this
-    /// call, however that's not currently possible due to: <see href="https://github.com/dotnet/runtime/issues/53378"/>.
-    /// </summary>
-    /// <param name="id">Id of the byte array</param>
-    public static void NotifyByteArrayAvailable(int id)
+    [SupportedOSPlatform("browser")]
+    [JSExport]
+    public static void UpdateRootComponentsCore(string operationsJson)
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var data = Instance.InvokeUnmarshalled<byte[]>("Blazor._internal.retrieveByteArray");
-#pragma warning restore CS0618 // Type or member is obsolete
+        try
+        {
+            var operations = DeserializeOperations(operationsJson);
+            Instance.OnUpdateRootComponents?.Invoke(operations);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deserializing root component operations: {ex}");
+        }
+    }
 
+    [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
+    [DynamicDependency(JsonSerialized, typeof(RootComponentOperationBatch))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
+    internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
+    {
+        var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+            operationsJson,
+            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+
+        for (var i = 0; i < deserialized.Operations.Length; i++)
+        {
+            var operation = deserialized.Operations[i];
+            if (operation.Type == RootComponentOperationType.Remove)
+            {
+                continue;
+            }
+
+            if (operation.Marker == null)
+            {
+                throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
+            }
+
+            var componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
+                ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
+            var parameters = DeserializeComponentParameters(operation.Marker.Value);
+            operation.Descriptor = new(componentType, parameters);
+        }
+
+        return deserialized;
+    }
+
+    static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
+    {
+        var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
+        var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
+        var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
+        var parameters = componentDeserializer.DeserializeParameters(definitions, values);
+
+        return new(parameters, definitions, values.AsReadOnly());
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    private static void ReceiveByteArrayFromJS(int id, byte[] data)
+    {
         DotNetDispatcher.ReceiveByteArray(Instance, id, data);
     }
 
@@ -100,6 +159,6 @@ internal sealed class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     /// <inheritdoc />
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
-        return TransmitDataStreamToJS.TransmitStreamAsync(this, streamId, dotNetStreamReference);
+        return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
     }
 }

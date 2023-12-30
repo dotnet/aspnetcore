@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ internal sealed partial class RateLimitingMiddleware
     private readonly RequestDelegate _next;
     private readonly Func<OnRejectedContext, CancellationToken, ValueTask>? _defaultOnRejected;
     private readonly ILogger _logger;
+    private readonly RateLimitingMetrics _metrics;
     private readonly PartitionedRateLimiter<HttpContext>? _globalLimiter;
     private readonly PartitionedRateLimiter<HttpContext> _endpointLimiter;
     private readonly int _rejectionStatusCode;
@@ -29,14 +31,17 @@ internal sealed partial class RateLimitingMiddleware
     /// <param name="logger">The <see cref="ILogger"/> used for logging.</param>
     /// <param name="options">The options for the middleware.</param>
     /// <param name="serviceProvider">The service provider.</param>
-    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider)
+    /// <param name="metrics">The rate limiting metrics.</param>
+    public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger, IOptions<RateLimiterOptions> options, IServiceProvider serviceProvider, RateLimitingMetrics metrics)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(serviceProvider);
+        ArgumentNullException.ThrowIfNull(metrics);
 
         _next = next;
         _logger = logger;
+        _metrics = metrics;
         _defaultOnRejected = options.Value.OnRejected;
         _rejectionStatusCode = options.Value.RejectionStatusCode;
         _policyMap = new Dictionary<string, DefaultRateLimiterPolicy>(options.Value.PolicyMap);
@@ -49,7 +54,6 @@ internal sealed partial class RateLimitingMiddleware
 
         _globalLimiter = options.Value.GlobalLimiter;
         _endpointLimiter = CreateEndpointLimiter();
-
     }
 
     // TODO - EventSource?
@@ -72,18 +76,41 @@ internal sealed partial class RateLimitingMiddleware
         {
             return _next(context);
         }
+
         return InvokeInternal(context, enableRateLimitingAttribute);
     }
 
     private async Task InvokeInternal(HttpContext context, EnableRateLimitingAttribute? enableRateLimitingAttribute)
     {
-        using var leaseContext = await TryAcquireAsync(context);
+        var policyName = enableRateLimitingAttribute?.PolicyName;
+
+        // Cache the up/down counter enabled state at the start of the middleware.
+        // This ensures that the state is consistent for the entire request.
+        // For example, if a meter listener starts after a request is queued, when the request exits the queue
+        // the requests queued counter won't go into a negative value.
+        var metricsContext = _metrics.CreateContext(policyName);
+
+        using var leaseContext = await TryAcquireAsync(context, metricsContext);
+
         if (leaseContext.Lease?.IsAcquired == true)
         {
-            await _next(context);
+            var startTimestamp = Stopwatch.GetTimestamp();
+            var currentLeaseStart = metricsContext.CurrentLeasedRequestsCounterEnabled;
+            try
+            {
+
+                _metrics.LeaseStart(metricsContext);
+                await _next(context);
+            }
+            finally
+            {
+                _metrics.LeaseEnd(metricsContext, startTimestamp, Stopwatch.GetTimestamp());
+            }
         }
         else
         {
+            _metrics.LeaseFailed(metricsContext, leaseContext.RequestRejectionReason!.Value);
+
             // If the request was canceled, do not call OnRejected, just return.
             if (leaseContext.RequestRejectionReason == RequestRejectionReason.RequestCanceled)
             {
@@ -107,7 +134,6 @@ internal sealed partial class RateLimitingMiddleware
                 }
                 else
                 {
-                    var policyName = enableRateLimitingAttribute?.PolicyName;
                     if (policyName is not null && _policyMap.TryGetValue(policyName, out policy) && policy.OnRejected is not null)
                     {
                         thisRequestOnRejected = policy.OnRejected;
@@ -122,15 +148,32 @@ internal sealed partial class RateLimitingMiddleware
         }
     }
 
-    private ValueTask<LeaseContext> TryAcquireAsync(HttpContext context)
+    private async ValueTask<LeaseContext> TryAcquireAsync(HttpContext context, MetricsContext metricsContext)
     {
         var leaseContext = CombinedAcquire(context);
         if (leaseContext.Lease?.IsAcquired == true)
         {
-            return ValueTask.FromResult(leaseContext);
+            return leaseContext;
         }
 
-        return CombinedWaitAsync(context, context.RequestAborted);
+        var waitTask = CombinedWaitAsync(context, context.RequestAborted);
+        // If the task returns immediately then the request wasn't queued.
+        if (waitTask.IsCompleted)
+        {
+            return await waitTask;
+        }
+
+        var startTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            _metrics.QueueStart(metricsContext);
+            leaseContext = await waitTask;
+            return leaseContext;
+        }
+        finally
+        {
+            _metrics.QueueEnd(metricsContext, leaseContext.RequestRejectionReason, startTimestamp, Stopwatch.GetTimestamp());
+        }
     }
 
     private LeaseContext CombinedAcquire(HttpContext context)

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.ObjectPool;
 
@@ -21,10 +22,7 @@ public class LeakTrackingObjectPoolProvider : ObjectPoolProvider
     /// <param name="inner">The <see cref="ObjectPoolProvider"/> to wrap.</param>
     public LeakTrackingObjectPoolProvider(ObjectPoolProvider inner)
     {
-        if (inner == null)
-        {
-            throw new ArgumentNullException(nameof(inner));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(inner);
 
         _inner = inner;
     }

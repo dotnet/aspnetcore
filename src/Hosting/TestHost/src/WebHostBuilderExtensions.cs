@@ -74,15 +74,8 @@ public static class WebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder ConfigureTestServices(this IWebHostBuilder webHostBuilder, Action<IServiceCollection> servicesConfiguration)
     {
-        if (webHostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(webHostBuilder));
-        }
-
-        if (servicesConfiguration == null)
-        {
-            throw new ArgumentNullException(nameof(servicesConfiguration));
-        }
+        ArgumentNullException.ThrowIfNull(webHostBuilder);
+        ArgumentNullException.ThrowIfNull(servicesConfiguration);
 
         if (webHostBuilder.GetType().Name.Equals("GenericWebHostBuilder", StringComparison.Ordinal))
         {
@@ -110,15 +103,8 @@ public static class WebHostBuilderExtensions
     /// <returns></returns>
     public static IWebHostBuilder ConfigureTestContainer<TContainer>(this IWebHostBuilder webHostBuilder, Action<TContainer> servicesConfiguration)
     {
-        if (webHostBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(webHostBuilder));
-        }
-
-        if (servicesConfiguration == null)
-        {
-            throw new ArgumentNullException(nameof(servicesConfiguration));
-        }
+        ArgumentNullException.ThrowIfNull(webHostBuilder);
+        ArgumentNullException.ThrowIfNull(servicesConfiguration);
 
 #pragma warning disable CS0612 // Type or member is obsolete
         webHostBuilder.ConfigureServices(
@@ -160,15 +146,8 @@ public static class WebHostBuilderExtensions
         string applicationBasePath,
         string solutionName = "*.sln")
     {
-        if (solutionRelativePath == null)
-        {
-            throw new ArgumentNullException(nameof(solutionRelativePath));
-        }
-
-        if (applicationBasePath == null)
-        {
-            throw new ArgumentNullException(nameof(applicationBasePath));
-        }
+        ArgumentNullException.ThrowIfNull(solutionRelativePath);
+        ArgumentNullException.ThrowIfNull(applicationBasePath);
 
         var directoryInfo = new DirectoryInfo(applicationBasePath);
         do
@@ -195,10 +174,7 @@ public static class WebHostBuilderExtensions
 
         public ConfigureTestServicesStartupConfigureServicesFilter(Action<IServiceCollection> servicesConfiguration)
         {
-            if (servicesConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(servicesConfiguration));
-            }
+            ArgumentNullException.ThrowIfNull(servicesConfiguration);
 
             _servicesConfiguration = servicesConfiguration;
         }
@@ -219,10 +195,7 @@ public static class WebHostBuilderExtensions
 
         public ConfigureTestServicesStartupConfigureContainerFilter(Action<TContainer> containerConfiguration)
         {
-            if (containerConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(containerConfiguration));
-            }
+            ArgumentNullException.ThrowIfNull(containerConfiguration);
 
             _servicesConfiguration = containerConfiguration;
         }

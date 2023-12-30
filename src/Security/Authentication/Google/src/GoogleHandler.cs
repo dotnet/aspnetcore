@@ -24,8 +24,17 @@ public class GoogleHandler : OAuthHandler<GoogleOptions>
     /// Initializes a new instance of <see cref="GoogleHandler"/>.
     /// </summary>
     /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
     public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         : base(options, logger, encoder, clock)
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="GoogleHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <inheritdoc />

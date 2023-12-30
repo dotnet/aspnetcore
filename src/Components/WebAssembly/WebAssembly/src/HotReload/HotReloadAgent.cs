@@ -95,13 +95,13 @@ internal sealed class HotReloadAgent : IDisposable
     {
         bool methodFound = false;
 
-        if (GetUpdateMethod("ClearCache") is MethodInfo clearCache)
+        if (GetUpdateMethod(handlerType, "ClearCache") is MethodInfo clearCache)
         {
             handlerActions.ClearCache.Add(CreateAction(clearCache));
             methodFound = true;
         }
 
-        if (GetUpdateMethod("UpdateApplication") is MethodInfo updateApplication)
+        if (GetUpdateMethod(handlerType, "UpdateApplication") is MethodInfo updateApplication)
         {
             handlerActions.UpdateApplication.Add(CreateAction(updateApplication));
             methodFound = true;
@@ -129,7 +129,7 @@ internal sealed class HotReloadAgent : IDisposable
             };
         }
 
-        MethodInfo? GetUpdateMethod(string name)
+        MethodInfo? GetUpdateMethod([DynamicallyAccessedMembers(HotReloadHandlerLinkerFlags)] Type handlerType, string name)
         {
             if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(Type[]) }) is MethodInfo updateMethod &&
                 updateMethod.ReturnType == typeof(void))

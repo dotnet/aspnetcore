@@ -11,10 +11,7 @@ public static class WebDriverExtensions
 {
     public static IReadOnlyList<LogEntry> GetBrowserLogs(this IWebDriver driver, LogLevel level)
     {
-        if (driver is null)
-        {
-            throw new ArgumentNullException(nameof(driver));
-        }
+        ArgumentNullException.ThrowIfNull(driver);
 
         // Fail-fast if any errors were logged to the console.
         var log = driver.Manage().Logs.GetLog(LogType.Browser);

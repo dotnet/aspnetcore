@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 [MsQuicSupported]
 [HttpSysHttp3Supported]
 [Collection(IISHttpsTestSiteCollection.Name)]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Http3Tests : FunctionalTestsBase
 {
     public Http3Tests(IISTestSiteFixture fixture)

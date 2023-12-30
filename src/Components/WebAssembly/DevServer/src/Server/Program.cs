@@ -35,6 +35,7 @@ public class Program
                     ["Logging:LogLevel:Microsoft"] = "Warning",
                     ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
                     [WebHostDefaults.StaticWebAssetsKey] = name,
+                    ["ApplyCopHeaders"] = args.Contains("--apply-cop-headers").ToString()
                 };
 
                 config.AddInMemoryCollection(inMemoryConfiguration);

@@ -66,10 +66,7 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     /// <param name="action">The <see cref="ActionModel"/>.</param>
     public void Apply(ActionModel action)
     {
-        if (action == null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         if (!ShouldApply(action))
         {
@@ -87,10 +84,8 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
             var bindingSource = parameter.BindingInfo?.BindingSource;
             if (bindingSource == null)
             {
-                bindingSource = InferBindingSourceForParameter(parameter);
-
-                parameter.BindingInfo = parameter.BindingInfo ?? new BindingInfo();
-                parameter.BindingInfo.BindingSource = bindingSource;
+                parameter.BindingInfo ??= new BindingInfo();
+                parameter.BindingInfo.BindingSource = InferBindingSourceForParameter(parameter);
             }
         }
 
@@ -116,16 +111,16 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
     }
 
     // Internal for unit testing.
-    internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
+    internal BindingSource? InferBindingSourceForParameter(ParameterModel parameter)
     {
-        if (IsComplexTypeParameter(parameter))
+        if (IsComplexTypeParameter(parameter, out var metadata))
         {
             if (IsService(parameter.ParameterType))
             {
                 return BindingSource.Services;
             }
 
-            return BindingSource.Body;
+            return metadata.BoundProperties.Any(prop => prop.BindingSource is not null) ? null : BindingSource.Body;
         }
 
         if (ParameterExistsInAnyRoute(parameter.Action, parameter.ParameterName))
@@ -174,10 +169,10 @@ public class InferParameterBindingInfoConvention : IActionModelConvention
         return false;
     }
 
-    private bool IsComplexTypeParameter(ParameterModel parameter)
+    private bool IsComplexTypeParameter(ParameterModel parameter, out ModelMetadata metadata)
     {
         // No need for information from attributes on the parameter. Just use its type.
-        var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
+        metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
 
         return metadata.IsComplexType;
     }

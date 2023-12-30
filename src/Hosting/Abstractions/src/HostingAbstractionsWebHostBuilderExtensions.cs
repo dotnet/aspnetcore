@@ -52,10 +52,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     [RequiresUnreferencedCode("This API searches the specified assembly for a startup type using reflection. The startup type may be trimmed. Please use UseStartup<TStartup>() to specify the startup type explicitly.")]
     public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, string startupAssemblyName)
     {
-        if (startupAssemblyName == null)
-        {
-            throw new ArgumentNullException(nameof(startupAssemblyName));
-        }
+        ArgumentNullException.ThrowIfNull(startupAssemblyName);
 
         return hostBuilder
             .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
@@ -70,10 +67,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseServer(this IWebHostBuilder hostBuilder, IServer server)
     {
-        if (server == null)
-        {
-            throw new ArgumentNullException(nameof(server));
-        }
+        ArgumentNullException.ThrowIfNull(server);
 
         return hostBuilder.ConfigureServices(services =>
         {
@@ -91,10 +85,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseEnvironment(this IWebHostBuilder hostBuilder, string environment)
     {
-        if (environment == null)
-        {
-            throw new ArgumentNullException(nameof(environment));
-        }
+        ArgumentNullException.ThrowIfNull(environment);
 
         return hostBuilder.UseSetting(WebHostDefaults.EnvironmentKey, environment);
     }
@@ -107,10 +98,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseContentRoot(this IWebHostBuilder hostBuilder, string contentRoot)
     {
-        if (contentRoot == null)
-        {
-            throw new ArgumentNullException(nameof(contentRoot));
-        }
+        ArgumentNullException.ThrowIfNull(contentRoot);
 
         return hostBuilder.UseSetting(WebHostDefaults.ContentRootKey, contentRoot);
     }
@@ -123,10 +111,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseWebRoot(this IWebHostBuilder hostBuilder, string webRoot)
     {
-        if (webRoot == null)
-        {
-            throw new ArgumentNullException(nameof(webRoot));
-        }
+        ArgumentNullException.ThrowIfNull(webRoot);
 
         return hostBuilder.UseSetting(WebHostDefaults.WebRootKey, webRoot);
     }
@@ -139,10 +124,7 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder UseUrls(this IWebHostBuilder hostBuilder, [StringSyntax(StringSyntaxAttribute.Uri)] params string[] urls)
     {
-        if (urls == null)
-        {
-            throw new ArgumentNullException(nameof(urls));
-        }
+        ArgumentNullException.ThrowIfNull(urls);
 
         return hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Join(';', urls));
     }

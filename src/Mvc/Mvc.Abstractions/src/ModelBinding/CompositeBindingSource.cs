@@ -24,10 +24,7 @@ public class CompositeBindingSource : BindingSource
         IEnumerable<BindingSource> bindingSources,
         string displayName)
     {
-        if (bindingSources == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSources));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSources);
 
         foreach (var bindingSource in bindingSources)
         {
@@ -66,15 +63,8 @@ public class CompositeBindingSource : BindingSource
         IEnumerable<BindingSource> bindingSources)
         : base(id, displayName, isGreedy: false, isFromRequest: true)
     {
-        if (id == null)
-        {
-            throw new ArgumentNullException(nameof(id));
-        }
-
-        if (bindingSources == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSources));
-        }
+        ArgumentNullException.ThrowIfNull(id);
+        ArgumentNullException.ThrowIfNull(bindingSources);
 
         BindingSources = bindingSources;
     }
@@ -87,10 +77,7 @@ public class CompositeBindingSource : BindingSource
     /// <inheritdoc />
     public override bool CanAcceptDataFrom(BindingSource bindingSource)
     {
-        if (bindingSource is null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
 
         if (bindingSource is CompositeBindingSource)
         {

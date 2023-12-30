@@ -33,15 +33,8 @@ public partial class ContentResultExecutor : IActionResultExecutor<ContentResult
     /// <inheritdoc />
     public virtual async Task ExecuteAsync(ActionContext context, ContentResult result)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (result == null)
-        {
-            throw new ArgumentNullException(nameof(result));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(result);
 
         var response = context.HttpContext.Response;
 

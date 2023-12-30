@@ -3,7 +3,6 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,9 +28,10 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
     private readonly bool _enableDetailedErrors;
     private readonly long? _maximumMessageSize;
     private readonly int _maxParallelInvokes;
+    private readonly long _statefulReconnectBufferSize;
 
     // Internal for testing
-    internal ISystemClock SystemClock { get; set; } = new SystemClock();
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
@@ -71,6 +71,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _hubOptions.DisableImplicitFromServicesParameters;
+            _statefulReconnectBufferSize = _hubOptions.StatefulReconnectBufferSize;
 
             if (_hubOptions.HubFilters != null)
             {
@@ -83,6 +84,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
             _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
             disableImplicitFromServiceParameters = _globalHubOptions.DisableImplicitFromServicesParameters;
+            _statefulReconnectBufferSize = _globalHubOptions.StatefulReconnectBufferSize;
 
             if (_globalHubOptions.HubFilters != null)
             {
@@ -120,8 +122,9 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
             StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
             MaximumReceiveMessageSize = _maximumMessageSize,
-            SystemClock = SystemClock,
+            TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
+            StatefulReconnectBufferSize = _statefulReconnectBufferSize,
         };
 
         Log.ConnectedStarting(_logger);
@@ -191,6 +194,20 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
     private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
     {
+        var disconnectException = exception;
+        if (connection.CloseMessage is not null)
+        {
+            // If client sent a CloseMessage we don't care about any internal exceptions that may have occurred.
+            // The CloseMessage indicates a graceful closure on the part of the client.
+            disconnectException = null;
+            exception = null;
+            if (connection.CloseMessage.Error is not null)
+            {
+                // A bit odd for the client to send an error along with a graceful close, but just in case we should surface it in OnDisconnectedAsync
+                disconnectException = new HubException(connection.CloseMessage.Error);
+            }
+        }
+
         // send close message before aborting the connection
         await SendCloseAsync(connection, exception, connection.AllowReconnect);
 
@@ -205,7 +222,7 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
 
         try
         {
-            await _dispatcher.OnDisconnectedAsync(connection, exception);
+            await _dispatcher.OnDisconnectedAsync(connection, disconnectException);
         }
         catch (Exception ex)
         {

@@ -12,4 +12,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Formatters.Xml.Test" />
+  </ItemGroup>
 </Project>

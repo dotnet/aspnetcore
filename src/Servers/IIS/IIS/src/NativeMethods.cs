@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS;
 
@@ -58,13 +59,13 @@ internal static partial class NativeMethods
         IntPtr pvShutdownContext);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static unsafe partial int http_write_response_bytes(NativeSafeHandle pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
+    private static unsafe partial int http_write_response_bytes(NativeSafeHandle pInProcessHandler, HTTP_DATA_CHUNK* pDataChunks, int nChunks, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_flush_response_bytes(NativeSafeHandle pInProcessHandler, [MarshalAs(UnmanagedType.Bool)] bool fMoreData, [MarshalAs(UnmanagedType.Bool)] out bool fCompletionExpected);
 
     [LibraryImport(AspNetCoreModuleDll)]
-    private static unsafe partial HttpApiTypes.HTTP_REQUEST_V2* http_get_raw_request(NativeSafeHandle pInProcessHandler);
+    private static unsafe partial HTTP_REQUEST_V2* http_get_raw_request(NativeSafeHandle pInProcessHandler);
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_stop_calls_into_managed(NativeSafeHandle pInProcessApplication);
@@ -91,6 +92,18 @@ internal static partial class NativeMethods
     private static partial int http_get_application_properties(out IISConfigurationData iiConfigData);
 
     [LibraryImport(AspNetCoreModuleDll)]
+    [SuppressMessage("LibraryImportGenerator", "SYSLIB1051:Specified type is not supported by source-generated P/Invokes", Justification = "The enum is handled by the runtime.")]
+    private static unsafe partial int http_query_request_property(
+        ulong requestId,
+        HTTP_REQUEST_PROPERTY propertyId,
+        void* qualifier,
+        uint qualifierSize,
+        void* output,
+        uint outputSize,
+        uint* bytesReturned,
+        IntPtr overlapped);
+
+    [LibraryImport(AspNetCoreModuleDll)]
     private static partial int http_get_server_variable(
         NativeSafeHandle pInProcessHandler,
         [MarshalAs(UnmanagedType.LPStr)] string variableName,
@@ -115,7 +128,7 @@ internal static partial class NativeMethods
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_websockets_write_bytes(
         NativeSafeHandle pInProcessHandler,
-        HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
+        HTTP_DATA_CHUNK* pDataChunks,
         int nChunks,
         delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
         IntPtr pvCompletionContext,
@@ -138,6 +151,7 @@ internal static partial class NativeMethods
 
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_has_response4(NativeSafeHandle pInProcessHandler, [MarshalAs(UnmanagedType.Bool)] out bool isResponse4);
+
     [LibraryImport(AspNetCoreModuleDll)]
     private static unsafe partial int http_response_set_trailer(NativeSafeHandle pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, [MarshalAs(UnmanagedType.Bool)] bool replace);
 
@@ -175,7 +189,7 @@ internal static partial class NativeMethods
         Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, requestsDrainedHandler, pvRequestContext, pvShutdownContext));
     }
 
-    internal static unsafe int HttpWriteResponseBytes(NativeSafeHandle pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
+    internal static unsafe int HttpWriteResponseBytes(NativeSafeHandle pInProcessHandler, HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
     {
         return http_write_response_bytes(pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
     }
@@ -185,7 +199,7 @@ internal static partial class NativeMethods
         return http_flush_response_bytes(pInProcessHandler, fMoreData, out fCompletionExpected);
     }
 
-    internal static unsafe HttpApiTypes.HTTP_REQUEST_V2* HttpGetRawRequest(NativeSafeHandle pInProcessHandler)
+    internal static unsafe HTTP_REQUEST_V2* HttpGetRawRequest(NativeSafeHandle pInProcessHandler)
     {
         return http_get_raw_request(pInProcessHandler);
     }
@@ -231,6 +245,11 @@ internal static partial class NativeMethods
         return iisConfigurationData;
     }
 
+    public static unsafe int HttpQueryRequestProperty(ulong requestId, HTTP_REQUEST_PROPERTY propertyId, void* qualifier, uint qualifierSize, void* output, uint outputSize, uint* bytesReturned, IntPtr overlapped)
+    {
+        return http_query_request_property(requestId, propertyId, qualifier, qualifierSize, output, outputSize, bytesReturned, overlapped);
+    }
+
     public static bool HttpTryGetServerVariable(NativeSafeHandle pInProcessHandler, string variableName, out string value)
     {
         return http_get_server_variable(pInProcessHandler, variableName, out value) == 0;
@@ -254,7 +273,7 @@ internal static partial class NativeMethods
 
     internal static unsafe int HttpWebsocketsWriteBytes(
         NativeSafeHandle pInProcessHandler,
-        HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
+        HTTP_DATA_CHUNK* pDataChunks,
         int nChunks,
         delegate* unmanaged<IntPtr, IntPtr, IntPtr, REQUEST_NOTIFICATION_STATUS> pfnCompletionCallback,
         IntPtr pvCompletionContext,

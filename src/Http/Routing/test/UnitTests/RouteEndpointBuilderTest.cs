@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing;
@@ -41,7 +42,37 @@ public class RouteEndpointBuilderTest
         Assert.Equal(defaultOrder, endpoint.Order);
         Assert.Equal(requestDelegate, endpoint.RequestDelegate);
         Assert.Equal("/", endpoint.RoutePattern.RawText);
-        Assert.Equal(metadata, Assert.Single(endpoint.Metadata));
+        Assert.Collection(endpoint.Metadata,
+            m => Assert.Same(metadata, m),
+            m => Assert.IsAssignableFrom<IRouteDiagnosticsMetadata>(m));
+    }
+
+    [Fact]
+    public void Build_CustomRouteDiagnosticsMetadata_EndpointCreated()
+    {
+        const int defaultOrder = 0;
+        var metadata = new object();
+        RequestDelegate requestDelegate = (d) => null;
+
+        var builder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
+        {
+            Metadata = { new TestRouteDiaganosticsMetadata { Route = "Test" }, metadata }
+        };
+
+        var endpoint = Assert.IsType<RouteEndpoint>(builder.Build());
+        Assert.Equal("/", endpoint.RoutePattern.RawText);
+        Assert.Collection(endpoint.Metadata,
+            m =>
+            {
+                var metadata = Assert.IsAssignableFrom<IRouteDiagnosticsMetadata>(m);
+                Assert.Equal("Test", metadata.Route);
+            },
+            m => Assert.Equal(metadata, m));
+    }
+
+    private sealed class TestRouteDiaganosticsMetadata : IRouteDiagnosticsMetadata
+    {
+        public string Route { get; init; }
     }
 
     [Fact]

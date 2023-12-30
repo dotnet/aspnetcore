@@ -78,7 +78,7 @@ internal sealed class OpenApiGenerator
             Description = metadata.GetMetadata<IEndpointDescriptionMetadata>()?.Description,
             Tags = GetOperationTags(methodInfo, metadata),
             Parameters = GetOpenApiParameters(methodInfo, pattern, disableInferredBody),
-            RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern),
+            RequestBody = GetOpenApiRequestBody(methodInfo, metadata, pattern, disableInferredBody),
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
 
@@ -98,9 +98,9 @@ internal sealed class OpenApiGenerator
     {
         var responses = new OpenApiResponses();
         var responseType = method.ReturnType;
-        if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(responseType, out var coercedAwaitableInfo))
         {
-            responseType = awaitableInfo.ResultType;
+            responseType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         if (typeof(IResult).IsAssignableFrom(responseType))
@@ -186,9 +186,9 @@ internal sealed class OpenApiGenerator
             eligibileAnnotations[statusCode] = (discoveredTypeAnnotation, discoveredContentTypeAnnotation);
         }
 
-        if (eligibileAnnotations.Count == 0)
+        if (responseType != null && eligibileAnnotations.Count == 0)
         {
-            GenerateDefaultResponses(eligibileAnnotations, responseType);
+            GenerateDefaultResponses(eligibileAnnotations, responseType!);
         }
 
         foreach (var annotation in eligibileAnnotations)
@@ -251,7 +251,7 @@ internal sealed class OpenApiGenerator
         }
     }
 
-    private OpenApiRequestBody? GetOpenApiRequestBody(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
+    private OpenApiRequestBody? GetOpenApiRequestBody(MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern, bool disableInferredBody)
     {
         var hasFormOrBodyParameter = false;
         ParameterInfo? requestBodyParameter = null;
@@ -259,7 +259,7 @@ internal sealed class OpenApiGenerator
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache);
         foreach (var parameter in parameters)
         {
-            var (bodyOrFormParameter, _, _) = GetOpenApiParameterLocation(parameter, pattern, false);
+            var (bodyOrFormParameter, _, _) = GetOpenApiParameterLocation(parameter, pattern, disableInferredBody);
             hasFormOrBodyParameter |= bodyOrFormParameter;
             if (hasFormOrBodyParameter)
             {
@@ -378,7 +378,9 @@ internal sealed class OpenApiGenerator
             }
             var nullabilityContext = new NullabilityInfoContext();
             var nullability = nullabilityContext.Create(parameter);
-            var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
+            var isOptional = parameter is PropertyAsParameterInfo argument
+                ? argument.IsOptional
+                : parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull;
             var name = attributeName ?? (pattern.GetParameter(parameter.Name) is { } routeParameter ? routeParameter.Name : parameter.Name);
             var openApiParameter = new OpenApiParameter()
             {
@@ -417,7 +419,7 @@ internal sealed class OpenApiGenerator
         {
             return (true, null, null);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
+        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
                 parameter.ParameterType == typeof(HttpContext) ||
                 parameter.ParameterType == typeof(HttpRequest) ||
                 parameter.ParameterType == typeof(HttpResponse) ||
@@ -445,9 +447,9 @@ internal sealed class OpenApiGenerator
             return (true, null, null);
         }
         else if (disableInferredBody && (
-                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
-                 parameter.ParameterType == typeof(StringValues)))
+                 parameter.ParameterType == typeof(StringValues) ||
+                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!))))
         {
             return (false, ParameterLocation.Query, null);
         }

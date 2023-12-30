@@ -28,10 +28,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
     public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
         : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
     {
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
+        ArgumentNullException.ThrowIfNull(valueBinder);
 
         _valueBinder = valueBinder;
     }
@@ -65,10 +62,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
             // CollectionModelBinder should not check IsRequired, done in this model binder.
             allowValidatingTopLevelNodes: false)
     {
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
+        ArgumentNullException.ThrowIfNull(valueBinder);
 
         _valueBinder = valueBinder;
     }
@@ -107,10 +101,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
               allowValidatingTopLevelNodes: false,
               mvcOptions)
     {
-        if (valueBinder == null)
-        {
-            throw new ArgumentNullException(nameof(valueBinder));
-        }
+        ArgumentNullException.ThrowIfNull(valueBinder);
 
         _valueBinder = valueBinder;
     }
@@ -118,26 +109,19 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
     /// <inheritdoc />
     public override async Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         await base.BindModelAsync(bindingContext);
-        if (!bindingContext.Result.IsModelSet)
-        {
-            // No match for the prefix at all.
-            return;
-        }
-
         var result = bindingContext.Result;
 
-        Debug.Assert(result.Model != null);
-        var model = (IDictionary<TKey, TValue?>)result.Model;
-        if (model.Count != 0)
+        if (result.IsModelSet)
         {
-            // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
-            return;
+            Debug.Assert(result.Model != null);
+            if (result.Model is IDictionary<TKey, TValue?> { Count: > 0 })
+            {
+                // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
+                return;
+            }
         }
 
         Log.NoKeyValueFormatForDictionaryModelBinder(Logger, bindingContext);
@@ -151,6 +135,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
                 AddErrorIfBindingRequired(bindingContext);
             }
 
+            // No match for the prefix at all.
             return;
         }
 
@@ -169,6 +154,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         }
 
         // Update the existing successful but empty ModelBindingResult.
+        var model = (IDictionary<TKey, TValue?>)(result.Model ?? CreateEmptyCollection(bindingContext.ModelType));
         var elementMetadata = bindingContext.ModelMetadata.ElementMetadata!;
         var valueMetadata = elementMetadata.Properties[nameof(KeyValuePair<TKey, TValue>.Value)]!;
 
@@ -177,7 +163,17 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         {
             // Use InvariantCulture to convert the key since ExpressionHelper.GetExpressionText() would use
             // that culture when rendering a form.
-            var convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+            TKey? convertedKey;
+            try
+            {
+                convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+            }
+            catch (Exception ex)
+            {
+                bindingContext.Result = ModelBindingResult.Failed();
+                bindingContext.ModelState.AddModelError(bindingContext.ModelName, ex.Message);
+                return;
+            }
 
             using (bindingContext.EnterNestedScope(
                 modelMetadata: valueMetadata,
@@ -214,6 +210,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
             }
         }
 
+        bindingContext.Result = ModelBindingResult.Success(model);
         bindingContext.ValidationState.Add(model, new ValidationStateEntry()
         {
             Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue?>(keyMappings, valueMetadata),
@@ -233,7 +230,7 @@ public partial class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder
         if (targetType.IsAssignableFrom(typeof(Dictionary<TKey, TValue?>)))
         {
             // Collection is a List<KeyValuePair<TKey, TValue>>, never already a Dictionary<TKey, TValue>.
-            return collection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return collection.ToDictionary();
         }
 
         return base.ConvertToCollectionType(targetType, collection);

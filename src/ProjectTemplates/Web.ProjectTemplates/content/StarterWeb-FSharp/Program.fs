@@ -10,7 +10,7 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
-#if !NoHttps
+#if (!NoHttps)
 open Microsoft.AspNetCore.HttpsPolicy
 #endif
 open Microsoft.Extensions.Configuration
@@ -35,11 +35,13 @@ module Program =
         let app = builder.Build()
 
         if not (builder.Environment.IsDevelopment()) then
+#if (HasHttpsProfile)
             app.UseExceptionHandler("/Home/Error")
-#if HasHttpsProfile
             app.UseHsts() |> ignore // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 
         app.UseHttpsRedirection()
+#else
+            app.UseExceptionHandler("/Home/Error") |> ignore
 #endif
 
         app.UseStaticFiles()

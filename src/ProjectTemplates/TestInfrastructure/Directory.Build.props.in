@@ -7,4 +7,7 @@
 
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />
 
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
 </Project>

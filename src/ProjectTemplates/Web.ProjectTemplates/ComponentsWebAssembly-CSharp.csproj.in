@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!--#if PWA -->
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    <!--#endif -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationVersion}" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="${MicrosoftAuthenticationWebAssemblyMsalVersion}" Condition="'$(OrganizationalAuth)' == 'true' OR '$(IndividualB2CAuth)' == 'true'" />
+  </ItemGroup>
+
+  <!--#if PWA -->
+  <ItemGroup>
+    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+  </ItemGroup>
+
+  <!--#endif -->
+</Project>

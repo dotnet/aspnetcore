@@ -28,7 +28,6 @@
       "src\\Http\\Routing.Abstractions\\src\\Microsoft.AspNetCore.Routing.Abstractions.csproj",
       "src\\Http\\Routing\\src\\Microsoft.AspNetCore.Routing.csproj",
       "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
-      "src\\Identity\\ApiAuthorization.IdentityServer\\src\\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj",
       "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
       "src\\Identity\\Extensions.Core\\src\\Microsoft.Extensions.Identity.Core.csproj",
       "src\\Identity\\Extensions.Stores\\src\\Microsoft.Extensions.Identity.Stores.csproj",
@@ -65,10 +64,9 @@
       "src\\ProjectTemplates\\Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ProjectTemplates\\Microsoft.DotNet.Web.ProjectTemplates.csproj",
-      "src\\ProjectTemplates\\test\\Templates.Blazor.Server.Tests\\Templates.Blazor.Server.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.Tests\\Templates.Blazor.Tests.csproj",
-      "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Tests\\Templates.Blazor.WebAssembly.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Auth.Tests\\Templates.Blazor.WebAssembly.Auth.Tests.csproj",
+      "src\\ProjectTemplates\\test\\Templates.Blazor.WebAssembly.Tests\\Templates.Blazor.WebAssembly.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Mvc.Tests\\Templates.Mvc.Tests.csproj",
       "src\\ProjectTemplates\\test\\Templates.Tests\\Templates.Tests.csproj",
       "src\\Razor\\Razor.Runtime\\src\\Microsoft.AspNetCore.Razor.Runtime.csproj",
@@ -85,6 +83,8 @@
       "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Transport.NamedPipes\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj",
+      "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Shared\\BrowserTesting\\src\\Microsoft.AspNetCore.BrowserTesting.csproj",
       "src\\SignalR\\common\\Http.Connections.Common\\src\\Microsoft.AspNetCore.Http.Connections.Common.csproj",
@@ -92,8 +92,7 @@
       "src\\SignalR\\common\\Protocols.NewtonsoftJson\\src\\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj",
       "src\\SignalR\\common\\SignalR.Common\\src\\Microsoft.AspNetCore.SignalR.Common.csproj",
       "src\\SignalR\\server\\Core\\src\\Microsoft.AspNetCore.SignalR.Core.csproj",
-      "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj",
-      "src\\submodules\\spa-templates\\src\\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj"
+      "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj"
     ]
   }
 }

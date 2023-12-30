@@ -1,10 +1,7 @@
 using Company.Application1;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services =>
-    {
-        services.AddHostedService<Worker>();
-    })
-    .Build();
+var builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddHostedService<Worker>();
 
+var host = builder.Build();
 host.Run();

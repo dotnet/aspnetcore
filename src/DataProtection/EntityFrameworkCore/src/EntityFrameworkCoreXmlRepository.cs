@@ -31,10 +31,7 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(DataProtectionKey))]
     public EntityFrameworkCoreXmlRepository(IServiceProvider services, ILoggerFactory loggerFactory)
     {
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<EntityFrameworkCoreXmlRepository<TContext>>();
         _services = services ?? throw new ArgumentNullException(nameof(services));

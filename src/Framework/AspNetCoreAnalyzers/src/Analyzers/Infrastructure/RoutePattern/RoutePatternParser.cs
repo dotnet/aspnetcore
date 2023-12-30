@@ -77,69 +77,8 @@ internal partial struct RoutePatternParser
         ValidateNoConsecutiveSeparators(root, diagnostics);
         ValidateCatchAllParameters(root, diagnostics);
         ValidateParameterParts(root, diagnostics, routeParameters);
-        ValidateAdditionalInvalidParameterCharacters(root, diagnostics, _routePatternOptions);
-        ValidateComplexSegments(root, diagnostics, _routePatternOptions);
 
         return new RoutePatternTree(_lexer.Text, root, diagnostics.ToImmutable(), routeParameters.ToImmutable());
-    }
-
-    private static void ValidateComplexSegments(RoutePatternCompilationUnit root, ImmutableArray<EmbeddedDiagnostic>.Builder diagnostics, RoutePatternOptions routePatternOptions)
-    {
-        if (routePatternOptions.SupportComplexSegments)
-        {
-            return;
-        }
-
-        foreach (var part in root)
-        {
-            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
-            {
-                if (segmentNode.ChildCount > 1)
-                {
-                    var message = $"Complex segment is not supported.";
-                    diagnostics.Add(new EmbeddedDiagnostic(message, segmentNode.GetFullSpan()!.Value));
-                }
-            }
-        }
-    }
-
-    private static void ValidateAdditionalInvalidParameterCharacters(RoutePatternCompilationUnit root, ImmutableArray<EmbeddedDiagnostic>.Builder diagnostics, RoutePatternOptions routePatternOptions)
-    {
-        if (routePatternOptions.AdditionalInvalidParameterCharacters == null)
-        {
-            return;
-        }
-
-        foreach (var part in root)
-        {
-            if (part.TryGetNode(RoutePatternKind.Segment, out var segmentNode))
-            {
-                foreach (var segmentPart in segmentNode)
-                {
-                    if (segmentPart.TryGetNode(RoutePatternKind.Parameter, out var parameterNode))
-                    {
-                        foreach (var parameterPart in parameterNode)
-                        {
-                            if (parameterPart.TryGetNode(RoutePatternKind.ParameterName, out var parameterNameNode))
-                            {
-                                var parameterNameToken = ((RoutePatternNameParameterPartNode)parameterNameNode).ParameterNameToken;
-                                if (!parameterNameToken.IsMissing)
-                                {
-                                    var name = parameterNameToken.Value!.ToString();
-                                    var invalidCharacter = name.IndexOfAny(routePatternOptions.AdditionalInvalidParameterCharacters);
-
-                                    if (invalidCharacter != -1)
-                                    {
-                                        var message = $"The character '{name[invalidCharacter]}' in parameter segment '{parameterNode}' is not allowed.";
-                                        diagnostics.Add(new EmbeddedDiagnostic(message, parameterNameNode.GetSpan()));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private static void ValidateStart(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
@@ -171,7 +110,7 @@ internal partial struct RoutePatternParser
                     // No problem if tilde is followed by slash.
                     if (root.ChildCount > 2 &&
                         root.ChildAt(1).Node is var secondNode &&
-                        secondNode?.Kind == RoutePatternKind.Seperator)
+                        secondNode?.Kind == RoutePatternKind.Separator)
                     {
                         return;
                     }
@@ -351,18 +290,18 @@ internal partial struct RoutePatternParser
 
     private static void ValidateNoConsecutiveSeparators(RoutePatternCompilationUnit root, IList<EmbeddedDiagnostic> diagnostics)
     {
-        RoutePatternSegmentSeperatorNode? previousNode = null;
+        RoutePatternSegmentSeparatorNode? previousNode = null;
         foreach (var part in root)
         {
-            if (part.TryGetNode(RoutePatternKind.Seperator, out var seperatorNode))
+            if (part.TryGetNode(RoutePatternKind.Separator, out var separatorNode))
             {
-                var currentNode = (RoutePatternSegmentSeperatorNode)seperatorNode;
+                var currentNode = (RoutePatternSegmentSeparatorNode)separatorNode;
                 if (previousNode != null)
                 {
                     diagnostics.Add(
                         new EmbeddedDiagnostic(
                             Resources.TemplateRoute_CannotHaveConsecutiveSeparators,
-                            EmbeddedSyntaxHelpers.GetSpan(previousNode.SeperatorToken, currentNode.SeperatorToken)));
+                            EmbeddedSyntaxHelpers.GetSpan(previousNode.SeparatorToken, currentNode.SeparatorToken)));
                 }
                 previousNode = currentNode;
             }
@@ -373,7 +312,7 @@ internal partial struct RoutePatternParser
         }
     }
 
-    private void CollectDiagnostics(RoutePatternNode node, HashSet<EmbeddedDiagnostic> seenDiagnostics, IList<EmbeddedDiagnostic> diagnostics)
+    private static void CollectDiagnostics(RoutePatternNode node, HashSet<EmbeddedDiagnostic> seenDiagnostics, IList<EmbeddedDiagnostic> diagnostics)
     {
         foreach (var child in node)
         {
@@ -421,13 +360,13 @@ internal partial struct RoutePatternParser
     private RoutePatternRootPartNode ParseRootPart()
         => _currentToken.Kind switch
         {
-            RoutePatternKind.SlashToken => ParseSegmentSeperator(),
+            RoutePatternKind.SlashToken => ParseSegmentSeparator(),
             _ => ParseSegment(),
         };
 
     private RoutePatternSegmentNode ParseSegment()
     {
-        var result = ImmutableArray.CreateBuilder<RoutePatternNode>();
+        var result = ImmutableArray.CreateBuilder<RoutePatternSegmentPartNode>();
 
         while (_currentToken.Kind != RoutePatternKind.EndOfFile &&
             _currentToken.Kind != RoutePatternKind.SlashToken)
@@ -567,12 +506,6 @@ internal partial struct RoutePatternParser
                     RoutePatternKind.AsteriskToken,
                     VirtualCharSequence.FromBounds(firstAsteriskToken.VirtualChars, _currentToken.VirtualChars));
 
-                if (!_routePatternOptions.SupportTwoAsteriskCatchAll)
-                {
-                    asterisksToken = asterisksToken.AddDiagnosticIfNone(
-                        new EmbeddedDiagnostic("A catch-all parameter may only have one '*' at the beginning of the segment.", asterisksToken.GetFullSpan()!.Value));
-                }
-
                 parts.Add(new RoutePatternCatchAllParameterPartNode(asterisksToken));
                 ConsumeCurrentToken();
             }
@@ -629,14 +562,6 @@ internal partial struct RoutePatternParser
         var equalsToken = _currentToken;
         var defaultValue = _lexer.TryScanDefaultValue() ?? CreateMissingToken(RoutePatternKind.DefaultValueToken);
 
-        if (!_routePatternOptions.SupportDefaultValues)
-        {
-            equalsToken = equalsToken.AddDiagnosticIfNone(
-                new EmbeddedDiagnostic(
-                    "A parameter with a default value isn't supported.",
-                    EmbeddedSyntaxHelpers.GetSpan(equalsToken, defaultValue)));
-        }
-
         ConsumeCurrentToken();
         var node = new RoutePatternDefaultValueParameterPartNode(equalsToken, defaultValue);
         return node;
@@ -686,7 +611,7 @@ internal partial struct RoutePatternParser
         return new(colonToken, fragments.ToImmutable());
     }
 
-    private RoutePatternSegmentSeperatorNode ParseSegmentSeperator()
+    private RoutePatternSegmentSeparatorNode ParseSegmentSeparator()
         => new(ConsumeCurrentToken());
 
     private TextSpan GetTokenStartPositionSpan(RoutePatternToken token)

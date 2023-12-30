@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -166,6 +165,14 @@ public class ParameterBindingMethodCacheTests
     }
 
     [Fact]
+    public void FindTryParseStringMethod_FindsExplicitlyImplementedIParsable()
+    {
+        var type = typeof(TodoWithExplicitIParsable);
+        var methodFound = new ParameterBindingMethodCache().FindTryParseMethod(type);
+        Assert.NotNull(methodFound);
+    }
+
+    [Fact]
     public void FindTryParseStringMethod_WorksForEnums()
     {
         var type = typeof(Choice);
@@ -201,7 +208,7 @@ public class ParameterBindingMethodCacheTests
 
         var parseEnum = Expression.Lambda<Func<string, Choice>>(Expression.Block(new[] { parsedValue },
             block,
-            parsedValue), ParameterBindingMethodCache.TempSourceStringExpr).Compile();
+            parsedValue), ParameterBindingMethodCache.SharedExpressions.TempSourceStringExpr).Compile();
 
         Assert.Equal(Choice.One, parseEnum("One"));
         Assert.Equal(Choice.Two, parseEnum("Two"));
@@ -223,7 +230,7 @@ public class ParameterBindingMethodCacheTests
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
             Expression.Block(new[] { parsedValue }, methodFound.Expression!),
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext
         {
@@ -254,7 +261,7 @@ public class ParameterBindingMethodCacheTests
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(
             Expression.Block(new[] { parsedValue }, methodFound.Expression!),
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext
         {
@@ -379,7 +386,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = cache.FindBindAsyncMethod(parameterInfo);
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext();
 
@@ -397,7 +404,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = cache.FindBindAsyncMethod(parameterInfo);
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object?>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext();
 
@@ -415,7 +422,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = cache.FindBindAsyncMethod(parameterInfo);
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext();
 
@@ -431,7 +438,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = cache.FindBindAsyncMethod(parameterInfo);
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext();
 
@@ -447,7 +454,7 @@ public class ParameterBindingMethodCacheTests
         var methodFound = cache.FindBindAsyncMethod(parameterInfo);
 
         var parseHttpContext = Expression.Lambda<Func<HttpContext, ValueTask<object>>>(methodFound.Expression!,
-            ParameterBindingMethodCache.HttpContextExpr).Compile();
+            ParameterBindingMethodCache.SharedExpressions.HttpContextExpr).Compile();
 
         var httpContext = new DefaultHttpContext();
         var result = await parseHttpContext(httpContext);
@@ -1514,6 +1521,19 @@ public class ParameterBindingMethodCacheTests
         {
             ClassImpl = type;
             NameImpl = name;
+        }
+    }
+
+    public class TodoWithExplicitIParsable : IParsable<TodoWithExplicitIParsable>
+    {
+        static TodoWithExplicitIParsable IParsable<TodoWithExplicitIParsable>.Parse(string s, IFormatProvider? provider)
+        {
+            throw new NotImplementedException();
+        }
+
+        static bool IParsable<TodoWithExplicitIParsable>.TryParse(string? s, IFormatProvider? provider, out TodoWithExplicitIParsable result)
+        {
+            throw new NotImplementedException();
         }
     }
 }

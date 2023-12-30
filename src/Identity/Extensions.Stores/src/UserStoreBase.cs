@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -45,10 +46,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
     public UserStoreBase(IdentityErrorDescriber describer)
     {
-        if (describer == null)
-        {
-            throw new ArgumentNullException(nameof(describer));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(describer);
 
         ErrorDescriber = describer;
     }
@@ -119,10 +117,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(ConvertIdToString(user.Id)!);
     }
 
@@ -136,10 +131,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.UserName);
     }
 
@@ -154,10 +146,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.UserName = userName;
         return Task.CompletedTask;
     }
@@ -172,10 +161,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.NormalizedUserName);
     }
 
@@ -190,10 +176,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.NormalizedUserName = normalizedName;
         return Task.CompletedTask;
     }
@@ -291,10 +274,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.PasswordHash = passwordHash;
         return Task.CompletedTask;
     }
@@ -309,10 +289,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.PasswordHash);
     }
 
@@ -361,10 +338,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// </summary>
     protected void ThrowIfDisposed()
     {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
+        ObjectDisposedThrowHelper.ThrowIf(_disposed, this);
     }
 
     /// <summary>
@@ -476,10 +450,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.EmailConfirmed);
     }
 
@@ -494,10 +465,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.EmailConfirmed = confirmed;
         return Task.CompletedTask;
     }
@@ -513,10 +481,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.Email = email;
         return Task.CompletedTask;
     }
@@ -531,10 +496,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.Email);
     }
 
@@ -550,10 +512,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.NormalizedEmail);
     }
 
@@ -568,10 +527,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.NormalizedEmail = normalizedEmail;
         return Task.CompletedTask;
     }
@@ -600,10 +556,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.LockoutEnd);
     }
 
@@ -618,10 +571,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.LockoutEnd = lockoutEnd;
         return Task.CompletedTask;
     }
@@ -636,10 +586,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.AccessFailedCount++;
         return Task.FromResult(user.AccessFailedCount);
     }
@@ -655,10 +602,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.AccessFailedCount = 0;
         return Task.CompletedTask;
     }
@@ -673,10 +617,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.AccessFailedCount);
     }
 
@@ -692,10 +633,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.LockoutEnabled);
     }
 
@@ -710,10 +648,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.LockoutEnabled = enabled;
         return Task.CompletedTask;
     }
@@ -729,10 +664,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.PhoneNumber = phoneNumber;
         return Task.CompletedTask;
     }
@@ -747,10 +679,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.PhoneNumber);
     }
 
@@ -767,10 +696,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.PhoneNumberConfirmed);
     }
 
@@ -785,10 +711,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.PhoneNumberConfirmed = confirmed;
         return Task.CompletedTask;
     }
@@ -804,14 +727,8 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-        if (stamp == null)
-        {
-            throw new ArgumentNullException(nameof(stamp));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        ArgumentNullThrowHelper.ThrowIfNull(stamp);
         user.SecurityStamp = stamp;
         return Task.CompletedTask;
     }
@@ -826,10 +743,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.SecurityStamp);
     }
 
@@ -845,10 +759,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         user.TwoFactorEnabled = enabled;
         return Task.CompletedTask;
     }
@@ -867,10 +778,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         return Task.FromResult(user.TwoFactorEnabled);
     }
 
@@ -922,10 +830,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
 
         var token = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         if (token == null)
@@ -951,10 +856,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         if (entry != null)
         {
@@ -975,10 +877,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         return entry?.Value;
     }
@@ -1017,14 +916,28 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken).ConfigureAwait(false) ?? "";
         if (mergedCodes.Length > 0)
         {
-            return mergedCodes.Split(';').Length;
+#if NET8_0_OR_GREATER
+            return mergedCodes.AsSpan().Count(';') + 1;
+#else
+            // non-allocating version of mergedCodes.Split(';').Length
+            var count = 1;
+            var index = 0;
+            while (index < mergedCodes.Length)
+            {
+                var semiColonIndex = mergedCodes.IndexOf(';', index);
+                if (semiColonIndex < 0)
+                {
+                    break;
+                }
+                count++;
+                index = semiColonIndex + 1;
+            }
+            return count;
+#endif
         }
         return 0;
     }
@@ -1055,14 +968,8 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user));
-        }
-        if (code == null)
-        {
-            throw new ArgumentNullException(nameof(code));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        ArgumentNullThrowHelper.ThrowIfNull(code);
 
         var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken).ConfigureAwait(false) ?? "";
         var splitCodes = mergedCodes.Split(';');

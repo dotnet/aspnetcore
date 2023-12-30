@@ -23,10 +23,7 @@ public abstract class RevalidatingServerAuthenticationStateProvider
     /// <param name="loggerFactory">A logger factory.</param>
     public RevalidatingServerAuthenticationStateProvider(ILoggerFactory loggerFactory)
     {
-        if (loggerFactory is null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _logger = loggerFactory.CreateLogger<RevalidatingServerAuthenticationStateProvider>();
 
@@ -34,7 +31,13 @@ public abstract class RevalidatingServerAuthenticationStateProvider
         // existing revalidation loop and start a new one
         AuthenticationStateChanged += authenticationStateTask =>
         {
-            _loopCancellationTokenSource?.Cancel();
+            var oldCancellationTokenSource = _loopCancellationTokenSource;
+            if (oldCancellationTokenSource is not null)
+            {
+                oldCancellationTokenSource.Cancel();
+                oldCancellationTokenSource.Dispose();
+            }
+            
             _loopCancellationTokenSource = new CancellationTokenSource();
             _ = RevalidationLoop(authenticationStateTask, _loopCancellationTokenSource.Token);
         };
@@ -58,7 +61,7 @@ public abstract class RevalidatingServerAuthenticationStateProvider
         try
         {
             var authenticationState = await authenticationStateTask;
-            if (authenticationState.User.Identity.IsAuthenticated)
+            if (authenticationState.User.Identity?.IsAuthenticated == true)
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {

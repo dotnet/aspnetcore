@@ -1,28 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
 public class AddressBinderTests
 {
+    private readonly Func<ListenOptions, ListenOptions> _noopUseHttps = l => l;
+
     [Theory]
     [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000)]
     [InlineData("http://[::1]:5000", "::1", 5000)]
@@ -78,6 +72,50 @@ public class AddressBinderTests
         Assert.False(https);
     }
 
+    [Fact]
+    public void ParseAddress_HasPipeNoSlash()
+    {
+        // Pipe prefix is missing slash here and so the address is parsed as an IP.
+        // The slash is required to differentiate between a pipe and a hostname.
+        var listenOptions = AddressBinder.ParseAddress("http://pipe:8080", out var https);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(8080, listenOptions.IPEndPoint.Port);
+        Assert.False(https);
+    }
+
+    [Fact]
+    public void ParseAddressNamedPipe()
+    {
+        var address = "http://pipe:/HelloWorld";
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<NamedPipeEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("HelloWorld", listenOptions.PipeName);
+        Assert.False(https);
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
+    [Fact]
+    public void ParseAddressNamedPipe_BackSlashes()
+    {
+        var address = @"http://pipe:/LOCAL\HelloWorld";
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<NamedPipeEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(@"LOCAL\HelloWorld", listenOptions.PipeName);
+        Assert.False(https);
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
+    [Fact]
+    public void ParseAddressNamedPipe_ForwardSlashes()
+    {
+        var address = "http://pipe://tmp/kestrel-test.sock";
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<NamedPipeEndPoint>(listenOptions.EndPoint);
+        Assert.Equal("/tmp/kestrel-test.sock", listenOptions.PipeName);
+        Assert.False(https);
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "tmp/kestrel-test.sock is not valid for windows. Unix socket path must be absolute.")]
     public void ParseAddressUnixPipe()
@@ -128,7 +166,7 @@ public class AddressBinderTests
             endpoint => throw new AddressInUseException("already in use"));
 
         await Assert.ThrowsAsync<IOException>(() =>
-            AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None));
+            AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, _noopUseHttps, CancellationToken.None));
     }
 
     [Fact]
@@ -149,7 +187,7 @@ public class AddressBinderTests
             logger,
             endpoint => Task.CompletedTask);
 
-        var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        var bindTask = AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, _noopUseHttps, CancellationToken.None);
         Assert.True(bindTask.IsCompletedSuccessfully);
 
         var log = Assert.Single(logger.Messages);
@@ -177,7 +215,7 @@ public class AddressBinderTests
 
         addressBindContext.ServerAddressesFeature.PreferHostingUrls = true;
 
-        var bindTask = AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        var bindTask = AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, _noopUseHttps, CancellationToken.None);
         Assert.True(bindTask.IsCompletedSuccessfully);
 
         var log = Assert.Single(logger.Messages);
@@ -203,7 +241,7 @@ public class AddressBinderTests
             });
 
         await Assert.ThrowsAsync<OperationCanceledException>(() =>
-            AddressBinder.BindAsync(options.ListenOptions, addressBindContext, new CancellationToken(true)));
+            AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, _noopUseHttps, new CancellationToken(true)));
     }
 
     [Theory]
@@ -240,7 +278,7 @@ public class AddressBinderTests
                 return Task.CompletedTask;
             });
 
-        await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        await AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, _noopUseHttps, CancellationToken.None);
 
         Assert.True(ipV4Attempt, "Should have attempted to bind to IPAddress.Any");
         Assert.True(ipV6Attempt, "Should have attempted to bind to IPAddress.IPv6Any");
@@ -271,7 +309,7 @@ public class AddressBinderTests
                 return Task.CompletedTask;
             });
 
-        await AddressBinder.BindAsync(options.ListenOptions, addressBindContext, CancellationToken.None);
+        await AddressBinder.BindAsync(options.GetListenOptions(), addressBindContext, _noopUseHttps, CancellationToken.None);
 
         Assert.Contains(endpoints, e => e.IPEndPoint.Port == 5000 && !e.IsTls);
     }

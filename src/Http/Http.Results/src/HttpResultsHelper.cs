@@ -1,11 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http;
@@ -15,10 +20,13 @@ internal static partial class HttpResultsHelper
     internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
-    public static Task WriteResultAsJsonAsync<T>(
+    [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
+        Justification = "The 'JsonSerializer.IsReflectionEnabledByDefault' feature switch, which is set to false by default for trimmed ASP.NET apps, ensures the JsonSerializer doesn't use Reflection.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "See above.")]
+    public static Task WriteResultAsJsonAsync<TValue>(
         HttpContext httpContext,
         ILogger logger,
-        T? value,
+        TValue? value,
         string? contentType = null,
         JsonSerializerOptions? jsonSerializerOptions = null)
     {
@@ -27,32 +35,30 @@ internal static partial class HttpResultsHelper
             return Task.CompletedTask;
         }
 
-        var declaredType = typeof(T);
-        if (declaredType.IsValueType)
-        {
-            Log.WritingResultAsJson(logger, declaredType.Name);
+        jsonSerializerOptions ??= ResolveJsonOptions(httpContext).SerializerOptions;
+        var jsonTypeInfo = (JsonTypeInfo<TValue>)jsonSerializerOptions.GetTypeInfo(typeof(TValue));
 
-            // In this case the polymorphism is not
-            // relevant and we don't need to box.
+        Type? runtimeType = value.GetType();
+        if (jsonTypeInfo.ShouldUseWith(runtimeType))
+        {
+            Log.WritingResultAsJson(logger, jsonTypeInfo.Type.Name);
             return httpContext.Response.WriteAsJsonAsync(
-                        value,
-                        options: jsonSerializerOptions,
-                        contentType: contentType);
+                value,
+                jsonTypeInfo,
+                contentType: contentType);
         }
 
-        var runtimeType = value.GetType();
-
         Log.WritingResultAsJson(logger, runtimeType.Name);
-
-        // Call WriteAsJsonAsync() with the runtime type to serialize the runtime type rather than the declared type
+        // Since we don't know the type's polymorphic characteristics
+        // our best option is to serialize the value as 'object'.
+        // call WriteAsJsonAsync<object>() rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://docs.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
-        return httpContext.Response.WriteAsJsonAsync(
-            value,
-            runtimeType,
-            options: jsonSerializerOptions,
-            contentType: contentType);
+        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        return httpContext.Response.WriteAsJsonAsync<object>(
+           value,
+           jsonSerializerOptions,
+           contentType: contentType);
     }
 
     public static Task WriteResultAsContentAsync(
@@ -140,6 +146,12 @@ internal static partial class HttpResultsHelper
         {
             ProblemDetailsDefaults.Apply(problemDetails, statusCode);
         }
+    }
+
+    private static JsonOptions ResolveJsonOptions(HttpContext httpContext)
+    {
+        // Attempt to resolve options from DI then fallback to default options
+        return httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value ?? new JsonOptions();
     }
 
     internal static partial class Log

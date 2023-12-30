@@ -21,7 +21,7 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
     {
         if (httpClient == null && requestedTransportType != HttpTransportType.WebSockets)
         {
-            throw new ArgumentNullException(nameof(httpClient));
+            throw new ArgumentException($"{nameof(httpClient)} cannot be null when {nameof(requestedTransportType)} is not {nameof(HttpTransportType.WebSockets)}.", nameof(httpClient));
         }
 
         _requestedTransportType = requestedTransportType;
@@ -31,13 +31,13 @@ internal sealed partial class DefaultTransportFactory : ITransportFactory
         _accessTokenProvider = accessTokenProvider;
     }
 
-    public ITransport CreateTransport(HttpTransportType availableServerTransports)
+    public ITransport CreateTransport(HttpTransportType availableServerTransports, bool useStatefulReconnect)
     {
         if (_websocketsSupported && (availableServerTransports & HttpTransportType.WebSockets & _requestedTransportType) == HttpTransportType.WebSockets)
         {
             try
             {
-                return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider, _httpClient);
+                return new WebSocketsTransport(_httpConnectionOptions, _loggerFactory, _accessTokenProvider, _httpClient, useStatefulReconnect);
             }
             catch (PlatformNotSupportedException ex)
             {

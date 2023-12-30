@@ -30,10 +30,7 @@ public class RouteBuilder : IRouteBuilder
     /// <param name="defaultHandler">The default <see cref="IRouter"/> used if a new route is added without a handler.</param>
     public RouteBuilder(IApplicationBuilder applicationBuilder, IRouter? defaultHandler)
     {
-        if (applicationBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(applicationBuilder));
-        }
+        ArgumentNullException.ThrowIfNull(applicationBuilder);
 
         if (applicationBuilder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
         {

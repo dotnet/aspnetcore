@@ -48,6 +48,7 @@ public class TestPipeWriter : PipeWriter
 
     public async Task<FlushResult> ForceAsyncResult()
     {
-        return await Task.FromResult<FlushResult>(default).ForceAsync();
+        await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+        return default;
     }
 }

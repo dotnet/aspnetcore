@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -16,11 +18,17 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 {
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
     private bool _hasInitializedParameters;
+    private bool _parsingFailed;
+    private string? _incomingValueBeforeParsing;
+    private string? _formattedValueExpression;
     private bool _previousParsingAttemptFailed;
     private ValidationMessageStore? _parsingValidationMessages;
     private Type? _nullableUnderlyingType;
+    private bool _shouldGenerateFieldNames;
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
+    [CascadingParameter] private HtmlFieldPrefix FieldPrefix { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
@@ -74,7 +82,18 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
             if (hasChanged)
             {
+                _parsingFailed = false;
+
+                // If we don't do this, then when the user edits from A to B, we'd:
+                // - Do a render that changes back to A
+                // - Then send the updated value to the parent, which sends the B back to this component
+                // - Do another render that changes it to B again
+                // The unnecessary reversion from B to A can cause selection to be lost while typing
+                // A better solution would be somehow forcing the parent component's render to occur first,
+                // but that would involve a complex change in the renderer to keep the render queue sorted
+                // by component depth or similar.
                 Value = value;
+
                 _ = ValueChanged.InvokeAsync(Value);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
             }
@@ -86,29 +105,33 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     protected string? CurrentValueAsString
     {
-        get => FormatValueAsString(CurrentValue);
+        // InputBase-derived components can hold invalid states (e.g., an InputNumber being blank even when bound
+        // to an int value). So, if parsing fails, we keep the rejected string in the UI even though it doesn't
+        // match what's on the .NET model. This avoids interfering with typing, but still notifies the EditContext
+        // about the validation error message.
+        get => _parsingFailed ? _incomingValueBeforeParsing : FormatValueAsString(CurrentValue);
+
         set
         {
+            _incomingValueBeforeParsing = value;
             _parsingValidationMessages?.Clear();
-
-            bool parsingFailed;
 
             if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
             {
                 // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
                 // Then all subclasses get nullable support almost automatically (they just have to
                 // not reject Nullable<T> based on the type itself).
-                parsingFailed = false;
+                _parsingFailed = false;
                 CurrentValue = default!;
             }
             else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
             {
-                parsingFailed = false;
+                _parsingFailed = false;
                 CurrentValue = parsedValue!;
             }
             else
             {
-                parsingFailed = true;
+                _parsingFailed = true;
 
                 // EditContext may be null if the input is not a child component of EditForm.
                 if (EditContext is not null)
@@ -122,10 +145,10 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             }
 
             // We can skip the validation notification if we were previously valid and still are
-            if (parsingFailed || _previousParsingAttemptFailed)
+            if (_parsingFailed || _previousParsingAttemptFailed)
             {
                 EditContext?.NotifyValidationStateChanged();
-                _previousParsingAttemptFailed = parsingFailed;
+                _previousParsingAttemptFailed = _parsingFailed;
             }
         }
     }
@@ -139,7 +162,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     }
 
     /// <summary>
-    /// Formats the value as a string. Derived classes can override this to determine the formating used for <see cref="CurrentValueAsString"/>.
+    /// Formats the value as a string. Derived classes can override this to determine the formatting used for <see cref="CurrentValueAsString"/>.
     /// </summary>
     /// <param name="value">The value to format.</param>
     /// <returns>A string representation of the value.</returns>
@@ -170,6 +193,33 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the value to be used for the input's "name" attribute.
+    /// </summary>
+    protected string NameAttributeValue
+    {
+        get
+        {
+            if (AdditionalAttributes?.TryGetValue("name", out var nameAttributeValue) ?? false)
+            {
+                return Convert.ToString(nameAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
+
+            if (_shouldGenerateFieldNames)
+            {
+                if (_formattedValueExpression is null && ValueExpression is not null)
+                {
+                    _formattedValueExpression = FieldPrefix != null ? FieldPrefix.GetFieldName(ValueExpression) :
+                        ExpressionFormatter.FormatLambda(ValueExpression);
+                }
+
+                return _formattedValueExpression ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+    }
+
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -192,6 +242,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             {
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+                _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+            }
+            else
+            {
+                // Ideally we'd know if we were in an SSR context but we don't
+                _shouldGenerateFieldNames = !OperatingSystem.IsBrowser();
             }
 
             _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
@@ -231,6 +287,15 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var hasAriaInvalidAttribute = AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid");
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
+            // If this input is associated with an incoming value from an HTTP form post (via model binding),
+            // retain the attempted value even if it's unparseable
+            var attemptedValue = EditContext.GetAttemptedValue(NameAttributeValue);
+            if (attemptedValue != null)
+            {
+                _parsingFailed = true;
+                _incomingValueBeforeParsing = attemptedValue;
+            }
+
             if (hasAriaInvalidAttribute)
             {
                 // Do not overwrite the attribute value

@@ -47,15 +47,8 @@ public class MultipartReader
     /// <param name="bufferSize">The minimum buffer size to use.</param>
     public MultipartReader(string boundary, Stream stream, int bufferSize)
     {
-        if (boundary == null)
-        {
-            throw new ArgumentNullException(nameof(boundary));
-        }
-
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(boundary);
+        ArgumentNullException.ThrowIfNull(stream);
 
         if (bufferSize < boundary.Length + 8) // Size of the boundary + leading and trailing CRLF + leading and trailing '--' markers.
         {
@@ -103,7 +96,7 @@ public class MultipartReader
             return null;
         }
         var headers = await ReadHeadersAsync(cancellationToken);
-        _boundary.ExpectLeadingCrlf = true;
+        _boundary.ExpectLeadingCrlf();
         _currentStream = new MultipartReaderStream(_stream, _boundary) { LengthLimit = BodyLengthLimit };
         long? baseStreamOffset = _stream.CanSeek ? (long?)_stream.Position : null;
         return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
@@ -113,7 +106,7 @@ public class MultipartReader
     {
         int totalSize = 0;
         var accumulator = new KeyValueAccumulator();
-        var line = await _stream.ReadLineAsync(HeadersLengthLimit - totalSize, cancellationToken);
+        var line = await _stream.ReadLineAsync(HeadersLengthLimit, cancellationToken);
         while (!string.IsNullOrEmpty(line))
         {
             if (HeadersLengthLimit - totalSize < line.Length)

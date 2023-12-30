@@ -33,12 +33,14 @@
       "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
       "src\\Security\\Authentication\\Core\\src\\Microsoft.AspNetCore.Authentication.csproj",
       "src\\Security\\Authentication\\JwtBearer\\src\\Microsoft.AspNetCore.Authentication.JwtBearer.csproj",
+      "src\\Security\\Authentication\\Negotiate\\src\\Microsoft.AspNetCore.Authentication.Negotiate.csproj",
       "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
       "src\\Security\\Authorization\\Policy\\src\\Microsoft.AspNetCore.Authorization.Policy.csproj",
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Transport.NamedPipes\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\SignalR\\clients\\csharp\\Client.Core\\src\\Microsoft.AspNetCore.SignalR.Client.Core.csproj",
@@ -70,7 +72,7 @@
       "src\\SignalR\\server\\Specification.Tests\\src\\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj",
       "src\\SignalR\\server\\StackExchangeRedis\\src\\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj",
       "src\\SignalR\\server\\StackExchangeRedis\\test\\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

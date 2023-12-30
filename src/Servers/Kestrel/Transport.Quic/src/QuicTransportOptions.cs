@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 
@@ -80,5 +79,5 @@ public sealed class QuicTransportOptions
         }
     }
 
-    internal ISystemClock SystemClock = new SystemClock();
+    internal TimeProvider TimeProvider = TimeProvider.System;
 }

@@ -1,15 +1,17 @@
 ﻿{
   "author": "Microsoft",
   "name": "Service gRPC ASP.NET Core",
-  "description": "Modèle de projet pour la création d'un service gRPC ASP.NET Core.",
+  "description": "Modèle de projet pour la création d’un service gRPC à l’aide de ASP.NET Core, avec prise en charge facultative de la publication en tant qu’AOT natif.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net8.0/description": "Cible net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/ExcludeLaunchSettings/description": "Indique s’il faut exclure launchSettings.json du modèle généré.",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/kestrelHttpPort/description": "Numéro de port à utiliser pour le point de terminaison HTTP dans launchSettings.json.",
   "symbols/kestrelHttpsPort/description": "Numéro de port à utiliser pour le point de terminaison HTTPS dans launchSettings.json. Cette option s’applique uniquement lorsque le paramètre no-https n’est pas utilisé (no-https sera ignoré si IndividualAuth ou OrganizationalAuth est utilisé).",
   "symbols/UseProgramMain/displayName": "N’utilisez pas _d’instructions de niveau supérieur.",
   "symbols/UseProgramMain/description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.",
+  "symbols/NativeAot/displayName": "Activer la publication _native AOT",
+  "symbols/NativeAot/description": "Indique si le projet doit être activé pour la publication en tant que native AOT.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »"
 }

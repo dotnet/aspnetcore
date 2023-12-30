@@ -20,11 +20,14 @@ class Program
         var mainWindow = new BlazorWindow(
             title: "Hello, world!",
             hostPage: "wwwroot/webviewhost.html",
-            services: serviceCollection.BuildServiceProvider());
+            services: serviceCollection.BuildServiceProvider(),
+            pathBase: "/subdir"); // The content in BasicTestApp assumes this
 
         AppDomain.CurrentDomain.UnhandledException += (sender, error) =>
         {
-            mainWindow.Photino.OpenAlertWindow("Fatal exception", error.ExceptionObject.ToString());
+            Console.Write(
+                "Fatal exception" + Environment.NewLine +
+                error.ExceptionObject.ToString() + Environment.NewLine);
         };
 
         mainWindow.RootComponents.Add<BasicTestApp.Index>("root");

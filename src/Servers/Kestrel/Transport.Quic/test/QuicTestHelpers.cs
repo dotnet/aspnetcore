@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -29,16 +29,16 @@ internal static class QuicTestHelpers
 
     public static QuicTransportFactory CreateTransportFactory(
         ILoggerFactory loggerFactory = null,
-        ISystemClock systemClock = null,
+        TimeProvider timeProvider = null,
         long defaultCloseErrorCode = 0)
     {
         var quicTransportOptions = new QuicTransportOptions();
         quicTransportOptions.MaxBidirectionalStreamCount = 200;
         quicTransportOptions.MaxUnidirectionalStreamCount = 200;
         quicTransportOptions.DefaultCloseErrorCode = defaultCloseErrorCode;
-        if (systemClock != null)
+        if (timeProvider != null)
         {
-            quicTransportOptions.SystemClock = systemClock;
+            quicTransportOptions.TimeProvider = timeProvider;
         }
 
         return new QuicTransportFactory(loggerFactory ?? NullLoggerFactory.Instance, Options.Create(quicTransportOptions));
@@ -46,14 +46,14 @@ internal static class QuicTestHelpers
 
     public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(
         ILoggerFactory loggerFactory = null,
-        ISystemClock systemClock = null,
+        TimeProvider timeProvider = null,
         bool clientCertificateRequired = false,
         long defaultCloseErrorCode = 0,
         int port = 0)
     {
         var transportFactory = CreateTransportFactory(
             loggerFactory,
-            systemClock,
+            timeProvider,
             defaultCloseErrorCode: defaultCloseErrorCode);
 
         var endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
@@ -65,10 +65,10 @@ internal static class QuicTestHelpers
     public static async Task<QuicConnectionListener> CreateConnectionListenerFactory(
         TlsConnectionCallbackOptions tlsConnectionOptions,
         ILoggerFactory loggerFactory = null,
-        ISystemClock systemClock = null,
+        TimeProvider timeProvider = null,
         int port = 0)
     {
-        var transportFactory = CreateTransportFactory(loggerFactory, systemClock);
+        var transportFactory = CreateTransportFactory(loggerFactory, timeProvider);
 
         var endpoint = new IPEndPoint(IPAddress.Loopback, port);
 

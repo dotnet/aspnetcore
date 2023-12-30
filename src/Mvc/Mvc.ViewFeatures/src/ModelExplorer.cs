@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// <summary>
 /// Associates a model object with it's corresponding <see cref="ModelMetadata"/>.
 /// </summary>
-[DebuggerDisplay("DeclaredType={Metadata.ModelType.Name} PropertyName={Metadata.PropertyName}")]
+[DebuggerDisplay("DeclaredType = {Metadata.ModelType.Name}, PropertyName = {Metadata.PropertyName}")]
 public class ModelExplorer
 {
     private readonly IModelMetadataProvider _metadataProvider;
@@ -30,15 +30,8 @@ public class ModelExplorer
         ModelMetadata metadata,
         object model)
     {
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
-
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
+        ArgumentNullException.ThrowIfNull(metadata);
 
         _metadataProvider = metadataProvider;
         Metadata = metadata;
@@ -58,20 +51,9 @@ public class ModelExplorer
         ModelMetadata metadata,
         Func<object, object> modelAccessor)
     {
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
-
-        if (container == null)
-        {
-            throw new ArgumentNullException(nameof(container));
-        }
-
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
+        ArgumentNullException.ThrowIfNull(container);
+        ArgumentNullException.ThrowIfNull(metadata);
 
         _metadataProvider = metadataProvider;
         Container = container;
@@ -92,15 +74,8 @@ public class ModelExplorer
         ModelMetadata metadata,
         object model)
     {
-        if (metadataProvider == null)
-        {
-            throw new ArgumentNullException(nameof(metadataProvider));
-        }
-
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadataProvider);
+        ArgumentNullException.ThrowIfNull(metadata);
 
         _metadataProvider = metadataProvider;
         Container = container;
@@ -258,10 +233,7 @@ public class ModelExplorer
     /// <returns>A <see cref="ModelExplorer"/>, or <c>null</c>.</returns>
     public ModelExplorer GetExplorerForProperty(string name)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         for (var i = 0; i < PropertiesInternal.Length; i++)
         {
@@ -287,10 +259,7 @@ public class ModelExplorer
     /// </remarks>
     public ModelExplorer GetExplorerForProperty(string name, Func<object, object> modelAccessor)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var metadata = GetMetadataForRuntimeType();
 
@@ -315,10 +284,7 @@ public class ModelExplorer
     /// </remarks>
     public ModelExplorer GetExplorerForProperty(string name, object model)
     {
-        if (name == null)
-        {
-            throw new ArgumentNullException(nameof(name));
-        }
+        ArgumentNullException.ThrowIfNull(name);
 
         var metadata = GetMetadataForRuntimeType();
 
@@ -349,10 +315,7 @@ public class ModelExplorer
     /// </remarks>
     public ModelExplorer GetExplorerForExpression(Type modelType, object model)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var metadata = _metadataProvider.GetMetadataForType(modelType);
         return GetExplorerForExpression(metadata, model);
@@ -377,10 +340,7 @@ public class ModelExplorer
     /// </remarks>
     public ModelExplorer GetExplorerForExpression(ModelMetadata metadata, object model)
     {
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
         return new ModelExplorer(_metadataProvider, this, metadata, model);
     }
@@ -404,10 +364,7 @@ public class ModelExplorer
     /// </remarks>
     public ModelExplorer GetExplorerForExpression(Type modelType, Func<object, object> modelAccessor)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
 
         var metadata = _metadataProvider.GetMetadataForType(modelType);
         return GetExplorerForExpression(metadata, modelAccessor);
@@ -432,10 +389,7 @@ public class ModelExplorer
     /// </remarks>
     public ModelExplorer GetExplorerForExpression(ModelMetadata metadata, Func<object, object> modelAccessor)
     {
-        if (metadata == null)
-        {
-            throw new ArgumentNullException(nameof(metadata));
-        }
+        ArgumentNullException.ThrowIfNull(metadata);
 
         return new ModelExplorer(_metadataProvider, this, metadata, modelAccessor);
     }

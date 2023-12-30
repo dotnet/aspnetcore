@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -18,6 +19,8 @@ public class NavigationManagerTest
     [InlineData("scheme://host/path", "scheme://host/")]
     [InlineData("scheme://host/path/", "scheme://host/path/")]
     [InlineData("scheme://host/path/page?query=string&another=here", "scheme://host/path/")]
+    [InlineData("scheme://host/path/#hash", "scheme://host/path/")]
+    [InlineData("scheme://host/path/page?query=string&another=here#hash", "scheme://host/path/")]
     public void ComputesCorrectBaseUri(string baseUri, string expectedResult)
     {
         var actualResult = NavigationManager.NormalizeBaseUri(baseUri);
@@ -64,24 +67,6 @@ public class NavigationManagerTest
     [InlineData("scheme://host/", "otherscheme://host/")]
     [InlineData("scheme://host/", "scheme://otherhost/")]
     [InlineData("scheme://host/path/", "scheme://host/")]
-    public void Uri_ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
-    {
-        var navigationManager = new TestNavigationManager(baseUri);
-
-        var ex = Assert.Throws<ArgumentException>(() =>
-        {
-            navigationManager.ToBaseRelativePath(absoluteUri);
-        });
-
-        Assert.Equal(
-            $"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.",
-            ex.Message);
-    }
-
-    [Theory]
-    [InlineData("scheme://host/", "otherscheme://host/")]
-    [InlineData("scheme://host/", "scheme://otherhost/")]
-    [InlineData("scheme://host/path/", "scheme://host/")]
     public void ToBaseRelativePath_ThrowsForInvalidBaseRelativePaths(string baseUri, string absoluteUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -102,6 +87,8 @@ public class NavigationManagerTest
     [InlineData("scheme://host/?full%20name=Sally%20Smith&age=42&full%20name=Emily", "scheme://host/?full%20name=John%20Doe&age=42&full%20name=John%20Doe")]
     [InlineData("scheme://host/?full%20name=&age=42", "scheme://host/?full%20name=John%20Doe&age=42")]
     [InlineData("scheme://host/?full%20name=", "scheme://host/?full%20name=John%20Doe")]
+    [InlineData("scheme://host/?full%20name=Bob%20Joe#hash", "scheme://host/?full%20name=John%20Doe#hash")]
+    [InlineData("scheme://host/?full%20name=Bob%20Joe&age=42#hash", "scheme://host/?full%20name=John%20Doe&age=42#hash")]
     public void GetUriWithQueryParameter_ReplacesWhenParameterExists(string baseUri, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -114,6 +101,8 @@ public class NavigationManagerTest
     [InlineData("scheme://host/?age=42", "scheme://host/?age=42&name=John%20Doe")]
     [InlineData("scheme://host/", "scheme://host/?name=John%20Doe")]
     [InlineData("scheme://host/?", "scheme://host/?name=John%20Doe")]
+    [InlineData("scheme://host/#hash", "scheme://host/?name=John%20Doe#hash")]
+    [InlineData("scheme://host/?age=42#hash", "scheme://host/?age=42&name=John%20Doe#hash")]
     public void GetUriWithQueryParameter_AppendsWhenParameterDoesNotExist(string baseUri, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -129,6 +118,9 @@ public class NavigationManagerTest
     [InlineData("scheme://host/?full%20name=&age=42", "scheme://host/?age=42")]
     [InlineData("scheme://host/?full%20name=", "scheme://host/")]
     [InlineData("scheme://host/", "scheme://host/")]
+    [InlineData("scheme://host/#hash", "scheme://host/#hash")]
+    [InlineData("scheme://host/?full%20name=&age=42#hash", "scheme://host/?age=42#hash")]
+    [InlineData("scheme://host/?full%20name=Bob#hash", "scheme://host/#hash")]
     public void GetUriWithQueryParameter_RemovesWhenParameterValueIsNull(string baseUri, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -156,6 +148,8 @@ public class NavigationManagerTest
     [InlineData("scheme://host/?age=42&eye%20color=87", "scheme://host/?age=25&eye%20color=green")]
     [InlineData("scheme://host/?", "scheme://host/?age=25&eye%20color=green")]
     [InlineData("scheme://host/", "scheme://host/?age=25&eye%20color=green")]
+    [InlineData("scheme://host/#hash", "scheme://host/?age=25&eye%20color=green#hash")]
+    [InlineData("scheme://host/?name=Bob%20Joe&age=42#hash", "scheme://host/?age=25&eye%20color=green#hash")]
     public void GetUriWithQueryParameters_CanAddUpdateAndRemove(string baseUri, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -173,6 +167,7 @@ public class NavigationManagerTest
     [InlineData("scheme://host/?full%20name=Bob%20Joe&ping=8&ping=300", "scheme://host/?full%20name=John%20Doe&ping=35&ping=16&ping=87&ping=240")]
     [InlineData("scheme://host/?ping=8&full%20name=Bob%20Joe&ping=300", "scheme://host/?ping=35&full%20name=John%20Doe&ping=16&ping=87&ping=240")]
     [InlineData("scheme://host/?ping=8&ping=300&ping=50&ping=68&ping=42", "scheme://host/?ping=35&ping=16&ping=87&ping=240&full%20name=John%20Doe")]
+    [InlineData("scheme://host/?full%20name=Bob%20Joe&ping=8&ping=300#hash", "scheme://host/?full%20name=John%20Doe&ping=35&ping=16&ping=87&ping=240#hash")]
     public void GetUriWithQueryParameters_SupportsEnumerableValues(string baseUri, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -803,6 +798,7 @@ public class NavigationManagerTest
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52407")]
     [Fact]
     public async Task LocationChangingHandlers_CannotCancelTheNavigationAsynchronously_UntilReturning()
     {

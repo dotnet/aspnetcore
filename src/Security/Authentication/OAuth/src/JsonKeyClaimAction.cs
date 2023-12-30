@@ -53,7 +53,7 @@ public class JsonKeyClaimAction : ClaimAction
         }
     }
 
-    private void AddClaim(string value, ClaimsIdentity identity, string issuer)
+    private protected void AddClaim(string value, ClaimsIdentity identity, string issuer)
     {
         if (!string.IsNullOrEmpty(value))
         {

@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
@@ -307,8 +308,9 @@ public class CompositeEndpointDataSourceTest
 
         var resolvedEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(groupedEndpoints));
         Assert.Equal("/prefix/a", resolvedEndpoint.RoutePattern.RawText);
-        var resolvedMetadata = Assert.Single(resolvedEndpoint.Metadata);
-        Assert.Same(metadata, resolvedMetadata);
+        Assert.Collection(resolvedEndpoint.Metadata,
+            m => Assert.Same(metadata, m),
+            m => Assert.IsAssignableFrom<IRouteDiagnosticsMetadata>(m));
     }
 
     [Fact]

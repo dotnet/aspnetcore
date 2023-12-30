@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.EventLog;
 
@@ -153,7 +153,7 @@ public class WebApplicationFunctionalTests : LoggedTest
             // so we loop until success or a timeout.
             await configChangedTcs.Task.DefaultTimeout();
 
-            var timeoutTicks = Environment.TickCount64 + Testing.TaskExtensions.DefaultTimeoutDuration;
+            var timeoutTicks = Environment.TickCount64 + InternalTesting.TaskExtensions.DefaultTimeoutDuration;
             var logWritten = false;
 
             while (!logWritten && Environment.TickCount < timeoutTicks)

@@ -27,4 +27,7 @@
     <NuspecProperty Include="OutputSymbol=$(OutputPath)$(AssemblyName).pdb" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Analyzers.Test" />
+  </ItemGroup>
 </Project>

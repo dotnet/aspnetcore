@@ -65,10 +65,7 @@ public class HubOptions
         get => _maximumParallelInvocationsPerClient;
         set
         {
-            if (value < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(MaximumParallelInvocationsPerClient));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
 
             _maximumParallelInvocationsPerClient = value;
         }
@@ -82,4 +79,10 @@ public class HubOptions
     /// False by default. Hub method arguments will be resolved from a DI container if possible.
     /// </remarks>
     public bool DisableImplicitFromServicesParameters { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum bytes to buffer per connection when using stateful reconnect.
+    /// </summary>
+    /// <remarks>Defaults to 100,000 bytes.</remarks>
+    public long StatefulReconnectBufferSize { get; set; } = 100_000;
 }

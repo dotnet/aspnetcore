@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.QPack;
 using System.Text;
@@ -17,18 +17,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Core.WebTransport;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using static System.IO.Pipelines.DuplexPipe;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 internal class Http3InMemory
 {
@@ -37,13 +35,13 @@ internal class Http3InMemory
     protected static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
     protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', 16 * 1024));
 
-    public Http3InMemory(ServiceContext serviceContext, MockSystemClock mockSystemClock, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
+    public Http3InMemory(ServiceContext serviceContext, FakeTimeProvider fakeTimeProvider, ITimeoutHandler timeoutHandler, ILoggerFactory loggerFactory)
     {
         _serviceContext = serviceContext;
-        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler));
+        _timeoutControl = new TimeoutControl(new TimeoutControlConnectionInvoker(this, timeoutHandler), fakeTimeProvider);
         _timeoutControl.Debugger = new TestDebugger();
 
-        _mockSystemClock = mockSystemClock;
+        _fakeTimeProvider = fakeTimeProvider;
 
         _serverReceivedSettings = Channel.CreateUnbounded<KeyValuePair<Http3SettingType, long>>();
         Logger = loggerFactory.CreateLogger<Http3InMemory>();
@@ -73,7 +71,7 @@ internal class Http3InMemory
     }
 
     internal ServiceContext _serviceContext;
-    private MockSystemClock _mockSystemClock;
+    private FakeTimeProvider _fakeTimeProvider;
     internal HttpConnection _httpConnection;
     internal readonly TimeoutControl _timeoutControl;
     internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
@@ -199,27 +197,28 @@ internal class Http3InMemory
         }
     }
 
-    public void AdvanceClock(TimeSpan timeSpan)
+    public void AdvanceTime(TimeSpan timeSpan)
     {
-        Logger.LogDebug($"Advancing clock {timeSpan}.");
+        Logger.LogDebug("Advancing timeProvider {timeSpan}.", timeSpan);
 
-        var clock = _mockSystemClock;
-        var endTime = clock.UtcNow + timeSpan;
+        var timeProvider = _fakeTimeProvider;
+        var endTime = timeProvider.GetTimestamp(timeSpan);
 
-        while (clock.UtcNow + Heartbeat.Interval < endTime)
+        while (timeProvider.GetTimestamp(Heartbeat.Interval) < endTime)
         {
-            clock.UtcNow += Heartbeat.Interval;
-            _timeoutControl.Tick(clock.UtcNow);
+            timeProvider.Advance(Heartbeat.Interval);
+            _timeoutControl.Tick(timeProvider.GetTimestamp());
         }
 
-        clock.UtcNow = endTime;
-        _timeoutControl.Tick(clock.UtcNow);
+        timeProvider.Advance(timeProvider.GetElapsedTime(timeProvider.GetTimestamp(), endTime));
+        _timeoutControl.Tick(timeProvider.GetTimestamp());
     }
 
-    public void TriggerTick(DateTimeOffset now)
+    public void TriggerTick(TimeSpan timeSpan = default)
     {
-        _mockSystemClock.UtcNow = now;
-        Connection?.Tick(now);
+        _fakeTimeProvider.Advance(timeSpan);
+        var timestamp = _fakeTimeProvider.GetTimestamp();
+        Connection?.Tick(timestamp);
     }
 
     public async Task InitializeConnectionAsync(RequestDelegate application)
@@ -982,7 +981,7 @@ internal class Http3ControlStream : Http3StreamBase
     }
 }
 
-internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature
+internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature, IConnectionMetricsContextFeature
 {
     public readonly Channel<ConnectionContext> ToServerAcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
     {
@@ -1006,6 +1005,7 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         Features.Set<IConnectionLifetimeNotificationFeature>(this);
         Features.Set<IConnectionHeartbeatFeature>(this);
         Features.Set<IProtocolErrorCodeFeature>(this);
+        Features.Set<IConnectionMetricsContextFeature>(this);
         ConnectionClosedRequested = ConnectionClosingCts.Token;
     }
 
@@ -1024,6 +1024,7 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         get => _error ?? -1;
         set => _error = value;
     }
+    public ConnectionMetricsContext MetricsContext { get; }
 
     public override void Abort()
     {

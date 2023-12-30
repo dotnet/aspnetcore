@@ -8,14 +8,13 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class HostingApplicationDiagnostics
 {
-    private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
-
     // internal so it can be used in tests
     internal const string ActivityName = "Microsoft.AspNetCore.Hosting.HttpRequestIn";
     private const string ActivityStartKey = ActivityName + ".Start";
@@ -25,21 +24,29 @@ internal sealed class HostingApplicationDiagnostics
     private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
     private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
+    private const string RequestUnhandledKey = "__RequestUnhandled";
+
     private readonly ActivitySource _activitySource;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly DistributedContextPropagator _propagator;
+    private readonly HostingEventSource _eventSource;
+    private readonly HostingMetrics _metrics;
     private readonly ILogger _logger;
 
     public HostingApplicationDiagnostics(
         ILogger logger,
         DiagnosticListener diagnosticListener,
         ActivitySource activitySource,
-        DistributedContextPropagator propagator)
+        DistributedContextPropagator propagator,
+        HostingEventSource eventSource,
+        HostingMetrics metrics)
     {
         _logger = logger;
         _diagnosticListener = diagnosticListener;
         _activitySource = activitySource;
         _propagator = propagator;
+        _eventSource = eventSource;
+        _metrics = metrics;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -47,9 +54,27 @@ internal sealed class HostingApplicationDiagnostics
     {
         long startTimestamp = 0;
 
-        if (HostingEventSource.Log.IsEnabled())
+        if (_metrics.IsEnabled())
+        {
+            context.MetricsEnabled = true;
+            context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
+            httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
+
+            startTimestamp = Stopwatch.GetTimestamp();
+
+            // To keep the hot path short we defer logging in this function to non-inlines
+            RecordRequestStartMetrics(httpContext);
+        }
+
+        if (_eventSource.IsEnabled())
         {
             context.EventLogEnabled = true;
+
+            if (startTimestamp == 0)
+            {
+                startTimestamp = Stopwatch.GetTimestamp();
+            }
+
             // To keep the hot path short we defer logging in this function to non-inlines
             RecordRequestStartEventLog(httpContext);
         }
@@ -63,16 +88,9 @@ internal sealed class HostingApplicationDiagnostics
             context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
-            if (context.Activity is Activity activity)
+            if (context.Activity != null)
             {
-                if (httpContext.Features.Get<IHttpActivityFeature>() is IHttpActivityFeature feature)
-                {
-                    feature.Activity = activity;
-                }
-                else
-                {
-                    httpContext.Features.Set(context.HttpActivityFeature);
-                }
+                httpContext.Features.Set<IHttpActivityFeature>(context.HttpActivityFeature);
             }
         }
 
@@ -80,7 +98,11 @@ internal sealed class HostingApplicationDiagnostics
         {
             if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
             {
-                startTimestamp = Stopwatch.GetTimestamp();
+                if (startTimestamp == 0)
+                {
+                    startTimestamp = Stopwatch.GetTimestamp();
+                }
+
                 RecordBeginRequestDiagnostics(httpContext, startTimestamp);
             }
         }
@@ -114,13 +136,43 @@ internal sealed class HostingApplicationDiagnostics
         var startTimestamp = context.StartTimestamp;
         long currentTimestamp = 0;
 
-        // If startTimestamp was 0, then Information logging wasn't enabled at for this request (and calculated time will be wildly wrong)
-        // Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
+        // startTimestamp has a value if:
+        // - Information logging was enabled at for this request (and calculated time will be wildly wrong)
+        //   Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
+        // - EventLog or metrics was enabled
         if (startTimestamp != 0)
         {
             currentTimestamp = Stopwatch.GetTimestamp();
+            var reachedPipelineEnd = httpContext.Items.ContainsKey(RequestUnhandledKey);
+
             // Non-inline
             LogRequestFinished(context, startTimestamp, currentTimestamp);
+
+            if (context.MetricsEnabled)
+            {
+                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+                var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+                var customTags = context.MetricsTagsFeature?.TagsList;
+
+                _metrics.RequestEnd(
+                    httpContext.Request.Protocol,
+                    httpContext.Request.IsHttps,
+                    httpContext.Request.Scheme,
+                    httpContext.Request.Method,
+                    httpContext.Request.Host,
+                    route,
+                    httpContext.Response.StatusCode,
+                    reachedPipelineEnd,
+                    exception,
+                    customTags,
+                    startTimestamp,
+                    currentTimestamp);
+            }
+
+            if (reachedPipelineEnd)
+            {
+                LogRequestUnhandled(context);
+            }
         }
 
         if (_diagnosticListener.IsEnabled())
@@ -164,13 +216,13 @@ internal sealed class HostingApplicationDiagnostics
             if (exception != null)
             {
                 // Non-inline
-                HostingEventSource.Log.UnhandledException();
+                _eventSource.UnhandledException();
             }
 
             // Count 500 as failed requests
             if (httpContext.Response.StatusCode >= 500)
             {
-                HostingEventSource.Log.RequestFailed();
+                _eventSource.RequestFailed();
             }
         }
 
@@ -179,12 +231,11 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ContextDisposed(HostingApplication.Context context)
+    public void ContextDisposed(HostingApplication.Context context)
     {
         if (context.EventLogEnabled)
         {
-            // Non-inline
-            HostingEventSource.Log.RequestStop();
+            _eventSource.RequestStop();
         }
     }
 
@@ -211,7 +262,7 @@ internal sealed class HostingApplicationDiagnostics
         // so check if we logged the start event
         if (context.StartLog != null)
         {
-            var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+            var elapsed = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
 
             _logger.Log(
                 logLevel: LogLevel.Information,
@@ -220,6 +271,17 @@ internal sealed class HostingApplicationDiagnostics
                 exception: null,
                 formatter: HostingRequestFinishedLog.Callback);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void LogRequestUnhandled(HostingApplication.Context context)
+    {
+        _logger.Log(
+            logLevel: LogLevel.Information,
+            eventId: LoggerEventIds.RequestUnhandled,
+            state: new HostingRequestUnhandledLog(context.HttpContext!),
+            exception: null,
+            formatter: HostingRequestUnhandledLog.Callback);
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
@@ -302,9 +364,15 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static void RecordRequestStartEventLog(HttpContext httpContext)
+    private void RecordRequestStartEventLog(HttpContext httpContext)
     {
-        HostingEventSource.Log.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
+        _eventSource.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void RecordRequestStartMetrics(HttpContext httpContext)
+    {
+        _metrics.RequestStart(httpContext.Request.IsHttps, httpContext.Request.Scheme, httpContext.Request.Method, httpContext.Request.Host);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

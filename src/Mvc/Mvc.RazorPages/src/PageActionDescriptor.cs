@@ -25,10 +25,7 @@ public class PageActionDescriptor : ActionDescriptor
     /// <param name="other">The <see cref="PageActionDescriptor"/> to copy from.</param>
     public PageActionDescriptor(PageActionDescriptor other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
 
         RelativePath = other.RelativePath;
         ViewEnginePath = other.ViewEnginePath;
@@ -79,10 +76,7 @@ public class PageActionDescriptor : ActionDescriptor
 
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             base.DisplayName = value;
         }

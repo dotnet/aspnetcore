@@ -21,4 +21,7 @@
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="TaskToApm.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.ResponseCompression.Tests" />
+  </ItemGroup>
 </Project>

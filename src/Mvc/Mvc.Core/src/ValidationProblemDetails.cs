@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -12,7 +10,6 @@ namespace Microsoft.AspNetCore.Mvc;
 /// <summary>
 /// A <see cref="ProblemDetails"/> for validation errors.
 /// </summary>
-[JsonConverter(typeof(ValidationProblemDetailsJsonConverter))]
 public class ValidationProblemDetails : HttpValidationProblemDetails
 {
     /// <summary>
@@ -34,10 +31,7 @@ public class ValidationProblemDetails : HttpValidationProblemDetails
 
     private static IDictionary<string, string[]> CreateErrorDictionary(ModelStateDictionary modelState)
     {
-        if (modelState == null)
-        {
-            throw new ArgumentNullException(nameof(modelState));
-        }
+        ArgumentNullException.ThrowIfNull(modelState);
 
         var errorDictionary = new Dictionary<string, string[]>(StringComparer.Ordinal);
 
@@ -87,5 +81,5 @@ public class ValidationProblemDetails : HttpValidationProblemDetails
     /// <summary>
     /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
     /// </summary>
-    public new IDictionary<string, string[]> Errors => base.Errors;
+    public new IDictionary<string, string[]> Errors { get { return base.Errors; } set { base.Errors = value; } }
 }

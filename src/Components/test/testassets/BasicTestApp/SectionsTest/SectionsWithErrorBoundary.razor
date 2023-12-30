@@ -1,0 +1,58 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<button id="render-section-outlet" @onclick="() => SectionOutletIsRendered = true">Render section outlet</button>
+<br />
+<button id="change-section-outlet-id" @onclick="() => SectionOutletId = anotherId">Change section outlet id</button>
+<br />
+<button id="render-first-section-content" @onclick="() => FirstSectionContentIsRendered = true">Render first section content</button>
+<br />
+<button id="dispose-first-section-content" @onclick="() => FirstSectionContentIsRendered = false">Dispose first section content</button>
+<br />
+<button id="render-second-section-content" @onclick="() => SecondSectionContentIsRendered = true">Render second section content</button>
+<br />
+<button id="dispose-second-section-content" @onclick="() => SecondSectionContentIsRendered = false">Dispose seecond section content</button>
+<br />
+<button id="change-second-section-content-id" @onclick="() => SecondSectionContentId = anotherId">Change second section content id</button>
+
+
+@if (SectionOutletIsRendered)
+{
+    <SectionOutlet SectionId=SectionOutletId />
+}
+
+@if (FirstSectionContentIsRendered)
+{
+    <ErrorBoundary>
+        <SectionContent SectionName=@id>
+            <h1>First Section</h1>
+            <ComponentThatThrowsException />
+        </SectionContent>
+    </ErrorBoundary>
+}
+
+@if (SecondSectionContentIsRendered)
+{
+    <ErrorBoundary>
+        <ChildContent>
+            <SectionContent SectionId=SecondSectionContentId>
+                <h1>Second Section</h1>
+                <ComponentThatThrowsException />
+            </SectionContent>
+        </ChildContent>
+        <ErrorContent>
+            <p>Sorry!</p>
+        </ErrorContent>
+    </ErrorBoundary>
+}
+
+@code {
+    private bool FirstSectionContentIsRendered = false;
+    private bool SecondSectionContentIsRendered = false;
+    private bool SectionOutletIsRendered = false;
+
+    private static string id = "errb-section-test";
+    private static object anotherId = new();
+
+    private object SectionOutletId = id;
+    private object SecondSectionContentId = id;
+}

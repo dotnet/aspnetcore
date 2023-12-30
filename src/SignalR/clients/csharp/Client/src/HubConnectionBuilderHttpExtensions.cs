@@ -7,6 +7,7 @@ using System.Net;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,18 @@ namespace Microsoft.AspNetCore.SignalR.Client;
 /// </summary>
 public static class HubConnectionBuilderHttpExtensions
 {
+    /// <summary>
+    /// Configures the <see cref="HttpConnectionOptions"/> to negotiate stateful reconnect with the server.
+    /// </summary>
+    /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
+    /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
+    public static IHubConnectionBuilder WithStatefulReconnect(this IHubConnectionBuilder hubConnectionBuilder)
+    {
+        hubConnectionBuilder.Services.Configure<HttpConnectionOptions>(options => options.UseStatefulReconnect = true);
+
+        return hubConnectionBuilder;
+    }
+
     /// <summary>
     /// Configures the <see cref="HubConnection" /> to use HTTP-based transports to connect to the specified URL.
     /// </summary>
@@ -124,10 +137,7 @@ public static class HubConnectionBuilderHttpExtensions
 
     private static IHubConnectionBuilder WithUrlCore(this IHubConnectionBuilder hubConnectionBuilder, Uri url, HttpTransportType? transports, Action<HttpConnectionOptions>? configureHttpConnection)
     {
-        if (hubConnectionBuilder == null)
-        {
-            throw new ArgumentNullException(nameof(hubConnectionBuilder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(hubConnectionBuilder);
 
         hubConnectionBuilder.Services.Configure<HttpConnectionOptions>(o =>
         {

@@ -1,6 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration!>?
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.set -> void
 const Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme = "Bearer" -> string!
 Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext
 Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext.AuthenticationFailedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
@@ -36,6 +34,7 @@ Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents.OnTokenValidated.s
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.Events.get -> Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents!
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.Events.set -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.JwtBearerHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.JwtBearerHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Audience.get -> string?
@@ -54,6 +53,8 @@ Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Challenge.get -> 
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Challenge.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Configuration.get -> Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration?
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Configuration.set -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.get -> Microsoft.IdentityModel.Protocols.IConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration!>?
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.ConfigurationManager.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Events.get -> Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents!
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.Events.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.IncludeErrorDetails.get -> bool
@@ -72,11 +73,14 @@ Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.RequireHttpsMetad
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.SaveToken.get -> bool
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.SaveToken.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.SecurityTokenValidators.get -> System.Collections.Generic.IList<Microsoft.IdentityModel.Tokens.ISecurityTokenValidator!>!
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenHandlers.get -> System.Collections.Generic.IList<Microsoft.IdentityModel.Tokens.TokenHandler!>!
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenValidationParameters.get -> Microsoft.IdentityModel.Tokens.TokenValidationParameters!
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.TokenValidationParameters.set -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.UseSecurityTokenValidators.get -> bool
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions.UseSecurityTokenValidators.set -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions
 Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.JwtBearerPostConfigureOptions() -> void
-Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string! name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
+Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerPostConfigureOptions.PostConfigure(string? name, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext
 Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext.MessageReceivedContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions! options) -> void
 Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext.Token.get -> string?
@@ -91,6 +95,7 @@ override Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.HandleAu
 override Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.HandleChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler.HandleForbiddenAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> System.Threading.Tasks.Task!
 static Microsoft.Extensions.DependencyInjection.JwtBearerExtensions.AddJwtBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.JwtBearerExtensions.AddJwtBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.JwtBearerExtensions.AddJwtBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string? displayName, System.Action<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.JwtBearerExtensions.AddJwtBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.JwtBearerExtensions.AddJwtBearer(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!

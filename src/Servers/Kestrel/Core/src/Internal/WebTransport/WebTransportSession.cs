@@ -38,7 +38,8 @@ internal sealed class WebTransportSession : IWebTransportSession
     internal const string VersionEnabledIndicator = "1";
     internal const string SecPrefix = "sec-webtransport-http3-";
     internal const string VersionHeaderPrefix = $"{SecPrefix}draft";
-    internal const string CurrentSuppportedVersion = $"{VersionHeaderPrefix}02";
+    internal const string CurrentSupportedVersionSuffix = "draft02";
+    internal const string CurrentSupportedVersion = $"{SecPrefix}{CurrentSupportedVersionSuffix}";
 
     public long SessionId => _connectStream.StreamId;
 

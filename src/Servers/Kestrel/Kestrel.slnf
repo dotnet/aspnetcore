@@ -39,6 +39,8 @@
       "src\\Servers\\Kestrel\\Core\\test\\Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\test\\Microsoft.AspNetCore.Server.Kestrel.Tests.csproj",
+      "src\\Servers\\Kestrel\\Transport.NamedPipes\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj",
+      "src\\Servers\\Kestrel\\Transport.NamedPipes\\test\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\test\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
@@ -59,7 +61,7 @@
       "src\\Servers\\Kestrel\\test\\Sockets.BindTests\\Sockets.BindTests.csproj",
       "src\\Servers\\Kestrel\\test\\Sockets.FunctionalTests\\Sockets.FunctionalTests.csproj",
       "src\\Servers\\Kestrel\\tools\\CodeGenerator\\CodeGenerator.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

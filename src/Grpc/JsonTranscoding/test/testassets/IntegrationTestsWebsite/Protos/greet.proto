@@ -46,6 +46,43 @@ service Greeter {
       get: "/v1/{name.last_name}/{name.first_name=complex_greeter/**/b}/c/d/two"
     };
   }
+  rpc SayHelloComplexCatchAll4 (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/{name=**}"
+    };
+  }
+  rpc SayHelloCustomVerbOne (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_custom/{name}:one"
+    };
+  }
+  rpc SayHelloCustomVerbTwo (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_custom/{name}:two"
+    };
+  }
+  rpc SayHelloCatchAllCustomVerbOne (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_customcatchall/{name=**}:one"
+    };
+  }
+  rpc SayHelloCatchAllCustomVerbTwo (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter_customcatchall/{name=**}:two"
+    };
+  }
+  rpc SayHelloPostCustomVerbOne (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter_custompost:one",
+      body: "*"
+    };
+  }
+  rpc SayHelloPostCustomVerbTwo (HelloRequest) returns (HelloReply) {
+    option (google.api.http) = {
+      post: "/v1/greeter_custompost:two",
+      body: "*"
+    };
+  }
 }
 
 // The request message containing the user's name.

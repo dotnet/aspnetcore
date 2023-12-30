@@ -3,8 +3,6 @@
   <String Id="Caption">Installazione di [BundleNameFull]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Benvenuti</String>
-  <String Id="InstallMessage">Il programma di installazione installerà [WixBundleName] nel computer. Fare clic su Installa per continuare, su Opzioni per impostare la directory di installazione o su Chiudi per uscire.</String>
   <String Id="InstallVersion">Versione [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Annullare?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versione precedente</String>
@@ -18,20 +16,13 @@
 /norestart   - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio.
 /log log.txt - registra il log in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Chiudi</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Condizioni di licenza&lt;/a&gt; di [WixBundleName].</String>
   <String Id="InstallAcceptCheckbox">&amp;Accetto i termini e le condizioni di licenza</String>
-  <String Id="InstallOptionsButton">&amp;Opzioni</String>
   <String Id="InstallInstallButton">&amp;Installa</String>
   <String Id="InstallCloseButton">&amp;Chiudi</String>
-  <String Id="OptionsHeader">Opzioni di installazione</String>
-  <String Id="OptionsLocationLabel">Percorso di installazione:</String>
-  <String Id="OptionsBrowseButton">&amp;Sfoglia</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">Ann&amp;ulla</String>
   <String Id="ProgressHeader">Stato installazione</String>
   <String Id="ProgressLabel">Elaborazione di:</String>
   <String Id="OverallProgressPackageText">Inizializzazione in corso...</String>
-  <String Id="ProgressCancelButton">Ann&amp;ulla</String>
+  <String Id="ProgressCancelButton">&amp;Annulla</String>
   <String Id="ModifyHeader">Modifica installazione</String>
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>

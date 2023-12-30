@@ -12,16 +12,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared"/>
-    <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RequestDelegateCreationMessages.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared" />
     <Compile Include="..\..\Shared\StreamCopyOperationInternal.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ApiExplorerTypes\*.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)RoutingMetadata\AcceptsMetadata.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ProblemDetails\ProblemDetailsDefaults.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LingBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Json\JsonSerializerExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RouteHandlers\ExecuteHandlerHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.cs" LinkBase="SharedFormMapping" />
+    <EmbeddedResource Include="$(RepoRoot)src\Components\Endpoints\src\FormMapping\**\*.resx" LinkBase="SharedFormMapping">
+      <ClassName>Microsoft.AspNetCore.Components.Endpoints.FormMapping.FormDataResources</ClassName>
+      <Language>CSharp</Language>
+    </EmbeddedResource>
+    <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="SharedFormMapping" />
+    <!-- Exclude Blazor-specific form binding suppliers. -->
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormValueMapper.cs" LinkBase="SharedFormMapping" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormDataProvider.cs" LinkBase="SharedFormMapping" />
+    <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\BrowserFileFromFormFile.cs" LinkBase="SharedFormMapping" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +42,10 @@
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
   </ItemGroup>
 
 </Project>

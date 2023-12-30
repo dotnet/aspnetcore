@@ -195,7 +195,7 @@ public class Customer
 }
 """;
 
-        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsableOrBindable)
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable)
             .WithArguments("customer", "Customer")
             .WithLocation(0);
 
@@ -204,7 +204,92 @@ public class Customer
     }
 
     [Fact]
-    public async Task Route_Parameter_withBindAsyncMethodThatReturnsTask_of_T_Fails()
+    public async Task Route_Parameter_withNameChanged_viaFromRoute_whenNotParsable_Fails()
+    {
+        // Arrange
+        var source = $$"""
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{cust}", ({|#0:[FromRoute(Name = "cust")]Customer customer|}) => {});
+
+public class Customer
+{
+}
+""";
+
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable)
+            .WithArguments("customer", "Customer")
+            .WithLocation(0);
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withTwoReceivingHandlerParameters_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{cust}", ([FromRoute(Name = "cust")]Customer customer, [FromRoute(Name = "cust")]string customerKey) => {});
+
+public class Customer
+{
+        public static bool TryParse(string s, IFormatProvider provider, out Customer result)
+        {
+            result = new Customer();
+            return true;
+        }
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withNameChanged_viaFromRoute_whenParsable_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+var webApp = WebApplication.Create();
+webApp.MapGet("/customers/{cust}", ({|#0:[FromRoute(Name = "cust")]Customer customer|}) => {});
+
+public class Customer : IParsable<Customer>
+{
+    public static Customer Parse(string s, IFormatProvider provider)
+    {
+        if (TryParse(s, provider, out Customer customer))
+        {
+            return customer;
+        }
+        else
+        {
+            throw new ArgumentException(s);
+        }
+    }
+
+    public static bool TryParse(string s, IFormatProvider provider, out Customer result)
+    {
+        result = new Customer();
+        return true;
+    }
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withBindAsyncMethod_Fails()
     {
         // Arrange
         var source = $$"""
@@ -216,14 +301,14 @@ webApp.MapGet("/customers/{customer}", ({|#0:Customer customer|}) => {});
 
 public class Customer
 {
-    public async static Task<Customer> BindAsync(HttpContext context)
+    public async static ValueTask<Customer> BindAsync(HttpContext context)
     {
         return new Customer();
     }
 }
 """;
 
-        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT)
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable)
             .WithArguments("customer", "Customer")
             .WithLocation(0);
 
@@ -337,7 +422,7 @@ public class Customer
     }
 
     [Fact]
-    public async Task Route_Parameter_withHttpContextBindableComplexType_viaImplicitIBindableFromHttp_Works()
+    public async Task Route_Parameter_withHttpContextBindableComplexType_viaImplicitIBindableFromHttp_Fails()
     {
         // Arrange
         var source = $$"""
@@ -348,7 +433,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 var webApp = WebApplication.Create();
-webApp.MapGet("/customers/{customer}", (Customer customer) => {});
+webApp.MapGet("/customers/{customer}", ({|#0:Customer customer|}) => {});
 
 public class Customer : IBindableFromHttpContext<Customer>
 {
@@ -359,12 +444,16 @@ public class Customer : IBindableFromHttpContext<Customer>
 }
 """;
 
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable)
+            .WithArguments("customer", "Customer")
+            .WithLocation(0);
+
         // Act
-        await VerifyCS.VerifyAnalyzerAsync(source);
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
     [Fact]
-    public async Task Route_Parameter_withHttpContextBindableComplexType_viaExplicitIBindableFromHttp_Works()
+    public async Task Route_Parameter_withHttpContextBindableComplexType_viaExplicitIBindableFromHttp_Fails()
     {
         // Arrange
         var source = $$"""
@@ -375,7 +464,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
 var webApp = WebApplication.Create();
-webApp.MapGet("/customers/{customer}", (Customer customer) => {});
+webApp.MapGet("/customers/{customer}", ({|#0:Customer customer|}) => {});
 
 public class Customer : IBindableFromHttpContext<Customer>
 {
@@ -386,8 +475,12 @@ public class Customer : IBindableFromHttpContext<Customer>
 }
 """;
 
+        var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable)
+            .WithArguments("customer", "Customer")
+            .WithLocation(0);
+
         // Act
-        await VerifyCS.VerifyAnalyzerAsync(source);
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostic);
     }
 
     [Fact]
@@ -489,7 +582,7 @@ public class Customer
     }
 
     [Fact]
-    public async Task Handler_Parameter_withWellknownTypes_Works()
+    public async Task Handler_Parameter_withWellKnownTypes_Works()
     {
         // Arrange
         var source = $$"""
@@ -538,6 +631,108 @@ webApp.MapPost(
 
 public class MyService
 {
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Handler_Parameter_withServiceInterface_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+
+var webApp = WebApplication.Create();
+webApp.MapGet("/weatherforecast", (HttpContext context, IDownstreamApi downstreamApi) => {});
+
+// This type doesn't need to be parsable because it should be assumed to be a service type.
+public interface IDownstreamApi
+{
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withAbstractBaseType_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => "Hello World!");
+app.MapGet("/{customer}", (BaseCustomer customer) => { });
+app.Run();
+
+public abstract class BaseCustomer : IParsable<BaseCustomer>
+{
+    public static BaseCustomer Parse(string s, IFormatProvider? provider)
+    {
+        return new CommercialCustomer();
+    }
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out BaseCustomer result)
+    {
+        result = new CommercialCustomer();
+        return true;
+    }
+}
+
+public class CommercialCustomer : BaseCustomer
+{
+
+}
+""";
+
+        // Act
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task Route_Parameter_withInterfaceType_Works()
+    {
+        // Arrange
+        var source = $$"""
+using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet("/", () => "Hello World!");
+app.MapGet("/{customer}", (ICustomer customer) => { });
+app.Run();
+
+public interface ICustomer
+{
+    public static ICustomer Parse(string s, IFormatProvider? provider)
+    {
+        return new CommercialCustomer();
+    }
+
+    public static bool TryParse(string? s, IFormatProvider? provider, out ICustomer result)
+    {
+        result = new CommercialCustomer();
+        return true;
+    }
+}
+
+public class CommercialCustomer : ICustomer
+{
+
 }
 """;
 

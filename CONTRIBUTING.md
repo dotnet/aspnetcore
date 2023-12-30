@@ -42,7 +42,7 @@ To help you be successful we've put together a few simple rules to follow when y
 
   Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
-  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with the `help wanted` label. You can find all these issues at [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
+  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with the `help wanted` label. You can find all these issues at [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted). When you choose an issue you'd like to work on, you'll see that some include a comment from our team that follows the [Issue Summary Template](/docs/HelpWantedIssueSummaryCommentTemplate.md). That comment is meant to make it much simpler for you to both understand what the problem is as well as provide references and hints about how to approach it.
 
 Within that set, we have additionally marked issues that are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with the `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
 
@@ -111,6 +111,12 @@ Your pull request will now go through extensive checks by the subject matter exp
 When your pull request has had all feedback addressed, it has been signed off by one or more reviewers with commit access, and all checks are green, we will commit it.
 
 We commit pull requests as a single Squash commit unless there are special circumstances. This creates a simpler history than a Merge or Rebase commit. "Special circumstances" are rare, and typically mean that there are a series of cleanly separated changes that will be too hard to understand if squashed together, or for some reason we want to preserve the ability to bisect them.
+
+## Additional Resources
+
+Here are videos (partially outdated) where members of the ASP.NET Core team provide guidance, advice and samples on how to contribute to this project.
+* For ASP.NET Core - https://www.youtube.com/watch?v=hVdwb41FPvU
+* For Blazor - https://www.youtube.com/watch?v=gRg0xxK8L6w
 
 ## Code of conduct
 

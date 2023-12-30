@@ -1,6 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
-Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
 Microsoft.AspNetCore.TestHost.ClientHandler
 Microsoft.AspNetCore.TestHost.HostBuilderTestServerExtensions
 Microsoft.AspNetCore.TestHost.HttpResetTestException
@@ -21,6 +19,7 @@ Microsoft.AspNetCore.TestHost.TestServer.BaseAddress.get -> System.Uri!
 Microsoft.AspNetCore.TestHost.TestServer.BaseAddress.set -> void
 Microsoft.AspNetCore.TestHost.TestServer.CreateClient() -> System.Net.Http.HttpClient!
 Microsoft.AspNetCore.TestHost.TestServer.CreateHandler() -> System.Net.Http.HttpMessageHandler!
+Microsoft.AspNetCore.TestHost.TestServer.CreateHandler(System.Action<Microsoft.AspNetCore.Http.HttpContext!>! additionalContextConfiguration) -> System.Net.Http.HttpMessageHandler!
 Microsoft.AspNetCore.TestHost.TestServer.CreateRequest(string! path) -> Microsoft.AspNetCore.TestHost.RequestBuilder!
 Microsoft.AspNetCore.TestHost.TestServer.CreateWebSocketClient() -> Microsoft.AspNetCore.TestHost.WebSocketClient!
 Microsoft.AspNetCore.TestHost.TestServer.Dispose() -> void
@@ -34,6 +33,8 @@ Microsoft.AspNetCore.TestHost.TestServer.TestServer(Microsoft.AspNetCore.Hosting
 Microsoft.AspNetCore.TestHost.TestServer.TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> void
 Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services) -> void
 Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection) -> void
+Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.AspNetCore.Http.Features.IFeatureCollection! featureCollection, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
+Microsoft.AspNetCore.TestHost.TestServer.TestServer(System.IServiceProvider! services, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.TestHost.TestServerOptions!>! optionsAccessor) -> void
 Microsoft.AspNetCore.TestHost.TestServerOptions
 Microsoft.AspNetCore.TestHost.TestServerOptions.AllowSynchronousIO.get -> bool
 Microsoft.AspNetCore.TestHost.TestServerOptions.AllowSynchronousIO.set -> void

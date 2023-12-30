@@ -84,10 +84,7 @@ internal sealed class PagedBufferedTextWriter : TextWriter
 
     public override void Write(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
 
         _charBuffer.Append(buffer, index, count);
     }

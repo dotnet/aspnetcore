@@ -1,8 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Sections;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -11,12 +12,14 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// within the context of a <see cref="Renderer"/>. This is an internal implementation
 /// detail of <see cref="Renderer"/>.
 /// </summary>
-internal sealed class ComponentState : IDisposable
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
-    private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
-    private readonly bool _hasCascadingParameters;
     private readonly bool _hasAnyCascadingParameterSubscriptions;
+    private IReadOnlyList<CascadingParameterState> _cascadingParameters;
+    private bool _hasCascadingParameters;
+    private bool _hasSingleDeliveryCascadingParameters;
     private RenderTreeBuilder _nextRenderTree;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
@@ -28,13 +31,16 @@ internal sealed class ComponentState : IDisposable
     /// <param name="componentId">The externally visible identifier for the <see cref="IComponent"/>. The identifier must be unique in the context of the <see cref="Renderer"/>.</param>
     /// <param name="component">The <see cref="IComponent"/> whose state is being tracked.</param>
     /// <param name="parentComponentState">The <see cref="ComponentState"/> for the parent component, or null if this is a root component.</param>
-    public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState parentComponentState)
+    public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
     {
         ComponentId = componentId;
         ParentComponentState = parentComponentState;
         Component = component ?? throw new ArgumentNullException(nameof(component));
+        LogicalParentComponentState = component is SectionOutlet.SectionOutletContentRenderer
+            ? (GetSectionOutletLogicalParent(renderer, (SectionOutlet)parentComponentState!.Component) ?? parentComponentState)
+            : parentComponentState;
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
+        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
 
@@ -45,13 +51,43 @@ internal sealed class ComponentState : IDisposable
         }
     }
 
-    // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
-    public int ComponentId { get; }
-    public IComponent Component { get; }
-    public ComponentState ParentComponentState { get; }
-    public RenderTreeBuilder CurrentRenderTree { get; private set; }
+    private static ComponentState? GetSectionOutletLogicalParent(Renderer renderer, SectionOutlet sectionOutlet)
+    {
+        // This will return null if the SectionOutlet is not currently rendering any content
+        if (sectionOutlet.CurrentLogicalParent is { } logicalParent
+            && renderer.GetComponentState(logicalParent) is { } logicalParentComponentState)
+        {
+            return logicalParentComponentState;
+        }
 
-    public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the component ID.
+    /// </summary>
+    public int ComponentId { get; }
+
+    /// <summary>
+    /// Gets the component instance.
+    /// </summary>
+    public IComponent Component { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> of the parent component, or null if this is a root component.
+    /// </summary>
+    public ComponentState? ParentComponentState { get; }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentState"/> of the logical parent component, or null if this is a root component.
+    /// </summary>
+    public ComponentState? LogicalParentComponentState { get; }
+
+    internal RenderTreeBuilder CurrentRenderTree { get; set; }
+
+    internal Renderer Renderer => _renderer;
+
+    internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
         renderFragmentException = null;
 
@@ -93,43 +129,8 @@ internal sealed class ComponentState : IDisposable
         batchBuilder.InvalidateParameterViews();
     }
 
-    public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
-    {
-        _componentWasDisposed = true;
-        exception = null;
-
-        try
-        {
-            if (Component is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
-        }
-
-        CleanupComponentStateResources(batchBuilder);
-
-        return exception == null;
-    }
-
-    private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
-    {
-        // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
-
-        if (_hasAnyCascadingParameterSubscriptions)
-        {
-            RemoveCascadingParameterSubscriptions();
-        }
-
-        DisposeBuffers();
-    }
-
     // Callers expect this method to always return a faulted task.
-    public Task NotifyRenderCompletedAsync()
+    internal Task NotifyRenderCompletedAsync()
     {
         if (Component is IHandleAfterRender handlerAfterRender)
         {
@@ -150,7 +151,7 @@ internal sealed class ComponentState : IDisposable
         return Task.CompletedTask;
     }
 
-    public void SetDirectParameters(ParameterView parameters)
+    internal void SetDirectParameters(ParameterView parameters)
     {
         // Note: We should be careful to ensure that the framework never calls
         // IComponent.SetParametersAsync directly elsewhere. We should only call it
@@ -174,13 +175,48 @@ internal sealed class ComponentState : IDisposable
         if (_hasCascadingParameters)
         {
             parameters = parameters.WithCascadingParameters(_cascadingParameters);
+            if (_hasSingleDeliveryCascadingParameters)
+            {
+                StopSupplyingSingleDeliveryCascadingParameters();
+            }
         }
 
         SupplyCombinedParameters(parameters);
     }
 
-    public void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
+    private void StopSupplyingSingleDeliveryCascadingParameters()
     {
+        // We're optimizing for the case where there are no single-delivery parameters, or if there were, we already
+        // removed them. In those cases _cascadingParameters is already up-to-date and gets used as-is without any filtering.
+        // In the unusual case were there are single-delivery parameters and we haven't yet removed them, it's OK to
+        // go through the extra work and allocation of creating a new list.
+        List<CascadingParameterState>? remainingCascadingParameters = null;
+        foreach (var param in _cascadingParameters)
+        {
+            if (!param.ParameterInfo.Attribute.SingleDelivery)
+            {
+                remainingCascadingParameters ??= new(_cascadingParameters.Count /* upper bound on capacity needed */);
+                remainingCascadingParameters.Add(param);
+            }
+        }
+
+        // Now update all the tracking state to match the filtered set
+        _hasCascadingParameters = remainingCascadingParameters is not null;
+        _cascadingParameters = (IReadOnlyList<CascadingParameterState>?)remainingCascadingParameters ?? Array.Empty<CascadingParameterState>();
+        _hasSingleDeliveryCascadingParameters = false;
+    }
+
+    internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
+    {
+        // If the component was already disposed, we must not try to supply new parameters. Among other reasons,
+        // _latestDirectParametersSnapshot will already have been disposed and that puts it into an invalid state
+        // so we can't even read from it. Note that disposal doesn't instantly trigger unsubscription from cascading
+        // values - that only happens when the ComponentState is processed later by the disposal queue.
+        if (_componentWasDisposed)
+        {
+            return;
+        }
+
         var directParams = _latestDirectParametersSnapshot != null
             ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
             : ParameterView.Empty;
@@ -204,7 +240,7 @@ internal sealed class ComponentState : IDisposable
             setParametersAsyncTask = Task.FromException(ex);
         }
 
-        _renderer.AddToPendingTasks(setParametersAsyncTask, owningComponentState: this);
+        _renderer.AddToPendingTasksWithErrorHandling(setParametersAsyncTask, owningComponentState: this);
     }
 
     private bool AddCascadingParameterSubscriptions()
@@ -215,9 +251,9 @@ internal sealed class ComponentState : IDisposable
         for (var i = 0; i < numCascadingParameters; i++)
         {
             var valueSupplier = _cascadingParameters[i].ValueSupplier;
-            if (!valueSupplier.CurrentValueIsFixed)
+            if (!valueSupplier.IsFixed)
             {
-                valueSupplier.Subscribe(this);
+                valueSupplier.Subscribe(this, _cascadingParameters[i].ParameterInfo);
                 hasSubscription = true;
             }
         }
@@ -231,20 +267,34 @@ internal sealed class ComponentState : IDisposable
         for (var i = 0; i < numCascadingParameters; i++)
         {
             var supplier = _cascadingParameters[i].ValueSupplier;
-            if (!supplier.CurrentValueIsFixed)
+            if (!supplier.IsFixed)
             {
-                supplier.Unsubscribe(this);
+                supplier.Unsubscribe(this, _cascadingParameters[i].ParameterInfo);
             }
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Disposes this instance and its associated component.
+    /// </summary>
+    public virtual ValueTask DisposeAsync()
     {
+        _componentWasDisposed = true;
         DisposeBuffers();
 
-        if (Component is IDisposable disposable)
+        // Components shouldn't need to implement IAsyncDisposable and IDisposable simultaneously,
+        // but in case they do, we prefer the async overload since we understand the sync overload
+        // is implemented for more "constrained" scenarios.
+        // Component authors are responsible for their IAsyncDisposable implementations not taking
+        // forever.
+        if (Component is IAsyncDisposable asyncDisposable)
         {
-            disposable.Dispose();
+            return asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            (Component as IDisposable)?.Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 
@@ -255,32 +305,21 @@ internal sealed class ComponentState : IDisposable
         _latestDirectParametersSnapshot?.Dispose();
     }
 
-    public Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+    internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
-        _componentWasDisposed = true;
+        // We don't expect these things to throw.
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
-        CleanupComponentStateResources(batchBuilder);
+        if (_hasAnyCascadingParameterSubscriptions)
+        {
+            RemoveCascadingParameterSubscriptions();
+        }
 
-        try
-        {
-            var result = ((IAsyncDisposable)Component).DisposeAsync();
-            if (result.IsCompletedSuccessfully)
-            {
-                // If it's a IValueTaskSource backed ValueTask,
-                // inform it its result has been read so it can reset
-                result.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                // We know we are dealing with an exception that happened asynchronously, so return a task
-                // to the caller so that he can unwrap it.
-                return result.AsTask();
-            }
-        }
-        catch (Exception e)
-        {
-            return Task.FromException(e);
-        }
+        return DisposeAsync();
+    }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"ComponentId = {ComponentId}, Type = {Component.GetType().Name}, Disposed = {_componentWasDisposed}";
     }
 }

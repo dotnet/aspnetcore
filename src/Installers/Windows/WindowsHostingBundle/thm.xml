@@ -22,17 +22,8 @@
         <Hypertext X="11" Y="119" Width="-11" Height="45" FontId="3" Name="InstallNoIIS" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
         <Hypertext Name="EulaAndPrivacyHyperlink" X="11" Y="178" Width="-11" Height="51" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.EulaPrivacy)</Hypertext>
         <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-41" Width="260" Height="34" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-        <Button Name="OptionsButton" X="-191" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
         <Button Name="InstallButton" X="-91" Y="-11" Width="95" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
         <Button Name="WelcomeCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallCloseButton)</Button>
-    </Page>
-    <Page Name="Options">
-        <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.OptionsHeader)</Text>
-        <Text X="11" Y="121" Width="-11" Height="17" FontId="3" DisablePrefix="yes">#(loc.OptionsLocationLabel)</Text>
-        <Editbox Name="FolderEditbox" X="11" Y="143" Width="-91" Height="21" TabStop="yes" FontId="3" FileSystemAutoComplete="yes" />
-        <Button Name="BrowseButton" X="-11" Y="142" Width="75" Height="23" TabStop="yes" FontId="3">#(loc.OptionsBrowseButton)</Button>
-        <Button Name="OptionsOkButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.OptionsOkButton)</Button>
-        <Button Name="OptionsCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.OptionsCancelButton)</Button>
     </Page>
     <Page Name="FilesInUse">
       <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.FilesInUseHeader)</Text>

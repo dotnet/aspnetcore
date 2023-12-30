@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Shared;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Provides access to file storage for the running test. Get access by
@@ -53,10 +54,7 @@ public sealed class TestFileOutputContext
 
     public string GetUniqueFileName(string prefix, string extension)
     {
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(prefix);
 
         if (extension != null && !extension.StartsWith(".", StringComparison.Ordinal))
         {

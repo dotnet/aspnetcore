@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -236,6 +236,30 @@ public class DataProtectionProviderTests
             string fileText = File.ReadAllText(allFiles[0].FullName);
             Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
             Assert.Contains("X509Certificate", fileText, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
+    public void System_UsesCertificate()
+    {
+        var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
+        var certificate = new X509Certificate2(filePath, "password");
+
+        AssetStoreDoesNotContain(certificate);
+
+        WithUniqueTempDirectory(directory =>
+        {
+            // Step 1: directory should be completely empty
+            directory.Create();
+            Assert.Empty(directory.GetFiles());
+
+            // Step 2: instantiate the system and round-trip a payload
+            var protector = DataProtectionProvider.Create("Test", certificate).CreateProtector("purpose");
+            Assert.Equal("payload",
+                protector.Unprotect(protector.Protect("payload")));
+
+            // Step 3: validate that there's no key in the directory
+            Assert.Empty(directory.GetFiles());
         });
     }
 

@@ -91,7 +91,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         CanWrite = _stream.CanWrite;
         _error = null;
         StreamId = _stream.Id;
-        PoolExpirationTicks = 0;
+        PoolExpirationTimestamp = 0;
 
         Transport = _originalTransport;
         Application = _originalApplication;
@@ -136,7 +136,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         set => _connectionId = value;
     }
 
-    public long PoolExpirationTicks { get; set; }
+    public long PoolExpirationTimestamp { get; set; }
 
     public void Start()
     {

@@ -5,11 +5,14 @@
     <TestGroupName>InMemory.FunctionalTests</TestGroupName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);IS_TESTS</DefineConstants>
-   </PropertyGroup>
+    <!-- EXTEXP0003: MetricCollector is experimental -->
+    <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" Link="SyncPoint.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\Http3\*.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Http2\HPackHeaderWriter.cs" />
@@ -22,16 +25,24 @@
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" Link="shared\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="Shared" />
 
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pem" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\*.pem" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
 
     <Reference Include="System.Threading.Channels" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>

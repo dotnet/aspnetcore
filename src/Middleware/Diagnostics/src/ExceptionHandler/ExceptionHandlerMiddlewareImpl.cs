@@ -2,21 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
 /// <summary>
 /// A middleware for handling exceptions in the application.
 /// </summary>
-internal class ExceptionHandlerMiddlewareImpl
+internal sealed class ExceptionHandlerMiddlewareImpl
 {
     private const int DefaultStatusCode = StatusCodes.Status500InternalServerError;
 
@@ -25,21 +26,17 @@ internal class ExceptionHandlerMiddlewareImpl
     private readonly ILogger _logger;
     private readonly Func<object, Task> _clearCacheHeadersDelegate;
     private readonly DiagnosticListener _diagnosticListener;
+    private readonly IExceptionHandler[] _exceptionHandlers;
+    private readonly DiagnosticsMetrics _metrics;
     private readonly IProblemDetailsService? _problemDetailsService;
 
-    /// <summary>
-    /// Creates a new <see cref="ExceptionHandlerMiddleware"/>
-    /// </summary>
-    /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
-    /// <param name="options">The options for configuring the middleware.</param>
-    /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/> used for writing diagnostic messages.</param>
-    /// <param name="problemDetailsService">The <see cref="IProblemDetailsService"/> used for writing <see cref="ProblemDetails"/> messages.</param>
     public ExceptionHandlerMiddlewareImpl(
         RequestDelegate next,
         ILoggerFactory loggerFactory,
         IOptions<ExceptionHandlerOptions> options,
         DiagnosticListener diagnosticListener,
+        IEnumerable<IExceptionHandler> exceptionHandlers,
+        IMeterFactory meterFactory,
         IProblemDetailsService? problemDetailsService = null)
     {
         _next = next;
@@ -47,6 +44,8 @@ internal class ExceptionHandlerMiddlewareImpl
         _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         _clearCacheHeadersDelegate = ClearCacheHeaders;
         _diagnosticListener = diagnosticListener;
+        _exceptionHandlers = exceptionHandlers as IExceptionHandler[] ?? new List<IExceptionHandler>(exceptionHandlers).ToArray();
+        _metrics = new DiagnosticsMetrics(meterFactory);
         _problemDetailsService = problemDetailsService;
 
         if (_options.ExceptionHandler == null)
@@ -72,6 +71,7 @@ internal class ExceptionHandlerMiddlewareImpl
     public Task Invoke(HttpContext context)
     {
         ExceptionDispatchInfo edi;
+
         try
         {
             var task = _next(context);
@@ -112,21 +112,47 @@ internal class ExceptionHandlerMiddlewareImpl
 
     private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
     {
-        _logger.UnhandledException(edi.SourceException);
+        var exceptionName = edi.SourceException.GetType().FullName!;
+
+        if ((edi.SourceException is OperationCanceledException || edi.SourceException is IOException) && context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.RequestAbortedException();
+
+            if (!context.Response.HasStarted)
+            {
+                context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
+            }
+
+            _metrics.RequestException(exceptionName, ExceptionResult.Aborted, handler: null);
+            return;
+        }
+
+        DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
+
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
         {
             _logger.ResponseStartedErrorHandler();
+
+            _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
             edi.Throw();
         }
 
-        PathString originalPath = context.Request.Path;
+        var originalPath = context.Request.Path;
         if (_options.ExceptionHandlingPath.HasValue)
         {
             context.Request.Path = _options.ExceptionHandlingPath;
         }
+        var oldScope = _options.CreateScopeForErrors ? context.RequestServices : null;
+        using var scope = _options.CreateScopeForErrors ? context.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope() : null;
+
         try
         {
+            if (scope != null)
+            {
+                context.RequestServices = scope.ServiceProvider;
+            }
+
             var exceptionHandlerFeature = new ExceptionHandlerFeature()
             {
                 Error = edi.SourceException,
@@ -142,22 +168,41 @@ internal class ExceptionHandlerMiddlewareImpl
             context.Response.StatusCode = DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-            if (_options.ExceptionHandler != null)
+            string? handler = null;
+            var handled = false;
+            foreach (var exceptionHandler in _exceptionHandlers)
             {
-                await _options.ExceptionHandler!(context);
-            }
-            else
-            {
-                await _problemDetailsService!.WriteAsync(new ()
+                handled = await exceptionHandler.TryHandleAsync(context, edi.SourceException, context.RequestAborted);
+                if (handled)
                 {
-                    HttpContext = context,
-                    AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                    ProblemDetails = { Status = DefaultStatusCode }
-                });
+                    handler = exceptionHandler.GetType().FullName;
+                    break;
+                }
             }
 
+            if (!handled)
+            {
+                if (_options.ExceptionHandler is not null)
+                {
+                    await _options.ExceptionHandler!(context);
+                }
+                else
+                {
+                    handled = await _problemDetailsService!.TryWriteAsync(new()
+                    {
+                        HttpContext = context,
+                        AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
+                        ProblemDetails = { Status = DefaultStatusCode },
+                        Exception = edi.SourceException,
+                    });
+                    if (handled)
+                    {
+                        handler = _problemDetailsService.GetType().FullName;
+                    }
+                }
+            }
             // If the response has already started, assume exception handler was successful.
-            if (context.Response.HasStarted || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (context.Response.HasStarted || handled || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
                 if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))
@@ -165,6 +210,7 @@ internal class ExceptionHandlerMiddlewareImpl
                     WriteDiagnosticEvent(_diagnosticListener, eventName, new { httpContext = context, exception = edi.SourceException });
                 }
 
+                _metrics.RequestException(exceptionName, ExceptionResult.Handled, handler);
                 return;
             }
 
@@ -180,8 +226,13 @@ internal class ExceptionHandlerMiddlewareImpl
         finally
         {
             context.Request.Path = originalPath;
+            if (oldScope != null)
+            {
+                context.RequestServices = oldScope;
+            }
         }
 
+        _metrics.RequestException(exceptionName, ExceptionResult.Unhandled, handler: null);
         edi.Throw(); // Re-throw wrapped exception or the original if we couldn't handle it
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
@@ -196,12 +247,7 @@ internal class ExceptionHandlerMiddlewareImpl
 
         // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
         // the endpoint and route values to ensure things are re-calculated.
-        context.SetEndpoint(endpoint: null);
-        var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
-        if (routeValuesFeature != null)
-        {
-            routeValuesFeature.RouteValues = null!;
-        }
+        HttpExtensions.ClearEndpoint(context);
     }
 
     private static Task ClearCacheHeaders(object state)

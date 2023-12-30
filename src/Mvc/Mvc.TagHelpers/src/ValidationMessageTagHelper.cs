@@ -51,15 +51,8 @@ public class ValidationMessageTagHelper : TagHelper
     /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (output == null)
-        {
-            throw new ArgumentNullException(nameof(output));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(output);
 
         if (For != null)
         {

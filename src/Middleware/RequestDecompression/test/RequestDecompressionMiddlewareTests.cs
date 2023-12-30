@@ -59,6 +59,14 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
+    private static async Task<byte[]> GetZlibCompressedContent(byte[] uncompressedBytes)
+    {
+        static Stream compressorDelegate(Stream compressedContent) =>
+            new ZLibStream(compressedContent, CompressionMode.Compress);
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
     private static async Task<byte[]> GetGZipCompressedContent(byte[] uncompressedBytes)
     {
         static Stream compressorDelegate(Stream compressedContent) =>
@@ -84,12 +92,12 @@ public class RequestDecompressionMiddlewareTests
     }
 
     [Fact]
-    public async Task Request_ContentEncodingDeflate_Decompressed()
+    public async Task Request_ContentEncodingDeflate_ZlibCompressed_Decompressed()
     {
         // Arrange
         var contentEncoding = "deflate";
         var uncompressedBytes = GetUncompressedContent();
-        var compressedBytes = await GetDeflateCompressedContent(uncompressedBytes);
+        var compressedBytes = await GetZlibCompressedContent(uncompressedBytes);
 
         // Act
         var (logMessages, decompressedBytes) = await InvokeMiddleware(compressedBytes, new[] { contentEncoding });
@@ -97,6 +105,22 @@ public class RequestDecompressionMiddlewareTests
         // Assert
         AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
         Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingDeflate_RawDeflateCompressed_Throws()
+    {
+        // This tests an incorrect version of deflate usage where the 'deflate'
+        // content-encoding is used with raw, unwrapped deflate compression. This
+        // usage doesn't conform to the spec (RFC 2616).
+
+        // Arrange
+        var contentEncoding = "deflate";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetDeflateCompressedContent(uncompressedBytes);
+
+        // Act/Assert
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await InvokeMiddleware(compressedBytes, new[] { contentEncoding }));
     }
 
     [Fact]
@@ -567,186 +591,6 @@ public class RequestDecompressionMiddlewareTests
             Assert.Null(exception);
             Assert.Equal(uncompressedBytes, decompressedBytes);
         }
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Endpoint_DoesNotHaveSizeLimitMetadata(bool isCompressed)
-    {
-        // Arrange
-        var sink = new TestSink();
-        var logger = new TestLogger<RequestDecompressionMiddleware>(
-            new TestLoggerFactory(sink, enabled: true));
-        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
-
-        var middleware = new RequestDecompressionMiddleware(
-            c =>
-            {
-                c.Response.StatusCode = StatusCodes.Status200OK;
-                return Task.CompletedTask;
-            },
-            logger,
-            provider);
-
-        var context = new DefaultHttpContext();
-
-        IEndpointFeature endpointFeature = new FakeEndpointFeature
-        {
-            Endpoint = new Endpoint(
-                requestDelegate: null,
-                metadata: new EndpointMetadataCollection(),
-                displayName: null)
-        };
-        context.HttpContext.Features.Set(endpointFeature);
-
-        long expectedRequestSizeLimit = 100;
-        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature =
-            new FakeHttpMaxRequestBodySizeFeature(expectedRequestSizeLimit);
-        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
-
-        // Act
-        await middleware.Invoke(context);
-
-        // Assert
-        var logMessages = sink.Writes.ToList();
-        AssertLog(Assert.Single(logMessages), LogLevel.Debug,
-            $"The endpoint does not specify the {nameof(IRequestSizeLimitMetadata)}.");
-
-        var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
-        Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Endpoint_DoesNotHaveBodySizeFeature(bool isCompressed)
-    {
-        // Arrange
-        var sink = new TestSink();
-        var logger = new TestLogger<RequestDecompressionMiddleware>(
-            new TestLoggerFactory(sink, enabled: true));
-        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
-
-        var middleware = new RequestDecompressionMiddleware(
-            c =>
-            {
-                c.Response.StatusCode = StatusCodes.Status200OK;
-                return Task.CompletedTask;
-            },
-            logger,
-            provider);
-
-        var context = new DefaultHttpContext();
-
-        IEndpointFeature endpointFeature = GetFakeEndpointFeature(100);
-        context.HttpContext.Features.Set(endpointFeature);
-
-        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature = null;
-        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
-
-        // Act
-        await middleware.Invoke(context);
-
-        // Assert
-        var logMessages = sink.Writes.ToList();
-        AssertLog(Assert.Single(logMessages), LogLevel.Warning,
-            $"A request body size limit could not be applied. This server does not support the {nameof(IHttpMaxRequestBodySizeFeature)}.");
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Endpoint_BodySizeFeatureIsReadOnly(bool isCompressed)
-    {
-        // Arrange
-        var sink = new TestSink();
-        var logger = new TestLogger<RequestDecompressionMiddleware>(
-            new TestLoggerFactory(sink, enabled: true));
-        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
-
-        var middleware = new RequestDecompressionMiddleware(
-            c =>
-            {
-                c.Response.StatusCode = StatusCodes.Status200OK;
-                return Task.CompletedTask;
-            },
-            logger,
-            provider);
-
-        var context = new DefaultHttpContext();
-
-        IEndpointFeature endpointFeature = GetFakeEndpointFeature(100);
-        context.HttpContext.Features.Set(endpointFeature);
-
-        long expectedRequestSizeLimit = 50;
-        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature =
-            new FakeHttpMaxRequestBodySizeFeature(expectedRequestSizeLimit, isReadOnly: true);
-        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
-
-        // Act
-        await middleware.Invoke(context);
-
-        // Assert
-        var logMessages = sink.Writes.ToList();
-        AssertLog(Assert.Single(logMessages), LogLevel.Warning,
-            $"A request body size limit could not be applied. The {nameof(IHttpMaxRequestBodySizeFeature)} for the server is read-only.");
-
-        var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
-        Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
-    }
-
-    [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, false)]
-    [InlineData(false, true)]
-    public async Task Endpoint_HasBodySizeFeature_SetUsingSizeLimitMetadata(bool isCompressed, bool isRequestSizeLimitDisabled)
-    {
-        // Arrange
-        var sink = new TestSink();
-        var logger = new TestLogger<RequestDecompressionMiddleware>(
-            new TestLoggerFactory(sink, enabled: true));
-        IRequestDecompressionProvider provider = new FakeRequestDecompressionProvider(isCompressed);
-
-        var middleware = new RequestDecompressionMiddleware(
-            c =>
-            {
-                c.Response.StatusCode = StatusCodes.Status200OK;
-                return Task.CompletedTask;
-            },
-            logger,
-            provider);
-
-        var context = new DefaultHttpContext();
-
-        long? expectedRequestSizeLimit = isRequestSizeLimitDisabled ? null : 100;
-        IEndpointFeature endpointFeature = GetFakeEndpointFeature(expectedRequestSizeLimit);
-        context.HttpContext.Features.Set(endpointFeature);
-
-        IHttpMaxRequestBodySizeFeature maxRequestBodySizeFeature =
-            new FakeHttpMaxRequestBodySizeFeature(50);
-        context.HttpContext.Features.Set(maxRequestBodySizeFeature);
-
-        // Act
-        await middleware.Invoke(context);
-
-        // Assert
-        var logMessages = sink.Writes.ToList();
-
-        if (isRequestSizeLimitDisabled)
-        {
-            AssertLog(Assert.Single(logMessages), LogLevel.Debug,
-                "The maximum request body size as been disabled.");
-        }
-        else
-        {
-            AssertLog(Assert.Single(logMessages), LogLevel.Debug,
-                $"The maximum request body size has been set to {expectedRequestSizeLimit.Value.ToString(CultureInfo.InvariantCulture)}.");
-        }
-
-        var actualRequestSizeLimit = maxRequestBodySizeFeature.MaxRequestBodySize;
-        Assert.Equal(expectedRequestSizeLimit, actualRequestSizeLimit);
     }
 
     [Fact]

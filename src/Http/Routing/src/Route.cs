@@ -78,10 +78,7 @@ public class Route : RouteBase
               constraints,
               dataTokens)
     {
-        if (target == null)
-        {
-            throw new ArgumentNullException(nameof(target));
-        }
+        ArgumentNullException.ThrowIfNull(target);
 
         _target = target;
     }

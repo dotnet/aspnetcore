@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
@@ -74,7 +74,7 @@ public class BinderTypeModelBinderTest
         {
             ActionContext = new ActionContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = new DefaultHttpContext() { RequestServices = new ServiceCollection().BuildServiceProvider() },
             },
             ModelMetadata = metadataProvider.GetMetadataForType(modelType),
             ModelName = "someName",

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.JsonPatch.Operations;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.JsonPatch;
 
@@ -22,10 +23,7 @@ public class JsonPatchError
         Operation operation,
         string errorMessage)
     {
-        if (errorMessage == null)
-        {
-            throw new ArgumentNullException(nameof(errorMessage));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(errorMessage);
 
         AffectedObject = affectedObject;
         Operation = operation;

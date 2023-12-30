@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.WebUtilities;
 using Moq;
 
@@ -466,7 +466,7 @@ public class XmlSerializerInputFormatterTest
         var formatter = new XmlSerializerInputFormatter(new MvcOptions());
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => formatter.MaxDepth = 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => formatter.MaxDepth = 0);
     }
 
     [Fact]

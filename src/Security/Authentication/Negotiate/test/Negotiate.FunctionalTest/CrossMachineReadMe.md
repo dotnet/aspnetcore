@@ -14,9 +14,9 @@ We use these three components because it allows us to run the tests from a dev m
 - Create a Windows server running DNS and Active Directory. Promote it to a domain controller.
   - Create an SPN on this machine for Windows -> Windows testing. `setspn -S "http/chrross-dc.crkerberos.com" -U administrator`
   - Future: Can we replace the domain controller with an AAD instance? We'd still want a second windows machine for Windows -> Windows testing, but AAD might be easier to configure.
-    - https://docs.microsoft.com/azure/active-directory-domain-services/active-directory-ds-getting-started
-    - https://docs.microsoft.com/azure/active-directory-domain-services/active-directory-ds-join-ubuntu-linux-vm
-    - https://docs.microsoft.com/azure/active-directory-domain-services/active-directory-ds-enable-kcd
+    - https://learn.microsoft.com/azure/active-directory-domain-services/active-directory-ds-getting-started
+    - https://learn.microsoft.com/azure/active-directory-domain-services/active-directory-ds-join-ubuntu-linux-vm
+    - https://learn.microsoft.com/azure/active-directory-domain-services/active-directory-ds-enable-kcd
 - Create another Windows machine and join it to the test domain.
 - Create a Linux machine and joining it to the domain. Ubuntu 18.04 has been used in the past.
   - https://www.safesquid.com/content-filtering/integrating-linux-host-windows-ad-kerberos-sso-authentication

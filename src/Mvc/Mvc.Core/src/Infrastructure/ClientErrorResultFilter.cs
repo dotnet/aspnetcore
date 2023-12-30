@@ -31,10 +31,7 @@ internal sealed partial class ClientErrorResultFilter : IAlwaysRunResultFilter, 
 
     public void OnResultExecuting(ResultExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!(context.Result is IClientErrorActionResult clientError))
         {

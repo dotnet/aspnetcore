@@ -98,7 +98,7 @@ public class DynamicComponent : IComponent
         {
             foreach (var entry in Parameters)
             {
-                builder.AddAttribute(1, entry.Key, entry.Value);
+                builder.AddComponentParameter(1, entry.Key, entry.Value);
             }
         }
 

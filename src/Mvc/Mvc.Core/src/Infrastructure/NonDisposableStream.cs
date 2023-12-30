@@ -20,10 +20,7 @@ internal sealed class NonDisposableStream : Stream
     /// <param name="innerStream">The stream which should not be closed or flushed.</param>
     public NonDisposableStream(Stream innerStream)
     {
-        if (innerStream == null)
-        {
-            throw new ArgumentNullException(nameof(innerStream));
-        }
+        ArgumentNullException.ThrowIfNull(innerStream);
 
         _innerStream = innerStream;
     }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure;
 
@@ -20,10 +21,7 @@ public class RolesAuthorizationRequirement : AuthorizationHandler<RolesAuthoriza
     /// <param name="allowedRoles">A collection of allowed roles.</param>
     public RolesAuthorizationRequirement(IEnumerable<string> allowedRoles)
     {
-        if (allowedRoles == null)
-        {
-            throw new ArgumentNullException(nameof(allowedRoles));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(allowedRoles);
 
         if (!allowedRoles.Any())
         {

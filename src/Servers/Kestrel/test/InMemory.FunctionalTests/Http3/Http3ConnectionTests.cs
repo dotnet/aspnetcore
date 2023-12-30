@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -290,8 +290,6 @@ public class Http3ConnectionTests : Http3TestBase
     [Fact]
     public async Task ControlStream_ClientToServer_Completes_ConnectionError()
     {
-        var now = _serviceContext.MockSystemClock.UtcNow;
-
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
         var controlStream = await Http3Api.CreateControlStream(id: 0);
@@ -302,8 +300,8 @@ public class Http3ConnectionTests : Http3TestBase
         // Wait for control stream to finish processing and exit.
         await controlStream.OnStreamCompletedTask.DefaultTimeout();
 
-        Http3Api.TriggerTick(now);
-        Http3Api.TriggerTick(now + TimeSpan.FromSeconds(1));
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
 
         await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
             ignoreNonGoAwayFrames: true,
@@ -339,16 +337,14 @@ public class Http3ConnectionTests : Http3TestBase
     [Fact]
     public async Task ControlStream_ServerToClient_ErrorInitializing_ConnectionError()
     {
-        var now = _serviceContext.MockSystemClock.UtcNow;
-
         await Http3Api.InitializeConnectionAsync(_noopApplication);
 
         var controlStream = await Http3Api.GetInboundControlStream();
 
         controlStream.StreamContext.Close();
 
-        Http3Api.TriggerTick(now);
-        Http3Api.TriggerTick(now + TimeSpan.FromSeconds(1));
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
 
         await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
             ignoreNonGoAwayFrames: true,

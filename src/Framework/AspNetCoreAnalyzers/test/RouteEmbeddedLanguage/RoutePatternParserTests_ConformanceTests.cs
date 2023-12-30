@@ -81,17 +81,17 @@ public partial class RoutePatternParserTests
         <Literal value=""cool"">cool</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""awesome"">awesome</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""super"">super</Literal>
@@ -117,9 +117,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -129,9 +129,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -452,9 +452,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -488,9 +488,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -537,9 +537,9 @@ public partial class RoutePatternParserTests
         <CloseBraceToken>}</CloseBraceToken>
       </Parameter>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""."">.</Literal>

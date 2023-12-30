@@ -64,16 +64,13 @@ public sealed class W3CLoggerOptions
         get { return _fileName; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
             _fileName = value;
         }
     }
 
     /// <summary>
-    /// Gets or sets a string representing the directory where the log file will be written to
+    /// Gets or sets a string representing the directory where the log file will be written to.
     /// Defaults to <c>./logs/</c> relative to the app directory (ContentRoot).
     /// If a full path is given, that full path will be used. If a relative path is given,
     /// the full path will be that path relative to ContentRoot.
@@ -83,10 +80,7 @@ public sealed class W3CLoggerOptions
         get { return _logDirectory; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
             _logDirectory = value;
         }
     }
@@ -110,13 +104,13 @@ public sealed class W3CLoggerOptions
 
     /// <summary>
     /// List of additional request header values to log.
-    /// <p>
+    /// <para>
     /// Request headers can contain authentication tokens,
     /// or private information which may have regulatory concerns
     /// under GDPR and other laws. Arbitrary request headers
     /// should not be logged unless logs are secure and
     /// access controlled and the privacy impact assessed.
-    /// </p>
+    /// </para>
     /// </summary>
     public ISet<string> AdditionalRequestHeaders { get; } = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
 

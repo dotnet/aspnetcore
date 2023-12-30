@@ -182,7 +182,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         // Determine the "requiredness" based on nullability, default value or if allowEmpty is set
         var nullabilityContext = new NullabilityInfoContext();
         var nullability = nullabilityContext.Create(parameter);
-        var isOptional = parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
+        var isOptional = parameter is PropertyAsParameterInfo argument
+            ? argument.IsOptional || allowEmpty
+            : parameter.HasDefaultValue || nullability.ReadState != NullabilityState.NotNull || allowEmpty;
         var parameterDescriptor = CreateParameterDescriptor(parameter, pattern);
         var routeInfo = CreateParameterRouteInfo(pattern, parameter, isOptional);
 
@@ -274,7 +276,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         {
             return (BindingSource.FormFile, fromFormAttribute.Name ?? parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)) ||
+        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
                  parameter.ParameterType == typeof(HttpContext) ||
                  parameter.ParameterType == typeof(HttpRequest) ||
                  parameter.ParameterType == typeof(HttpResponse) ||
@@ -305,9 +307,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             return (BindingSource.FormFile, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
         else if (disableInferredBody && (
-                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ||
                  parameter.ParameterType == typeof(string[]) ||
-                 parameter.ParameterType == typeof(StringValues)))
+                 parameter.ParameterType == typeof(StringValues) ||
+                 (parameter.ParameterType.IsArray && ParameterBindingMethodCache.HasTryParseMethod(parameter.ParameterType.GetElementType()!)) ))
         {
             return (BindingSource.Query, parameter.Name ?? string.Empty, false, parameter.ParameterType);
         }
@@ -324,9 +326,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
     {
         var responseType = returnType;
 
-        if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(responseType, out var coercedAwaitableInfo))
         {
-            responseType = awaitableInfo.ResultType;
+            responseType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         // Can't determine anything about IResults yet that's not from extra metadata. IResult<T> could help here.

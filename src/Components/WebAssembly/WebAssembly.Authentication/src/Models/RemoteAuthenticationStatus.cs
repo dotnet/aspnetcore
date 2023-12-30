@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// <summary>
 /// Represents the status of an authentication operation.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter<RemoteAuthenticationStatus>))]
 public enum RemoteAuthenticationStatus
 {
     /// <summary>

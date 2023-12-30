@@ -38,10 +38,7 @@ public class FileContentResult : FileResult
     public FileContentResult(byte[] fileContents, MediaTypeHeaderValue contentType)
         : base(contentType.ToString())
     {
-        if (fileContents == null)
-        {
-            throw new ArgumentNullException(nameof(fileContents));
-        }
+        ArgumentNullException.ThrowIfNull(fileContents);
 
         FileContents = fileContents;
     }
@@ -55,10 +52,7 @@ public class FileContentResult : FileResult
         [MemberNotNull(nameof(_fileContents))]
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _fileContents = value;
         }
@@ -67,10 +61,7 @@ public class FileContentResult : FileResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<FileContentResult>>();
         return executor.ExecuteAsync(context, this);

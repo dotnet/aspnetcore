@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -46,6 +47,7 @@ public class RenderBatchWriterTest
             default,
             default,
             new ArrayRange<int>(new[] { 123, int.MaxValue, int.MinValue, 456 }, 3), // Only use first 3 to show that param is respected
+            default,
             default));
 
         // Assert
@@ -72,8 +74,8 @@ public class RenderBatchWriterTest
             new ArrayRange<RenderTreeDiff>(),
             new ArrayRange<RenderTreeFrame>(),
             new ArrayRange<int>(),
-            new ArrayRange<ulong>(new ulong[] { 123, ulong.MaxValue, ulong.MinValue, 456 }, 3) // Only use first 3 to show that param is respected
-            ));
+            new ArrayRange<ulong>(new ulong[] { 123, ulong.MaxValue, ulong.MinValue, 456 }, 3), // Only use first 3 to show that param is respected
+            default));
 
         // Assert
         AssertBinaryContents(bytes, /* startIndex */ 0,
@@ -101,6 +103,7 @@ public class RenderBatchWriterTest
                     new RenderTreeDiff(123, default),
                     new RenderTreeDiff(int.MaxValue, default),
             }, 2),
+            default,
             default,
             default,
             default));
@@ -159,6 +162,7 @@ public class RenderBatchWriterTest
             }, 1),
             default,
             default,
+            default,
             default));
 
         // Assert
@@ -210,22 +214,25 @@ public class RenderBatchWriterTest
                     RenderTreeFrame.Text(131, "Some text"),
                     RenderTreeFrame.Markup(132, "Some markup"),
                     RenderTreeFrame.Text(133, "\n\t  "),
+                    RenderTreeFrame.NamedEvent(135, "SomeEventType", "Some assigned name"),
+                    RenderTreeFrame.ComponentRenderModeFrame(136, RenderMode.InteractiveAuto),
 
                     // Testing deduplication
-                    RenderTreeFrame.Attribute(134, "Attribute with string value", "String value"),
-                    RenderTreeFrame.Element(135, "Some element") // Will be deduplicated
+                    RenderTreeFrame.Attribute(200, "Attribute with string value", "String value"),
+                    RenderTreeFrame.Element(201, "Some element") // Will be deduplicated
                         .WithElementSubtreeLength(999),
-                    RenderTreeFrame.Text(136, "Some text"), // Will not be deduplicated
-                    RenderTreeFrame.Markup(137, "Some markup"), // Will not be deduplicated
-                    RenderTreeFrame.Text(138, "\n\t  "), // Will be deduplicated
-            }, 16),
+                    RenderTreeFrame.Text(236, "Some text"), // Will not be deduplicated
+                    RenderTreeFrame.Markup(237, "Some markup"), // Will not be deduplicated
+                    RenderTreeFrame.Text(238, "\n\t  "), // Will be deduplicated
+            }, 18),
+            default,
             default,
             default));
 
         // Assert
         var referenceFramesStartIndex = ReadInt(bytes, bytes.Length - 16);
         AssertBinaryContents(bytes, referenceFramesStartIndex,
-            16, // Number of frames
+            18, // Number of frames
             RenderTreeFrameType.Attribute, "Attribute with string value", "String value", 0, 0,
             RenderTreeFrameType.Attribute, "Attribute with nonstring value", NullStringMarker, 0, 0,
             RenderTreeFrameType.Attribute, "Attribute with delegate value", NullStringMarker, ((ulong)uint.MaxValue) + 1,
@@ -237,6 +244,8 @@ public class RenderBatchWriterTest
             RenderTreeFrameType.Text, "Some text", 0, 0, 0,
             RenderTreeFrameType.Markup, "Some markup", 0, 0, 0,
             RenderTreeFrameType.Text, "\n\t  ", 0, 0, 0,
+            RenderTreeFrameType.NamedEvent, 0, 0, 0, 0,
+            RenderTreeFrameType.ComponentRenderMode, 0, 0, 0, 0,
             RenderTreeFrameType.Attribute, "Attribute with string value", "String value", 0, 0,
             RenderTreeFrameType.Element, 999, "Some element", 0, 0,
             RenderTreeFrameType.Text, "Some text", 0, 0, 0,

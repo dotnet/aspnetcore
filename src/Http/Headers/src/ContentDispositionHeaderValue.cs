@@ -35,6 +35,11 @@ public class ContentDispositionHeaderValue
     private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
     private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
 
+    // attr-char definition from RFC5987
+    // Same as token except ( "*" / "'" / "%" )
+    private static readonly SearchValues<char> AttrChar =
+        SearchValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
 
@@ -504,7 +509,7 @@ public class ContentDispositionHeaderValue
             for (int i = 0; i < result.Length; i++)
             {
                 var c = result[i];
-                if ((int)c > 0x7f || (int)c < 0x20)
+                if ((int)c >= 0x7f || (int)c < 0x20)
                 {
                     c = '_'; // Replace out-of-range characters
                 }
@@ -525,12 +530,12 @@ public class ContentDispositionHeaderValue
             && value.EndsWith("\"", StringComparison.Ordinal);
     }
 
-    // tspecials are required to be in a quoted string.  Only non-ascii needs to be encoded.
+    // tspecials are required to be in a quoted string.  Only non-ascii and control characters need to be encoded.
     private static bool RequiresEncoding(StringSegment input)
     {
         Contract.Assert(input != null);
 
-        return input.AsSpan().IndexOfAnyExceptInRange((char)0x20, (char)0x7f) >= 0;
+        return input.AsSpan().IndexOfAnyExceptInRange((char)0x20, (char)0x7e) >= 0;
     }
 
     // Encode using MIME encoding
@@ -626,12 +631,12 @@ public class ContentDispositionHeaderValue
         int totalBytesConsumed = 0;
         while (totalBytesConsumed < inputBytes.Length)
         {
-            if (inputBytes[totalBytesConsumed] <= 0x7F)
+            if (Ascii.IsValid(inputBytes[totalBytesConsumed]))
             {
                 // This is an ASCII char. Let's handle it ourselves.
 
                 char c = (char)inputBytes[totalBytesConsumed];
-                if (!HttpRuleParser.IsTokenChar(c) || c == '*' || c == '\'' || c == '%')
+                if (!AttrChar.Contains(c))
                 {
                     HexEscape(builder, c);
                 }

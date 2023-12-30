@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Localization;
 
@@ -17,10 +18,7 @@ internal class AssemblyWrapper
 {
     public AssemblyWrapper(Assembly assembly)
     {
-        if (assembly == null)
-        {
-            throw new ArgumentNullException(nameof(assembly));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(assembly);
 
         Assembly = assembly;
     }

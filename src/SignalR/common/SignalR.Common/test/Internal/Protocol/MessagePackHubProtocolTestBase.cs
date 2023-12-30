@@ -196,6 +196,18 @@ public abstract class MessagePackHubProtocolTestBase
                 name: "CloseMessage_HasErrorAndAllowReconnect",
                 message: new CloseMessage("Error!", allowReconnect: true),
                 binary: "kwemRXJyb3Ihww=="),
+
+            // Ack Message
+            new ProtocolTestData(
+                name: "AckMessage",
+                message: new AckMessage(42),
+                binary: "kggq"),
+
+            // Sequence Message
+            new ProtocolTestData(
+                name: "SequenceMessage",
+                message: new SequenceMessage(146),
+                binary: "kgnMkg=="),
         }.ToDictionary(t => t.Name);
 
     [Theory]
@@ -279,21 +291,28 @@ public abstract class MessagePackHubProtocolTestBase
             new InvalidMessageData("HeaderValueInt", new byte[] { 0x92, 1, 0x82, 0xa3, (byte)'f', (byte)'o', (byte)'o', 42 }, "Reading 'headers[0].Value' as String failed."),
             new InvalidMessageData("HeaderKeyArray", new byte[] { 0x92, 1, 0x84, 0xa3, (byte)'f', (byte)'o', (byte)'o', 0xa3, (byte)'f', (byte)'o', (byte)'o', 0x90, 0xa3, (byte)'f', (byte)'o', (byte)'o' }, "Reading 'headers[1].Key' as String failed."),
             new InvalidMessageData("HeaderValueArray", new byte[] { 0x92, 1, 0x84, 0xa3, (byte)'f', (byte)'o', (byte)'o', 0xa3, (byte)'f', (byte)'o', (byte)'o', 0xa3, (byte)'f', (byte)'o', (byte)'o', 0x90 }, "Reading 'headers[1].Value' as String failed."),
+            new InvalidMessageData("HeaderKeyEmptyString", new byte[] { 0x92, 1, 0x82, 0xa0, 0xa3, (byte)'f', (byte)'o', (byte)'o' }, "Null or empty key in header."),
+            new InvalidMessageData("HeaderValueEmptyString", new byte[] { 0x92, 1, 0x82, 0xa3, (byte)'f', (byte)'o', (byte)'o', 0xa0 }, "Null or empty value in header."),
 
             // InvocationMessage
             new InvalidMessageData("InvocationMissingId", new byte[] { 0x92, 1, 0x80 }, "Reading 'invocationId' as String failed."),
             new InvalidMessageData("InvocationIdBoolean", new byte[] { 0x91, 1, 0x80, 0xc2 }, "Reading 'invocationId' as String failed."),
             new InvalidMessageData("InvocationTargetMissing", new byte[] { 0x93, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c' }, "Reading 'target' as String failed."),
             new InvalidMessageData("InvocationTargetInt", new byte[] { 0x94, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 42 }, "Reading 'target' as String failed."),
+            new InvalidMessageData("InvocationTargetEmptyString", new byte[] { 0x94, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa0 }, "Null or empty target for Invocation message."),
+            new InvalidMessageData("InvocationEmptyStringStreamId", new byte[] { 0x96, 1, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa1, (byte)'T', 0x91, 0xa0, 0x91, 0xa0 }, "Null or empty value in streamIds received."),
 
             // StreamInvocationMessage
             new InvalidMessageData("StreamInvocationMissingId", new byte[] { 0x92, 4, 0x80 }, "Reading 'invocationId' as String failed."),
+            new InvalidMessageData("StreamInvocationEmptyStringId", new byte[] { 0x93, 4, 0x80, 0xa0 }, "Null or empty invocation ID for StreamInvocation message."),
             new InvalidMessageData("StreamInvocationIdBoolean", new byte[] { 0x93, 4, 0x80, 0xc2 }, "Reading 'invocationId' as String failed."),
             new InvalidMessageData("StreamInvocationTargetMissing", new byte[] { 0x93, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c' }, "Reading 'target' as String failed."),
             new InvalidMessageData("StreamInvocationTargetInt", new byte[] { 0x94, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 42 }, "Reading 'target' as String failed."),
+            new InvalidMessageData("StreamInvocationTargetEmptyString", new byte[] { 0x94, 4, 0x80, 0xa3, (byte)'a', (byte)'b', (byte)'c', 0xa0 }, "Null or empty target for StreamInvocation message."),
 
             // StreamItemMessage
             new InvalidMessageData("StreamItemMissingId", new byte[] { 0x92, 2, 0x80 }, "Reading 'invocationId' as String failed."),
+            new InvalidMessageData("StreamItemEmptyStringId", new byte[] { 0x93, 2, 0x80, 0xa0 }, "Null or empty invocation ID for StreamItem message."),
             new InvalidMessageData("StreamItemInvocationIdBoolean", new byte[] { 0x93, 2, 0x80, 0xc2 }, "Reading 'invocationId' as String failed."),
 
             // These now trigger StreamBindingInvocationFailureMessages
@@ -302,6 +321,7 @@ public abstract class MessagePackHubProtocolTestBase
 
             // CompletionMessage
             new InvalidMessageData("CompletionMissingId", new byte[] { 0x92, 3, 0x80 }, "Reading 'invocationId' as String failed."),
+            new InvalidMessageData("CompletionEmptyStringId", new byte[] { 0x93, 3, 0x80, 0xa0 }, "Null or empty invocation ID for Completion message."),
             new InvalidMessageData("CompletionIdBoolean", new byte[] { 0x93, 3, 0x80, 0xc2 }, "Reading 'invocationId' as String failed."),
             new InvalidMessageData("CompletionResultKindString", new byte[] { 0x94, 3, 0x80, 0xa3, (byte)'x', (byte)'y', (byte)'z', 0xa3, (byte)'x', (byte)'y', (byte)'z' }, "Reading 'resultKind' as Int32 failed."),
             new InvalidMessageData("CompletionResultKindOutOfRange", new byte[] { 0x94, 3, 0x80, 0xa3, (byte)'x', (byte)'y', (byte)'z', 42 }, "Invalid invocation result kind."),
@@ -311,6 +331,18 @@ public abstract class MessagePackHubProtocolTestBase
             // These now result in CompletionMessages with the error field set
             //new InvalidMessageData("CompletionResultMissing", new byte[] { 0x94, 3, 0x80, 0xa3, (byte)'x', (byte)'y', (byte)'z', 0x03 }, "Deserializing object of the `String` type for 'argument' failed."),
             //new InvalidMessageData("CompletionResultTypeMismatch", new byte[] { 0x95, 3, 0x80, 0xa3, (byte)'x', (byte)'y', (byte)'z', 0x03, 42 }, "Deserializing object of the `String` type for 'argument' failed."),
+
+            // CancelInvocationMessage
+            new InvalidMessageData("CancelInvocationMissingId", new byte[] { 0x92, 5, 0x80 }, "Reading 'invocationId' as String failed."),
+            new InvalidMessageData("CancelInvocationEmptyStringId", new byte[] { 0x93, 5, 0x80, 0xa0 }, "Null or empty invocation ID for CancelInvocation message."),
+
+            // AckMessage
+            new InvalidMessageData("AckSequenceIdMissing", new byte[] { 0x91, 8 }, "Reading 'sequenceId' as Int64 failed."),
+            new InvalidMessageData("AckSequenceIdNull", new byte[] { 0x91, 8, 0xc0 }, "Reading 'sequenceId' as Int64 failed."),
+
+            // SequenceMessage
+            new InvalidMessageData("SequenceMessageSequenceIdMissing", new byte[] { 0x91, 9 }, "Reading 'sequenceId' as Int64 failed."),
+            new InvalidMessageData("SequenceMessageSequenceIdNull", new byte[] { 0x91, 9, 0xc0 }, "Reading 'sequenceId' as Int64 failed."),
         }.ToDictionary(t => t.Name);
 
     public static IEnumerable<object[]> BaseInvalidPayloadNames => BaseInvalidPayloads.Keys.Select(name => new object[] { name });

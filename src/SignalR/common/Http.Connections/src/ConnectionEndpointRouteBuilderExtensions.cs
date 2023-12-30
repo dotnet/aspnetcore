@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -111,6 +112,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
         var executehandler = app.Build();
 
         var executeBuilder = endpoints.Map(pattern, executehandler);
+        executeBuilder.WithMetadata(new DisableRequestTimeoutAttribute());
         conventionBuilders.Add(executeBuilder);
 
         var compositeConventionBuilder = new CompositeEndpointConventionBuilder(conventionBuilders);

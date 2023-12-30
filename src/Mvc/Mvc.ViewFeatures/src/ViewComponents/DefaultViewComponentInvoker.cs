@@ -36,25 +36,10 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
         DiagnosticListener diagnosticListener,
         ILogger logger)
     {
-        if (viewComponentFactory == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentFactory));
-        }
-
-        if (viewComponentInvokerCache == null)
-        {
-            throw new ArgumentNullException(nameof(viewComponentInvokerCache));
-        }
-
-        if (diagnosticListener == null)
-        {
-            throw new ArgumentNullException(nameof(diagnosticListener));
-        }
-
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(viewComponentFactory);
+        ArgumentNullException.ThrowIfNull(viewComponentInvokerCache);
+        ArgumentNullException.ThrowIfNull(diagnosticListener);
+        ArgumentNullException.ThrowIfNull(logger);
 
         _viewComponentFactory = viewComponentFactory;
         _viewComponentInvokerCache = viewComponentInvokerCache;
@@ -65,10 +50,7 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
     /// <inheritdoc />
     public async Task InvokeAsync(ViewComponentContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = _viewComponentInvokerCache.GetViewComponentMethodExecutor(context);
 
@@ -320,7 +302,7 @@ internal sealed partial class DefaultViewComponentInvoker : IViewComponentInvoke
                     {
                         return new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id);
                     }
-                    throw new IndexOutOfRangeException(nameof(index));
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 

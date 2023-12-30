@@ -41,10 +41,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// <inheritdoc />
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         foreach (var filter in _mvcOptions.Filters)
         {
@@ -110,10 +107,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// <returns>A <see cref="ControllerModel"/> for the given <see cref="TypeInfo"/>.</returns>
     internal static ControllerModel CreateControllerModel(TypeInfo typeInfo)
     {
-        if (typeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(typeInfo));
-        }
+        ArgumentNullException.ThrowIfNull(typeInfo);
 
         // For attribute routes on a controller, we want to support 'overriding' routes on a derived
         // class. So we need to walk up the hierarchy looking for the first class to define routes.
@@ -215,10 +209,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// <returns>A <see cref="PropertyModel"/> for the given <see cref="PropertyInfo"/>.</returns>
     internal PropertyModel CreatePropertyModel(PropertyInfo propertyInfo)
     {
-        if (propertyInfo == null)
-        {
-            throw new ArgumentNullException(nameof(propertyInfo));
-        }
+        ArgumentNullException.ThrowIfNull(propertyInfo);
 
         var attributes = propertyInfo.GetCustomAttributes(inherit: true);
 
@@ -265,15 +256,8 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         TypeInfo typeInfo,
         MethodInfo methodInfo)
     {
-        if (typeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(typeInfo));
-        }
-
-        if (methodInfo == null)
-        {
-            throw new ArgumentNullException(nameof(methodInfo));
-        }
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        ArgumentNullException.ThrowIfNull(methodInfo);
 
         if (!IsAction(typeInfo, methodInfo))
         {
@@ -392,15 +376,8 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// </remarks>
     internal static bool IsAction(TypeInfo typeInfo, MethodInfo methodInfo)
     {
-        if (typeInfo == null)
-        {
-            throw new ArgumentNullException(nameof(typeInfo));
-        }
-
-        if (methodInfo == null)
-        {
-            throw new ArgumentNullException(nameof(methodInfo));
-        }
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        ArgumentNullException.ThrowIfNull(methodInfo);
 
         // The SpecialName bit is set to flag members that are treated in a special way by some compilers
         // (such as property accessors and operator overloading methods).
@@ -456,10 +433,7 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
     /// <returns>A <see cref="ParameterModel"/> for the given <see cref="ParameterInfo"/>.</returns>
     internal ParameterModel CreateParameterModel(ParameterInfo parameterInfo)
     {
-        if (parameterInfo == null)
-        {
-            throw new ArgumentNullException(nameof(parameterInfo));
-        }
+        ArgumentNullException.ThrowIfNull(parameterInfo);
 
         var attributes = parameterInfo.GetCustomAttributes(inherit: true);
 

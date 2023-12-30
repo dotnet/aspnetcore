@@ -1,0 +1,37 @@
+name: Locker - Lock stale issues and PRs
+on:
+  schedule:
+    - cron: '34 8 * * *' # Once per day, overnight PT, uncommon minute of hour
+
+  workflow_dispatch:
+    # Manual triggering through the GitHub UI, API, or CLI
+    inputs:
+      daysSinceClose:
+        required: true
+        default: "30"
+      daysSinceUpdate:
+        required: true
+        default: "30"
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Actions
+        uses: actions/checkout@v4
+        with:
+          repository: "microsoft/vscode-github-triage-actions"
+          path: ./actions
+          ref: cd16cd2aad6ba2da74bb6c6f7293adddd579a90e # locker action commit sha
+      - name: Install Actions
+        run: npm install --production --prefix ./actions
+      - name: Run Locker
+        uses: ./actions/locker
+        with:
+          daysSinceClose:  ${{ fromJson(inputs.daysSinceClose  || 30) }}
+          daysSinceUpdate: ${{ fromJson(inputs.daysSinceUpdate || 30) }}
+          ignoredLabel: "Bot: Do Not Lock"

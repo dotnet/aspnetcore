@@ -8,6 +8,9 @@
     <IsShippingPackage>true</IsShippingPackage>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>

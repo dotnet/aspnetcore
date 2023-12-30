@@ -15,10 +15,7 @@ public class RequestCultureFeature : IRequestCultureFeature
     /// <param name="provider">The <see cref="IRequestCultureProvider"/>.</param>
     public RequestCultureFeature(RequestCulture requestCulture, IRequestCultureProvider? provider)
     {
-        if (requestCulture == null)
-        {
-            throw new ArgumentNullException(nameof(requestCulture));
-        }
+        ArgumentNullException.ThrowIfNull(requestCulture);
 
         RequestCulture = requestCulture;
         Provider = provider;

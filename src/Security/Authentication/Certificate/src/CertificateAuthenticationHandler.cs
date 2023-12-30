@@ -19,8 +19,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
     public CertificateAuthenticationHandler(
         IOptionsMonitor<CertificateAuthenticationOptions> options,
         ILoggerFactory logger,
-        UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        UrlEncoder encoder) : base(options, logger, encoder)
     {
     }
 

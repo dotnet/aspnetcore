@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.NETCore.BrowserDebugHost.Transport" GeneratePathProperty="true" PrivateAssets="All" />
   </ItemGroup>

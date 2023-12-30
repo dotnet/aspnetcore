@@ -3,30 +3,38 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal readonly struct CascadingParameterState
 {
-    private static readonly ConcurrentDictionary<Type, ReflectedCascadingParameterInfo[]> _cachedInfos = new();
+    private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
 
-    public string LocalValueName { get; }
-    public ICascadingValueComponent ValueSupplier { get; }
+    public CascadingParameterInfo ParameterInfo { get; }
+    public ICascadingValueSupplier ValueSupplier { get; }
 
-    public CascadingParameterState(string localValueName, ICascadingValueComponent valueSupplier)
+    public CascadingParameterState(in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier)
     {
-        LocalValueName = localValueName;
+        ParameterInfo = parameterInfo;
         ValueSupplier = valueSupplier;
     }
 
-    public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState)
+    public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState, out bool hasSingleDeliveryParameters)
     {
         var componentType = componentState.Component.GetType();
-        var infos = GetReflectedCascadingParameterInfos(componentType);
+
+        // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
+        #pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.CascadingParameterState.GetCascadingParameterInfos(Type)'.
+        var infos = GetCascadingParameterInfos(componentType);
+        #pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.CascadingParameterState.GetCascadingParameterInfos(Type)'.
+
+        hasSingleDeliveryParameters = false;
 
         // For components known not to have any cascading parameters, bail out early
         if (infos.Length == 0)
@@ -42,88 +50,88 @@ internal readonly struct CascadingParameterState
         for (var infoIndex = 0; infoIndex < numInfos; infoIndex++)
         {
             ref var info = ref infos[infoIndex];
-            var supplier = GetMatchingCascadingValueSupplier(info, componentState);
+            var supplier = GetMatchingCascadingValueSupplier(info, componentState.Renderer, componentState.LogicalParentComponentState);
             if (supplier != null)
             {
-                if (resultStates == null)
-                {
-                    // Although not all parameters might be matched, we know the maximum number
-                    resultStates = new List<CascadingParameterState>(infos.Length - infoIndex);
-                }
+                // Although not all parameters might be matched, we know the maximum number
+                resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
+                resultStates.Add(new CascadingParameterState(info, supplier));
 
-                resultStates.Add(new CascadingParameterState(info.ConsumerValueName, supplier));
+                if (info.Attribute.SingleDelivery)
+                {
+                    hasSingleDeliveryParameters = true;
+                    if (!supplier.IsFixed)
+                    {
+                        // We don't have a use case for IsFixed=false with SingleDelivery=true. To avoid complications about
+                        // subscribing/unsubscribing in this case, just disallow it. It shouldn't be possible for this to
+                        // occur unless someone creates their own CascadingParameterAttributeBase subclass.
+                        throw new InvalidOperationException($"'{info.Attribute.GetType()}' is flagged with SingleDelivery, but the selected supplier '{supplier.GetType()}' is not flagged with {nameof(ICascadingValueSupplier.IsFixed)}");
+                    }
+                }
             }
         }
 
         return resultStates ?? (IReadOnlyList<CascadingParameterState>)Array.Empty<CascadingParameterState>();
     }
 
-    private static ICascadingValueComponent? GetMatchingCascadingValueSupplier(in ReflectedCascadingParameterInfo info, ComponentState componentState)
+    internal static ICascadingValueSupplier? GetMatchingCascadingValueSupplier(in CascadingParameterInfo info, Renderer renderer, ComponentState? componentState)
     {
-        do
+        // First scan up through the component hierarchy
+        var candidate = componentState;
+        while (candidate is not null)
         {
-            if (componentState.Component is ICascadingValueComponent candidateSupplier
-                && candidateSupplier.CanSupplyValue(info.ValueType, info.SupplierValueName))
+            if (candidate.Component is ICascadingValueSupplier valueSupplier && valueSupplier.CanSupplyValue(info))
             {
-                return candidateSupplier;
+                return valueSupplier;
             }
 
-            componentState = componentState.ParentComponentState;
-        } while (componentState != null);
+            candidate = candidate.LogicalParentComponentState;
+        }
+
+        // We got to the root and found no match, so now look at the providers registered in DI
+        foreach (var valueSupplier in renderer.ServiceProviderCascadingValueSuppliers)
+        {
+            if (valueSupplier.CanSupplyValue(info))
+            {
+                return valueSupplier;
+            }
+        }
 
         // No match
         return null;
     }
 
-    private static ReflectedCascadingParameterInfo[] GetReflectedCascadingParameterInfos(
+    private static CascadingParameterInfo[] GetCascadingParameterInfos(
         [DynamicallyAccessedMembers(Component)] Type componentType)
     {
         if (!_cachedInfos.TryGetValue(componentType, out var infos))
         {
-            infos = CreateReflectedCascadingParameterInfos(componentType);
+            infos = CreateCascadingParameterInfos(componentType);
             _cachedInfos[componentType] = infos;
         }
 
         return infos;
     }
 
-    private static ReflectedCascadingParameterInfo[] CreateReflectedCascadingParameterInfos(
+    private static CascadingParameterInfo[] CreateCascadingParameterInfos(
         [DynamicallyAccessedMembers(Component)] Type componentType)
     {
-        List<ReflectedCascadingParameterInfo>? result = null;
+        List<CascadingParameterInfo>? result = null;
         var candidateProps = ComponentProperties.GetCandidateBindableProperties(componentType);
         foreach (var prop in candidateProps)
         {
-            var attribute = prop.GetCustomAttribute<CascadingParameterAttribute>();
-            if (attribute != null)
+            var cascadingParameterAttribute = prop.GetCustomAttributes()
+                .OfType<CascadingParameterAttributeBase>().SingleOrDefault();
+            if (cascadingParameterAttribute != null)
             {
-                if (result == null)
-                {
-                    result = new List<ReflectedCascadingParameterInfo>();
-                }
-
-                result.Add(new ReflectedCascadingParameterInfo(
+                result ??= new List<CascadingParameterInfo>();
+                result.Add(new CascadingParameterInfo(
+                    cascadingParameterAttribute,
                     prop.Name,
-                    prop.PropertyType,
-                    attribute.Name));
+                    prop.PropertyType));
             }
         }
 
-        return result?.ToArray() ?? Array.Empty<ReflectedCascadingParameterInfo>();
-    }
-
-    readonly struct ReflectedCascadingParameterInfo
-    {
-        public string ConsumerValueName { get; }
-        public string? SupplierValueName { get; }
-        public Type ValueType { get; }
-
-        public ReflectedCascadingParameterInfo(
-            string consumerValueName, Type valueType, string? supplierValueName)
-        {
-            ConsumerValueName = consumerValueName;
-            SupplierValueName = supplierValueName;
-            ValueType = valueType;
-        }
+        return result?.ToArray() ?? Array.Empty<CascadingParameterInfo>();
     }
 }

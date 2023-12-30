@@ -31,10 +31,7 @@ public class HandleRequestResult : AuthenticateResult
     /// <returns>The result.</returns>
     public static new HandleRequestResult Success(AuthenticationTicket ticket)
     {
-        if (ticket == null)
-        {
-            throw new ArgumentNullException(nameof(ticket));
-        }
+        ArgumentNullException.ThrowIfNull(ticket);
         return new HandleRequestResult() { Ticket = ticket, Properties = ticket.Properties };
     }
 
@@ -65,7 +62,7 @@ public class HandleRequestResult : AuthenticateResult
     /// <param name="failureMessage">The failure message.</param>
     /// <returns>The result.</returns>
     public static new HandleRequestResult Fail(string failureMessage)
-        => Fail(new Exception(failureMessage));
+        => Fail(new AuthenticationFailureException(failureMessage));
 
     /// <summary>
     /// Indicates that there was a failure during authentication.
@@ -74,7 +71,7 @@ public class HandleRequestResult : AuthenticateResult
     /// <param name="properties">Additional state values for the authentication session.</param>
     /// <returns>The result.</returns>
     public static new HandleRequestResult Fail(string failureMessage, AuthenticationProperties? properties)
-        => Fail(new Exception(failureMessage), properties);
+        => Fail(new AuthenticationFailureException(failureMessage), properties);
 
     /// <summary>
     /// Discontinue all processing for this request and return to the client.

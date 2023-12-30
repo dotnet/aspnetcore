@@ -17,10 +17,7 @@ public class JQueryFormValueProviderFactory : IValueProviderFactory
     /// <inheritdoc />
     public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var request = context.ActionContext.HttpContext.Request;
         if (request.HasFormContentType)

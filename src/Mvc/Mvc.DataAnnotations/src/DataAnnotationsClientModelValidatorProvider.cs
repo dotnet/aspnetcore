@@ -33,14 +33,8 @@ internal sealed class DataAnnotationsClientModelValidatorProvider : IClientModel
         IOptions<MvcDataAnnotationsLocalizationOptions> options,
         IStringLocalizerFactory? stringLocalizerFactory)
     {
-        if (validationAttributeAdapterProvider == null)
-        {
-            throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(validationAttributeAdapterProvider);
+        ArgumentNullException.ThrowIfNull(options);
 
         _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
         _options = options;
@@ -50,10 +44,7 @@ internal sealed class DataAnnotationsClientModelValidatorProvider : IClientModel
     /// <inheritdoc />
     public void CreateValidators(ClientValidatorProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
         IStringLocalizer? stringLocalizer = null;
         if (_options.Value.DataAnnotationLocalizerProvider != null && _stringLocalizerFactory != null)
         {

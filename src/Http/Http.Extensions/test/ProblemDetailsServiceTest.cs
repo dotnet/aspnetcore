@@ -34,7 +34,34 @@ public class ProblemDetailsServiceTest
     }
 
     [Fact]
-    public async Task WriteAsync_Skip_WhenNoWriterRegistered()
+    public async Task TryWriteAsync_ReturnsTrue_WhenAtLeastOneWriterCanWrite()
+    {
+        // Arrange
+        var service = CreateService(
+            writers: new List<IProblemDetailsWriter>
+            {
+                new MetadataBasedWriter("FirstWriter", canWrite: false),
+                new MetadataBasedWriter("SecondWriter"),
+                new MetadataBasedWriter("FirstWriter"),
+            });
+
+        var metadata = new EndpointMetadataCollection(new SampleMetadata() { ContentType = "application/problem+json" });
+        var stream = new MemoryStream();
+        var context = new DefaultHttpContext()
+        {
+            Response = { Body = stream, StatusCode = StatusCodes.Status400BadRequest },
+        };
+
+        // Act
+        var result = await service.TryWriteAsync(new() { HttpContext = context, AdditionalMetadata = metadata });
+
+        // Assert
+        Assert.True(result);
+        Assert.Equal("\"SecondWriter\"", Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
+    public async Task WriteAsync_Throws_WhenNoWriterRegistered()
     {
         // Arrange
         var service = CreateService();
@@ -45,14 +72,11 @@ public class ProblemDetailsServiceTest
         };
 
         // Act
-        await service.WriteAsync(new() { HttpContext = context });
-
-        // Assert
-        Assert.Equal(string.Empty, Encoding.UTF8.GetString(stream.ToArray()));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.WriteAsync(new() { HttpContext = context }));
     }
 
     [Fact]
-    public async Task WriteAsync_Skip_WhenNoWriterCanWrite()
+    public async Task WriteAsync_Throws_WhenNoWriterCanWrite()
     {
         // Arrange
         var service = CreateService(
@@ -63,19 +87,31 @@ public class ProblemDetailsServiceTest
             Response = { Body = stream, StatusCode = StatusCodes.Status400BadRequest },
         };
 
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await service.WriteAsync(new() { HttpContext = context }));
+    }
+
+    [Fact]
+    public async Task TryWriteAsync_ReturnsFalse_WhenNoWriterRegistered()
+    {
+        // Arrange
+        var service = CreateService();
+        var stream = new MemoryStream();
+        var context = new DefaultHttpContext()
+        {
+            Response = { Body = stream, StatusCode = StatusCodes.Status400BadRequest },
+        };
+
         // Act
-        await service.WriteAsync(new() { HttpContext = context });
+        var result = await service.TryWriteAsync(new() { HttpContext = context });
 
         // Assert
+        Assert.False(result);
         Assert.Equal(string.Empty, Encoding.UTF8.GetString(stream.ToArray()));
     }
 
-    [Theory]
-    [InlineData(StatusCodes.Status100Continue)]
-    [InlineData(StatusCodes.Status200OK)]
-    [InlineData(StatusCodes.Status300MultipleChoices)]
-    [InlineData(399)]
-    public async Task WriteAsync_Skip_WhenSuccessStatusCode(int statusCode)
+    [Fact]
+    public async Task TryWriteAsync_ReturnsFalse_WhenNoWriterCanWrite()
     {
         // Arrange
         var service = CreateService(
@@ -83,16 +119,14 @@ public class ProblemDetailsServiceTest
         var stream = new MemoryStream();
         var context = new DefaultHttpContext()
         {
-            Response = { Body = stream, StatusCode = statusCode },
+            Response = { Body = stream, StatusCode = StatusCodes.Status400BadRequest },
         };
-        var metadata = new EndpointMetadataCollection(new SampleMetadata() { ContentType = "application/problem+json" });
-        context.SetEndpoint(new Endpoint(context => Task.CompletedTask, metadata, null));
 
-        // Act
-        await service.WriteAsync(new() { HttpContext = context });
+        // Act & Assert
+        var result = await service.TryWriteAsync(new() { HttpContext = context });
 
         // Assert
-        Assert.Equal(string.Empty, Encoding.UTF8.GetString(stream.ToArray()));
+        Assert.False(result);
     }
 
     private static ProblemDetailsService CreateService(

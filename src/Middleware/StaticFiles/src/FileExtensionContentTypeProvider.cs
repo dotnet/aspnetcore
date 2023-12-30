@@ -414,10 +414,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
     /// <param name="mapping"></param>
     public FileExtensionContentTypeProvider(IDictionary<string, string> mapping)
     {
-        if (mapping == null)
-        {
-            throw new ArgumentNullException(nameof(mapping));
-        }
+        ArgumentNullException.ThrowIfNull(mapping);
         Mappings = mapping;
     }
 

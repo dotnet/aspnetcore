@@ -1,0 +1,27 @@
+﻿@page "/nav/scroll-to-hash"
+@attribute [StreamRendering]
+
+<PageTitle>Page for scrolling to hash</PageTitle>
+
+<h1>Scroll to hash</h1>
+
+<p>If you scroll down a long way, you'll find more content. We add it asynchronously via streaming rendering.</p>
+
+<div style="height: 2000px; border: 2px dashed red;">spacer</div>
+
+@if (showContent)
+{
+    <h2 id="some-content">Some content</h2>
+
+    <p>This is the content.</p>
+}
+
+@code {
+    bool showContent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        showContent = true;
+    }
+}

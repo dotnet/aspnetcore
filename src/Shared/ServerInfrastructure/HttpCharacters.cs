@@ -19,22 +19,22 @@ internal static class HttpCharacters
     // 127.0.0.1
     // user@host.com
     // user:password@host.com
-    private static readonly IndexOfAnyValues<byte> _allowedAuthorityBytes = IndexOfAnyValues.Create(":.-[]@0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
+    private static readonly SearchValues<byte> _allowedAuthorityBytes = SearchValues.Create(":.-[]@0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
 
     // Matches Http.Sys
     // Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
-    private static readonly IndexOfAnyValues<char> _allowedHostChars = IndexOfAnyValues.Create("!$&'()-._~" + AlphaNumeric);
+    private static readonly SearchValues<char> _allowedHostChars = SearchValues.Create("!$&'()-._~" + AlphaNumeric);
 
     // tchar https://tools.ietf.org/html/rfc7230#appendix-B
-    private static readonly IndexOfAnyValues<char> _allowedTokenChars = IndexOfAnyValues.Create("!#$%&'*+-.^_`|~" + AlphaNumeric);
-    private static readonly IndexOfAnyValues<byte> _allowedTokenBytes = IndexOfAnyValues.Create("!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
+    private static readonly SearchValues<char> _allowedTokenChars = SearchValues.Create("!#$%&'*+-.^_`|~" + AlphaNumeric);
+    private static readonly SearchValues<byte> _allowedTokenBytes = SearchValues.Create("!#$%&'*+-.^_`|~0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"u8);
 
     // field-value https://tools.ietf.org/html/rfc7230#section-3.2
     // HTAB, [VCHAR, SP]
-    private static readonly IndexOfAnyValues<char> _allowedFieldChars = IndexOfAnyValues.Create("\t !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" + AlphaNumeric);
+    private static readonly SearchValues<char> _allowedFieldChars = SearchValues.Create("\t !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" + AlphaNumeric);
 
     // Values are [0x00, 0x1F] without 0x09 (HTAB) and with 0x7F.
-    private static readonly IndexOfAnyValues<char> _invalidFieldChars = IndexOfAnyValues.Create(
+    private static readonly SearchValues<char> _invalidFieldChars = SearchValues.Create(
         "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u000A\u000B\u000C\u000D\u000E\u000F\u0010" +
         "\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F\u007F");
 

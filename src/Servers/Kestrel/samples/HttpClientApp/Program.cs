@@ -4,7 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 // Console.WriteLine("Ready");
 // Console.ReadKey();

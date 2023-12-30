@@ -3,38 +3,30 @@
   <String Id="Caption">Konfiguracja pakietu [BundleNameFull]</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">Witamy</String>
-  <String Id="InstallMessage">Instalator zainstaluje pakiet [WixBundleName] na Twoim komputerze. Kliknij pozycję Instaluj, aby kontynuować, pozycję Opcje, aby określić katalog instalacyjny, lub pozycję Zamknij, aby zakończyć.</String>
   <String Id="InstallVersion">Wersja [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
   <String Id="HelpHeader">Instalator — Pomoc</String>
   <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]katalog[\]] — instaluje, naprawia, odinstalowuje lub
-    tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna
+    tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna.
 
 /passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów albo nie wyświetla żadnego interfejsu użytkownika ani monitów
-. Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
+.
+   Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
 
 /norestart  — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
 /log log.txt — tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zamknij</String>
-  <String Id="InstallLicenseLinkText">&lt;a href="#"&gt;Postanowienia licencyjne&lt;/a&gt; dotyczące pakietu [WixBundleName].</String>
-  <String Id="InstallAcceptCheckbox">Zg&amp;adzam się na warunki licencji</String>
-  <String Id="InstallOptionsButton">&amp;Opcje</String>
-  <String Id="InstallInstallButton">Za&amp;instaluj</String>
+  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się na warunki licencji</String>
+  <String Id="InstallInstallButton">&amp;Zainstaluj</String>
   <String Id="InstallCloseButton">&amp;Zamknij</String>
-  <String Id="OptionsHeader">Opcje instalatora</String>
-  <String Id="OptionsLocationLabel">Lokalizacja instalacji:</String>
-  <String Id="OptionsBrowseButton">&amp;Przeglądaj</String>
-  <String Id="OptionsOkButton">&amp;OK</String>
-  <String Id="OptionsCancelButton">&amp;Anuluj</String>
   <String Id="ProgressHeader">Postęp instalacji</String>
   <String Id="ProgressLabel">Przetwarzanie:</String>
   <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
   <String Id="ProgressCancelButton">&amp;Anuluj</String>
   <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
-  <String Id="ModifyRepairButton">Nap&amp;raw</String>
-  <String Id="ModifyUninstallButton">O&amp;dinstaluj</String>
+  <String Id="ModifyRepairButton">&amp;Napraw</String>
+  <String Id="ModifyUninstallButton">&amp;Odinstaluj</String>
   <String Id="ModifyCloseButton">&amp;Zamknij</String>
   <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
   <String Id="SuccessUninstallHeader">Pomyślnie ukończono operację odinstalowania</String>

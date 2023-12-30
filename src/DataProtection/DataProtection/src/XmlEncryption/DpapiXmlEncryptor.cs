@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.Cng;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
@@ -48,10 +49,7 @@ public sealed class DpapiXmlEncryptor : IXmlEncryptor
     /// </returns>
     public EncryptedXmlInfo Encrypt(XElement plaintextElement)
     {
-        if (plaintextElement == null)
-        {
-            throw new ArgumentNullException(nameof(plaintextElement));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(plaintextElement);
         if (_protectToLocalMachine)
         {
             _logger.EncryptingToWindowsDPAPIForLocalMachineAccount();

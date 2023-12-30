@@ -85,10 +85,7 @@ internal sealed class PageResponseCacheFilter : IPageFilter, IResponseCacheFilte
 
     public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (!context.IsEffectivePolicy<IResponseCacheFilter>(this))
         {

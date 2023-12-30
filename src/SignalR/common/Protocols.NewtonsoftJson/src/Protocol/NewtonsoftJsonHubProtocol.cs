@@ -34,9 +34,10 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
     private const string ArgumentsPropertyName = "arguments";
     private const string HeadersPropertyName = "headers";
     private const string AllowReconnectPropertyName = "allowReconnect";
+    private const string SequenceIdPropertyName = "sequenceId";
 
     private const string ProtocolName = "json";
-    private const int ProtocolVersion = 1;
+    private const int ProtocolVersion = 2;
 
     /// <summary>
     /// Gets the serializer used to serialize invocation arguments and return values.
@@ -71,7 +72,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
     /// <inheritdoc />
     public bool IsVersionSupported(int version)
     {
-        return version == Version;
+        return version <= Version;
     }
 
     /// <inheritdoc />
@@ -136,6 +137,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
             Dictionary<string, string>? headers = null;
             var completed = false;
             var allowReconnect = false;
+            long? sequenceId = null;
 
             using (var reader = JsonUtils.CreateJsonTextReader(textReader))
             {
@@ -310,6 +312,13 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                                     JsonUtils.CheckRead(reader);
                                     headers = ReadHeaders(reader);
                                     break;
+                                case SequenceIdPropertyName:
+                                    sequenceId = JsonUtils.ReadAsInt64(reader, SequenceIdPropertyName);
+                                    if (sequenceId is null)
+                                    {
+                                        throw new InvalidDataException($"Missing required property '{SequenceIdPropertyName}'.");
+                                    }
+                                    break;
                                 default:
                                     // Skip read the property name
                                     JsonUtils.CheckRead(reader);
@@ -447,6 +456,10 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                     return PingMessage.Instance;
                 case HubProtocolConstants.CloseMessageType:
                     return BindCloseMessage(error, allowReconnect);
+                case HubProtocolConstants.AckMessageType:
+                    return BindAckMessage(sequenceId);
+                case HubProtocolConstants.SequenceMessageType:
+                    return BindSequenceMessage(sequenceId);
                 case null:
                     throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                 default:
@@ -538,6 +551,14 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
                     case CloseMessage m:
                         WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
                         WriteCloseMessage(m, writer);
+                        break;
+                    case AckMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.AckMessageType);
+                        WriteAckMessage(m, writer);
+                        break;
+                    case SequenceMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.SequenceMessageType);
+                        WriteSequenceMessage(m, writer);
                         break;
                     default:
                         throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
@@ -683,6 +704,18 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
     {
         writer.WritePropertyName(TypePropertyName);
         writer.WriteValue(type);
+    }
+
+    private static void WriteAckMessage(AckMessage message, JsonTextWriter writer)
+    {
+        writer.WritePropertyName(SequenceIdPropertyName);
+        writer.WriteValue(message.SequenceId);
+    }
+
+    private static void WriteSequenceMessage(SequenceMessage message, JsonTextWriter writer)
+    {
+        writer.WritePropertyName(SequenceIdPropertyName);
+        writer.WriteValue(message.SequenceId);
     }
 
     private static HubMessage BindCancelInvocationMessage(string? invocationId)
@@ -837,6 +870,26 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         }
 
         return new CloseMessage(error, allowReconnect);
+    }
+
+    private static AckMessage BindAckMessage(long? sequenceId)
+    {
+        if (sequenceId is null)
+        {
+            throw new InvalidDataException($"Missing required property '{SequenceIdPropertyName}'.");
+        }
+
+        return new AckMessage(sequenceId.Value);
+    }
+
+    private static SequenceMessage BindSequenceMessage(long? sequenceId)
+    {
+        if (sequenceId is null)
+        {
+            throw new InvalidDataException($"Missing required property '{SequenceIdPropertyName}'.");
+        }
+
+        return new SequenceMessage(sequenceId.Value);
     }
 
     private object?[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)

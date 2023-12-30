@@ -3,6 +3,10 @@
 
 using System.Security.Authentication;
 
+#if NETCOREAPP
+using System.Net.Security;
+#endif
+
 namespace Microsoft.AspNetCore.Connections.Features;
 
 /// <summary>
@@ -14,6 +18,19 @@ public interface ITlsHandshakeFeature
     /// Gets the <see cref="SslProtocols"/>.
     /// </summary>
     SslProtocols Protocol { get; }
+
+#if NETCOREAPP
+    /// <summary>
+    /// Gets the <see cref="TlsCipherSuite"/>.
+    /// </summary>
+    TlsCipherSuite? NegotiatedCipherSuite => null;
+
+    /// <summary>
+    /// Gets the host name from the "server_name" (SNI) extension of the client hello if present.
+    /// See <see href="https://www.rfc-editor.org/rfc/rfc6066#section-3">RFC 6066</see>.
+    /// </summary>
+    string HostName => string.Empty;
+#endif
 
     /// <summary>
     /// Gets the <see cref="CipherAlgorithmType"/>.

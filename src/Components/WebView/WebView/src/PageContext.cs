@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebView.Services;
@@ -25,6 +26,7 @@ internal sealed class PageContext : IAsyncDisposable
     public WebViewNavigationManager NavigationManager { get; }
     public WebViewJSRuntime JSRuntime { get; }
     public WebViewRenderer Renderer { get; }
+    public IServiceProvider ServiceProvider => _serviceScope.ServiceProvider;
 
     public PageContext(
         Dispatcher dispatcher,
@@ -35,22 +37,24 @@ internal sealed class PageContext : IAsyncDisposable
         string startUrl)
     {
         _serviceScope = serviceScope;
-        var services = serviceScope.ServiceProvider;
 
-        NavigationManager = (WebViewNavigationManager)services.GetRequiredService<NavigationManager>();
+        NavigationManager = (WebViewNavigationManager)ServiceProvider.GetRequiredService<NavigationManager>();
         NavigationManager.AttachToWebView(ipcSender, baseUrl, startUrl);
 
-        JSRuntime = (WebViewJSRuntime)services.GetRequiredService<IJSRuntime>();
+        JSRuntime = (WebViewJSRuntime)ServiceProvider.GetRequiredService<IJSRuntime>();
         JSRuntime.AttachToWebView(ipcSender);
 
-        var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+        var loggerFactory = ServiceProvider.GetRequiredService<ILoggerFactory>();
         var jsComponents = new JSComponentInterop(jsComponentsConfiguration);
-        Renderer = new WebViewRenderer(services, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
+        Renderer = new WebViewRenderer(ServiceProvider, dispatcher, ipcSender, loggerFactory, JSRuntime, jsComponents);
+
+        var webViewScrollToLocationHash = (WebViewScrollToLocationHash)ServiceProvider.GetRequiredService<IScrollToLocationHash>();
+        webViewScrollToLocationHash.AttachJSRuntime(JSRuntime);
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        Renderer.Dispose();
-        return _serviceScope.DisposeAsync();
+        await Renderer.DisposeAsync();
+        await _serviceScope.DisposeAsync();
     }
 }

@@ -56,10 +56,7 @@ public static class UriHelper
         QueryString query = new QueryString(),
         FragmentString fragment = new FragmentString())
     {
-        if (scheme == null)
-        {
-            throw new ArgumentNullException(nameof(scheme));
-        }
+        ArgumentNullException.ThrowIfNull(scheme);
 
         var hostText = host.ToUriComponent();
         var pathBaseText = pathBase.ToUriComponent();
@@ -113,10 +110,7 @@ public static class UriHelper
         out QueryString query,
         out FragmentString fragment)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         path = new PathString();
         query = new QueryString();
@@ -164,10 +158,7 @@ public static class UriHelper
     /// <returns>The encoded string version of <paramref name="uri"/>.</returns>
     public static string Encode(Uri uri)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         if (uri.IsAbsoluteUri)
         {

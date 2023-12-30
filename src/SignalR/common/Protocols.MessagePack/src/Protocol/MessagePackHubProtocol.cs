@@ -9,6 +9,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol;
 public class MessagePackHubProtocol : IHubProtocol
 {
     private const string ProtocolName = "messagepack";
-    private const int ProtocolVersion = 1;
+    private const int ProtocolVersion = 2;
     private readonly DefaultMessagePackHubProtocolWorker _worker;
 
     /// <inheritdoc />
@@ -44,10 +45,7 @@ public class MessagePackHubProtocol : IHubProtocol
     /// <param name="options">The options used to initialize the protocol.</param>
     public MessagePackHubProtocol(IOptions<MessagePackHubProtocolOptions> options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(options);
 
         _worker = new DefaultMessagePackHubProtocolWorker(options.Value.SerializerOptions);
     }
@@ -55,7 +53,7 @@ public class MessagePackHubProtocol : IHubProtocol
     /// <inheritdoc />
     public bool IsVersionSupported(int version)
     {
-        return version == Version;
+        return version <= Version;
     }
 
     /// <inheritdoc />

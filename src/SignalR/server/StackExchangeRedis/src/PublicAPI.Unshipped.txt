@@ -1,4 +1,1 @@
 #nullable enable
-override Microsoft.AspNetCore.SignalR.StackExchangeRedis.RedisHubLifetimeManager<THub>.InvokeConnectionAsync<T>(string! connectionId, string! methodName, object?[]! args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<T>!
-override Microsoft.AspNetCore.SignalR.StackExchangeRedis.RedisHubLifetimeManager<THub>.SetConnectionResultAsync(string! connectionId, Microsoft.AspNetCore.SignalR.Protocol.CompletionMessage! result) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.SignalR.StackExchangeRedis.RedisHubLifetimeManager<THub>.TryGetReturnType(string! invocationId, out System.Type? type) -> bool

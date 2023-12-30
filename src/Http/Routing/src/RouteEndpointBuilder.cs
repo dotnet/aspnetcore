@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -53,12 +56,14 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
             RequestDelegate,
             RoutePattern,
             Order,
-            CreateMetadataCollection(Metadata),
+            CreateMetadataCollection(Metadata, RoutePattern),
             DisplayName);
     }
 
-    private static EndpointMetadataCollection CreateMetadataCollection(IList<object> metadata)
+    private static EndpointMetadataCollection CreateMetadataCollection(IList<object> metadata, RoutePattern routePattern)
     {
+        var hasRouteDiagnosticsMetadata = false;
+
         if (metadata.Count > 0)
         {
             var hasCorsMetadata = false;
@@ -85,6 +90,11 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
                     // are ICorsMetadata
                     hasCorsMetadata = true;
                 }
+
+                if (!hasRouteDiagnosticsMetadata && metadata[i] is IRouteDiagnosticsMetadata)
+                {
+                    hasRouteDiagnosticsMetadata = true;
+                }
             }
 
             if (hasCorsMetadata && httpMethodMetadata is not null && !httpMethodMetadata.AcceptCorsPreflight)
@@ -95,6 +105,28 @@ public sealed class RouteEndpointBuilder : EndpointBuilder
             }
         }
 
+        // No route diagnostics metadata provided so automatically add one based on the route pattern string.
+        if (!hasRouteDiagnosticsMetadata)
+        {
+            metadata.Add(new RouteDiagnosticsMetadata(routePattern.DebuggerToString()));
+        }
+
         return new EndpointMetadataCollection(metadata);
+    }
+
+    [DebuggerDisplay("{ToString(),nq}")]
+    private sealed class RouteDiagnosticsMetadata : IRouteDiagnosticsMetadata
+    {
+        public string Route { get; }
+
+        public RouteDiagnosticsMetadata(string route)
+        {
+            Route = route;
+        }
+
+        public override string ToString()
+        {
+            return DebuggerHelpers.GetDebugText(nameof(Route), Route);
+        }
     }
 }

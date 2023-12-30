@@ -422,6 +422,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] int foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
@@ -524,6 +525,46 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
         AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+    }
+#nullable enable
+
+    public class AsParametersWithRequiredMembers
+    {
+        public required string RequiredStringMember { get; set; }
+        public required string? RequiredNullableStringMember { get; set; }
+        public string NonNullableStringMember { get; set; } = string.Empty;
+        public string? NullableStringMember { get; set; }
+    }
+
+    [Fact]
+    public void SupportsRequiredMembersInAsParametersAttribute()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] AsParametersWithRequiredMembers foo) => { });
+        Assert.Equal(4, apiDescription.ParameterDescriptions.Count);
+
+        Assert.Collection(apiDescription.ParameterDescriptions,
+            param => Assert.True(param.IsRequired),
+            param => Assert.False(param.IsRequired),
+            param => Assert.True(param.IsRequired),
+            param => Assert.False(param.IsRequired));
+    }
+
+#nullable disable
+    public class AsParametersWithRequiredMembersObliviousContext
+    {
+        public required string RequiredStringMember { get; set; }
+        public string OptionalStringMember { get; set; }
+    }
+
+    [Fact]
+    public void SupportsRequiredMembersInAsParametersObliviousContextAttribute()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] AsParametersWithRequiredMembersObliviousContext foo) => { });
+        Assert.Equal(2, apiDescription.ParameterDescriptions.Count);
+
+        Assert.Collection(apiDescription.ParameterDescriptions,
+            param => Assert.True(param.IsRequired),
+            param => Assert.False(param.IsRequired));
     }
 #nullable enable
 

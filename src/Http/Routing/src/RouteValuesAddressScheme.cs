@@ -21,10 +21,7 @@ internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteVal
 
     public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress address)
     {
-        if (address == null)
-        {
-            throw new ArgumentNullException(nameof(address));
-        }
+        ArgumentNullException.ThrowIfNull(address);
 
         var state = State;
 

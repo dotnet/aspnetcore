@@ -83,25 +83,10 @@ internal sealed class TemplateRenderer
         string templateName,
         bool readOnly)
     {
-        if (viewEngine == null)
-        {
-            throw new ArgumentNullException(nameof(viewEngine));
-        }
-
-        if (bufferScope == null)
-        {
-            throw new ArgumentNullException(nameof(bufferScope));
-        }
-
-        if (viewContext == null)
-        {
-            throw new ArgumentNullException(nameof(viewContext));
-        }
-
-        if (viewData == null)
-        {
-            throw new ArgumentNullException(nameof(viewData));
-        }
+        ArgumentNullException.ThrowIfNull(viewEngine);
+        ArgumentNullException.ThrowIfNull(bufferScope);
+        ArgumentNullException.ThrowIfNull(viewContext);
+        ArgumentNullException.ThrowIfNull(viewData);
 
         _viewEngine = viewEngine;
         _bufferScope = bufferScope;

@@ -28,8 +28,14 @@ internal sealed class AnyIPListenOptions : ListenOptions
             // HttpsConnectionMiddleware.CreateHttp3Options, Http3 doesn't support OnAuthenticate.
             && ex is not NotSupportedException)
         {
-            context.Logger.LogTrace(ex, CoreStrings.FailedToBindToIPv6Any, IPEndPoint.Port);
-            context.Logger.LogDebug(CoreStrings.FallbackToIPv4Any, IPEndPoint.Port, IPEndPoint.Port);
+            if (context.Logger.IsEnabled(LogLevel.Trace))
+            {
+                context.Logger.LogTrace(ex, CoreStrings.FailedToBindToIPv6Any, IPEndPoint.Port);
+            }
+            if (context.Logger.IsEnabled(LogLevel.Debug))
+            {
+                context.Logger.LogDebug(CoreStrings.FallbackToIPv4Any, IPEndPoint.Port, IPEndPoint.Port);
+            }
 
             // for machines that do not support IPv6
             EndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);

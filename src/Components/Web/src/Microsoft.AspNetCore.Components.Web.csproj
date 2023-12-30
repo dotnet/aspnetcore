@@ -8,14 +8,28 @@
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\AttributeUtilities.cs" LinkBase="Forms" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*.cs" LinkBase="Forms\ExpressionFommatting" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Primitives" />
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+  </ItemGroup>
 </Project>

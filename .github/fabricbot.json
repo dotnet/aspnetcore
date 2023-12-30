@@ -167,149 +167,6 @@
       }
     },
     {
-      "taskType": "scheduled",
-      "capabilityId": "ScheduledSearch",
-      "subCapability": "ScheduledSearch",
-      "version": "1.1",
-      "config": {
-        "frequency": [
-          {
-            "weekDay": 0,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          },
-          {
-            "weekDay": 1,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          },
-          {
-            "weekDay": 2,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          },
-          {
-            "weekDay": 3,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          },
-          {
-            "weekDay": 4,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          },
-          {
-            "weekDay": 5,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          },
-          {
-            "weekDay": 6,
-            "hours": [
-              1,
-              4,
-              7,
-              10,
-              13,
-              16,
-              19,
-              22
-            ],
-            "timezoneOffset": -8
-          }
-        ],
-        "searchTerms": [
-          {
-            "name": "isClosed",
-            "parameters": {}
-          },
-          {
-            "name": "noActivitySince",
-            "parameters": {
-              "days": 30
-            }
-          },
-          {
-            "name": "isUnlocked",
-            "parameters": {}
-          },
-          {
-            "name": "isIssue",
-            "parameters": {}
-          },
-          {
-            "name": "noLabel",
-            "parameters": {
-              "label": "Bot: Do Not Lock"
-            }
-          }
-        ],
-        "taskName": "[Closed Issue Management] Lock issues closed without activity for over 30 days",
-        "actions": [
-          {
-            "name": "lockIssue",
-            "parameters": {
-              "reason": "resolved"
-            }
-          }
-        ]
-      }
-    },
-    {
       "taskType": "trigger",
       "capabilityId": "IssueResponder",
       "subCapability": "IssueCommentResponder",
@@ -1496,7 +1353,7 @@
             ]
           },
           {
-            "label": "area-runtime",
+            "label": "area-networking",
             "pathFilter": [
               "src/Servers/",
               "src/Http/",
@@ -1504,9 +1361,7 @@
               "src/Azure/AzureAppServices.HostingStartup/",
               "src/Middleware/",
               "src/HttpClientFactory/",
-              "src/Hosting/",
-              "src/SiteExtensions/",
-              "src/DefaultBuilder/"
+              "src/SiteExtensions/"
             ]
           },
           {
@@ -1522,7 +1377,7 @@
             ]
           },
           {
-            "label": "area-web-frameworks",
+            "label": "area-mvc",
             "pathFilter": [
               "src/Mvc/Mvc.Abstractions/",
               "src/Mvc/Mvc.Analyzers/",
@@ -1539,32 +1394,15 @@
               "src/OpenApi/",
               "src/Mvc/perf/"
             ]
+          },
+          {
+            "label": "area-hosting",
+            "pathFilter": [
+              "src/DefaultBuilder/",
+              "src/Hosting/"
+            ]
           }
         ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "AutoMerge",
-      "subCapability": "AutoMerge",
-      "version": "1.0",
-      "config": {
-        "taskName": "Auto Merge PRs",
-        "label": "auto-merge",
-        "minMinutesOpen": "60",
-        "mergeType": "squash",
-        "removeLabelOnPush": true,
-        "conditionalMergeTypes": [
-          {
-            "mergeType": "merge",
-            "condition": {
-              "placeholder": "labels",
-              "operator": "contains",
-              "label_name": "Type: Merge Forward :fast_forward:"
-            }
-          }
-        ],
-        "deleteBranches": true
       }
     },
     {
@@ -1652,7 +1490,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": ".NET 8 Planning"
+                "milestoneName": ".NET 9 Planning"
               }
             },
             {
@@ -1668,12 +1506,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment when an investigation issue moved to .NET 8 Planning",
+        "taskName": "Comment when an investigation issue moved to .NET 9 Planning",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "To learn more about what this message means, what to expect next, and how this issue will be handled you can read our [Triage Process document](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md).\nWe're moving this issue to the .NET 8 Planning milestone for future evaluation / consideration. Because it's not immediately obvious what is causing this behavior, we would like to keep this around to collect more feedback, which can later help us determine how to handle this. We will re-evaluate this issue, during our next planning meeting(s).\nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact work."
+              "comment": "To learn more about what this message means, what to expect next, and how this issue will be handled you can read our [Triage Process document](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md).\nWe're moving this issue to the .NET 9 Planning milestone for future evaluation / consideration. Because it's not immediately obvious what is causing this behavior, we would like to keep this around to collect more feedback, which can later help us determine how to handle this. We will re-evaluate this issue, during our next planning meeting(s).\nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact work."
             }
           }
         ]
@@ -2005,58 +1843,6 @@
             "name": "addReply",
             "parameters": {
               "comment": "Hi @${contextualAuthor}. It looks like you just commented on a closed PR. The team will most probably miss it. If you'd like to bring something important up to their attention, consider filing a new issue and add enough details to build context."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "opened"
-              }
-            },
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": "dotnet-maestro-bot"
-              }
-            },
-            {
-              "name": "titleContains",
-              "parameters": {
-                "titlePattern": "Merge branch"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "main"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "[Infrastructure PRs] Add auto-merge label to branch merge Pull Requests in main",
-        "actions": [
-          {
-            "name": "addLabel",
-            "parameters": {
-              "label": "auto-merge"
             }
           }
         ]
@@ -2562,11 +2348,11 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0-preview1"
+              "milestoneName": "9.0-preview1"
             }
           }
         ],
-        "taskName": "[Milestone Assignments] Assign `Current Milestone` to PRs merged to main"
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch"
       }
     },
     {
@@ -2581,7 +2367,7 @@
             {
               "name": "addedToMilestone",
               "parameters": {
-                "milestoneName": ".NET 8 Planning"
+                "milestoneName": ".NET 9 Planning"
               }
             },
             {
@@ -2602,12 +2388,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Comment when an issue is moved to `.NET 8 Planning` milestone",
+        "taskName": "Comment when an issue is moved to `.NET 9 Planning` milestone",
         "actions": [
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\n\nWe're moving this issue to the `.NET 8 Planning` milestone for future evaluation / consideration. We would like to keep this around to collect more feedback, which can help us with prioritizing this work. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
+              "comment": "Thanks for contacting us.\n\nWe're moving this issue to the `.NET 9 Planning` milestone for future evaluation / consideration. We would like to keep this around to collect more feedback, which can help us with prioritizing this work. We will re-evaluate this issue, during our next planning meeting(s). \nIf we later determine, that the issue has no community involvement, or it's very rare and low-impact issue, we will close it - so that the team can focus on more important and high impact issues.\nTo learn more about what to expect next and how this issue will be handled you can read more about our triage process [here](https://github.com/dotnet/aspnetcore/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -2652,7 +2438,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://docs.microsoft.com/en-us/aspnet/core/blazor/debug?view=aspnetcore-5.0&tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
+              "comment": "Thanks for contacting us.\nIt looks like this issue is related to debugging in Blazor WebAssembly application.\nBecause there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.\nYou can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).\nIf these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up."
             }
           }
         ]
@@ -2686,46 +2472,6 @@
             "name": "addReply",
             "parameters": {
               "comment": "Thank you for submitting this for API review. This will be reviewed by @dotnet/aspnet-api-review at the next meeting of the ASP.NET Core API Review group. Please ensure you take a look at [the API review process documentation](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md) and ensure that:\n\n* The PR contains changes to the reference-assembly that describe the API change. **Or**, you have included a snippet of reference-assembly-style code that illustrates the API change.\n* The PR describes the impact to users, both positive (useful new APIs) and negative (breaking changes).\n* Someone is assigned to \"champion\" this change in the meeting, and they understand the impact and design of the change."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "release/6.0"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Assign milestone to PRs merged to \"release/6.0\"",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "6.0.2"
             }
           }
         ]
@@ -2999,19 +2745,25 @@
                 {
                   "name": "addedToMilestone",
                   "parameters": {
+                    "milestoneName": "8.0.x"
+                  }
+                },
+                {
+                  "name": "addedToMilestone",
+                  "parameters": {
+                    "milestoneName": "7.0.x"
+                  }
+                },
+                {
+                  "name": "addedToMilestone",
+                  "parameters": {
                     "milestoneName": "6.0.x"
                   }
                 },
                 {
                   "name": "addedToMilestone",
                   "parameters": {
-                    "milestoneName": "5.0.x"
-                  }
-                },
-                {
-                  "name": "addedToMilestone",
-                  "parameters": {
-                    "milestoneName": "3.1.x"
+                    "milestoneName": "2.1.x"
                   }
                 }
               ]
@@ -3046,15 +2798,15 @@
           "operator": "and",
           "operands": [
             {
-              "name": "prTargetsBranch",
-              "parameters": {
-                "branchName": "release/3.1"
-              }
-            },
-            {
               "name": "isAction",
               "parameters": {
                 "action": "opened"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/8.0"
               }
             }
           ]
@@ -3065,12 +2817,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Add release/3.1 targeting PRs to the servicing project",
+        "taskName": "Add release/8.0 targeting PRs to the servicing project",
         "actions": [
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "3.1.x"
+              "milestoneName": "8.0.x"
             }
           },
           {
@@ -3107,7 +2859,7 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/5.0"
+                "branchName": "release/7.0"
               }
             }
           ]
@@ -3118,12 +2870,12 @@
           "issues",
           "project_card"
         ],
-        "taskName": "Add release/5.0 targeting PRs to the servicing project",
+        "taskName": "Add release/7.0 targeting PRs to the servicing project",
         "actions": [
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "5.0.x"
+              "milestoneName": "7.0.x"
             }
           },
           {
@@ -3380,46 +3132,6 @@
             {
               "name": "prTargetsBranch",
               "parameters": {
-                "branchName": "release/3.1"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/3.1 branch",
-        "actions": [
-          {
-            "name": "addMilestone",
-            "parameters": {
-              "milestoneName": "3.1.33"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "merged"
-              }
-            },
-            {
-              "name": "prTargetsBranch",
-              "parameters": {
                 "branchName": "release/6.0"
               }
             }
@@ -3434,9 +3146,13 @@
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch",
         "actions": [
           {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.13"
+              "milestoneName": "6.0.26"
             }
           }
         ]
@@ -3474,9 +3190,411 @@
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch",
         "actions": [
           {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.2"
+              "milestoneName": "7.0.15"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/8.0"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch",
+        "actions": [
+          {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "8.0.1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "Needs: Repro"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Needs: Repro] Request a minimal repro project",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Thank you for filing this issue. In order for us to investigate this issue, please provide [a minimal repro project](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) that illustrates the problem without unnecessary code. Please share with us in a public GitHub repo because we cannot open ZIP attachments, and don't include any confidential content."
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "Needs: Author Feedback"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 1,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          },
+          {
+            "weekDay": 6,
+            "hours": [
+              7,
+              19
+            ],
+            "timezoneOffset": -8
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isDraftPr",
+            "parameters": {
+              "value": "false"
+            }
+          },
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 7
+            }
+          },
+          {
+            "name": "noLabel",
+            "parameters": {
+              "label": "pending-ci-rerun"
+            }
+          }
+        ],
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Looks like this PR hasn't been active for some time and the codebase could have been changed in the meantime.\nTo make sure no conflicting changes have occurred, please rerun validation before merging. You can do this by leaving an `/azp run` comment here (requires commit rights), or by simply closing and reopening."
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "pending-ci-rerun"
+            }
+          }
+        ],
+        "taskName": "Request CI rerun for stalish PRs"
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestCommentResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "activitySenderHasPermissions",
+              "parameters": {
+                "permissions": "write"
+              }
+            },
+            {
+              "name": "commentContains",
+              "parameters": {
+                "isRegex": true,
+                "commentPattern": "^(\\/azp run)$"
+              }
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "pending-ci-rerun"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "issue_comment"
+        ],
+        "taskName": "Remove pending-ci-rerun label when CI rerun requested",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "pending-ci-rerun"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "wtgodbe"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Add area-infrastructure to wtgodbe's PRs",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "area-infrastructure"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "breaking-change"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Breaking change actions reminder",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "needs-breaking-change-announcement"
+            }
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Thanks for identifying a breaking change.\n\n${assignees}, after you commit this PR please take the following actions, as part of the breaking changes announcement process:\n\\n- [ ] Create an announcement issue by using the [ASP.NET Core breaking change](https://github.com/aspnet/Announcements/issues/new?assignees=&labels=Breaking+change&template=breaking-change.yaml&title=%5BBreaking+change%5D%3A+) issue template.\n\\n- [ ] Link the breaking change announcement issue from this PR.\n\\n- [ ] Remove the `needs-breaking-change-announcement` label."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "bodyContains",
+                  "parameters": {
+                    "bodyPattern": "[Aa][Oo][Tt]",
+                    "isRegex": true
+                  }
+                },
+                {
+                  "name": "titleContains",
+                  "parameters": {
+                    "isRegex": true,
+                    "titlePattern": "[Aa][Oo][Tt]"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Label AOT related issues appropriately",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "NativeAOT"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "help wanted"
+              }
+            },
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "labeled"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Drop a comment when a help candidate issue is identified",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Looks like this issue has been identified as a candidate for community contribution. If you're considering sending a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)"
             }
           }
         ]

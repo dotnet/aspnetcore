@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Components;
 internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
 #pragma warning restore CA1852 // Seal internal types
 {
+    private bool _stateIsPersisted;
+
     public PrerenderComponentApplicationStore()
     {
         ExistingState = new();
@@ -18,10 +21,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
     public PrerenderComponentApplicationStore(string existingState)
     {
-        if (existingState is null)
-        {
-            throw new ArgumentNullException(nameof(existingState));
-        }
+        ArgumentNullException.ThrowIfNull(existingState);
 
         DeserializeState(Convert.FromBase64String(existingState));
     }
@@ -55,7 +55,21 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
     {
-        PersistedState = Convert.ToBase64String(SerializeState(state));
+        if (_stateIsPersisted)
+        {
+            throw new InvalidOperationException("State already persisted.");
+        }
+
+        _stateIsPersisted = true;
+
+        if (state is not null && state.Count > 0)
+        {
+            PersistedState = Convert.ToBase64String(SerializeState(state));
+        }
+
         return Task.CompletedTask;
     }
+
+    public virtual bool SupportsRenderMode(IComponentRenderMode renderMode) =>
+        renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
 }

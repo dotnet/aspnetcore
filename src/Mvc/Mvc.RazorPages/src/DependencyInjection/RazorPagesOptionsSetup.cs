@@ -18,10 +18,7 @@ internal sealed class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptio
 
     public void Configure(RazorPagesOptions options)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         options.Conventions = new PageConventionCollection(_serviceProvider);
     }

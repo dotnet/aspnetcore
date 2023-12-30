@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http;
 /// </summary>
 /// <remarks>
 /// Descriptions for status codes are available from
-/// <see cref="M:Microsoft.AspNetCore.WebUtilitiesReasonPhrases.GetReasonPhrase(Int32)" />.
+/// <see cref="M:Microsoft.AspNetCore.WebUtilities.ReasonPhrases.GetReasonPhrase(Int32)" />.
 /// </remarks>
 public static class StatusCodes
 {
@@ -282,6 +282,12 @@ public static class StatusCodes
     /// HTTP status code 451.
     /// </summary>
     public const int Status451UnavailableForLegalReasons = 451;
+
+    /// <summary>
+    /// HTTP status code 499. This is an unofficial status code originally defined by Nginx and is commonly used
+    /// in logs when the client has disconnected.
+    /// </summary>
+    public const int Status499ClientClosedRequest = 499;
 
     /// <summary>
     /// HTTP status code 500.

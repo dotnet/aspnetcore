@@ -32,6 +32,24 @@ public class InferParameterBindingInfoConventionTest
     }
 
     [Fact]
+    public void Apply_DoesNotInferBindingSourceFor_ComplexType_WithPropertiesWithBindingSource()
+    {
+        // Arrange
+        var actionName = nameof(ParameterBindingController.CompositeComplexTypeModel);
+        var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+        var convention = GetConvention(modelMetadataProvider);
+        var action = GetActionModel(typeof(ParameterBindingController), actionName);
+
+        // Act
+        convention.Apply(action);
+
+        // Assert
+        var parameterModel = Assert.Single(action.Parameters);
+        Assert.NotNull(parameterModel.BindingInfo);
+        Assert.Null(parameterModel.BindingInfo.BindingSource);
+    }
+
+    [Fact]
     public void InferParameterBindingSources_Throws_IfMultipleParametersAreInferredAsBodyBound()
     {
         // Arrange
@@ -953,6 +971,9 @@ Environment.NewLine + "int b";
         public IActionResult ComplexTypeModel(TestModel model) => null;
 
         [HttpPut("put-action/{id}")]
+        public IActionResult CompositeComplexTypeModel(CompositeTestModel model) => null;
+
+        [HttpPut("put-action/{id}")]
         public IActionResult SimpleTypeModel(ConvertibleFromString model) => null;
 
         [HttpPost("form-file")]
@@ -1093,6 +1114,14 @@ Environment.NewLine + "int b";
     }
 
     private class TestModel { }
+
+    private class CompositeTestModel
+    {
+        [FromQuery]
+        public int Id { get; set; }
+
+        public TestModel TestModel { get; set; }
+    }
 
     [TypeConverter(typeof(ConvertibleFromStringConverter))]
     private class ConvertibleFromString { }

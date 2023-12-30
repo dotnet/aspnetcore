@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Graph = Microsoft.Graph;
 #endif
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web.Resource;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
         .EnableTokenAcquisitionToCallDownstreamApi()
 #if (GenerateApi)
-            .AddDownstreamWebApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
+            .AddDownstreamApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
 #endif
 #if (GenerateGraph)
             .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamApi"))
@@ -32,7 +33,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 #if (GenerateApi)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"))
         .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddDownstreamWebApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
+            .AddDownstreamApi("DownstreamApi", builder.Configuration.GetSection("DownstreamApi"))
             .AddInMemoryTokenCaches();
 #else
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
@@ -68,11 +69,11 @@ var summaries = new[]
 };
 
 #if (GenerateApi)
-app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamWebApi downstreamWebApi) =>
+app.MapGet("/weatherforecast", async (HttpContext httpContext, IDownstreamApi downstreamApi) =>
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    using var response = await downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+    using var response = await downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
     if (response.StatusCode == System.Net.HttpStatusCode.OK)
     {
         var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -99,7 +100,7 @@ app.MapGet("/weatherforecast", async (HttpContext httpContext, Graph.GraphServic
 {
     httpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-    var user = await graphServiceClient.Me.Request().GetAsync();
+    var user = await graphServiceClient.Me.GetAsync();
 
     var forecast =  Enumerable.Range(1, 5).Select(index =>
         new WeatherForecast

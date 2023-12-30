@@ -2,11 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- EXTEXP0003: MetricCollector is experimental -->
+    <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
+    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Microsoft.AspNetCore.Hosting.StaticWebAssets.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -20,6 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 

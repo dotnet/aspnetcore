@@ -24,10 +24,7 @@ public class DefaultCorsPolicyProvider : ICorsPolicyProvider
     /// <inheritdoc />
     public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         policyName ??= _options.DefaultPolicyName;
         if (_options.PolicyMap.TryGetValue(policyName, out var result))

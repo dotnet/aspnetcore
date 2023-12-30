@@ -121,6 +121,18 @@ public class OutputCacheAttributeTests
         Assert.DoesNotContain("RouteB", (IEnumerable<string>)context.CacheVaryByRules.RouteValueNames);
     }
 
+    [Fact]
+    public async Task Attribute_CreatesTagsPolicy()
+    {
+        var context = TestUtils.CreateUninitializedContext();
+        var attribute = OutputCacheMethods.GetAttribute(nameof(OutputCacheMethods.Tags));
+        await attribute.BuildPolicy().CacheRequestAsync(context, cancellation: default);
+
+        Assert.True(context.EnableOutputCaching);
+        Assert.Contains("Tag1", (IEnumerable<string>)context.Tags);
+        Assert.Contains("Tag2", (IEnumerable<string>)context.Tags);
+    }
+
     private class OutputCacheMethods
     {
         public static OutputCacheAttribute GetAttribute(string methodName)
@@ -148,5 +160,8 @@ public class OutputCacheAttributeTests
 
         [OutputCache(VaryByRouteValueNames = new[] { "RouteA", "RouteC" })]
         public static void VaryByRouteValueNames() { }
+
+        [OutputCache(Tags = new[] { "Tag1", "Tag2" })]
+        public static void Tags() { }
     }
 }

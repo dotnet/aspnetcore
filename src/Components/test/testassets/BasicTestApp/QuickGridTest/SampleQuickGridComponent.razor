@@ -1,0 +1,93 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+
+<h3>Sample QuickGrid Component</h3>
+
+<div id="grid">
+    <QuickGrid Items="@FilteredPeople" Pagination="@pagination" custom-attrib="somevalue" class="custom-class-attrib">
+        <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.firstName)" Sortable="true">
+                <ColumnOptions>
+                    <div class="search-box">
+                        <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
+                    </div>
+                </ColumnOptions>
+         </PropertyColumn>
+        <PropertyColumn Property="@(p => p.lastName)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
+        <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true"/>
+    </QuickGrid>
+</div>
+<Paginator State="@pagination" />
+
+@code {
+    record Person(int PersonId, string firstName, string lastName, DateOnly BirthDate);
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    string firstNameFilter;
+
+    int ComputeAge(DateOnly birthDate)
+        => DateTime.Now.Year - birthDate.Year - (birthDate.DayOfYear < DateTime.Now.DayOfYear ? 0 : 1);
+
+    IQueryable<Person> FilteredPeople
+    {
+        get
+        {
+            var result = people;
+
+            if (!string.IsNullOrEmpty(firstNameFilter))
+            {
+                result = result.Where(p => p.firstName.Contains(firstNameFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            return result;
+        }
+    }
+
+    // Changes to this list affect the E2E tests.
+    // If you change this list, you must also update the E2E tests.
+    IQueryable<Person> people = new[]
+    {
+        new Person(11203, "Julie", "Smith", new DateOnly(1958, 10, 10)),
+        new Person(11205, "Nur", "Sari", new DateOnly(1922, 4, 27)),
+        new Person(11898, "Jose", "Hernandez", new DateOnly(2011, 5, 3)),
+        new Person(10895, "Jean", "Martin", new DateOnly(1985, 3, 16)),
+        new Person(10944, "António", "Langa", new DateOnly(1991, 12, 1)),
+        new Person(12130, "Kenji", "Sato", new DateOnly(2004, 1, 9)),
+        new Person(12238, "Sven", "Ottlieb", new DateOnly(1973, 11, 15)),
+        new Person(12345, "Liu", "Wang", new DateOnly(1999, 6, 30)),
+        new Person(12346, "Giovanni", "Rovelli", new DateOnly(2000, 7, 31)),
+        new Person(12347, "Eduardo", "Martins", new DateOnly(2001, 8, 1)),
+        new Person(12348, "Martín", "Sommer", new DateOnly(2002, 9, 2)),
+        new Person(12349, "Victoria", "Ashworth", new DateOnly(2003, 10, 3)),
+        new Person(12350, "Hannah", "Moos", new DateOnly(2004, 11, 4)),
+        new Person(12351, "Palle", "Ibsen", new DateOnly(2005, 12, 5)),
+        new Person(12352, "Lúcia", "Carvalho", new DateOnly(2006, 1, 6)),
+        new Person(12353, "Horst", "Kloss", new DateOnly(2007, 2, 7)),
+        new Person(12354, "Sergio", "Gutiérrez", new DateOnly(2008, 3, 8)),
+        new Person(12355, "Janine", "Labrune", new DateOnly(2009, 4, 9)),
+        new Person(12356, "Ann", "Devon", new DateOnly(2010, 5, 10)),
+        new Person(12357, "Roland", "Mendel", new DateOnly(2011, 6, 11)),
+        new Person(12358, "Aria", "Cruz", new DateOnly(2012, 7, 12)),
+        new Person(12359, "Diego", "Roel", new DateOnly(2001, 8, 13)),
+        new Person(12360, "Martine", "Rancé", new DateOnly(2005, 9, 14)),
+        new Person(12361, "Maria", "Larsson", new DateOnly(1998, 10, 15)),
+        new Person(12362, "Peter", "Lewis", new DateOnly(2016, 11, 16)),
+        new Person(12363, "Carine", "Schmitt", new DateOnly(2017, 12, 13)),
+        new Person(12364, "Paolo", "Accorti", new DateOnly(2018, 5, 18)),
+        new Person(12365, "Lino", "Rodriguez", new DateOnly(1980, 2, 19)),
+        new Person(12367, "Bernardo", "Batista", new DateOnly(1979, 4, 21)),
+        new Person(12368, "Lúcia", "Carvalho", new DateOnly(1976, 5, 22)),
+        new Person(12369, "Guillermo", "Fernández", new DateOnly(1983, 6, 23)),
+        new Person(12370, "Georg", "Pipps", new DateOnly(1982, 7, 24)),
+        new Person(12371, "Mario", "Pontes", new DateOnly(1981, 8, 25)),
+        new Person(12372, "Anabela", "Camino", new DateOnly(1980, 9, 26)),
+        new Person(12380, "Karl", "Jablonski", new DateOnly(1981, 5, 3)),
+        new Person(12381, "Matti", "Karttunen", new DateOnly(1981, 6, 4)),
+        new Person(12373, "Helvetius", "Nagy", new DateOnly(1980, 10, 27)),
+        new Person(12374, "Rita", "Müller", new DateOnly(1980, 11, 28)),
+        new Person(12375, "Pirkko", "Koskitalo", new DateOnly(1980, 12, 29)),
+        new Person(12376, "Paula", "Parente", new DateOnly(1981, 1, 30)),
+        new Person(12377, "Karl", "Jablonski", new DateOnly(1981, 2, 10)),
+        new Person(12378, "Matti", "Karttunen", new DateOnly(1981, 3, 1)),
+        new Person(12379, "Zbyszek", "Piestrzeniewicz", new DateOnly(1981, 4, 2)),
+    }.AsQueryable();
+}

@@ -45,10 +45,7 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// </summary>
     public void EnableLdap(string domain)
     {
-        if (string.IsNullOrEmpty(domain))
-        {
-            throw new ArgumentNullException(nameof(domain));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(domain);
 
         LdapSettings.EnableLdapClaimResolution = true;
         LdapSettings.Domain = domain;
@@ -60,10 +57,7 @@ public class NegotiateOptions : AuthenticationSchemeOptions
     /// </summary>
     public void EnableLdap(Action<LdapSettings> configureSettings)
     {
-        if (configureSettings == null)
-        {
-            throw new ArgumentNullException(nameof(configureSettings));
-        }
+        ArgumentNullException.ThrowIfNull(configureSettings);
 
         LdapSettings.EnableLdapClaimResolution = true;
         configureSettings(LdapSettings);

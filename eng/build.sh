@@ -36,6 +36,8 @@ runtime_source_feed_key=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
+elif [ "$(uname)" = "FreeBSD" ]; then
+    target_os_name='freebsd'
 else
     target_os_name='linux'
 fi

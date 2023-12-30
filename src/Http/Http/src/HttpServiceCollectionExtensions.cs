@@ -18,10 +18,7 @@ public static class HttpServiceCollectionExtensions
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddHttpContextAccessor(this IServiceCollection services)
     {
-        if (services == null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         return services;

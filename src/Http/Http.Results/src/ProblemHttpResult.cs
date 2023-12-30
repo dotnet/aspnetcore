@@ -46,12 +46,13 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
     int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(HttpContext httpContext)
+    public async Task ExecuteAsync(HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(ProblemHttpResult));
+        var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
 
         if (StatusCode is { } code)
         {
@@ -59,10 +60,13 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
             httpContext.Response.StatusCode = code;
         }
 
-        return HttpResultsHelper.WriteResultAsJsonAsync(
+        if (problemDetailsService is null || !await problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = ProblemDetails }))
+        {
+            await HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger,
                 value: ProblemDetails,
                 ContentType);
+        }
     }
 }

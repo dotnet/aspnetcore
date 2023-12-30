@@ -172,7 +172,7 @@ internal class TestUtils
                             {
                                 responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
                                 responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
-                                responseCachingOptions.SystemClock = options.SystemClock;
+                                responseCachingOptions.TimeProvider = options.TimeProvider;
                             }
                         });
                     })
@@ -262,15 +262,8 @@ internal static class HttpResponseWritingExtensions
 {
     internal static void Write(this HttpResponse response, string text)
     {
-        if (response == null)
-        {
-            throw new ArgumentNullException(nameof(response));
-        }
-
-        if (text == null)
-        {
-            throw new ArgumentNullException(nameof(text));
-        }
+        ArgumentNullException.ThrowIfNull(response);
+        ArgumentNullException.ThrowIfNull(text);
 
         byte[] data = Encoding.UTF8.GetBytes(text);
         response.Body.Write(data, 0, data.Length);
@@ -395,9 +388,4 @@ internal class TestResponseCache : IResponseCache
         SetCount++;
         _storage[key] = entry;
     }
-}
-
-internal class TestClock : ISystemClock
-{
-    public DateTimeOffset UtcNow { get; set; }
 }

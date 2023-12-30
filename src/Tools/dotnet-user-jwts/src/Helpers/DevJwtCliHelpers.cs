@@ -25,26 +25,10 @@ internal static class DevJwtCliHelpers
         return id;
     }
 
-    public static string GetProject(string projectPath = null)
-    {
-        if (projectPath is not null)
-        {
-            return projectPath;
-        }
-
-        var csprojFiles = Directory.EnumerateFileSystemEntries(Directory.GetCurrentDirectory(), "*.*proj", SearchOption.TopDirectoryOnly)
-                .Where(f => !".xproj".Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        if (csprojFiles is [var path])
-        {
-            return path;
-        }
-        return null;
-    }
-
     public static bool GetProjectAndSecretsId(string projectPath, IReporter reporter, out string project, out string userSecretsId)
     {
-        project = GetProject(projectPath);
+        var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
+        project = finder.FindMsBuildProject(projectPath);
         userSecretsId = null;
         if (project == null)
         {

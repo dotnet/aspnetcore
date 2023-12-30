@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino;
 /// </summary>
 public class BlazorWindow
 {
-    private readonly PhotinoWindow _window;
     private readonly PhotinoWebViewManager _manager;
+    private readonly string _pathBase;
 
     /// <summary>
     /// Constructs an instance of <see cref="BlazorWindow"/>.
@@ -22,17 +22,25 @@ public class BlazorWindow
     /// <param name="hostPage">The path to the host page.</param>
     /// <param name="services">The service provider.</param>
     /// <param name="configureWindow">A callback that configures the window.</param>
+    /// <param name="pathBase">The pathbase for the application. URLs will be resolved relative to this.</param>
     public BlazorWindow(
         string title,
         string hostPage,
         IServiceProvider services,
-        Action<PhotinoWindowOptions>? configureWindow = null)
+        Action<PhotinoWindow>? configureWindow = null,
+        string? pathBase = null)
     {
-        _window = new PhotinoWindow(title, options =>
+        PhotinoWindow = new PhotinoWindow
         {
-            options.CustomSchemeHandlers.Add(PhotinoWebViewManager.BlazorAppScheme, HandleWebRequest);
-            configureWindow?.Invoke(options);
-        }, width: 1600, height: 1200, left: 300, top: 300);
+            Title = title,
+            Width = 1600,
+            Height = 1200,
+            Left = 300,
+            Top = 300,
+        };
+        PhotinoWindow.RegisterCustomSchemeHandler(PhotinoWebViewManager.BlazorAppScheme, HandleWebRequest);
+
+        configureWindow?.Invoke(PhotinoWindow);
 
         // We assume the host page is always in the root of the content directory, because it's
         // unclear there's any other use case. We can add more options later if so.
@@ -40,16 +48,24 @@ public class BlazorWindow
         var hostPageRelativePath = Path.GetRelativePath(contentRootDir, hostPage);
         var fileProvider = new PhysicalFileProvider(contentRootDir);
 
-        var dispatcher = new PhotinoDispatcher(_window);
+        var dispatcher = new PhotinoDispatcher(PhotinoWindow);
         var jsComponents = new JSComponentConfigurationStore();
-        _manager = new PhotinoWebViewManager(_window, services, dispatcher, new Uri(PhotinoWebViewManager.AppBaseUri), fileProvider, jsComponents, hostPageRelativePath);
+
+        _pathBase = (pathBase ?? string.Empty);
+        if (!_pathBase.EndsWith('/'))
+        {
+            _pathBase += "/";
+        }
+        var appBaseUri = new Uri(new Uri(PhotinoWebViewManager.AppBaseOrigin), _pathBase);
+
+        _manager = new PhotinoWebViewManager(PhotinoWindow, services, dispatcher, appBaseUri, fileProvider, jsComponents, hostPageRelativePath);
         RootComponents = new BlazorWindowRootComponents(_manager, jsComponents);
     }
 
     /// <summary>
-    /// Gets the underlying <see cref="PhotinoWindow"/>.
+    /// Gets the underlying <see cref="PhotinoNET.PhotinoWindow"/>.
     /// </summary>
-    public PhotinoWindow Photino => _window;
+    public PhotinoWindow PhotinoWindow { get; }
 
     /// <summary>
     /// Gets configuration for the root components in the window.
@@ -61,10 +77,13 @@ public class BlazorWindow
     /// </summary>
     public void Run()
     {
-        _manager.Navigate("/");
-        _window.WaitForClose();
+        _manager.Navigate(_pathBase);
+
+        // This line actually starts Photino and makes the window appear
+        Console.WriteLine($"Starting Photino window...");
+        PhotinoWindow.WaitForClose();
     }
 
-    private Stream HandleWebRequest(string url, out string contentType)
+    private Stream HandleWebRequest(object sender, string scheme, string url, out string contentType)
         => _manager.HandleWebRequest(url, out contentType!)!;
 }

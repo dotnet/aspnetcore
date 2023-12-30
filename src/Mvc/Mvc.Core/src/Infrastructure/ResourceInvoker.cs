@@ -496,28 +496,32 @@ internal abstract partial class ResourceInvoker
                     Debug.Assert(_resourceExecutingContext != null);
 
                     var filter = (IAsyncResourceFilter)state;
-                    if (_resourceExecutedContext == null)
+                    try
                     {
-                        // If we get here then the filter didn't call 'next' indicating a short circuit.
-                        _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
+                        if (_resourceExecutedContext == null)
                         {
-                            Canceled = true,
-                            Result = _resourceExecutingContext.Result,
-                        };
+                            // If we get here then the filter didn't call 'next' indicating a short circuit.
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
+                            {
+                                Canceled = true,
+                                Result = _resourceExecutingContext.Result,
+                            };
 
+                            // A filter could complete a Task without setting a result
+                            if (_resourceExecutingContext.Result != null)
+                            {
+                                goto case State.ResourceShortCircuit;
+                            }
+                        }
+                    }
+                    finally
+                    {
                         _diagnosticListener.AfterOnResourceExecution(_resourceExecutedContext, filter);
                         _logger.AfterExecutingMethodOnFilter(
                             FilterTypeConstants.ResourceFilter,
                             nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
                             filter);
-
-                        // A filter could complete a Task without setting a result
-                        if (_resourceExecutingContext.Result != null)
-                        {
-                            goto case State.ResourceShortCircuit;
-                        }
                     }
-
                     goto case State.ResourceEnd;
                 }
 

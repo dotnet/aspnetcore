@@ -1,0 +1,16 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@*#if (IndividualLocalAuth)
+@using Microsoft.AspNetCore.Components.Authorization
+##endif*@
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using BlazorWeb_CSharp
+@*#if (UseWebAssembly) -->
+@using BlazorWeb_CSharp.Client
+##endif*@
+@using BlazorWeb_CSharp.Components

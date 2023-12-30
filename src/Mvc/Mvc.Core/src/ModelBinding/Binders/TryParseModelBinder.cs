@@ -32,15 +32,8 @@ internal sealed class TryParseModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public TryParseModelBinder(Type modelType, ILoggerFactory loggerFactory)
     {
-        if (modelType == null)
-        {
-            throw new ArgumentNullException(nameof(modelType));
-        }
-
-        if (loggerFactory == null)
-        {
-            throw new ArgumentNullException(nameof(loggerFactory));
-        }
+        ArgumentNullException.ThrowIfNull(modelType);
+        ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _tryParseOperation = CreateTryParseOperation(modelType);
         _logger = loggerFactory.CreateLogger<TryParseModelBinder>();
@@ -49,10 +42,7 @@ internal sealed class TryParseModelBinder : IModelBinder
     /// <inheritdoc />
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
         _logger.AttemptingToBindModel(bindingContext);
 
@@ -137,8 +127,8 @@ internal sealed class TryParseModelBinder : IModelBinder
         var modelValue = Expression.Variable(typeof(object), "model");
 
         var expression = Expression.Block(
-            new[] { parsedValue, modelValue, ParameterBindingMethodCache.TempSourceStringExpr },
-            Expression.Assign(ParameterBindingMethodCache.TempSourceStringExpr, ValueExpression),
+            new[] { parsedValue, modelValue, ParameterBindingMethodCache.SharedExpressions.TempSourceStringExpr },
+            Expression.Assign(ParameterBindingMethodCache.SharedExpressions.TempSourceStringExpr, ValueExpression),
             Expression.IfThenElse(tryParseMethodExpession(parsedValue, CultureExpression),
                 Expression.Block(
                     Expression.Assign(modelValue, Expression.Convert(parsedValue, modelValue.Type)),

@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@namespace Microsoft.AspNetCore.Components.QuickGrid
+@typeparam TGridItem
+@{
+    InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
+}
+
+@code
+{
+    private void RenderDefaultHeaderContent(RenderTreeBuilder __builder)
+    {
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate(this)
+        }
+        else
+        {
+            @if (ColumnOptions is not null && (Align != Align.Right && Align != Align.End))
+            {
+                <button class="col-options-button" type="button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+            }
+
+            if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
+            {
+                <button class="col-title" type="button" @onclick="@(() => Grid.SortByColumnAsync(this))">
+                    <div class="col-title-text">@Title</div>
+                    <div class="sort-indicator" aria-hidden="true"></div>
+                </button>
+            }
+            else
+            {
+                <div class="col-title">
+                    <div class="col-title-text">@Title</div>
+                </div>
+            }
+
+            @if (ColumnOptions is not null && (Align == Align.Right || Align == Align.End))
+            {
+                <button class="col-options-button" type="button" @onclick="@(() => Grid.ShowColumnOptionsAsync(this))"></button>
+            }
+        }
+    }
+
+    internal void RenderPlaceholderContent(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
+    {
+        // Blank if no placeholder template was supplied, as it's enough to style with CSS by default
+        if (PlaceholderTemplate is not null)
+        {
+            @PlaceholderTemplate(placeholderContext)
+        }
+    }
+}

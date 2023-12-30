@@ -23,10 +23,7 @@ public static class FileServerExtensions
     /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseFileServer(new FileServerOptions());
     }
@@ -43,10 +40,7 @@ public static class FileServerExtensions
     /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, bool enableDirectoryBrowsing)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
+        ArgumentNullException.ThrowIfNull(app);
 
         return app.UseFileServer(new FileServerOptions
         {
@@ -66,15 +60,8 @@ public static class FileServerExtensions
     /// </remarks>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, string requestPath)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-
-        if (requestPath == null)
-        {
-            throw new ArgumentNullException(nameof(requestPath));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(requestPath);
 
         return app.UseFileServer(new FileServerOptions
         {
@@ -90,14 +77,8 @@ public static class FileServerExtensions
     /// <returns></returns>
     public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, FileServerOptions options)
     {
-        if (app == null)
-        {
-            throw new ArgumentNullException(nameof(app));
-        }
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(options);
 
         if (options.EnableDefaultFiles)
         {

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ComponentsWebAssembly-CSharp</title>
+    <base href="/" />
+    <!--#if SampleContent -->
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <!--#endif -->
+    <link rel="stylesheet" href="css/app.css" />
+    <!--#if SampleContent -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="ComponentsWebAssembly-CSharp.styles.css" rel="stylesheet" />
+    <!--#else -->
+    <!-- If you add any scoped CSS files, uncomment the following to load them
+    <link href="ComponentsWebAssembly-CSharp.styles.css" rel="stylesheet" /> -->
+    <!--#endif -->
+    <!--#if PWA -->
+    <link href="manifest.webmanifest" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+    <!--#endif -->
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+<!--#if (IndividualLocalAuth)  -->
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+<!--#endif  -->
+<!--#if (IndividualB2CAuth || OrganizationalAuth)  -->
+    <script src="_content/Microsoft.Authentication.WebAssembly.Msal/AuthenticationService.js"></script>
+<!--#endif  -->
+    <script src="_framework/blazor.webassembly.js"></script>
+    <!--#if PWA -->
+    <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <!--#endif -->
+</body>
+
+</html>

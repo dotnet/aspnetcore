@@ -3,8 +3,6 @@
   <String Id="Caption">[WixBundleName]安裝程式</String>
   <String Id="Title">[BundleNameShort]</String>
   <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallHeader">歡迎</String>
-  <String Id="InstallMessage">安裝程式將在電腦上安裝 [WixBundleName]。請按一下 [\[]安裝[\]] 以繼續，該選項會設定安裝目錄，或按一下 [\[]關閉[\]] 以結束。</String>
   <String Id="InstallVersion">版本 [WixBundleVersion]</String>
   <String Id="ConfirmCancelMessage">您確定要取消嗎?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">前一版</String>
@@ -18,16 +16,9 @@
 /norestart   - 隱藏任何重新啟動嘗試。根據預設，UI 會在重新啟動之前提示。
 /log log.txt - 記錄至特定檔案。預設會在 %TEMP% 建立記錄檔。</String>
   <String Id="HelpCloseButton">關閉(&amp;C)</String>
-  <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;授權條款&lt;/a&gt;。</String>
   <String Id="InstallAcceptCheckbox">我同意授權條款及條件(&amp;A)</String>
-  <String Id="InstallOptionsButton">選項(&amp;O)</String>
   <String Id="InstallInstallButton">安裝(&amp;I)</String>
   <String Id="InstallCloseButton">關閉(&amp;C)</String>
-  <String Id="OptionsHeader">安裝選項</String>
-  <String Id="OptionsLocationLabel">安裝位置: </String>
-  <String Id="OptionsBrowseButton">瀏覽(&amp;B)</String>
-  <String Id="OptionsOkButton">確定(&amp;O)</String>
-  <String Id="OptionsCancelButton">取消(&amp;C)</String>
   <String Id="ProgressHeader">安裝進度</String>
   <String Id="ProgressLabel">處理中: </String>
   <String Id="OverallProgressPackageText">正在初始化...</String>

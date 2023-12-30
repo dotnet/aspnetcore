@@ -4,6 +4,6 @@
   <PropertyGroup>
     <RestoreAdditionalProjectSources>${RestoreAdditionalProjectSources}</RestoreAdditionalProjectSources>
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
-    <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
+    <UserRuntimeConfig Condition="'$(PublishAot)' != 'true'">$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
   </PropertyGroup>
 </Project>

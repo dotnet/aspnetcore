@@ -32,10 +32,7 @@ internal sealed class DefaultControllerPropertyActivator : IControllerPropertyAc
 
     public Action<ControllerContext, object> GetActivatorDelegate(ControllerActionDescriptor actionDescriptor)
     {
-        if (actionDescriptor == null)
-        {
-            throw new ArgumentNullException(nameof(actionDescriptor));
-        }
+        ArgumentNullException.ThrowIfNull(actionDescriptor);
 
         var controllerType = actionDescriptor.ControllerTypeInfo?.AsType();
         if (controllerType == null)

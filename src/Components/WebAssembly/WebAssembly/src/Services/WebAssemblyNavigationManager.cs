@@ -52,10 +52,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
-        if (uri == null)
-        {
-            throw new ArgumentNullException(nameof(uri));
-        }
+        ArgumentNullException.ThrowIfNull(uri);
 
         _ = PerformNavigationAsync();
 
@@ -82,13 +79,19 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         }
     }
 
+    /// <inheritdoc />
+    public override void Refresh(bool forceReload = false)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);
+    }
+
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
     {
         Log.NavigationFailed(_logger, context.TargetLocation, ex);
     }
 
     protected override void SetNavigationLockState(bool value)
-        => DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.SetHasLocationChangingListeners, value);
+        => InternalJSImportMethods.Instance.NavigationManager_SetHasLocationChangingListeners((int)WebRendererId.WebAssembly, value);
 
     private static partial class Log
     {

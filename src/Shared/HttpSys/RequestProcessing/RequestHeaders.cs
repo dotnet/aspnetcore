@@ -2,13 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal sealed partial class RequestHeaders : IHeaderDictionary
 {
     private IDictionary<string, StringValues>? _extra;
@@ -66,6 +70,11 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
 
     void IDictionary<string, StringValues>.Add(string key, StringValues value)
     {
+        if (ContainsKey(key))
+        {
+            ThrowDuplicateKeyException();
+        }
+
         if (!PropertiesTrySetValue(key, value))
         {
             Extra.Add(key, value);
@@ -216,7 +225,7 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         }
         set
         {
-            if (StringValues.IsNullOrEmpty(value))
+            if (value.Count == 0)
             {
                 Remove(key);
             }
@@ -251,6 +260,11 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         }
     }
 
+    private static void ThrowDuplicateKeyException()
+    {
+        throw new ArgumentException("An item with the same key has already been added.");
+    }
+
     public IEnumerable<string> GetValues(string key)
     {
         StringValues values;
@@ -266,7 +280,7 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         int observedHeadersCount = 0;
         for (int i = 0; i < HeaderKeys.Length; i++)
         {
-            var header = (HttpSysRequestHeader)HeaderKeys[i];
+            var header = HeaderKeys[i];
             if (HasKnownHeader(header))
             {
                 observedHeaders[observedHeadersCount++] = GetHeaderKeyName(header);
@@ -280,7 +294,7 @@ internal sealed partial class RequestHeaders : IHeaderDictionary
         int observedHeadersCount = 0;
         for (int i = 0; i < HeaderKeys.Length; i++)
         {
-            var header = (HttpSysRequestHeader)HeaderKeys[i];
+            var header = HeaderKeys[i];
             if (HasKnownHeader(header))
             {
                 observedHeadersCount++;

@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.Endpoint.set -> void
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary?
-Microsoft.AspNetCore.Diagnostics.StatusCodeReExecuteFeature.RouteValues.set -> void

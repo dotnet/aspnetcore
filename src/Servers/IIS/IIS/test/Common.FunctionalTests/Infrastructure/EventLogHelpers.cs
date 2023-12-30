@@ -262,6 +262,11 @@ public class EventLogHelpers
         }
     }
 
+    public static string InProcessFailedToFindApplication()
+    {
+        return "Provided application path does not exist, or isn't a .dll or .exe.";
+    }
+
     public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)
     {
         if (DeployerSelector.HasNewShim)

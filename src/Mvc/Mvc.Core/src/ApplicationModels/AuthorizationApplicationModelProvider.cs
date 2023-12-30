@@ -30,10 +30,7 @@ internal sealed class AuthorizationApplicationModelProvider : IApplicationModelP
 
     public void OnProvidersExecuting(ApplicationModelProviderContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (_mvcOptions.EnableEndpointRouting)
         {

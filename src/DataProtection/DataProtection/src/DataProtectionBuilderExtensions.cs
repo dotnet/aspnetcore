@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -38,10 +39,7 @@ public static class DataProtectionBuilderExtensions
     /// </remarks>
     public static IDataProtectionBuilder SetApplicationName(this IDataProtectionBuilder builder, string applicationName)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         builder.Services.Configure<DataProtectionOptions>(options =>
         {
@@ -62,15 +60,8 @@ public static class DataProtectionBuilderExtensions
     /// </remarks>
     public static IDataProtectionBuilder AddKeyEscrowSink(this IDataProtectionBuilder builder, IKeyEscrowSink sink)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (sink == null)
-        {
-            throw new ArgumentNullException(nameof(sink));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(sink);
 
         builder.Services.Configure<KeyManagementOptions>(options =>
         {
@@ -92,10 +83,7 @@ public static class DataProtectionBuilderExtensions
     public static IDataProtectionBuilder AddKeyEscrowSink<TImplementation>(this IDataProtectionBuilder builder)
         where TImplementation : class, IKeyEscrowSink
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -120,15 +108,8 @@ public static class DataProtectionBuilderExtensions
     /// </remarks>
     public static IDataProtectionBuilder AddKeyEscrowSink(this IDataProtectionBuilder builder, Func<IServiceProvider, IKeyEscrowSink> factory)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (factory == null)
-        {
-            throw new ArgumentNullException(nameof(factory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(factory);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -150,15 +131,8 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder AddKeyManagementOptions(this IDataProtectionBuilder builder, Action<KeyManagementOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -175,10 +149,7 @@ public static class DataProtectionBuilderExtensions
     /// </remarks>
     public static IDataProtectionBuilder DisableAutomaticKeyGeneration(this IDataProtectionBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         builder.Services.Configure<KeyManagementOptions>(options =>
         {
@@ -196,15 +167,8 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder PersistKeysToFileSystem(this IDataProtectionBuilder builder, DirectoryInfo directory)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (directory == null)
-        {
-            throw new ArgumentNullException(nameof(directory));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(directory);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -227,15 +191,8 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder PersistKeysToRegistry(this IDataProtectionBuilder builder, RegistryKey registryKey)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (registryKey == null)
-        {
-            throw new ArgumentNullException(nameof(registryKey));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(registryKey);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -257,15 +214,8 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder ProtectKeysWithCertificate(this IDataProtectionBuilder builder, X509Certificate2 certificate)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (certificate == null)
-        {
-            throw new ArgumentNullException(nameof(certificate));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(certificate);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -289,15 +239,8 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder ProtectKeysWithCertificate(this IDataProtectionBuilder builder, string thumbprint)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (thumbprint == null)
-        {
-            throw new ArgumentNullException(nameof(thumbprint));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(thumbprint);
 
         // Make sure the thumbprint corresponds to a valid certificate.
         if (new CertificateResolver().ResolveCertificate(thumbprint) == null)
@@ -330,10 +273,7 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder UnprotectKeysWithAnyCertificate(this IDataProtectionBuilder builder, params X509Certificate2[] certificates)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         builder.Services.Configure<XmlKeyDecryptionOptions>(o =>
         {
@@ -361,10 +301,7 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder ProtectKeysWithDpapi(this IDataProtectionBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         return builder.ProtectKeysWithDpapi(protectToLocalMachine: false);
     }
@@ -384,10 +321,7 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder ProtectKeysWithDpapi(this IDataProtectionBuilder builder, bool protectToLocalMachine)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -415,10 +349,7 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder ProtectKeysWithDpapiNG(this IDataProtectionBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         return builder.ProtectKeysWithDpapiNG(
             protectionDescriptorRule: DpapiNGXmlEncryptor.GetDefaultProtectionDescriptorString(),
@@ -443,15 +374,8 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder ProtectKeysWithDpapiNG(this IDataProtectionBuilder builder, string protectionDescriptorRule, DpapiNGProtectionDescriptorFlags flags)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (protectionDescriptorRule == null)
-        {
-            throw new ArgumentNullException(nameof(protectionDescriptorRule));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(protectionDescriptorRule);
 
         builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
@@ -476,10 +400,7 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder SetDefaultKeyLifetime(this IDataProtectionBuilder builder, TimeSpan lifetime)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         if (lifetime < TimeSpan.Zero)
         {
@@ -503,15 +424,8 @@ public static class DataProtectionBuilderExtensions
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder UseCryptographicAlgorithms(this IDataProtectionBuilder builder, AuthenticatedEncryptorConfiguration configuration)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
     }
@@ -532,15 +446,8 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngCbcAuthenticatedEncryptorConfiguration configuration)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
     }
@@ -561,15 +468,8 @@ public static class DataProtectionBuilderExtensions
     [SupportedOSPlatform("windows")]
     public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, CngGcmAuthenticatedEncryptorConfiguration configuration)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
     }
@@ -586,15 +486,8 @@ public static class DataProtectionBuilderExtensions
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static IDataProtectionBuilder UseCustomCryptographicAlgorithms(this IDataProtectionBuilder builder, ManagedAuthenticatedEncryptorConfiguration configuration)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(configuration);
 
         return UseCryptographicAlgorithmsCore(builder, configuration);
     }
@@ -623,10 +516,7 @@ public static class DataProtectionBuilderExtensions
     /// </remarks>
     public static IDataProtectionBuilder UseEphemeralDataProtectionProvider(this IDataProtectionBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
 
         builder.Services.Replace(ServiceDescriptor.Singleton<IDataProtectionProvider, EphemeralDataProtectionProvider>());
 

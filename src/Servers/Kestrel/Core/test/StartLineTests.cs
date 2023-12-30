@@ -1,21 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -524,15 +520,17 @@ public class StartLineTests : IDisposable
         var pair = DuplexPipe.CreateConnectionPair(options, options);
         Transport = pair.Transport;
 
+        var timeProvider = new FakeTimeProvider();
         var serviceContext = TestContextFactory.CreateServiceContext(
             serverOptions: new KestrelServerOptions(),
+            timeProvider: timeProvider,
             httpParser: new HttpParser<Http1ParsingHandler>());
 
         var connectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: serviceContext,
             connectionContext: Mock.Of<ConnectionContext>(),
             transport: Transport,
-            timeoutControl: new TimeoutControl(timeoutHandler: null),
+            timeoutControl: new TimeoutControl(timeoutHandler: null, timeProvider),
             memoryPool: MemoryPool,
             connectionFeatures: new FeatureCollection());
 

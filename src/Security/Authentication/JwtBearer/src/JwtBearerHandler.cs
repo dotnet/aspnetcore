@@ -9,7 +9,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 
@@ -20,14 +19,21 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 /// </summary>
 public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
 {
-    private OpenIdConnectConfiguration? _configuration;
+    /// <summary>
+    /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
+    /// </summary>
+    /// <inheritdoc />
+    [Obsolete("ISystemClock is obsolete, use TimeProvider on AuthenticationSchemeOptions instead.")]
+    public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        : base(options, logger, encoder, clock)
+    { }
 
     /// <summary>
     /// Initializes a new instance of <see cref="JwtBearerHandler"/>.
     /// </summary>
     /// <inheritdoc />
-    public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
-        : base(options, logger, encoder, clock)
+    public JwtBearerHandler(IOptionsMonitor<JwtBearerOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+        : base(options, logger, encoder)
     { }
 
     /// <summary>
@@ -87,79 +93,88 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                 }
             }
 
-            if (_configuration == null && Options.ConfigurationManager != null)
-            {
-                _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
-            }
-
-            var validationParameters = Options.TokenValidationParameters.Clone();
-            if (_configuration != null)
-            {
-                var issuers = new[] { _configuration.Issuer };
-                validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuers) ?? issuers;
-
-                validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys)
-                    ?? _configuration.SigningKeys;
-            }
-
+            var tvp = await SetupTokenValidationParametersAsync();
             List<Exception>? validationFailures = null;
             SecurityToken? validatedToken = null;
-            foreach (var validator in Options.SecurityTokenValidators)
+            ClaimsPrincipal? principal = null;
+
+            if (!Options.UseSecurityTokenValidators)
             {
-                if (validator.CanReadToken(token))
+                foreach (var tokenHandler in Options.TokenHandlers)
                 {
-                    ClaimsPrincipal principal;
                     try
                     {
-                        principal = validator.ValidateToken(token, validationParameters, out validatedToken);
+                        var tokenValidationResult = await tokenHandler.ValidateTokenAsync(token, tvp);
+                        if (tokenValidationResult.IsValid)
+                        {
+                            principal = new ClaimsPrincipal(tokenValidationResult.ClaimsIdentity);
+                            validatedToken = tokenValidationResult.SecurityToken;
+                            break;
+                        }
+                        else
+                        {
+                            validationFailures ??= new List<Exception>(1);
+                            RecordTokenValidationError(tokenValidationResult.Exception ?? new SecurityTokenValidationException($"The TokenHandler: '{tokenHandler}', was unable to validate the Token."), validationFailures);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Logger.TokenValidationFailed(ex);
-
-                        // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
-                        if (Options.RefreshOnIssuerKeyNotFound && Options.ConfigurationManager != null
-                            && ex is SecurityTokenSignatureKeyNotFoundException)
-                        {
-                            Options.ConfigurationManager.RequestRefresh();
-                        }
-
-                        if (validationFailures == null)
-                        {
-                            validationFailures = new List<Exception>(1);
-                        }
-                        validationFailures.Add(ex);
-                        continue;
+                        validationFailures ??= new List<Exception>(1);
+                        RecordTokenValidationError(ex, validationFailures);
                     }
-
-                    Logger.TokenValidationSucceeded();
-
-                    var tokenValidatedContext = new TokenValidatedContext(Context, Scheme, Options)
-                    {
-                        Principal = principal,
-                        SecurityToken = validatedToken
-                    };
-
-                    tokenValidatedContext.Properties.ExpiresUtc = GetSafeDateTime(validatedToken.ValidTo);
-                    tokenValidatedContext.Properties.IssuedUtc = GetSafeDateTime(validatedToken.ValidFrom);
-
-                    await Events.TokenValidated(tokenValidatedContext);
-                    if (tokenValidatedContext.Result != null)
-                    {
-                        return tokenValidatedContext.Result;
-                    }
-
-                    if (Options.SaveToken)
-                    {
-                        tokenValidatedContext.Properties.StoreTokens(new[]
-                        {
-                                new AuthenticationToken { Name = "access_token", Value = token }
-                            });
-                    }
-
-                    tokenValidatedContext.Success();
-                    return tokenValidatedContext.Result!;
                 }
+            }
+            else
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                foreach (var validator in Options.SecurityTokenValidators)
+                {
+                    if (validator.CanReadToken(token))
+                    {
+                        try
+                        {
+                            principal = validator.ValidateToken(token, tvp, out validatedToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            validationFailures ??= new List<Exception>(1);
+                            RecordTokenValidationError(ex, validationFailures);
+                            continue;
+                        }
+                    }
+                }
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
+            if (principal != null && validatedToken != null)
+            {
+                Logger.TokenValidationSucceeded();
+
+                var tokenValidatedContext = new TokenValidatedContext(Context, Scheme, Options)
+                {
+                    Principal = principal
+                };
+
+                tokenValidatedContext.SecurityToken = validatedToken;
+                tokenValidatedContext.Properties.ExpiresUtc = GetSafeDateTime(validatedToken.ValidTo);
+                tokenValidatedContext.Properties.IssuedUtc = GetSafeDateTime(validatedToken.ValidFrom);
+
+                await Events.TokenValidated(tokenValidatedContext);
+                if (tokenValidatedContext.Result != null)
+                {
+                    return tokenValidatedContext.Result;
+                }
+
+                if (Options.SaveToken)
+                {
+                    tokenValidatedContext.Properties.StoreTokens(new[]
+                    {
+                        new AuthenticationToken { Name = "access_token", Value = token }
+                    });
+                }
+
+                tokenValidatedContext.Success();
+                return tokenValidatedContext.Result!;
             }
 
             if (validationFailures != null)
@@ -176,6 +191,11 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                 }
 
                 return AuthenticateResult.Fail(authenticationFailedContext.Exception);
+            }
+
+            if (!Options.UseSecurityTokenValidators)
+            {
+                return AuthenticateResults.TokenHandlerUnableToValidate;
             }
 
             return AuthenticateResults.ValidatorNotFound;
@@ -197,6 +217,47 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
 
             throw;
         }
+    }
+
+    private void RecordTokenValidationError(Exception exception, List<Exception> exceptions)
+    {
+        if (exception != null)
+        {
+            Logger.TokenValidationFailed(exception);
+            exceptions.Add(exception);
+        }
+
+        // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
+        // Refreshing on SecurityTokenSignatureKeyNotFound may be redundant if Last-Known-Good is enabled, it won't do much harm, most likely will be a nop.
+        if (Options.RefreshOnIssuerKeyNotFound && Options.ConfigurationManager != null
+            && exception is SecurityTokenSignatureKeyNotFoundException)
+        {
+            Options.ConfigurationManager.RequestRefresh();
+        }
+    }
+
+    private async Task<TokenValidationParameters> SetupTokenValidationParametersAsync()
+    {
+        // Clone to avoid cross request race conditions for updated configurations.
+        var tokenValidationParameters = Options.TokenValidationParameters.Clone();
+
+        if (Options.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+        {
+            tokenValidationParameters.ConfigurationManager = baseConfigurationManager;
+        }
+        else
+        {
+            if (Options.ConfigurationManager != null)
+            {
+                // GetConfigurationAsync has a time interval that must pass before new http request will be issued.
+                var configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
+                var issuers = new[] { configuration.Issuer };
+                tokenValidationParameters.ValidIssuers = (tokenValidationParameters.ValidIssuers == null ? issuers : tokenValidationParameters.ValidIssuers.Concat(issuers));
+                tokenValidationParameters.IssuerSigningKeys = (tokenValidationParameters.IssuerSigningKeys == null ? configuration.SigningKeys : tokenValidationParameters.IssuerSigningKeys.Concat(configuration.SigningKeys));
+            }
+        }
+
+        return tokenValidationParameters;
     }
 
     private static DateTime? GetSafeDateTime(DateTime dateTime)
@@ -288,7 +349,20 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
     {
         var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
-        Response.StatusCode = 403;
+
+        if (Response.StatusCode == 403)
+        {
+            // No-op
+        }
+        else if (Response.HasStarted)
+        {
+            Logger.ForbiddenResponseHasStarted();
+        }
+        else
+        {
+            Response.StatusCode = 403;
+        }
+
         return Events.Forbidden(forbiddenContext);
     }
 

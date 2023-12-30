@@ -31,12 +31,11 @@ public class AuthenticationBuilder
         where TOptions : AuthenticationSchemeOptions, new()
         where THandler : class, IAuthenticationHandler
     {
-        var state = new AddSchemeHelperState(typeof(THandler));
         Services.Configure<AuthenticationOptions>(o =>
         {
             o.AddScheme(authenticationScheme, scheme =>
             {
-                scheme.HandlerType = state.HandlerType;
+                scheme.HandlerType = typeof(THandler);
                 scheme.DisplayName = displayName;
             });
         });
@@ -50,19 +49,8 @@ public class AuthenticationBuilder
             return true;
         });
         Services.AddTransient<THandler>();
+        Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, PostConfigureAuthenticationSchemeOptions<TOptions>>());
         return this;
-    }
-
-    // Workaround for linker bug: https://github.com/dotnet/linker/issues/1981
-    private readonly struct AddSchemeHelperState
-    {
-        public AddSchemeHelperState([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
-        {
-            HandlerType = handlerType;
-        }
-
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        public Type HandlerType { get; }
     }
 
     /// <summary>
@@ -134,6 +122,23 @@ public class AuthenticationBuilder
         public void PostConfigure(string? name, TOptions options)
         {
             options.SignInScheme ??= _authOptions.DefaultSignInScheme ?? _authOptions.DefaultScheme;
+        }
+    }
+
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
+    private sealed class PostConfigureAuthenticationSchemeOptions<TOptions> : IPostConfigureOptions<TOptions>
+        where TOptions : AuthenticationSchemeOptions
+    {
+        public PostConfigureAuthenticationSchemeOptions(TimeProvider timeProvider)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider TimeProvider { get; }
+
+        public void PostConfigure(string? name, TOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
         }
     }
 }

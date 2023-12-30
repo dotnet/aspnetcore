@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="sub\sub-dir\File3.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Primitives" />

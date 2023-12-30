@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "API Web di ASP.NET Core (native AOT)",
+  "description": "Modello di progetto per la creazione di un'API Web RESTful tramite API minime di ASP.NET Core pubblicate come native AOT.",
+  "symbols/ExcludeLaunchSettings/description": "Indica se escludere launchSettings.json dal modello generato.",
+  "symbols/kestrelHttpPort/description": "Numero di porta da usare per l'endpoint HTTP in launchSettings.json.",
+  "symbols/iisHttpPort/description": "Numero di porta da usare per l'endpoint HTTP in launchSettings.json.",
+  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
+  "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",
+  "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"
+}

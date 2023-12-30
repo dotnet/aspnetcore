@@ -6,8 +6,8 @@ using BenchmarkDotNet.Attributes;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Greet;
+using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 
 namespace Microsoft.AspNetCore.Grpc.Microbenchmarks.Json;

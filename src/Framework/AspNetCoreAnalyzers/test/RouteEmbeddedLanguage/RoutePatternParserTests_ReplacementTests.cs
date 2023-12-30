@@ -161,9 +161,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Replacement>
         <OpenBracketToken>[</OpenBracketToken>
@@ -229,9 +229,9 @@ public partial class RoutePatternParserTests
         <Literal value=""[[-]][["">[[-]][[</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""[[controller]]"">[[controller]]</Literal>
@@ -255,9 +255,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Replacement>
         <OpenBracketToken>[</OpenBracketToken>
@@ -283,9 +283,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Replacement>
         <OpenBracketToken>[</OpenBracketToken>
@@ -293,9 +293,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Parameter>
         <OpenBraceToken>{</OpenBraceToken>
@@ -325,9 +325,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""[["">[[</Literal>
@@ -341,9 +341,9 @@ public partial class RoutePatternParserTests
         <Literal value=""]]"">]]</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""id"">id</Literal>
@@ -367,9 +367,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""[[[["">[[[[</Literal>
@@ -383,9 +383,9 @@ public partial class RoutePatternParserTests
         <Literal value=""]]]]"">]]]]</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""id"">id</Literal>
@@ -409,9 +409,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""[[[[[["">[[[[[[</Literal>
@@ -425,9 +425,9 @@ public partial class RoutePatternParserTests
         <Literal value=""]]]]]]"">]]]]]]</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""id"">id</Literal>
@@ -451,9 +451,9 @@ public partial class RoutePatternParserTests
         <CloseBracketToken>]</CloseBracketToken>
       </Replacement>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""[[[["">[[[[</Literal>
@@ -467,9 +467,9 @@ public partial class RoutePatternParserTests
         <Literal value=""]]]]]]"">]]]]]]</Literal>
       </Literal>
     </Segment>
-    <Seperator>
+    <Separator>
       <SlashToken>/</SlashToken>
-    </Seperator>
+    </Separator>
     <Segment>
       <Literal>
         <Literal value=""id"">id</Literal>

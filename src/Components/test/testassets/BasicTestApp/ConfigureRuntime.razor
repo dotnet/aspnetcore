@@ -1,0 +1,19 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JsRuntime
+
+<p>
+    Environment variable CONFIGURE_RUNTIME: <span id="environment">@Environment.GetEnvironmentVariable("CONFIGURE_RUNTIME")</span>
+</p>
+<p>
+    .NET runtime build configuration: <span id="build-configuration">@RuntimeBuildConfiguration</span>
+</p>
+
+@code
+{
+    protected string RuntimeBuildConfiguration { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        RuntimeBuildConfiguration = await JsRuntime.InvokeAsync<string>("window.getRuntimeBuildConfiguration");
+    }
+}

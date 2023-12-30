@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "Framework": {
+      "longName": "framework"
+    },
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    },
+    "kestrelHttpPort": {
+      "isHidden": true
+    },
+    "iisHttpPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
+    "UseProgramMain": {
+      "longName": "use-program-main",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    ""
+  ]
+}

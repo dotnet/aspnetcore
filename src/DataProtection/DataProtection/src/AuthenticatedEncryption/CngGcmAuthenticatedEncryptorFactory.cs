@@ -57,8 +57,9 @@ public sealed class CngGcmAuthenticatedEncryptorFactory : IAuthenticatedEncrypto
             return null;
         }
 
+        using var key = new Secret(secret);
         return new CngGcmAuthenticatedEncryptor(
-            keyDerivationKey: new Secret(secret),
+            keyDerivationKey: key,
             symmetricAlgorithmHandle: GetSymmetricBlockCipherAlgorithmHandle(configuration),
             symmetricAlgorithmKeySizeInBytes: (uint)(configuration.EncryptionAlgorithmKeySize / 8));
     }

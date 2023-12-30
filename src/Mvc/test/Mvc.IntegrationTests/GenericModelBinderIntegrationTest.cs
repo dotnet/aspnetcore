@@ -165,10 +165,7 @@ public class GenericModelBinderIntegrationTest
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
+            ArgumentNullException.ThrowIfNull(bindingContext);
 
             Debug.Assert(bindingContext.Result == ModelBindingResult.Failed());
 

@@ -32,10 +32,7 @@ public class HstsMiddleware
     /// <param name="loggerFactory"></param>
     public HstsMiddleware(RequestDelegate next, IOptions<HstsOptions> options, ILoggerFactory loggerFactory)
     {
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _next = next ?? throw new ArgumentNullException(nameof(next));
 

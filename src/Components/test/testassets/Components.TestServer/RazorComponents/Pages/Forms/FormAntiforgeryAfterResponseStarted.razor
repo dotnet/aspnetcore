@@ -1,0 +1,29 @@
+﻿@page "/forms/antiforgery-after-response-started"
+@attribute [StreamRendering]
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form</h2>
+
+@if(_renderForm)
+{
+    <form data-enhance method="post" @onsubmit="() => _submitted = true" @formname="myform">
+        <input id="send" type="submit" value="Send" />
+        <AntiforgeryToken />
+    </form>
+}
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+    bool _renderForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _renderForm = true;
+    }
+}

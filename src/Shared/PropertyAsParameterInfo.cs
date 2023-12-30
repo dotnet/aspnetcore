@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Internal;
 
@@ -21,7 +22,7 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
     public PropertyAsParameterInfo(PropertyInfo propertyInfo, NullabilityInfoContext? nullabilityContext = null)
     {
-        Debug.Assert(null != propertyInfo);
+        Debug.Assert(propertyInfo != null, "PropertyInfo must be provided.");
 
         AttrsImpl = (ParameterAttributes)propertyInfo.Attributes;
         NameImpl = propertyInfo.Name;
@@ -53,13 +54,13 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     /// <summary>
     /// Unwraps all parameters that contains <see cref="AsParametersAttribute"/> and
     /// creates a flat list merging the current parameters, not including the
-    /// parametres that contain a <see cref="AsParametersAttribute"/>, and all additional
+    /// parameters that contain a <see cref="AsParametersAttribute"/>, and all additional
     /// parameters detected.
     /// </summary>
     /// <param name="parameters">List of parameters to be flattened.</param>
     /// <param name="cache">An instance of the method cache class.</param>
     /// <returns>Flat list of parameters.</returns>
-    [UnconditionalSuppressMessage("Trimmer", "IL2075", Justification = "PropertyAsParameterInfo.Flatten requires unreferenced code.")]
+    [RequiresUnreferencedCode("Uses unbounded Reflection to access parameter type constructors.")]
     public static ReadOnlySpan<ParameterInfo> Flatten(ParameterInfo[] parameters, ParameterBindingMethodCache cache)
     {
         ArgumentNullException.ThrowIfNull(parameters);
@@ -84,7 +85,14 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             {
                 // Initialize the list with all parameter already processed
                 // to keep the same parameter ordering
-                flattenedParameters ??= new(parameters[0..i]);
+                static List<ParameterInfo> InitializeList(ParameterInfo[] parameters, int i)
+                {
+                    // will add the rest of the parameters to this list, so set initial capacity to reduce growing the list
+                    List<ParameterInfo> list = new(parameters.Length);
+                    list.AddRange(parameters.AsSpan(0, i));
+                    return list;
+                }
+                flattenedParameters ??= InitializeList(parameters, i);
                 nullabilityContext ??= new();
 
                 var isNullable = Nullable.GetUnderlyingType(parameters[i].ParameterType) != null ||
@@ -131,14 +139,20 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
 
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {
-        var attributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
+        var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
 
-        if (attributes == null || attributes is { Length: 0 })
+        if (constructorAttributes == null || constructorAttributes is { Length: 0 })
         {
-            attributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+            return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
         }
 
-        return attributes;
+        var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
+
+        var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
+        Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
+        Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
+
+        return mergedAttributes;
     }
 
     public override object[] GetCustomAttributes(bool inherit)
@@ -182,7 +196,20 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
             _underlyingProperty.IsDefined(attributeType, inherit);
     }
 
-    public new bool IsOptional => HasDefaultValue || NullabilityInfo.ReadState != NullabilityState.NotNull;
+    public new bool IsOptional => NullabilityInfo.ReadState switch
+    {
+        // Anything nullable is optional
+        NullabilityState.Nullable => true,
+        // In an oblivious context, the required modifier makes
+        // members non-optional
+        NullabilityState.Unknown => !_underlyingProperty.GetCustomAttributes().OfType<RequiredMemberAttribute>().Any(),
+        // Non-nullable types are only optional if they have a default
+        // value
+        NullabilityState.NotNull => HasDefaultValue,
+        // Assume that types are optional by default so we
+        // don't greedily opt parameters into param checking
+        _ => true
+    };
 
     public NullabilityInfo NullabilityInfo
         => _nullabilityInfo ??= _constructionParameterInfo is not null ?

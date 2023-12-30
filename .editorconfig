@@ -4,7 +4,7 @@
 ;
 ; Here are some resources for what's supported for .NET/C#
 ; https://kent-boogaart.com/blog/editorconfig-reference-for-c-developers
-; https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference?view=vs-2017
+; https://learn.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 ;
 ; Be **careful** editing this because some of the rules don't support adding a severity level
 ; For instance if you change to `dotnet_sort_system_directives_first = true:warning` (adding `:warning`)
@@ -55,6 +55,23 @@ csharp_style_namespace_declarations = file_scoped
 # Brace settings
 csharp_prefer_braces = true # Prefer curly braces even for one line of code
 
+# name all constant fields using PascalCase
+dotnet_naming_rule.constant_fields_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.constant_fields_should_be_pascal_case.symbols  = constant_fields
+dotnet_naming_rule.constant_fields_should_be_pascal_case.style    = pascal_case_style
+dotnet_naming_symbols.constant_fields.applicable_kinds   = field
+dotnet_naming_symbols.constant_fields.required_modifiers = const
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# internal and private fields should be _camelCase
+dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
+dotnet_naming_rule.camel_case_for_private_internal_fields.symbols  = private_internal_fields
+dotnet_naming_rule.camel_case_for_private_internal_fields.style    = camel_case_underscore_style
+dotnet_naming_symbols.private_internal_fields.applicable_kinds = field
+dotnet_naming_symbols.private_internal_fields.applicable_accessibilities = private, internal
+dotnet_naming_style.camel_case_underscore_style.required_prefix = _
+dotnet_naming_style.camel_case_underscore_style.capitalization = camel_case
+
 [*.{xml,config,*proj,nuspec,props,resx,targets,yml,tasks}]
 indent_size = 2
 
@@ -91,6 +108,18 @@ dotnet_diagnostic.CA1305.severity = warning
 
 # CA1507: Use nameof to express symbol names
 dotnet_diagnostic.CA1507.severity = warning
+
+# CA1510: Use ArgumentNullException throw helper
+dotnet_diagnostic.CA1510.severity = warning
+
+# CA1511: Use ArgumentException throw helper
+dotnet_diagnostic.CA1511.severity = warning
+
+# CA1512: Use ArgumentOutOfRangeException throw helper
+dotnet_diagnostic.CA1512.severity = warning
+
+# CA1513: Use ObjectDisposedException throw helper
+dotnet_diagnostic.CA1513.severity = warning
 
 # CA1725: Parameter names should match base declaration
 dotnet_diagnostic.CA1725.severity = suggestion
@@ -133,10 +162,12 @@ dotnet_diagnostic.CA1829.severity = warning
 dotnet_diagnostic.CA1830.severity = warning
 
 # CA1831: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
-# CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
-# CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 dotnet_diagnostic.CA1831.severity = warning
+
+# CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 dotnet_diagnostic.CA1832.severity = warning
+
+# CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 dotnet_diagnostic.CA1833.severity = warning
 
 # CA1834: Consider using 'StringBuilder.Append(char)' when applicable
@@ -187,6 +218,18 @@ dotnet_diagnostic.CA1852.severity = warning
 # CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
 dotnet_diagnostic.CA1854.severity = warning
 
+# CA1855: Prefer 'Clear' over 'Fill'
+dotnet_diagnostic.CA1855.severity = warning
+
+# CA1856: Incorrect usage of ConstantExpected attribute
+dotnet_diagnostic.CA1856.severity = error
+
+# CA1857: A constant is expected for the parameter
+dotnet_diagnostic.CA1857.severity = warning
+
+# CA1858: Use 'StartsWith' instead of 'IndexOf'
+dotnet_diagnostic.CA1858.severity = warning
+
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = warning
 
@@ -213,6 +256,9 @@ dotnet_diagnostic.CA2016.severity = warning
 
 # CA2200: Rethrow to preserve stack details
 dotnet_diagnostic.CA2200.severity = warning
+
+# CA2201: Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = warning
 
 # CA2208: Instantiate argument exceptions correctly
 dotnet_diagnostic.CA2208.severity = warning
@@ -290,11 +336,19 @@ dotnet_diagnostic.IDE0200.severity = warning
 dotnet_style_allow_multiple_blank_lines_experimental = false
 dotnet_diagnostic.IDE2000.severity = warning
 
-[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf,scripts,stress}/**.cs}]
+[{eng/tools/**.cs,**/{test,testassets,samples,Samples,perf,benchmarkapps,scripts,stress}/**.cs,src/Hosting/Server.IntegrationTesting/**.cs,src/Servers/IIS/IntegrationTesting.IIS/**.cs,src/Shared/Http2cat/**.cs,src/Testing/**.cs}]
 # CA1018: Mark attributes with AttributeUsageAttribute
 dotnet_diagnostic.CA1018.severity = suggestion
 # CA1507: Use nameof to express symbol names
 dotnet_diagnostic.CA1507.severity = suggestion
+# CA1510: Use ArgumentNullException throw helper
+dotnet_diagnostic.CA1510.severity = suggestion
+# CA1511: Use ArgumentException throw helper
+dotnet_diagnostic.CA1511.severity = suggestion
+# CA1512: Use ArgumentOutOfRangeException throw helper
+dotnet_diagnostic.CA1512.severity = suggestion
+# CA1513: Use ObjectDisposedException throw helper
+dotnet_diagnostic.CA1513.severity = suggestion
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = suggestion
 # CA1805: Do not initialize unnecessarily
@@ -311,6 +365,12 @@ dotnet_diagnostic.CA1826.severity = suggestion
 dotnet_diagnostic.CA1827.severity = suggestion
 # CA1829: Use Length/Count property instead of Count() when available
 dotnet_diagnostic.CA1829.severity = suggestion
+# CA1831: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+dotnet_diagnostic.CA1831.severity = suggestion
+# CA1832: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+dotnet_diagnostic.CA1832.severity = suggestion
+# CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+dotnet_diagnostic.CA1833.severity = suggestion
 # CA1834: Consider using 'StringBuilder.Append(char)' when applicable
 dotnet_diagnostic.CA1834.severity = suggestion
 # CA1835: Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'
@@ -333,12 +393,22 @@ dotnet_diagnostic.CA1847.severity = suggestion
 dotnet_diagnostic.CA1852.severity = suggestion
 # CA1854: Prefer the IDictionary.TryGetValue(TKey, out TValue) method
 dotnet_diagnostic.CA1854.severity = suggestion
+# CA1855: Prefer 'Clear' over 'Fill'
+dotnet_diagnostic.CA1855.severity = suggestion
+# CA1856: Incorrect usage of ConstantExpected attribute
+dotnet_diagnostic.CA1856.severity = suggestion
+# CA1857: A constant is expected for the parameter
+dotnet_diagnostic.CA1857.severity = suggestion
+# CA1858: Use 'StartsWith' instead of 'IndexOf'
+dotnet_diagnostic.CA1858.severity = suggestion
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = suggestion
 # CA2008: Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = suggestion
 # CA2012: Use ValueTask correctly
 dotnet_diagnostic.CA2012.severity = suggestion
+# CA2201: Do not raise reserved exception types
+dotnet_diagnostic.CA2201.severity = suggestion
 # CA2249: Use string.Contains instead of string.IndexOf to improve readability.
 dotnet_diagnostic.CA2249.severity = suggestion
 # IDE0005: Remove unnecessary usings

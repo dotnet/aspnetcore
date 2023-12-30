@@ -22,15 +22,8 @@ public static class MvcRazorPagesMvcBuilderExtensions
         this IMvcBuilder builder,
         Action<RazorPagesOptions> setupAction)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
-
-        if (setupAction == null)
-        {
-            throw new ArgumentNullException(nameof(setupAction));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(setupAction);
 
         builder.Services.Configure(setupAction);
         return builder;
@@ -44,10 +37,7 @@ public static class MvcRazorPagesMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder WithRazorPagesRoot(this IMvcBuilder builder, string rootDirectory)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         if (string.IsNullOrEmpty(rootDirectory))
         {
@@ -70,10 +60,7 @@ public static class MvcRazorPagesMvcBuilderExtensions
     /// <returns>The <see cref="IMvcBuilder"/>.</returns>
     public static IMvcBuilder WithRazorPagesAtContentRoot(this IMvcBuilder builder)
     {
-        if (builder == null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.Configure<RazorPagesOptions>(options => options.RootDirectory = "/");
         return builder;

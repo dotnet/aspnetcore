@@ -24,10 +24,7 @@ public class TagHelperContext
         IDictionary<object, object> items,
         string uniqueId) : this(allAttributes, items, uniqueId)
     {
-        if (tagName == null)
-        {
-            throw new ArgumentNullException(nameof(tagName));
-        }
+        ArgumentNullException.ThrowIfNull(tagName);
 
         TagName = tagName;
     }
@@ -44,20 +41,9 @@ public class TagHelperContext
         IDictionary<object, object> items,
         string uniqueId)
     {
-        if (items == null)
-        {
-            throw new ArgumentNullException(nameof(items));
-        }
-
-        if (uniqueId == null)
-        {
-            throw new ArgumentNullException(nameof(uniqueId));
-        }
-
-        if (allAttributes == null)
-        {
-            throw new ArgumentNullException(nameof(allAttributes));
-        }
+        ArgumentNullException.ThrowIfNull(items);
+        ArgumentNullException.ThrowIfNull(uniqueId);
+        ArgumentNullException.ThrowIfNull(allAttributes);
 
         _allAttributes = allAttributes;
         Items = items;

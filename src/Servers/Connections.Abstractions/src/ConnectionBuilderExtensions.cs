@@ -29,6 +29,16 @@ public static class ConnectionBuilderExtensions
 
     /// <summary>
     /// Add the given <paramref name="middleware"/> to the connection.
+    /// If you aren't calling the next function, use <see cref="Run(IConnectionBuilder, Func{ConnectionContext, Task})"/> instead.
+    /// <para>
+    /// Prefer using <see cref="Use(IConnectionBuilder, Func{ConnectionContext, ConnectionDelegate, Task})"/> for better performance as shown below:
+    /// <code>
+    /// builder.Use((context, next) =>
+    /// {
+    ///     return next(context);
+    /// });
+    /// </code>
+    /// </para>
     /// </summary>
     /// <param name="connectionBuilder">The <see cref="IConnectionBuilder"/>.</param>
     /// <param name="middleware">The middleware to add to the <see cref="IConnectionBuilder"/>.</param>
@@ -43,6 +53,18 @@ public static class ConnectionBuilderExtensions
                 return middleware(context, simpleNext);
             };
         });
+    }
+
+    /// <summary>
+    /// Add the given <paramref name="middleware"/> to the connection.
+    /// If you aren't calling the next function, use <see cref="Run(IConnectionBuilder, Func{ConnectionContext, Task})"/> instead.
+    /// </summary>
+    /// <param name="connectionBuilder">The <see cref="IConnectionBuilder"/>.</param>
+    /// <param name="middleware">The middleware to add to the <see cref="IConnectionBuilder"/>.</param>
+    /// <returns>The <see cref="IConnectionBuilder"/>.</returns>
+    public static IConnectionBuilder Use(this IConnectionBuilder connectionBuilder, Func<ConnectionContext, ConnectionDelegate, Task> middleware)
+    {
+        return connectionBuilder.Use(next => context => middleware(context, next));
     }
 
     /// <summary>

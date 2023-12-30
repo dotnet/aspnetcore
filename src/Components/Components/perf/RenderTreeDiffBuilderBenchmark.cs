@@ -79,7 +79,7 @@ public class RenderTreeDiffBuilderBenchmark
     public void ComputeDiff_SingleFormField()
     {
         builder.ClearStateForCurrentBatch();
-        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, builder, 0, original.GetFrames(), modified.GetFrames());
+        var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, builder, 0, modified.GetFrames(), original.GetFrames());
         GC.KeepAlive(diff);
     }
 

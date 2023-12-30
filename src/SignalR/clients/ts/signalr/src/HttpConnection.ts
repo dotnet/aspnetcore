@@ -3,6 +3,7 @@
 
 import { AccessTokenHttpClient } from "./AccessTokenHttpClient";
 import { DefaultHttpClient } from "./DefaultHttpClient";
+import { getEventSource, getWS } from "./DynamicImports";
 import { AggregateErrors, DisabledTransportError, FailedToNegotiateWithServerError, FailedToStartTransportError, HttpError, UnsupportedTransportError, AbortError } from "./Errors";
 import { IConnection } from "./IConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
@@ -30,6 +31,7 @@ export interface INegotiateResponse {
     url?: string;
     accessToken?: string;
     error?: string;
+    useStatefulReconnect?: boolean;
 }
 
 /** @private */
@@ -86,11 +88,8 @@ export class HttpConnection implements IConnection {
         let eventSourceModule: any = null;
 
         if (Platform.isNode && typeof require !== "undefined") {
-            // In order to ignore the dynamic require in webpack builds we need to do this magic
-            // @ts-ignore: TS doesn't know about these names
-            const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-            webSocketModule = requireFunc("ws");
-            eventSourceModule = requireFunc("eventsource");
+            webSocketModule = getWS();
+            eventSourceModule = getEventSource();
         }
 
         if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
@@ -333,6 +332,11 @@ export class HttpConnection implements IConnection {
                 // So we set it equal to connectionId so all our logic can use connectionToken without being aware of the negotiate version
                 negotiateResponse.connectionToken = negotiateResponse.connectionId;
             }
+
+            if (negotiateResponse.useStatefulReconnect && this._options._useStatefulReconnect !== true) {
+                return Promise.reject(new FailedToNegotiateWithServerError("Client didn't negotiate Stateful Reconnect but the server did."));
+            }
+
             return negotiateResponse;
         } catch (e) {
             let errorMessage = "Failed to complete negotiation with the server: " + e;
@@ -370,7 +374,8 @@ export class HttpConnection implements IConnection {
         const transports = negotiateResponse.availableTransports || [];
         let negotiate: INegotiateResponse | undefined = negotiateResponse;
         for (const endpoint of transports) {
-            const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat);
+            const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat,
+                negotiate?.useStatefulReconnect === true);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed:`);
@@ -415,7 +420,8 @@ export class HttpConnection implements IConnection {
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!, this._options.WebSocket, this._options.headers || {});
+                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!,
+                    this._options.WebSocket, this._options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
@@ -430,11 +436,34 @@ export class HttpConnection implements IConnection {
 
     private _startTransport(url: string, transferFormat: TransferFormat): Promise<void> {
         this.transport!.onreceive = this.onreceive;
-        this.transport!.onclose = (e) => this._stopConnection(e);
+        if (this.features.reconnect) {
+            this.transport!.onclose = async (e) => {
+                let callStop = false;
+                if (this.features.reconnect) {
+                    try {
+                        this.features.disconnected();
+                        await this.transport!.connect(url, transferFormat);
+                        await this.features.resend();
+                    } catch {
+                        callStop = true;
+                    }
+                } else {
+                    this._stopConnection(e);
+                    return;
+                }
+
+                if (callStop) {
+                    this._stopConnection(e);
+                }
+            };
+        } else {
+            this.transport!.onclose = (e) => this._stopConnection(e);
+        }
         return this.transport!.connect(url, transferFormat);
     }
 
-    private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined, requestedTransferFormat: TransferFormat): ITransport | Error | unknown {
+    private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined,
+        requestedTransferFormat: TransferFormat, useStatefulReconnect: boolean): ITransport | Error | unknown {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this._logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
@@ -450,6 +479,7 @@ export class HttpConnection implements IConnection {
                     } else {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
+                            this.features.reconnect = transport === HttpTransportType.WebSockets ? useStatefulReconnect : undefined;
                             return this._constructTransport(transport);
                         } catch (ex) {
                             return ex;
@@ -546,19 +576,30 @@ export class HttpConnection implements IConnection {
     }
 
     private _resolveNegotiateUrl(url: string): string {
-        const index = url.indexOf("?");
-        let negotiateUrl = url.substring(0, index === -1 ? url.length : index);
-        if (negotiateUrl[negotiateUrl.length - 1] !== "/") {
-            negotiateUrl += "/";
-        }
-        negotiateUrl += "negotiate";
-        negotiateUrl += index === -1 ? "" : url.substring(index);
+        const negotiateUrl = new URL(url);
 
-        if (negotiateUrl.indexOf("negotiateVersion") === -1) {
-            negotiateUrl += index === -1 ? "?" : "&";
-            negotiateUrl += "negotiateVersion=" + this._negotiateVersion;
+        if (negotiateUrl.pathname.endsWith('/')) {
+            negotiateUrl.pathname += "negotiate";
+        } else {
+            negotiateUrl.pathname += "/negotiate";
         }
-        return negotiateUrl;
+        const searchParams = new URLSearchParams(negotiateUrl.searchParams);
+
+        if (!searchParams.has("negotiateVersion")) {
+            searchParams.append("negotiateVersion", this._negotiateVersion.toString());
+        }
+
+        if (searchParams.has("useStatefulReconnect")) {
+            if (searchParams.get("useStatefulReconnect") === "true") {
+                this._options._useStatefulReconnect = true;
+            }
+        } else if (this._options._useStatefulReconnect === true) {
+            searchParams.append("useStatefulReconnect", "true");
+        }
+
+        negotiateUrl.search = searchParams.toString();
+
+        return negotiateUrl.toString();
     }
 }
 

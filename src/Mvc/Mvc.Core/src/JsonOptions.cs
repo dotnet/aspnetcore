@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -37,5 +38,13 @@ public class JsonOptions
         // from deserialization errors that might occur from deeply nested objects.
         // This value is the same for model binding and Json.Net's serialization.
         MaxDepth = MvcOptions.DefaultMaxModelBindingRecursionDepth,
+
+        // The JsonSerializerOptions.GetTypeInfo method is called directly and needs a defined resolver
+        // setting the default resolver (reflection-based) but the user can overwrite it directly or by modifying
+        // the TypeInfoResolverChain. Use JsonTypeInfoResolver.Combine() to produce an empty TypeInfoResolver.
+        TypeInfoResolver = JsonSerializer.IsReflectionEnabledByDefault ? CreateDefaultTypeResolver() : JsonTypeInfoResolver.Combine()
     };
+
+    private static IJsonTypeInfoResolver CreateDefaultTypeResolver()
+        => new DefaultJsonTypeInfoResolver();
 }

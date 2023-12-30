@@ -7,9 +7,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -29,28 +31,28 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     {
         get
         {
-            IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, Delegate action) =>
+            IEndpointConventionBuilder MapGet(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
                 routes.MapGet(template, action);
 
-            IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, Delegate action) =>
+            IEndpointConventionBuilder MapPost(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
                 routes.MapPost(template, action);
 
-            IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, Delegate action) =>
+            IEndpointConventionBuilder MapPut(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
                 routes.MapPut(template, action);
 
-            IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, Delegate action) =>
+            IEndpointConventionBuilder MapDelete(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
                 routes.MapDelete(template, action);
 
-            IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, Delegate action) =>
+            IEndpointConventionBuilder Map(IEndpointRouteBuilder routes, string template, RequestDelegate action) =>
                 routes.Map(template, action);
 
             return new object[][]
             {
-                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapGet },
-                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPost },
-                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapPut },
-                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)MapDelete },
-                    new object[] { (Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder>)Map },
+                new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapGet },
+                new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapPost },
+                new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapPut },
+                new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)MapDelete },
+                new object[] { (Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder>)Map },
             };
         }
     }
@@ -75,7 +77,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
     [Theory]
     [MemberData(nameof(MapMethods))]
-    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate(Func<IEndpointRouteBuilder, string, Delegate, IEndpointConventionBuilder> map)
+    public async Task MapEndpoint_ReturnGenericTypeTask_GeneratedDelegate(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
     {
         var httpContext = new DefaultHttpContext();
         var responseBodyStream = new MemoryStream();
@@ -83,7 +85,11 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         // Arrange
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
-        static async Task<string> GenericTypeTaskDelegate(HttpContext context) => await Task.FromResult("String Test");
+        static async Task<string> GenericTypeTaskDelegate(HttpContext context)
+        {
+            await context.Response.WriteAsync("Response string text");
+            return await Task.FromResult("String Test");
+        }
 
         // Act
         var endpointBuilder = map(builder, "/", GenericTypeTaskDelegate);
@@ -98,12 +104,12 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
-        Assert.Equal("String Test", responseBody);
+        Assert.Equal("Response string text", responseBody);
     }
 
     [Theory]
     [MemberData(nameof(MapMethods))]
-    public async Task MapEndpoint_CanBeFiltered_ByEndpointFilters(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
+    public async Task MapEndpoint_CanBeFiltered_EndpointFilterFactory(Func<IEndpointRouteBuilder, string, RequestDelegate, IEndpointConventionBuilder> map)
     {
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
         var httpContext = new DefaultHttpContext();
@@ -111,7 +117,6 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         httpContext.Response.Body = responseBodyStream;
 
         RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
-        var filterTag = new TagsAttribute("filter");
 
         var endpointBuilder = map(builder, "/", initialRequestDelegate).AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
         {
@@ -119,7 +124,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
             {
                 Assert.IsAssignableFrom<HttpContext>(Assert.Single(invocationContext.Arguments));
                 // Ignore thre result and write filtered because we can!
-                await next(invocationContext);
+                _ = await next(invocationContext);
                 return "filtered!";
             };
         });
@@ -136,6 +141,185 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
 
         Assert.Equal("filtered!", responseBody);
+    }
+
+    [Fact]
+    public async Task MapEndpoint_CanBeFiltered_EndpointFilter()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        RequestDelegate initialRequestDelegate = static (context) => Task.CompletedTask;
+
+        var endpointBuilder = builder.Map("/", initialRequestDelegate)
+            .AddEndpointFilter(new HttpContextArgFilter("First"))
+            .AddEndpointFilter(new HttpContextArgFilter("Second"));
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        Assert.NotSame(initialRequestDelegate, endpoint.RequestDelegate);
+
+        Assert.NotNull(endpoint.RequestDelegate);
+        var requestDelegate = endpoint.RequestDelegate!;
+        await requestDelegate(httpContext);
+
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+
+        Assert.Equal("filtered!", responseBody);
+        Assert.Equal(1, (int)httpContext.Items["First-Order"]!);
+        Assert.Equal(2, (int)httpContext.Items["Second-Order"]!);
+    }
+
+    [Fact]
+    public async Task MapEndpoint_Filtered_DontExecuteEndpointWhenErrorResponseStatus()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        RequestDelegate initialRequestDelegate = static (context) =>
+        {
+            context.Items["ExecutedEndpoint"] = true;
+            throw new Exception("Shouldn't reach here.");
+        };
+
+        var endpointBuilder = builder.Map("/", initialRequestDelegate)
+            .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
+            {
+                return async invocationContext =>
+                {
+                    var httpContext = Assert.IsAssignableFrom<HttpContext>(Assert.Single(invocationContext.Arguments));
+                    httpContext.Items["First"] = true;
+                    httpContext.Response.StatusCode = 400;
+                    return await next(invocationContext);
+                };
+            })
+            .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
+            {
+                return invocationContext =>
+                {
+                    var httpContext = Assert.IsAssignableFrom<HttpContext>(Assert.Single(invocationContext.Arguments));
+                    httpContext.Items["Second"] = true;
+                    return next(invocationContext);
+                };
+            });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        Assert.NotSame(initialRequestDelegate, endpoint.RequestDelegate);
+
+        Assert.NotNull(endpoint.RequestDelegate);
+        var requestDelegate = endpoint.RequestDelegate!;
+        await requestDelegate(httpContext);
+
+        Assert.True((bool)httpContext.Items["First"]!);
+        Assert.True((bool)httpContext.Items["Second"]!);
+        Assert.False(httpContext.Items.ContainsKey("ExecutedEndpoint"));
+    }
+
+    [Fact]
+    public async Task RequestFilters_CanAssertOnEmptyResult()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        var @delegate = (HttpContext context) => context.Items.Add("param", "Value");
+
+        object? response = null;
+        var endpointBuilder = builder.Map("/", @delegate)
+            .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
+            {
+                return async invocationContext =>
+                {
+                    response = await next(invocationContext);
+                    return response;
+                };
+            });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "Tester"
+        });
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.IsType<EmptyHttpResult>(response);
+        Assert.Same(Results.Empty, response);
+    }
+
+    [Fact]
+    public async Task RequestFilters_ReturnValue_SerializeJson()
+    {
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+        var httpContext = new DefaultHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        RequestDelegate requestDelegate = (HttpContext context) => Task.CompletedTask;
+
+        var endpointBuilder = builder.Map("/", requestDelegate)
+            .AddEndpointFilterFactory(filterFactory: (routeHandlerContext, next) =>
+            {
+                return async invocationContext =>
+                {
+                    await next(invocationContext);
+                    return new MyCoolType(Name: "你好"); // serialized as JSON
+                };
+            });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        var responseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(@"{""name"":""你好""}", responseBody);
+    }
+
+    private record struct MyCoolType(string Name);
+
+    private sealed class HttpContextArgFilter : IEndpointFilter
+    {
+        private readonly string _name;
+
+        public HttpContextArgFilter(string name)
+        {
+            _name = name;
+        }
+
+        public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        {
+            if (context.Arguments[0] is HttpContext httpContext)
+            {
+                int order;
+                if (httpContext.Items["CurrentOrder"] is int)
+                {
+                    order = (int)httpContext.Items["CurrentOrder"]!;
+                    order++;
+                    httpContext.Items["CurrentOrder"] = order;
+                }
+                else
+                {
+                    order = 1;
+                    httpContext.Items["CurrentOrder"] = order;
+                }
+                httpContext.Items[$"{_name}-Order"] = order;
+            }
+
+            // Ignore thre result and write filtered because we can!
+            _ = await next(context);
+            return "filtered!";
+        }
     }
 
     [Theory]
@@ -227,10 +411,11 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         // As with the Delegate Map method overloads for route handlers, the attributes on the RequestDelegate
         // can override the HttpMethodMetadata. Extension methods could already do this.
-        Assert.Equal(3, endpoint.Metadata.Count);
+        Assert.Equal(4, endpoint.Metadata.Count);
         Assert.Equal("METHOD", GetMethod(endpoint.Metadata[0]));
         Assert.Equal("ATTRIBUTE", GetMethod(endpoint.Metadata[1]));
         Assert.Equal("BUILDER", GetMethod(endpoint.Metadata[2]));
+        Assert.IsAssignableFrom<IRouteDiagnosticsMetadata>(endpoint.Metadata[3]);
 
         Assert.Equal("BUILDER", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Single());
 
@@ -315,7 +500,24 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
             },
             m => Assert.Equal("System.Runtime.CompilerServices.NullableContextAttribute", m.ToString()),
             m => Assert.IsAssignableFrom<Attribute1>(m),
-            m => Assert.IsAssignableFrom<Attribute2>(m));
+            m => Assert.IsAssignableFrom<Attribute2>(m),
+            m => Assert.IsAssignableFrom<IRouteDiagnosticsMetadata>(m));
+    }
+
+    [Fact]
+    public void MapEndpoint_Filter()
+    {
+        // Arrange
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
+
+        // Act
+        var endpointBuilder = builder
+            .Map(RoutePatternFactory.Parse("/"), context => Task.CompletedTask)
+            .AddEndpointFilter(new HttpContextArgFilter(""));
+
+        // Assert
+        var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+        Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
     }
 
     [Attribute1]

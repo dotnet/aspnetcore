@@ -14,8 +14,10 @@ public class QueueRequestsOverwritten
     private int _rejectionCount = 0;
     private readonly ManualResetEventSlim _mres = new ManualResetEventSlim();
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private ConcurrencyLimiterMiddleware _middlewareQueue;
     private ConcurrencyLimiterMiddleware _middlewareStack;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     [GlobalSetup]
     public void GlobalSetup()

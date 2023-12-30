@@ -25,6 +25,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Extensions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Features" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Http.Results" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http" />
     <TrimmableProject Include="Microsoft.AspNetCore.Metadata" />
     <TrimmableProject Include="Microsoft.AspNetCore.Routing.Abstractions" />
@@ -40,8 +41,10 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Server.IIS" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <TrimmableProject Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Certificate" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <TrimmableProject Include="Microsoft.AspNetCore.Authentication" />
@@ -86,11 +89,14 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid" />
     <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" />
     <TrimmableProject Include="Microsoft.JSInterop.WebAssembly" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Web" />
+    <TrimmableProject Include="Microsoft.Extensions.FileProviders.Embedded" />
     <TrimmableProject Include="Microsoft.Extensions.Localization.Abstractions" />
     <TrimmableProject Include="Microsoft.Extensions.ObjectPool" />
     <TrimmableProject Include="Microsoft.JSInterop" />

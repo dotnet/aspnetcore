@@ -1,9 +1,9 @@
 #nullable enable
-Microsoft.JSInterop.DotNetObjectReference<TValue>
 abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string?
 abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(long taskId, string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 abstract Microsoft.JSInterop.JSRuntime.EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult invocationResult) -> void
 Microsoft.JSInterop.DotNetObjectReference
+Microsoft.JSInterop.DotNetObjectReference<TValue>
 Microsoft.JSInterop.DotNetObjectReference<TValue>.Dispose() -> void
 Microsoft.JSInterop.DotNetObjectReference<TValue>.Value.get -> TValue!
 Microsoft.JSInterop.DotNetStreamReference
@@ -50,9 +50,9 @@ Microsoft.JSInterop.Implementation.JSStreamReference
 Microsoft.JSInterop.Implementation.JSStreamReference.Length.get -> long
 Microsoft.JSInterop.Infrastructure.DotNetDispatcher
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo
-Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetInvocationInfo() -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.AssemblyName.get -> string?
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.CallId.get -> string?
+Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetInvocationInfo() -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetInvocationInfo(string? assemblyName, string! methodIdentifier, long dotNetObjectId, string? callId) -> void
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.DotNetObjectId.get -> long
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.MethodIdentifier.get -> string!

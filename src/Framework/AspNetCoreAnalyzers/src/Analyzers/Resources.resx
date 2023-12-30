@@ -207,4 +207,112 @@
   <data name="Analyzer_HeaderDictionaryAdd_Title" xml:space="preserve">
     <value>Suggest using IHeaderDictionary.Append or the indexer</value>
   </data>
+  <data name="Analyzer_MultipleFromBody_Message" xml:space="preserve">
+    <value>Route handler has multiple parameters with the [FromBody] attribute or a parameter with an [AsParameters] attribute where the parameter type contains multiple members with [FromBody] attributes. Only one parameter can have a [FromBody] attribute.</value>
+  </data>
+  <data name="Analyzer_MultipleFromBody_Title" xml:space="preserve">
+    <value>Route handler has multiple parameters with the [FromBody] attribute</value>
+  </data>
+  <data name="Analyzer_DoNotUseModelBindingAttributesOnRouteHandlerParameters_Title" xml:space="preserve">
+    <value>Do not use model binding attributes with route handlers</value>
+  </data>
+  <data name="Analyzer_DoNotUseModelBindingAttributesOnRouteHandlerParameters_Message" xml:space="preserve">
+    <value>{0} should not be specified for a {1} Delegate parameter</value>
+  </data>
+  <data name="Analyzer_DoNotReturnActionResultsFromRouteHandlers_Title" xml:space="preserve">
+    <value>Do not use action results with route handlers</value>
+  </data>
+  <data name="Analyzer_DoNotReturnActionResultsFromRouteHandlers_Message" xml:space="preserve">
+    <value>IActionResult instances should not be returned from a {0} Delegate parameter. Consider returning an equivalent result from Microsoft.AspNetCore.Http.Results.</value>
+  </data>
+  <data name="Analyzer_DetectMisplacedLambdaAttribute_Title" xml:space="preserve">
+    <value>Do not place attribute on method called by route handler lambda</value>
+  </data>
+  <data name="Analyzer_DetectMisplacedLambdaAttribute_Message" xml:space="preserve">
+    <value>'{0}' should be placed directly on the route handler lambda to be effective</value>
+  </data>
+  <data name="Analyzer_DoNotUseNonLiteralSequenceNumbers_Title" xml:space="preserve">
+    <value>Do not use non-literal sequence numbers</value>
+  </data>
+  <data name="Analyzer_DoNotUseNonLiteralSequenceNumbers_Message" xml:space="preserve">
+    <value>'{0}' should not be used as a sequence number. Instead, use an integer literal representing source code order.</value>
+  </data>
+  <data name="Analyzer_DetectMismatchedParameterOptionality_Title" xml:space="preserve">
+    <value>Route parameter and argument optionality is mismatched</value>
+  </data>
+  <data name="Analyzer_DetectMismatchedParameterOptionality_Message" xml:space="preserve">
+    <value>'{0}' argument should be annotated as optional or nullable to match route parameter</value>
+  </data>
+  <data name="Analyzer_DoNotUseConfigureWebHostWithConfigureHostBuilder_Title" xml:space="preserve">
+    <value>Do not use ConfigureWebHost with WebApplicationBuilder.Host</value>
+  </data>
+  <data name="Analyzer_DoNotUseConfigureWebHostWithConfigureHostBuilder_Message" xml:space="preserve">
+    <value>ConfigureWebHost cannot be used with WebApplicationBuilder.Host</value>
+  </data>
+  <data name="Analyzer_DoNotUseConfigureWithConfigureWebHostBuilder_Title" xml:space="preserve">
+    <value>Do not use Configure with WebApplicationBuilder.WebHost</value>
+  </data>
+  <data name="Analyzer_DoNotUseConfigureWithConfigureWebHostBuilder_Message" xml:space="preserve">
+    <value>Configure cannot be used with WebApplicationBuilder.WebHost</value>
+  </data>
+  <data name="Analyzer_DoNotUseUseStartupWithConfigureWebHostBuilder_Title" xml:space="preserve">
+    <value>Do not use UseStartup with WebApplicationBuilder.WebHost</value>
+  </data>
+  <data name="Analyzer_DoNotUseUseStartupWithConfigureWebHostBuilder_Message" xml:space="preserve">
+    <value>UseStartup cannot be used with WebApplicationBuilder.WebHost</value>
+  </data>
+  <data name="Analyzer_DoNotUseHostConfigureLogging_Title" xml:space="preserve">
+    <value>Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLogging</value>
+  </data>
+  <data name="Analyzer_DoNotUseHostConfigureLogging_Message" xml:space="preserve">
+    <value>Suggest using builder.Logging instead of {0}</value>
+  </data>
+  <data name="Analyzer_DoNotUseHostConfigureServices_Title" xml:space="preserve">
+    <value>Suggest using builder.Services over Host.ConfigureServices or WebHost.ConfigureServices</value>
+  </data>
+  <data name="Analyzer_DoNotUseHostConfigureServices_Message" xml:space="preserve">
+    <value>Suggest using builder.Services instead of {0}</value>
+  </data>
+  <data name="Analyzer_DisallowConfigureAppConfigureHostBuilder_Title" xml:space="preserve">
+    <value>Suggest switching from using Configure methods to WebApplicationBuilder.Configuration</value>
+  </data>
+  <data name="Analyzer_DisallowConfigureAppConfigureHostBuilder_Message" xml:space="preserve">
+    <value>Suggest using WebApplicationBuilder.Configuration instead of {0}</value>
+  </data>
+  <data name="Analyzer_UseTopLevelRouteRegistrationsInsteadOfUseEndpoints_Title" xml:space="preserve">
+    <value>Suggest using top level route registrations</value>
+  </data>
+  <data name="Analyzer_UseTopLevelRouteRegistrationsInsteadOfUseEndpoints_Message" xml:space="preserve">
+    <value>Suggest using top level route registrations instead of {0}</value>
+  </data>
+  <data name="Analyzer_RouteParameterComplexTypeIsNotParsable_Title" xml:space="preserve">
+    <value>Complex types referenced by route parameters must be parsable</value>
+  </data>
+  <data name="Analyzer_RouteParameterComplexTypeIsNotParsable_Message" xml:space="preserve">
+    <value>Parameter '{0}' of type {1} should define a bool TryParse(string, IFormatProvider, out {1}) method, or implement IParsable&lt;{1}&gt;</value>
+  </data>
+  <data name="Analyzer_BindAsyncSignatureMustReturnValueTaskOfT_Title" xml:space="preserve">
+    <value>When implementing BindAsync(...) method, the return type must be ValueTask&lt;T&gt;</value>
+  </data>
+  <data name="Analyzer_BindAsyncSignatureMustReturnValueTaskOfT_Message" xml:space="preserve">
+    <value>Parameter '{0}' of type {1} has a BindAsync(...) method, but the return type is not ValueTask&lt;{1}&gt;. Consider implementing IBindableFromHttpContext&lt;{1}&gt; to enforce implementation.</value>
+  </data>
+  <data name="Analyzer_AmbiguousRouteHandlerRoute_Title" xml:space="preserve">
+    <value>Route conflict detected between route handlers</value>
+  </data>
+  <data name="Analyzer_AmbiguousRouteHandlerRoute_Message" xml:space="preserve">
+    <value>Route '{0}' conflicts with another handler route. An HTTP request that matches multiple routes results in an ambiguous match error. Fix the conflict by changing the route's pattern, HTTP method, or route constraints.</value>
+  </data>
+  <data name="Analyzer_AmbiguousActionRoute_Title" xml:space="preserve">
+    <value>Route conflict detected between controller actions</value>
+  </data>
+  <data name="Analyzer_AmbiguousActionRoute_Message" xml:space="preserve">
+    <value>Route '{0}' conflicts with another action route. An HTTP request that matches multiple routes results in an ambiguous match error. Fix the conflict by changing the route's pattern, HTTP method, or route constraints.</value>
+  </data>
+  <data name="Analyzer_UseAddAuthorizationBuilder_Message" xml:space="preserve">
+    <value>Use AddAuthorizationBuilder to register authorization services and construct policies</value>
+  </data>
+  <data name="Analyzer_UseAddAuthorizationBuilder_Title" xml:space="preserve">
+    <value>Use AddAuthorizationBuilder</value>
+  </data>
 </root>

@@ -24,10 +24,7 @@ public sealed class AcceptVerbsAttribute : Attribute, IActionHttpMethodProvider,
     public AcceptVerbsAttribute(string method)
         : this(new[] { method })
     {
-        if (method == null)
-        {
-            throw new ArgumentNullException(nameof(method));
-        }
+        ArgumentNullException.ThrowIfNull(method);
     }
 
     /// <summary>

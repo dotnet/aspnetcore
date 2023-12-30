@@ -30,10 +30,7 @@ public class HtmlHelperOptions
         get => _idAttributeDotReplacement;
         set
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            ArgumentNullException.ThrowIfNull(value);
 
             _idAttributeDotReplacement = value;
         }

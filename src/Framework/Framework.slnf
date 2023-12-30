@@ -6,9 +6,11 @@
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
+      "src\\Components\\Endpoints\\src\\Microsoft.AspNetCore.Components.Endpoints.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
+      "src\\Components\\WebAssembly\\Server\\src\\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj",
       "src\\Configuration.KeyPerFile\\src\\Microsoft.Extensions.Configuration.KeyPerFile.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
@@ -60,6 +62,7 @@
       "src\\Middleware\\Localization.Routing\\src\\Microsoft.AspNetCore.Localization.Routing.csproj",
       "src\\Middleware\\Localization\\src\\Microsoft.AspNetCore.Localization.csproj",
       "src\\Middleware\\OutputCaching\\src\\Microsoft.AspNetCore.OutputCaching.csproj",
+      "src\\Middleware\\RateLimiting\\src\\Microsoft.AspNetCore.RateLimiting.csproj",
       "src\\Middleware\\ResponseCaching.Abstractions\\src\\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj",
       "src\\Middleware\\ResponseCaching\\src\\Microsoft.AspNetCore.ResponseCaching.csproj",
       "src\\Middleware\\ResponseCompression\\src\\Microsoft.AspNetCore.ResponseCompression.csproj",
@@ -95,6 +98,7 @@
       "src\\Servers\\IIS\\IIS\\src\\Microsoft.AspNetCore.Server.IIS.csproj",
       "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
       "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Transport.NamedPipes\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\SignalR\\common\\Http.Connections.Common\\src\\Microsoft.AspNetCore.Http.Connections.Common.csproj",
@@ -103,7 +107,7 @@
       "src\\SignalR\\common\\SignalR.Common\\src\\Microsoft.AspNetCore.SignalR.Common.csproj",
       "src\\SignalR\\server\\Core\\src\\Microsoft.AspNetCore.SignalR.Core.csproj",
       "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

@@ -52,20 +52,9 @@ internal sealed class W3CLoggingMiddleware
     /// <param name="w3cLogger"></param>
     public W3CLoggingMiddleware(RequestDelegate next, IOptionsMonitor<W3CLoggerOptions> options, W3CLogger w3cLogger)
     {
-        if (next == null)
-        {
-            throw new ArgumentNullException(nameof(next));
-        }
-
-        if (options == null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
-
-        if (w3cLogger == null)
-        {
-            throw new ArgumentNullException(nameof(w3cLogger));
-        }
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(w3cLogger);
 
         _next = next;
         _options = options;

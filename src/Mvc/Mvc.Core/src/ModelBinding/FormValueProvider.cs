@@ -29,15 +29,8 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
         CultureInfo? culture)
         : base(bindingSource)
     {
-        if (bindingSource == null)
-        {
-            throw new ArgumentNullException(nameof(bindingSource));
-        }
-
-        if (values == null)
-        {
-            throw new ArgumentNullException(nameof(values));
-        }
+        ArgumentNullException.ThrowIfNull(bindingSource);
+        ArgumentNullException.ThrowIfNull(values);
 
         _values = values;
 
@@ -79,10 +72,7 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
     /// <inheritdoc />
     public virtual IDictionary<string, string> GetKeysFromPrefix(string prefix)
     {
-        if (prefix == null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix);
 
         return PrefixContainer.GetKeysFromPrefix(prefix);
     }
@@ -90,10 +80,7 @@ public class FormValueProvider : BindingSourceValueProvider, IEnumerableValuePro
     /// <inheritdoc />
     public override ValueProviderResult GetValue(string key)
     {
-        if (key == null)
-        {
-            throw new ArgumentNullException(nameof(key));
-        }
+        ArgumentNullException.ThrowIfNull(key);
 
         if (key.Length == 0)
         {

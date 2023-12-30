@@ -37,10 +37,7 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
         IFilterMetadata[] filters)
         : base(diagnosticListener, logger, actionContextAccessor, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
     {
-        if (cacheEntry == null)
-        {
-            throw new ArgumentNullException(nameof(cacheEntry));
-        }
+        ArgumentNullException.ThrowIfNull(cacheEntry);
 
         _cacheEntry = cacheEntry;
         _controllerContext = controllerContext;

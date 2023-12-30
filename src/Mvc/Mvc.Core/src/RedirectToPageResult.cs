@@ -204,10 +204,7 @@ public class RedirectToPageResult : ActionResult, IKeepTempDataResult
     /// <inheritdoc />
     public override Task ExecuteResultAsync(ActionContext context)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<RedirectToPageResult>>();
         return executor.ExecuteAsync(context, this);

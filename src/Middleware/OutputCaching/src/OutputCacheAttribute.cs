@@ -30,7 +30,7 @@ public sealed class OutputCacheAttribute : Attribute
     }
 
     /// <summary>
-    /// Gets or sets the value which determines whether the reponse should be cached or not.
+    /// Gets or sets the value which determines whether the response should be cached or not.
     /// When set to <see langword="true"/>, the response won't be cached.
     /// </summary>
     public bool NoStore
@@ -53,6 +53,11 @@ public sealed class OutputCacheAttribute : Attribute
     /// Gets or sets the route value names to vary by.
     /// </summary>
     public string[]? VaryByRouteValueNames { get; init; }
+
+    /// <summary>
+    /// Gets or sets tags to apply to the output cache.
+    /// </summary>
+    public string[]? Tags { get; init; }
 
     /// <summary>
     /// Gets or sets the value of the cache policy name.
@@ -97,6 +102,11 @@ public sealed class OutputCacheAttribute : Attribute
         if (VaryByRouteValueNames != null)
         {
             builder.SetVaryByRouteValue(VaryByRouteValueNames);
+        }
+
+        if (Tags != null)
+        {
+            builder.Tag(Tags);
         }
 
         if (_duration != null)

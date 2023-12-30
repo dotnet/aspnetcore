@@ -243,12 +243,11 @@ namespace System.Net.Http.QPack
             // will no longer be valid.
             if (_headerNameRange != null)
             {
-                EnsureStringCapacity(ref _headerNameOctets, _stringLength, existingLength: 0);
+                EnsureStringCapacity(ref _headerNameOctets, _headerNameLength, existingLength: 0);
                 _headerName = _headerNameOctets;
 
                 ReadOnlySpan<byte> headerBytes = data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
                 headerBytes.CopyTo(_headerName);
-                _headerNameLength = headerBytes.Length;
                 _headerNameRange = null;
             }
         }
@@ -294,6 +293,7 @@ namespace System.Net.Http.QPack
             {
                 // Fast path. Store the range rather than copying.
                 _headerNameRange = (start: currentIndex, count);
+                _headerNameLength = _stringLength;
                 currentIndex += count;
 
                 _state = State.HeaderValueLength;

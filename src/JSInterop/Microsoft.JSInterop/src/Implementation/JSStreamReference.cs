@@ -14,7 +14,7 @@ public sealed class JSStreamReference : JSObjectReference, IJSStreamReference
     public long Length { get; }
 
     /// <summary>
-    /// Inititializes a new <see cref="JSStreamReference"/> instance.
+    /// Initializes a new <see cref="JSStreamReference"/> instance.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="JSRuntime"/> used for invoking JS interop calls.</param>
     /// <param name="id">The unique identifier.</param>

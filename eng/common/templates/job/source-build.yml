@@ -46,20 +46,12 @@ jobs:
     # source-build builds run in Docker, including the default managed platform.
     # /eng/common/templates/variables/pool-providers.yml can't be used here (some customers declare variables already), so duplicate its logic
     pool:
-      # Main environments
-      ${{ if and(eq(variables['System.TeamProject'], 'public'), ne(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), true)) }}:
-        name: NetCore-Public
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore-Svc-Public' ), False, 'NetCore-Public')]
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
-      ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), true)) }}:
-        name: NetCore1ESPool-Internal
-        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
 
-      # Servicing build environments
-      ${{ if and(eq(variables['System.TeamProject'], 'public'), contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release')) }}:
-        name: NetCore-Svc-Public
-        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
-      ${{ if and(eq(variables['System.TeamProject'], 'internal'), contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release')) }}:
-        name: NetCore1ESPool-Svc-Internal
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore1ESPool-Svc-Internal'), False, 'NetCore1ESPool-Internal')]
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
 
   ${{ if ne(parameters.platform.pool, '') }}:

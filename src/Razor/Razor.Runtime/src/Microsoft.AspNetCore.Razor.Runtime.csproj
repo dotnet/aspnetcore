@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Runtime infrastructure for rendering Razor pages and tag helpers.</Description>
@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,4 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Razor.Runtime.Test" />
+  </ItemGroup>
 </Project>

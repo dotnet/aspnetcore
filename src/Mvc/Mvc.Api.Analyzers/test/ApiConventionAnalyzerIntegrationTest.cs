@@ -41,6 +41,10 @@ public class ApiConventionAnalyzerIntegrationTest
         => RunNoDiagnosticsAreReturned();
 
     [Fact]
+    public Task NoDiagnosticsAreReturned_ForApiController_WhenMethodNeverReturns()
+        => RunNoDiagnosticsAreReturned();
+
+    [Fact]
     public async Task DiagnosticsAreReturned_ForIncompleteActionResults()
     {
         // Arrange
@@ -122,6 +126,72 @@ namespace Test
         public ActionResult<string> Test()
         {
             return NotFound(null);
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+        var expectedLocation = testSource.DefaultMarkerLocation;
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromSwitchExpression()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        public IActionResult Get(bool b)
+        {
+            return b switch
+            {
+                true => Ok(),
+                false => BadRequest()
+            };
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+        var expectedLocation = testSource.DefaultMarkerLocation;
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+        [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromSwitchStatement()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        public IActionResult Get(bool b)
+        {
+            switch (b)
+            {
+                case true:
+                    return Ok();
+                case false:
+                    return BadRequest();
+            }
         }
     }
 }";
