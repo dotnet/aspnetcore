@@ -9,7 +9,7 @@
     "MonoPlatform.*"
   ],
   "scripts": {
-    "clean": "npx rimraf ./dist/Debug ./dist/Release",
+    "clean": "rimraf ./dist/Debug ./dist/Release",
     "prebuild": "npm run clean",
     "lint": "eslint -c ./src/.eslintrc.js --ext .ts ./src",
     "test": "jest",

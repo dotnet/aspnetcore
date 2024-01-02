@@ -5,8 +5,8 @@
     "clean": "rimraf ./dist/Debug ./dist/Release",
     "prebuild": "npm run clean",
     "build": "npm run build:debug && npm run build:production",
-    "build:debug": "npx webpack --mode development --config ./webpack.config.js",
-    "build:production": "npx webpack --mode production --config ./webpack.config.js"
+    "build:debug": "webpack --mode development --config ./webpack.config.js",
+    "build:production": "webpack --mode production --config ./webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
