@@ -2,10 +2,10 @@
   "name": "components.authentication",
   "private": true,
   "scripts": {
-    "clean": "npx rimraf ./dist/Debug ./dist/Release",
+    "clean": "rimraf ./dist/Debug ./dist/Release",
     "build": "npm run build:debug && npm run build:production",
-    "build:debug": "npx webpack --mode development --config ./webpack.config.js",
-    "build:production": "npx webpack --mode production --config ./webpack.config.js"
+    "build:debug": "webpack --mode development --config ./webpack.config.js",
+    "build:production": "webpack --mode production --config ./webpack.config.js"
   },
   "sideEffects": [
     "AuthenticationService.*"
