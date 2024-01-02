@@ -43,7 +43,6 @@ export default ({ environment }) => {
         preventAssignment: true
       }),
       terser({
-        ecma: 2020,
         compress: {
           passes: 3
         },
@@ -57,9 +56,10 @@ export default ({ environment }) => {
         toplevel: true
       })
       ,
-      environment === 'development' && filesize({ showMinifiedSize: true, showGzippedSize: true, showBrotliSize: true })
+      environment !== 'development' && filesize({ showMinifiedSize: true, showGzippedSize: true, showBrotliSize: true })
     ],
-    treeshake: 'smallest'
+    treeshake: 'smallest',
+    logLevel: 'silent'
   };
 
   return Object.entries(inputOutputMap).map(([output, input]) => {
