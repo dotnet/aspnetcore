@@ -31,6 +31,8 @@ Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts 
 different bundles that only contain minimal content.
 */
 
+const acceptHeader = 'text/html; blazor-enhanced-nav=on';
+
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
@@ -116,33 +118,52 @@ function onDocumentSubmit(event: SubmitEvent) {
       return;
     }
 
-    event.preventDefault();
-
-    let url = new URL(formElem.action);
-    const fetchOptions: RequestInit = { method: formElem.method };
-    const formData = new FormData(formElem);
-  
-    const submitter = event.submitter as HTMLButtonElement;
-    if (submitter) {
-      if (submitter.name) {
-        // Replicate the normal behavior of appending the submitter name/value to the form data
-        formData.append(submitter.name, submitter.value);
-      }
-      if (submitter.getAttribute("formaction") !== null) {
-        // Replicate the normal behavior of overriding action attribute of form element
-        url = new URL(submitter.formAction);
-      }
+    const method = event.submitter?.getAttribute('formmethod') || formElem.method;
+    if (method === 'dialog') {
+      console.warn('A form cannot be enhanced when its method is "dialog".');
+      return;
     }
 
+    const target = event.submitter?.getAttribute('formtarget') || formElem.target;
+    if (target !== '' && target !== '_self') {
+      console.warn('A form cannot be enhanced when its target is different from the default value "_self".');
+      return;
+    }
+
+    event.preventDefault();
+
+    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI); 
+    const fetchOptions: RequestInit = { method: method}; 
+    const formData = new FormData(formElem);
+   
+    const submitterName = event.submitter?.getAttribute('name');
+    const submitterValue = event.submitter!.getAttribute('value');
+    if (submitterName && submitterValue) {
+      formData.append(submitterName, submitterValue);
+    }
+
+    const urlSearchParams = new URLSearchParams(formData as any).toString();
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
-      url.search = new URLSearchParams(formData as any).toString();
+      url.search = urlSearchParams;
 
       // For forms with method=get, we need to push a URL history entry equivalent to how it
       // would be pushed for a native <form method=get> submission. This is also equivalent to
       // how we push a URL history entry before starting enhanced page load on an <a> click.
       history.pushState(null, /* ignored title */ '', url.toString());
     } else {
-      fetchOptions.body = formData;
+      // Setting request body and content-type header depending on enctype
+      const enctype = event.submitter?.getAttribute('formenctype') || formElem.enctype;
+      if (enctype === 'multipart/form-data') { 
+        // Content-Type header will be set to 'multipart/form-data' 
+        fetchOptions.body = formData;
+      } else {
+        fetchOptions.body = urlSearchParams;
+        fetchOptions.headers = {
+          'content-type': enctype,
+          // Setting Accept header here as well so it wouldn't be lost when coping headers
+          'accept': acceptHeader
+        };
+      }
     }
 
     performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
@@ -168,7 +189,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     headers: {
       // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
       // enhanced nav as a MIME type parameter
-      'accept': 'text/html; blazor-enhanced-nav=on',
+      'accept': acceptHeader,
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;

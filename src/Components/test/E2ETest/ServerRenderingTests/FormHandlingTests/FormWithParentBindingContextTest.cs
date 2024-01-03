@@ -1368,6 +1368,101 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Equal("Formaction url", () => Browser.Exists(By.TagName("html")).Text);
     }
 
+    [Fact]
+    public void SubmitButtonFormmethodAttributeOverridesEnhancedFormMethod()
+    {
+        GoTo("forms/form-with-method-and-submit-button-with-formmethod/get/post");
+        Browser.DoesNotExist(By.Id("submitted"));
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("Form submitted!", () => Browser.Exists(By.Id("submitted")).Text);
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenMethodEqualsDialog()
+    {
+        GoTo("forms/form-with-method-and-submit-button-with-formmethod/dialog");
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of the form element because the default behavior is to stay on the page.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its method is \\\"dialog\\\"."));
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenFormmethodEqualsDialog()
+    {
+        GoTo("forms/form-with-method-and-submit-button-with-formmethod/get/dialog");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of the form element because the default behavior is to stay on the page.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its method is \\\"dialog\\\"."));
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenTargetIsNotEqualSelf()
+    {
+        GoTo("forms/form-with-target-and-submit-button-with-formtarget/_blank");
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of form element because the default behavior is to open a new browser tab and the form remains on the original tab.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
+    }
+
+    [Fact]
+    public void FormNotEnhancedWhenFormtargetIsNotEqualSelf()
+    {
+        GoTo("forms/form-with-target-and-submit-button-with-formtarget/_self/_blank");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // We are not checking staleness of form element because the default behavior is to open a new browser tab and the form remains on the original tab.
+        // Check the warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.True(logs.Count > 0);
+        Assert.Contains(logs, log => log.Message.Contains("A form cannot be enhanced when its target is different from the default value \\\"_self\\\"."));
+    }
+
+    [Fact]
+    public void FormEnctypeEqualsDefaultWhenNotSpecified()
+    {
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("application/x-www-form-urlencoded", () => Browser.Exists(By.Id("content-type")).Text);
+    }
+
+    [Fact]
+    public void FormEnctypeSetsContentTypeHeader()
+    {
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype?enctype=multipart/form-data");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Contains("multipart/form-data", () => Browser.Exists(By.Id("content-type")).Text);
+    }
+
+    [Fact]
+    public void SubmitButtonFormenctypeAttributeOverridesEnhancedFormEnctype()
+    {
+        GoTo("forms/form-with-enctype-and-submit-button-with-formenctype?enctype=text/plain&formenctype=application/x-www-form-urlencoded");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("application/x-www-form-urlencoded", () => Browser.Exists(By.Id("content-type")).Text);
+    }
+
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
     // to an absolute URL. We want to be able to assert about the attribute's literal value.
     private string ReadFormActionAttribute(IWebElement form)
