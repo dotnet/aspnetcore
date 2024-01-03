@@ -24,16 +24,6 @@ Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Th
 Microsoft.JSInterop.IJSStreamReference
 Microsoft.JSInterop.IJSStreamReference.Length.get -> long
 Microsoft.JSInterop.IJSStreamReference.OpenReadStreamAsync(long maxAllowedSize = 512000, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
-Microsoft.JSInterop.IJSUnmarshalledObjectReference
-Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<T0, T1, T2, TResult>(string! identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledRuntime
-Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string! identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
-Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Dispose() -> void
 Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Invoke<TValue>(string! identifier, params object?[]? args) -> TValue
