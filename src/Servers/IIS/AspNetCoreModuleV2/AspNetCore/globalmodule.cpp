@@ -43,19 +43,12 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     UNREFERENCED_PARAMETER(pProvider);
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
 
-    if (m_shutdown.joinable())
+    if (!g_fInShutdown && !m_shutdown.joinable())
     {
-        m_shutdown.join();
-    }
-    else
-    {
-        if (!g_fInShutdown && m_pApplicationManager && m_pApplicationManager->IsCommandLineLaunch() &&
-            m_pApplicationManager->ShouldRecycleOnConfigChange())
-        {
-            // IISExpress can close without calling OnGlobalStopListening which is where we usually would trigger shutdown
-            // so we should make sure to shutdown the server
-            StartShutdown();
-        }
+        // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
+        // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
+        // so we should make sure to shutdown the server in those cases
+        StartShutdown();
     }
 
     return GL_NOTIFICATION_CONTINUE;

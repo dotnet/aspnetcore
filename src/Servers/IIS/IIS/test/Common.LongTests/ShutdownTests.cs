@@ -257,7 +257,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         // Shutdown should be graceful here!
         EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            EventLogHelpers.InProcessShutdown(), Logger);
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -295,7 +295,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         // Shutdown should be graceful here!
         EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            EventLogHelpers.InProcessShutdown(), Logger);
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -333,7 +333,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         // Shutdown should be graceful here!
         EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            EventLogHelpers.InProcessShutdown(), Logger);
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
     [ConditionalFact]
