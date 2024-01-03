@@ -31,7 +31,6 @@
     "karma-junit-reporter": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "karma-safari-launcher": "^1.0.0",
-    "karma-sauce-launcher": "^4.3.6",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-summary-reporter": "^3.0.0",
     "mitt": "^3.0.0",
