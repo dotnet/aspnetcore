@@ -412,9 +412,9 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.23615.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.23621.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>236d6c586677394a698d79fb2ff8e60bcc41ab0c</Sha>
+      <Sha>6b058bf0b8942460db4f0ef953e8a0e44db0474c</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
