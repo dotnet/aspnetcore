@@ -110,14 +110,14 @@ Please see the [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/m
 
 ##### WebAssembly Trimming
 
-By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedApps` property set. For e.g.
+By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedOrMultithreadingApps` property set. For e.g.
 
 ```
 dotnet test -c Release
 ```
 or
 ```
-dotnet build /p:TestTrimmedApps=true
+dotnet build /p:TestTrimmedOrMultithreadingApps=true
 dotnet test --no-build
 ```
 
