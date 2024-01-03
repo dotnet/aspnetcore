@@ -23,7 +23,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
     private readonly Dispatcher _dispatcher;
-    internal static SynchronizationContext? _mainSynchronizationContext;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
@@ -31,9 +30,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
         // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
-        _dispatcher = _mainSynchronizationContext == null
+        _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
             ? NullDispatcher.Instance
-            : new WebAssemblyDispatcher(_mainSynchronizationContext);
+            : new WebAssemblyDispatcher();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;

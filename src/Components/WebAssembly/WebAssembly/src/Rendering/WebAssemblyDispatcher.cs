@@ -9,14 +9,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 // Because all of the Dispatcher.InvokeAsync methods return Task, we don't need to propagate errors via OnUnhandledException handler
 internal sealed class WebAssemblyDispatcher : Dispatcher
 {
-    private readonly SynchronizationContext _mainSyncContext;
+    internal static SynchronizationContext? _mainSynchronizationContext;
+    internal static int _mainManagedThreadId;
 
-    public WebAssemblyDispatcher(SynchronizationContext mainSyncContext)
-    {
-        _mainSyncContext = mainSyncContext;
-    }
-
-    public override bool CheckAccess() => SynchronizationContext.Current == _mainSyncContext;
+    // we really need the UI thread not just the right context, because JS objects have thread affinity
+    public override bool CheckAccess() => _mainManagedThreadId == Environment.CurrentManagedThreadId;
 
     public override Task InvokeAsync(Action workItem)
     {
@@ -34,7 +31,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
 
         // RendererSynchronizationContext doesn't need to deal with thread affinity and so it could execute jobs on calling thread as optimization.
         // we could not do it for WASM/JavaScript, because we need to solve for thread affinity of JavaScript objects, so we always Post into the queue.
-        _mainSyncContext.Post(static (object? o) =>
+        _mainSynchronizationContext!.Post(static (object? o) =>
         {
             var state = ((TaskCompletionSource tcs, Action workItem))o!;
             try
@@ -62,7 +59,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
 
         var tcs = new TaskCompletionSource<TResult>();
 
-        _mainSyncContext.Post(static (object? o) =>
+        _mainSynchronizationContext!.Post(static (object? o) =>
         {
             var state = ((TaskCompletionSource<TResult> tcs, Func<TResult> workItem))o!;
             try
@@ -92,7 +89,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
 
         var tcs = new TaskCompletionSource();
 
-        _mainSyncContext.Post(static (object? o) =>
+        _mainSynchronizationContext!.Post(static (object? o) =>
         {
             var state = ((TaskCompletionSource tcs, Func<Task> workItem))o!;
 
@@ -133,7 +130,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
 
         var tcs = new TaskCompletionSource<TResult>();
 
-        _mainSyncContext.Post(static (object? o) =>
+        _mainSynchronizationContext!.Post(static (object? o) =>
         {
             var state = ((TaskCompletionSource<TResult> tcs, Func<Task<TResult>> workItem))o!;
             try

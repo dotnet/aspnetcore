@@ -184,7 +184,8 @@ public sealed class WebAssemblyHostBuilder
         // capture the JSSynchronizationContext from the main thread, which runtime already installed.
         // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
         // if user somehow installed SynchronizationContext different from JSSynchronizationContext, they need to make sure the behavior is consistent with JSSynchronizationContext.
-        WebAssemblyRenderer._mainSynchronizationContext = SynchronizationContext.Current;
+        WebAssemblyDispatcher._mainSynchronizationContext = SynchronizationContext.Current;
+        WebAssemblyDispatcher._mainManagedThreadId = Environment.CurrentManagedThreadId;
     }
 
     /// <summary>
