@@ -162,9 +162,16 @@ public class EventLogHelpers
         }
     }
 
-    public static string InProcessShutdown()
+    public static string ShutdownMessage(IISDeploymentResult deploymentResult)
     {
-        return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
+        if (deploymentResult.DeploymentParameters.HostingModel == HostingModel.InProcess)
+        {
+            return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
+        }
+        else
+        {
+            return "Application '/LM/W3SVC/1/ROOT' with physical root '.*?' shut down process with Id '.*?' listening on port '.*?'";
+        }
     }
 
     public static string ShutdownFileChange(IISDeploymentResult deploymentResult)
