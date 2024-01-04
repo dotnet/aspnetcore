@@ -203,7 +203,6 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     setTimeout(() => {
       this._isComponentRefreshPending = false;
       this.refreshRootComponents(this._rootComponentsBySsrComponentId.values());
-      this.circuitMayHaveNoRootComponents();
     }, 0);
   }
 
@@ -299,6 +298,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         this.updateWebAssemblyRootComponents(batchJson);
       }
     }
+
+    this.circuitMayHaveNoRootComponents();
   }
 
   private updateWebAssemblyRootComponents(operationsJson: string) {

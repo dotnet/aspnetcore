@@ -21,10 +21,8 @@
         const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
         const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
-        const useLongWebAssemblyTimeout = sessionStorage.getItem('use-long-auto-timeout') === 'true';
         sessionStorage.removeItem('suppress-enhanced-navigation');
         sessionStorage.removeItem('block-load-boot-resource');
-        sessionStorage.removeItem('use-long-auto-timeout');
         sessionStorage.removeItem('enable-classic-initializers');
 
         let loadBootResourceUnblocked = null;
@@ -64,10 +62,6 @@
                         }
                     },
                 },
-            }).then(() => {
-                if (useLongWebAssemblyTimeout) {
-                    Blazor._internal.loadWebAssemblyQuicklyTimeout = 10000000;
-                }
             }).then(() => {
                 const startedParagraph = document.createElement('p');
                 startedParagraph.id = 'blazor-started';

@@ -659,7 +659,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
         ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -697,7 +696,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
         ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -715,14 +713,11 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Click(By.Id($"remove-counter-link-1"));
         Browser.DoesNotExist(By.Id("is-interactive-1"));
 
-        UseLongWebAssemblyLoadTimeout();
         Browser.Navigate().Refresh();
 
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-0")).Text);
 
-        BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
         ForceWebAssemblyResourceCacheMiss("dummy hash");
         Browser.Navigate().Refresh();
 
@@ -766,7 +761,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        UseLongWebAssemblyLoadTimeout();
         ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -1144,11 +1138,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     private void UnblockWebAssemblyResourceLoad()
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript("window.unblockLoadBootResource()");
-    }
-
-    private void UseLongWebAssemblyLoadTimeout()
-    {
-        ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('use-long-auto-timeout', 'true')");
     }
 
     private void ForceWebAssemblyResourceCacheMiss(string resourceHash = null)
