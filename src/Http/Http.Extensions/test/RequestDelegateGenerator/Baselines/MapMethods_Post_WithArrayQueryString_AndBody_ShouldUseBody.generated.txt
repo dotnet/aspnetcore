@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     file static class GeneratedRouteBuilderExtensionsCore
     {
         private static readonly JsonOptions FallbackJsonOptions = new();
-        
+
         [InterceptsLocation(@"TestMapActions.cs", 26, 13)]
         internal static RouteHandlerBuilder MapMethods0(
             this IEndpointRouteBuilder endpoints,
@@ -72,7 +72,9 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var serviceProvider = options.ServiceProvider ?? options.EndpointBuilder.ApplicationServices;
                 var serviceProviderIsService = serviceProvider.GetRequiredService<IServiceProviderIsService>();
                 var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
+                    #nullable disable
                     (false, typeof(global::System.String[])),
+                    #nullable restore
                 };
                 foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
                 {

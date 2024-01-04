@@ -320,10 +320,12 @@ internal static class StaticRouteHandlerModelEmitter
 
             codeWriter.WriteLine("var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {");
             codeWriter.Indent++;
+            codeWriter.WriteLine("#nullable disable");
             foreach (var parameter in potentialImplicitBodyParameters)
             {
                 codeWriter.WriteLine($$"""({{(parameter.IsOptional ? "true" : "false")}}, typeof({{parameter.Type.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}})),""");
             }
+            codeWriter.WriteLine("#nullable restore");
             codeWriter.Indent--;
             codeWriter.WriteLine("};");
             codeWriter.WriteLine("foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)");
