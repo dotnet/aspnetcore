@@ -1109,8 +1109,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 return;
             }
-
-            _rendererIsDisposed = true;
         }
 
         if (!Dispatcher.CheckAccess())
@@ -1128,6 +1126,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             return;
+        }
+
+        lock (_lockObject)
+        {
+            _rendererIsDisposed = true;
         }
 
         if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported)
