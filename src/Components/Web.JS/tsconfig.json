@@ -4,10 +4,9 @@
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
-    "sourceMap": true,
-    "target": "es2019",
+    "target": "es2020",
     "module": "es2020",
-    "lib": ["es2019", "dom"],
+    "lib": ["es2020", "dom"],
     "strict": true,
   }
 }
