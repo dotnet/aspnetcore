@@ -53,9 +53,9 @@
     <Message Text="Computed package version info: %(_NodePackageNameAndVersions.PackageName)=%(_NodePackageNameAndVersions.PackageVersion)" Importance="high" />
     -->
     <ItemGroup>
-      <_ResolvedPackageVersionInfo>
+      <_NodePackageNameAndVersions>
         <PackageVersion>$(PackageVersion)</PackageVersion>
-      </_ResolvedPackageVersionInfo>
+      </_NodePackageNameAndVersions>
     </ItemGroup>
   </Target>
 
