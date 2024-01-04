@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -303,7 +304,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
     {
         lock (_pathLock)
         {
-            var searchString = FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.*.txt");
+            var searchString = string.Create(CultureInfo.InvariantCulture, $"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.*.txt");
             var files = new DirectoryInfo(_path)
                 .GetFiles(searchString);
 
@@ -326,7 +327,7 @@ internal partial class FileLoggerProcessor : IAsyncDisposable
                 _fileNumber = 0;
                 _maxFilesReached = false;
             }
-            return Path.Combine(_path, FormattableString.Invariant($"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
+            return Path.Combine(_path, string.Create(CultureInfo.InvariantCulture, $"{_fileName}{date.Year:0000}{date.Month:00}{date.Day:00}.{_fileNumber:0000}.txt"));
         }
     }
 

@@ -95,7 +95,7 @@ public class ViewViewComponentResult : IViewComponentResult
             //
             // This supports a controller or area providing an override for component views.
             var viewName = isNullOrEmptyViewName ? DefaultViewName : ViewName;
-            var qualifiedViewName = FormattableString.Invariant($"Components/{context.ViewComponentDescriptor.ShortName}/{viewName}");
+            var qualifiedViewName = string.Create(CultureInfo.InvariantCulture, $"Components/{context.ViewComponentDescriptor.ShortName}/{viewName}");
 
             result = viewEngine.FindView(viewContext, qualifiedViewName, isMainPage: false);
         }

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -221,7 +222,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
             sb.AppendLine("=======");
             foreach (var pair in httpContext.Request.Headers)
             {
-                sb.AppendLine(FormattableString.Invariant($"{pair.Key}: {pair.Value}"));
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{pair.Key}: {pair.Value}");
             }
 
             await httpContext.Response.WriteAsync(sb.ToString());
