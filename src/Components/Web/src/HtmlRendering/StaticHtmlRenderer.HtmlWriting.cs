@@ -22,7 +22,7 @@ public partial class StaticHtmlRenderer
         typeof(FormMappingContext));
 
     private readonly TextEncoder _javaScriptEncoder;
-    private readonly TextEncoder _htmlEncoder;
+    private TextEncoder _htmlEncoder;
     private string? _closestSelectValueAsString;
 
     /// <summary>
