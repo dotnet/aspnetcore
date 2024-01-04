@@ -70,6 +70,42 @@ public class JsonConverterReadTests
     }
 
     [Fact]
+    public void ReadNullStringProperty()
+    {
+        var json = @"{
+  ""name"": null
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void ReadNullIntProperty()
+    {
+        var json = @"{
+  ""age"": null
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
+    public void ReadNullProperties()
+    {
+        var json = @"{
+  ""age"": null,
+  ""nullValue"": null,
+  ""json_customized_name"": null,
+  ""field_name"": null,
+  ""oneof_name1"": null,
+  ""sub"": null,
+  ""timestamp_value"": null
+}";
+
+        AssertReadJson<HelloRequest>(json);
+    }
+
+    [Fact]
     public void RepeatedStrings()
     {
         var json = @"{
@@ -144,6 +180,34 @@ public class JsonConverterReadTests
   ""singleString"": """",
   ""singleBytes"": """",
   ""singleEnum"": ""NESTED_ENUM_UNSPECIFIED""
+}";
+
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+    }
+
+    [Fact]
+    public void DataTypes_NullValues()
+    {
+        var json = @"{
+  ""singleInt32"": null,
+  ""singleInt64"": null,
+  ""singleUint32"": null,
+  ""singleUint64"": null,
+  ""singleSint32"": null,
+  ""singleSint64"": null,
+  ""singleFixed32"": null,
+  ""singleFixed64"": null,
+  ""singleSfixed32"": null,
+  ""singleSfixed64"": null,
+  ""singleFloat"": null,
+  ""singleDouble"": null,
+  ""singleBool"": null,
+  ""singleString"": null,
+  ""singleBytes"": null,
+  ""singleEnum"": null
 }";
 
         var serviceDescriptorRegistry = new DescriptorRegistry();
