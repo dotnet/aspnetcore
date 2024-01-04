@@ -1,10 +1,9 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import createBaseConfig from '../Shared.JS/rollup.config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-import createBaseConfig from '../Shared.JS/rollup.config.mjs';
 
 export default createBaseConfig({
   inputOutputMap: {
