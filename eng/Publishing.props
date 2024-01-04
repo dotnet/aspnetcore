@@ -107,7 +107,7 @@
     <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
         Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>
 
     <PropertyGroup>
