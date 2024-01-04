@@ -88,10 +88,7 @@ public class RegistryXmlRepository : IXmlRepository
                 // Even though this is in HKLM, WAS ensures that applications hosted in IIS are properly isolated.
                 // See APP_POOL::EnsureSharedMachineKeyStorage in WAS source for more info.
                 // The version number will need to change if IIS hosts Core CLR directly.
-                var aspnetAutoGenKeysBaseKeyName = string.Format(
-                    CultureInfo.InvariantCulture,
-                    @"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{0}",
-                    WindowsIdentity.GetCurrent()!.User!.Value);
+                var aspnetAutoGenKeysBaseKeyName = FormattableString.Invariant($@"SOFTWARE\Microsoft\ASP.NET\4.0.30319.0\AutoGenKeys\{WindowsIdentity.GetCurrent()!.User!.Value}");
 
                 var aspnetBaseKey = hklmBaseKey.OpenSubKey(aspnetAutoGenKeysBaseKeyName, writable: true);
                 if (aspnetBaseKey != null)

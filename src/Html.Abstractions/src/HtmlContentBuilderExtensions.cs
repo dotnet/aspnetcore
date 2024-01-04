@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Html;
 
@@ -56,6 +57,56 @@ public static class HtmlContentBuilderExtensions
         this IHtmlContentBuilder builder,
         IFormatProvider formatProvider,
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object?[] args)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(args);
+
+        builder.AppendHtml(new HtmlFormattableString(formatProvider, format, args));
+        return builder;
+    }
+
+    /// <summary>
+    /// Appends the specified <paramref name="format"/> to the existing content after replacing each format
+    /// item with the HTML encoded <see cref="string"/> representation of the corresponding item in the
+    /// <paramref name="args"/> array.
+    /// </summary>
+    /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
+    /// <param name="format">The composite format.</param>
+    /// <param name="args">
+    /// The object array to format. Each element in the array will be formatted and then HTML encoded.
+    /// </param>
+    /// <returns>A reference to this instance after the append operation has completed.</returns>
+    public static IHtmlContentBuilder AppendFormat(
+        this IHtmlContentBuilder builder,
+        CompositeFormat format,
+        params object?[] args)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(args);
+
+        builder.AppendHtml(new HtmlFormattableString(format, args));
+        return builder;
+    }
+
+    /// <summary>
+    /// Appends the specified <paramref name="format"/> to the existing content with information from the
+    /// <paramref name="formatProvider"/> after replacing each format item with the HTML encoded
+    /// <see cref="string"/> representation of the corresponding item in the <paramref name="args"/> array.
+    /// </summary>
+    /// <param name="builder">The <see cref="IHtmlContentBuilder"/>.</param>
+    /// <param name="formatProvider">An object that supplies culture-specific formatting information.</param>
+    /// <param name="format">The composite format.</param>
+    /// <param name="args">
+    /// The object array to format. Each element in the array will be formatted and then HTML encoded.
+    /// </param>
+    /// <returns>A reference to this instance after the append operation has completed.</returns>
+    public static IHtmlContentBuilder AppendFormat(
+        this IHtmlContentBuilder builder,
+        IFormatProvider formatProvider,
+        CompositeFormat format,
         params object?[] args)
     {
         ArgumentNullException.ThrowIfNull(builder);

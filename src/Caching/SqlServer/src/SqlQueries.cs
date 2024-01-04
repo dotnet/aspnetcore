@@ -56,9 +56,7 @@ internal sealed class SqlQueries
 
     public SqlQueries(string schemaName, string tableName)
     {
-        var tableNameWithSchema = string.Format(
-            CultureInfo.InvariantCulture,
-            "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
+        var tableNameWithSchema = DelimitIdentifier(schemaName) + "." + DelimitIdentifier(tableName);
 
         // when retrieving an item, we do an UPDATE first and then a SELECT
         GetCacheItem = string.Format(CultureInfo.InvariantCulture, UpdateCacheItemFormat + GetCacheItemFormat, tableNameWithSchema);

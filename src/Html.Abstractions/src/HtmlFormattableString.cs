@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNetCore.Html;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Html;
 public class HtmlFormattableString : IHtmlContent
 {
     private readonly IFormatProvider _formatProvider;
-    private readonly string _format;
+    private readonly CompositeFormat _format;
     private readonly object?[] _args;
 
     /// <summary>
@@ -41,6 +42,37 @@ public class HtmlFormattableString : IHtmlContent
     public HtmlFormattableString(
         IFormatProvider? formatProvider,
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object?[] args)
+    {
+        ArgumentNullException.ThrowIfNull(format);
+        ArgumentNullException.ThrowIfNull(args);
+
+        _formatProvider = formatProvider ?? CultureInfo.CurrentCulture;
+        _format = CompositeFormat.Parse(format);
+        _args = args;
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="HtmlFormattableString"/> with the given <paramref name="format"/> and
+    /// <paramref name="args"/>.
+    /// </summary>
+    /// <param name="format">A composite format.</param>
+    /// <param name="args">An array that contains objects to format.</param>
+    public HtmlFormattableString(CompositeFormat format, params object?[] args)
+        : this(formatProvider: null, format: format, args: args)
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="HtmlFormattableString"/> with the given <paramref name="formatProvider"/>,
+    /// <paramref name="format"/> and <paramref name="args"/>.
+    /// </summary>
+    /// <param name="formatProvider">An object that provides culture-specific formatting information.</param>
+    /// <param name="format">A composite format.</param>
+    /// <param name="args">An array that contains objects to format.</param>
+    public HtmlFormattableString(
+        IFormatProvider? formatProvider,
+        CompositeFormat format,
         params object?[] args)
     {
         ArgumentNullException.ThrowIfNull(format);

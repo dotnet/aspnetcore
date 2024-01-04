@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,8 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 /// </summary>
 public class ViewViewComponentResult : IViewComponentResult
 {
-    // {0} is the component name, {1} is the view name.
-    private const string ViewPathFormat = "Components/{0}/{1}";
     private const string DefaultViewName = "Default";
 
     private DiagnosticListener? _diagnosticListener;
@@ -96,11 +95,7 @@ public class ViewViewComponentResult : IViewComponentResult
             //
             // This supports a controller or area providing an override for component views.
             var viewName = isNullOrEmptyViewName ? DefaultViewName : ViewName;
-            var qualifiedViewName = string.Format(
-                CultureInfo.InvariantCulture,
-                ViewPathFormat,
-                context.ViewComponentDescriptor.ShortName,
-                viewName);
+            var qualifiedViewName = FormattableString.Invariant($"Components/{context.ViewComponentDescriptor.ShortName}/{viewName}");
 
             result = viewEngine.FindView(viewContext, qualifiedViewName, isMainPage: false);
         }

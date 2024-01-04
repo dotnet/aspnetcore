@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 
@@ -113,6 +114,24 @@ public abstract class TagHelperContent : IHtmlContentBuilder
     public TagHelperContent AppendFormat(
         IFormatProvider provider,
         [StringSyntax(StringSyntaxAttribute.CompositeFormat)] string format,
+        params object[] args)
+    {
+        HtmlContentBuilderExtensions.AppendFormat(this, provider, format, args);
+        return this;
+    }
+
+    /// <summary>
+    /// Appends the specified <paramref name="format"/> to the existing content with information from the
+    /// <paramref name="provider"/> after replacing each format item with the HTML encoded <see cref="string"/>
+    /// representation of the corresponding item in the <paramref name="args"/> array.
+    /// </summary>
+    /// <param name="provider">An object that supplies culture-specific formatting information.</param>
+    /// <param name="format">The composite format.</param>
+    /// <param name="args">The object array to format.</param>
+    /// <returns>A reference to this instance after the append operation has completed.</returns>
+    public TagHelperContent AppendFormat(
+        IFormatProvider provider,
+        CompositeFormat format,
         params object[] args)
     {
         HtmlContentBuilderExtensions.AppendFormat(this, provider, format, args);

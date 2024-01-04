@@ -423,7 +423,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var possiblyEncryptedKeyElement = KeyEncryptor?.EncryptIfNecessary(keyElement) ?? keyElement;
 
         // Persist it to the underlying repository and trigger the cancellation token.
-        var friendlyName = string.Format(CultureInfo.InvariantCulture, "key-{0:D}", keyId);
+        var friendlyName = FormattableString.Invariant($"key-{keyId:D}");
         KeyRepository.StoreElement(possiblyEncryptedKeyElement, friendlyName);
         TriggerAndResetCacheExpirationToken();
 
@@ -506,7 +506,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             new XElement(ReasonElementName, reason));
 
         // Persist it to the underlying repository and trigger the cancellation token
-        var friendlyName = string.Format(CultureInfo.InvariantCulture, "revocation-{0:D}", keyId);
+        var friendlyName = FormattableString.Invariant($"revocation-{keyId:D}");
         KeyRepository.StoreElement(revocationElement, friendlyName);
         TriggerAndResetCacheExpirationToken();
     }

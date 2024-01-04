@@ -104,7 +104,7 @@ public sealed class DpapiNGXmlEncryptor : IXmlEncryptor
         using (var currentIdentity = WindowsIdentity.GetCurrent())
         {
             // use the SID to create an SDDL string
-            return string.Format(CultureInfo.InvariantCulture, "SID={0}", currentIdentity?.User?.Value);
+            return FormattableString.Invariant($"SID={currentIdentity?.User?.Value}");
         }
     }
 }

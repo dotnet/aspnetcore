@@ -29,6 +29,39 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
         _htmlEncoder = encoder;
     }
 
+    private static readonly CompositeFormat _cf1 = CompositeFormat.Parse(@"<!DOCTYPE html>
+<html lang=""{0}"">");
+
+    private static readonly CompositeFormat _cf2 = CompositeFormat.Parse(@"
+<head>
+  <title>{0} {1}</title>");
+
+    private static readonly CompositeFormat _cf3 = CompositeFormat.Parse(@"
+    <header><h1>{0} <a href=""/"">/</a>");
+
+    private static readonly CompositeFormat _cf4 = CompositeFormat.Parse(@"<a href=""{0}"">{1}/</a>");
+
+    private static readonly CompositeFormat _cf5 = CompositeFormat.Parse(@"</h1></header>
+    <table id=""index"" summary=""{0}"">
+    <thead>
+      <tr><th abbr=""{1}"">{1}</th><th abbr=""{2}"">{2}</th><th abbr=""{3}"">{4}</th></tr>
+    </thead>
+    <tbody>");
+
+    private static readonly CompositeFormat _cf6 = CompositeFormat.Parse(@"
+      <tr class=""directory"">
+        <td class=""name""><a href=""./{0}/"">{0}/</a></td>
+        <td></td>
+        <td class=""modified"">{1}</td>
+      </tr>");
+
+    private static readonly CompositeFormat _cf7 = CompositeFormat.Parse(@"
+      <tr class=""file"">
+        <td class=""name""><a href=""./{0}"">{0}</a></td>
+        <td class=""length"">{1}</td>
+        <td class=""modified"">{2}</td>
+      </tr>");
+
     /// <summary>
     /// Generates an HTML view for a directory.
     /// </summary>
@@ -49,17 +82,8 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
 
         var builder = new StringBuilder();
 
-        builder.AppendFormat(
-            CultureInfo.InvariantCulture,
-@"<!DOCTYPE html>
-<html lang=""{0}"">", CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
-
-        builder.AppendFormat(
-            CultureInfo.InvariantCulture,
-@"
-<head>
-  <title>{0} {1}</title>", HtmlEncode(Resources.HtmlDir_IndexOf), HtmlEncode(requestPath.Value!));
-
+        builder.AppendFormat(CultureInfo.InvariantCulture, _cf1, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+        builder.AppendFormat(CultureInfo.InvariantCulture, _cf2, HtmlEncode(Resources.HtmlDir_IndexOf), HtmlEncode(requestPath.Value!));
         builder.Append(@"
   <style>
     body {
@@ -97,34 +121,23 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
 </head>
 <body>
   <section id=""main"">");
-        builder.AppendFormat(
-            CultureInfo.InvariantCulture,
-            @"
-    <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
+        builder.AppendFormat(CultureInfo.InvariantCulture, _cf3, HtmlEncode(Resources.HtmlDir_IndexOf));
 
         string cumulativePath = "/";
         foreach (var segment in requestPath.Value!.Split('/', StringSplitOptions.RemoveEmptyEntries))
         {
             cumulativePath = cumulativePath + segment + "/";
-            builder.AppendFormat(
-                CultureInfo.InvariantCulture,
-                @"<a href=""{0}"">{1}/</a>",
-                HtmlEncode(cumulativePath), HtmlEncode(segment));
+            builder.AppendFormat(CultureInfo.InvariantCulture, _cf4, HtmlEncode(cumulativePath), HtmlEncode(segment));
         }
 
         builder.AppendFormat(
             CultureInfo.InvariantCulture,
-@"</h1></header>
-    <table id=""index"" summary=""{0}"">
-    <thead>
-      <tr><th abbr=""{1}"">{1}</th><th abbr=""{2}"">{2}</th><th abbr=""{3}"">{4}</th></tr>
-    </thead>
-    <tbody>",
-        HtmlEncode(Resources.HtmlDir_TableSummary),
-        HtmlEncode(Resources.HtmlDir_Name),
-        HtmlEncode(Resources.HtmlDir_Size),
-        HtmlEncode(Resources.HtmlDir_Modified),
-        HtmlEncode(Resources.HtmlDir_LastModified));
+            _cf5,
+            HtmlEncode(Resources.HtmlDir_TableSummary),
+            HtmlEncode(Resources.HtmlDir_Name),
+            HtmlEncode(Resources.HtmlDir_Size),
+            HtmlEncode(Resources.HtmlDir_Modified),
+            HtmlEncode(Resources.HtmlDir_LastModified));
 
         foreach (var subdir in contents.Where(info => info.IsDirectory))
         {
@@ -133,16 +146,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
             // to the table.
             try
             {
-                builder.AppendFormat(
-                    CultureInfo.InvariantCulture,
-                    @"
-      <tr class=""directory"">
-        <td class=""name""><a href=""./{0}/"">{0}/</a></td>
-        <td></td>
-        <td class=""modified"">{1}</td>
-      </tr>",
-                    HtmlEncode(subdir.Name),
-                    HtmlEncode(subdir.LastModified.ToString(CultureInfo.CurrentCulture)));
+                builder.AppendFormat(CultureInfo.InvariantCulture, _cf6, HtmlEncode(subdir.Name), HtmlEncode(subdir.LastModified.ToString(CultureInfo.CurrentCulture)));
             }
             catch (DirectoryNotFoundException)
             {
@@ -171,12 +175,7 @@ public class HtmlDirectoryFormatter : IDirectoryFormatter
             {
                 builder.AppendFormat(
                     CultureInfo.InvariantCulture,
-                    @"
-      <tr class=""file"">
-        <td class=""name""><a href=""./{0}"">{0}</a></td>
-        <td class=""length"">{1}</td>
-        <td class=""modified"">{2}</td>
-      </tr>",
+                    _cf7,
                     HtmlEncode(file.Name),
                     HtmlEncode(file.Length.ToString("n0", CultureInfo.CurrentCulture)),
                     HtmlEncode(file.LastModified.ToString(CultureInfo.CurrentCulture)));

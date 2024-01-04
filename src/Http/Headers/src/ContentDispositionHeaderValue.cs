@@ -493,7 +493,7 @@ public class ContentDispositionHeaderValue
                 result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");
             }
             // Re-add quotes "value"
-            result = string.Format(CultureInfo.InvariantCulture, "\"{0}\"", result);
+            result = "\"" + result + "\"";
         }
         return result;
     }
