@@ -43,7 +43,7 @@ internal static class DebugProxyLauncher
         var noProxyEnvVar = Environment.GetEnvironmentVariable("NO_PROXY");
         if (noProxyEnvVar is not null)
         {
-            var noProxyEnvVarValues = noProxyEnvVar.Split(",", StringSplitOptions.None);
+            var noProxyEnvVarValues = noProxyEnvVar.Split(",", StringSplitOptions.TrimEntries);
             if (noProxyEnvVarValues.Any(noProxyValue => noProxyValue.Equals("localhost") || noProxyValue.Equals("127.0.0.1")))
             {
                 return "--IgnoreProxyForLocalAddress True";
