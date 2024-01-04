@@ -43,21 +43,16 @@
     DependsOnTargets="_WriteProductVersionFile">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
-      and npm project. We use SignalR.Npm.FunctionalTests.nodeproj because it is non-shipping (we need a non-stable
-      version string to use as our publish location), non-packed (won't be shipped in the future), and it is _not_ a
-      C# or F# project. For now at least, C# and F# projects should not be referenced when using desktop msbuild.
+      and npm project. We use Microsoft.AspNetCore.InternalTesting.csproj because it is non-shipping (we need a non-stable
+      version string to use as our publish location) non-packed (won't be shipped in the future).
     -->
-    <MSBuild Projects="$(RepoRoot)eng\Npm.Workspace.nodeproj"
+    <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
         Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
 
     <PropertyGroup>
-      <!-- _GetPackageVersionInfo will return all the versions for all public/shipping packages.
-           They are all the same, so we just take the last one.
-           If this changes in the future, we'll have to update this logic.
-       -->
       <_PackageVersion>@(_ResolvedPackageVersionInfo->'%(PackageVersion)')</_PackageVersion>
     </PropertyGroup>
 
