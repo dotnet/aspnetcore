@@ -24,7 +24,7 @@ export default ({ environment }) => {
   const baseConfig = {
     output: {
       dir: path.join(__dirname, '/dist', environment === 'development' ? '/Debug' : '/Release'),
-      format: 'cjs',
+      format: 'iife',
       sourcemap: true,
       entryFileNames: '[name].js',
       sourcemap: environment === 'development' ? 'inline' : false,

@@ -3,9 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "lib": [ "DOM", "ES2022" ],
-    "sourceMap": true,
     "strict": true,
-    "esModuleInterop": false,
     "forceConsistentCasingInFileNames": true
   }
 }
