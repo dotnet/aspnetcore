@@ -16,8 +16,8 @@
     "test:watch": "jest --watch",
     "test:debug": "node --nolazy --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --colors --verbose",
     "build": "npm run build:debug && npm run build:production",
-    "build:debug": "rollup -c --environment development",
-    "build:production": "rollup -c --environment production"
+    "build:debug": "rollup -c --environment development --forceExit",
+    "build:production": "rollup -c --environment production --forceExit"
   },
   "devDependencies": {
     "@babel/core": "^7.23.6",
