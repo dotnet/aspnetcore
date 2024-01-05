@@ -1,0 +1,21 @@
+﻿@if (_loaded)
+{
+    <ChildComponentThatDelaysLoading />
+}
+
+@code {
+    private bool _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _loaded = await Load();
+    }
+
+    private async Task<bool> Load()
+    {
+        await Task.Yield();
+
+        return true;
+    }
+}
