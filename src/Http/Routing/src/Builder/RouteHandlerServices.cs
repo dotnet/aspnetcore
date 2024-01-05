@@ -29,6 +29,7 @@ public static class RouteHandlerServices
     /// <param name="httpMethods">The set of supported HTTP methods.</param>
     /// <param name="populateMetadata">A delegate for populating endpoint metadata.</param>
     /// <param name="createRequestDelegate">A delegate for constructing a RequestDelegate.</param>
+    /// <param name="methodInfo">The MethodInfo associated with the incoming delegate.</param>
     /// <returns></returns>
     public static RouteHandlerBuilder Map(
             IEndpointRouteBuilder endpoints,
@@ -36,7 +37,8 @@ public static class RouteHandlerServices
             Delegate handler,
             IEnumerable<string>? httpMethods,
             Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult> populateMetadata,
-            Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createRequestDelegate)
+            Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createRequestDelegate,
+            MethodInfo methodInfo)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(pattern);
@@ -51,6 +53,7 @@ public static class RouteHandlerServices
                                httpMethods,
                                isFallback: false,
                                populateMetadata,
-                               createRequestDelegate);
+                               createRequestDelegate,
+                               methodInfo);
     }
 }

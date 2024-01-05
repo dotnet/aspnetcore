@@ -28,7 +28,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         RoutePattern pattern,
         RequestDelegate requestDelegate,
         IEnumerable<string>? httpMethods,
-        Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc)
+        Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc,
+        MethodInfo methodInfo)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
@@ -42,7 +43,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             Conventions = conventions,
             FinallyConventions = finallyConventions,
             InferMetadataFunc = null, // Metadata isn't infered from RequestDelegate endpoints
-            CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc
+            CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc,
+            Method = methodInfo // MethodInfo needed to resolve attributes for RequestDelegate endpoints
         });
 
         return new RouteHandlerBuilder(conventions, finallyConventions);
@@ -54,7 +56,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         IEnumerable<string>? httpMethods,
         bool isFallback,
         Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult>? inferMetadataFunc,
-        Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc)
+        Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createHandlerRequestDelegateFunc,
+        MethodInfo methodInfo)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
@@ -74,7 +77,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
             Conventions = conventions,
             FinallyConventions = finallyConventions,
             InferMetadataFunc = inferMetadataFunc,
-            CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc
+            CreateHandlerRequestDelegateFunc = createHandlerRequestDelegateFunc,
+            Method = methodInfo
         });
 
         return new RouteHandlerBuilder(conventions, finallyConventions);
@@ -133,7 +137,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // ApplicationBuilder.Build(). This was observed in MapSignalRTests and is not very useful. Maybe if we come up
         // with a better heuristic for what a useful method name is, we could use it for everything. Inline lambdas are
         // compiler generated methods so they are filtered out even for route handlers.
-        if (isRouteHandler && TypeHelper.TryGetNonCompilerGeneratedMethodName(handler.Method, out var methodName))
+        if (isRouteHandler && TypeHelper.TryGetNonCompilerGeneratedMethodName(entry.Method, out var methodName))
         {
             displayName = $"{displayName} => {methodName}";
         }
@@ -325,6 +329,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         public required ThrowOnAddAfterEndpointBuiltConventionCollection FinallyConventions { get; init; }
         public required Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult>? InferMetadataFunc { get; init; }
         public required Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> CreateHandlerRequestDelegateFunc { get; init; }
+        public required MethodInfo Method { get; init; }
     }
 
     [Flags]
