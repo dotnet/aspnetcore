@@ -4,5 +4,6 @@
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
+    "useDefineForClassFields": false
   },
 }
