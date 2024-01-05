@@ -64,9 +64,9 @@ export default function createBaseConfig({ inputOutputMap, dir, updateConfig }) 
           keep_classnames: false,
           keep_fnames: false,
           toplevel: true
-        })
-        ,
-        environment !== 'development' && filesize({ showMinifiedSize: true, showGzippedSize: true, showBrotliSize: true })
+        }),
+        // Check the ContinuousIntegrationBuild environment variable to determine if we should show the file size.
+        env.ContinuousIntegrationBuild !== 'true' && environment !== 'development' && filesize({ showMinifiedSize: true, showGzippedSize: true, showBrotliSize: true })
       ],
       treeshake: 'smallest',
       logLevel: 'silent'
@@ -78,6 +78,9 @@ export default function createBaseConfig({ inputOutputMap, dir, updateConfig }) 
         output: {
           ...baseConfig.output,
         },
+        plugins: [
+          ...baseConfig.plugins
+        ],
         input: { [output]: input }
       };
 
