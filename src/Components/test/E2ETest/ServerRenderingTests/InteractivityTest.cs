@@ -598,22 +598,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
-    public void AutoRenderMode_UsesBlazorServer_IfWebAssemblyResourcesTakeTooLongToLoad()
-    {
-        Navigate(ServerPathBase);
-        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
-        ForceWebAssemblyResourceCacheMiss();
-        BlockWebAssemblyResourceLoad();
-
-        Navigate($"{ServerPathBase}/streaming-interactivity");
-        Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
-
-        Browser.Click(By.Id(AddAutoPrerenderedId));
-        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-0")).Text);
-        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-0")).Text);
-    }
-
-    [Fact]
     public void AutoRenderMode_UsesBlazorWebAssembly_AfterAddingWebAssemblyRootComponent()
     {
         Navigate($"{ServerPathBase}/streaming-interactivity");
@@ -659,7 +643,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
@@ -696,7 +679,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
@@ -761,7 +743,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate(ServerPathBase);
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         BlockWebAssemblyResourceLoad();
-        ForceWebAssemblyResourceCacheMiss();
 
         Navigate($"{ServerPathBase}/streaming-interactivity");
         Browser.Equal("Not streaming", () => Browser.FindElement(By.Id("status")).Text);
@@ -1129,6 +1110,9 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     private void BlockWebAssemblyResourceLoad()
     {
+        // Force a WebAssembly resource cache miss so that we can fall back to using server interactivity
+        ForceWebAssemblyResourceCacheMiss();
+
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
 
         // Clear caches so that we can block the resource load
