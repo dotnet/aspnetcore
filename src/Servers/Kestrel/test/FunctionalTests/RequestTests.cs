@@ -630,12 +630,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
 #if LIBUV
         [InlineData(true, 1)]
         [InlineData(false, 1)]
         [InlineData(true, 2)]
         [InlineData(false, 2)]
+        [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/50403")]
         public async Task AbortingTheConnection(bool fin, int threadCount)
 #else
         [InlineData(true)]

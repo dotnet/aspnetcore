@@ -210,7 +210,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnAlpine("https://github.com/dotnet/aspnetcore/issues/50403")]
         public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
         {
             // Parameters
