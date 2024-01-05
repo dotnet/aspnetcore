@@ -6,10 +6,10 @@
   "types": "dist/src/Microsoft.JSInterop.d.ts",
   "type": "module",
   "scripts": {
-    "clean": "npx rimraf ./dist",
+    "clean": "rimraf ./dist",
     "build": "npm run clean && npm run build:esm",
     "build:lint": "eslint -c .eslintrc.json --ext .ts ./src",
-    "build:esm": "npx tsc --project ./tsconfig.json",
+    "build:esm": "tsc --project ./tsconfig.json",
     "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
   },
   "repository": {

@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "commonjs",
-    "lib": [ "DOM", "ES2019" ],
-    "sourceMap": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": [ "DOM", "ES2022" ],
     "strict": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   }
 }

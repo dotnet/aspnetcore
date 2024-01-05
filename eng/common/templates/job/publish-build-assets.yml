@@ -72,7 +72,7 @@ jobs:
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
-    - task: NuGetAuthenticate@0
+    - task: NuGetAuthenticate@1
 
     - task: PowerShell@2
       displayName: Publish Build Assets

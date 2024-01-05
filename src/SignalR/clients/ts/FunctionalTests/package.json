@@ -31,7 +31,6 @@
     "karma-junit-reporter": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "karma-safari-launcher": "^1.0.0",
-    "karma-sauce-launcher": "^4.1.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-summary-reporter": "^3.0.0",
     "mitt": "^3.0.0",
@@ -51,10 +50,10 @@
     "build:webpack": "webpack-cli",
     "preintegration-test": "npm run build && dotnet build SignalR.Client.FunctionalTestApp.csproj",
     "integration-test": "tsc --noEmit && npm run integration-test:local",
-    "integration-test:inner": "npm run build:inner && npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "integration-test:local": "npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "integration-test:all": "npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
-    "integration-test:sauce": "npx ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
+    "integration-test:inner": "npm run build:inner && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "integration-test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "integration-test:all": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
+    "integration-test:sauce": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
     "sauce": "npm run integration-test:sauce"
   },
   "overrides": {
