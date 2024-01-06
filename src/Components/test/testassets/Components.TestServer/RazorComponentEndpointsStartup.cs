@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -35,6 +36,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
+
+        var circuitContextAccessor = new TestCircuitContextAccessor();
+        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
+        services.AddSingleton(circuitContextAccessor);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

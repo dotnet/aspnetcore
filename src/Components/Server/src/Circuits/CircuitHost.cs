@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -22,7 +23,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly Func<Func<Task>, Task> _dispatchInboundActivity;
+    private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
@@ -738,7 +739,7 @@ internal partial class CircuitHost : IAsyncDisposable
             var shouldClearStore = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
-            Task[]? pendingTasks = null;
+            var shouldWaitForQuiescence = false;
             try
             {
                 if (Descriptors.Count > 0)
@@ -751,6 +752,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 if (_isFirstUpdate)
                 {
                     _isFirstUpdate = false;
+                    shouldWaitForQuiescence = true;
                     if (store != null)
                     {
                         shouldClearStore = true;
@@ -762,6 +764,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
                     // Retrieve the circuit handlers at this point.
                     _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
+                    _dispatchInboundActivity = BuildInboundActivityDispatcher(_circuitHandlers, Circuit);
                     await OnCircuitOpenedAsync(cancellation);
                     await OnConnectionUpAsync(cancellation);
 
@@ -773,43 +776,50 @@ internal partial class CircuitHost : IAsyncDisposable
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
                     }
-
-                    pendingTasks = new Task[operations.Length];
                 }
 
-                for (var i = 0; i < operations.Length; i++)
+                var quiescenceTask = HandleInboundActivityAsync(async () =>
                 {
-                    var operation = operations[i];
-                    switch (operation.Type)
+                    var pendingTasks = ArrayPool<Task>.Shared.Rent(operations.Length);
+
+                    try
                     {
-                        case RootComponentOperationType.Add:
-                            var task = webRootComponentManager.AddRootComponentAsync(
-                                operation.SsrComponentId,
-                                operation.Descriptor.ComponentType,
-                                operation.Marker.Value.Key,
-                                operation.Descriptor.Parameters);
-                            if (pendingTasks != null)
+                        for (var i = 0; i < operations.Length; i++)
+                        {
+                            var operation = operations[i];
+                            switch (operation.Type)
                             {
-                                pendingTasks[i] = task;
+                                case RootComponentOperationType.Add:
+                                    pendingTasks[i] = webRootComponentManager.AddRootComponentAsync(
+                                        operation.SsrComponentId,
+                                        operation.Descriptor.ComponentType,
+                                        operation.Marker.Value.Key,
+                                        operation.Descriptor.Parameters);
+                                    break;
+                                case RootComponentOperationType.Update:
+                                    pendingTasks[i] = webRootComponentManager.UpdateRootComponentAsync(
+                                        operation.SsrComponentId,
+                                        operation.Descriptor.ComponentType,
+                                        operation.Marker.Value.Key,
+                                        operation.Descriptor.Parameters);
+                                    break;
+                                case RootComponentOperationType.Remove:
+                                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                                    break;
                             }
-                            break;
-                        case RootComponentOperationType.Update:
-                            // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                            _ = webRootComponentManager.UpdateRootComponentAsync(
-                                operation.SsrComponentId,
-                                operation.Descriptor.ComponentType,
-                                operation.Marker.Value.Key,
-                                operation.Descriptor.Parameters);
-                            break;
-                        case RootComponentOperationType.Remove:
-                            webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
-                            break;
-                    }
-                }
+                        }
 
-                if (pendingTasks != null)
+                        await Task.WhenAll(pendingTasks.Take(operations.Length));
+                    }
+                    finally
+                    {
+                        ArrayPool<Task>.Shared.Return(pendingTasks);
+                    }
+                });
+
+                if (shouldWaitForQuiescence)
                 {
-                    await Task.WhenAll(pendingTasks);
+                    await quiescenceTask;
                 }
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
