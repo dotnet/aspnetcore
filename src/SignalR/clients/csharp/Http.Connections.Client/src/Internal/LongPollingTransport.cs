@@ -35,7 +35,7 @@ internal sealed partial class LongPollingTransport : ITransport
     public LongPollingTransport(HttpClient httpClient, HttpConnectionOptions? httpConnectionOptions = null, ILoggerFactory? loggerFactory = null)
     {
         _httpClient = httpClient;
-        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
+        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger(typeof(LongPollingTransport));
         _httpConnectionOptions = httpConnectionOptions ?? new();
     }
 

@@ -76,7 +76,7 @@ public partial class BodyModelBinder : IModelBinder
         _formatters = formatters;
         _readerFactory = readerFactory.CreateReader;
 
-        _logger = loggerFactory?.CreateLogger<BodyModelBinder>() ?? NullLogger<BodyModelBinder>.Instance;
+        _logger = loggerFactory?.CreateLogger(typeof(BodyModelBinder)) ?? NullLogger<BodyModelBinder>.Instance;
 
         _options = options;
     }

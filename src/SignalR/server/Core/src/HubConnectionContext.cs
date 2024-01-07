@@ -72,7 +72,7 @@ public partial class HubConnectionContext
         _statefulReconnectBufferSize = contextOptions.StatefulReconnectBufferSize;
 
         _connectionContext = connectionContext;
-        _logger = loggerFactory.CreateLogger<HubConnectionContext>();
+        _logger = loggerFactory.CreateLogger(typeof(HubConnectionContext));
         ConnectionAborted = _connectionAbortedTokenSource.Token;
         _closedRegistration = connectionContext.ConnectionClosed.Register(static (state) => ((HubConnectionContext)state!).Abort(), this);
 

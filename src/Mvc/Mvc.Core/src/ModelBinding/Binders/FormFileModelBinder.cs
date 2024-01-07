@@ -27,7 +27,7 @@ public partial class FormFileModelBinder : IModelBinder
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        _logger = loggerFactory.CreateLogger<FormFileModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(FormFileModelBinder));
     }
 
     /// <inheritdoc />

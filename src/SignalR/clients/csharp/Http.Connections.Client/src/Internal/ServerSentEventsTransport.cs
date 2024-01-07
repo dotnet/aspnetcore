@@ -40,7 +40,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
         ArgumentNullThrowHelper.ThrowIfNull(httpClient);
 
         _httpClient = httpClient;
-        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
+        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger(typeof(ServerSentEventsTransport));
         _httpConnectionOptions = httpConnectionOptions ?? new();
     }
 

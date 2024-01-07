@@ -22,7 +22,7 @@ public class ByteArrayModelBinder : IModelBinder
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        _logger = loggerFactory.CreateLogger<ByteArrayModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(ByteArrayModelBinder));
     }
 
     /// <inheritdoc />
