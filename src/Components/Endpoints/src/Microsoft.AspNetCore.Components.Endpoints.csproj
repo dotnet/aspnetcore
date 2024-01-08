@@ -60,11 +60,11 @@
   <Target Name="_AddEmbeddedBlazorWebJS" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
     <PropertyGroup>
       <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
-      <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
-      <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
+      <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>
+      <BlazorWebJSFile Condition=" '$(Configuration)' != 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Release\$(BlazorWebJSFilename)</BlazorWebJSFile>
     </PropertyGroup>
 
-    <Warning Condition="!Exists('$(BlazorWebViewJSFile)')" Text="'$(BlazorWebJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
+    <Warning Condition="!Exists('$(BlazorWebJSFile)')" Text="'$(BlazorWebJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
 
     <ItemGroup>
       <EmbeddedResource Include="$(BlazorWebJSFile)" LogicalName="_framework/$(BlazorWebJSFilename)" />

@@ -60,8 +60,8 @@
 
     <PropertyGroup>
       <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
-      <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-      <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+      <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+      <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">$(MSBuildThisFileDirectory)..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
     </PropertyGroup>
 
     <Warning Condition="!Exists('$(BlazorWebViewJSFile)')" Text="'$(BlazorWebViewJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
