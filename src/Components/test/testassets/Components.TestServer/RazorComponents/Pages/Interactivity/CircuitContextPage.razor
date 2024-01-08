@@ -11,11 +11,14 @@
 @code {
     private bool _hasCircuitContext;
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            await Task.Yield();
+
             _hasCircuitContext = CircuitContextAccessor.HasCircuitContext;
+
             StateHasChanged();
         }
     }

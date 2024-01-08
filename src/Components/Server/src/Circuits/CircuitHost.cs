@@ -739,7 +739,7 @@ internal partial class CircuitHost : IAsyncDisposable
             var shouldClearStore = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
-            var shouldWaitForQuiescence = false;
+            Task[]? pendingTasks = null;
             try
             {
                 if (Descriptors.Count > 0)
@@ -752,7 +752,6 @@ internal partial class CircuitHost : IAsyncDisposable
                 if (_isFirstUpdate)
                 {
                     _isFirstUpdate = false;
-                    shouldWaitForQuiescence = true;
                     if (store != null)
                     {
                         shouldClearStore = true;
@@ -776,50 +775,44 @@ internal partial class CircuitHost : IAsyncDisposable
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
                     }
+
+                    pendingTasks = new Task[operations.Length];
                 }
 
-                var quiescenceTask = HandleInboundActivityAsync(async () =>
+                await HandleInboundActivityAsync(() =>
                 {
-                    var pendingTasks = ArrayPool<Task>.Shared.Rent(operations.Length);
-
-                    try
+                    for (var i = 0; i < operations.Length; i++)
                     {
-                        for (var i = 0; i < operations.Length; i++)
+                        var operation = operations[i];
+                        switch (operation.Type)
                         {
-                            var operation = operations[i];
-                            switch (operation.Type)
-                            {
-                                case RootComponentOperationType.Add:
-                                    pendingTasks[i] = webRootComponentManager.AddRootComponentAsync(
-                                        operation.SsrComponentId,
-                                        operation.Descriptor.ComponentType,
-                                        operation.Marker.Value.Key,
-                                        operation.Descriptor.Parameters);
-                                    break;
-                                case RootComponentOperationType.Update:
-                                    pendingTasks[i] = webRootComponentManager.UpdateRootComponentAsync(
-                                        operation.SsrComponentId,
-                                        operation.Descriptor.ComponentType,
-                                        operation.Marker.Value.Key,
-                                        operation.Descriptor.Parameters);
-                                    break;
-                                case RootComponentOperationType.Remove:
-                                    webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
-                                    break;
-                            }
+                            case RootComponentOperationType.Add:
+                                pendingTasks[i] = webRootComponentManager.AddRootComponentAsync(
+                                    operation.SsrComponentId,
+                                    operation.Descriptor.ComponentType,
+                                    operation.Marker.Value.Key,
+                                    operation.Descriptor.Parameters);
+                                break;
+                            case RootComponentOperationType.Update:
+                                // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                                _ = webRootComponentManager.UpdateRootComponentAsync(
+                                    operation.SsrComponentId,
+                                    operation.Descriptor.ComponentType,
+                                    operation.Marker.Value.Key,
+                                    operation.Descriptor.Parameters);
+                                break;
+                            case RootComponentOperationType.Remove:
+                                webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                                break;
                         }
+                    }
 
-                        await Task.WhenAll(pendingTasks.Take(operations.Length));
-                    }
-                    finally
-                    {
-                        ArrayPool<Task>.Shared.Return(pendingTasks);
-                    }
+                    return Task.CompletedTask;
                 });
 
-                if (shouldWaitForQuiescence)
+                if (pendingTasks != null)
                 {
-                    await quiescenceTask;
+                    await Task.WhenAll(pendingTasks);
                 }
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
