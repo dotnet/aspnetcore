@@ -46,7 +46,7 @@
     <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
         StandardOutputImportance="High"
         StandardErrorImportance="High"
-        IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
+        IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"
         IgnoreExitCode="true">
           <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode" />
     </Yarn>
@@ -54,7 +54,7 @@
     <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
         StandardOutputImportance="High"
         StandardErrorImportance="High"
-        IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" 
+        IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"
         Condition="'$(_YarnExitCode)' != '0'" />
   </Target>
 
@@ -119,6 +119,7 @@
     <Exec Command="node &quot;$(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js&quot; &quot;$(PackageJson)&quot; $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
 
+    <Message Importance="High" Text="PackageOutputPath: $(PackageOutputPath)" />
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
 
