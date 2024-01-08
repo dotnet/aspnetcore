@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             private static readonly LogDefineOptions SkipEnabledCheckLogOptions = new() { SkipEnabledCheck = true };
 
             private static readonly Action<ILogger, int, Type, int, Type, Exception> _initializingChildComponent =
-                LoggerMessage.Define<int, Type, int, Type>(LogLevel.Debug, new EventId(1, "InitializingChildComponent"), "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentId})", SkipEnabledCheckLogOptions);
+                LoggerMessage.Define<int, Type, int, Type>(LogLevel.Debug, new EventId(1, "InitializingChildComponent"), "Initializing component {ComponentId} ({ComponentType}) as child of {ParentComponentId} ({ParentComponentType})", SkipEnabledCheckLogOptions);
 
             private static readonly Action<ILogger, int, Type, Exception> _initializingRootComponent =
                 LoggerMessage.Define<int, Type>(LogLevel.Debug, new EventId(2, "InitializingRootComponent"), "Initializing root component {ComponentId} ({ComponentType})", SkipEnabledCheckLogOptions);
