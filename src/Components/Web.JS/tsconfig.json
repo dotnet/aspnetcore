@@ -1,12 +1,9 @@
 {
+  "extends": "../Shared.JS/tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
-    "target": "es2020",
-    "module": "es2020",
-    "lib": ["es2020", "dom"],
-    "strict": true,
-  }
+    "useDefineForClassFields": false
+  },
 }
