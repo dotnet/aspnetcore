@@ -147,7 +147,7 @@ internal sealed class SingleClientProxy<THub> : ISingleClientProxy where THub : 
     public SingleClientProxy(HubLifetimeManager<THub> lifetimeManager, string connectionId)
     {
         _lifetimeManager = lifetimeManager;
-        ArgumentNullException.ThrowIfNull(connectionId, nameof(connectionId));
+        ArgumentNullException.ThrowIfNull(connectionId);
         _connectionId = connectionId;
     }
 
