@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
@@ -30,6 +31,8 @@ public partial class StaticHtmlRenderer : Renderer
         : base(serviceProvider, loggerFactory)
     {
         _navigationManager = serviceProvider.GetService<NavigationManager>();
+        _htmlEncoder = serviceProvider.GetService<HtmlEncoder>() ?? HtmlEncoder.Default;
+        _javaScriptEncoder = serviceProvider.GetService<JavaScriptEncoder>() ?? JavaScriptEncoder.Default;
     }
 
     /// <inheritdoc/>
