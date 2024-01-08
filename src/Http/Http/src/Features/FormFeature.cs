@@ -326,7 +326,10 @@ public class FormFeature : IFormFeature
 
     private bool ResolveHasInvalidAntiforgeryValidationFeature()
     {
-        if (_request is null) return false;
+        if (_request is null)
+        {
+            return false;
+        }
         var hasInvokedMiddleware = _request.HttpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked");
         var hasInvalidToken = _request.HttpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false };
         return hasInvokedMiddleware && hasInvalidToken;
