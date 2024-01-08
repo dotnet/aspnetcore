@@ -83,4 +83,35 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="RestoreNpmPackages"
+          BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Message Text="Checking node version..." Importance="high" />
+    <Exec
+      Command="node --version"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+    <Message Text="Checking npm version..." Importance="high" />
+    <Exec
+      Command="npm --version"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+    <Exec
+      Command="npm ci"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+  </Target>
+
+  <Target Name="BuildNpmFiles"
+    DependsOnTargets="RestoreNpmPackages"
+    BeforeTargets="RunInnerSourceBuildCommand">
+
+    <Message Text="Building Node JS files..." Importance="high" />
+
+    <Exec
+      Command="npm run build"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+  </Target>
+
 </Project>
