@@ -102,4 +102,15 @@
 
   </Target>
 
+  <Target Name="BuildNpmFiles"
+    DependsOnTargets="RestoreNpmPackages">
+
+    <Message Text="Building Node JS files..." Importance="high" />
+
+    <Exec
+      Command="npm run build"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+
+  </Target>
+
 </Project>
