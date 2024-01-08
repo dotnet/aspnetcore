@@ -56,20 +56,16 @@
 
   <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
-  <PropertyGroup>
-    <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
-    <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-    <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-  </PropertyGroup>
+  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
 
-  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
-    <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Falling back to checked-in copy." />
     <PropertyGroup>
-      <BlazorWebViewJSFile>..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+      <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
+      <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+      <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
     </PropertyGroup>
-  </Target>
 
-  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
+    <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
+
     <ItemGroup>
       <EmbeddedResource Include="blazor.modules.json" LogicalName="_framework/blazor.modules.json" />
       <EmbeddedResource Include="$(BlazorWebViewJSFile)" LogicalName="_framework/$(BlazorWebViewJSFilename)" />
