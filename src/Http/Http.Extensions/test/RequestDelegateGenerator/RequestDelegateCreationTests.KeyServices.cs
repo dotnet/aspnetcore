@@ -201,7 +201,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
     }
 
     [Fact]
-    public async Task ThrowsIfDIContainerDoesNotSupportKeyedServices()
+    public async Task ThrowsIfDiContainerDoesNotSupportKeyedServices()
     {
         var source = """
  app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestService arg1) =>
@@ -222,7 +222,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
     {
         public object GetService(Type serviceType)
         {
-            if (serviceType == typeof(ILoggerFactory))
+            if (serviceType == typeof(Microsoft.Extensions.Logging.ILoggerFactory))
             {
                 return NullLoggerFactory.Instance;
             }
