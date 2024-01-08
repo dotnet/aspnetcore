@@ -103,7 +103,8 @@
   </Target>
 
   <Target Name="BuildNpmFiles"
-    DependsOnTargets="RestoreNpmPackages">
+    DependsOnTargets="RestoreNpmPackages"
+    BeforeTargets="RunInnerSourceBuildCommand">
 
     <Message Text="Building Node JS files..." Importance="high" />
 
