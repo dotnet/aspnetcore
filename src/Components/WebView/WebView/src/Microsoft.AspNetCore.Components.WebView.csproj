@@ -64,7 +64,7 @@
       <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
     </PropertyGroup>
 
-    <Warning Text="'$(BlazorWebViewJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
+    <Warning Condition="!Exists('$(BlazorWebViewJSFile)')" Text="'$(BlazorWebViewJSFile)' does not exist. Ensure the JS assets have been build by running 'npm run build' from the repository root." />
 
     <ItemGroup>
       <EmbeddedResource Include="blazor.modules.json" LogicalName="_framework/blazor.modules.json" />
