@@ -56,15 +56,15 @@ export const monoPlatform: Platform = {
   },
 
   readInt16Field: function readHeapInt16(baseAddress: Pointer, fieldOffset?: number): number {
-    return runtime.getHeapI16((baseAddress as any) + + (fieldOffset || 0));
+    return runtime.getHeapI16((baseAddress as any) + (fieldOffset || 0));
   },
 
   readInt32Field: function readHeapInt32(baseAddress: Pointer, fieldOffset?: number): number {
-    return runtime.getHeapI32((baseAddress as any) + + (fieldOffset || 0));
+    return runtime.getHeapI32((baseAddress as any) + (fieldOffset || 0));
   },
 
   readUint64Field: function readHeapUint64(baseAddress: Pointer, fieldOffset?: number): number {
-    return runtime.getHeapU52((baseAddress as any) + + (fieldOffset || 0));
+    return runtime.getHeapU52((baseAddress as any) + (fieldOffset || 0));
   },
 
   readObjectField: function readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T {
