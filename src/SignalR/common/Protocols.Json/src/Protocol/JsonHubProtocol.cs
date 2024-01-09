@@ -611,7 +611,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                 }
                 else
                 {
-                    JsonSerializer.Serialize(writer, message.Result, message.Result.GetType(), _payloadSerializerOptions);
+                    JsonSerializer.Serialize(writer, message.Result, _payloadSerializerOptions);
                 }
             }
         }
@@ -633,7 +633,7 @@ public sealed class JsonHubProtocol : IHubProtocol
         }
         else
         {
-            JsonSerializer.Serialize(writer, message.Item, message.Item.GetType(), _payloadSerializerOptions);
+            JsonSerializer.Serialize(writer, message.Item, _payloadSerializerOptions);
         }
     }
 
@@ -691,7 +691,7 @@ public sealed class JsonHubProtocol : IHubProtocol
             }
             else
             {
-                JsonSerializer.Serialize(writer, argument, argument.GetType(), _payloadSerializerOptions);
+                JsonSerializer.Serialize(writer, argument, _payloadSerializerOptions);
             }
         }
         writer.WriteEndArray();
