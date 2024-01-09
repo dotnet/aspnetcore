@@ -110,7 +110,7 @@ internal sealed class HubMethodDescriptor
                         }
                         else
                         {
-                            throw new InvalidOperationException($"This service provider doesn't support keyed services.");
+                            throw new InvalidOperationException($"Unable to resolve {nameof(FromKeyedServicesAttribute)}. This service provider doesn't support keyed services.");
                         }
                     }
 
