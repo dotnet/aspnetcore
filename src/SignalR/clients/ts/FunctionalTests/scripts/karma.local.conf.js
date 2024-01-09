@@ -1,3 +1,5 @@
+const os = require('os');
+
 try {
     // Karma configuration for a local run (the default)
     const createKarmaConfig = require("./karma.base.conf");
@@ -45,8 +47,13 @@ try {
     // We use the launchers themselves to figure out if the browser exists. It's a bit sneaky, but it works.
     tryAddBrowser("ChromeHeadlessNoSandbox", ChromeHeadlessBrowser.prototype);
     tryAddBrowser("ChromiumHeadlessIgnoreCert", ChromiumHeadlessBrowser.prototype);
-    if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
-      tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
+
+    if (os.platform() !== 'darwin') {
+      if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
+        tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
+      }
+    } else {
+        tryAddBrowser("FirefoxHeadlessMac", FirefoxHeadlessBrowser.prototype)
     }
 
     // We need to receive an argument from the caller, but globals don't seem to work, so we use an environment variable.
@@ -71,7 +78,11 @@ try {
 
           // Ignore cert errors to allow our test cert to work (NEVER do this outside of testing)
           flags: ["--allow-insecure-localhost", "--ignore-certificate-errors"]
-        }
+        },
+        FirefoxHeadlessMac: {
+          base: 'FirefoxHeadless',
+
+          command: '/Applications/FireFox.app/Contents/MacOS/firefox'
       },
     });
 } catch (e) {
