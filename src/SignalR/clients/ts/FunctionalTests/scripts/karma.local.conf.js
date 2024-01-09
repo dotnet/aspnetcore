@@ -53,7 +53,7 @@ try {
         tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
       }
     } else {
-        tryAddBrowser("FirefoxHeadlessMac", FirefoxHeadlessBrowser.prototype)
+        tryAddBrowser("FirefoxHeadlessMac", FirefoxHeadlessBrowser.prototype);
     }
 
     // We need to receive an argument from the caller, but globals don't seem to work, so we use an environment variable.
@@ -83,6 +83,7 @@ try {
           base: 'FirefoxHeadless',
 
           command: '/Applications/FireFox.app/Contents/MacOS/firefox'
+        }
       },
     });
 } catch (e) {
