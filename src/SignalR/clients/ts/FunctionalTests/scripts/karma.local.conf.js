@@ -1,5 +1,3 @@
-const os = require('os');
-
 try {
     // Karma configuration for a local run (the default)
     const createKarmaConfig = require("./karma.base.conf");
@@ -47,7 +45,7 @@ try {
     // We use the launchers themselves to figure out if the browser exists. It's a bit sneaky, but it works.
     tryAddBrowser("ChromeHeadlessNoSandbox", ChromeHeadlessBrowser.prototype);
     tryAddBrowser("ChromiumHeadlessIgnoreCert", ChromiumHeadlessBrowser.prototype);
-    if (os.platform() !== 'darwin' && !tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
+    if (!tryAddBrowser("FirefoxHeadless", FirefoxHeadlessBrowser.prototype)) {
       tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
     }
 
