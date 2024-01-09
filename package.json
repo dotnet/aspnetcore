@@ -15,9 +15,6 @@
     "src/Components/CustomElements/src/js",
     "src/ProjectTemplates/test/Templates.Tests"
   ],
-  "devDependencies":{
-    "karma-sauce-launcher": "^4.3.6"
-  },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
@@ -37,6 +34,16 @@
     "npm": ">=9.3.1"
   },
   "devDependencies": {
+    "karma-sauce-launcher": "^4.3.6",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.2",
+    "rollup-plugin-filesize": "^10.0.0",
+    "typescript": "^5.3.3",
     "ts-node": "^10.9.2"
   }
 }
