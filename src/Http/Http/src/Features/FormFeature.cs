@@ -161,10 +161,6 @@ public class FormFeature : IFormFeature
             }
             else
             {
-                if (!HasFormContentType)
-                {
-                    throw new InvalidOperationException("This request does not have a Content-Type header. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data.");
-                }
                 _parsedFormTask = InnerReadFormAsync(cancellationToken);
             }
         }
@@ -173,6 +169,11 @@ public class FormFeature : IFormFeature
 
     private async Task<IFormCollection> InnerReadFormAsync(CancellationToken cancellationToken)
     {
+        if (_request is null)
+        {
+            throw new InvalidOperationException("Cannot read form from this request. Request is 'null'.");
+        }
+
         HandleUncheckedAntiforgeryValidationFeature();
         _options = _endpoint is null ? _options : GetFormOptionsFromMetadata(_options, _endpoint);
 
