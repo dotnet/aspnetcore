@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 /// </summary>
 public class FormFeature : IFormFeature
 {
-    private readonly HttpRequest _request;
+    private readonly HttpRequest? _request;
     private readonly Endpoint? _endpoint;
     private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
@@ -31,7 +31,6 @@ public class FormFeature : IFormFeature
         ArgumentNullException.ThrowIfNull(form);
 
         Form = form;
-        _request = default!;
         _options = FormOptions.Default;
     }
 
@@ -71,7 +70,15 @@ public class FormFeature : IFormFeature
     {
         get
         {
-            _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
+            // Set directly
+            if (Form is not null)
+            {
+                _ = MediaTypeHeaderValue.TryParse("application/x-www-form-urlencoded", out var mt);
+            }
+            else
+            {
+                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
+            }
             return mt;
         }
     }
@@ -85,6 +92,11 @@ public class FormFeature : IFormFeature
             if (Form != null)
             {
                 return true;
+            }
+
+            if (_request is null)
+            {
+                return false;
             }
 
             var contentType = ContentType;
