@@ -70,15 +70,18 @@ public class FormFeature : IFormFeature
     {
         get
         {
+            MediaTypeHeaderValue? mt = default;
+
             // Set directly
             if (Form is not null)
             {
-                _ = MediaTypeHeaderValue.TryParse("application/x-www-form-urlencoded", out var mt);
+                mt = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             }
             else
             {
-                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
+                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
             }
+
             return mt;
         }
     }
