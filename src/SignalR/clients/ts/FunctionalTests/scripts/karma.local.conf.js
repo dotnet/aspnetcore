@@ -53,6 +53,9 @@ try {
         tryAddBrowser("FirefoxDeveloperHeadless", FirefoxDeveloperHeadlessBrowser.prototype);
       }
     } else {
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=1871366
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=1871447
+        // It looks like some Entitlements issue with Firefox and macOS, additionally, it seems 'firefox-bin' is being removed which is what the karma firefox launcher uses by default
         tryAddBrowser("FirefoxHeadlessMac", FirefoxHeadlessBrowser.prototype);
     }
 
