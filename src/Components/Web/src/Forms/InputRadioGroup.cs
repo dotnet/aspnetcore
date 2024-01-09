@@ -34,7 +34,7 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         if (_context is null)
         {
             var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
-            _context = new InputRadioContext(CascadedContext, changeEventCallback);
+            _context = new InputRadioContext(() => CurrentValue, CascadedContext, changeEventCallback);
         }
         else if (_context.ParentContext != CascadedContext)
         {
@@ -59,7 +59,7 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
             // Otherwise, just use a GUID to disambiguate this group's radio inputs from any others on the page.
             _context.GroupName = _defaultGroupName;
         }
-        _context.CurrentValue = CurrentValue;
+
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
     }
 
