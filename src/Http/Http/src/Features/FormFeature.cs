@@ -79,7 +79,10 @@ public class FormFeature : IFormFeature
             }
             else
             {
-                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+                if (_request is not null)
+                {
+                    _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+                }
             }
 
             return mt;
@@ -158,6 +161,10 @@ public class FormFeature : IFormFeature
             }
             else
             {
+                if (!HasFormContentType)
+                {
+                    throw new InvalidOperationException("This request does not have a Content-Type header. Forms are available from requests with bodies like POSTs and a form Content-Type of either application/x-www-form-urlencoded or multipart/form-data.");
+                }
                 _parsedFormTask = InnerReadFormAsync(cancellationToken);
             }
         }
