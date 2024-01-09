@@ -4,6 +4,7 @@
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 
   <PropertyGroup>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <IsTestProject>true</IsTestProject>
     <IsUnitTestProject>true</IsUnitTestProject>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>

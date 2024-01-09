@@ -9,37 +9,37 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="dotnet-ef" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="9.0.0-alpha.1.24056.1">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="9.0.0-alpha.1.24058.4">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>b5b1abff6ef727795679e41a85c1d737d1a8f45f</Sha>
+      <Sha>7b712f8023b1a2a33a99eee81c66dfa17d95a289</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0-alpha.1.24057.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -333,9 +333,9 @@
       <Sha>676b9ddede4b3843bb41af274343e7eebd79169a</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24052.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24055.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>5357f2bafb9e23858aa57136d38dbb113cdf81a2</Sha>
+      <Sha>ef691e3c401949dab9986a50d8288a6e489f72bb</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
@@ -412,9 +412,9 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.23621.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.24058.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>6b058bf0b8942460db4f0ef953e8a0e44db0474c</Sha>
+      <Sha>1194d0bd9b2a0257706a2635531948ceaa02e729</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>

@@ -788,6 +788,10 @@ public static partial class RequestDelegateFactory
         }
         else if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } keyedServicesAttribute)
         {
+            if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
+            {
+                throw new InvalidOperationException($"Unable to resolve {nameof(FromKeyedServicesAttribute)}. This service provider doesn't support keyed services.");
+            }
             var key = keyedServicesAttribute.Key;
             return BindParameterFromKeyedService(parameter, key, factoryContext);
         }
