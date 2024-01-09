@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressReadingTokenFromFormBody.get -> bool
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressReadingTokenFromFormBody.set -> void
