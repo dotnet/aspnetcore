@@ -162,7 +162,7 @@ stages:
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
         # otherwise it'll complain about accessing a private feed.
-        - task: NuGetAuthenticate@0
+        - task: NuGetAuthenticate@1
           displayName: 'Authenticate to AzDO Feeds'
 
         - task: PowerShell@2
