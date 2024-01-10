@@ -19,6 +19,9 @@
          from the dependency on NuGet.Packaging which would cause a source-built prebuilt. -->
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingVersion)" />
+    <!-- Explicitly reference the desired version of System.Text.Json to avoid getting an older version
+         from the dependency on Microsoft.Extensions.DependencyModel which would cause a source-built prebuilt. -->
+    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
   </ItemGroup>
 
