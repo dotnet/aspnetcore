@@ -100,6 +100,9 @@ else
     ComponentState _state = new(ImmutableArray<CounterInfo>.Empty, NextCounterId: 0);
     bool _isStreaming = false;
 
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; }
+
     [SupplyParameterFromQuery]
     public string? InitialState { get; set; }
 
@@ -109,11 +112,19 @@ else
     [SupplyParameterFromQuery]
     public bool DisableKeys { get; set; }
 
+    [SupplyParameterFromQuery]
+    public bool ClearSiteData { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         if (InitialState is not null)
         {
             _state = ReadStateFromJson(InitialState);
+        }
+
+        if (ClearSiteData)
+        {
+            HttpContext.Response.Headers["Clear-Site-Data"] = "\"*\"";
         }
 
         if (ShouldStream)

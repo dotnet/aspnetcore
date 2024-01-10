@@ -31,7 +31,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext + _nextStreamingIdContext++);
 
-    // Validates that we can use persisted state across server, webasembly, and auto modes, with and without
+    // Validates that we can use persisted state across server, webassembly, and auto modes, with and without
     // streaming rendering.
     // For streaming rendering, we validate that the state is captured and restored after streaming completes.
     // For enhanced navigation we validate that the state is captured at the time components are rendered for
@@ -101,6 +101,12 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "server");
 
             UnblockWebAssemblyResourceLoad();
+
+            if (suppressEnhancedNavigation)
+            {
+                RenderWebAssemblyComponentAndWaitForWebAssemblyRuntime(returnUrl: Browser.Url);
+            }
+
             Browser.Navigate().Refresh();
 
             RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "wasm");
@@ -123,16 +129,19 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         }
         Browser.Click(By.Id("page-with-components-link"));
 
-        RenderComponentsWithPersistentStateAndValidate(suppresEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming);
+        RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming);
         Browser.Click(By.Id("page-no-components-link"));
         // Ensure that the circuit is gone.
         await Task.Delay(1000);
         Browser.Click(By.Id("page-with-components-link-and-state"));
-        RenderComponentsWithPersistentStateAndValidate(suppresEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
+        RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
     }
 
     private void BlockWebAssemblyResourceLoad()
     {
+        // Clear local storage so that the resource hash is not found
+        ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.clear()");
+
         ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-load-boot-resource', 'true')");
 
         // Clear caches so that we can block the resource load
@@ -145,7 +154,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     }
 
     private void RenderComponentsWithPersistentStateAndValidate(
-        bool suppresEnhancedNavigation,
+        bool suppressEnhancedNavigation,
         string mode,
         Type renderMode,
         string streaming,
@@ -154,7 +163,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     {
         stateValue ??= "restored";
         // No need to navigate if we are using enhanced navigation, the tests will have already navigated to the page via a link.
-        if (suppresEnhancedNavigation)
+        if (suppressEnhancedNavigation)
         {
             // In this case we suppress auto start to check some server side state before we boot Blazor.
             if (streaming == null)
@@ -229,6 +238,18 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         else
         {
             Browser.Equal("Streaming: True", () => Browser.FindElement(By.Id("streaming")).Text);
+        }
+    }
+
+    private void RenderWebAssemblyComponentAndWaitForWebAssemblyRuntime(string returnUrl = null)
+    {
+        Navigate("subdir/persistent-state/page-with-webassembly-interactivity");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-counter")).Text);
+
+        if (returnUrl is not null)
+        {
+            Navigate(returnUrl);
         }
     }
 
