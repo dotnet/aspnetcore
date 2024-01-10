@@ -1,4 +1,4 @@
-name: Locker - Lock stale issues and PRs
+name: Locker - Lock stale issues
 on:
   schedule:
     - cron: '34 8 * * *' # Once per day, overnight PT, uncommon minute of hour
