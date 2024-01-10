@@ -21,6 +21,7 @@ public class FormFeature : IFormFeature
     private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
     private IFormCollection? _form;
+	private MediaTypeHeaderValue? _formContentType;
 
     /// <summary>
     /// Initializes a new instance of <see cref="FormFeature"/>.
@@ -31,6 +32,7 @@ public class FormFeature : IFormFeature
         ArgumentNullException.ThrowIfNull(form);
 
         Form = form;
+		_formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
         _options = FormOptions.Default;
     }
 
@@ -70,22 +72,19 @@ public class FormFeature : IFormFeature
     {
         get
         {
-            MediaTypeHeaderValue? mt = default;
+			MediaTypeHeaderValue? mt = null;
 
-            // Set directly
-            if (Form is not null)
-            {
-                mt = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            }
-            else
-            {
-                if (_request is not null)
-                {
-                    _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
-                }
-            }
+			if (_request is not null)
+			{
+				_ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+			}
 
-            return mt;
+			if (Form is not null && mt is null)
+			{
+				mt = _formContentType;
+			}
+
+			return mt;
         }
     }
 
@@ -124,6 +123,10 @@ public class FormFeature : IFormFeature
         {
             _parsedFormTask = null;
             _form = value;
+			if (_form is not null && _formContentType is null)
+            {
+				_formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            }
         }
     }
 
