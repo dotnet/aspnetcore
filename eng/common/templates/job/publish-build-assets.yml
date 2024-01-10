@@ -53,7 +53,7 @@ jobs:
       continueOnError: ${{ parameters.continueOnError }}
     
     - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - task: NuGetAuthenticate@0
+      - task: NuGetAuthenticate@1
 
       - task: PowerShell@2 
         displayName: Enable cross-org NuGet feed authentication 
@@ -68,7 +68,7 @@ jobs:
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
           /p:BuildAssetRegistryToken=$(MaestroAccessToken)
-          /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
+          /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:Configuration=$(_BuildConfig)
           /p:OfficialBuildId=$(Build.BuildNumber)

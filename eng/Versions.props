@@ -131,8 +131,8 @@
     <MicrosoftEntityFrameworkCoreVersion>6.0.26</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>6.0.26</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.23517.3</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.23517.3</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>6.0.0-beta.24059.3</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>6.0.0-beta.24059.3</MicrosoftDotNetBuildTasksTemplatingVersion>
   </PropertyGroup>
   <!--
 
