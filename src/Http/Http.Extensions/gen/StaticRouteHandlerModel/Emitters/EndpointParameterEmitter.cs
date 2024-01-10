@@ -337,7 +337,7 @@ internal static class EndpointParameterEmitter
 
         codeWriter.WriteLine("if (httpContext.RequestServices.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)");
         codeWriter.StartBlock();
-        codeWriter.WriteLine(@"throw new InvalidOperationException($""Unable to resolve {nameof(FromKeyedServicesAttribute)}. This service provider doesn't support keyed services."");");
+        codeWriter.WriteLine(@"throw new InvalidOperationException($""Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services."");");
         codeWriter.EndBlock();
 
         var assigningCode = endpointParameter.IsOptional ?

@@ -790,7 +790,7 @@ public static partial class RequestDelegateFactory
         {
             if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
             {
-                throw new InvalidOperationException($"Unable to resolve {nameof(FromKeyedServicesAttribute)}. This service provider doesn't support keyed services.");
+                throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
             }
             var key = keyedServicesAttribute.Key;
             return BindParameterFromKeyedService(parameter, key, factoryContext);
