@@ -13,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -2762,7 +2763,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.WebSockets)]
         public async Task AuthenticationExpirationSetOnAuthenticatedConnectionWithJWT(HttpTransportType transportType)
         {
-            SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+            SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
             JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
             using var host = CreateHost(services =>
@@ -2924,7 +2925,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(HttpTransportType.WebSockets)]
         public async Task AuthenticationExpirationUsesCorrectScheme(HttpTransportType transportType)
         {
-            var SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+            var SecurityKey = new SymmetricSecurityKey(SHA256.HashData(Guid.NewGuid().ToByteArray()));
             var JwtTokenHandler = new JwtSecurityTokenHandler();
 
             using var host = CreateHost(services =>
