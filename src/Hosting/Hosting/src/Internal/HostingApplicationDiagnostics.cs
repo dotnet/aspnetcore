@@ -150,7 +150,8 @@ internal sealed class HostingApplicationDiagnostics
 
             if (context.MetricsEnabled)
             {
-                var route = httpContext.GetEndpoint()?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+                var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+                var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
                 var customTags = context.MetricsTagsFeature?.TagsList;
 
                 _metrics.RequestEnd(

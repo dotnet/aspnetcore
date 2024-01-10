@@ -190,11 +190,7 @@ public static class StatusCodePagesExtensions
 
             // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
             // the endpoint and route values to ensure things are re-calculated.
-            context.HttpContext.SetEndpoint(endpoint: null);
-            if (routeValuesFeature != null)
-            {
-                routeValuesFeature.RouteValues = null!;
-            }
+            HttpExtensions.ClearEndpoint(context.HttpContext);
 
             context.HttpContext.Request.Path = newPath;
             context.HttpContext.Request.QueryString = newQueryString;

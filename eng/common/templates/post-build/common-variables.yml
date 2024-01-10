@@ -7,7 +7,7 @@ variables:
 
   # Default Maestro++ API Endpoint and API Version
   - name: MaestroApiEndPoint
-    value: "https://maestro-prod.westus2.cloudapp.azure.com"
+    value: "https://maestro.dot.net"
   - name: MaestroApiAccessToken
     value: $(MaestroAccessToken)
   - name: MaestroApiVersion
