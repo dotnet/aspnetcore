@@ -108,11 +108,6 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
                 await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
                 Log.NavigationCompleted(_logger, uri);
             }
-            catch (TaskCanceledException) when (_jsRuntime is RemoteJSRuntime remoteRuntime && !remoteRuntime.IsInitialized)
-            {
-                Log.NavigationCanceled(_logger, uri);
-                return;
-            }
             catch (Exception ex)
             {
                 // We shouldn't ever reach this since exceptions thrown from handlers are handled in HandleLocationChangingHandlerException.
