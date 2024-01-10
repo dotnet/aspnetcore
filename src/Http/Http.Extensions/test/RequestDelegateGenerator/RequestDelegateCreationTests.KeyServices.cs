@@ -214,14 +214,14 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         if (!IsGeneratorEnabled)
         {
             var runtimeException = Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
-            Assert.Equal("Unable to resolve FromKeyedServicesAttribute. This service provider doesn't support keyed services.", runtimeException.Message);
+            Assert.Equal("Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.", runtimeException.Message);
             return;
         }
         var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
 
         var httpContext = CreateHttpContext(serviceProvider);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
-        Assert.Equal("Unable to resolve FromKeyedServicesAttribute. This service provider doesn't support keyed services.", exception.Message);
+        Assert.Equal("Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.", exception.Message);
     }
 
     private class MockServiceProvider : IServiceProvider, ISupportRequiredService
