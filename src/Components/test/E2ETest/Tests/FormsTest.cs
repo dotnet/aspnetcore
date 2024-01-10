@@ -857,10 +857,15 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal(n == 0 ? "True" : "False", () => zero.GetDomProperty("checked"));
         Browser.Equal("False", () => one.GetDomProperty("checked"));
 
-        // Observe that the value can be mutated by the setter, and this shows up in the DOM
+        // Observe the changes after a click
         one.Click();
         Browser.Equal("False", () => zero.GetDomProperty("checked"));
         Browser.Equal("True", () => one.GetDomProperty("checked"));
+
+        // Ensure other options can be selected
+        zero.Click();
+        Browser.Equal("False", () => one.GetDomProperty("checked"));
+        Browser.Equal("True", () => zero.GetDomProperty("checked"));
     }
 
     [Fact]
