@@ -734,11 +734,10 @@ internal partial class CircuitHost : IAsyncDisposable
 
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
-            var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
             var shouldClearStore = false;
+            var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
-            Task[]? pendingTasks = null;
             try
             {
                 if (Descriptors.Count > 0)
@@ -751,6 +750,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 if (_isFirstUpdate)
                 {
                     _isFirstUpdate = false;
+                    shouldWaitForQuiescence = true;
                     if (store != null)
                     {
                         shouldClearStore = true;
@@ -774,45 +774,9 @@ internal partial class CircuitHost : IAsyncDisposable
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
                     }
-
-                    pendingTasks = new Task[operations.Length];
                 }
 
-                await HandleInboundActivityAsync(() =>
-                {
-                    for (var i = 0; i < operations.Length; i++)
-                    {
-                        var operation = operations[i];
-                        switch (operation.Type)
-                        {
-                            case RootComponentOperationType.Add:
-                                pendingTasks[i] = webRootComponentManager.AddRootComponentAsync(
-                                    operation.SsrComponentId,
-                                    operation.Descriptor.ComponentType,
-                                    operation.Marker.Value.Key,
-                                    operation.Descriptor.Parameters);
-                                break;
-                            case RootComponentOperationType.Update:
-                                // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
-                                _ = webRootComponentManager.UpdateRootComponentAsync(
-                                    operation.SsrComponentId,
-                                    operation.Descriptor.ComponentType,
-                                    operation.Marker.Value.Key,
-                                    operation.Descriptor.Parameters);
-                                break;
-                            case RootComponentOperationType.Remove:
-                                webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
-                                break;
-                        }
-                    }
-
-                    return Task.CompletedTask;
-                });
-
-                if (pendingTasks != null)
-                {
-                    await Task.WhenAll(pendingTasks);
-                }
+                await PerformRootComponentOperations(operations, shouldWaitForQuiescence);
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
@@ -836,6 +800,58 @@ internal partial class CircuitHost : IAsyncDisposable
                 }
             }
         });
+    }
+
+    private async ValueTask PerformRootComponentOperations(
+        RootComponentOperation[] operations,
+        bool shouldWaitForQuiescence)
+    {
+        var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+        var pendingTasks = shouldWaitForQuiescence
+            ? new Task[operations.Length]
+            : null;
+
+        // The inbound activity pipeline needs to be awaited because it populates
+        // the pending tasks used to wait for quiescence.
+        await HandleInboundActivityAsync(() =>
+        {
+            for (var i = 0; i < operations.Length; i++)
+            {
+                var operation = operations[i];
+                switch (operation.Type)
+                {
+                    case RootComponentOperationType.Add:
+                        var task = webRootComponentManager.AddRootComponentAsync(
+                            operation.SsrComponentId,
+                            operation.Descriptor.ComponentType,
+                            operation.Marker.Value.Key,
+                            operation.Descriptor.Parameters);
+                        if (pendingTasks != null)
+                        {
+                            pendingTasks[i] = task;
+                        }
+                        break;
+                    case RootComponentOperationType.Update:
+                        // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+                        _ = webRootComponentManager.UpdateRootComponentAsync(
+                            operation.SsrComponentId,
+                            operation.Descriptor.ComponentType,
+                            operation.Marker.Value.Key,
+                            operation.Descriptor.Parameters);
+                        break;
+                    case RootComponentOperationType.Remove:
+                        webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
+                        break;
+                }
+            }
+
+            return Task.CompletedTask;
+        });
+
+        if (pendingTasks != null)
+        {
+            await Task.WhenAll(pendingTasks);
+        }
     }
 
     private static partial class Log
