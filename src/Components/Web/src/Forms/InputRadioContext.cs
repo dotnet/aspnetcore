@@ -8,19 +8,19 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 internal sealed class InputRadioContext
 {
-    private readonly Func<object?> _valueGetter;
+    private readonly IInputRadioValueProvider _valueProvider;
 
     public InputRadioContext? ParentContext { get; }
     public EventCallback<ChangeEventArgs> ChangeEventCallback { get; }
-    public object? CurrentValue => _valueGetter();
+    public object? CurrentValue => _valueProvider.CurrentValue;
 
     // Mutable properties that may change any time an InputRadioGroup is rendered
     public string? GroupName { get; set; }
     public string? FieldClass { get; set; }
 
-    public InputRadioContext(Func<object?> valueGetter, InputRadioContext? parentContext, EventCallback<ChangeEventArgs> changeEventCallback)
+    public InputRadioContext(IInputRadioValueProvider valueProvider, InputRadioContext? parentContext, EventCallback<ChangeEventArgs> changeEventCallback)
     {
-        _valueGetter = valueGetter;
+        _valueProvider = valueProvider;
         ParentContext = parentContext;
         ChangeEventCallback = changeEventCallback;
     }
