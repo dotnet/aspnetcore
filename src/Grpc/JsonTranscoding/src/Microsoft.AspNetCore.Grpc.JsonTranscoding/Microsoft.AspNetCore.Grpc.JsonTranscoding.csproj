@@ -34,9 +34,12 @@
       <Pack>true</Pack>
       <PackagePath>content</PackagePath>
     </None>
+    <!-- The build file needs to be in build and buildTransitive. -->
+    <!-- buildTransitive is required so the package reference will work when not directly referenced by the web app. -->
+    <!-- See https://github.com/dotnet/aspnetcore/issues/52006 for more details. -->
     <None Include="build\*.targets">
       <Pack>true</Pack>
-      <PackagePath>build</PackagePath>
+      <PackagePath>build;buildTransitive</PackagePath>
     </None>
   </ItemGroup>
 </Project>

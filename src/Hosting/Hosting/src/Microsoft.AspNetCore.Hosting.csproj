@@ -34,6 +34,7 @@
     <Reference Include="Microsoft.Extensions.Options" />
 
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
