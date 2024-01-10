@@ -3,7 +3,7 @@ param(
   [Parameter(Mandatory=$true)][int] $PublishingInfraVersion,
   [Parameter(Mandatory=$true)][string] $AzdoToken,
   [Parameter(Mandatory=$true)][string] $MaestroToken,
-  [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = 'https://maestro-prod.westus2.cloudapp.azure.com',
+  [Parameter(Mandatory=$false)][string] $MaestroApiEndPoint = 'https://maestro.dot.net',
   [Parameter(Mandatory=$true)][string] $WaitPublishingFinish,
   [Parameter(Mandatory=$false)][string] $ArtifactsPublishingAdditionalParameters,
   [Parameter(Mandatory=$false)][string] $SymbolPublishingAdditionalParameters

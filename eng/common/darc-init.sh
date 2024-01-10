@@ -2,7 +2,7 @@
 
 source="${BASH_SOURCE[0]}"
 darcVersion=''
-versionEndpoint='https://maestro-prod.westus2.cloudapp.azure.com/api/assets/darc-version?api-version=2019-01-16'
+versionEndpoint='https://maestro.dot.net/api/assets/darc-version?api-version=2019-01-16'
 verbosity='minimal'
 
 while [[ $# > 0 ]]; do

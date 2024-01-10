@@ -123,7 +123,7 @@ jobs:
         continueOnError: ${{ parameters.continueOnError }}
         condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 
-    - task: NuGetAuthenticate@0
+    - task: NuGetAuthenticate@1
 
   - ${{ if or(eq(parameters.artifacts.download, 'true'), ne(parameters.artifacts.download, '')) }}:
     - task: DownloadPipelineArtifact@2
