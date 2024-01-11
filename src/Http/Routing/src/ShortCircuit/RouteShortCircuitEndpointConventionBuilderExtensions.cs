@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Routing.ShortCircuit;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class RouteShortCircuitEndpointConventionBuilderExtensions
 {
-    private static readonly ShortCircuitMetadata _200ShortCircuitMetadata = new ShortCircuitMetadata(200);
-    private static readonly ShortCircuitMetadata _401ShortCircuitMetadata = new ShortCircuitMetadata(401);
-    private static readonly ShortCircuitMetadata _404ShortCircuitMetadata = new ShortCircuitMetadata(404);
-    private static readonly ShortCircuitMetadata _nullShortCircuitMetadata = new ShortCircuitMetadata(null);
+    private static readonly ShortCircuitAttribute _200ShortCircuitMetadata = new(200);
+    private static readonly ShortCircuitAttribute _401ShortCircuitMetadata = new(401);
+    private static readonly ShortCircuitAttribute _404ShortCircuitMetadata = new(404);
+    private static readonly ShortCircuitAttribute _nullShortCircuitMetadata = new(null);
 
     /// <summary>
     /// Short circuit the endpoint(s).
@@ -30,7 +30,7 @@ public static class RouteShortCircuitEndpointConventionBuilderExtensions
             401 => _401ShortCircuitMetadata,
             404 => _404ShortCircuitMetadata,
             null => _nullShortCircuitMetadata,
-            _ => new ShortCircuitMetadata(statusCode)
+            _ => new ShortCircuitAttribute(statusCode)
         };
 
         builder.Add(b => b.Metadata.Add(metadata));

@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.ShortCircuit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -48,7 +47,7 @@ internal sealed partial class EndpointRoutingMiddleware
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _metrics = metrics;
         _next = next ?? throw new ArgumentNullException(nameof(next));
-        _routeOptions = routeOptions.Value;
+        _routeOptions = routeOptions?.Value ?? throw new ArgumentNullException(nameof(routeOptions));
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
@@ -137,7 +136,7 @@ internal sealed partial class EndpointRoutingMiddleware
             // can access the feature with the correct value.
             SetMaxRequestBodySize(httpContext);
 
-            var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
+            var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitAttribute>();
             if (shortCircuitMetadata is not null)
             {
                 return ExecuteShortCircuit(shortCircuitMetadata, endpoint, httpContext);
@@ -155,7 +154,7 @@ internal sealed partial class EndpointRoutingMiddleware
         }
     }
 
-    private Task ExecuteShortCircuit(ShortCircuitMetadata shortCircuitMetadata, Endpoint endpoint, HttpContext httpContext)
+    private Task ExecuteShortCircuit(ShortCircuitAttribute shortCircuitMetadata, Endpoint endpoint, HttpContext httpContext)
     {
         // This check should be kept in sync with the one in EndpointMiddleware
         if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
