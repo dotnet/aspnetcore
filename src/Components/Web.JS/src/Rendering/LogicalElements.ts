@@ -149,12 +149,13 @@ export function insertLogicalChildBefore(child: Node, parent: LogicalElement, be
 export function insertLogicalChild(child: Node, parent: LogicalElement, childIndex: number): void {
   const childAsLogicalElement = child as unknown as LogicalElement;
 
-  // If the child is a component comment with logical siblings, its siblings also
+  // If the child is a component comment with logical children, its children
   // need to be inserted into the parent node
   let nodeToInsert = child;
-  if (isLogicalElement(child)) {
-    const lastNodeToInsert = findLastDomNodeInRange(childAsLogicalElement);
-    if (lastNodeToInsert !== child) {
+  if (child instanceof Comment) {
+    const existingGranchildren = getLogicalChildrenArray(childAsLogicalElement);
+    if (existingGranchildren?.length > 0) {
+      const lastNodeToInsert = findLastDomNodeInRange(childAsLogicalElement);
       const range = new Range();
       range.setStartBefore(child);
       range.setEndAfter(lastNodeToInsert);
