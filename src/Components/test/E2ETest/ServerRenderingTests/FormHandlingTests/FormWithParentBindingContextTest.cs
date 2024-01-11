@@ -1482,6 +1482,28 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Navigate().Back();
         Browser.Equal(startUrl, () => Browser.Url);
     }
+    
+    [Fact]
+    public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry_Streaming()
+    {
+        var startUrl = Browser.Url;
+        GoTo("forms/form-that-calls-navigation-manager-refresh-streaming");
+
+        // Submit the form
+        Browser.FindElement(By.Id("some-text")).SendKeys("test string");
+        Browser.Equal("test string", () => Browser.FindElement(By.Id("some-text")).GetAttribute("value"));
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        // Wait for the async/streaming process to complete. We know this happened
+        // if the loading indicator says we're done, and the textbox was cleared
+        // due to the refresh
+        Browser.Equal("False", () => Browser.FindElement(By.Id("loading-indicator")).Text);
+        Browser.Equal("", () => Browser.FindElement(By.Id("some-text")).GetAttribute("value"));
+
+        // Checking that the history entry was not pushed
+        Browser.Navigate().Back();
+        Browser.Equal(startUrl, () => Browser.Url);
+    }
 
     // Can't just use GetAttribute or GetDomAttribute because they both auto-resolve it
     // to an absolute URL. We want to be able to assert about the attribute's literal value.
