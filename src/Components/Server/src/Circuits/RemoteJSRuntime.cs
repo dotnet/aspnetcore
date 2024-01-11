@@ -30,6 +30,8 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     public bool IsInitialized => _clientProxy is not null;
 
+    internal bool IsPermanentlyDisconnected => _permanentlyDisconnected;
+
     /// <summary>
     /// Notifies when a runtime exception occurred.
     /// </summary>
