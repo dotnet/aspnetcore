@@ -1138,6 +1138,14 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("GET", () => Browser.Exists(By.Id("method")).Text);
     }
 
+    [Fact]
+    public void InteractiveServerRootComponent_CanAccessCircuitContext()
+    {
+        Navigate($"{ServerPathBase}/interactivity/circuit-context");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("has-circuit-context")).Text);
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         // Force a WebAssembly resource cache miss so that we can fall back to using server interactivity
