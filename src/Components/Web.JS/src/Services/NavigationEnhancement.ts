@@ -132,10 +132,10 @@ function onDocumentSubmit(event: SubmitEvent) {
 
     event.preventDefault();
 
-    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI); 
-    const fetchOptions: RequestInit = { method: method}; 
+    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI);
+    const fetchOptions: RequestInit = { method: method};
     const formData = new FormData(formElem);
-   
+
     const submitterName = event.submitter?.getAttribute('name');
     const submitterValue = event.submitter!.getAttribute('value');
     if (submitterName && submitterValue) {
@@ -153,8 +153,8 @@ function onDocumentSubmit(event: SubmitEvent) {
     } else {
       // Setting request body and content-type header depending on enctype
       const enctype = event.submitter?.getAttribute('formenctype') || formElem.enctype;
-      if (enctype === 'multipart/form-data') { 
-        // Content-Type header will be set to 'multipart/form-data' 
+      if (enctype === 'multipart/form-data') {
+        // Content-Type header will be set to 'multipart/form-data'
         fetchOptions.body = formData;
       } else {
         fetchOptions.body = urlSearchParams;
@@ -170,7 +170,7 @@ function onDocumentSubmit(event: SubmitEvent) {
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post') {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -232,8 +232,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
-      if (response.redirected) {
-        if (isGetRequest) {
+      if (response.redirected || treatAsRedirectionFromMethod) {
+        if (isGetRequest || treatAsRedirectionFromMethod === 'get') {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
           // so that 'back' would go to the page before the redirection
           history.replaceState(null, '', response.url);
