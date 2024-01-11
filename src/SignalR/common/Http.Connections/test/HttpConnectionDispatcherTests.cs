@@ -2862,12 +2862,14 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var options = new HttpConnectionDispatcherOptions();
             options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
 
-            _ = dispatcher.ExecuteAsync(context, options, app);
+            var executeTask = dispatcher.ExecuteAsync(context, options, app);
 
             // "close" server, since we're not using a server in these tests we just simulate what would be called when the server closes
             await connection.DisposeAsync().DefaultTimeout();
 
             await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+
+            await executeTask.DefaultTimeout();
         }
     }
 
