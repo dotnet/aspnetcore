@@ -338,6 +338,30 @@ public class InputBaseTest
     }
 
     [Fact]
+    public async Task ClearsParsingValidationMessagesWhenDisposed()
+    {
+        // Arrange
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // Act + Assert 1 (Precondition): The test needs a validation message to be removed later.
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+        Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+
+        // Act: Dispose the input component
+        (inputComponent as IDisposable).Dispose();
+
+        // Assert 2
+        Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+    }
+
+    [Fact]
     public async Task RespondsToValidationStateChangeNotifications()
     {
         // Arrange

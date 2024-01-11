@@ -374,6 +374,13 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
         }
 
+        // Clear parsing validation messages store owned by the input when the input is disposed.
+        if (_parsingValidationMessages != null)
+        {
+            _parsingValidationMessages.Clear();
+            EditContext!.NotifyValidationStateChanged(); // when _parsingValidationMessages is not null, EditContext is also not null.
+        }
+
         Dispose(disposing: true);
     }
 }
