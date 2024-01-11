@@ -102,7 +102,7 @@ function isSamePageWithHash(absoluteHref: string): boolean {
   return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
 }
 
-function performScrollToElementOnTheSamePage(absoluteHref: string, replace: boolean, state: string | undefined = undefined): void {
+function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boolean, state: string | undefined = undefined): void {
   saveToBrowserHistory(absoluteHref, replace, state);
 
   const hashIndex = absoluteHref.indexOf('#');
@@ -162,23 +162,19 @@ function navigateToCore(uri: string, options: NavigationOptions, skipLocationCha
 }
 
 function performExternalNavigation(uri: string, replace: boolean) {
-  // If we are navigating to an external URI, defer setting the URL so that we can
-  // complete the current navigation operation if the request comes from .NET.
-  setTimeout(() => {
-    if (location.href === uri) {
-      // If you're already on this URL, you can't append another copy of it to the history stack,
-      // so we can ignore the 'replace' flag. However, reloading the same URL you're already on
-      // requires special handling to avoid triggering browser-specific behavior issues.
-      // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
-      const temporaryUri = uri + '?';
-      history.replaceState(null, '', temporaryUri);
-      location.replace(uri);
-    } else if (replace) {
-      location.replace(uri);
-    } else {
-      location.href = uri;
-    }
-  }, 0);
+  if (location.href === uri) {
+    // If you're already on this URL, you can't append another copy of it to the history stack,
+    // so we can ignore the 'replace' flag. However, reloading the same URL you're already on
+    // requires special handling to avoid triggering browser-specific behavior issues.
+    // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
+    const temporaryUri = uri + '?';
+    history.replaceState(null, '', temporaryUri);
+    location.replace(uri);
+  } else if (replace) {
+    location.replace(uri);
+  } else {
+    location.href = uri;
+  }
 }
 
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
