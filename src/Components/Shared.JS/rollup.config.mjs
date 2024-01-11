@@ -37,7 +37,7 @@ export default function createBaseConfig({ inputOutputMap, dir, updateConfig }) 
     const baseConfig = {
       output: {
         dir: path.join(dir, '/dist', environment === 'development' ? '/Debug' : '/Release'),
-        format: 'cjs',
+        format: 'iife',
         sourcemap: environment === 'development' ? true : false,
         entryFileNames: '[name].js',
       },
