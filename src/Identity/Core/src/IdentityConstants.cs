@@ -13,30 +13,30 @@ public class IdentityConstants
     /// <summary>
     /// The scheme used to identify application authentication cookies.
     /// </summary>
-    public static readonly string ApplicationScheme = IdentityPrefix + ".Application";
+    public const string ApplicationScheme = IdentityPrefix + ".Application";
 
     /// <summary>
     /// The scheme used to identify bearer authentication tokens.
     /// </summary>
-    public static readonly string BearerScheme = IdentityPrefix + ".Bearer";
+    public const string BearerScheme = IdentityPrefix + ".Bearer";
 
     /// <summary>
     /// The scheme used to identify combination of <see cref="BearerScheme"/> and <see cref="ApplicationScheme"/>.
     /// </summary>
-    internal const string BearerAndApplicationScheme = IdentityPrefix + ".BearerAndApplication";
+    public const string BearerAndApplicationScheme = IdentityPrefix + ".BearerAndApplication";
 
     /// <summary>
     /// The scheme used to identify external authentication cookies.
     /// </summary>
-    public static readonly string ExternalScheme = IdentityPrefix + ".External";
+    public const string ExternalScheme = IdentityPrefix + ".External";
 
     /// <summary>
     /// The scheme used to identify Two Factor authentication cookies for saving the Remember Me state.
     /// </summary>
-    public static readonly string TwoFactorRememberMeScheme = IdentityPrefix + ".TwoFactorRememberMe";
+    public const string TwoFactorRememberMeScheme = IdentityPrefix + ".TwoFactorRememberMe";
 
     /// <summary>
     /// The scheme used to identify Two Factor authentication cookies for round tripping user identities.
     /// </summary>
-    public static readonly string TwoFactorUserIdScheme = IdentityPrefix + ".TwoFactorUserId";
+    public const string TwoFactorUserIdScheme = IdentityPrefix + ".TwoFactorUserId";
 }

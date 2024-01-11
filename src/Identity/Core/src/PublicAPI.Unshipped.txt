@@ -1,1 +1,7 @@
 #nullable enable
+const Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme = "Identity.Application" -> string!
+const Microsoft.AspNetCore.Identity.IdentityConstants.BearerAndApplicationScheme = "Identity.BearerAndApplication" -> string!
+const Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme = "Identity.Bearer" -> string!
+const Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme = "Identity.External" -> string!
+const Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorRememberMeScheme = "Identity.TwoFactorRememberMe" -> string!
+const Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorUserIdScheme = "Identity.TwoFactorUserId" -> string!
