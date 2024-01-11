@@ -233,7 +233,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
       if (response.redirected || treatAsRedirectionFromMethod) {
-        if (isGetRequest || treatAsRedirectionFromMethod === 'get') {
+        const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
+        if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
           // so that 'back' would go to the page before the redirection
           history.replaceState(null, '', response.url);
