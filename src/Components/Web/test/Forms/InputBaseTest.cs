@@ -358,7 +358,7 @@ public class InputBaseTest
         (inputComponent as IDisposable).Dispose();
 
         // Assert 2
-        Assert.Equal(Array.Empty<string>(), rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
     }
 
     [Fact]
