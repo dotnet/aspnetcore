@@ -513,8 +513,8 @@ namespace Microsoft.AspNetCore.Http.Generated
     file static class GeneratedRouteBuilderExtensionsCore
     {
         private static readonly JsonOptions FallbackJsonOptions = new();
-        {{GetVerbs(verbs)}}
-        {{endpoints}}
+{{GetVerbs(verbs)}}
+{{endpoints}}
 
         internal static RouteHandlerBuilder MapCore(
             this IEndpointRouteBuilder routes,
@@ -522,9 +522,10 @@ namespace Microsoft.AspNetCore.Http.Generated
             Delegate handler,
             IEnumerable<string>? httpMethods,
             MetadataPopulator populateMetadata,
-            RequestDelegateFactoryFunc createRequestDelegate)
+            RequestDelegateFactoryFunc createRequestDelegate,
+            MethodInfo methodInfo)
         {
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate, methodInfo);
         }
 
         private static T Cast<T>(Delegate d, T _) where T : Delegate

@@ -132,6 +132,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 codeWriter.WriteLine("var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;");
                 codeWriter.WriteLine("return new RequestDelegateResult(targetDelegate, metadata);");
                 codeWriter.EndBlockWithSemicolon();
+                codeWriter.WriteLine($"var castHandler = Cast(handler, {endpoint.EmitHandlerDelegateType()} => throw null!);");
                 codeWriter.WriteLine("return MapCore(");
                 codeWriter.Indent++;
                 codeWriter.WriteLine("endpoints,");
@@ -148,7 +149,8 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 codeWriter.WriteLine("handler,");
                 codeWriter.WriteLine($"{endpoint.EmitVerb()},");
                 codeWriter.WriteLine("populateMetadata,");
-                codeWriter.WriteLine("createRequestDelegate);");
+                codeWriter.WriteLine("createRequestDelegate,");
+                codeWriter.WriteLine("castHandler.Method);");
                 codeWriter.Indent--;
                 codeWriter.EndBlock();
                 return stringWriter.ToString();
@@ -271,7 +273,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 return;
             }
             using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-            using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
+            using var codeWriter = new CodeWriter(stringWriter, baseIndent: 0);
             foreach (var endpoint in endpointsCode)
             {
                 codeWriter.WriteLine(endpoint);
