@@ -45,7 +45,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
-    private long _startedSendTime;
+    private TimeSpan _startedSendTime;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -65,7 +65,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         ConnectionId = connectionId;
         ConnectionToken = connectionToken;
-        LastSeenTicks = Environment.TickCount64;
+        LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64);
         _options = options;
 
         // The default behavior is that both formats are supported.
@@ -118,9 +118,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     public Task? ApplicationTask { get; set; }
 
-    public long LastSeenTicks { get; set; }
+    public TimeSpan LastSeenTicks { get; set; }
 
-    public long? LastSeenTicksIfInactive
+    public TimeSpan? LastSeenTicksIfInactive
     {
         get
         {
@@ -541,7 +541,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             if (Status == HttpConnectionStatus.Active)
             {
                 Status = HttpConnectionStatus.Inactive;
-                LastSeenTicks = Environment.TickCount64;
+                LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64);
             }
         }
     }
@@ -573,12 +573,12 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                 _sendCts = new CancellationTokenSource();
                 SendingToken = _sendCts.Token;
             }
-            _startedSendTime = Environment.TickCount64;
+            _startedSendTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             _activeSend = true;
         }
     }
 
-    internal void TryCancelSend(long currentTicks)
+    internal void TryCancelSend(TimeSpan currentTicks)
     {
         if (!_options.TransportSendTimeoutEnabled)
         {
@@ -589,7 +589,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             if (_activeSend)
             {
-                if (currentTicks - _startedSendTime > _options.TransportSendTimeoutTicks)
+                if (currentTicks - _startedSendTime > _options.TransportSendTimeout)
                 {
                     _sendCts!.Cancel();
 
