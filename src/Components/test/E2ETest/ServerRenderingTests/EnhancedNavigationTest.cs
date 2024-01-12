@@ -597,6 +597,20 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{anotherRuntime}")).Text);
     }
 
+    [Fact]
+    public void CanScrollToHashWithoutPerformingFullNavigation()
+    {
+        Navigate($"{ServerPathBase}/nav/scroll-to-hash");
+        Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id("scroll-anchor")).Click();
+        Browser.True(() => Browser.GetScrollY() > 500);
+        Browser.True(() => Browser
+            .Exists(By.Id("uri-on-page-load"))
+            .GetAttribute("data-value")
+            .EndsWith("scroll-to-hash", StringComparison.Ordinal));
+    }
+
     private void AssertEnhancedUpdateCountEquals(long count)
         => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 
