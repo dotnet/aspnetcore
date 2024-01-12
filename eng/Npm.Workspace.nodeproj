@@ -4,6 +4,7 @@
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 
   <PropertyGroup>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <IsTestProject>true</IsTestProject>
     <IsUnitTestProject>true</IsUnitTestProject>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
@@ -33,23 +34,6 @@
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
     <Exec Command="node $(MSBuildThisFileDirectory)scripts\pack-workspace.js $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath)" />
-  </Target>
-
-  <Target Name="_GetPackageVersionInfo" Returns="@(_NodePackageNameAndVersions)">
-    <Exec Command="npm run get-version" ConsoleToMsBuild="true">
-      <Output TaskParameter="ConsoleOutput" ItemName="_GetNpmVersionOutput" />
-    </Exec>
-    <ItemGroup>
-      <_FilteredNpmVersionOuput Include="@(_GetNpmVersionOutput)" Condition="'%(Identity)' == '' or $([System.String]::Copy('%(Identity)').StartsWith('>')) " />
-      <_NodePackageNameAndVersions Include="@(_GetNpmVersionOutput)"  Exclude="@(_FilteredNpmVersionOuput)">
-      </_NodePackageNameAndVersions>
-      <_NodePackageNameAndVersions Condition="$([System.String]::new('%(_NodePackageNameAndVersions.Identity)').Contains(';'))">
-        <PackageName>$([System.String]::new('%(_NodePackageNameAndVersions.Identity)').Split(';')[0])</PackageName>
-        <PackageVersion>$([System.String]::new('%(_NodePackageNameAndVersions.Identity)').Split(';')[1])</PackageVersion>
-      </_NodePackageNameAndVersions>
-    </ItemGroup>
-
-    <Message Text="Computed package version info: %(_NodePackageNameAndVersions.PackageName)=%(_NodePackageNameAndVersions.PackageVersion)" Importance="high" />
   </Target>
 
   <!-- Import Directory.Build.targets -->

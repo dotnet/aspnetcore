@@ -110,68 +110,6 @@
       "subCapability": "IssueCommentResponder",
       "version": "1.0",
       "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "created"
-              }
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isOpen",
-                  "parameters": {}
-                }
-              ]
-            },
-            {
-              "name": "activitySenderHasPermissions",
-              "parameters": {
-                "permissions": "none"
-              }
-            },
-            {
-              "name": "noActivitySince",
-              "parameters": {
-                "days": 7
-              }
-            },
-            {
-              "operator": "not",
-              "operands": [
-                {
-                  "name": "isCloseAndComment",
-                  "parameters": {}
-                }
-              ]
-            }
-          ]
-        },
-        "eventType": "issue",
-        "eventNames": [
-          "issue_comment"
-        ],
-        "taskName": "[Closed Issue Management] For issues closed with no activity over 7 days, ask non-contributor to consider opening a new issue instead.",
-        "actions": [
-          {
-            "name": "addReply",
-            "parameters": {
-              "comment": "Hello lovely human, thank you for your comment on this issue. Because this issue has been closed for a period of time, please strongly consider opening a new issue linking to this issue instead to ensure better visibility of your comment. Thank you!\n\nSee [our Issue Management Policies](https://aka.ms/aspnet/issue-policies) for more information."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "IssueCommentResponder",
-      "version": "1.0",
-      "config": {
         "taskName": "[Idle Issue Management] Replace needs author feedback label with needs attention label when the author comments on an issue",
         "conditions": {
           "operator": "and",
@@ -3152,7 +3090,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "6.0.26"
+              "milestoneName": "6.0.27"
             }
           }
         ]
@@ -3196,7 +3134,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "7.0.15"
+              "milestoneName": "7.0.16"
             }
           }
         ]
@@ -3240,7 +3178,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0.1"
+              "milestoneName": "8.0.2"
             }
           }
         ]
