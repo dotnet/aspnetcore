@@ -611,10 +611,12 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("0", () => Browser.Exists(By.Id("current-count")).Text);
 
         Browser.Exists(By.Id("button-increment")).Click();
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count")).Text);
         Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
 
         // This refresh causes the interactive component to receive a 'null' parameter value
         Browser.Exists(By.Id("button-refresh")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count")).Text);
         Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
 
         // Increment the count again to ensure that interactivity still works
