@@ -187,11 +187,6 @@ static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensi
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.AddIdentityApiEndpoints<TUser>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions!>! configure) -> Microsoft.AspNetCore.Identity.IdentityBuilder!
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.ConfigureApplicationCookie(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions.ConfigureExternalCookie(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static readonly Microsoft.AspNetCore.Identity.IdentityConstants.ApplicationScheme -> string!
-static readonly Microsoft.AspNetCore.Identity.IdentityConstants.BearerScheme -> string!
-static readonly Microsoft.AspNetCore.Identity.IdentityConstants.ExternalScheme -> string!
-static readonly Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorRememberMeScheme -> string!
-static readonly Microsoft.AspNetCore.Identity.IdentityConstants.TwoFactorUserIdScheme -> string!
 virtual Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.CanGenerateTwoFactorTokenAsync(Microsoft.AspNetCore.Identity.UserManager<TUser!>! manager, TUser! user) -> System.Threading.Tasks.Task<bool>!
 virtual Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.GenerateAsync(string! purpose, Microsoft.AspNetCore.Identity.UserManager<TUser!>! manager, TUser! user) -> System.Threading.Tasks.Task<string!>!
 virtual Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.ValidateAsync(string! purpose, string! token, Microsoft.AspNetCore.Identity.UserManager<TUser!>! manager, TUser! user) -> System.Threading.Tasks.Task<bool>!
