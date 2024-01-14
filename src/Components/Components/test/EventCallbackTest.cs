@@ -272,6 +272,24 @@ public class EventCallbackTest
     }
 
     [Fact]
+    public void EventCallbackOf_Equals_WhenANewDelegateIsCreated()
+    {
+        // Arrange
+        var component = new EventCountingComponent();
+
+        var delegate_1 = (EventArgs _) => { };
+        var delegate_2 = (MulticastDelegate)MulticastDelegate.CreateDelegate(typeof(Action<EventArgs>), delegate_1.Target, delegate_1.Method);
+        var eventcallback_1 = new EventCallback(component, delegate_1);
+        var eventcallback_2 = new EventCallback(component, delegate_2);
+
+        // Act
+        var result = eventcallback_1.Equals(eventcallback_2);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
     public async Task EventCallbackOfT_Action_Null()
     {
         // Arrange
@@ -413,6 +431,24 @@ public class EventCallbackTest
         Assert.NotNull(arg);
         Assert.Equal(1, runCount);
         Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public void EventCallbackOfT_Equals_WhenANewDelegateIsCreated()
+    {
+        // Arrange
+        var component = new EventCountingComponent();
+
+        var delegate_1 = (EventArgs _) => { };
+        var delegate_2 = (MulticastDelegate)MulticastDelegate.CreateDelegate(typeof(Action<EventArgs>), delegate_1.Target, delegate_1.Method);
+        var eventcallback_1 = new EventCallback<EventArgs>(component, delegate_1);
+        var eventcallback_2 = new EventCallback<EventArgs>(component, delegate_2);
+
+        // Act
+        var result = eventcallback_1.Equals(eventcallback_2);
+
+        // Assert
+        Assert.True(result);
     }
 
     private class EventCountingComponent : IComponent, IHandleEvent
