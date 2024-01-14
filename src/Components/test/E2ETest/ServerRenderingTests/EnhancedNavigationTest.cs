@@ -597,6 +597,38 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("0", () => Browser.Exists(By.Id($"location-changing-count-{anotherRuntime}")).Text);
     }
 
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void CanReceiveNullParameterValueOnEnhancedNavigation(string renderMode)
+    {
+        // See: https://github.com/dotnet/aspnetcore/issues/52434 
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Null component parameter ({renderMode})")).Click();
+        Browser.Equal("Page rendering component with null parameter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("current-count")).Text);
+
+        Browser.Exists(By.Id("button-increment")).Click();
+        Browser.Equal("0", () => Browser.Exists(By.Id("location-changed-count")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // This refresh causes the interactive component to receive a 'null' parameter value
+        Browser.Exists(By.Id("button-refresh")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("location-changed-count")).Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // Increment the count again to ensure that interactivity still works
+        Browser.Exists(By.Id("button-increment")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // Even if the interactive runtime continues to function (as the WebAssembly runtime might),
+        // fail the test if any errors were logged to the browser console
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
+    }
+
     private void AssertEnhancedUpdateCountEquals(long count)
         => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 

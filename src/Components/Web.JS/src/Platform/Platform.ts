@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { MonoObject, MonoString, MonoArray } from 'dotnet-runtime/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
 import { MonoConfig } from 'dotnet-runtime';
@@ -11,16 +13,12 @@ export interface Platform {
 
   callEntryPoint(): Promise<unknown>;
 
-  toUint8Array(array: System_Array<unknown>): Uint8Array;
-
-  getArrayLength(array: System_Array<unknown>): number;
   getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr;
 
   getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer;
   readInt16Field(baseAddress: Pointer, fieldOffset?: number): number;
   readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
   readUint64Field(baseAddress: Pointer, fieldOffset?: number): number;
-  readFloatField(baseAddress: Pointer, fieldOffset?: number): number;
   readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
   readStringField(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null;
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;

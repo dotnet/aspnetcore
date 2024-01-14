@@ -16,8 +16,8 @@
     "test:watch": "jest --watch",
     "test:debug": "node --nolazy --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --colors --verbose",
     "build": "npm run build:debug && npm run build:production",
-    "build:debug": "rollup -c --environment development",
-    "build:production": "rollup -c --environment production"
+    "build:debug": "rollup -c --environment development --forceExit",
+    "build:production": "rollup -c --environment production --forceExit"
   },
   "devDependencies": {
     "@babel/core": "^7.23.6",
@@ -26,11 +26,6 @@
     "@microsoft/dotnet-js-interop": "*",
     "@microsoft/signalr": "*",
     "@microsoft/signalr-protocol-msgpack": "*",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.5",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.5",
     "@types/jsdom": "^16.2.14",
     "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.26.0",
@@ -40,11 +35,7 @@
     "eslint-plugin-header": "^3.1.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "jest-junit": "^16.0.0",
-    "rimraf": "^3.0.2",
-    "rollup": "^4.9.2",
-    "rollup-plugin-filesize": "^10.0.0",
-    "typescript": "^5.3.3"
+    "jest-junit": "^16.0.0"
   },
   "resolutions": {
     "tough-cookie": ">=4.1.3"
