@@ -25,7 +25,7 @@ public class TransportsServerStartup : ServerStartup
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
                 endpoints.MapFallbackToPage("/_ServerHost");
             });
         });

@@ -39,7 +39,7 @@ public class LockedNavigationStartup
             {
                 endpoints.MapRazorPages();
                 endpoints.MapFallbackToPage("/LockedNavigationHost");
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             });
         });
     }

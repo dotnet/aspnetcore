@@ -34,7 +34,7 @@ public class Startup
         {
             endpoints.MapRazorPages();
             endpoints.MapControllers();
-            endpoints.MapBlazorHub();
+            endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             endpoints.MapFallbackToPage("/_Host");
         });
     }

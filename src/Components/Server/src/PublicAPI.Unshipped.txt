@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!

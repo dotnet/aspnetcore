@@ -58,7 +58,7 @@ public class AuthenticationStartupBase
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
                 _configureMode(endpoints);
             });
         });

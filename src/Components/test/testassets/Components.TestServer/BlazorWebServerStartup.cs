@@ -44,7 +44,7 @@ public class BlazorWebServerStartup
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<Root>()
-                    .AddInteractiveServerRenderMode();
+                    .AddInteractiveServerRenderMode(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             });
         });
     }

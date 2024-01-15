@@ -78,7 +78,7 @@ public class ServerStartup
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
                 endpoints.MapControllerRoute("mvc", "{controller}/{action}");
                 endpoints.MapFallbackToPage("/_ServerHost");
             });

@@ -48,7 +48,7 @@ public class PrerenderedStartup
             {
                 endpoints.MapRazorPages();
                 endpoints.MapFallbackToPage("/PrerenderedHost");
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             });
         });
     }

@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -18,6 +20,21 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(this RazorComponentsEndpointConventionBuilder builder)
     {
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode());
+        return builder;
+    }
+
+    /// <summary>
+    ///Maps the Blazor <see cref="Hub" /> to the default path.
+    /// </summary>
+    /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
+    /// <param name="configureOptions">A callback to configure dispatcher options.</param>
+    /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
+    public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(
+        this RazorComponentsEndpointConventionBuilder builder,
+        Action<HttpConnectionDispatcherOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(configureOptions);
+        ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(configureOptions));
         return builder;
     }
 }

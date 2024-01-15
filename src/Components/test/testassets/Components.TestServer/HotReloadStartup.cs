@@ -37,7 +37,7 @@ public class HotReloadStartup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
-            endpoints.MapBlazorHub();
+            endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             endpoints.MapFallbackToPage("/_ServerHost");
         });
     }

@@ -64,7 +64,15 @@ public static class ServerRazorComponentsBuilderExtensions
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
-            endpointRouteBuilder.MapBlazorHub();
+            if (renderMode is InternalServerRenderMode { ConfigureConnectionOptions: var configureOptions } &&
+                configureOptions != null)
+            {
+                endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions);
+            }
+            else
+            {
+                endpointRouteBuilder.MapBlazorHub();
+            }
 
             return endpointRouteBuilder.GetEndpoints();
         }

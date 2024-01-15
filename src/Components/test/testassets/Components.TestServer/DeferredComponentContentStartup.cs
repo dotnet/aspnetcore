@@ -39,7 +39,7 @@ public class DeferredComponentContentStartup
             {
                 endpoints.MapRazorPages();
                 endpoints.MapFallbackToPage("/DeferredComponentContentHost");
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             });
         });
     }

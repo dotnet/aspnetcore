@@ -58,7 +58,7 @@ public class MultipleComponents
             {
                 endpoints.MapRazorPages();
                 endpoints.MapFallbackToPage("/MultipleComponents");
-                endpoints.MapBlazorHub();
+                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
             });
         });
     }
