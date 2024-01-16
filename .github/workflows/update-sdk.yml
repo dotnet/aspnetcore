@@ -9,6 +9,11 @@ on:
   # Manual trigger to update the .NET SDK on-demand.
   workflow_dispatch:
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   update-dotnet-sdk:
     name: Update .NET SDK
