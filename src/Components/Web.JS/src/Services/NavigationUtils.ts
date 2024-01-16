@@ -62,15 +62,8 @@ export function performScrollToElementOnTheSamePage(absoluteHref : string): void
   scrollToElement(identifier);
 }
 
-export function scrollToElement(identifier: string): boolean {
-  const element = document.getElementById(identifier);
-
-  if (element) {
-    element.scrollIntoView();
-    return true;
-  }
-
-  return false;
+export function scrollToElement(identifier: string): void {
+  document.getElementById(identifier)?.scrollIntoView();
 }
 
 export function attachEnhancedNavigationListener(listener: typeof enhancedNavigationListener) {
