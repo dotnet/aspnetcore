@@ -65,14 +65,19 @@ public class ThreadingAppTest
     }
 
     [Fact]
-    public async Task HasCounterPage()
+    public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
         Browser.Exists(By.LinkText("Counter")).Click();
         Assert.Equal("Counter", Browser.Exists(By.TagName("h1")).Text);
 
         var countDisplayElement = Browser.Exists(By.CssSelector("h1 + p"));
+        // see that initial state is zero
         Browser.Equal("Current count: 0", () => countDisplayElement.Text);
+
+        // start the test
+        var testThreadsButton = Browser.Exists(By.Id("TestThreads"));
+        testThreadsButton.Click();
 
         // wait and see timer increase
         Browser.NotEqual("Current count: 0", () => countDisplayElement.Text);
