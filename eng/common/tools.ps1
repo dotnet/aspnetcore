@@ -596,7 +596,15 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net9.0' }
+
+    # Use override if it exists - commonly set by source-build
+    if ($null -eq $env:_OverrideArcadeInitializeBuildToolFramework) {
+      $initializeBuildToolFramework="net9.0"
+    } else {
+      $initializeBuildToolFramework=$env:_OverrideArcadeInitializeBuildToolFramework
+    }
+    
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = $initializeBuildToolFramework }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
