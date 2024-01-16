@@ -59,8 +59,7 @@ else
         req.SetBrowserResponseStreamingEnabled(true);
 
         // send the request from the UI thread
-        var pr = Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
-        using var response = await pr;
+        using var response = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
 
         await Task.Run(async () =>
         {
