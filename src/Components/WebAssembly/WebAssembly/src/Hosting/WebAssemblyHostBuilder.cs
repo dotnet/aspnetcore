@@ -181,11 +181,20 @@ public sealed class WebAssemblyHostBuilder
 
     private static void InitializeWebAssemblyRenderer()
     {
+        var currentThread = Thread.CurrentThread;
+        if (currentThread.IsThreadPoolThread || currentThread.IsBackground)
+        {
+            throw new InvalidOperationException("WebAssemblyHostBuilder needs to be instantiated in the UI thread.");
+        }
+
         // capture the JSSynchronizationContext from the main thread, which runtime already installed.
         // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
         // if user somehow installed SynchronizationContext different from JSSynchronizationContext, they need to make sure the behavior is consistent with JSSynchronizationContext.
-        WebAssemblyDispatcher._mainSynchronizationContext = SynchronizationContext.Current;
-        WebAssemblyDispatcher._mainManagedThreadId = Environment.CurrentManagedThreadId;
+        if (WebAssemblyDispatcher._mainSynchronizationContext == null)
+        {
+            WebAssemblyDispatcher._mainSynchronizationContext = SynchronizationContext.Current;
+            WebAssemblyDispatcher._mainManagedThreadId = currentThread.ManagedThreadId;
+        }
     }
 
     /// <summary>
