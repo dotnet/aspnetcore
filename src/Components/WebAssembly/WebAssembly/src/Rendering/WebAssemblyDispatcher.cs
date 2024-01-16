@@ -101,6 +101,10 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
                     {
                         state.tcs.SetException(t.Exception);
                     }
+                    else if (t.IsCanceled)
+                    {
+                        state.tcs.SetCanceled();
+                    }
                     else
                     {
                         state.tcs.SetResult();
@@ -140,6 +144,10 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
                     if (t.IsFaulted)
                     {
                         state.tcs.SetException(t.Exception);
+                    }
+                    else if (t.IsCanceled)
+                    {
+                        state.tcs.SetCanceled();
                     }
                     else
                     {
