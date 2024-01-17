@@ -98,6 +98,11 @@
 
     private async Task OnLoginCallbackAsync()
     {
+        if (externalLoginInfo is null)
+        {
+            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+        }
+
         // Sign in the user with this external login provider if the user already has a login.
         var result = await SignInManager.ExternalLoginSignInAsync(
             externalLoginInfo.LoginProvider,
@@ -127,6 +132,11 @@
 
     private async Task OnValidSubmitAsync()
     {
+        if (externalLoginInfo is null)
+        {
+            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+        }
+
         var emailStore = GetEmailStore();
         var user = CreateUser();
 
