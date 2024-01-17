@@ -3537,7 +3537,66 @@
           }
         ]
       }
-    }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "github-actions[bot]",
+                "association": "CONTRIBUTOR"
+              }
+            },
+            {
+              "name": "titleContains",
+              "parameters": {
+                "titlePattern": "Update .NET SDK"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "area-infrastructure"
+            }
+          },
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "Type: Dependency Update :arrow_up_small:"
+            }
+          },
+          {
+            "name": "approvePullRequest",
+            "parameters": {
+              "comment": "Auto-approving SDK update."
+            }
+          }
+        ]
+      }
+    },
   ],
   "userGroups": []
 }
