@@ -184,6 +184,7 @@ public sealed class WebAssemblyHostBuilder
         // note that when this is running in single-threaded context or multi-threaded-CoreCLR unit tests, we don't want to install WebAssemblyDispatcher
         if (OperatingSystem.IsBrowser())
         {
+            var currentThread = Thread.CurrentThread;
             if (currentThread.IsThreadPoolThread || currentThread.IsBackground)
             {
                 throw new InvalidOperationException("WebAssemblyHostBuilder needs to be instantiated in the UI thread.");
@@ -192,7 +193,6 @@ public sealed class WebAssemblyHostBuilder
             // capture the JSSynchronizationContext from the main thread, which runtime already installed.
             // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
             // if user somehow installed SynchronizationContext different from JSSynchronizationContext, they need to make sure the behavior is consistent with JSSynchronizationContext.
-            var currentThread = Thread.CurrentThread;
             if (WebAssemblyDispatcher._mainSynchronizationContext == null && SynchronizationContext.Current != null)
             {
                 WebAssemblyDispatcher._mainSynchronizationContext = SynchronizationContext.Current;
