@@ -52,7 +52,7 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
         _subscribers.Remove(subscriber);
         _pendingSubscribers?.Remove(subscriber);
 
-        if (_subscribers.Count == 0 && !(_pendingSubscribers?.Count > 0))
+        if (_subscribers.Count == 0 && _pendingSubscribers is null or { Count: 0 })
         {
             UnsubscribeFromLocationChanges();
         }
