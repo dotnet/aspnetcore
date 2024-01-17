@@ -1103,7 +1103,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
-        //  in theory multiple threads could be racing for this
+        // Unlike other Renderer APIs, we need Dispose to be thread-safe 
+        // (and not require being called only from the sync context) 
+        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync) 
+        // and we don't want to force that other code to deal with calling InvokeAsync from a synchronous method.
         lock (_lockObject)
         {
             if (_rendererIsDisposed)
