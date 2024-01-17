@@ -22,11 +22,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
+    private readonly Dispatcher _dispatcher;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+
+        // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
+        _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
+            ? NullDispatcher.Instance
+            : new WebAssemblyDispatcher();
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
@@ -69,7 +75,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
     }
 
-    public override Dispatcher Dispatcher => NullDispatcher.Instance;
+    public override Dispatcher Dispatcher => _dispatcher;
 
     public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
     {

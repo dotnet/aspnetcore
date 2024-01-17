@@ -13,7 +13,7 @@
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->
-  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedApps)' == 'true'">
+  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
     <ItemGroup>
       <ResolvedFileToPublish RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\subdir', 'subdir').Replace('subdir/subdir', 'subdir'))" />
 
