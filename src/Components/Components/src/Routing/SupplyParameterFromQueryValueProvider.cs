@@ -33,8 +33,8 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
     {
         if (_pendingSubscribers?.Count > 0 || (TryUpdateUri() && _isSubscribedToLocationChanges))
         {
-            // This branch is only taken if there's a pending OnLocationChanged event for the current Uri that we're already subscribed to.
-            // We'll add the _pendingSubscribers to _subscribers and clear _pendingSubscribers during the upcoming call to OnLocationChanged.
+            // Renderer.RenderInExistingBatch triggers Unsubscribe via ProcessDisposalQueueInExistingBatch after subscribing with any new components,
+            // so this branch should be taken iff there's a pending OnLocationChanged event for the current Uri that we're already subscribed to.
             _pendingSubscribers ??= new();
             _pendingSubscribers.Add(subscriber);
             return;
@@ -63,8 +63,8 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
     {
         _queryParameterValueSupplier ??= new();
 
-        // Router.OnLocationChanged calls GetCurrentValue before our own OnLocationChanged handler,
-        // so we have to compare strings rather than rely on a bool set in OnLocationChanged.
+        // NavigationManager triggers Router.OnLocationChanged which calls GetCurrentValue before this class's OnLocationHandler
+        // gets a chance to run, so we have to compare strings rather than rely on OnLocationChanged always running before Uri updates.
         if (navigationManager.Uri == _lastUri)
         {
             return false;
