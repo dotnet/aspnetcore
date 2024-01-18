@@ -22,7 +22,7 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
 
     public object? GetCurrentValue(in CascadingParameterInfo parameterInfo)
     {
-        TryUpdateQueryParameters();
+        TryUpdateUri();
 
         var attribute = (SupplyParameterFromQueryAttribute)parameterInfo.Attribute; // Must be a valid cast because we check in CanSupplyValue
         var queryParameterName = attribute.Name ?? parameterInfo.PropertyName;
@@ -31,7 +31,7 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
 
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
-        if (_pendingSubscribers?.Count > 0 || (TryUpdateQueryParameters() && _isSubscribedToLocationChanges))
+        if (_pendingSubscribers?.Count > 0 || (TryUpdateUri() && _isSubscribedToLocationChanges))
         {
             // This branch is only taken if there's a pending OnLocationChanged event for the current Uri that we're already subscribed to.
             // We'll add the _pendingSubscribers to _subscribers and clear _pendingSubscribers during the upcoming call to OnLocationChanged.
@@ -59,7 +59,7 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
     }
 
     [MemberNotNull(nameof(_queryParameterValueSupplier))]
-    private bool TryUpdateQueryParameters()
+    private bool TryUpdateUri()
     {
         _queryParameterValueSupplier ??= new();
 
@@ -71,19 +71,27 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
         }
 
         var query = GetQueryString(navigationManager.Uri);
-        _queryParameterValueSupplier.ReadParametersFromQuery(query);
+
+        // We still notify subscribers if the query string is the same only because we don't want
+        // to bother tracking an extra _isPendingLocationChangedEventWithoutQueryChange bool.
+        if (!query.Span.SequenceEqual(GetQueryString(_lastUri).Span))
+        {
+           _queryParameterValueSupplier.ReadParametersFromQuery(query);
+        }
+
         _lastUri = navigationManager.Uri;
         return true;
 
-        static ReadOnlyMemory<char> GetQueryString(string url)
+        static ReadOnlyMemory<char> GetQueryString(string? url)
         {
-            var queryStartPos = url.IndexOf('?');
+            var queryStartPos = url?.IndexOf('?') ?? -1;
 
             if (queryStartPos < 0)
             {
                 return default;
             }
 
+            Debug.Assert(url is not null);
             var queryEndPos = url.IndexOf('#', queryStartPos);
             return url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
         }
