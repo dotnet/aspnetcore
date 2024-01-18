@@ -200,7 +200,7 @@ APPLICATION_MANAGER::ShutDown()
     g_fInAppOfflineShutdown = true;
     for (auto & [str, applicationInfo] : m_pApplicationInfoHash)
     {
-        applicationInfo->ShutDownApplication(/* fServerInitiated */ false);
+        applicationInfo->ShutDownApplication(/* fServerInitiated */ true);
         applicationInfo = nullptr;
     }
 }
