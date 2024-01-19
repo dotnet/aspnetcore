@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
+Microsoft.AspNetCore.Http.HostString.Value.get -> string?
