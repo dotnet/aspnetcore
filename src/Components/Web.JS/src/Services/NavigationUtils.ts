@@ -49,7 +49,7 @@ export function isWithinBaseUriSpace(href: string) {
 
 export function isSamePageWithHash(absoluteHref: string): boolean {
   const url = new URL(absoluteHref);
-  return location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
+  return url.hash !== '' && location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
 }
 
 export function performScrollToElementOnTheSamePage(absoluteHref : string): void {
