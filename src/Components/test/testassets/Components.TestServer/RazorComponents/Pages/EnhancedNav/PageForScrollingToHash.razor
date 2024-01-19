@@ -1,11 +1,17 @@
 ﻿@page "/nav/scroll-to-hash"
 @attribute [StreamRendering]
+@inject NavigationManager NavigationManager
 
 <PageTitle>Page for scrolling to hash</PageTitle>
 
 <h1>Scroll to hash</h1>
 
 <p>If you scroll down a long way, you'll find more content. We add it asynchronously via streaming rendering.</p>
+
+<p>
+    <a id="scroll-anchor" href="nav/scroll-to-hash#some-content">Scroll via anchor</a>
+    <div id="uri-on-page-load" style="display: none" data-value="@uriOnPageLoad"></div>
+</p>
 
 <div style="height: 2000px; border: 2px dashed red;">spacer</div>
 
@@ -18,9 +24,11 @@
 
 @code {
     bool showContent;
+    string uriOnPageLoad;
 
     protected override async Task OnInitializedAsync()
     {
+        uriOnPageLoad = NavigationManager.Uri;
         await Task.Delay(1000);
         showContent = true;
     }
