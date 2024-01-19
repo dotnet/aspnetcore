@@ -97,7 +97,7 @@
       WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
 
     <Exec
-      Command="npm ci"
+      Command="npm ci --offline"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
 
   </Target>

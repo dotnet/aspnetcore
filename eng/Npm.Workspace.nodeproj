@@ -17,7 +17,7 @@
 
   <Target Name="Restore">
     <Message Text="Restoring NPM packages..." Importance="high" />
-    <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec Command="npm ci --offline" WorkingDirectory="$(MSBuildThisFileDirectory).." />
   </Target>
 
   <Target Name="Build">
