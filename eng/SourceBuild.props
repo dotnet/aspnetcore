@@ -84,6 +84,7 @@
   </Target>
 
   <Target Name="RestoreNpmPackages"
+          Condition="'$(BuildNodeJS)' == 'true'"
           BeforeTargets="RunInnerSourceBuildCommand">
 
     <Message Text="Checking node version..." Importance="high" />
@@ -103,8 +104,9 @@
   </Target>
 
   <Target Name="BuildNpmFiles"
-    DependsOnTargets="RestoreNpmPackages"
-    BeforeTargets="RunInnerSourceBuildCommand">
+          Condition="'$(BuildNodeJS)' == 'true'"
+          DependsOnTargets="RestoreNpmPackages"
+          BeforeTargets="RunInnerSourceBuildCommand">
 
     <Message Text="Building Node JS files..." Importance="high" />
 
