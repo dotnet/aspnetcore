@@ -10,10 +10,13 @@ namespace Microsoft.AspNetCore.Components.Routing;
 internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager navigationManager) : ICascadingValueSupplier, IDisposable
 {
     private QueryParameterValueSupplier? _queryParameterValueSupplier;
+
     private HashSet<ComponentState>? _subscribers;
     private HashSet<ComponentState>? _pendingSubscribers;
-    private bool _isSubscribedToLocationChanges;
+
     private string? _lastUri;
+    private bool _isSubscribedToLocationChanges;
+    private bool _queryChanged;
 
     public bool IsFixed => false;
 
@@ -72,10 +75,9 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
 
         var query = GetQueryString(navigationManager.Uri);
 
-        // We still notify subscribers if the query string is the same only because we don't want
-        // to bother tracking an extra _isPendingLocationChangedEventWithoutQueryChange bool.
         if (!query.Span.SequenceEqual(GetQueryString(_lastUri).Span))
         {
+           _queryChanged = true;
            _queryParameterValueSupplier.ReadParametersFromQuery(query);
         }
 
@@ -122,9 +124,17 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         Debug.Assert(_subscribers is not null);
-        foreach (var subscriber in _subscribers)
+
+        TryUpdateUri();
+
+        if (_queryChanged)
         {
-            subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+            foreach (var subscriber in _subscribers)
+            {
+                subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+            }
+
+            _queryChanged = false;
         }
 
         if (_pendingSubscribers is not null)
