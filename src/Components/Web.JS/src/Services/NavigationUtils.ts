@@ -48,8 +48,8 @@ export function isWithinBaseUriSpace(href: string) {
 }
 
 export function isSamePageWithHash(absoluteHref: string): boolean {
-  const hashIndex = absoluteHref.indexOf('#');
-  return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
+  const url = new URL(absoluteHref);
+  return location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
 }
 
 export function performScrollToElementOnTheSamePage(absoluteHref : string): void {
