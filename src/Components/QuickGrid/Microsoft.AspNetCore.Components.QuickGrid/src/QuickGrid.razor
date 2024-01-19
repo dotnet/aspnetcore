@@ -52,7 +52,12 @@
         {
             while (rowIndex++ < initialRowIndex + Pagination.ItemsPerPage)
             {
-                <tr></tr>
+                <tr>
+                    @foreach (var col in _columns)
+                    {
+                        <td class="@ColumnClass(col)" @key="@col"></td>
+                    }
+                </tr>
             }
         }
     }
