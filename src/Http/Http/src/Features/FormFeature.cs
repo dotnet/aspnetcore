@@ -79,7 +79,7 @@ public class FormFeature : IFormFeature
 				_ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
 			}
 
-			if (Form is not null && mt is null)
+			if (_form is not null && mt is null)
 			{
 				mt = _formContentType;
 			}
@@ -123,6 +123,10 @@ public class FormFeature : IFormFeature
         {
             _parsedFormTask = null;
             _form = value;
+            if (_form is null)
+            {
+                _formContentType = null;
+            }
 			if (_form is not null && _formContentType is null)
             {
 				_formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
