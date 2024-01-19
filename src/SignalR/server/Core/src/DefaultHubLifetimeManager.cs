@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR;
 
@@ -42,6 +43,16 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             return Task.CompletedTask;
         }
 
+        //track groups in the connection object
+        var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
+        lock (groupNames)
+        {
+            if (!groupNames.Add(groupName))
+            {
+                return Task.CompletedTask; // Connection already in group
+            }
+        }
+
         _groups.Add(connection, groupName);
         // Connection disconnected while adding to group, remove it in case the Add was called after OnDisconnectedAsync removed items from the group
         if (connection.ConnectionAborted.IsCancellationRequested)
@@ -62,6 +73,16 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         if (connection == null)
         {
             return Task.CompletedTask;
+        }
+
+        //remove from previouslyy saved groups
+        var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
+        lock (groupNames)
+        {
+            if (!groupNames.Remove(groupName))
+            {
+                return Task.CompletedTask; // Connection not in group
+            }
         }
 
         _groups.Remove(connectionId, groupName);
@@ -271,14 +292,22 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     public override Task OnConnectedAsync(HubConnectionContext connection)
     {
         _connections.Add(connection);
+        connection.Features.Set(new GroupTrackerFeature()); //add a group tracker to every concection
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override Task OnDisconnectedAsync(HubConnectionContext connection)
     {
+        //now remove from tracked groups one by one
+        //this is faster than calling _groups.RemoveDisconnectedConnection
+        //because that method iteratas through ALL the groups
+        foreach (var grpName in connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups.ToArray()) //copy to array because groups can be modified in other methods, prevent "collection was modified"
+        {
+            _groups.Remove(connection.ConnectionId, grpName);
+        }
+
         _connections.Remove(connection);
-        _groups.RemoveDisconnectedConnection(connection.ConnectionId);
 
         return Task.CompletedTask;
     }
@@ -349,6 +378,11 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             }
             throw;
         }
+    }
+
+    private class GroupTrackerFeature
+    {
+        public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc/>
