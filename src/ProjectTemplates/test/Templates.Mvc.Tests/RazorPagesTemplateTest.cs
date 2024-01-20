@@ -59,7 +59,7 @@ public class RazorPagesTemplateTest : LoggedTest
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
-        Assert.DoesNotContain(".db", projectFileContents);
+        Assert.DoesNotContain("app.db", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
         Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
@@ -155,7 +155,7 @@ public class RazorPagesTemplateTest : LoggedTest
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
         if (!useLocalDB)
         {
-            Assert.Contains(".db", projectFileContents);
+            Assert.Contains("app.db", projectFileContents);
         }
 
         await project.RunDotNetPublishAsync();
