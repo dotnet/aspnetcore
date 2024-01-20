@@ -64,12 +64,7 @@ public class DistributedSession : ISession
         bool isNewSessionKey)
     {
         ArgumentNullException.ThrowIfNull(cache);
-
-        if (string.IsNullOrEmpty(sessionKey))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
-        }
-
+        ArgumentException.ThrowIfNullOrEmpty(sessionKey);
         ArgumentNullException.ThrowIfNull(tryEstablishSession);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 

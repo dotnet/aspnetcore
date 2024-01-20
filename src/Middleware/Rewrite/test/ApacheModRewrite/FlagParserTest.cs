@@ -58,7 +58,7 @@ public class FlagParserTest
     [Fact]
     public void FlagParser_AssertArgumentExceptionWhenFlagsAreNullOrEmpty()
     {
-        Assert.Throws<ArgumentException>(() => FlagParser.Parse(null));
+        Assert.Throws<ArgumentNullException>(() => FlagParser.Parse(null));
         Assert.Throws<ArgumentException>(() => FlagParser.Parse(string.Empty));
     }
 

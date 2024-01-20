@@ -38,7 +38,7 @@ public class HttpMethodActionConstraint : IActionConstraint
         {
             if (string.IsNullOrEmpty(method))
             {
-                throw new ArgumentException("httpMethod cannot be null or empty");
+                throw new ArgumentException($"{nameof(httpMethods)} cannot contain null or empty strings.");
             }
 
             methods.Add(method);

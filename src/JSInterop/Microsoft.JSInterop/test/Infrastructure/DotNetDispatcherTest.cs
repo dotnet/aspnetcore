@@ -3,6 +3,7 @@
 
 #nullable disable
 using System.Text.Json;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
@@ -10,28 +11,28 @@ public class DotNetDispatcherTest
 {
     private static readonly string thisAssemblyName = typeof(DotNetDispatcherTest).Assembly.GetName().Name;
 
-    [Fact]
-    public void CannotInvokeWithEmptyAssemblyName()
+    [Theory]
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string or composed entirely of whitespace.")]
+    public void CannotInvokeWithInvalidAssemblyName(string assemblyName, string expectedMessage)
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-        {
-            DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(" ", "SomeMethod", default, default), "[]");
-        });
-
-        Assert.StartsWith("Property 'AssemblyName' cannot be null, empty, or whitespace.", ex.Message);
-        Assert.Equal("assemblyKey", ex.ParamName);
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo(assemblyName, "SomeMethod", default, default), "[]"),
+            "assemblyKey.AssemblyName",
+            expectedMessage);
     }
 
-    [Fact]
-    public void CannotInvokeWithEmptyMethodIdentifier()
+    [Theory]
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string or composed entirely of whitespace.")]
+    public void CannotInvokeWithInvalidMethodIdentifier(string methodIdentifier, string expectedMessage)
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-        {
-            DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo("SomeAssembly", " ", default, default), "[]");
-        });
-
-        Assert.StartsWith("Cannot be null, empty, or whitespace.", ex.Message);
-        Assert.Equal("methodIdentifier", ex.ParamName);
+        // Act & Assert
+        ExceptionAssert.ThrowsArgument(
+            () => DotNetDispatcher.Invoke(new TestJSRuntime(), new DotNetInvocationInfo("SomeAssembly", methodIdentifier, default, default), "[]"),
+            "methodIdentifier",
+            expectedMessage);
     }
 
     [Fact]
