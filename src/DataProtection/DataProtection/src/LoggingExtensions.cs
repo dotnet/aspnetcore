@@ -237,4 +237,16 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(60, LogLevel.Warning, "Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to https://aka.ms/aspnet/dataprotectionwarning", EventName = "UsingEphemeralFileSystemLocationInContainer")]
     public static partial void UsingEphemeralFileSystemLocationInContainer(this ILogger logger, string path);
+
+    [LoggerMessage(61, LogLevel.Trace, "Ignoring configuration '{PropertyName}' for options instance '{OptionsName}'", EventName = "IgnoringReadOnlyConfigurationForNonDefaultOptions")]
+    public static partial void IgnoringReadOnlyConfigurationForNonDefaultOptions(this ILogger logger, string propertyName, string? optionsName);
+
+    [LoggerMessage(62, LogLevel.Debug, "Enabling read-only key access with repository directory '{Path}'", EventName = "UsingReadOnlyKeyConfiguration")]
+    public static partial void UsingReadOnlyKeyConfiguration(this ILogger logger, string path);
+
+    [LoggerMessage(63, LogLevel.Debug, "Not enabling read-only key access because an XML repository has been specified", EventName = "NotUsingReadOnlyKeyConfigurationBecauseOfRepository")]
+    public static partial void NotUsingReadOnlyKeyConfigurationBecauseOfRepository(this ILogger logger);
+
+    [LoggerMessage(64, LogLevel.Debug, "Not enabling read-only key access because an XML encryptor has been specified", EventName = "NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor")]
+    public static partial void NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor(this ILogger logger);
 }

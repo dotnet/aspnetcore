@@ -30,6 +30,7 @@ internal sealed class KeyManagementOptionsPostSetup : IPostConfigureOptions<KeyM
 
     private readonly string? _keyDirectoryPath;
     private readonly ILoggerFactory? _loggerFactory; // Null iff _keyDirectoryPath is null
+    private readonly ILogger<KeyManagementOptionsPostSetup>? _logger; // Null iff _keyDirectoryPath is null
 
     public KeyManagementOptionsPostSetup()
     {
@@ -39,14 +40,30 @@ internal sealed class KeyManagementOptionsPostSetup : IPostConfigureOptions<KeyM
 
     public KeyManagementOptionsPostSetup(IConfiguration configuration, ILoggerFactory loggerFactory)
     {
-        _keyDirectoryPath = configuration[ReadOnlyDataProtectionKeyDirectoryKey];
+        var dirPath = configuration[ReadOnlyDataProtectionKeyDirectoryKey];
+        if (string.IsNullOrEmpty(dirPath))
+        {
+            return;
+        }
+
+        _keyDirectoryPath = dirPath;
         _loggerFactory = loggerFactory;
+        _logger = loggerFactory.CreateLogger<KeyManagementOptionsPostSetup>();
     }
 
     void IPostConfigureOptions<KeyManagementOptions>.PostConfigure(string? name, KeyManagementOptions options)
     {
-        if (string.IsNullOrEmpty(_keyDirectoryPath) || name != Options.DefaultName)
+        if (_keyDirectoryPath is null)
         {
+            // There's no logger, so we couldn't log if we wanted to
+            return;
+        }
+
+        var logger = _logger!;
+
+        if (name != Options.DefaultName)
+        {
+            logger.IgnoringReadOnlyConfigurationForNonDefaultOptions(ReadOnlyDataProtectionKeyDirectoryKey, name);
             return;
         }
 
@@ -55,9 +72,19 @@ internal sealed class KeyManagementOptionsPostSetup : IPostConfigureOptions<KeyM
         {
             var keyDirectory = new DirectoryInfo(_keyDirectoryPath);
 
+            logger.UsingReadOnlyKeyConfiguration(keyDirectory.FullName);
+
             options.AutoGenerateKeys = false;
             options.XmlEncryptor = InvalidEncryptor.Instance;
             options.XmlRepository = new ReadOnlyFileSystemXmlRepository(keyDirectory, _loggerFactory!);
+        }
+        else if (options.XmlRepository is not null)
+        {
+            logger.NotUsingReadOnlyKeyConfigurationBecauseOfRepository();
+        }
+        else
+        {
+            logger.NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor();
         }
     }
 
