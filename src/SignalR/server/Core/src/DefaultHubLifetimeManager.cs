@@ -4,10 +4,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR;
 
@@ -303,11 +303,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     public override Task OnDisconnectedAsync(HubConnectionContext connection)
     {
         // Remove from tracked groups one by one
-        //this is faster than calling _groups.RemoveDisconnectedConnection
-        //because that method iteratas through ALL the groups
-        foreach (var grpName in connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups.ToArray()) //copy to array because groups can be modified in other methods, prevent "collection was modified"
+        foreach (var groupName in connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups.ToArray()) //copy to array because groups can be modified in other methods, prevent "collection was modified"
         {
-            _groups.Remove(connection.ConnectionId, grpName);
+            _groups.Remove(connection.ConnectionId, groupName);
         }
 
         _connections.Remove(connection);
