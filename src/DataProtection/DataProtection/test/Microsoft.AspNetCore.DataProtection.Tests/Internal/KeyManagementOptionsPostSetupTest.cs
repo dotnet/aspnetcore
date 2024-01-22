@@ -53,6 +53,25 @@ public class KeyManagementOptionsPostSetupTest
     }
 
     [Fact]
+    public void ConfigureReadOnly_EmptyDirPath()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection(
+        [
+            new KeyValuePair<string, string>(KeyManagementOptionsPostSetup.ReadOnlyDataProtectionKeyDirectoryKey, ""),
+        ]).Build();
+
+        IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
+
+        var options = new KeyManagementOptions();
+
+        setup.PostConfigure(Options.DefaultName, options);
+
+        AssertNotReadOnly(options, keyDir);
+
+        Assert.True(options.AutoGenerateKeys);
+    }
+
+    [Fact]
     public void ConfigureReadOnly_ExplicitRepository()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(

@@ -45,7 +45,7 @@ internal sealed class KeyManagementOptionsPostSetup : IPostConfigureOptions<KeyM
 
     void IPostConfigureOptions<KeyManagementOptions>.PostConfigure(string? name, KeyManagementOptions options)
     {
-        if (_keyDirectoryPath is null || name != Options.DefaultName)
+        if (string.IsNullOrEmpty(_keyDirectoryPath) || name != Options.DefaultName)
         {
             return;
         }
