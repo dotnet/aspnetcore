@@ -302,10 +302,14 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task OnDisconnectedAsync(HubConnectionContext connection)
     {
-        // Remove from tracked groups one by one
-        foreach (var groupName in connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups.ToArray()) //copy to array because groups can be modified in other methods, prevent "collection was modified"
+        var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
+        lock (groupNames)
         {
-            _groups.Remove(connection.ConnectionId, groupName);
+            // Remove from tracked groups one by one
+            foreach (var groupName in groupNames)
+            {
+                _groups.Remove(connection.ConnectionId, groupName);
+            }
         }
 
         _connections.Remove(connection);
