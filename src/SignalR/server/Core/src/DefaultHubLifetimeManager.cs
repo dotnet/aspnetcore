@@ -43,13 +43,14 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             return Task.CompletedTask;
         }
 
-        //track groups in the connection object
+        // Track groups in the connection object
         var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
         lock (groupNames)
         {
             if (!groupNames.Add(groupName))
             {
-                return Task.CompletedTask; // Connection already in group
+                // Connection already in group
+                return Task.CompletedTask;
             }
         }
 
@@ -75,13 +76,14 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             return Task.CompletedTask;
         }
 
-        //remove from previouslyy saved groups
+        // Remove from previously saved groups
         var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
         lock (groupNames)
         {
             if (!groupNames.Remove(groupName))
             {
-                return Task.CompletedTask; // Connection not in group
+                // Connection not in group
+                return Task.CompletedTask;
             }
         }
 
@@ -292,14 +294,15 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     public override Task OnConnectedAsync(HubConnectionContext connection)
     {
         _connections.Add(connection);
-        connection.Features.Set(new GroupTrackerFeature()); //add a group tracker to every concection
+        // Add a group tracker to every connection
+        connection.Features.Set(new GroupTrackerFeature()); 
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override Task OnDisconnectedAsync(HubConnectionContext connection)
     {
-        //now remove from tracked groups one by one
+        // Remove from tracked groups one by one
         //this is faster than calling _groups.RemoveDisconnectedConnection
         //because that method iteratas through ALL the groups
         foreach (var grpName in connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups.ToArray()) //copy to array because groups can be modified in other methods, prevent "collection was modified"
@@ -380,7 +383,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
     }
 
-    private class GroupTrackerFeature
+    private sealed class GroupTrackerFeature
     {
         public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
