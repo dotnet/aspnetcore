@@ -241,7 +241,7 @@ internal static partial class LoggingExtensions
     [LoggerMessage(61, LogLevel.Trace, "Ignoring configuration '{PropertyName}' for options instance '{OptionsName}'", EventName = "IgnoringReadOnlyConfigurationForNonDefaultOptions")]
     public static partial void IgnoringReadOnlyConfigurationForNonDefaultOptions(this ILogger logger, string propertyName, string? optionsName);
 
-    [LoggerMessage(62, LogLevel.Debug, "Enabling read-only key access with repository directory '{Path}'", EventName = "UsingReadOnlyKeyConfiguration")]
+    [LoggerMessage(62, LogLevel.Information, "Enabling read-only key access with repository directory '{Path}'", EventName = "UsingReadOnlyKeyConfiguration")]
     public static partial void UsingReadOnlyKeyConfiguration(this ILogger logger, string path);
 
     [LoggerMessage(63, LogLevel.Debug, "Not enabling read-only key access because an XML repository has been specified", EventName = "NotUsingReadOnlyKeyConfigurationBecauseOfRepository")]
