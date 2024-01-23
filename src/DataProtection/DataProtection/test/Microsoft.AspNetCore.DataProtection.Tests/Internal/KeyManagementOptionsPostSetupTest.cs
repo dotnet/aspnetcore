@@ -175,7 +175,6 @@ public class KeyManagementOptionsPostSetupTest
             // Missing effect 2: Location from configuration
             Assert.NotEqual(keyDir, (repository as FileSystemXmlRepository)?.Directory.FullName);
 
-
             // Missing effect 3: No writing
             repository.StoreElement(xElement, friendlyName: null);
         }
