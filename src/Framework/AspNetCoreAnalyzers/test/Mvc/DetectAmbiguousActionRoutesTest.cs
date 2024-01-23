@@ -39,34 +39,6 @@ internal class Program
         // Act & Assert
         await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
     }
-/*
-    [Fact]
-    public async Task ActionRouteToken_DifferentActionNames_NoDiagnostics()
-    {
-        // Arrange
-        var source = @"
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-public class WeatherForecastController : ControllerBase
-{
-    [Route(""{action}"")]
-    public object Get() => new object();
-
-    [Route(""{action}"")]
-    public object Get1() => new object();
-}
-internal class Program
-{
-    static void Main(string[] args)
-    {
-    }
-}
-";
-
-        // Act & Assert
-        await VerifyCS.VerifyAnalyzerAsync(source);
-    }
-*/
 
     [Fact]
     public async Task ActionReplacementToken_DifferentActionNames_NoDiagnostics()
@@ -397,8 +369,8 @@ internal class Program
 ";
 
         var expectedDiagnostics = new[] {
-            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("[action]").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("[action]").WithLocation(1)
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(1)
         };
 
         // Act & Assert
@@ -430,8 +402,8 @@ internal class Program
 ";
 
         var expectedDiagnostics = new[] {
-            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("[action]").WithLocation(0),
-            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("[action]").WithLocation(1)
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(1)
         };
 
         // Act & Assert
