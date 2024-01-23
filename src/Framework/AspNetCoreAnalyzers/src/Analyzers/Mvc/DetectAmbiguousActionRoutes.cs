@@ -76,7 +76,7 @@ public partial class MvcAnalyzer
                     {
                         for (var k = 0; k < parameterNode.ParameterParts.Length; k++)
                         {
-                            if (parameterNode.ParameterParts[j] is RoutePatternNameParameterPartNode namePartNode)
+                            if (parameterNode.ParameterParts[k] is RoutePatternNameParameterPartNode namePartNode)
                             {
                                 if (!namePartNode.ParameterNameToken.IsMissing)
                                 {
