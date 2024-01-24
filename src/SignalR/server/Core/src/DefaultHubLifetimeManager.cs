@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -44,10 +43,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         // Track groups in the connection object
-        var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
-        lock (groupNames)
+        lock (connection.GroupNames)
         {
-            if (!groupNames.Add(groupName))
+            if (!connection.GroupNames.Add(groupName))
             {
                 // Connection already in group
                 return Task.CompletedTask;
@@ -77,10 +75,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         }
 
         // Remove from previously saved groups
-        var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
-        lock (groupNames)
+        lock (connection.GroupNames)
         {
-            if (!groupNames.Remove(groupName))
+            if (!connection.GroupNames.Remove(groupName))
             {
                 // Connection not in group
                 return Task.CompletedTask;
@@ -294,19 +291,16 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     public override Task OnConnectedAsync(HubConnectionContext connection)
     {
         _connections.Add(connection);
-        // Add a group tracker to every connection
-        connection.Features.Set(new GroupTrackerFeature()); 
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override Task OnDisconnectedAsync(HubConnectionContext connection)
     {
-        var groupNames = connection.Features.GetRequiredFeature<GroupTrackerFeature>().Groups;
-        lock (groupNames)
+        lock (connection.GroupNames)
         {
             // Remove from tracked groups one by one
-            foreach (var groupName in groupNames)
+            foreach (var groupName in connection.GroupNames)
             {
                 _groups.Remove(connection.ConnectionId, groupName);
             }
@@ -383,11 +377,6 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             }
             throw;
         }
-    }
-
-    private sealed class GroupTrackerFeature
-    {
-        public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc/>
