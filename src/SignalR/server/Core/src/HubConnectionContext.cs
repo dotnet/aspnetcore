@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
