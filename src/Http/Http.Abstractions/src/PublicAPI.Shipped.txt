@@ -274,10 +274,10 @@ Microsoft.AspNetCore.Http.HostString.HasValue.get -> bool
 Microsoft.AspNetCore.Http.HostString.Host.get -> string!
 Microsoft.AspNetCore.Http.HostString.HostString() -> void
 Microsoft.AspNetCore.Http.HostString.HostString(string! host, int port) -> void
-Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
+Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 Microsoft.AspNetCore.Http.HostString.Port.get -> int?
 Microsoft.AspNetCore.Http.HostString.ToUriComponent() -> string!
-Microsoft.AspNetCore.Http.HostString.Value.get -> string!
+Microsoft.AspNetCore.Http.HostString.Value.get -> string?
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpContext.HttpContext() -> void
 Microsoft.AspNetCore.Http.HttpMethods
