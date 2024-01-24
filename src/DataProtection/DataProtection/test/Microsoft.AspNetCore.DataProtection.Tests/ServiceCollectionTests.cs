@@ -105,4 +105,24 @@ public class ServiceCollectionTests
         Assert.NotNull(options.XmlEncryptor);
         Assert.Throws<InvalidOperationException>(() => options.XmlEncryptor.Encrypt(xElement));
     }
+
+    [Fact]
+    public void NoReadOnlyDataProtectionKeyDirectory()
+    {
+        var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+
+        var services = new ServiceCollection()
+            .AddSingleton<IConfiguration>(config)
+            .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+            .AddDataProtection()
+            .Services
+            .BuildServiceProvider();
+
+        var options = services.GetRequiredService<IOptions<KeyManagementOptions>>().Value;
+
+        // Missing effect 1: No key generation
+        Assert.True(options.AutoGenerateKeys);
+
+        // KeyManagementOptionsPostSetupTest covers other missing effects
+    }
 }
