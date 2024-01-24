@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
@@ -55,6 +56,9 @@ public partial class HubConnectionContext
 
     [MemberNotNullWhen(true, nameof(_messageBuffer))]
     internal bool UsingStatefulReconnect() => _useStatefulReconnect;
+
+    // Tracks groups that the connection has been added to
+    internal HashSet<string> GroupNames { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
