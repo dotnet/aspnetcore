@@ -81,16 +81,24 @@ public class KeyManagementOptionsPostSetupTest
 
         IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
 
-        var options = new KeyManagementOptions()
+        var xmlDir = Directory.CreateTempSubdirectory();
+        try
         {
-            XmlRepository = new FileSystemXmlRepository(new DirectoryInfo("/testpath2"), NullLoggerFactory.Instance),
-        };
+            var options = new KeyManagementOptions()
+            {
+                XmlRepository = new FileSystemXmlRepository(xmlDir, NullLoggerFactory.Instance),
+            };
 
-        setup.PostConfigure(Options.DefaultName, options);
+            setup.PostConfigure(Options.DefaultName, options);
 
-        AssertNotReadOnly(options, keyDir);
+            AssertNotReadOnly(options, keyDir);
 
-        Assert.True(options.AutoGenerateKeys);
+            Assert.True(options.AutoGenerateKeys);
+        }
+        finally
+        {
+            xmlDir.Delete(recursive: true);
+        }
     }
 
     [Fact]
