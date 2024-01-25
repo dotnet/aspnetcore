@@ -810,6 +810,22 @@ public static partial class Results
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
     /// </summary>
     /// <param name="uri">The URI at which the content has been created.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Created(string? uri)
+        => TypedResults.Created(uri);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="uri">The URI at which the content has been created.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Created(Uri? uri)
+        => TypedResults.Created(uri);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status201Created"/> response.
+    /// </summary>
+    /// <param name="uri">The URI at which the content has been created.</param>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created(string? uri, object? value)
@@ -822,7 +838,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created<TValue>(string? uri, TValue? value)
-        => value is null ? TypedResults.Created(uri) : TypedResults.Created(uri, value);
+        => TypedResults.Created(uri, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
@@ -840,7 +856,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Created<TValue>(Uri? uri, TValue? value)
-        => value is null ? TypedResults.Created(uri) : TypedResults.Created(uri, value);
+        => TypedResults.Created(uri, value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.

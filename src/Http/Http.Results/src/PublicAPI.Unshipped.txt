@@ -14,3 +14,5 @@ static Microsoft.AspNetCore.Http.Results.Conflict(object? error) -> Microsoft.As
 *REMOVED*static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created(string? uri) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Created(System.Uri? uri) -> Microsoft.AspNetCore.Http.IResult!

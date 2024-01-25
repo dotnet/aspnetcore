@@ -577,7 +577,7 @@ public partial class ResultsTests
         var uri = "https://example.com/entity";
 
         // Act
-        var result = Results.Created(uri, null) as Created;
+        var result = Results.Created(uri) as Created;
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -623,7 +623,7 @@ public partial class ResultsTests
         var uri = new Uri("https://example.com/entity");
 
         // Act
-        var result = Results.Created(uri, null) as Created;
+        var result = Results.Created(uri) as Created;
 
         // Assert
         Assert.Equal(StatusCodes.Status201Created, result.StatusCode);
@@ -634,7 +634,7 @@ public partial class ResultsTests
     public void Created_WithNullStringUri_SetsLocationNull()
     {
         //Act
-        var result = Results.Created(default(string), null) as Created;
+        var result = Results.Created(default(string)) as Created;
 
         //Assert
         Assert.Null(result.Location);
@@ -644,7 +644,7 @@ public partial class ResultsTests
     public void Created_WithEmptyStringUri_SetsLocationEmpty()
     {
         //Act
-        var result = Results.Created(string.Empty, null) as Created;
+        var result = Results.Created(string.Empty) as Created;
 
         //Assert
         Assert.Empty(result.Location);
@@ -654,7 +654,7 @@ public partial class ResultsTests
     public void Created_WithNullUri_SetsLocationNull()
     {
         // Act
-        var result = Results.Created(default(Uri), null) as Created;
+        var result = Results.Created(default(Uri)) as Created;
 
         //Assert
         Assert.Null(result.Location);
@@ -1625,7 +1625,8 @@ public partial class ResultsTests
         (() => Results.Conflict(new()), typeof(Conflict<object>)),
         (() => Results.Content("content", null, null), typeof(ContentHttpResult)),
         (() => Results.Content("content", null, null, null), typeof(ContentHttpResult)),
-        (() => Results.Created("/path", null), typeof(Created)),
+        (() => Results.Created("/path", null), typeof(Created<object>)),
+        (() => Results.Created("/path"), typeof(Created)),
         (() => Results.Created(), typeof(Created)),
         (() => Results.Created("/path", new()), typeof(Created<object>)),
         (() => Results.CreatedAtRoute("routeName", (object)null, null), typeof(CreatedAtRoute)),
