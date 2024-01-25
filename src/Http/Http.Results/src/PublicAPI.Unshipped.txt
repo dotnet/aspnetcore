@@ -2,3 +2,15 @@
 *REMOVED*static Microsoft.AspNetCore.Http.Results.Ok(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Ok() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Ok(object? value) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.NotFound(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.NotFound() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.NotFound(object? value) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.BadRequest(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.BadRequest() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.BadRequest(object? error) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.Conflict(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Conflict() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.Conflict(object? error) -> Microsoft.AspNetCore.Http.IResult!
+*REMOVED*static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.UnprocessableEntity() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.UnprocessableEntity(object? error) -> Microsoft.AspNetCore.Http.IResult!

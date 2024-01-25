@@ -599,9 +599,15 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
     /// </summary>
-    /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult NotFound(object? value = null)
+    public static IResult NotFound()
+        => TypedResults.NotFound();
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult NotFound(object? value)
         => NotFound<object>(value);
 
     /// <summary>
@@ -610,7 +616,7 @@ public static partial class Results
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult NotFound<TValue>(TValue? value)
-        => value is null ? TypedResults.NotFound() : TypedResults.NotFound(value);
+        => TypedResults.NotFound(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -622,9 +628,16 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult BadRequest()
+        => TypedResults.BadRequest();
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult BadRequest(object? error = null)
+    public static IResult BadRequest(object? error)
         => BadRequest<object>(error);
 
     /// <summary>
@@ -633,14 +646,21 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult BadRequest<TValue>(TValue? error)
-        => error is null ? TypedResults.BadRequest() : TypedResults.BadRequest(error);
+        => TypedResults.BadRequest(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Conflict()
+        => TypedResults.Conflict();
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
     /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Conflict(object? error = null)
+    public static IResult Conflict(object? error)
         => Conflict<object>(error);
 
     /// <summary>
@@ -649,7 +669,7 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Conflict<TValue>(TValue? error)
-        => error is null ? TypedResults.Conflict() : TypedResults.Conflict(error);
+        => TypedResults.Conflict(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status204NoContent"/> response.
@@ -684,9 +704,16 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
     /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult UnprocessableEntity()
+        => TypedResults.UnprocessableEntity();
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
+    /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult UnprocessableEntity(object? error = null)
+    public static IResult UnprocessableEntity(object? error)
         => UnprocessableEntity<object>(error);
 
     /// <summary>
@@ -695,7 +722,7 @@ public static partial class Results
     /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult UnprocessableEntity<TValue>(TValue? error)
-        => error is null ? TypedResults.UnprocessableEntity() : TypedResults.UnprocessableEntity(error);
+        => TypedResults.UnprocessableEntity(error);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
