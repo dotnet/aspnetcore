@@ -662,21 +662,24 @@ public static partial class Results
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Ok() => TypedResults.Ok();
+    public static IResult Ok()
+        => TypedResults.Ok();
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Ok(object? value) => TypedResults.Ok(value);
+    public static IResult Ok(object? value)
+        => TypedResults.Ok(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Ok<TValue>(TValue? value) => TypedResults.Ok(value);
+    public static IResult Ok<TValue>(TValue? value)
+        => TypedResults.Ok(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
