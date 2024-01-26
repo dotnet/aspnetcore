@@ -1,8 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ServerComponentsEndpointOptions
-Microsoft.AspNetCore.Builder.ServerComponentsEndpointOptions.EnableWebSocketCompression.get -> bool
-Microsoft.AspNetCore.Builder.ServerComponentsEndpointOptions.EnableWebSocketCompression.set -> void
-Microsoft.AspNetCore.Builder.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConnectionOptions.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>!
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConnectionOptions.set -> void
