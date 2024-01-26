@@ -23,7 +23,7 @@ public class WebAssemblyPrerenderedTest : ServerTestBase<AspNetSiteServerFixture
 
         var testTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
+            .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps")
             .Value == "true";
 
         if (testTrimmedApps)

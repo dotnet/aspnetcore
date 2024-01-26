@@ -319,10 +319,8 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        if (string.IsNullOrWhiteSpace(normalizedRoleName))
-        {
-            throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, nameof(normalizedRoleName));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedRoleName);
+
         var roleEntity = await FindRoleAsync(normalizedRoleName, cancellationToken);
         if (roleEntity == null)
         {
@@ -343,10 +341,8 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        if (string.IsNullOrWhiteSpace(normalizedRoleName))
-        {
-            throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, nameof(normalizedRoleName));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedRoleName);
+
         var roleEntity = await FindRoleAsync(normalizedRoleName, cancellationToken);
         if (roleEntity != null)
         {
@@ -390,10 +386,8 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
-        if (string.IsNullOrWhiteSpace(normalizedRoleName))
-        {
-            throw new ArgumentException(Resources.ValueCannotBeNullOrEmpty, nameof(normalizedRoleName));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedRoleName);
+
         var role = await FindRoleAsync(normalizedRoleName, cancellationToken);
         if (role != null)
         {

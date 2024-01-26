@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 // dispatching events to them, and notifying when the user interface is being updated.
 public abstract partial class Renderer : IDisposable, IAsyncDisposable
 {
+    private readonly object _lockObject = new();
     private readonly IServiceProvider _serviceProvider;
     private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
     private readonly Dictionary<IComponent, ComponentState> _componentStateByComponent = new Dictionary<IComponent, ComponentState>();
@@ -1102,17 +1103,42 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
+        // Unlike other Renderer APIs, we need Dispose to be thread-safe 
+        // (and not require being called only from the sync context) 
+        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync) 
+        // and we don't want to force that other code to deal with calling InvokeAsync from a synchronous method.
+        lock (_lockObject)
+        {
+            if (_rendererIsDisposed)
+            {
+                // quitting synchronously as soon as possible is avoiding
+                // possible async dispatch to another thread and
+                // possible deadlock on synchronous `done.Wait()` below.
+                return;
+            }
+        }
+
         if (!Dispatcher.CheckAccess())
         {
             // It's important that we only call the components' Dispose/DisposeAsync lifecycle methods
             // on the sync context, like other lifecycle methods. In almost all cases we'd already be
             // on the sync context here since DisposeAsync dispatches, but just in case someone is using
             // Dispose directly, we'll dispatch and block.
-            Dispatcher.InvokeAsync(() => Dispose(disposing)).Wait();
+            var done = Dispatcher.InvokeAsync(() => Dispose(disposing));
+
+            // only block caller when this is not finalizer
+            if (disposing)
+            {
+                done.Wait();
+            }
+
             return;
         }
 
-        _rendererIsDisposed = true;
+        lock (_lockObject)
+        {
+            _rendererIsDisposed = true;
+        }
 
         if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported)
         {
@@ -1195,7 +1221,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <summary>
     /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
     /// This is only called when a render mode is specified either at the call site or on the component type.
-    /// 
+    ///
     /// Subclasses may override this method to return a component of a different type, or throw, depending on whether the renderer
     /// supports the render mode and how it implements that support.
     /// </summary>
@@ -1225,9 +1251,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (_rendererIsDisposed)
+        lock (_lockObject)
         {
-            return;
+            if (_rendererIsDisposed)
+            {
+                return;
+            }
         }
 
         if (_disposeTask != null)

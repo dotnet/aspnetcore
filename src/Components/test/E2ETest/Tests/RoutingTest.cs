@@ -1537,7 +1537,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void CanNavigateBetweenPagesWithQueryStrings()
+    public void CanNavigateWithinPageWithQueryStrings()
     {
         SetUrlViaPushState("/");
 
@@ -1584,6 +1584,30 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Assert.Equal("0 values ()", app.FindElement(By.Id("value-nested-LongValues")).Text);
         Assert.Equal(instanceId, app.FindElement(By.Id("instance-id")).Text);
         AssertHighlightedLinks("With query parameters (none)", "With query parameters (passing string value)");
+    }
+
+    [Fact]
+    public void CanNavigateBetweenDifferentPagesWithQueryStrings()
+    {
+        SetUrlViaPushState("/");
+
+        // Navigate between pages with the same querystring parameter "l" for LongValues and GuidValue.
+        // https://github.com/dotnet/aspnetcore/issues/52483
+        var app = Browser.MountTestComponent<TestRouter>();
+        app.FindElement(By.LinkText("With query parameters (none)")).Click();
+        app.FindElement(By.LinkText("With IntValue and LongValues")).Click();
+        app.FindElement(By.LinkText("Another page with GuidValue")).Click();
+
+        Browser.Equal("8b7ae9ee-de22-4dd0-8fa1-b31e66abcc79", () => app.FindElement(By.Id("value-QueryGuid")).Text);
+        // Verify that OnParametersSet was only called once.
+        Browser.Equal("1", () => app.FindElement(By.Id("param-set-count")).Text);
+
+        app.FindElement(By.LinkText("Another page with LongValues")).Click();
+        Assert.Equal("3 values (50, 100, -20)", app.FindElement(By.Id("value-LongValues")).Text);
+
+        // We can also click back to go the preceding query while retaining the same component instance.
+        Browser.Navigate().Back();
+        Browser.Equal("8b7ae9ee-de22-4dd0-8fa1-b31e66abcc79", () => app.FindElement(By.Id("value-QueryGuid")).Text);
     }
 
     [Fact]

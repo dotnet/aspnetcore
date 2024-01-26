@@ -4,7 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
@@ -70,16 +70,6 @@ function setHasLocationChangingListeners(rendererId: WebRendererId, hasListeners
   callbacks.hasLocationChangingEventListeners = hasListeners;
 }
 
-export function scrollToElement(identifier: string): boolean {
-  const element = document.getElementById(identifier);
-
-  if (element) {
-    element.scrollIntoView();
-    return true;
-  }
-
-  return false;
-}
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
@@ -96,22 +86,6 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   });
 }
 
-function isSamePageWithHash(absoluteHref: string): boolean {
-  const hashIndex = absoluteHref.indexOf('#');
-  return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
-}
-
-function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boolean, state: string | undefined = undefined): void {
-  saveToBrowserHistory(absoluteHref, replace, state);
-
-  const hashIndex = absoluteHref.indexOf('#');
-  if (hashIndex === absoluteHref.length - 1) {
-    return;
-  }
-
-  const identifier = absoluteHref.substring(hashIndex + 1);
-  scrollToElement(identifier);
-}
 
 function refresh(forceReload: boolean): void {
   if (!forceReload && hasProgrammaticEnhancedNavigationHandler()) {
@@ -177,7 +151,8 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   ignorePendingNavigation();
 
   if (isSamePageWithHash(absoluteInternalHref)) {
-    performScrollToElementOnTheSamePage(absoluteInternalHref, replace, state);
+    saveToBrowserHistory(absoluteInternalHref, replace, state);
+    performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
   }
 

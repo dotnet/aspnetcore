@@ -687,16 +687,16 @@ public class CookieConsentTests
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void CreateCookiePolicyOptionsWithEmptyConsentCookieValueThrows(string value)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void CreateCookiePolicyOptionsWithEmptyConsentCookieValueThrows(string value, string expectedMessage)
     {
         var options = new CookiePolicyOptions();
 
         ExceptionAssert.ThrowsArgument(
             () => options.ConsentCookieValue = value,
             "value",
-            "Value cannot be null or empty string.");
+            expectedMessage);
     }
 
     private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)

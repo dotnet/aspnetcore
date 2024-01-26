@@ -28,10 +28,7 @@ public class TagBuilder : IHtmlContent
     /// <param name="tagName">An HTML tag name.</param>
     public TagBuilder(string tagName)
     {
-        if (string.IsNullOrEmpty(tagName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(tagName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(tagName);
 
         TagName = tagName;
     }
@@ -285,10 +282,7 @@ public class TagBuilder : IHtmlContent
     /// <param name="replaceExisting">Whether to replace an existing value.</param>
     public void MergeAttribute(string key, string? value, bool replaceExisting)
     {
-        if (string.IsNullOrEmpty(key))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(key));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
         if (replaceExisting || !Attributes.ContainsKey(key))
         {

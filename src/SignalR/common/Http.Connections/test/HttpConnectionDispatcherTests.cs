@@ -2842,6 +2842,37 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task ServerClosingClosesWebSocketConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+            options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
+
+            var executeTask = dispatcher.ExecuteAsync(context, options, app);
+
+            // "close" server, since we're not using a server in these tests we just simulate what would be called when the server closes
+            await connection.DisposeAsync().DefaultTimeout();
+
+            await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+
+            await executeTask.DefaultTimeout();
+        }
+    }
+
     public class CustomHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
     {
         public CancellationToken RequestAborted { get; set; }

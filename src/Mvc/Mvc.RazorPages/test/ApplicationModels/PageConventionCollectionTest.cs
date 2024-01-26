@@ -9,15 +9,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels;
 public class PageConventionCollectionTest
 {
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void EnsureValidPageName_ThrowsIfPageNameIsNullOrEmpty(string pageName)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void EnsureValidPageName_ThrowsIfPageNameIsNullOrEmpty(string pageName, string expectedMessage)
     {
         // Act & Assert
-        var ex = ExceptionAssert.ThrowsArgument(
+        ExceptionAssert.ThrowsArgument(
             () => PageConventionCollection.EnsureValidPageName(pageName),
             "pageName",
-            "Value cannot be null or empty.");
+            expectedMessage);
     }
 
     [Theory]
@@ -48,16 +48,15 @@ public class PageConventionCollectionTest
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void EnsureValidFolderPath_ThrowsIfPathIsNullOrEmpty(string folderPath)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void EnsureValidFolderPath_ThrowsIfPathIsNullOrEmpty(string folderPath, string expectedMessage)
     {
-        // Arrange
         // Act & Assert
-        var ex = ExceptionAssert.ThrowsArgument(
+        ExceptionAssert.ThrowsArgument(
             () => PageConventionCollection.EnsureValidFolderPath(folderPath),
             "folderPath",
-           "Value cannot be null or empty.");
+            expectedMessage);
     }
 
     [Theory]

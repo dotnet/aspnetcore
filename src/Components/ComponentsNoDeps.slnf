@@ -34,6 +34,7 @@
       "src\\Components\\WebAssembly\\testassets\\HostedInAspNet.Client\\HostedInAspNet.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\HostedInAspNet.Server\\HostedInAspNet.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\StandaloneApp\\StandaloneApp.csproj",
+      "src\\Components\\WebAssembly\\testassets\\ThreadingApp\\ThreadingApp.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Prerendered.Client\\Wasm.Prerendered.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Prerendered.Server\\Wasm.Prerendered.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\WasmLinkerTest\\WasmLinkerTest.csproj",

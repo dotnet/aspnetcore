@@ -8,9 +8,11 @@
     <SourceBuildTargetFrameworkFilter>netstandard2.0%3bnetstandard2.1%3bnetcoreapp2.1%3bnetcoreapp3.1%3bnet5.0%3bnet6.0%3bnet7.0%3bnet8.0%3bnet9.0</SourceBuildTargetFrameworkFilter>
   </PropertyGroup>
 
+  <!-- Only run this target in source-build only mode. -->
   <Target Name="PrepareGlobalJsonForSourceBuild"
           AfterTargets="PrepareInnerSourceBuildRepoRoot"
-          BeforeTargets="RunInnerSourceBuildCommand">
+          BeforeTargets="RunInnerSourceBuildCommand"
+          Condition="'$(ArcadeBuildFromSource)' == 'true'">
     <Exec
       Command="./eng/scripts/prepare-sourcebuild-globaljson.sh"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
@@ -28,13 +30,11 @@
     <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
   </Target>
 
-  <!--
-    Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild
-  -->
+  <!-- Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild.
+       https://github.com/dotnet/source-build/issues/3807 -->
   <Target Name="BuildRepoTasks"
           Condition="'$(ArcadeInnerBuildFromSource)' == 'true'"
           BeforeTargets="Execute">
-
     <!-- If the alternative runtime location and key are present, pass those through -->
     <PropertyGroup>
       <_AdditionalRepoTaskBuildArgs />
@@ -45,7 +45,8 @@
     <ItemGroup>
       <!-- We need to flow FullAssemblySigningSupported even when building repo tasks because they use full signing -->
       <InnerBuildEnv Condition="'$(FullAssemblySigningSupported)' != ''" Include="FullAssemblySigningSupported=$(FullAssemblySigningSupported)" />
-      <InnerBuildEnv Include="DotNetBuildFromSource=true" />
+      <InnerBuildEnv Include="DotNetBuildFromSource=$(ArcadeBuildFromSource)" />
+      <InnerBuildEnv Include="DotNetBuildVertical=$(ArcadeBuildVertical)" />
     </ItemGroup>
 
     <!-- Call the build.sh script to build the repo tasks. Set IgnoreStandardErrorWarningFormat
@@ -56,7 +57,15 @@
       Command="./eng/build.sh --only-build-repo-tasks -bl $(_AdditionalRepoTaskBuildArgs)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
-      EnvironmentVariables="@(InnerBuildEnv)" />
+      EnvironmentVariables="@(InnerBuildEnv)"
+      Condition="'$(OS)' != 'Windows_NT'" />
+
+    <Exec
+      Command=".\eng\build.cmd -OnlyBuildRepoTasks -bl $(_AdditionalRepoTaskBuildArgs)"
+      IgnoreStandardErrorWarningFormat="true"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="@(InnerBuildEnv)"
+      Condition="'$(OS)' == 'Windows_NT'" />
   </Target>
 
   <Target Name="CustomizeInnerBuildArgs"
@@ -84,6 +93,7 @@
   </Target>
 
   <Target Name="RestoreNpmPackages"
+          Condition="'$(BuildNodeJS)' == 'true'"
           BeforeTargets="RunInnerSourceBuildCommand">
 
     <Message Text="Checking node version..." Importance="high" />
@@ -103,8 +113,9 @@
   </Target>
 
   <Target Name="BuildNpmFiles"
-    DependsOnTargets="RestoreNpmPackages"
-    BeforeTargets="RunInnerSourceBuildCommand">
+          Condition="'$(BuildNodeJS)' == 'true'"
+          DependsOnTargets="RestoreNpmPackages"
+          BeforeTargets="RunInnerSourceBuildCommand">
 
     <Message Text="Building Node JS files..." Importance="high" />
 
