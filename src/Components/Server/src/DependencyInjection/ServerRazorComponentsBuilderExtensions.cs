@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -64,10 +65,20 @@ public static class ServerRazorComponentsBuilderExtensions
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
-            if (renderMode is InternalServerRenderMode { ConfigureConnectionOptions: var configureOptions } &&
+            if (renderMode is InternalServerRenderMode { Options: var configureOptions } &&
                 configureOptions != null)
             {
-                endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions);
+                if (configureOptions.ConnectionOptions != null)
+                {
+                    endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions.ConnectionOptions);
+                }
+                else if (configureOptions.EnableWebSocketCompression)
+                {
+                    endpointRouteBuilder.MapBlazorHub("/_blazor", options =>
+                    {
+                        options.WebSockets.WebSocketAcceptContextFactory = EnableCompressionDefaults;
+                    });
+                }
             }
             else
             {
@@ -76,6 +87,9 @@ public static class ServerRazorComponentsBuilderExtensions
 
             return endpointRouteBuilder.GetEndpoints();
         }
+
+        private static WebSocketAcceptContext EnableCompressionDefaults(HttpContext context) =>
+            new() { DangerousEnableCompression = true };
 
         public override bool Supports(IComponentRenderMode renderMode)
         {

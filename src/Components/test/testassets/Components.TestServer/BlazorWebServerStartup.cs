@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Components.TestServer.RazorComponents;
-using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace TestServer;
@@ -44,7 +41,8 @@ public class BlazorWebServerStartup
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorComponents<Root>()
-                    .AddInteractiveServerRenderMode(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
+                    .AddInteractiveWebAssemblyRenderMode()
+                    .AddInteractiveServerRenderMode(options => options.EnableWebSocketCompression = true);
             });
         });
     }

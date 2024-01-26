@@ -43,7 +43,7 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
 
         using (var ws = await (acceptContext != null ? context.WebSockets.AcceptWebSocketAsync(acceptContext) : context.WebSockets.AcceptWebSocketAsync(subProtocol)))
         {
-            Log.SocketOpened(_logger, subProtocol);
+            Log.SocketOpened(_logger, acceptContext != null ? acceptContext.SubProtocol : subProtocol);
 
             try
             {

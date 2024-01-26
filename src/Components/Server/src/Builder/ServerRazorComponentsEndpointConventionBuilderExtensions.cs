@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -27,14 +27,16 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     ///Maps the Blazor <see cref="Hub" /> to the default path.
     /// </summary>
     /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
-    /// <param name="configureOptions">A callback to configure dispatcher options.</param>
+    /// <param name="callback">A callback to configure server endpoint options.</param>
     /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
     public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(
         this RazorComponentsEndpointConventionBuilder builder,
-        Action<HttpConnectionDispatcherOptions> configureOptions)
+        Action<ServerComponentsEndpointOptions>? callback = null)
     {
-        ArgumentNullException.ThrowIfNull(configureOptions);
-        ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(configureOptions));
+        var options = new ServerComponentsEndpointOptions();
+        callback?.Invoke(options);
+
+        ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(options));
         return builder;
     }
 }

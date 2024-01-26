@@ -5,11 +5,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Http.Connections;
 
-namespace Microsoft.AspNetCore.Builder;
+namespace Microsoft.AspNetCore.Components.Server;
 
-internal class InternalServerRenderMode(Action<HttpConnectionDispatcherOptions>? configureOptions = null) : InteractiveServerRenderMode
+internal class InternalServerRenderMode(ServerComponentsEndpointOptions options = null) : InteractiveServerRenderMode
 {
-    public Action<HttpConnectionDispatcherOptions>? ConfigureConnectionOptions { get; } = configureOptions;
+    public ServerComponentsEndpointOptions? Options { get; } = options;
 }
