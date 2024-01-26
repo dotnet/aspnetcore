@@ -2,6 +2,8 @@
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConnectionOptions.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>!
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConnectionOptions.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.get -> string?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.EnableWebSocketCompression.get -> bool
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.EnableWebSocketCompression.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void

@@ -10,5 +10,5 @@ namespace Microsoft.AspNetCore.Components.Server;
 
 internal class InternalServerRenderMode(ServerComponentsEndpointOptions options = null) : InteractiveServerRenderMode
 {
-    public ServerComponentsEndpointOptions? Options { get; } = options;
+    public ServerComponentsEndpointOptions? Options { get; } = options ?? new() { EnableWebSocketCompression = true };
 }

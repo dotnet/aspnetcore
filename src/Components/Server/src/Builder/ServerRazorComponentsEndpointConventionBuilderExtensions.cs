@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -19,8 +20,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
     public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(this RazorComponentsEndpointConventionBuilder builder)
     {
-        ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode());
-        return builder;
+        return AddInteractiveServerRenderMode(builder, null);
     }
 
     /// <summary>
@@ -37,6 +37,21 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
         callback?.Invoke(options);
 
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(options));
+
+        if (options.EnableWebSocketCompression && options.ContentSecurityFrameAncestorPolicy != null)
+        {
+            builder.AddEndpointFilter(new RequireCspFilter(options.ContentSecurityFrameAncestorPolicy));
+        }
+
         return builder;
+    }
+
+    private class RequireCspFilter(string policy) : IEndpointFilter
+    {
+        public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+        {
+            context.HttpContext.Response.Headers.Add("Content-Security-Policy", $"frame-ancestors {policy}");
+            return next(context);
+        }
     }
 }
