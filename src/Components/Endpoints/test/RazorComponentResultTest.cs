@@ -516,7 +516,7 @@ public class RazorComponentResultTest
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             // Equivalent to what RemoteNavigationManager would do
-            var absoluteUriString = ToAbsoluteUri(uri).ToString();
+            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
             throw new NavigationException(absoluteUriString);
         }
     }
