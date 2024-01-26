@@ -9,7 +9,7 @@ public class WebSocketCompressionConfiguration
 {
     public bool IsCompressionEnabled { get; set; } = true;
 
-    public string CspPolicy { get; set; } = "'none'";
+    public string CspPolicy { get; set; } = "'self'";
 
     public Action<HttpConnectionDispatcherOptions> ConnectionDispatcherOptions { get; set; }
 }

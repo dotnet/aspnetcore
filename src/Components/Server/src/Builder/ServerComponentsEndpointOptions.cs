@@ -28,16 +28,14 @@ public class ServerComponentsEndpointOptions
     /// <para>
     /// A content security policy provides defense against security threats that can occur if
     /// the app uses compression and can be embedded in other origins. When compression is enabled
-    /// embedding the app inside an <c>iframe</c> is prohibited.
+    /// embedding the app inside an <c>iframe</c> from other origins is prohibited.
     /// </para>
     /// <para>
-    /// This restriction can be relaxed to 'self' or any other trusted origin at the expense
-    /// of exposing the app if an attacker is able to run code from one of those origins.
     /// For more details see the security recommendations for Interactive Server Components in
     /// the official documentation.
     /// </para>
     /// </remarks>
-    public string? ContentSecurityFrameAncestorPolicy { get; set; } = "'none'";
+    public string? ContentSecurityFrameAncestorPolicy { get; set; } = "'self'";
 
     /// <summary>
     /// Gets or sets a callback to configure the underlying <see cref="HttpConnectionDispatcherOptions"/>.

@@ -62,11 +62,11 @@ public partial class DefaultConfigurationWebSocketCompressionTests(
     BrowserFixture browserFixture,
     BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
     ITestOutputHelper output)
-    : BlockedWebSocketCompressionTests(browserFixture, serverFixture, output)
+    : AllowedWebSocketCompressionTests(browserFixture, serverFixture, output)
 {
 }
 
-public partial class CustomConfigurationCallbackWebSocketCompressionTests : BlockedWebSocketCompressionTests
+public partial class CustomConfigurationCallbackWebSocketCompressionTests : AllowedWebSocketCompressionTests
 {
     public CustomConfigurationCallbackWebSocketCompressionTests(
         BrowserFixture browserFixture,
@@ -99,9 +99,9 @@ public partial class CompressionDisabledWebSocketCompressionTests : AllowedWebSo
     }
 }
 
-public partial class SelfFrameAncestorWebSocketCompressionTests : AllowedWebSocketCompressionTests
+public partial class NoneAncestorWebSocketCompressionTests : BlockedWebSocketCompressionTests
 {
-    public SelfFrameAncestorWebSocketCompressionTests(
+    public NoneAncestorWebSocketCompressionTests(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -110,7 +110,7 @@ public partial class SelfFrameAncestorWebSocketCompressionTests : AllowedWebSock
         serverFixture.UpdateHostServices = services =>
         {
             var configuration = services.GetService<WebSocketCompressionConfiguration>();
-            configuration.CspPolicy = "'self'";
+            configuration.CspPolicy = "'none'";
         };
     }
 }
