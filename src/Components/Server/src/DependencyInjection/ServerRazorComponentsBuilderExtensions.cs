@@ -68,9 +68,9 @@ public static class ServerRazorComponentsBuilderExtensions
             if (renderMode is InternalServerRenderMode { Options: var configureOptions } &&
                 configureOptions != null)
             {
-                if (configureOptions.ConnectionOptions != null)
+                if (configureOptions.ConfigureConnectionOptions != null)
                 {
-                    endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions.ConnectionOptions);
+                    endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions.ConfigureConnectionOptions);
                 }
                 else if (configureOptions.EnableWebSocketCompression)
                 {

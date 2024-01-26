@@ -36,6 +36,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
+        services.AddSingleton<WebSocketCompressionConfiguration>();
 
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
@@ -69,7 +70,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             {
                 endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode()
+                    .AddInteractiveServerRenderMode(options =>
+                    {
+                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                        options.EnableWebSocketCompression = config.IsCompressionEnabled;
+                        options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
+                        options.ConfigureConnectionOptions = config.ConnectionDispatcherOptions;
+                    })
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);

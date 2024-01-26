@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
-internal class InternalServerRenderMode(ServerComponentsEndpointOptions options = null) : InteractiveServerRenderMode
+internal class InternalServerRenderMode(ServerComponentsEndpointOptions options) : InteractiveServerRenderMode
 {
-    public ServerComponentsEndpointOptions? Options { get; } = options ?? new() { EnableWebSocketCompression = true };
+    public ServerComponentsEndpointOptions? Options { get; } = options;
 }

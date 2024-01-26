@@ -14,7 +14,7 @@ public class ServerComponentsEndpointOptions
     /// <summary>
     /// Gets or sets a value that indicates whether compression is enabled for the WebSocket connections.
     /// </summary>
-    public bool EnableWebSocketCompression { get; set; }
+    public bool EnableWebSocketCompression { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the <c>frame-ancestors</c> <c>Content-Security-Policy</c> to set in the
@@ -41,7 +41,8 @@ public class ServerComponentsEndpointOptions
 
     /// <summary>
     /// Gets or sets a callback to configure the underlying <see cref="HttpConnectionDispatcherOptions"/>.
-    /// If set, this callback takes precedence over <see cref="EnableWebSocketCompression"/>.
+    /// If set, <see cref="ContentSecurityFrameAncestorPolicy"/> will be applied independent of the value of
+    /// <see cref="EnableWebSocketCompression"/>.
     /// </summary>
-    public Action<HttpConnectionDispatcherOptions> ConnectionOptions { get; set; }
+    public Action<HttpConnectionDispatcherOptions> ConfigureConnectionOptions { get; set; }
 }
