@@ -1,8 +1,8 @@
 ---
 name: Test failure
 about: Report a failing test that needs to be quarantined
-title: 'Quarantine <FAILING_TEST_NAME>'
-labels: test-failure
+title: Quarantine <FAILING_TEST_NAME>
+labels: ''
 assignees: ''
 
 ---
