@@ -1,7 +1,10 @@
 ---
-name: 🤔 Design proposal
+name: "\U0001F914 Design proposal"
 about: Collaborate on a design for a feature/fix or other change
-labels: design-proposal
+title: ''
+labels: ''
+assignees: ''
+
 ---
 
 <!--

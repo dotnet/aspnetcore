@@ -2,7 +2,7 @@
 name: API proposal
 about: Propose a change to the public API surface
 title: ''
-labels: api-suggestion
+labels: ''
 assignees: ''
 
 ---
@@ -52,4 +52,3 @@ How does this compare to analogous APIs in other ecosystems and libraries?
 <!--
 Please mention any risks that to your knowledge the API proposal might entail, such as breaking changes, performance regressions, etc.
 -->
-
