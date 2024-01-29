@@ -240,6 +240,7 @@ function Build {
     /p:Build=$build \
     /p:DotNetBuildRepo=$product_build \
     /p:ArcadeBuildFromSource=$source_build \
+    /p:DotNetBuildSourceOnly=$source_build \
     /p:ArcadeBuildVertical=$vertical_build \
     /p:Rebuild=$rebuild \
     /p:Test=$test \
