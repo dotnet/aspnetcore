@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
   </ItemGroup>
 
