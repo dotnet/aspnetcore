@@ -172,7 +172,7 @@
     <!-- Packages from dotnet/winforms -->
     <SystemDrawingCommonVersion>9.0.0-preview.2.24078.1</SystemDrawingCommonVersion>
     <!-- Packages from dotnet/xdt -->
-    <MicrosoftWebXdtVersion>9.0.0-preview.24067.1</MicrosoftWebXdtVersion>
+    <MicrosoftWebXdtVersion>9.0.0-preview.24079.2</MicrosoftWebXdtVersion>
   </PropertyGroup>
   <!--
 
