@@ -51,6 +51,57 @@ public class CacheConfigTests
         }
         Assert.Equal(2, s.BackendCalls);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StatefulUsage(bool useCustomBackend)
+    {
+        var services = new ServiceCollection();
+
+        if (useCustomBackend)
+        {
+            services.AddSingleton<IDistributedCache, CustomBackend>();
+        }
+        services.AddTypedDistributedCache();
+        services.AddScoped<SomeService>();
+        var provider = services.BuildServiceProvider();
+
+        var s = provider.GetService<SomeService>();
+        Assert.NotNull(s);
+
+        Assert.Equal(0, s.BackendCalls);
+        var x = await s.GetFromCacheWithStateAsync(42);
+        Assert.NotNull(x);
+        Assert.Equal(42, x.Id);
+        Assert.Equal(1, s.BackendCalls);
+
+        for (int i = 0; i < 10; i++)
+        {
+            var y = await s.GetFromCacheWithStateAsync(42);
+            Assert.NotNull(y);
+            Assert.NotSame(x, y);
+            Assert.Equal(42, y.Id);
+        }
+        Assert.Equal(1, s.BackendCalls);
+
+        await Task.Delay(TimeSpan.FromSeconds(1.5)); // timeout
+
+        for (int i = 0; i < 10; i++)
+        {
+            var y = await s.GetFromCacheWithStateAsync(42);
+            Assert.NotNull(y);
+            Assert.Equal(42, y.Id);
+            Assert.NotSame(x, y);
+        }
+        Assert.Equal(2, s.BackendCalls);
+
+        var z = await s.GetFromCacheWithStateAsync(43);
+        Assert.NotNull(z);
+        Assert.NotSame(x, z);
+        Assert.Equal(43, z.Id);
+        Assert.Equal(3, s.BackendCalls);
+    }
 }
 
 public class SomeService(IDistributedCache<Foo> cache)
@@ -62,8 +113,16 @@ public class SomeService(IDistributedCache<Foo> cache)
         var obj = new Foo { Id = Interlocked.Increment(ref _backendCalls) };
         return new(obj);
     }
+    private ValueTask<Foo> BackendAsync(int id)
+    {
+        Interlocked.Increment(ref _backendCalls);
+        var obj = new Foo { Id = id };
+        return new(obj);
+    }
 
-    public async Task<Foo> GetFromCacheAsync() => await cache.GetAsync("foos", () => BackendAsync(), CacheExpiration);
+    public async Task<Foo> GetFromCacheAsync() => await cache.GetAsync("foos", _ => BackendAsync(), CacheExpiration);
+
+    public async Task<Foo> GetFromCacheWithStateAsync(int id) => await cache.GetAsync($"foos_{id}", (obj: this, id), static (state, ct) => state.obj.BackendAsync(state.id), CacheExpiration);
 
     private static readonly DistributedCacheEntryOptions CacheExpiration = new DistributedCacheEntryOptions
     {

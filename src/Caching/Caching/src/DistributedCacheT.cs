@@ -20,25 +20,30 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
         _ = options;
     }
 
-    public ValueTask<T> GetAsync(string key, Func<ValueTask<T>> callback, DistributedCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
+    // for the simple usage scenario (no TState), pack the original callback as the "state", and use a wrapper function that just unrolls and invokes from the state
+    static readonly Func<Func<CancellationToken, ValueTask<T>>, CancellationToken, ValueTask<T>> _wrapped = static (callback, ct) => callback(ct);
+    public ValueTask<T> GetAsync(string key, Func<CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
+        => GetAsync(key, callback, _wrapped, options, cancellationToken);
+
+    public ValueTask<T> GetAsync<TState>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(callback);
 
         return _bufferBackend is not null
-            ? GetBufferedBackendAsync(key, callback, options, cancellationToken)
-            : GetLegacyBackendAsync(key, callback, options, cancellationToken);
+            ? GetBufferedBackendAsync(key, state, callback, options, cancellationToken)
+            : GetLegacyBackendAsync(key, state, callback, options, cancellationToken);
 
     }
 
-    private ValueTask<T> GetBufferedBackendAsync(string key, Func<ValueTask<T>> callback, DistributedCacheEntryOptions? options, CancellationToken cancellationToken)
+    private ValueTask<T> GetBufferedBackendAsync<TState>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options, CancellationToken cancellationToken)
     {
         var buffer = new RecyclableArrayBufferWriter<byte>();
         var pendingGet = _bufferBackend!.TryGetAsync(key, buffer, cancellationToken);
 
         if (!pendingGet.IsCompletedSuccessfully)
         {
-            return AwaitedBackend(this, key, callback, options, cancellationToken, buffer, pendingGet);
+            return AwaitedBackend(this, key, state, callback, options, cancellationToken, buffer, pendingGet);
         }
 
         // fast path; backend available immediately
@@ -50,9 +55,9 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
         }
     
         // fall back to main code-path, but without the pending bytes (we've already checked those)
-        return AwaitedBackend(this, key, callback, options, cancellationToken, buffer, default);
+        return AwaitedBackend(this, key, state, callback, options, cancellationToken, buffer, default);
 
-        static async ValueTask<T> AwaitedBackend(DistributedCache<T> @this, string key, Func<ValueTask<T>> callback, DistributedCacheEntryOptions? options,
+        static async ValueTask<T> AwaitedBackend(DistributedCache<T> @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options,
              CancellationToken cancellationToken, RecyclableArrayBufferWriter<byte> buffer, ValueTask<bool> pendingGet)
         {
             using (buffer)
@@ -62,7 +67,7 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
                     return @this._serializer.Deserialize(new(buffer.GetCommittedMemory()));
                 }
 
-                var value = await callback();
+                var value = await callback(state, cancellationToken);
                 if (value is null)
                 {
                     await @this._backend.RemoveAsync(key, cancellationToken);
@@ -79,12 +84,12 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
         }
     }
 
-    private ValueTask<T> GetLegacyBackendAsync(string key, Func<ValueTask<T>> callback, DistributedCacheEntryOptions? options, CancellationToken cancellationToken)
+    private ValueTask<T> GetLegacyBackendAsync<TState>(string key, TState state, Func<TState,  CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options, CancellationToken cancellationToken)
     {
         var pendingBytes = _backend.GetAsync(key, cancellationToken);
         if (!pendingBytes.IsCompletedSuccessfully)
         {
-            return AwaitedBackend(this, key, callback, options, cancellationToken, pendingBytes);
+            return AwaitedBackend(this, key, state, callback, options, cancellationToken, pendingBytes);
         }
 
         // fast path; backend available immediately
@@ -95,9 +100,9 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
         }
 
         // fall back to main code-path, but without the pending bytes (we've already checked those)
-        return AwaitedBackend(this, key, callback, options, cancellationToken, null);
+        return AwaitedBackend(this, key, state, callback, options, cancellationToken, null);
 
-        static async ValueTask<T> AwaitedBackend(DistributedCache<T> @this, string key, Func<ValueTask<T>> callback, DistributedCacheEntryOptions? options,
+        static async ValueTask<T> AwaitedBackend(DistributedCache<T> @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options,
              CancellationToken cancellationToken, Task<byte[]?>? pendingBytes)
         {
             if (pendingBytes is not null)
@@ -109,7 +114,7 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
                 }
             }
 
-            var value = await callback();
+            var value = await callback(state, cancellationToken);
             if (value is null)
             {
                 await @this._backend.RemoveAsync(key, cancellationToken);
