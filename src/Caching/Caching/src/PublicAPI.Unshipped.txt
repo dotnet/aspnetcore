@@ -1,0 +1,12 @@
+#nullable enable
+Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions
+Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>
+Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.Deserialize(System.Buffers.ReadOnlySequence<byte> source) -> T
+Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.Serialize(T value, System.Buffers.IBufferWriter<byte>! target) -> void
+Microsoft.Extensions.Caching.Distributed.IDistributedCache<T>
+Microsoft.Extensions.Caching.Distributed.IDistributedCache<T>.GetAsync(string! key, System.Func<System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
+Microsoft.Extensions.Caching.Distributed.IDistributedCache<T>.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions
+Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions.TypedDistributedCacheOptions() -> void
+static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddTypedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddTypedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

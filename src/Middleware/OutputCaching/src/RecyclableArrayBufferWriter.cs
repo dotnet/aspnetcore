@@ -25,15 +25,17 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
     public RecyclableArrayBufferWriter()
     {
-        _buffer = Array.Empty<T>();
+        _buffer = [];
         _index = 0;
     }
+
+    public void Reset() => _index = 0;
 
     public void Dispose()
     {
         var tmp = _buffer;
         _index = 0;
-        _buffer = Array.Empty<T>();
+        _buffer = [];
         if (tmp.Length != 0)
         {
             ArrayPool<T>.Shared.Return(tmp);
@@ -58,7 +60,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             => throw new ArgumentOutOfRangeException(nameof(count));
     }
 
-    public ReadOnlyMemory<T> GetCommittedMemory() => new ReadOnlyMemory<T>(_buffer, 0, _index); // could also directly expose a ReadOnlySpan<byte> if useful
+    public ReadOnlyMemory<T> GetCommittedMemory() => new(_buffer, 0, _index); // could also directly expose a ReadOnlySpan<byte> if useful
 
     public Memory<T> GetMemory(int sizeHint = 0)
     {

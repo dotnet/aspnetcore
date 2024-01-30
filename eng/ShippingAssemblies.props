@@ -5,6 +5,7 @@
 -->
 <Project>
   <ItemGroup>
+    <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.Distributed" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Cryptography.Internal" />

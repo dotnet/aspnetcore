@@ -39,6 +39,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Features" />
 
     <!-- These assemblies are only in the shared framework -->
+    <AspNetCoreAppReference Include="Microsoft.Extensions.Caching.Distributed" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Antiforgery" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
