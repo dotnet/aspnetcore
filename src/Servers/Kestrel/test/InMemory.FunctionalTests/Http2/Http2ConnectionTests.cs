@@ -3401,6 +3401,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53744")]
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
     {
