@@ -140,8 +140,13 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             _cancellationTokenSource = new CancellationTokenSource();
             _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
             oldCancellationTokenSource?.Cancel();
+            oldCancellationTokenSource?.Dispose();
             if (_hotReloadService is { MetadataUpdateSupported : true })
             {
+                if (_disposable != null)
+                {
+                    _disposable?.Dispose();
+                }
                 _disposable = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
         }
@@ -155,6 +160,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         return _changeToken;
     }
 
+    // NOTE: Safia, I don't think this will ever get called.
     public void Dispose()
     {
         _disposable?.Dispose();

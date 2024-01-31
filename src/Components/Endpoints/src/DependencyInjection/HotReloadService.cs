@@ -32,6 +32,7 @@ internal sealed class HotReloadService : IDisposable
     {
         var current = Interlocked.Exchange(ref _tokenSource, new CancellationTokenSource());
         current.Cancel();
+        current.Dispose();
     }
 
     public void Dispose()
