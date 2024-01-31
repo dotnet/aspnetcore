@@ -40,6 +40,7 @@
       <_AdditionalRepoTaskBuildArgs />
       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeed)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeed $(DotNetRuntimeSourceFeed)</_AdditionalRepoTaskBuildArgs>
       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeedKey)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeedkey $(DotNetRuntimeSourceFeedKey)</_AdditionalRepoTaskBuildArgs>
+      <_AdditionalRepoTaskBuildArgs Condition="'$(RestoreConfigFile)' != ''" >$(_AdditionalRepoTaskBuildArgs) /p:RestoreConfigFile=$(RestoreConfigFile)</_AdditionalRepoTaskBuildArgs>
     </PropertyGroup>
 
     <ItemGroup>
