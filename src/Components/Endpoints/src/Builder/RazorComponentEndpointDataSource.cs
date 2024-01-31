@@ -46,6 +46,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
         _hotReloadService = hotReloadService;
+        HotReloadService.ClearCacheEvent += OnHotReloadClearCache;
         DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
             builder,
@@ -149,6 +150,15 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
                 }
                 _disposable = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
+        }
+    }
+ 
+    public void OnHotReloadClearCache(Type[]? types)
+    {
+        if (_disposable != null)
+        {
+            _disposable?.Dispose();
+            _disposable = null;
         }
     }
 
