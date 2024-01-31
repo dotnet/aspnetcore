@@ -159,11 +159,4 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         Debug.Assert(_endpoints != null);
         return _changeToken;
     }
-
-    // NOTE: Safia, I don't think this will ever get called.
-    public void Dispose()
-    {
-        _disposable?.Dispose();
-        _disposable = null;
-    }
 }
