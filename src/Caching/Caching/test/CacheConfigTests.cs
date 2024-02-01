@@ -104,7 +104,7 @@ public class CacheConfigTests
     }
 }
 
-public class SomeService(IDistributedCache<Foo> cache)
+public class SomeService(IAdvancedDistributedCache cache)
 {
     private int _backendCalls;
     public int BackendCalls => _backendCalls;

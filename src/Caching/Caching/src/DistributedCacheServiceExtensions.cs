@@ -22,7 +22,7 @@ public static class DistributedCacheServiceExtensions
         services.AddDistributedMemoryCache(); // we need a backend; use in-proc by default
         services.TryAddSingleton(typeof(ICacheSerializer<string>), typeof(StringSerializer));
         services.TryAddSingleton(typeof(ICacheSerializer<>), typeof(DefaultJsonSerializer<>));
-        services.AddSingleton(typeof(IDistributedCache<>), typeof(DistributedCache<>));
+        services.AddSingleton(typeof(IAdvancedDistributedCache), typeof(DistributedCache));
         return services;
     }
 }
