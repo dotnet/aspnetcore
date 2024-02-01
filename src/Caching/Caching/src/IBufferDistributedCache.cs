@@ -4,8 +4,13 @@
 using System.Buffers;
 
 namespace Microsoft.Extensions.Caching.Distributed;
-interface IBufferDistributedCache : IDistributedCache
+public interface IBufferDistributedCache : IDistributedCache
 {
     ValueTask<bool> TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken);
     ValueTask SetAsync(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options, CancellationToken cancellationToken);
+}
+
+public interface IDistributedCacheInvalidation : IDistributedCache
+{
+    event Func<string, ValueTask> CacheKeyInvalidated;
 }

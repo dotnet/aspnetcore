@@ -14,5 +14,7 @@ public interface IDistributedCache<T>
     ValueTask<T> GetAsync<TState>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
 
     ValueTask RemoveAsync(string key, CancellationToken cancellationToken = default);
+
+    ValueTask RefreshAsync(string key, CancellationToken cancellationToken = default);
 }
 

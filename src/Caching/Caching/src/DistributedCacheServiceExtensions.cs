@@ -29,5 +29,6 @@ public static class DistributedCacheServiceExtensions
 
 public sealed class TypedDistributedCacheOptions
 {
+    // TBD
 }
 

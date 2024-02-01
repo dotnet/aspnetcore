@@ -36,6 +36,8 @@ internal sealed class DistributedCache<T> : IDistributedCache<T>
 
     }
 
+    ValueTask IDistributedCache<T>.RefreshAsync(string key, CancellationToken cancellationToken) => new(_backend.RefreshAsync(key, cancellationToken));
+
     private ValueTask<T> GetBufferedBackendAsync<TState>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options, CancellationToken cancellationToken)
     {
         var buffer = new RecyclableArrayBufferWriter<byte>();
