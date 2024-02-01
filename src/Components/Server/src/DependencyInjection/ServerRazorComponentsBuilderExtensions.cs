@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -67,7 +66,7 @@ public static class ServerRazorComponentsBuilderExtensions
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
             if (renderMode is InternalServerRenderMode { Options.ConfigureConnectionOptions: { } configureConnection })
             {
-                endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions.ConfigureConnectionOptions);
+                endpointRouteBuilder.MapBlazorHub("/_blazor", configureConnection);
             }
             else
             {

@@ -37,7 +37,8 @@ public class ServerComponentsEndpointOptions
     /// By default, a policy that enables compression and sets a Content Security Policy for the frame ancestors
     /// defined in <see cref="ContentSecurityFrameAncestorPolicy"/> will be applied.
     /// </summary>
-    public Action<HttpConnectionDispatcherOptions>? ConfigureConnectionOptions { get; set; } = EnableCompressionDefaults;
+    public Action<HttpConnectionDispatcherOptions>? ConfigureConnectionOptions { get; set; } =
+        options => options.WebSockets.WebSocketAcceptContextFactory = EnableCompressionDefaults;
 
     private static WebSocketAcceptContext EnableCompressionDefaults(HttpContext context) =>
         new() { DangerousEnableCompression = true };

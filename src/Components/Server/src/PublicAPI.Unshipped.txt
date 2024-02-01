@@ -1,6 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnectionOptions.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>!
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnectionOptions.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnectionOptions.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.get -> string?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.set -> void

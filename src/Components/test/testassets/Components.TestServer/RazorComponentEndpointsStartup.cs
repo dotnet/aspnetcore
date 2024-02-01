@@ -66,14 +66,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
+            _ = app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<TRootComponent>()
+                _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddInteractiveServerRenderMode(options =>
                     {
                         var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
-                        options.EnableWebSocketCompression = config.IsCompressionEnabled;
+                        options.ConfigureConnectionOptions = config.IsCompressionEnabled ?
+                            (opts) => opts.WebSockets.WebSocketAcceptContextFactory = _ => new() { DangerousEnableCompression = true } : null;
                         options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
                         options.ConfigureConnectionOptions = config.ConnectionDispatcherOptions;
                     })
