@@ -327,7 +327,6 @@
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24079.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
       <Sha>23e11f8312f853a3f694c6680c0e3762bdf1d9fd</Sha>
-      <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24079.2">
