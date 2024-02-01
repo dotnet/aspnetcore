@@ -1,5 +1,21 @@
 <Project>
   <PropertyGroup>
     <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <BlazorRoutingEnableRegexConstraint Condition="'$(BlazorRoutingEnableRegexConstraint)' == ''">false</BlazorRoutingEnableRegexConstraint>
   </PropertyGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport"
+      Condition="'$(BlazorRoutingEnableRegexConstraint)' != ''"
+      Value="$(BlazorRoutingEnableRegexConstraint)"
+      Trim="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BlazorRoutingEnableRegexConstraint)' == 'true'">
+      <_Parameter1>Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
