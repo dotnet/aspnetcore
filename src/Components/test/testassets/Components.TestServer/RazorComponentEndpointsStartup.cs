@@ -76,7 +76,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                         options.ConfigureConnectionOptions = config.IsCompressionEnabled ?
                             (opts) => opts.WebSockets.WebSocketAcceptContextFactory = _ => new() { DangerousEnableCompression = true } : null;
                         options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
-                        options.ConfigureConnectionOptions = config.ConnectionDispatcherOptions;
+                        options.ConfigureConnectionOptions = config.ConnectionDispatcherOptions ?? (config.IsCompressionEnabled ?
+                            opts => opts.WebSockets.WebSocketAcceptContextFactory = (context) => new() { DangerousEnableCompression = true } : null);
                     })
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
