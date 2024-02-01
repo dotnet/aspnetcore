@@ -144,10 +144,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             oldCancellationTokenSource?.Dispose();
             if (_hotReloadService is { MetadataUpdateSupported : true })
             {
-                if (_disposable != null)
-                {
-                    _disposable?.Dispose();
-                }
+                _disposable?.Dispose();
                 _disposable = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
         }
@@ -157,11 +154,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     {
         lock (_lock)
         {
-            if (_disposable != null)
-            {
-                _disposable?.Dispose();
-                _disposable = null;
-            }
+            _disposable?.Dispose();
+            _disposable = null;
         }
     }
 
