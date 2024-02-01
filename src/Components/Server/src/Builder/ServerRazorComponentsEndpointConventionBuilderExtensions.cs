@@ -38,7 +38,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
 
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(options));
 
-        if ((options.EnableWebSocketCompression || options.ConfigureConnectionOptions is not null) && options.ContentSecurityFrameAncestorPolicy != null)
+        if (options.ConfigureConnectionOptions is not null && options.ContentSecurityFrameAncestorPolicy != null)
         {
             builder.AddEndpointFilter(new RequireCspFilter(options.ContentSecurityFrameAncestorPolicy));
         }

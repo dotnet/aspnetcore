@@ -65,20 +65,9 @@ public static class ServerRazorComponentsBuilderExtensions
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
-            if (renderMode is InternalServerRenderMode { Options: var configureOptions } &&
-                configureOptions != null)
+            if (renderMode is InternalServerRenderMode { Options.ConfigureConnectionOptions: { } configureConnection })
             {
-                if (configureOptions.ConfigureConnectionOptions != null)
-                {
-                    endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions.ConfigureConnectionOptions);
-                }
-                else if (configureOptions.EnableWebSocketCompression)
-                {
-                    endpointRouteBuilder.MapBlazorHub("/_blazor", options =>
-                    {
-                        options.WebSockets.WebSocketAcceptContextFactory = EnableCompressionDefaults;
-                    });
-                }
+                endpointRouteBuilder.MapBlazorHub("/_blazor", configureOptions.ConfigureConnectionOptions);
             }
             else
             {
@@ -87,9 +76,6 @@ public static class ServerRazorComponentsBuilderExtensions
 
             return endpointRouteBuilder.GetEndpoints();
         }
-
-        private static WebSocketAcceptContext EnableCompressionDefaults(HttpContext context) =>
-            new() { DangerousEnableCompression = true };
 
         public override bool Supports(IComponentRenderMode renderMode)
         {
