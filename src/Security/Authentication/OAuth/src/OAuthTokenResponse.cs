@@ -19,6 +19,7 @@ public class OAuthTokenResponse : IDisposable
     {
         Response = response;
         var root = response.RootElement;
+        IdentityToken = root.GetString("id_token");
         AccessToken = root.GetString("access_token");
         TokenType = root.GetString("token_type");
         RefreshToken = root.GetString("refresh_token");
@@ -61,6 +62,11 @@ public class OAuthTokenResponse : IDisposable
     /// Gets or sets the received JSON payload.
     /// </summary>
     public JsonDocument? Response { get; set; }
+
+    /// <summary>
+    /// Gets or sets the identity token issued by the OAuth provider.
+    /// </summary>
+    public string? IdentityToken { get; set; }
 
     /// <summary>
     /// Gets or sets the access token issued by the OAuth provider.
