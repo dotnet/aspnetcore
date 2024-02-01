@@ -4,7 +4,5 @@ Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.Configure
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnectionOptions.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.get -> string?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.set -> void
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.EnableWebSocketCompression.get -> bool
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.EnableWebSocketCompression.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void
 static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>? callback = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!

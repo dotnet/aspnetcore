@@ -22,7 +22,7 @@ public class ServerComponentsEndpointOptions
     /// </para>
     /// <para>
     /// A content security policy provides defense against security threats that can occur if
-    /// the app uses compression and can be embedded in other origins. When compression is enabled
+    /// the app uses compression and can be embedded in other origins. When compression is enabled,
     /// embedding the app inside an <c>iframe</c> from other origins is prohibited.
     /// </para>
     /// <para>
@@ -37,7 +37,7 @@ public class ServerComponentsEndpointOptions
     /// By default, a policy that enables compression and sets a Content Security Policy for the frame ancestors
     /// defined in <see cref="ContentSecurityFrameAncestorPolicy"/> will be applied.
     /// </summary>
-    public Action<HttpConnectionDispatcherOptions> ConfigureConnectionOptions { get; set; } = EnableCompressionDefaults;
+    public Action<HttpConnectionDispatcherOptions>? ConfigureConnectionOptions { get; set; } = EnableCompressionDefaults;
 
     private static WebSocketAcceptContext EnableCompressionDefaults(HttpContext context) =>
         new() { DangerousEnableCompression = true };

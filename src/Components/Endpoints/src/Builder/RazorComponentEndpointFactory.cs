@@ -76,7 +76,6 @@ internal class RazorComponentEndpointFactory
     {
         if (builder.FilterFactories.Count > 0)
         {
-
             EndpointFilterDelegate del = static async invocationContext =>
             {
                 var httpContext = invocationContext.HttpContext;
@@ -90,8 +89,6 @@ internal class RazorComponentEndpointFactory
                 MethodInfo = typeof(IRazorComponentEndpointInvoker).GetMethod(nameof(IRazorComponentEndpointInvoker.Render))!,
                 ApplicationServices = builder.ApplicationServices,
             };
-
-            var initialFilteredInvocation = del;
 
             for (var i = builder.FilterFactories.Count - 1; i >= 0; i--)
             {

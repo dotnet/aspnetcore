@@ -24,7 +24,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    ///Maps the Blazor <see cref="Hub" /> to the default path.
+    /// Maps the Blazor <see cref="Hub" /> to the default path.
     /// </summary>
     /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
     /// <param name="callback">A callback to configure server endpoint options.</param>
@@ -46,7 +46,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
         return builder;
     }
 
-    private class RequireCspFilter(string policy) : IEndpointFilter
+    private sealed class RequireCspFilter(string policy) : IEndpointFilter
     {
         public ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
         {
