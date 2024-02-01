@@ -28,6 +28,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private List<Endpoint>? _endpoints;
     private CancellationTokenSource _cancellationTokenSource;
     private IChangeToken _changeToken;
+    private IDisposable? _disposable;                   // THREADING: protected by _lock
 
     // Internal for testing.
     internal ComponentApplicationBuilder Builder => _builder;
@@ -45,6 +46,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
         _hotReloadService = hotReloadService;
+        HotReloadService.ClearCacheEvent += OnHotReloadClearCache;
         DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
             builder,
@@ -139,10 +141,21 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             _cancellationTokenSource = new CancellationTokenSource();
             _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
             oldCancellationTokenSource?.Cancel();
+            oldCancellationTokenSource?.Dispose();
             if (_hotReloadService is { MetadataUpdateSupported : true })
             {
-                ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
+                _disposable?.Dispose();
+                _disposable = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
+        }
+    }
+ 
+    public void OnHotReloadClearCache(Type[]? types)
+    {
+        lock (_lock)
+        {
+            _disposable?.Dispose();
+            _disposable = null;
         }
     }
 
