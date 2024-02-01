@@ -28,7 +28,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private List<Endpoint>? _endpoints;
     private CancellationTokenSource _cancellationTokenSource;
     private IChangeToken _changeToken;
-    private IDisposable? _disposable;
+    private IDisposable? _disposable;                   // THREADING: protected by _lock
 
     // Internal for testing.
     internal ComponentApplicationBuilder Builder => _builder;
@@ -155,10 +155,13 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
  
     public void OnHotReloadClearCache(Type[]? types)
     {
-        if (_disposable != null)
+        lock (_lock)
         {
-            _disposable?.Dispose();
-            _disposable = null;
+            if (_disposable != null)
+            {
+                _disposable?.Dispose();
+                _disposable = null;
+            }
         }
     }
 
