@@ -1017,6 +1017,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
         {
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
+            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudience", "http://localhost:5000"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
             new KeyValuePair<string, string>("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
@@ -1036,9 +1037,9 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Equal("dotnet-user-jwts", jwtBearerOptions.TokenValidationParameters.ValidIssuer);
-        Assert.Equal(new[] { "dotnet-user-jwts" }, jwtBearerOptions.TokenValidationParameters.ValidIssuers);
+        Assert.Empty(jwtBearerOptions.TokenValidationParameters.ValidIssuers);
         Assert.Equal("http://localhost:5000", jwtBearerOptions.TokenValidationParameters.ValidAudience);
-        Assert.Equal(new[] { "http://localhost:5000" }, jwtBearerOptions.TokenValidationParameters.ValidAudiences);
+        Assert.Empty(jwtBearerOptions.TokenValidationParameters.ValidAudiences);
         Assert.Equal(TimeSpan.FromSeconds(60), jwtBearerOptions.BackchannelTimeout);
         Assert.False(jwtBearerOptions.RequireHttpsMetadata);
         Assert.True(jwtBearerOptions.SaveToken);
