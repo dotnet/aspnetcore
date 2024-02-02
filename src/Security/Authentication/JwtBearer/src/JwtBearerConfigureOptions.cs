@@ -42,16 +42,8 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
 
         var issuer = configSection[nameof(TokenValidationParameters.ValidIssuer)];
         var issuers = configSection.GetSection(nameof(TokenValidationParameters.ValidIssuers)).GetChildren().Select(iss => iss.Value).ToList();
-        if (issuer is not null)
-        {
-            issuers.Add(issuer);
-        }
         var audience = configSection[nameof(TokenValidationParameters.ValidAudience)];
         var audiences = configSection.GetSection(nameof(TokenValidationParameters.ValidAudiences)).GetChildren().Select(aud => aud.Value).ToList();
-        if (audience is not null)
-        {
-            audiences.Add(audience);
-        }
 
         options.Authority = configSection[nameof(options.Authority)] ?? options.Authority;
         options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
