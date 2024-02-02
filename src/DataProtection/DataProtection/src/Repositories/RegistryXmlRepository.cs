@@ -155,4 +155,22 @@ public class RegistryXmlRepository : IXmlRepository
         // but the window for that should be small enough that we shouldn't have to worry about it.
         RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
     }
+
+    /// <inheritdoc/>
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc/>
+    public virtual void RemoveElements(Func<XElement, bool> shouldRemove)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
+
+        foreach (string valueName in RegistryKey.GetValueNames())
+        {
+            if (shouldRemove(ReadElementFromRegKey(RegistryKey, valueName)!))
+            {
+                _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
+                RegistryKey.DeleteValue(valueName);
+            }
+        }
+    }
 }

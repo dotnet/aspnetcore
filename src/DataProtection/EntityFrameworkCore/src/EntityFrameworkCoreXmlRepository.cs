@@ -79,4 +79,27 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
             context.SaveChanges();
         }
     }
+
+    /// <inheritdoc />
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc />
+    public virtual void RemoveElements(Func<XElement, bool> shouldRemove)
+    {
+        using (var scope = _services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<TContext>();
+            var keys = context.DataProtectionKeys.AsNoTracking().ToList();
+            foreach (var key in keys)
+            {
+                if (shouldRemove(XElement.Parse(key.Xml)))
+                {
+                    context.DataProtectionKeys.Remove(key);
+                    _logger.LogDeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
+                }
+            }
+
+            context.SaveChanges();
+        }
+    }
 }
