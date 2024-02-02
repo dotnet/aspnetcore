@@ -74,4 +74,40 @@ public interface IKeyManager
     /// all existing IKey instances should be discarded, and GetAllKeys should be called again.
     /// </remarks>
     void RevokeAllKeys(DateTimeOffset revocationDate, string? reason = null);
+
+#if NETCOREAPP
+    /// <summary>
+    /// Indicates whether this key manager supports key deletion.
+    /// </summary>
+    /// <remarks>
+    /// Deletion is stronger than revocation.  A revoked key is retained and can even be (forcefully) applied.
+    /// A deleted key is indistinguishable from a key that never existed.
+    /// </remarks>
+    bool CanDeleteKeys => false;
+
+    /// <summary>
+    /// Deletes a specific key and its revocations.
+    /// </summary>
+    /// <param name="keyId">The id of the key to delete.</param>
+    /// <param name="expiredFor">
+    /// Specifies how long ago a key must have expired to be eligible for deletion.
+    /// If no value is supplied, the default is double <see cref="KeyManagementOptions.NewKeyLifetime"/>.
+    /// If a timespan of zero is supplied, the key will be deleted regardless of its expiration status.
+    /// </param>
+    /// <remarks>
+    /// Generally, keys should only be deleted to save space.  If space is not a concern, keys
+    /// should be revoked or allowed to expire instead.
+    /// 
+    /// This method will not mutate existing IKey instances. After calling this method,
+    /// all existing IKey instances should be discarded, and GetAllKeys should be called again.
+    /// </remarks>
+    /// <exception cref="NotSupportedException">
+    /// If <see cref="CanDeleteKeys"/> is false.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// If the key is not found, if the key is expired but not for at least <paramref name="expiredFor"/>,
+    /// or if the key is active and <paramref name="expiredFor"/> is non-zero.
+    /// </exception>
+    void DeleteKey(Guid keyId, TimeSpan? expiredFor = null) => throw new NotSupportedException();
+#endif
 }
