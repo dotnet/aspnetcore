@@ -81,10 +81,15 @@ public class FileSystemXmlRepository : IXmlRepository
         // set of elements. If a file contains well-formed XML but its contents are meaningless, we
         // won't fail that operation here. The caller is responsible for failing as appropriate given
         // that scenario.
-        foreach (var fileSystemInfo in Directory.EnumerateFileSystemInfos("*.xml", SearchOption.TopDirectoryOnly))
+        foreach (var fileSystemInfo in EnumerateFileSystemInfos())
         {
             yield return ReadElementFromFile(fileSystemInfo.FullName);
         }
+    }
+
+    private IEnumerable<FileSystemInfo> EnumerateFileSystemInfos()
+    {
+        return Directory.EnumerateFileSystemInfos("*.xml", SearchOption.TopDirectoryOnly);
     }
 
     private static bool IsSafeFilename(string filename)
@@ -167,6 +172,26 @@ public class FileSystemXmlRepository : IXmlRepository
         finally
         {
             File.Delete(tempFilename); // won't throw if the file doesn't exist
+        }
+    }
+
+    /// <inheritdoc/>
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc/>
+    public virtual void RemoveElements(Func<XElement, bool> shouldRemove)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
+
+        foreach (var fileSystemInfo in EnumerateFileSystemInfos().ToArray()) // ToArray() to avoid modifying the collection while enumerating
+        {
+            var fullPath = fileSystemInfo.FullName;
+            var element = ReadElementFromFile(fullPath);
+            if (shouldRemove(element))
+            {
+                _logger.DeletingFile(fullPath);
+                File.Delete(fullPath);
+            }
         }
     }
 }

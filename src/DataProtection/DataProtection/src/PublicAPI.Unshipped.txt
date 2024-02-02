@@ -3,3 +3,7 @@ Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.CanDeleteKeys.get 
 Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.DeleteKey(System.Guid keyId, System.TimeSpan? expiredFor = null) -> void
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.CanRemoveElements.get -> bool
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, bool>! shouldRemove) -> void
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.CanRemoveElements.get -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, bool>! shouldRemove) -> void
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.CanRemoveElements.get -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, bool>! shouldRemove) -> void
