@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.CanDeleteKeys.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.DeleteKey(System.Guid keyId, System.TimeSpan? expiredFor = null) -> void
