@@ -50,9 +50,10 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
                 // Connection already in group
                 return Task.CompletedTask;
             }
+
+            _groups.Add(connection, groupName);
         }
 
-        _groups.Add(connection, groupName);
         // Connection disconnected while adding to group, remove it in case the Add was called after OnDisconnectedAsync removed items from the group
         if (connection.ConnectionAborted.IsCancellationRequested)
         {
@@ -82,9 +83,9 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
                 // Connection not in group
                 return Task.CompletedTask;
             }
-        }
 
-        _groups.Remove(connectionId, groupName);
+            _groups.Remove(connectionId, groupName);
+        }
 
         return Task.CompletedTask;
     }
