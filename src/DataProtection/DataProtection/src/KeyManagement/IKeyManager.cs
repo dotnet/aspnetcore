@@ -88,11 +88,13 @@ public interface IKeyManager
     /// <summary>
     /// Deletes a specific key and its revocations.
     /// </summary>
-    /// <param name="keyId">The id of the key to delete.</param>
-    /// <param name="expiredFor">
-    /// Specifies how long ago a key must have expired to be eligible for deletion.
-    /// If no value is supplied, the default is double <see cref="KeyManagementOptions.NewKeyLifetime"/>.
-    /// If a timespan of zero is supplied, the key will be deleted regardless of its expiration status.
+    /// <param name="shouldDelete">
+    /// A predicate applied to each expired key (and active key if <paramref name="unsafeIncludeActive"/> is true).
+    /// Returning true will cause the key to be deleted.
+    /// </param>
+    /// <param name="unsafeIncludeActive">
+    /// True indicates that active keys should also be passed to <paramref name="shouldDelete"/>.
+    /// Use with caution as deleting active keys will normally cause data loss.
     /// </param>
     /// <remarks>
     /// Generally, keys should only be deleted to save space.  If space is not a concern, keys
@@ -104,10 +106,6 @@ public interface IKeyManager
     /// <exception cref="NotSupportedException">
     /// If <see cref="CanDeleteKeys"/> is false.
     /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// If the key is not found, if the key is expired but not for at least <paramref name="expiredFor"/>,
-    /// or if the key is active and <paramref name="expiredFor"/> is non-zero.
-    /// </exception>
-    void DeleteKey(Guid keyId, TimeSpan? expiredFor = null) => throw new NotSupportedException();
+    void DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeActive = false) => throw new NotSupportedException();
 #endif
 }
