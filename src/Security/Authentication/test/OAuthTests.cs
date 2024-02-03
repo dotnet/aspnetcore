@@ -44,7 +44,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.AuthorizationEndpoint = "/";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ClientId", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ClientId", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.AuthorizationEndpoint = "/";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ClientSecret", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ClientSecret", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.SignInScheme = "eh";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
                 o.SignInScheme = "eh";
             }));
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
+        await Assert.ThrowsAsync<ArgumentNullException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
     }
 
     [Fact]

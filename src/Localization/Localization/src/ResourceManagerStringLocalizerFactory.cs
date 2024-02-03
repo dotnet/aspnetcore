@@ -77,11 +77,7 @@ public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     {
         ArgumentNullThrowHelper.ThrowIfNull(typeInfo);
         ArgumentThrowHelper.ThrowIfNullOrEmpty(baseNamespace);
-
-        if (string.IsNullOrEmpty(typeInfo.FullName))
-        {
-            throw new ArgumentException(Resources.FormatLocalization_TypeMustHaveTypeName(typeInfo));
-        }
+        ArgumentThrowHelper.ThrowIfNullOrEmpty(typeInfo.FullName);
 
         if (string.IsNullOrEmpty(resourcesRelativePath))
         {

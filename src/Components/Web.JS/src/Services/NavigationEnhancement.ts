@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, notifyEnhancedNavigationListners } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListners, performScrollToElementOnTheSamePage } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -89,8 +89,14 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-    performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+
+    if (shouldScrollToHash) {
+      performScrollToElementOnTheSamePage(absoluteInternalHref);
+    } else {
+      performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+    }
   });
 }
 
