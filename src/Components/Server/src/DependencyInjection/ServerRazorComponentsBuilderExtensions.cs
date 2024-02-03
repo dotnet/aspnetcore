@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -64,13 +67,19 @@ public static class ServerRazorComponentsBuilderExtensions
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
+            var hub = endpointRouteBuilder.MapBlazorHub("/_blazor");
             if (renderMode is InternalServerRenderMode { Options.ConfigureConnectionOptions: { } configureConnection })
             {
-                endpointRouteBuilder.MapBlazorHub("/_blazor", configureConnection);
-            }
-            else
-            {
-                endpointRouteBuilder.MapBlazorHub();
+                hub.AddEndpointFilter(async (context, next) =>
+                {
+                    if (context.HttpContext.WebSockets.IsWebSocketRequest)
+                    {
+                        var currentFeature = context.HttpContext.Features.Get<IHttpWebSocketFeature>();
+
+                        context.HttpContext.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                    }
+                    return await next(context);
+                });
             }
 
             return endpointRouteBuilder.GetEndpoints();
@@ -121,6 +130,17 @@ public static class ServerRazorComponentsBuilderExtensions
                         yield return builder;
                     }
                 }
+            }
+
+        }
+        private sealed class ServerComponentsSocketFeature(IHttpWebSocketFeature originalFeature) : IHttpWebSocketFeature
+        {
+            public bool IsWebSocketRequest => originalFeature.IsWebSocketRequest;
+
+            public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
+            {
+                context.DangerousEnableCompression = true;
+                return originalFeature.AcceptAsync(context);
             }
         }
     }

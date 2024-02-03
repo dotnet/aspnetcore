@@ -76,9 +76,7 @@ public partial class CustomConfigurationCallbackWebSocketCompressionTests : Allo
         serverFixture.UpdateHostServices = services =>
         {
             var configuration = services.GetService<WebSocketCompressionConfiguration>();
-            configuration.ConnectionDispatcherOptions = options =>
-            options.WebSockets.WebSocketAcceptContextFactory = context =>
-                new Http.WebSocketAcceptContext { DangerousEnableCompression = true };
+            configuration.ConnectionDispatcherOptions = context => new() { DangerousEnableCompression = true };
         };
     }
 }

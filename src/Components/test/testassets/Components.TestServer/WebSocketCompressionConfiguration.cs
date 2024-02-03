@@ -11,5 +11,5 @@ public class WebSocketCompressionConfiguration
 
     public string CspPolicy { get; set; } = "'self'";
 
-    public Action<HttpConnectionDispatcherOptions> ConnectionDispatcherOptions { get; set; }
+    public Func<HttpContext, WebSocketAcceptContext> ConnectionDispatcherOptions { get; set; }
 }
