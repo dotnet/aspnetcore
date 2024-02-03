@@ -39,11 +39,10 @@ internal sealed partial class WebSocketsServerTransport : IHttpTransport
         Debug.Assert(context.WebSockets.IsWebSocketRequest, "Not a websocket request");
 
         var subProtocol = _options.SubProtocolSelector?.Invoke(context.WebSockets.WebSocketRequestedProtocols);
-        var acceptContext = _options.WebSocketAcceptContextFactory?.Invoke(context);
 
-        using (var ws = await (acceptContext != null ? context.WebSockets.AcceptWebSocketAsync(acceptContext) : context.WebSockets.AcceptWebSocketAsync(subProtocol)))
+        using (var ws = await context.WebSockets.AcceptWebSocketAsync(subProtocol))
         {
-            Log.SocketOpened(_logger, acceptContext != null ? acceptContext.SubProtocol : subProtocol);
+            Log.SocketOpened(_logger, subProtocol);
 
             try
             {
