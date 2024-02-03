@@ -73,10 +73,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     .AddInteractiveServerRenderMode(options =>
                     {
                         var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
-                        options.ConfigureConnectionOptions = config.IsCompressionEnabled ?
+                        options.ConfigureWebsocketOptions = config.IsCompressionEnabled ?
                             _ => new() { DangerousEnableCompression = true } : null;
                         options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
-                        options.ConfigureConnectionOptions = config.ConnectionDispatcherOptions ?? (config.IsCompressionEnabled ?
+                        options.ConfigureWebsocketOptions = config.ConnectionDispatcherOptions ?? (config.IsCompressionEnabled ?
                             (context) => new() { DangerousEnableCompression = true } : null);
                     })
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");

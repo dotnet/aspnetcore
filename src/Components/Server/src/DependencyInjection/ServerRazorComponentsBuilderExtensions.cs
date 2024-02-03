@@ -68,7 +68,7 @@ public static class ServerRazorComponentsBuilderExtensions
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
             var hub = endpointRouteBuilder.MapBlazorHub("/_blazor");
-            if (renderMode is InternalServerRenderMode { Options.ConfigureConnectionOptions: { } configureConnection })
+            if (renderMode is InternalServerRenderMode { Options.ConfigureWebsocketOptions: { } configureConnection })
             {
                 hub.AddEndpointFilter(async (context, next) =>
                 {

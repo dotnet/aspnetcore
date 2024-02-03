@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Connections;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
@@ -13,7 +12,7 @@ public class ServerComponentsEndpointOptions
 {
     /// <summary>
     /// Gets or sets the <c>frame-ancestors</c> <c>Content-Security-Policy</c> to set in the
-    /// <see cref="HttpResponse"/> when <see cref="ConfigureConnectionOptions" /> is set.
+    /// <see cref="HttpResponse"/> when <see cref="ConfigureWebsocketOptions" /> is set.
     /// </summary>
     /// <remarks>
     /// <para>Setting this value to <see langword="null" /> will prevent the policy from being
@@ -33,11 +32,12 @@ public class ServerComponentsEndpointOptions
     public string? ContentSecurityFrameAncestorPolicy { get; set; } = "'self'";
 
     /// <summary>
-    /// Gets or sets a callback to configure the underlying <see cref="HttpConnectionDispatcherOptions"/>.
+    /// Gets or sets a function to configure the <see cref="WebSocketAcceptContext"/> for the websocket connections
+    /// used by the server components.
     /// By default, a policy that enables compression and sets a Content Security Policy for the frame ancestors
     /// defined in <see cref="ContentSecurityFrameAncestorPolicy"/> will be applied.
     /// </summary>
-    public Func<HttpContext, WebSocketAcceptContext>? ConfigureConnectionOptions { get; set; } = EnableCompressionDefaults;
+    public Func<HttpContext, WebSocketAcceptContext>? ConfigureWebsocketOptions { get; set; } = EnableCompressionDefaults;
 
     private static WebSocketAcceptContext EnableCompressionDefaults(HttpContext context) =>
         new() { DangerousEnableCompression = true };
