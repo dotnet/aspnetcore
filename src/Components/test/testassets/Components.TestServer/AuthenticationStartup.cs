@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace TestServer;
 
@@ -58,10 +60,31 @@ public class AuthenticationStartupBase
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
-                endpoints.MapBlazorHub(options => options.WebSockets.WebSocketAcceptContextFactory = context => new WebSocketAcceptContext { DangerousEnableCompression = true });
+                endpoints.MapBlazorHub()
+                    .AddEndpointFilter(async (context, next) =>
+                    {
+                        if (context.HttpContext.WebSockets.IsWebSocketRequest)
+                        {
+                            var currentFeature = context.HttpContext.Features.Get<IHttpWebSocketFeature>();
+
+                            context.HttpContext.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                        }
+                        return await next(context);
+                    });
                 _configureMode(endpoints);
             });
         });
+    }
+
+    private sealed class ServerComponentsSocketFeature(IHttpWebSocketFeature originalFeature) : IHttpWebSocketFeature
+    {
+        public bool IsWebSocketRequest => originalFeature.IsWebSocketRequest;
+
+        public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
+        {
+            context.DangerousEnableCompression = true;
+            return originalFeature.AcceptAsync(context);
+        }
     }
 }
 

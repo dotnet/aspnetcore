@@ -133,6 +133,7 @@ public static class ServerRazorComponentsBuilderExtensions
             }
 
         }
+
         private sealed class ServerComponentsSocketFeature(IHttpWebSocketFeature originalFeature) : IHttpWebSocketFeature
         {
             public bool IsWebSocketRequest => originalFeature.IsWebSocketRequest;
