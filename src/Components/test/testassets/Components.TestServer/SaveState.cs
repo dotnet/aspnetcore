@@ -40,6 +40,7 @@ public class SaveState
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
         app.UseRouting();
+        app.UseWebSockets();
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapRazorPages();

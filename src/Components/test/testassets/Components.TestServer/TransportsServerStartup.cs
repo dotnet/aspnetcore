@@ -27,6 +27,7 @@ public class TransportsServerStartup : ServerStartup
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseWebSockets();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub()
@@ -64,12 +65,22 @@ public class TransportsServerStartup : ServerStartup
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseWebSockets();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub(configureOptions: options =>
                 {
                     options.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
-                });
+                }).AddEndpointFilter(async (context, next) =>
+                    {
+                        if (context.HttpContext.WebSockets.IsWebSocketRequest)
+                        {
+                            var currentFeature = context.HttpContext.Features.Get<IHttpWebSocketFeature>();
+
+                            context.HttpContext.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                        }
+                        return await next(context);
+                    });
                 endpoints.MapFallbackToPage("/_ServerHost");
             });
         });

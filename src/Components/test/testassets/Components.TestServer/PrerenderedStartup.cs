@@ -46,6 +46,7 @@ public class PrerenderedStartup
             app.UseAuthentication();
 
             app.UseRouting();
+            app.UseWebSockets();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();

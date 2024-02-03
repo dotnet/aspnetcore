@@ -37,6 +37,7 @@ public class DeferredComponentContentStartup
             app.UseAuthentication();
 
             app.UseRouting();
+            app.UseWebSockets();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();

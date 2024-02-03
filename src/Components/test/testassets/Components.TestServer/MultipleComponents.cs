@@ -56,6 +56,7 @@ public class MultipleComponents
             app.UseAuthentication();
 
             app.UseRouting();
+            app.UseWebSockets();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();

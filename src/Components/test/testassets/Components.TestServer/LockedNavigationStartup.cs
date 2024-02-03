@@ -37,6 +37,7 @@ public class LockedNavigationStartup
             app.UseAuthentication();
 
             app.UseRouting();
+            app.UseWebSockets();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
