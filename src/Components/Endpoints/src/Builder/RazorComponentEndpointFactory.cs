@@ -51,6 +51,12 @@ internal class RazorComponentEndpointFactory
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(configuredRenderModesMetadata);
 
+        builder.RequestDelegate = static httpContext =>
+        {
+            var invoker = httpContext.RequestServices.GetRequiredService<IRazorComponentEndpointInvoker>();
+            return invoker.Render(httpContext);
+        };
+
         foreach (var convention in conventions)
         {
             convention(builder);
@@ -67,48 +73,6 @@ internal class RazorComponentEndpointFactory
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
 
-        ApplyEndpointFilters(builder);
-
         endpoints.Add(builder.Build());
-    }
-
-    private static void ApplyEndpointFilters(RouteEndpointBuilder builder)
-    {
-        if (builder.FilterFactories.Count > 0)
-        {
-            EndpointFilterDelegate del = static async invocationContext =>
-            {
-                var httpContext = invocationContext.HttpContext;
-                var invoker = httpContext.RequestServices.GetRequiredService<IRazorComponentEndpointInvoker>();
-                await invoker.Render(httpContext);
-                return null;
-            };
-
-            var context = new EndpointFilterFactoryContext
-            {
-                MethodInfo = typeof(IRazorComponentEndpointInvoker).GetMethod(nameof(IRazorComponentEndpointInvoker.Render))!,
-                ApplicationServices = builder.ApplicationServices,
-            };
-
-            for (var i = builder.FilterFactories.Count - 1; i >= 0; i--)
-            {
-                var filterFactory = builder.FilterFactories[i];
-                del = filterFactory(context, del);
-            }
-
-            builder.RequestDelegate = async context =>
-            {
-                var invocationContext = EndpointFilterInvocationContext.Create(context);
-                await del(invocationContext);
-            };
-        }
-        else
-        {
-            builder.RequestDelegate = static httpContext =>
-            {
-                var invoker = httpContext.RequestServices.GetRequiredService<IRazorComponentEndpointInvoker>();
-                return invoker.Render(httpContext);
-            };
-        }
     }
 }

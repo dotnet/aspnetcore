@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -68,17 +70,39 @@ public static class ServerRazorComponentsBuilderExtensions
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
             var hub = endpointRouteBuilder.MapBlazorHub("/_blazor");
+
             if (renderMode is InternalServerRenderMode { Options.ConfigureWebsocketOptions: { } configureConnection })
             {
-                hub.AddEndpointFilter(async (context, next) =>
+                hub.Finally(c =>
                 {
-                    if (context.HttpContext.WebSockets.IsWebSocketRequest)
+                    for (var i = 0; i < c.Metadata.Count; i++)
                     {
-                        var currentFeature = context.HttpContext.Features.Get<IHttpWebSocketFeature>();
+                        var metadata = c.Metadata[i];
+                        if (metadata is NegotiateMetadata)
+                        {
+                            return;
+                        }
 
-                        context.HttpContext.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                        if (metadata is HubMetadata)
+                        {
+                            var originalDelegate = c.RequestDelegate;
+                            var builder = endpointRouteBuilder.CreateApplicationBuilder();
+                            builder.UseWebSockets();
+                            builder.Use(static (ctx, nxt) =>
+                            {
+                                if (ctx.WebSockets.IsWebSocketRequest)
+                                {
+                                    var currentFeature = ctx.Features.Get<IHttpWebSocketFeature>();
+
+                                    ctx.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                                }
+                                return nxt(ctx);
+                            });
+                            builder.Run(originalDelegate);
+                            c.RequestDelegate = builder.Build();
+                            return;
+                        }
                     }
-                    return await next(context);
                 });
             }
 

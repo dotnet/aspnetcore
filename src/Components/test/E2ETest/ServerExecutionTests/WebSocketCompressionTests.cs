@@ -93,6 +93,7 @@ public partial class CompressionDisabledWebSocketCompressionTests : AllowedWebSo
         {
             var configuration = services.GetService<WebSocketCompressionConfiguration>();
             configuration.IsCompressionEnabled = false;
+            configuration.ConnectionDispatcherOptions = null;
         };
     }
 }

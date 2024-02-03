@@ -75,7 +75,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                         var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
                         options.ConfigureWebsocketOptions = config.IsCompressionEnabled ?
                             _ => new() { DangerousEnableCompression = true } : null;
+
                         options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
+
                         options.ConfigureWebsocketOptions = config.ConnectionDispatcherOptions ?? (config.IsCompressionEnabled ?
                             (context) => new() { DangerousEnableCompression = true } : null);
                     })
