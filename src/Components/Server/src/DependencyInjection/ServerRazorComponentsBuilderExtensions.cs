@@ -63,7 +63,7 @@ public static class ServerRazorComponentsBuilderExtensions
                     throw new InvalidOperationException("Invalid render mode. Use AddInteractiveServerRenderMode() to configure the Server render mode.");
                 }
 
-                return Array.Empty<RouteEndpointBuilder>();
+                return [];
             }
 
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);

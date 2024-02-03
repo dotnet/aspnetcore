@@ -11,5 +11,8 @@ public class WebSocketCompressionConfiguration
 
     public string CspPolicy { get; set; } = "'self'";
 
-    public Func<HttpContext, WebSocketAcceptContext> ConnectionDispatcherOptions { get; set; }
+    public Func<HttpContext, WebSocketAcceptContext> ConnectionDispatcherOptions { get; set; } = (context) => new WebSocketAcceptContext
+    {
+        DangerousEnableCompression = true
+    };
 }

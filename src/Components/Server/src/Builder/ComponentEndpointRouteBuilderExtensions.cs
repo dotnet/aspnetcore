@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
@@ -76,7 +78,26 @@ public static class ComponentEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions);
+        var hubEndpoint = endpoints.MapHub<ComponentHub>(path, configureOptions)
+            .AddEndpointFilter(async (context, next) =>
+            {
+                if (context.HttpContext.WebSockets.IsWebSocketRequest)
+                {
+                    var currentFeature = context.HttpContext.Features.Get<IHttpWebSocketFeature>();
+
+                    context.HttpContext.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                }
+                return await next(context);
+            });
+
+        hubEndpoint.Add(c =>
+        {
+            var originalDelegate = c.RequestDelegate;
+            var builder = endpoints.CreateApplicationBuilder();
+            builder.UseWebSockets();
+            builder.Run(originalDelegate);
+            c.RequestDelegate = builder.Build();
+        });
 
         var disconnectEndpoint = endpoints.Map(
             (path.EndsWith('/') ? path : path + "/") + "disconnect/",
@@ -115,7 +136,7 @@ public static class ComponentEndpointRouteBuilderExtensions
             .WithDisplayName("Blazor static files");
 
         blazorEndpoint.Add((builder) => ((RouteEndpointBuilder)builder).Order = int.MinValue);
-        
+
 #if DEBUG
         // We only need to serve the sourcemap when working on the framework, not in the distributed packages
         endpoints.Map("/_framework/blazor.server.js.map", app.Build())
@@ -124,5 +145,16 @@ public static class ComponentEndpointRouteBuilderExtensions
 #endif
 
         return blazorEndpoint;
+    }
+
+    private sealed class ServerComponentsSocketFeature(IHttpWebSocketFeature originalFeature) : IHttpWebSocketFeature
+    {
+        public bool IsWebSocketRequest => originalFeature.IsWebSocketRequest;
+
+        public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
+        {
+            context.DangerousEnableCompression = true;
+            return originalFeature.AcceptAsync(context);
+        }
     }
 }
