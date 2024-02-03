@@ -53,4 +53,9 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
 </Project>
