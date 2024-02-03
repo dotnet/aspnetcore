@@ -92,10 +92,10 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
             var keys = context.DataProtectionKeys.AsNoTracking().ToList();
             foreach (var key in keys)
             {
-                if (shouldRemove(XElement.Parse(key.Xml)))
+                if (!string.IsNullOrEmpty(key.Xml) && shouldRemove(XElement.Parse(key.Xml)))
                 {
                     context.DataProtectionKeys.Remove(key);
-                    _logger.LogDeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
+                    _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
                 }
             }
 

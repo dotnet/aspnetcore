@@ -255,4 +255,10 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(73, LogLevel.Debug, "Key {KeyId:B} method {MethodName} failed. Retrying.", EventName = "RetryingMethodOfKeyAfterFailure")]
     public static partial void RetryingMethodOfKeyAfterFailure(this ILogger logger, Guid keyId, string methodName, Exception exception);
+	
+    [LoggerMessage(74, LogLevel.Information, "Deleting file '{FileName}'.", EventName = "DeletingFile")]
+    public static partial void DeletingFile(this ILogger logger, string fileName);
+
+    [LoggerMessage(75, LogLevel.Debug, "Deleting registry key '{RegistryKeyName}', value '{Value}'.", EventName = "RemovingDataFromRegistryKeyValue")]
+    public static partial void RemovingDataFromRegistryKeyValue(this ILogger logger, RegistryKey registryKeyName, string value);
 }

@@ -10,4 +10,7 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(2, LogLevel.Debug, "Saving key '{FriendlyName}' to '{DbContext}'.", EventName = "SavingKeyToDbContext")]
     public static partial void LogSavingKeyToDbContext(this ILogger logger, string friendlyName, string dbContext);
+
+    [LoggerMessage(3, LogLevel.Debug, "Deleting key '{FriendlyName}' from '{DbContext}'.", EventName = "DeletingKeyFromDbContext")]
+    public static partial void DeletingKeyFromDbContext(this ILogger logger, string? friendlyName, string dbContext);
 }
