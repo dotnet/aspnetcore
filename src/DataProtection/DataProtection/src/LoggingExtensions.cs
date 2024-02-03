@@ -249,4 +249,10 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(64, LogLevel.Debug, "Not enabling read-only key access because an XML encryptor has been specified", EventName = "NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor")]
     public static partial void NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor(this ILogger logger);
+
+    [LoggerMessage(65, LogLevel.Information, "Deleting file '{FileName}'.", EventName = "DeletingFile")]
+    public static partial void DeletingFile(this ILogger logger, string fileName);
+
+    [LoggerMessage(66, LogLevel.Debug, "Deleting registry key '{RegistryKeyName}', value '{Value}'.", EventName = "RemovingDataFromRegistryKeyValue")]
+    public static partial void RemovingDataFromRegistryKeyValue(this ILogger logger, RegistryKey registryKeyName, string value);
 }
