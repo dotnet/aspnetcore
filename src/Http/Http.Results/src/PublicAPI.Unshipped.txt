@@ -6,5 +6,7 @@ Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.StatusCode.get -> int
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.Value.get -> TValue?
+static Microsoft.AspNetCore.Http.Results.InternalServerError(object? error = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.TypedResults.InternalServerError() -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError!
 static Microsoft.AspNetCore.Http.TypedResults.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>!
