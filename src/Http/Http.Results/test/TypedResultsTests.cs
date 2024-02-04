@@ -1422,6 +1422,30 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
     }
 
+    // [Fact]
+    // public void InternalServerError_WithValue_ResultHasCorrectValues()
+    // {
+    //     // Arrange
+    //     var value = new { };
+
+    //     // Act
+    //     var result = TypedResults.InternalServerError(value);
+
+    //     // Assert
+    //     Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+    //     Assert.Equal(value, result.Value);
+    // }
+
+    // [Fact]
+    // public void InternalServerError_WithNoArgs_ResultHasCorrectValues()
+    // {
+    //     // Act
+    //     var result = TypedResults.InternalServerError();
+
+    //     // Assert
+    //     Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+    // }
+
     [JsonSerializable(typeof(object))]
     private partial class ObjectJsonContext : JsonSerializerContext
     { }
