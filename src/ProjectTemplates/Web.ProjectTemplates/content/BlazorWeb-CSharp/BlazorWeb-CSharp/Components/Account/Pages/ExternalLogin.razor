@@ -48,7 +48,7 @@
     public const string LoginCallbackAction = "LoginCallback";
 
     private string? message;
-    private ExternalLoginInfo externalLoginInfo = default!;
+    private ExternalLoginInfo? externalLoginInfo;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -65,7 +65,7 @@
     [SupplyParameterFromQuery]
     private string? Action { get; set; }
 
-    private string? ProviderDisplayName => externalLoginInfo.ProviderDisplayName;
+    private string? ProviderDisplayName => externalLoginInfo?.ProviderDisplayName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,6 +98,11 @@
 
     private async Task OnLoginCallbackAsync()
     {
+        if (externalLoginInfo is null)
+        {
+            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+        }
+
         // Sign in the user with this external login provider if the user already has a login.
         var result = await SignInManager.ExternalLoginSignInAsync(
             externalLoginInfo.LoginProvider,
@@ -127,6 +132,11 @@
 
     private async Task OnValidSubmitAsync()
     {
+        if (externalLoginInfo is null)
+        {
+            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information during confirmation.", HttpContext);
+        }
+
         var emailStore = GetEmailStore();
         var user = CreateUser();
 

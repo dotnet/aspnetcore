@@ -699,6 +699,63 @@ public class MinimalFormTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task MapPost_WithFormFile_MissingBody_ReturnsBadRequest()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(b => b.MapPost("/", (IFormFile formFile) => "ok").DisableAntiforgery());
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services => services.AddRouting())
+            .Build();
+
+        using var server = host.GetTestServer();
+
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var response = await client.PostAsync("/", null);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapPost_WithFormFile_MissingContentType_ReturnsUnsupportedMediaType()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(b => b.MapPost("/", (IFormFile formFile) => "ok").DisableAntiforgery());
+                    })
+                    .UseTestServer();
+            })
+            .ConfigureServices(services => services.AddRouting())
+            .Build();
+
+        using var server = host.GetTestServer();
+
+        await host.StartAsync();
+        var client = server.CreateClient();
+
+        var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, "/")
+        {
+            Content = new ByteArrayContent([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        });
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+    }
+
     class Todo
     {
         public string Name { get; set; }

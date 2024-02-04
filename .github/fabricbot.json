@@ -2286,11 +2286,55 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "9.0-preview1"
+              "milestoneName": "9.0-preview2"
             }
           }
         ],
         "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch"
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            },
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "release/9.0-preview1"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview1 branch",
+        "actions": [
+          {
+            "name": "removeMilestone",
+            "parameters": {}
+          },
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "9.0-preview1"
+            }
+          }
+        ]
       }
     },
     {
