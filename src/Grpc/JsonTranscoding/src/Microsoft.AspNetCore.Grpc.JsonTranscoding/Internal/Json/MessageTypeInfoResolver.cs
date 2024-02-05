@@ -63,7 +63,7 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
 
     private bool IsStandardMessage(Type type, [NotNullWhen(true)] out MessageDescriptor? messageDescriptor)
     {
-        if (!typeof(IMessage).IsAssignableFrom(type))
+        if (type.IsInterface || !typeof(IMessage).IsAssignableFrom(type))
         {
             messageDescriptor = null;
             return false;
@@ -135,14 +135,26 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
                     throw new InvalidOperationException($"Multiple values specified for oneof {field.RealContainingOneof.Name}.");
                 }
 
-                field.Accessor.SetValue((IMessage)o, v);
+                SetFieldValue(field, (IMessage)o, v);
             };
         }
 
         return (o, v) =>
         {
-            field.Accessor.SetValue((IMessage)o, v);
+            SetFieldValue(field, (IMessage)o, v);
         };
+
+        static void SetFieldValue(FieldDescriptor field, IMessage m, object? v)
+        {
+            if (v != null)
+            {
+                field.Accessor.SetValue(m, v);
+            }
+            else
+            {
+                field.Accessor.Clear(m);
+            }
+        }
     }
 
     private static Dictionary<string, FieldDescriptor> CreateJsonFieldMap(IList<FieldDescriptor> fields)

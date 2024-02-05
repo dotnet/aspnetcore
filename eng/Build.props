@@ -63,10 +63,10 @@
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)"
             Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
-          <BuildInParallel Condition=" '%(Extension)' == '.npmproj' OR '%(Extension)' == '.vcxproj' ">false</BuildInParallel>
-          <RestoreInParallel Condition=" '%(Extension)' == '.npmproj' ">false</RestoreInParallel>
+          <BuildInParallel Condition=" '%(Extension)' == '.nodeproj' OR '%(Extension)' == '.vcxproj' ">false</BuildInParallel>
+          <RestoreInParallel Condition=" '%(Extension)' == '.nodeproj' ">false</RestoreInParallel>
           <!-- Also do not build in parallel w/in npm projects. -->
-          <AdditionalProperties Condition=" '%(Extension)' == '.npmproj' OR '%(Extension)' == '.vcxproj' ">BuildInParallel=false</AdditionalProperties>
+          <AdditionalProperties Condition=" '%(Extension)' == '.nodeproj' OR '%(Extension)' == '.vcxproj' ">BuildInParallel=false</AdditionalProperties>
         </ProjectToBuild>
       </ItemGroup>
     </When>
@@ -124,26 +124,18 @@
         <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
-        <NodeJsProjects Include="
-                          $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
-                          $(RepoRoot)src\SignalR\**\*.npmproj;
-                          $(RepoRoot)src\JSInterop\**\*.npmproj;
-                          "
+        <NodeJsProjects
+          Include="$(RepoRoot)eng\Npm.Workspace.nodeproj;
+                   $(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj;"
                         AdditionalProperties="BuildInParallel=false"
                         BuildInParallel="false"
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
 
+        <ExplicitRequiresDelay Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
+
         <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
-
-        <YarnMSBuildProjects Include="
-                          $(RepoRoot)src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj;
-                          $(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj;
-                          $(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj;
-                          "
-                        Exclude="@(ProjectToExclude)" />
-        <ProjectToExclude Condition=" '$(DotNetBuildFromSource)' == 'true'" Include="@(YarnMSBuildProjects)" />
 
         <JavaProjects Include="$(RepoRoot)src\SignalR\**\*.javaproj"
                       Exclude="@(ProjectToExclude)" />
@@ -253,4 +245,5 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
+
 </Project>

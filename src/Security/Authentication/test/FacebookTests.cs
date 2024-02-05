@@ -50,7 +50,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = "PLACEHOLDER"),
             async context =>
             {
-                await Assert.ThrowsAsync<ArgumentException>("AppId", () => context.ChallengeAsync("Facebook"));
+                await Assert.ThrowsAsync<ArgumentNullException>("AppId", () => context.ChallengeAsync("Facebook"));
                 return true;
             });
         using var server = host.GetTestServer();
@@ -66,7 +66,7 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
             services => services.AddAuthentication().AddFacebook(o => o.AppId = "Whatever"),
             async context =>
             {
-                await Assert.ThrowsAsync<ArgumentException>("AppSecret", () => context.ChallengeAsync("Facebook"));
+                await Assert.ThrowsAsync<ArgumentNullException>("AppSecret", () => context.ChallengeAsync("Facebook"));
                 return true;
             });
         using var server = host.GetTestServer();

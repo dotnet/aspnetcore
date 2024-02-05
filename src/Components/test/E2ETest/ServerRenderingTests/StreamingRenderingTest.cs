@@ -316,4 +316,37 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
             Assert.Matches(new Regex(@"</html><!--[0-9a-f\-]{36}--><blazor-ssr>"), html);
         }
     }
+
+    // https://github.com/dotnet/aspnetcore/issues/52126
+    [Fact]
+    public void CanPerformEnhancedNavigation_AfterStreamingUpdate_WithInteractiveComponentInLayout()
+    {
+        Navigate($"{ServerPathBase}/interactive-in-layout/streaming");
+
+        Browser.Exists(By.Id("done-streaming"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-counter")).Text);
+        Browser.Click(By.Id("increment-counter"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-counter")).Text);
+
+        Browser.Click(By.LinkText("Non-streaming"));
+        Browser.Exists(By.Id("non-streamed-content"));
+
+        Browser.Click(By.Id("increment-counter"));
+        Browser.Equal("2", () => Browser.FindElement(By.Id("count-counter")).Text);
+
+        AssertLogDoesNotContainCriticalMessages("DOMException");
+    }
+
+    private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+    {
+        var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+        foreach (var message in messages)
+        {
+            Assert.DoesNotContain(log, entry =>
+            {
+                return entry.Level == LogLevel.Severe
+                && entry.Message.Contains(message);
+            });
+        }
+    }
 }

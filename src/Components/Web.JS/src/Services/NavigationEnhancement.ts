@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, notifyEnhancedNavigationListners } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListners, performScrollToElementOnTheSamePage } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -30,6 +30,8 @@ However, a single site can use both [1] and [2] on different URLs.
 Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts or vice-versa. This is to ensure we could produce
 different bundles that only contain minimal content.
 */
+
+const acceptHeader = 'text/html; blazor-enhanced-nav=on';
 
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
@@ -87,8 +89,14 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-    performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+
+    if (shouldScrollToHash) {
+      performScrollToElementOnTheSamePage(absoluteInternalHref);
+    } else {
+      performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+    }
   });
 }
 
@@ -116,44 +124,59 @@ function onDocumentSubmit(event: SubmitEvent) {
       return;
     }
 
-    event.preventDefault();
-
-    let url = new URL(formElem.action);
-    const fetchOptions: RequestInit = { method: formElem.method };
-    const formData = new FormData(formElem);
-  
-    const submitter = event.submitter as HTMLButtonElement;
-    if (submitter) {
-      if (submitter.name) {
-        // Replicate the normal behavior of appending the submitter name/value to the form data
-        formData.append(submitter.name, submitter.value);
-      }
-      if (submitter.getAttribute("formaction") !== null) {
-        // Replicate the normal behavior of overriding action attribute of form element
-        url = new URL(submitter.formAction);
-      }
-      if (submitter.formMethod) {
-        // Replicate the normal behavior of overriding method attribute of form element
-        fetchOptions.method = submitter.formMethod;
-      }
+    const method = event.submitter?.getAttribute('formmethod') || formElem.method;
+    if (method === 'dialog') {
+      console.warn('A form cannot be enhanced when its method is "dialog".');
+      return;
     }
 
+    const target = event.submitter?.getAttribute('formtarget') || formElem.target;
+    if (target !== '' && target !== '_self') {
+      console.warn('A form cannot be enhanced when its target is different from the default value "_self".');
+      return;
+    }
+
+    event.preventDefault();
+
+    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI);
+    const fetchOptions: RequestInit = { method: method};
+    const formData = new FormData(formElem);
+
+    const submitterName = event.submitter?.getAttribute('name');
+    const submitterValue = event.submitter!.getAttribute('value');
+    if (submitterName && submitterValue) {
+      formData.append(submitterName, submitterValue);
+    }
+
+    const urlSearchParams = new URLSearchParams(formData as any).toString();
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
-      url.search = new URLSearchParams(formData as any).toString();
+      url.search = urlSearchParams;
 
       // For forms with method=get, we need to push a URL history entry equivalent to how it
       // would be pushed for a native <form method=get> submission. This is also equivalent to
       // how we push a URL history entry before starting enhanced page load on an <a> click.
       history.pushState(null, /* ignored title */ '', url.toString());
     } else {
-      fetchOptions.body = formData;
+      // Setting request body and content-type header depending on enctype
+      const enctype = event.submitter?.getAttribute('formenctype') || formElem.enctype;
+      if (enctype === 'multipart/form-data') {
+        // Content-Type header will be set to 'multipart/form-data'
+        fetchOptions.body = formData;
+      } else {
+        fetchOptions.body = urlSearchParams;
+        fetchOptions.headers = {
+          'content-type': enctype,
+          // Setting Accept header here as well so it wouldn't be lost when coping headers
+          'accept': acceptHeader
+        };
+      }
     }
 
     performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post') {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -172,7 +195,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     headers: {
       // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
       // enhanced nav as a MIME type parameter
-      'accept': 'text/html; blazor-enhanced-nav=on',
+      'accept': acceptHeader,
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
@@ -215,14 +238,17 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
-      if (response.redirected) {
-        if (isGetRequest) {
+      if (response.redirected || treatAsRedirectionFromMethod) {
+        const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
+        if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
           // so that 'back' would go to the page before the redirection
           history.replaceState(null, '', response.url);
         } else {
           // For non-gets, we're still on the source page, so need to append a whole new history entry
-          history.pushState(null, '', response.url);
+          if (response.url !== location.href) {
+            history.pushState(null, '', response.url);
+          }
         }
         internalDestinationHref = response.url;
       }

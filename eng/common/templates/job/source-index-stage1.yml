@@ -1,6 +1,6 @@
 parameters:
   runAsPublic: false
-  sourceIndexPackageVersion: 1.0.1-20230228.2
+  sourceIndexPackageVersion: 1.0.1-20240129.2
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
   preSteps: []
@@ -30,20 +30,20 @@ jobs:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2019.amd64.open
+        demands: ImageOverride -equals windows.vs2022.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
-        demands: ImageOverride -equals windows.vs2019.amd64
+        demands: ImageOverride -equals windows.vs2022.amd64
 
   steps:
   - ${{ each preStep in parameters.preSteps }}:
     - ${{ preStep }}
 
   - task: UseDotNet@2
-    displayName: Use .NET Core SDK 6
+    displayName: Use .NET 8 SDK
     inputs:
       packageType: sdk
-      version: 6.0.x
+      version: 8.0.x
       installationPath: $(Agent.TempDirectory)/dotnet
       workingDirectory: $(Agent.TempDirectory)
 

@@ -62,6 +62,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("True", () => Browser.FindElement(By.Id("button-received-focus-out")).Text);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53724")]
     [Fact]
     public void MouseOverAndMouseOut_CanTrigger()
     {
@@ -201,6 +202,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52783")]
     public void Cancel_CanTrigger()
     {
         Browser.MountTestComponent<DialogEventsComponent>();

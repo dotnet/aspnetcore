@@ -557,6 +557,46 @@ app.MapPost("/todo1", (Todo todo1) => todo1.Id.ToString());
         Assert.Equal(@"Implicit body inferred for parameter ""todo1"" but no body was provided. Did you mean to use a Service instead?", log2.Message);
     }
 
+    [Theory]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return("Hello"));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new Todo { Name = "Hello" }));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(TypedResults.Ok(new Todo { Name = "Hello" })));""")]
+    [InlineData("""app.MapGet("/", () => Microsoft.FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(Microsoft.FSharp.Core.Unit)!));""")]
+    public async Task MapAction_NoParam_FSharpAsyncReturn_NotCoercedToTaskAtCompileTime(string source)
+    {
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            Assert.False(endpointModel.Response.IsAwaitable);
+        });
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody: "{}");
+    }
+
+    [Theory]
+    [InlineData("""app.MapGet("/", () => Task.FromResult(default(Microsoft.FSharp.Core.Unit)!));""")]
+    [InlineData("""app.MapGet("/", () => ValueTask.FromResult(default(Microsoft.FSharp.Core.Unit)!));""")]
+    public async Task MapAction_NoParam_TaskLikeOfUnitReturn_NotConvertedToVoidReturningAtCompileTime(string source)
+    {
+        var (result, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(result, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            Assert.True(endpointModel.Response.IsAwaitable);
+        });
+
+        var httpContext = CreateHttpContext();
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, expectedBody: "null");
+    }
+
     [Fact]
     public async Task SkipsMapWithIncorrectNamespaceAndAssembly()
     {
@@ -626,5 +666,59 @@ namespace Microsoft.AspNetCore.Builder
         // Emits diagnostic and generates source for all endpoints
         var result = Assert.IsType<GeneratorRunResult>(Assert.Single(generatorRunResult.Results));
         Assert.Empty(GetStaticEndpoints(result, GeneratorSteps.EndpointModelStep));
+    }
+
+    [Fact]
+    public async Task TestHandlingOfGenericWithNullableReferenceTypes()
+    {
+        var source = """
+using System;
+using System.Globalization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+namespace TestApp
+{
+    public static class TestMapActions
+    {
+        public static IEndpointRouteBuilder MapTestEndpoints(this IEndpointRouteBuilder app)
+        {
+            app.MapGet("/", (IGenericService<SomeInput, string?> service)
+                => "Maybe? " + service.Get(new SomeInput(Random.Shared.Next())));
+            return app;
+        }
+    }
+
+    public interface IInputConstraint<TOutput>;
+
+    public interface IGenericService<TInput, TOutput> where TInput : IInputConstraint<TOutput>
+    {
+        TOutput Get(TInput input);
+    }
+
+    public record SomeInput(int Value) : IInputConstraint<string?>;
+
+    public class ConcreteService : IGenericService<SomeInput, string?>
+    {
+        public string? Get(SomeInput input) => input.Value % 2 == 0 ? input.Value.ToString(CultureInfo.InvariantCulture) : null;
+    }
+}
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators: new[]
+            {
+                generator
+            },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation,
+            out var _);
+
+        var diagnostics = updatedCompilation.GetDiagnostics();
+        Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
     }
 }

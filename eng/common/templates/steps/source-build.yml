@@ -105,7 +105,7 @@ steps:
     Contents: |
       **/*.log
       **/*.binlog
-      artifacts/source-build/self/prebuilt-report/**
+      artifacts/sb/prebuilt-report/**
     TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
     CleanTargetFolder: true
   continueOnError: true
@@ -126,4 +126,4 @@ steps:
 - task: ComponentGovernanceComponentDetection@0
   displayName: Component Detection (Exclude upstream cache)
   inputs:
-    ignoreDirectories: '$(Build.SourcesDirectory)/artifacts/source-build/self/src/artifacts/obj/source-built-upstream-cache'
+    ignoreDirectories: '$(Build.SourcesDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'

@@ -1,0 +1,61 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+package response_body;
+
+import "google/api/annotations.proto";
+
+// Add go_package to keep protoc happy when testing generating OpenAPI from commandline.
+option go_package = "github.com/dotnet/aspnetcore/swagger";
+
+// HttpRule: https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#google.api.HttpRule
+
+service ResponseBody {
+  rpc DemoBodyOne (Request) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/responsebody1",
+      response_body: "message"
+    };
+  }
+  rpc DemoBodyTwo (Request) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/responsebody2",
+      response_body: "messages"
+    };
+  }
+  rpc DemoBodyThree (Request) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/responsebody3",
+      response_body: "enum"
+    };
+  }
+  rpc DemoBodyFour (Request) returns (BodyParamResponse) {
+    option (google.api.http) = {
+      post: "/v1/responsebody4",
+      response_body: "nested_message"
+    };
+  }
+}
+
+message Request {
+}
+
+message BodyParamResponse {
+  string message = 1;
+  repeated string messages = 2;
+  EnumWithoutMessage enum = 3;
+  BodyMessage nested_message = 4;
+}
+
+message BodyMessage {
+}
+
+enum EnumWithoutMessage {
+  ENUM_WITHOUT_MESSAGE_UNSPECIFIED = 0;
+  ENUM_WITHOUT_MESSAGE_FOO = 1;
+  ENUM_WITHOUT_MESSAGE_BAR = 2;
+  ENUM_WITHOUT_MESSAGE_BAZ = 3;
+  ENUM_WITHOUT_MESSAGE_NEG = -1;  // Intentionally negative.
+}

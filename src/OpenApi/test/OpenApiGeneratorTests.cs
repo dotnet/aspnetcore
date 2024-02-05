@@ -156,6 +156,12 @@ public class OpenApiOperationGeneratorTests
 
         AssertJsonResponse(GetOpenApiOperation(() => new InferredJsonClass()), "object");
         AssertJsonResponse(GetOpenApiOperation(() => (IInferredJsonInterface)null), "object");
+        AssertJsonResponse(GetOpenApiOperation(() => Task.FromResult(new InferredJsonClass())), "object");
+        AssertJsonResponse(GetOpenApiOperation(() => Task.FromResult((IInferredJsonInterface)null)), "object");
+        AssertJsonResponse(GetOpenApiOperation(() => ValueTask.FromResult(new InferredJsonClass())), "object");
+        AssertJsonResponse(GetOpenApiOperation(() => ValueTask.FromResult((IInferredJsonInterface)null)), "object");
+        AssertJsonResponse(GetOpenApiOperation(() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new InferredJsonClass())), "object");
+        AssertJsonResponse(GetOpenApiOperation(() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return((IInferredJsonInterface)null)), "object");
     }
 
     [Fact]
@@ -181,7 +187,10 @@ public class OpenApiOperationGeneratorTests
 
         AssertVoid(GetOpenApiOperation(() => { }));
         AssertVoid(GetOpenApiOperation(() => Task.CompletedTask));
+        AssertVoid(GetOpenApiOperation(() => Task.FromResult(default(FSharp.Core.Unit))));
         AssertVoid(GetOpenApiOperation(() => new ValueTask()));
+        AssertVoid(GetOpenApiOperation(() => ValueTask.FromResult(default(FSharp.Core.Unit))));
+        AssertVoid(GetOpenApiOperation(() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(FSharp.Core.Unit))));
     }
 
     [Fact]

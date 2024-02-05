@@ -3,8 +3,6 @@
 
 <UsageData>
   <IgnorePatterns>
-    <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
-
     <!-- These are used in-build for repo-tasks and should come from previously source built -->
     <UsagePattern IdentityGlob="NuGet.Common/*6.2.4*" />
     <UsagePattern IdentityGlob="NuGet.Configuration/*6.2.4*" />

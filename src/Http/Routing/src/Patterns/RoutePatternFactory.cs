@@ -727,10 +727,7 @@ internal static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternLiteralPart"/>.</returns>
     public static RoutePatternLiteralPart LiteralPart(string content)
     {
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(content);
 
         if (content.Contains('?'))
         {
@@ -753,10 +750,7 @@ internal static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternSeparatorPart"/>.</returns>
     public static RoutePatternSeparatorPart SeparatorPart(string content)
     {
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(content);
 
         return SeparatorPartCore(content);
     }
@@ -774,10 +768,7 @@ internal static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
     public static RoutePatternParameterPart ParameterPart(string parameterName)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -800,10 +791,7 @@ internal static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
     public static RoutePatternParameterPart ParameterPart(string parameterName, object @default)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -830,10 +818,7 @@ internal static class RoutePatternFactory
         object? @default,
         RoutePatternParameterKind parameterKind)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -867,10 +852,7 @@ internal static class RoutePatternFactory
         RoutePatternParameterKind parameterKind,
         IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -906,10 +888,7 @@ internal static class RoutePatternFactory
         RoutePatternParameterKind parameterKind,
         params RoutePatternParameterPolicyReference[] parameterPolicies)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -1008,10 +987,7 @@ internal static class RoutePatternFactory
 #endif
     public static RoutePatternParameterPolicyReference Constraint(string constraint)
     {
-        if (string.IsNullOrEmpty(constraint))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(constraint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(constraint);
 
         return ParameterPolicyCore(constraint);
     }
@@ -1041,10 +1017,7 @@ internal static class RoutePatternFactory
 #endif
     public static RoutePatternParameterPolicyReference ParameterPolicy(string parameterPolicy)
     {
-        if (string.IsNullOrEmpty(parameterPolicy))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterPolicy));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterPolicy);
 
         return ParameterPolicyCore(parameterPolicy);
     }

@@ -120,7 +120,7 @@
   -->
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
-        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+        Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>

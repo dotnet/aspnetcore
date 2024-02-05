@@ -58,7 +58,7 @@ export class RenderQueue {
     return this.nextBatchId - 1;
   }
 
-  private async completeBatch(connection: signalR.HubConnection, batchId: number): Promise<void> {
+  private async completeBatch(connection: HubConnection, batchId: number): Promise<void> {
     try {
       await connection.send('OnRenderCompleted', batchId, null);
     } catch {

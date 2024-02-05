@@ -47,6 +47,25 @@ export function isWithinBaseUriSpace(href: string) {
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
 }
 
+export function isSamePageWithHash(absoluteHref: string): boolean {
+  const url = new URL(absoluteHref);
+  return url.hash !== '' && location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
+}
+
+export function performScrollToElementOnTheSamePage(absoluteHref : string): void {
+  const hashIndex = absoluteHref.indexOf('#');
+  if (hashIndex === absoluteHref.length - 1) {
+    return;
+  }
+
+  const identifier = absoluteHref.substring(hashIndex + 1);
+  scrollToElement(identifier);
+}
+
+export function scrollToElement(identifier: string): void {
+  document.getElementById(identifier)?.scrollIntoView();
+}
+
 export function attachEnhancedNavigationListener(listener: typeof enhancedNavigationListener) {
   enhancedNavigationListener = listener;
 }
@@ -103,8 +122,8 @@ function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | SVGAElement | 
       if (candidate instanceof HTMLAnchorElement || candidate instanceof SVGAElement) {
         return candidate;
       }
-    } 
-  } 
+    }
+  }
   return null;
 }
 

@@ -23,7 +23,10 @@ Typically, we will update the Major Version before updating the TFM. This is bec
     * The result of `.\eng\scripts\mark-shipped.cmd` should be checked in to the release branch as well, as part of the RTM release.
 * Update `.\eng\Baseline.xml` to reflect the set of RTM packages that were just shipped. Then, `dotnet run` `.\eng\tools\BaselineGenerator\BaselineGenerator.csproj`, which will update `.\eng\Baseline.Designer.props`. If RTM hasn't shipped yet, do this in a separate PR once it has.
 * Update `.\eng\PlatformManifest.txt` and `.\eng\PackageOverrides.txt`. Download the just released RTM version of the `Microsoft.AspNetCore.App.Ref` package, and copy over the files from the `data` folder. This can be done in the same PR as the one updating `.\eng\Baseline.xml` and `.\eng\Baseline.Designer.props` (see https://github.com/dotnet/aspnetcore/pull/49269).
-* Update [helix-matrix.yml](https://github.com/dotnet/aspnetcore/blob/436556163a671259c8b14ae1c90d72767af62d18/.azure/pipelines/helix-matrix.yml#L12-L16) to list the currently active release branches
+* Update [helix-matrix.yml](https://github.com/dotnet/aspnetcore/blob/436556163a671259c8b14ae1c90d72767af62d18/.azure/pipelines/helix-matrix.yml#L12-L16) to list the currently active release branches.
+    * This should be done in `main` as well as the relevant release branch.
+* Update [dependabot.yml](https://github.com/dotnet/aspnetcore/blob/b43884c1b21ea71e91c539721a75e5c96b8c1263/.github/dependabot.yml#L74-L85) to list the currently active release branches for submodule updates.
+    * This only needs to be done in `main`.
 
 ### Validation
 

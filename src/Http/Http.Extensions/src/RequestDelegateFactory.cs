@@ -507,34 +507,45 @@ public static partial class RequestDelegateFactory
         {
             return Expression.Block(methodCall, EmptyHttpResultValueTaskExpr);
         }
-        else if (returnType == typeof(Task))
+        else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
+            {
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
+                methodCall = Expression.Invoke(coercerExpression, methodCall);
+            }
+
+            if (returnType == typeof(Task))
+            {
+                return Expression.Call(ExecuteTaskWithEmptyResultMethod, methodCall);
+            }
+            else if (returnType == typeof(ValueTask))
+            {
+                return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
+            }
+            else if (returnType == typeof(ValueTask<object?>))
+            {
+                return methodCall;
+            }
+            else if (returnType.IsGenericType &&
+                         returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+            {
+                var typeArg = coercedAwaitableInfo.AwaitableInfo.ResultType;
+                return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            }
+            else if (returnType.IsGenericType &&
+                        returnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var typeArg = coercedAwaitableInfo.AwaitableInfo.ResultType;
+                return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
+            }
         }
-        else if (returnType == typeof(ValueTask))
-        {
-            return Expression.Call(ExecuteValueTaskWithEmptyResultMethod, methodCall);
-        }
-        else if (returnType == typeof(ValueTask<object?>))
-        {
-            return methodCall;
-        }
-        else if (returnType.IsGenericType &&
-                     returnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
-        {
-            var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(ValueTaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
-        }
-        else if (returnType.IsGenericType &&
-                    returnType.GetGenericTypeDefinition() == typeof(Task<>))
-        {
-            var typeArg = returnType.GetGenericArguments()[0];
-            return Expression.Call(TaskOfTToValueTaskOfObjectMethod.MakeGenericMethod(typeArg), methodCall);
-        }
-        else
-        {
-            return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
-        }
+
+        return Expression.Call(WrapObjectAsValueTaskMethod, methodCall);
     }
 
     private static ValueTask<object?> ValueTaskOfTToValueTaskOfObject<T>(ValueTask<T> valueTask)
@@ -777,6 +788,10 @@ public static partial class RequestDelegateFactory
         }
         else if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } keyedServicesAttribute)
         {
+            if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
+            {
+                throw new InvalidOperationException($"Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services.");
+            }
             var key = keyedServicesAttribute.Key;
             return BindParameterFromKeyedService(parameter, key, factoryContext);
         }
@@ -994,22 +1009,9 @@ public static partial class RequestDelegateFactory
             throw GetUnsupportedReturnTypeException(returnType);
         }
 
-        if (returnType == typeof(Task) || returnType == typeof(ValueTask))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            returnType = typeof(void);
-        }
-        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
-        {
-            var genericTypeDefinition = returnType.IsGenericType ? returnType.GetGenericTypeDefinition() : null;
-
-            if (genericTypeDefinition == typeof(Task<>) || genericTypeDefinition == typeof(ValueTask<>))
-            {
-                returnType = returnType.GetGenericArguments()[0];
-            }
-            else
-            {
-                throw GetUnsupportedReturnTypeException(returnType);
-            }
+            returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         // Skip void returns and IResults. IResults might implement IEndpointMetadataProvider but otherwise we don't know what it might do.
@@ -1057,8 +1059,18 @@ public static partial class RequestDelegateFactory
                 HttpContextExpr,
                 Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
         }
-        else if (AwaitableInfo.IsTypeAwaitable(returnType, out _))
+        else if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
+            if (coercedAwaitableInfo.CoercerResultType is { } coercedType)
+            {
+                returnType = coercedType;
+            }
+
+            if (coercedAwaitableInfo.CoercerExpression is { } coercerExpression)
+            {
+                methodCall = Expression.Invoke(coercerExpression, methodCall);
+            }
+
             if (returnType == typeof(Task))
             {
                 return methodCall;
@@ -1088,6 +1100,14 @@ public static partial class RequestDelegateFactory
                         ExecuteTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {
@@ -1128,6 +1148,14 @@ public static partial class RequestDelegateFactory
                         ExecuteValueTaskOfStringMethod,
                         methodCall,
                         HttpContextExpr);
+                }
+                else if (typeArg == typeof(object))
+                {
+                    return Expression.Call(
+                        ExecuteValueTaskOfObjectMethod,
+                        methodCall,
+                        HttpContextExpr,
+                        Expression.Constant(factoryContext.JsonSerializerOptions.GetReadOnlyTypeInfo(typeof(object)), typeof(JsonTypeInfo<object>)));
                 }
                 else
                 {
@@ -1447,44 +1475,48 @@ public static partial class RequestDelegateFactory
             object? formValue = null;
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
-            if (feature?.CanHaveBody == true)
+            if (feature?.CanHaveBody == false)
             {
-                if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
-                {
-                    Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
+                Log.UnexpectedRequestWithoutBody(httpContext, parameterTypeName, parameterName, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
 
-                if (!httpContext.Request.HasFormContentType)
-                {
-                    Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (null, false);
-                }
+            if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
 
-                try
-                {
-                    formValue = await httpContext.Request.ReadFormAsync();
-                }
-                catch (BadHttpRequestException ex)
-                {
-                    Log.RequestBodyIOException(httpContext, ex);
-                    httpContext.Response.StatusCode = ex.StatusCode;
-                    return (null, false);
-                }
-                catch (IOException ex)
-                {
-                    Log.RequestBodyIOException(httpContext, ex);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
-                catch (InvalidDataException ex)
-                {
-                    Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
+            if (!httpContext.Request.HasFormContentType)
+            {
+                Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                return (null, false);
+            }
+
+            try
+            {
+                formValue = await httpContext.Request.ReadFormAsync();
+            }
+            catch (BadHttpRequestException ex)
+            {
+                Log.RequestBodyIOException(httpContext, ex);
+                httpContext.Response.StatusCode = ex.StatusCode;
+                return (null, false);
+            }
+            catch (IOException ex)
+            {
+                Log.RequestBodyIOException(httpContext, ex);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
+            catch (InvalidDataException ex)
+            {
+                Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
             }
 
             return (formValue, true);
@@ -2710,6 +2742,20 @@ public static partial class RequestDelegateFactory
 
         [LoggerMessage(RequestDelegateCreationLogging.FormDataMappingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.FormDataMappingFailedLogMessage, EventName = RequestDelegateCreationLogging.FormDataMappingFailedEventName)]
         private static partial void FormDataMappingFailed(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void UnexpectedRequestWithoutBody(HttpContext httpContext, string parameterTypeName, string parameterName, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyExceptionMessage, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message);
+            }
+
+            UnexpectedRequestWithoutBody(GetLogger(httpContext), parameterTypeName, parameterName);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventName)]
+        private static partial void UnexpectedRequestWithoutBody(ILogger logger, string parameterType, string parameterName);
 
         private static ILogger GetLogger(HttpContext httpContext)
         {

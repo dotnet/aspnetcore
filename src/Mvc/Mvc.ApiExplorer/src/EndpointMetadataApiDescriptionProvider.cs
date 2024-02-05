@@ -326,9 +326,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
     {
         var responseType = returnType;
 
-        if (AwaitableInfo.IsTypeAwaitable(responseType, out var awaitableInfo))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(responseType, out var coercedAwaitableInfo))
         {
-            responseType = awaitableInfo.ResultType;
+            responseType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         // Can't determine anything about IResults yet that's not from extra metadata. IResult<T> could help here.

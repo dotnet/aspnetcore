@@ -51,7 +51,7 @@ The steps you follow next depend on your preferred development environment:
 
 ## Visual Studio on Windows
 
-1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/). [Yarn](https://yarnpkg.com/) version 1.x will be installed automatically using `npm`, if you have already installed it with a version >= 2.x then you may have to uninstall it as it is not compatible with the aspnetcore build script.
+1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/).
 
 1. Before you open project in Visual Studio, install the required dependencies and set up the repo by running the `restore.cmd` script in the root of the repo:
 
@@ -89,7 +89,7 @@ The steps you follow next depend on your preferred development environment:
 
 1. To use Visual Studio Code for developing in this repo, you need [Visual Studio Code installed](https://code.visualstudio.com/) and the ability to [launch `code` from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 
-1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/). [Yarn](https://yarnpkg.com/) version 1.x will be installed automatically using `npm`, if you have already installed it with a version >= 2.x then you may have to uninstall it as it is not compatible with the aspnetcore build script.
+1. This repo has JavaScript dependencies, so you need [Node.js](https://nodejs.org/en/).
 
 1. Before you open anything in Visual Studio Code, run the `restore` script in the root of the repo to install the required .NET dependencies.
 
@@ -235,5 +235,4 @@ To support building and testing the projects in the repo, several dependencies m
 | [Chrome](https://www.google.com/chrome/)                     | Required when running tests with Selenium or Playwright in the projects above. When using Playwright, the dependency is automatically installed.              |                                                                                                                                                     |
 | [Java Development Kit (v11 or newer)](https://jdk.java.net/) | Required when building the Java SignalR client. Can be installed using the `./eng/scripts/InstallJdk.ps1` script on Windows.                                  | Ensure that the `JAVA_HOME` directory points to the installation and that the `PATH` has been updated to include the `$(jdkInstallDir)/bin` folder. |
 | [Wix](https://wixtoolset.org/releases/)                      | Required when working with the Windows installers in the [Windows installers project](https://github.com/dotnet/aspnetcore/tree/main/src/Installers/Windows). |                                                                                                                                                     |
-| [Node.js](https://nodejs.org/en/)                             | Used for building JavaScript assets in the repo, such as those in Blazor and SignalR.                                                                         | Required a minimum version of the current NodeJS LTS.                                                                                               |
-| [Yarn](https://yarnpkg.com/)                                 | Used for installing JavaScript dependencies in the repo, such as those in Blazor and SignalR.                                                                 |                                                                                                                                                     |
+| [Node.js](https://nodejs.org/en/)                            | Used for building JavaScript assets in the repo, such as those in Blazor and SignalR.                                                                         | Required a minimum version of the current NodeJS LTS.                                                                                               |

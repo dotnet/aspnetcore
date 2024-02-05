@@ -17,7 +17,7 @@ import { getNextChunk } from './StreamingInterop';
 import { RootComponentsFunctions } from './Rendering/JSRootComponents';
 import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods';
 import { WebStartOptions } from './Platform/WebStartOptions';
-import { RuntimeAPI } from 'dotnet';
+import { RuntimeAPI } from 'dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
@@ -52,7 +52,6 @@ export interface IBlazor {
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile;
     NavigationLock: typeof NavigationLock;
-    invokeJSFromDotNet?: (callInfo: Pointer, arg0: any, arg1: any, arg2: any) => any;
     invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number) => string | null;
     endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
     receiveByteArray?: (id: number, data: Uint8Array) => void;
@@ -79,7 +78,6 @@ export interface IBlazor {
     receiveWebAssemblyDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     receiveWebViewDotNetDataStream?: (streamId: number, data: any, bytesRead: number, errorMessage: string) => void;
     attachWebRendererInterop?: typeof attachWebRendererInterop;
-    loadWebAssemblyQuicklyTimeout?: number;
 
     // JSExport APIs
     dotNetExports?: {

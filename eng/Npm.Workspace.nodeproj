@@ -1,0 +1,42 @@
+<Project>
+
+  <!-- Import Directory.Build.Props -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <IsTestProject>true</IsTestProject>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
+    <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
+    <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+  </PropertyGroup>
+
+  <Target Name="Restore">
+    <Message Text="Restoring NPM packages..." Importance="high" />
+    <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Build">
+    <Message Text="Building NPM packages..." Importance="high" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="_Test" BeforeTargets="Test">
+    <Message Text="Testing NPM packages..." Importance="high" />
+    <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Pack">
+    <Message Text="Packing NPM packages..." Importance="high" />
+    <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts\pack-workspace.js $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath)" />
+  </Target>
+
+  <!-- Import Directory.Build.targets -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.targets" />
+
+</Project>

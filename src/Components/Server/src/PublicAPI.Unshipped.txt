@@ -1,1 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebsocketOptions.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!>?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebsocketOptions.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.get -> string?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void
+static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>? callback = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!

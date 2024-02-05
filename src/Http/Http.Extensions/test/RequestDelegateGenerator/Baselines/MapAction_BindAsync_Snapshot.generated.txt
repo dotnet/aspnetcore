@@ -158,13 +158,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord? arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 27, 5)]
@@ -253,13 +255,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncRecord? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 28, 5)]
@@ -350,13 +354,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 29, 5)]
@@ -445,13 +451,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncStruct? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 30, 5)]
@@ -554,13 +562,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 31, 5)]
@@ -649,13 +659,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MyNullableBindAsyncStruct? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 32, 5)]
@@ -746,13 +758,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 33, 5)]
@@ -841,13 +855,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBothBindAsyncStruct? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 34, 5)]
@@ -949,13 +965,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord? arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 35, 5)]
@@ -1043,13 +1061,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncRecord? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 36, 5)]
@@ -1139,13 +1159,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 37, 5)]
@@ -1233,13 +1255,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MySimpleBindAsyncStruct? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 38, 5)]
@@ -1342,13 +1366,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 39, 5)]
@@ -1437,13 +1463,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromImplicitStaticAbstractInterface? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 40, 5)]
@@ -1545,13 +1573,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync? arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 41, 5)]
@@ -1639,13 +1669,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.InheritBindAsync? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 42, 5)]
@@ -1748,13 +1780,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 43, 5)]
@@ -1843,13 +1877,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.BindAsyncFromExplicitStaticAbstractInterface? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 44, 5)]
@@ -1951,13 +1987,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord? arg1) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
@@ -2045,13 +2083,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.MyBindAsyncFromInterfaceRecord? arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
 
@@ -2062,9 +2102,10 @@ namespace Microsoft.AspNetCore.Http.Generated
             Delegate handler,
             IEnumerable<string>? httpMethods,
             MetadataPopulator populateMetadata,
-            RequestDelegateFactoryFunc createRequestDelegate)
+            RequestDelegateFactoryFunc createRequestDelegate,
+            MethodInfo methodInfo)
         {
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate, methodInfo);
         }
 
         private static T Cast<T>(Delegate d, T _) where T : Delegate

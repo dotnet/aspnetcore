@@ -23,10 +23,8 @@
   "symbols/iisHttpsPort/description": "Numero di porta da usare per l'endpoint HTTPS IIS Express in launchSettings.json. Questa opzione è applicabile solo quando il parametro no-https non viene usato (no-https verrà ignorato se si usa IndividualB2C o OrganizationalAuth).",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS. Questa opzione si applica solo se IndividualB2C, SingleOrg o MultiOrg non vengono usati per --auth.",
   "symbols/UseLocalDB/description": "Indica se usare LocalDB invece di SQLite. Questa opzione si applica solo se è specificato --auth Individual o --auth IndividualB2C.",
-  "symbols/UseMinimalAPIs/description": "Indica se usare API minime anziché controller.",
-  "symbols/UseControllers/description": "Indica se usare i controller anziché le API minime. Questa opzione sostituisce il valore specificato da --minimal.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net8.0/description": "Destinazione net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/CalledApiUrl/description": "URL dell'API da chiamare dall'app Web. Questa opzione si applica solo se è specificato --auth SingleOrg o --auth IndividualB2C.",
   "symbols/CallsMicrosoftGraph/description": "Specifica se l'app Web chiama Microsoft Graph. Questa opzione si applica solo se è specificato --auth SingleOrg.",
@@ -34,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "Disabilita il supporto di OpenAPI (Swagger)",
   "symbols/UseProgramMain/displayName": "Non usare_istruzioni di primo livello",
   "symbols/UseProgramMain/description": "Indica se generare una classe Program esplicita e un metodo Main anziché istruzioni di primo livello.",
+  "symbols/UseMinimalAPIs/description": "Indica se usare API minime anziché controller.",
+  "symbols/UseControllers/description": "Indica se usare i controller anziché le API minime. Questa opzione sostituisce il valore specificato da --minimal.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'"
 }

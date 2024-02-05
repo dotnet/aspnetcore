@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -35,6 +36,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
+        services.AddSingleton<WebSocketCompressionConfiguration>();
+
+        var circuitContextAccessor = new TestCircuitContextAccessor();
+        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
+        services.AddSingleton(circuitContextAccessor);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,11 +66,21 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
+            _ = app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<TRootComponent>()
+                _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode()
+                    .AddInteractiveServerRenderMode(options =>
+                    {
+                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                        options.ConfigureWebsocketOptions = config.IsCompressionEnabled ?
+                            _ => new() { DangerousEnableCompression = true } : null;
+
+                        options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
+
+                        options.ConfigureWebsocketOptions = config.ConnectionDispatcherOptions ?? (config.IsCompressionEnabled ?
+                            (context) => new() { DangerousEnableCompression = true } : null);
+                    })
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);

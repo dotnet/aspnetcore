@@ -2,24 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 /* eslint-disable array-element-newline */
-import { DotNet } from '@microsoft/dotnet-js-interop';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Blazor } from './GlobalExports';
 import * as Environment from './Environment';
-import { BINDING, monoPlatform, dispatcher, getInitializer } from './Platform/Mono/MonoPlatform';
+import { monoPlatform, dispatcher, getInitializer } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
-import { PlatformApi, Pointer } from './Platform/Platform';
+import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 import { WebAssemblyComponentDescriptor, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
-import { MonoConfig } from 'dotnet';
+import { MonoConfig } from 'dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 
 let options: Partial<WebAssemblyStartOptions> | undefined;
-let initializersPromise: Promise<void>;
 let platformLoadPromise: Promise<void> | undefined;
 let loadedWebAssemblyPlatform = false;
 let started = false;
@@ -43,7 +42,7 @@ export function resolveInitialUpdate(value: string): void {
 }
 
 let resolveInitializersPromise: (value: void) => void;
-initializersPromise = new Promise<void>(resolve => {
+const initializersPromise = new Promise<void>(resolve => {
   resolveInitializersPromise = resolve;
 });
 
@@ -105,7 +104,6 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
 
   // Configure JS interop
-  Blazor._internal.invokeJSFromDotNet = invokeJSFromDotNet;
   Blazor._internal.invokeJSJson = invokeJSJson;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
   Blazor._internal.receiveWebAssemblyDotNetDataStream = receiveWebAssemblyDotNetDataStream;
@@ -169,7 +167,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   Blazor._internal.endUpdateRootComponents = (batchId: number) =>
     components.onAfterUpdateRootComponents?.(batchId);
 
-  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId: any) => {
+  Blazor._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
     const element = componentAttacher.resolveRegisteredElement(selector);
     if (!element) {
       attachRootComponentToElement(selector, componentId, rendererId);
@@ -178,17 +176,16 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
-  let api: PlatformApi;
   try {
     await platformLoadPromise;
-    api = await platform.start();
+    await platform.start();
   } catch (ex) {
     throw new Error(`Failed to start platform. Reason: ${ex}`);
   }
 
   // Start up the application
   platform.callEntryPoint();
-  // At this point .NET has been initialized (and has yielded), we can't await the promise becasue it will
+  // At this point .NET has been initialized (and has yielded), we can't await the promise because it will
   // only end when the app finishes running
   const initializer = getInitializer();
   initializer.invokeAfterStartedCallbacks(Blazor);
@@ -227,45 +224,6 @@ export function hasStartedLoadingWebAssemblyPlatform(): boolean {
 
 export function hasLoadedWebAssemblyPlatform(): boolean {
   return loadedWebAssemblyPlatform;
-}
-
-// obsolete, legacy, don't use for new code!
-function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any): any {
-  const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
-  const resultType = monoPlatform.readInt32Field(callInfo, 4);
-  const marshalledCallArgsJson = monoPlatform.readStringField(callInfo, 8);
-  const targetInstanceId = monoPlatform.readUint64Field(callInfo, 20);
-
-  if (marshalledCallArgsJson !== null) {
-    const marshalledCallAsyncHandle = monoPlatform.readUint64Field(callInfo, 12);
-
-    if (marshalledCallAsyncHandle !== 0) {
-      dispatcher.beginInvokeJSFromDotNet(marshalledCallAsyncHandle, functionIdentifier, marshalledCallArgsJson, resultType, targetInstanceId);
-      return 0;
-    } else {
-      const resultJson = dispatcher.invokeJSFromDotNet(functionIdentifier, marshalledCallArgsJson, resultType, targetInstanceId)!;
-      return resultJson === null ? 0 : BINDING.js_string_to_mono_string(resultJson);
-    }
-  } else {
-    const func = DotNet.findJSFunction(functionIdentifier, targetInstanceId);
-    const result = func.call(null, arg0, arg1, arg2);
-
-    switch (resultType) {
-      case DotNet.JSCallResultType.Default:
-        return result;
-      case DotNet.JSCallResultType.JSObjectReference:
-        return DotNet.createJSObjectReference(result).__jsObjectId;
-      case DotNet.JSCallResultType.JSStreamReference: {
-        const streamReference = DotNet.createJSStreamReference(result);
-        const resultJson = JSON.stringify(streamReference);
-        return BINDING.js_string_to_mono_string(resultJson);
-      }
-      case DotNet.JSCallResultType.JSVoidResult:
-        return null;
-      default:
-        throw new Error(`Invalid JS call result type '${resultType}'.`);
-    }
-  }
 }
 
 export function updateWebAssemblyRootComponents(operations: string): void {
@@ -307,7 +265,7 @@ function endInvokeDotNetFromJS(callId: string, success: boolean, resultJsonOrErr
   dispatcher.endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage);
 }
 
-function receiveWebAssemblyDotNetDataStream(streamId: number, data: any, bytesRead: number, errorMessage: string): void {
+function receiveWebAssemblyDotNetDataStream(streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {
   receiveDotNetDataStream(dispatcher, streamId, data, bytesRead, errorMessage);
 }
 

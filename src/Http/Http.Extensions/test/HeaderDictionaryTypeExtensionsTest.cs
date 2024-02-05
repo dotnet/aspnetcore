@@ -41,6 +41,89 @@ public class HeaderDictionaryTypeExtensionsTest
     }
 
     [Fact]
+    public void GetT_CacheControlHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.CacheControl = "max-age=604800";
+
+        var result = context.Request.GetTypedHeaders().Get<CacheControlHeaderValue>(HeaderNames.CacheControl);
+
+        var expected = new CacheControlHeaderValue() { MaxAge = TimeSpan.FromSeconds(604800) };
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetT_ContentDispositionHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.ContentDisposition = "form-data; name=\"fieldName\"";
+
+        var result = context.Request.GetTypedHeaders().Get<ContentDispositionHeaderValue>(HeaderNames.ContentDisposition);
+
+        var expected = new ContentDispositionHeaderValue("form-data") { Name = "\"fieldName\"" };
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetT_RangeConditionHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.IfRange = "\"etag1\"";
+
+        var result = context.Request.GetTypedHeaders().Get<RangeConditionHeaderValue>(HeaderNames.IfRange);
+
+        var expected = new RangeConditionHeaderValue("\"etag1\"");
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetT_RangeHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Range = "bytes=0-499";
+
+        var result = context.Request.GetTypedHeaders().Get<RangeHeaderValue>(HeaderNames.Range);
+
+        var expected = new RangeHeaderValue(0, 499);
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetT_EntityTagHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.ETag = "\"123\"";
+
+        var result = context.Request.GetTypedHeaders().Get<EntityTagHeaderValue>(HeaderNames.ETag);
+
+        var expected = new EntityTagHeaderValue("\"123\"");
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetT_DateTimeOffsetHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        var expected = new DateTimeOffset(2023, 12, 04, 7, 28, 00, TimeSpan.Zero);
+        context.Request.Headers.ETag = expected.ToString("r");
+
+        var result = context.Request.GetTypedHeaders().Get<DateTimeOffset?>(HeaderNames.ETag);
+
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetT_LongHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.ETag = $"{int.MaxValue + 1L}";
+
+        var result = context.Request.GetTypedHeaders().Get<long?>(HeaderNames.ETag);
+
+        Assert.Equal(int.MaxValue + 1L, result);
+    }
+
+    [Fact]
     public void GetT_UnknownTypeWithTryParseAndValidValue_Success()
     {
         var context = new DefaultHttpContext();
@@ -113,6 +196,54 @@ public class HeaderDictionaryTypeExtensionsTest
         var result = context.Request.GetTypedHeaders().GetList<MediaTypeHeaderValue>(HeaderNames.Accept);
 
         Assert.Empty(result);
+    }
+
+    [Fact]
+    public void GetListT_StringWithQualityHeaderValidValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Accept = "text/plain; q=0.5, text/html; q=0.8";
+
+        var result = context.Request.GetTypedHeaders().GetList<StringWithQualityHeaderValue>(HeaderNames.Accept);
+
+        List<StringWithQualityHeaderValue> expected = [new("plain", 0.5), new("html", 0.8)];
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetListT_CookieHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = "cookie1=a,cookie2=b";
+
+        var result = context.Request.GetTypedHeaders().GetList<CookieHeaderValue>(HeaderNames.Cookie);
+
+        List<CookieHeaderValue> expected = [new("cookie1", "a"), new("cookie2", "b")];
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetListT_EntityTagHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.ETag = "\"123\",\"456\"";
+
+        var result = context.Request.GetTypedHeaders().GetList<EntityTagHeaderValue>(HeaderNames.ETag);
+
+        List<EntityTagHeaderValue> expected = [new("\"123\"", false), new("\"456\"", false)];
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void GetListT_SetCookieHeaderValue_Success()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.SetCookie = "cookie1=a,cookie2=b";
+
+        var result = context.Request.GetTypedHeaders().GetList<SetCookieHeaderValue>(HeaderNames.SetCookie);
+
+        List<SetCookieHeaderValue> expected = [new("cookie1", "a"), new("cookie2", "b")];
+        Assert.Equal(expected, result);
     }
 
     [Fact]

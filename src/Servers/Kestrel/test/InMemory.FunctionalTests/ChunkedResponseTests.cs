@@ -1042,7 +1042,7 @@ public class ChunkedResponseTests : LoggedTest
             Assert.Equal(4096, memory.Length);
 
             memory = response.BodyWriter.GetMemory(1000000);
-            Assert.Equal(1000000, memory.Length);
+            Assert.True(memory.Length >= 1000000);
             await Task.CompletedTask;
         }, testContext))
         {

@@ -23,10 +23,8 @@
   "symbols/iisHttpsPort/description": "要用于 launchSettings.json 中 IIS Express HTTPS 终结点的端口号。仅当不使用参数 no-https 时，此选项才适用(如果使用 IndividualB2C 或 OrganizationalAuth，则将忽略 no-https)。",
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
-  "symbols/UseMinimalAPIs/description": "是否使用最小 API 而不是控制器。",
-  "symbols/UseControllers/description": "是否使用控制器而不是最小 API。此选项替代指定的值，即“最小”。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net8.0/description": "目标 net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/CalledApiUrl/description": "要从 Web 应用调用的 API 的 URL。仅当指定了 --auth SingleOrg 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/CallsMicrosoftGraph/description": "指定 Web 应用是否调用 Microsoft Graph。仅当指定了 --auth SingleOrg 时，此选项才适用。",
@@ -34,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "禁用 OpenAI (Swagger)支持",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",
+  "symbols/UseMinimalAPIs/description": "是否使用最小 API 而不是控制器。",
+  "symbols/UseControllers/description": "是否使用控制器而不是最小 API。此选项替代指定的值，即“最小”。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }

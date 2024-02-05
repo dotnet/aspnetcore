@@ -7,9 +7,8 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
-import { MonoConfig } from 'dotnet';
+import { MonoConfig } from 'dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
-import { Blazor } from '../GlobalExports';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
@@ -100,12 +99,18 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       return;
     }
 
-    if (descriptor.type === 'auto' || descriptor.type === 'webassembly') {
-      // Eagerly start loading the WebAssembly runtime, even though we're not
-      // activating the component yet. This is becuase WebAssembly resources
-      // may take a long time to load, so starting to load them now potentially reduces
-      // the time to interactvity.
+    // When encountering a component with a WebAssembly or Auto render mode,
+    // start loading the WebAssembly runtime, even though we're not
+    // activating the component yet. This is becuase WebAssembly resources
+    // may take a long time to load, so starting to load them now potentially reduces
+    // the time to interactvity.
+    if (descriptor.type === 'webassembly') {
       this.startLoadingWebAssemblyIfNotStarted();
+    } else if (descriptor.type === 'auto') {
+      // If the WebAssembly runtime starts downloading because an Auto component was added to
+      // the page, we limit the maximum number of parallel WebAssembly resource downloads to 1
+      // so that the performance of any Blazor Server circuit is minimally impacted.
+      this.startLoadingWebAssemblyIfNotStarted(/* maxParallelDownloadsOverride */ 1);
     }
 
     const ssrComponentId = this._nextSsrComponentId++;
@@ -120,7 +125,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.circuitMayHaveNoRootComponents();
   }
 
-  private async startLoadingWebAssemblyIfNotStarted() {
+  private async startLoadingWebAssemblyIfNotStarted(maxParallelDownloadsOverride?: number) {
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
@@ -128,17 +133,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     setWaitForRootComponents();
 
     const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
-
-    // If WebAssembly resources can't be loaded within some time limit,
-    // we take note of this fact so that "auto" components fall back
-    // to using Blazor Server.
-    setTimeout(() => {
-      if (!hasLoadedWebAssemblyPlatform()) {
-        this.onWebAssemblyFailedToLoadQuickly();
-      }
-    }, Blazor._internal.loadWebAssemblyQuicklyTimeout);
-
     const bootConfig = await waitForBootConfigLoaded();
+
+    if (maxParallelDownloadsOverride !== undefined) {
+      bootConfig.maxParallelDownloads = maxParallelDownloadsOverride;
+    }
 
     if (!areWebAssemblyResourcesLikelyCached(bootConfig)) {
       // Since WebAssembly resources aren't likely cached,
@@ -299,6 +298,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         this.updateWebAssemblyRootComponents(batchJson);
       }
     }
+
+    this.circuitMayHaveNoRootComponents();
   }
 
   private updateWebAssemblyRootComponents(operationsJson: string) {

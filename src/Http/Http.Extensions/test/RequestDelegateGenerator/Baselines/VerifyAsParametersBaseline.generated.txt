@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = int, IsOptional = True, IsParsable = True, IsArray = False, Source = Route)
                     if (options?.RouteParameterNames?.Contains("Value", StringComparer.OrdinalIgnoreCase) != true)
                     {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = int, IsOptional = True, IsParsable = True, IsArray = False, Source = Route)
                     if (options?.RouteParameterNames?.Contains("Value", StringComparer.OrdinalIgnoreCase) != true)
                     {
@@ -186,13 +186,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, void (global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListWitDefaultValue arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
@@ -243,7 +245,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = int, IsOptional = False, IsParsable = True, IsArray = False, Source = RouteOrQuery)
                     var Value_raw = Value_RouteOrQueryResolver(httpContext);
                     if (Value_raw is StringValues { Count: 0 })
@@ -277,7 +279,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = int, IsOptional = False, IsParsable = True, IsArray = False, Source = RouteOrQuery)
                     var Value_raw = Value_RouteOrQueryResolver(httpContext);
                     if (Value_raw is StringValues { Count: 0 })
@@ -313,13 +315,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, void (global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterListRecordStruct arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 PostVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
@@ -369,7 +373,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     var User_local = httpContext.User;
                     var Request_local = httpContext.Request;
                     var Response_local = httpContext.Response;
@@ -389,7 +393,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     var User_local = httpContext.User;
                     var Request_local = httpContext.Request;
                     var Response_local = httpContext.Response;
@@ -411,13 +415,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, void (global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithHttpContext arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 PutVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
@@ -470,7 +476,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
                     if (!Todo_resolveJsonBodyOrServiceResult.Item1)
@@ -502,7 +508,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
                     if (!Todo_resolveJsonBodyOrServiceResult.Item1)
@@ -528,13 +534,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 PatchVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 49, 5)]
@@ -591,7 +599,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Value_resolveJsonBodyOrServiceResult = await Value_JsonBodyOrServiceResolver(httpContext, false);
                     if (!Value_resolveJsonBodyOrServiceResult.Item1)
@@ -614,7 +622,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    var HttpContext_local = httpContext;
+                                        var HttpContext_local = httpContext;
                     // Endpoint Parameter: Value (Type = Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Value_resolveJsonBodyOrServiceResult = await Value_JsonBodyOrServiceResolver(httpContext, false);
                     if (!Value_resolveJsonBodyOrServiceResult.Item1)
@@ -640,13 +648,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, void (global::Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
         [InterceptsLocation(@"TestMapActions.cs", 50, 5)]
@@ -700,7 +710,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                                        // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
                     if (!Todo_resolveJsonBodyOrServiceResult.Item1)
                     {
@@ -738,7 +748,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: args (Type = Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService, IsOptional = False, IsParsable = False, IsArray = False, Source = AsParameters)
-                    // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
+                                        // Endpoint Parameter: Todo (Type = Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct, IsOptional = False, IsParsable = False, IsArray = False, Source = JsonBodyOrService)
                     var Todo_resolveJsonBodyOrServiceResult = await Todo_JsonBodyOrServiceResolver(httpContext, false);
                     if (!Todo_resolveJsonBodyOrServiceResult.Item1)
                     {
@@ -770,13 +780,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::System.String (global::Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService arg0) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 PostVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
 
@@ -787,9 +799,10 @@ namespace Microsoft.AspNetCore.Http.Generated
             Delegate handler,
             IEnumerable<string>? httpMethods,
             MetadataPopulator populateMetadata,
-            RequestDelegateFactoryFunc createRequestDelegate)
+            RequestDelegateFactoryFunc createRequestDelegate,
+            MethodInfo methodInfo)
         {
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate, methodInfo);
         }
 
         private static T Cast<T>(Delegate d, T _) where T : Delegate

@@ -39,7 +39,7 @@ To build this specific project from source, follow the instructions [on building
 
 Prior to building `src\Components\Web.JS\`
 
-1. You'll need to install [Node](https://nodejs.org) and [yarn](https://yarnpkg.com) on your machine.
+1. You'll need to install [Node](https://nodejs.org) on your machine.
 
 2. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
@@ -110,14 +110,14 @@ Please see the [`Build From Source`](https://github.com/dotnet/aspnetcore/blob/m
 
 ##### WebAssembly Trimming
 
-By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedApps` property set. For e.g.
+By default, WebAssembly E2E tests that run as part of the CI or when run in Release builds run with trimming enabled. It's possible that tests that successfully run locally might fail as part of the CI run due to errors introduced due to trimming. To test this scenario locally, either run the E2E tests in release build or with the `TestTrimmedOrMultithreadingApps` property set. For e.g.
 
 ```
 dotnet test -c Release
 ```
 or
 ```
-dotnet build /p:TestTrimmedApps=true
+dotnet build /p:TestTrimmedOrMultithreadingApps=true
 dotnet test --no-build
 ```
 

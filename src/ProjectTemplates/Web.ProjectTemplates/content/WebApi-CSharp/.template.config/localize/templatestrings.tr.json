@@ -23,10 +23,8 @@
   "symbols/iisHttpsPort/description": "launchSettings.json içinde IIS Express HTTPS uç noktası için kullanılacak bağlantı noktası numarası. Bu seçenek yalnızca no-https parametresi kullanılmazsa uygulanabilir (IndividualB2C veya OrganizationalAuth kullanılırsa no-https yoksayılır).",
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca IndividualB2C, SingleOrg veya MultiOrg -- auth için kullanılmazsa geçerlidir.",
   "symbols/UseLocalDB/description": "SQLite yerine LocalDB'nin kullanılıp kullanılmayacağı. Bu seçenek yalnızca --auth Individual veya --auth IndividualB2C belirtilirse geçerlidir.",
-  "symbols/UseMinimalAPIs/description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağı.",
-  "symbols/UseControllers/description": "Minimal API yerine denetleyicileri kullanma seçimi. Bu seçenek -- minimal tarafından belirtilen değeri geçersiz kılar.",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
-  "symbols/Framework/choices/net8.0/description": "Hedef net8.0",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
   "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklenmesini atlar.",
   "symbols/CalledApiUrl/description": "Web uygulamasından çağrılan API URL'si. Bu seçenek yalnızca --auth SingleOrg veya --auth IndividualB2C belirtilirse geçerlidir.",
   "symbols/CallsMicrosoftGraph/description": "Web uygulamasının Microsoft Graph çağırıp çağırmadığını belirtir. Bu seçenek yalnızca --auth SingleOrg belirtilirse geçerlidir.",
@@ -34,6 +32,8 @@
   "symbols/DisableOpenAPI/description": "OpenAPI (Swagger) desteğini devre dışı bırak",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
+  "symbols/UseMinimalAPIs/description": "Denetleyiciler yerine minimal API’lerin kullanılıp kullanılmayacağı.",
+  "symbols/UseControllers/description": "Minimal API yerine denetleyicileri kullanma seçimi. Bu seçenek -- minimal tarafından belirtilen değeri geçersiz kılar.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
 }

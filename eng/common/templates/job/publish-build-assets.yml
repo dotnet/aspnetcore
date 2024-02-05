@@ -48,8 +48,8 @@ jobs:
     - group: AzureDevOps-Artifact-Feeds-Pats
     - name: runCodesignValidationInjection
       value: false
-    - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
-      - template: /eng/common/templates/post-build/common-variables.yml
+    # unconditional - needed for logs publishing (redactor tool version)
+    - template: /eng/common/templates/post-build/common-variables.yml
 
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
@@ -63,6 +63,10 @@ jobs:
 
   steps:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - checkout: self
+      fetchDepth: 3
+      clean: true
+      
     - task: DownloadBuildArtifacts@0
       displayName: Download artifact
       inputs:
@@ -72,7 +76,7 @@ jobs:
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
-    - task: NuGetAuthenticate@0
+    - task: NuGetAuthenticate@1
 
     - task: PowerShell@2
       displayName: Publish Build Assets
@@ -81,7 +85,7 @@ jobs:
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
           /p:BuildAssetRegistryToken=$(MaestroAccessToken)
-          /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
+          /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:OfficialBuildId=$(Build.BuildNumber)
       condition: ${{ parameters.condition }}
