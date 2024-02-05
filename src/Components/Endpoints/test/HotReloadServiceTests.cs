@@ -137,6 +137,29 @@ public class HotReloadServiceTests
         Assert.Empty(compositeEndpointDataSource.Endpoints);
     }
 
+    [Fact]
+    public void ComfirmChangeTokenDisposedHotReload()
+    {
+        // Arrange
+        var builder = CreateBuilder(typeof(ServerComponent));
+        var services = CreateServices(typeof(MockEndpointProvider));
+        var endpointDataSource = CreateDataSource<App>(builder, services);
+        endpointDataSource.EnableChangeTokenDisposeTracking();
+
+        // Assert - 1
+        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
+        Assert.Equal("/server", endpoint.RoutePattern.RawText);
+        Assert.DoesNotContain(endpoint.Metadata, (element) => element is TestMetadata);
+
+        // Act - 2
+        endpointDataSource.Conventions.Add(builder =>
+            builder.Metadata.Add(new TestMetadata()));
+        HotReloadService.UpdateApplication(null);
+        var disposableChangeToken = endpointDataSource.GetChangeTokenDisposable();
+        HotReloadService.ClearCache(null);
+        Assert.True(disposableChangeToken.IsDisposed);
+    }
+
     private class TestMetadata { }
 
     private ComponentApplicationBuilder CreateBuilder(params Type[] types)
