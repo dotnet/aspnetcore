@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests;
 
@@ -14,6 +14,7 @@ public class NamedPipeConnectionTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly byte[] TestData = Encoding.UTF8.GetBytes("Hello world");
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52462")]
     [ConditionalFact]
     public async Task BidirectionalStream_ServerReadsDataAndCompletes_GracefullyClosed()
     {

@@ -7,7 +7,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Windows.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
@@ -239,15 +240,14 @@ public class ServerOnExistingQueueTests
         var queueName = Guid.NewGuid().ToString();
 
         // Create a queue without a UrlGroup or any UrlPrefixes
-        HttpRequestQueueV2Handle requestQueueHandle = null;
-        var statusCode = HttpApi.HttpCreateRequestQueue(
+        var statusCode = PInvoke.HttpCreateRequestQueue(
                 HttpApi.Version,
                 queueName,
-                IntPtr.Zero,
+                default,
                 0,
-                out requestQueueHandle);
+                out var requestQueueHandle);
 
-        Assert.True(statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
+        Assert.True(statusCode == ErrorCodes.ERROR_SUCCESS);
 
         using var server = Utilities.CreateServer(options =>
         {

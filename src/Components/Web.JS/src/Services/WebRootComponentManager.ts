@@ -7,13 +7,17 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
-import { MonoConfig } from 'dotnet';
+import { MonoConfig } from 'dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
-import { Blazor } from '../GlobalExports';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
+
+type RootComponentOperationBatch = {
+  batchId: number;
+  operations: RootComponentOperation[];
+}
 
 type RootComponentOperation = RootComponentAddOperation | RootComponentUpdateOperation | RootComponentRemoveOperation;
 
@@ -39,12 +43,17 @@ type RootComponentInfo = {
   ssrComponentId: number;
   assignedRendererId?: WebRendererId;
   uniqueIdAtLastUpdate?: number;
+  hasPendingRemoveOperation?: boolean;
 };
 
 export class WebRootComponentManager implements DescriptorHandler, RootComponentManager</* InitialComponentsDescriptorType */ never> {
   private readonly _rootComponentsBySsrComponentId = new Map<number, RootComponentInfo>();
 
   private readonly _seenDescriptors = new Set<ComponentDescriptor>();
+
+  private readonly _pendingOperationBatches: { [batchId: number]: RootComponentOperationBatch } = {};
+
+  private _nextOperationBatchId = 1;
 
   private _nextSsrComponentId = 1;
 
@@ -90,12 +99,18 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       return;
     }
 
-    if (descriptor.type === 'auto' || descriptor.type === 'webassembly') {
-      // Eagerly start loading the WebAssembly runtime, even though we're not
-      // activating the component yet. This is becuase WebAssembly resources
-      // may take a long time to load, so starting to load them now potentially reduces
-      // the time to interactvity.
+    // When encountering a component with a WebAssembly or Auto render mode,
+    // start loading the WebAssembly runtime, even though we're not
+    // activating the component yet. This is becuase WebAssembly resources
+    // may take a long time to load, so starting to load them now potentially reduces
+    // the time to interactvity.
+    if (descriptor.type === 'webassembly') {
       this.startLoadingWebAssemblyIfNotStarted();
+    } else if (descriptor.type === 'auto') {
+      // If the WebAssembly runtime starts downloading because an Auto component was added to
+      // the page, we limit the maximum number of parallel WebAssembly resource downloads to 1
+      // so that the performance of any Blazor Server circuit is minimally impacted.
+      this.startLoadingWebAssemblyIfNotStarted(/* maxParallelDownloadsOverride */ 1);
     }
 
     const ssrComponentId = this._nextSsrComponentId++;
@@ -107,9 +122,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private unregisterComponent(component: RootComponentInfo) {
     this._seenDescriptors.delete(component.descriptor);
     this._rootComponentsBySsrComponentId.delete(component.ssrComponentId);
+    this.circuitMayHaveNoRootComponents();
   }
 
-  private async startLoadingWebAssemblyIfNotStarted() {
+  private async startLoadingWebAssemblyIfNotStarted(maxParallelDownloadsOverride?: number) {
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
@@ -117,17 +133,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     setWaitForRootComponents();
 
     const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
-
-    // If WebAssembly resources can't be loaded within some time limit,
-    // we take note of this fact so that "auto" components fall back
-    // to using Blazor Server.
-    setTimeout(() => {
-      if (!hasLoadedWebAssemblyPlatform()) {
-        this.onWebAssemblyFailedToLoadQuickly();
-      }
-    }, Blazor._internal.loadWebAssemblyQuicklyTimeout);
-
     const bootConfig = await waitForBootConfigLoaded();
+
+    if (maxParallelDownloadsOverride !== undefined) {
+      bootConfig.maxParallelDownloads = maxParallelDownloadsOverride;
+    }
 
     if (!areWebAssemblyResourcesLikelyCached(bootConfig)) {
       // Since WebAssembly resources aren't likely cached,
@@ -275,11 +285,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
 
     for (const [rendererId, operations] of operationsByRendererId) {
-      const operationsJson = JSON.stringify(operations);
+      const batch: RootComponentOperationBatch = {
+        batchId: this._nextOperationBatchId++,
+        operations,
+      };
+      this._pendingOperationBatches[batch.batchId] = batch;
+      const batchJson = JSON.stringify(batch);
+
       if (rendererId === WebRendererId.Server) {
-        updateServerRootComponents(operationsJson);
+        updateServerRootComponents(batchJson);
       } else {
-        this.updateWebAssemblyRootComponents(operationsJson);
+        this.updateWebAssemblyRootComponents(batchJson);
       }
     }
 
@@ -367,6 +383,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         component.uniqueIdAtLastUpdate = component.descriptor.uniqueId;
         return { type: 'add', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
       } else {
+        if (!isRendererAttached(component.assignedRendererId)) {
+          // The renderer for this descriptor is not attached, so we'll no-op.
+          // After the renderer attaches, we'll handle this descriptor again if
+          // it's still in the document.
+          return null;
+        }
+
         // The component has already been added for interactivity.
         if (component.uniqueIdAtLastUpdate === component.descriptor.uniqueId) {
           // The descriptor has not changed since the last update.
@@ -379,12 +402,21 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         return { type: 'update', ssrComponentId: component.ssrComponentId, marker: descriptorToMarker(component.descriptor) };
       }
     } else {
-      // The descriptor was removed from the document.
-      this.unregisterComponent(component);
+      if (component.hasPendingRemoveOperation) {
+        // The component is already being disposed, so there's nothing left to do.
+        return null;
+      }
 
       if (component.assignedRendererId === undefined) {
         // The component was removed from the document before it was assigned to a renderer,
         // so we don't have to notify .NET that anything has changed.
+        this.unregisterComponent(component);
+        return null;
+      }
+
+      if (!isRendererAttached(component.assignedRendererId)) {
+        // The component was already assigned a renderer, but that renderer is no longer attached.
+        // After the renderer attaches, we'll handle the removal of this descriptor again.
         return null;
       }
 
@@ -394,6 +426,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
       // This component was removed from the document and we've assigned a renderer ID,
       // so we'll dispose it in .NET.
+      component.hasPendingRemoveOperation = true;
       return { type: 'remove', ssrComponentId: component.ssrComponentId };
     }
   }
@@ -405,6 +438,24 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
 
     return component.descriptor;
+  }
+
+  public onAfterUpdateRootComponents(batchId: number): void {
+    const batch = this._pendingOperationBatches[batchId];
+    delete this._pendingOperationBatches[batchId];
+
+    for (const operation of batch.operations) {
+      switch (operation.type) {
+        case 'remove': {
+          // We can stop tracking this component now that .NET has acknowedged its removal.
+          const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
+          if (component) {
+            this.unregisterComponent(component);
+          }
+          break;
+        }
+      }
+    }
   }
 }
 

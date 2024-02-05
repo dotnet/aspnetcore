@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -274,5 +277,76 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate($"{ServerPathBase}/streaming-with-sections");
         Browser.Equal("This is some streaming content", () => Browser.Exists(By.Id("streaming-message")).Text);
+    }
+
+    [Fact]
+    public async Task WorksWithVeryBriefStreamingDelays()
+    {
+        // First check it works in the browser
+        Navigate($"{ServerPathBase}/brief-streaming");
+        var header = Browser.Exists(By.Id("brief-streaming"));
+        for (var i = 1; i < 20; i++)
+        {
+            Browser.FindElement(By.LinkText("Load this page")).Click();
+
+            // Keep checking the same header to show this is always enhanced nav
+            Assert.Equal("Brief streaming", header.Text);
+
+            Browser.True(() =>
+            {
+                var loadCount = int.Parse(Browser.FindElement(By.Id("load-count")).Text, CultureInfo.InvariantCulture);
+                return loadCount >= i;
+            });
+        }
+
+        // That's not enough to be sure it was really correct, since it might
+        // work in the browser even if the SSR framing is emitted in the wrong
+        // place depending on exactly where it was emitted. To be sure, we'll
+        // also validate the HTML response directly.
+        var url = Browser.Url;
+        var httpClient = new HttpClient();
+        for (var i = 0; i < 100; i++)
+        {
+            // We expect to see the SSR framing marker right before the first <blazor-ssr>
+            var req = new HttpRequestMessage(HttpMethod.Get, url);
+            req.Headers.Accept.Clear();
+            req.Headers.Add("accept", "text/html; blazor-enhanced-nav=on");
+            var response = await httpClient.SendAsync(req);
+            var html = await response.Content.ReadAsStringAsync();
+            Assert.Matches(new Regex(@"</html><!--[0-9a-f\-]{36}--><blazor-ssr>"), html);
+        }
+    }
+
+    // https://github.com/dotnet/aspnetcore/issues/52126
+    [Fact]
+    public void CanPerformEnhancedNavigation_AfterStreamingUpdate_WithInteractiveComponentInLayout()
+    {
+        Navigate($"{ServerPathBase}/interactive-in-layout/streaming");
+
+        Browser.Exists(By.Id("done-streaming"));
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-counter")).Text);
+        Browser.Click(By.Id("increment-counter"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-counter")).Text);
+
+        Browser.Click(By.LinkText("Non-streaming"));
+        Browser.Exists(By.Id("non-streamed-content"));
+
+        Browser.Click(By.Id("increment-counter"));
+        Browser.Equal("2", () => Browser.FindElement(By.Id("count-counter")).Text);
+
+        AssertLogDoesNotContainCriticalMessages("DOMException");
+    }
+
+    private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+    {
+        var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+        foreach (var message in messages)
+        {
+            Assert.DoesNotContain(log, entry =>
+            {
+                return entry.Level == LogLevel.Severe
+                && entry.Message.Contains(message);
+            });
+        }
     }
 }

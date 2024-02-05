@@ -2141,18 +2141,26 @@ public class RenderTreeBuilderTest
     }
 
     [Fact]
-    public void CannotAddNullComponentRenderMode()
+    public void CanAddNullComponentRenderMode()
     {
         // Arrange
         var builder = new RenderTreeBuilder();
-        builder.OpenComponent<TestComponent>(0);
 
-        // Act/Assert
-        var ex = Assert.Throws<ArgumentNullException>(() =>
-        {
-            builder.AddComponentRenderMode(null);
-        });
-        Assert.Equal("renderMode", ex.ParamName);
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentParameter(1, "param", 123);
+        builder.AddComponentRenderMode(null);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 2, 0);
+                Assert.False(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+            },
+            frame => AssertFrame.Attribute(frame, "param", 123, 1));
     }
 
     [Fact]
@@ -2169,39 +2177,6 @@ public class RenderTreeBuilderTest
             builder.AddComponentParameter(2, "key", "value");
         });
         Assert.Equal($"Component parameters may only be added immediately after frames of type {RenderTreeFrameType.Component}", ex.Message);
-    }
-
-    [Fact]
-    public void TemporaryApiForCallSiteComponentRenderModeWorksEvenIfOtherParameterAddedAfter()
-    {
-        // For the temporary syntax rendermode=@something (as opposed to @rendermode=@something), we can't guarantee
-        // the Razor compiler will emit the AddComponentParameter call for rendermode last. For example if there's a
-        // ChildContent it will actually emit that last. So for the temporary syntax to be usable it has to support
-        // other component parameters being added afterwards, even though that does not need to be supported for
-        // AddComponentRenderMode (since the compiler can be sure to add that after all component parameters).
-
-        // Arrange
-        var builder = new RenderTreeBuilder();
-        var renderMode = new TestRenderMode();
-
-        // Act
-        builder.OpenComponent<TestComponent>(0);
-        builder.AddComponentParameter(1, "param", 123);
-        builder.AddComponentParameter(2, "@rendermode", renderMode);
-        builder.AddComponentParameter(3, "anotherparam", 456);
-        builder.CloseComponent();
-
-        // Assert
-        Assert.Collection(
-            builder.GetFrames().AsEnumerable(),
-            frame =>
-            {
-                AssertFrame.Component<TestComponent>(frame, 4, 0);
-                Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
-            },
-            frame => AssertFrame.Attribute(frame, "param", 123, 1),
-            frame => AssertFrame.Attribute(frame, "anotherparam", 456, 3),
-            frame => AssertFrame.ComponentRenderMode(frame, renderMode));
     }
 
     [Fact]
@@ -2299,34 +2274,6 @@ public class RenderTreeBuilderTest
             builder.AddAttribute(2, "a", "b");
         });
         Assert.Equal($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}", ex.Message);
-    }
-
-    [Fact]
-    public void TemporaryApiForFormNameEventsWorksEvenIfAttributesAddedAfter()
-    {
-        // TODO: Remove this once the Razor compiler is updated to support @formname directly
-
-        // Arrange
-        var builder = new RenderTreeBuilder();
-        var renderMode = new TestRenderMode();
-
-        // Act
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "attr1", 123);
-        builder.AddAttribute(2, "@formname", "some custom name");
-        builder.AddAttribute(3, "attr2", 456);
-        builder.OpenElement(4, "other");
-        builder.CloseElement();
-        builder.CloseElement();
-
-        // Assert
-        Assert.Collection(
-            builder.GetFrames().AsEnumerable(),
-            frame => AssertFrame.Element(frame, "div", 5, 0),
-            frame => AssertFrame.Attribute(frame, "attr1", "123", 1),
-            frame => AssertFrame.Attribute(frame, "attr2", "456", 3),
-            frame => AssertFrame.NamedEvent(frame, "onsubmit", "some custom name"),
-            frame => AssertFrame.Element(frame, "other", 1));
     }
 
     private class TestComponent : IComponent

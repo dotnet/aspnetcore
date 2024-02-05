@@ -1,0 +1,19 @@
+﻿@page "/forms/post-form-with-component-that-delays-loading"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>Post Form With Component That Delays Loading</h3>
+
+@if (_render)
+{
+    <ParentComponentThatDelaysLoading />
+}
+
+<form @onsubmit="@(() => _render = true)" @formname="myform" method="post">
+    <AntiforgeryToken />
+    <button id="submit-button">Submit</button>
+</form>
+
+@code
+{
+    bool _render;
+}

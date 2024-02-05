@@ -20,7 +20,7 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string GetPersistedState()
         => null;
 
-    public void NavigationManager_EnableNavigationInterception() { }
+    public void NavigationManager_EnableNavigationInterception(int rendererId) { }
 
     public void NavigationManager_ScrollToElement(string id) { }
 
@@ -30,7 +30,7 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
     public string NavigationManager_GetLocationHref()
         => "https://www.example.com/awesome-part-that-will-be-truncated-in-tests/cool";
 
-    public void NavigationManager_SetHasLocationChangingListeners(bool value) { }
+    public void NavigationManager_SetHasLocationChangingListeners(int rendererId, bool value) { }
 
     public string RegisteredComponents_GetAssembly(int index)
         => string.Empty;

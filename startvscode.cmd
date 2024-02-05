@@ -1,7 +1,7 @@
 @ECHO OFF
 SETLOCAL
 
-:: This command launches a Visual Studio code with environment variables required to use a local version of the .NET Core SDK.
+:: This command launches a Visual Studio Code with environment variables required to use a local version of the .NET Core SDK.
 
 :: This tells .NET Core to use the same dotnet.exe that build scripts use
 SET DOTNET_ROOT=%~dp0.dotnet

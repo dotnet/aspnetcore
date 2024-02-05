@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
@@ -8,15 +9,15 @@ namespace Microsoft.AspNetCore.Routing;
 
 internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>, IDisposable
 {
-    private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
+    private readonly DataSourceDependentCache<FrozenDictionary<string, Endpoint[]>> _cache;
 
     public EndpointNameAddressScheme(EndpointDataSource dataSource)
     {
-        _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
+        _cache = new DataSourceDependentCache<FrozenDictionary<string, Endpoint[]>>(dataSource, Initialize);
     }
 
     // Internal for tests
-    internal Dictionary<string, Endpoint[]> Entries => _cache.EnsureInitialized();
+    internal FrozenDictionary<string, Endpoint[]> Entries => _cache.EnsureInitialized();
 
     public IEnumerable<Endpoint> FindEndpoints(string address)
     {
@@ -29,7 +30,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
         return result ?? Array.Empty<Endpoint>();
     }
 
-    private static Dictionary<string, Endpoint[]> Initialize(IReadOnlyList<Endpoint> endpoints)
+    private static FrozenDictionary<string, Endpoint[]> Initialize(IReadOnlyList<Endpoint> endpoints)
     {
         // Collect duplicates as we go, blow up on startup if we find any.
         var hasDuplicates = false;
@@ -67,7 +68,7 @@ internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>
         if (!hasDuplicates)
         {
             // No duplicates, success!
-            return entries;
+            return entries.ToFrozenDictionary(StringComparer.Ordinal);
         }
 
         // OK we need to report some duplicates.

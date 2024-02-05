@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListners, performScrollToElementOnTheSamePage } from './NavigationUtils';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -31,9 +31,15 @@ Note that we don't reference NavigationManager.ts from NavigationEnhancement.ts 
 different bundles that only contain minimal content.
 */
 
+const acceptHeader = 'text/html; blazor-enhanced-nav=on';
+
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
+
+// This gets initialized to the current URL when we load.
+// After that, it gets updated every time we successfully complete a navigation.
+let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
   documentUpdated: () => void;
@@ -70,7 +76,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   }
 
-  performEnhancedPageLoad(absoluteInternalHref);
+  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
 }
 
 function onDocumentClick(event: MouseEvent) {
@@ -78,13 +84,19 @@ function onDocumentClick(event: MouseEvent) {
     return;
   }
 
-  if (event.target instanceof HTMLAnchorElement && !enhancedNavigationIsEnabledForLink(event.target)) {
+  if (event.target instanceof Element && !enhancedNavigationIsEnabledForElement(event.target)) {
     return;
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
+    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-    performEnhancedPageLoad(absoluteInternalHref);
+
+    if (shouldScrollToHash) {
+      performScrollToElementOnTheSamePage(absoluteInternalHref);
+    } else {
+      performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+    }
   });
 }
 
@@ -93,7 +105,7 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
-  performEnhancedPageLoad(location.href);
+  performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 
 function onDocumentSubmit(event: SubmitEvent) {
@@ -112,38 +124,66 @@ function onDocumentSubmit(event: SubmitEvent) {
       return;
     }
 
-    event.preventDefault();
-
-    const url = new URL(formElem.action);
-    const fetchOptions: RequestInit = { method: formElem.method };
-    const formData = new FormData(formElem);
-
-    // Replicate the normal behavior of appending the submitter name/value to the form data
-    const submitter = event.submitter as HTMLButtonElement;
-    if (submitter && submitter.name) {
-      formData.append(submitter.name, submitter.value);
+    const method = event.submitter?.getAttribute('formmethod') || formElem.method;
+    if (method === 'dialog') {
+      console.warn('A form cannot be enhanced when its method is "dialog".');
+      return;
     }
 
+    const target = event.submitter?.getAttribute('formtarget') || formElem.target;
+    if (target !== '' && target !== '_self') {
+      console.warn('A form cannot be enhanced when its target is different from the default value "_self".');
+      return;
+    }
+
+    event.preventDefault();
+
+    const url = new URL(event.submitter?.getAttribute('formaction') || formElem.action, document.baseURI);
+    const fetchOptions: RequestInit = { method: method};
+    const formData = new FormData(formElem);
+
+    const submitterName = event.submitter?.getAttribute('name');
+    const submitterValue = event.submitter!.getAttribute('value');
+    if (submitterName && submitterValue) {
+      formData.append(submitterName, submitterValue);
+    }
+
+    const urlSearchParams = new URLSearchParams(formData as any).toString();
     if (fetchOptions.method === 'get') { // method is always returned as lowercase
-      url.search = new URLSearchParams(formData as any).toString();
+      url.search = urlSearchParams;
 
       // For forms with method=get, we need to push a URL history entry equivalent to how it
       // would be pushed for a native <form method=get> submission. This is also equivalent to
       // how we push a URL history entry before starting enhanced page load on an <a> click.
       history.pushState(null, /* ignored title */ '', url.toString());
     } else {
-      fetchOptions.body = formData;
+      // Setting request body and content-type header depending on enctype
+      const enctype = event.submitter?.getAttribute('formenctype') || formElem.enctype;
+      if (enctype === 'multipart/form-data') {
+        // Content-Type header will be set to 'multipart/form-data'
+        fetchOptions.body = formData;
+      } else {
+        fetchOptions.body = urlSearchParams;
+        fetchOptions.headers = {
+          'content-type': enctype,
+          // Setting Accept header here as well so it wouldn't be lost when coping headers
+          'accept': acceptHeader
+        };
+      }
     }
 
-    performEnhancedPageLoad(url.toString(), fetchOptions);
+    performEnhancedPageLoad(url.toString(), /* interceptedLink */ false, fetchOptions);
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, fetchOptions?: RequestInit) {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post') {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
+
+  // Notify any interactive runtimes that an enhanced navigation is starting
+  notifyEnhancedNavigationListners(internalDestinationHref, interceptedLink);
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
@@ -155,7 +195,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
     headers: {
       // Because of no-cors, we can only send CORS-safelisted headers, so communicate the info about
       // enhanced nav as a MIME type parameter
-      'accept': 'text/html;blazor-enhanced-nav=on',
+      'accept': acceptHeader,
     },
   }, fetchOptions));
   let isNonRedirectedPostToADifferentUrlMessage: string | null = null;
@@ -198,14 +238,17 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
       // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
-      if (response.redirected) {
-        if (isGetRequest) {
+      if (response.redirected || treatAsRedirectionFromMethod) {
+        const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
+        if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
           // so that 'back' would go to the page before the redirection
           history.replaceState(null, '', response.url);
         } else {
           // For non-gets, we're still on the source page, so need to append a whole new history entry
-          history.pushState(null, '', response.url);
+          if (response.url !== location.href) {
+            history.pushState(null, '', response.url);
+          }
         }
         internalDestinationHref = response.url;
       }
@@ -217,9 +260,24 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
         return;
       }
 
-      if (!response.redirected && !isGetRequest && response.url !== location.href && isSuccessResponse) {
-        isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+      if (!response.redirected && !isGetRequest && isSuccessResponse) {
+        // If this is the result of a form post that didn't trigger a redirection.
+        if (!isForSamePath(response)) {
+          // In this case we don't want to push the currentContentUrl to the history stack because we don't know if this is a location
+          // we can navigate back to (as we don't know if the location supports GET) and we are not able to replicate the Resubmit form?
+          // browser behavior.
+          // The only case where this is acceptable is when the last content URL, is the same as the URL for the form we posted to.
+          isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+        } else {
+          if (location.href !== currentContentUrl) {
+            // The url on the browser might be out of data, so push an entry to the stack to update the url in place.
+            history.pushState(null, '', currentContentUrl);
+          }
+        }
       }
+
+      // Set the currentContentUrl to the location of the last completed navigation.
+      currentContentUrl = response.url;
 
       const responseContentType = response.headers.get('content-type');
       if (responseContentType?.startsWith('text/html') && initialContent) {
@@ -276,6 +334,20 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, f
     if (isNonRedirectedPostToADifferentUrlMessage) {
       throw new Error(isNonRedirectedPostToADifferentUrlMessage);
     }
+  }
+
+  function isForSamePath(response: Response) {
+    // We are trying to determine if the response URL is compatible with the last content URL that was successfully loaded on to
+    // the page.
+    // We are going to use the scheme, host, port and path to determine if they are compatible. We do not account for the query string
+    // as we want to allow for the query string to change. (Blazor doesn't use the query string for routing purposes).
+
+    const responseUrl = new URL(response.url);
+    const currentContentUrlParsed = new URL(currentContentUrl!);
+    return responseUrl.protocol === currentContentUrlParsed.protocol
+      && responseUrl.host === currentContentUrlParsed.host
+      && responseUrl.port === currentContentUrlParsed.port
+      && responseUrl.pathname === currentContentUrlParsed.pathname;
   }
 }
 
@@ -355,7 +427,7 @@ function splitStream(frameBoundaryMarker: string) {
   });
 }
 
-function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean {
+function enhancedNavigationIsEnabledForElement(element: Element): boolean {
   // For links, they default to being enhanced, but you can override at any ancestor level (both positively and negatively)
   const closestOverride = element.closest('[data-enhance-nav]');
   if (closestOverride) {
@@ -369,7 +441,7 @@ function enhancedNavigationIsEnabledForLink(element: HTMLAnchorElement): boolean
 function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
   // For forms, they default *not* to being enhanced, and must be enabled explicitly on the form element itself (not an ancestor).
   const attributeValue = form.getAttribute('data-enhance');
-  return typeof(attributeValue) === 'string'
+  return typeof (attributeValue) === 'string'
     && attributeValue === '' || attributeValue?.toLowerCase() === 'true';
 }
 

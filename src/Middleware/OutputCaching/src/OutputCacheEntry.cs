@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -17,8 +16,6 @@ internal sealed class OutputCacheEntry : IDisposable
         Created = created;
         StatusCode = statusCode;
     }
-
-    private bool _recycleBuffers; // does this instance own the memory behind the segments?
 
     public StringValues FindHeader(string key)
     {
@@ -69,26 +66,9 @@ internal sealed class OutputCacheEntry : IDisposable
     internal void SetBody(ReadOnlySequence<byte> value, bool recycleBuffers)
     {
         Body = value;
-        _recycleBuffers = recycleBuffers;
-    }
-
-    public void Dispose()
-    {
-        var headers = Headers;
-        var body = Body;
-        Headers = default;
-        Body = default;
-        Recycle(headers);
-        RecyclableReadOnlySequenceSegment.RecycleChain(body, _recycleBuffers);
-        // ^^ note that this only recycles the chain, not the actual buffers
-    }
-
-    private static void Recycle<T>(ReadOnlyMemory<T> value)
-    {
-        if (MemoryMarshal.TryGetArray<T>(value, out var segment) && segment.Array is { Length: > 0 })
-        {
-            ArrayPool<T>.Shared.Return(segment.Array);
-        }
+        _ = recycleBuffers; // satisfy IDE0060
+        // note that recycleBuffers is not stored currently, until OutputCacheEntry buffer recycling is re-implemented;
+        // it indicates whether this instance "owns" the memory behind the segments, such that they can be recycled later if desired
     }
 
     internal OutputCacheEntry CreateBodyFrom(IList<byte[]> segments) // mainly used from tests
@@ -118,6 +98,7 @@ internal sealed class OutputCacheEntry : IDisposable
                 if (index == 0) // only ignored headers
                 {
                     ArrayPool<(string, StringValues)>.Shared.Return(arr);
+                    Headers = default;
                 }
                 else
                 {
@@ -142,4 +123,6 @@ internal sealed class OutputCacheEntry : IDisposable
 
     public ValueTask CopyToAsync(PipeWriter destination, CancellationToken cancellationToken)
         => RecyclableReadOnlySequenceSegment.CopyToAsync(Body, destination, cancellationToken);
+
+    public void Dispose() { } // intention here is to add recycling; this was removed late in NET8, but is retained as a callback
 }

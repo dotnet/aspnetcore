@@ -1,0 +1,27 @@
+﻿@page "/forms/form-that-calls-navigation-manager-refresh"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Nav
+@inject IHttpContextAccessor HttpContextAccessor
+
+<h3>Form That Calls NavigationManager.Refresh()</h3>
+
+<form data-enhance @onsubmit="@(() => Nav.Refresh())" @formname="form-refresh" method="post">
+    <AntiforgeryToken />
+    <button id="submit-button">Submit</button>
+</form>
+
+<p>Method: <span id="method">@_method</span></p>
+
+<p>Guid: <span id="guid">@Guid</span></p>
+
+@code {
+    private string? _method = "";
+
+    private Guid Guid = Guid.NewGuid();
+
+    protected override void OnInitialized()
+    {
+        var httpContext = HttpContextAccessor.HttpContext;
+        _method = httpContext?.Request.Method;
+    }
+}

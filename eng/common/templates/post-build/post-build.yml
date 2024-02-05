@@ -169,7 +169,7 @@ stages:
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
         # otherwise it'll complain about accessing a private feed.
-        - task: NuGetAuthenticate@0
+        - task: NuGetAuthenticate@1
           displayName: 'Authenticate to AzDO Feeds'
 
         # Signing validation will optionally work with the buildmanifest file which is downloaded from
@@ -187,6 +187,7 @@ stages:
           parameters:
             StageLabel: 'Validation'
             JobLabel: 'Signing'
+            BinlogToolVersion: $(BinlogToolVersion)
 
     - job:
       displayName: SourceLink Validation
@@ -266,7 +267,7 @@ stages:
             BARBuildId: ${{ parameters.BARBuildId }}
             PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
 
-        - task: NuGetAuthenticate@0
+        - task: NuGetAuthenticate@1
 
         - task: PowerShell@2
           displayName: Publish Using Darc

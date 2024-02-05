@@ -33,7 +33,7 @@ internal static class EndpointParameterEmitter
         }
         else if (endpointParameter.IsOptional)
         {
-            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : {endpointParameter.DefaultValue};");
+            codeWriter.WriteLine($"var {endpointParameter.EmitTempArgument()} = {endpointParameter.EmitAssigningCodeResult()}.Count > 0 ? (string?){endpointParameter.EmitAssigningCodeResult()} : null;");
         }
         else if (endpointParameter.IsStringValues)
         {
@@ -334,6 +334,11 @@ internal static class EndpointParameterEmitter
     internal static void EmitKeyedServiceParameterPreparation(this EndpointParameter endpointParameter, CodeWriter codeWriter)
     {
         codeWriter.WriteLine(endpointParameter.EmitParameterDiagnosticComment());
+
+        codeWriter.WriteLine("if (httpContext.RequestServices.GetService<IServiceProviderIsService>() is not IServiceProviderIsKeyedService)");
+        codeWriter.StartBlock();
+        codeWriter.WriteLine(@"throw new InvalidOperationException($""Unable to resolve service referenced by {nameof(FromKeyedServicesAttribute)}. The service provider doesn't support keyed services."");");
+        codeWriter.EndBlock();
 
         var assigningCode = endpointParameter.IsOptional ?
             $"httpContext.RequestServices.GetKeyedService<{endpointParameter.Type}>({endpointParameter.KeyedServiceKey});" :

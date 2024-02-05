@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -14,9 +15,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 {
-    public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
+    public readonly bool TestTrimmedOrMultithreadingApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
+        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps")
         .Value == "true";
 
     public string Environment { get; set; }
@@ -25,9 +26,9 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
 
     protected override IHost CreateWebHost()
     {
-        if (TestTrimmedApps)
+        if (TestTrimmedOrMultithreadingApps)
         {
-            var staticFilePath = Path.Combine(AppContext.BaseDirectory, "trimmed", typeof(TProgram).Assembly.GetName().Name);
+            var staticFilePath = Path.Combine(AppContext.BaseDirectory, "trimmed-or-threading", typeof(TProgram).Assembly.GetName().Name);
             if (!Directory.Exists(staticFilePath))
             {
                 throw new DirectoryNotFoundException($"Test is configured to use trimmed outputs, but trimmed outputs were not found in {staticFilePath}.");
@@ -90,6 +91,14 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 app.UsePathBase(PathBase);
             }
+
+            app.Use(async (ctx, next) =>
+            {
+                // Browser multi-threaded runtime requires cross-origin policy headers to enable SharedArrayBuffer.
+                ctx.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
+                ctx.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
+                await next(ctx);
+            });
 
             app.UseStaticFiles(new StaticFileOptions
             {

@@ -285,10 +285,7 @@ internal partial class IISHttpContext : IFeatureCollection,
     {
         get
         {
-            if (string.IsNullOrEmpty(variableName))
-            {
-                throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(variableName);
 
             // Synchronize access to native methods that might run in parallel with IO loops
             lock (_contextLock)
@@ -298,10 +295,7 @@ internal partial class IISHttpContext : IFeatureCollection,
         }
         set
         {
-            if (string.IsNullOrEmpty(variableName))
-            {
-                throw new ArgumentException($"{nameof(variableName)} should be non-empty string");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(variableName);
 
             ArgumentNullException.ThrowIfNull(value);
 

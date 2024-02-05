@@ -3,7 +3,10 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +18,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
-
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
         // Act
         RazorComponentsServiceCollectionExtensions.AddRazorComponents(services);
 
@@ -42,6 +45,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<IConfiguration>(new ConfigurationBuilder().AddInMemoryCollection().Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
 
         // Act
         RazorComponentsServiceCollectionExtensions.AddRazorComponents(services);
@@ -87,7 +91,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
                 [typeof(ICascadingValueSupplier)] = new[]
                 {
                     typeof(SupplyParameterFromFormValueProvider),
-                    typeof(SupplyParameterFromQueryProviderServiceCollectionExtensions.SupplyValueFromQueryValueProvider),
+                    typeof(SupplyParameterFromQueryValueProvider),
                 }
             };
         }
@@ -134,5 +138,15 @@ public class RazorComponentsServiceCollectionExtensionsTest
                 false,
                 $"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
         }
+    }
+
+    private class TestWebHostEnvironment : IWebHostEnvironment
+    {
+        public string WebRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        public string EnvironmentName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string ApplicationName { get; set; } = "App";
+        public string ContentRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 }

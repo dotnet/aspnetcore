@@ -680,6 +680,7 @@ Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode.AlwaysUseCurrentCulture = 1 -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode.DetectCultureFromInputType = 0 -> Microsoft.AspNetCore.Mvc.Rendering.FormInputRenderMode
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod
+Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Get = 0 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post = 1 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod
 Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode

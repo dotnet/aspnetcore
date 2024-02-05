@@ -28,7 +28,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public IQueryable<TGridItem>? Items { get; set; }
 
     /// <summary>
-    /// A callback that supplies data for the rid.
+    /// A callback that supplies data for the grid.
     ///
     /// You should supply either <see cref="Items"/> or <see cref="ItemsProvider"/>, but not both.
     /// </summary>

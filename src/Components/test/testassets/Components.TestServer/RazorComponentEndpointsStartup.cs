@@ -8,7 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -36,6 +36,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
+        services.AddSingleton<WebSocketCompressionConfiguration>();
+
+        var circuitContextAccessor = new TestCircuitContextAccessor();
+        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
+        services.AddSingleton(circuitContextAccessor);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,11 +66,21 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
+            _ = app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<TRootComponent>()
+                _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode()
+                    .AddInteractiveServerRenderMode(options =>
+                    {
+                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                        options.ConfigureWebsocketOptions = config.IsCompressionEnabled ?
+                            _ => new() { DangerousEnableCompression = true } : null;
+
+                        options.ContentSecurityFrameAncestorPolicy = config.CspPolicy;
+
+                        options.ConfigureWebsocketOptions = config.ConnectionDispatcherOptions ?? (config.IsCompressionEnabled ?
+                            (context) => new() { DangerousEnableCompression = true } : null);
+                    })
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
@@ -155,10 +170,26 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             await response.WriteAsync("<html><body><h1>This is a non-Blazor endpoint</h1><p>That's all</p></body></html>");
         });
 
-        endpoints.MapPost("api/antiforgery-form", ([FromForm] string value) =>
+        endpoints.MapPost("api/antiforgery-form", (
+            [FromForm] string value,
+            [FromForm(Name = "__RequestVerificationToken")] string? inFormCsrfToken,
+            [FromHeader(Name = "RequestVerificationToken")] string? inHeaderCsrfToken) =>
         {
-            return Results.Ok(value);
+            // We shouldn't get this far without a valid CSRF token, but we'll double check it's there.
+            if (string.IsNullOrEmpty(inFormCsrfToken) && string.IsNullOrEmpty(inHeaderCsrfToken))
+            {
+                throw new InvalidOperationException("Invalid POST to api/antiforgery-form!");
+            }
+
+            return TypedResults.Text($"<p id='pass'>Hello {value}!</p>", "text/html");
         });
+
+        endpoints.Map("/forms/endpoint-that-never-finishes-rendering", (HttpResponse response, CancellationToken token) =>
+        {
+            return Task.Delay(Timeout.Infinite, token);
+        });
+
+        endpoints.Map("/test-formaction", () => "Formaction url");
 
         static Task PerformRedirection(HttpRequest request, HttpResponse response)
         {

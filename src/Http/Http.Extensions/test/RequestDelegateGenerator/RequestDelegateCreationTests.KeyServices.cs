@@ -3,6 +3,8 @@
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 public partial class RequestDelegateCreationTests : RequestDelegateCreationTestBase
@@ -196,5 +198,45 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         Assert.Same(myOriginalService1, httpContext.Items["arg1"]);
         Assert.IsType<TestService>(httpContext.Items["arg2"]);
         Assert.Same(myOriginalService2, httpContext.Items["arg3"]);
+    }
+
+    [Fact]
+    public async Task ThrowsIfDiContainerDoesNotSupportKeyedServices()
+    {
+        var source = """
+ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestService arg1) =>
+ {
+     context.Items["arg1"] = arg1;
+ });
+ """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = new MockServiceProvider();
+        if (!IsGeneratorEnabled)
+        {
+            var runtimeException = Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider));
+            Assert.Equal("Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.", runtimeException.Message);
+            return;
+        }
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
+        Assert.Equal("Unable to resolve service referenced by FromKeyedServicesAttribute. The service provider doesn't support keyed services.", exception.Message);
+    }
+
+    private class MockServiceProvider : IServiceProvider, ISupportRequiredService
+    {
+        public object GetService(Type serviceType)
+        {
+            if (serviceType == typeof(Microsoft.Extensions.Logging.ILoggerFactory))
+            {
+                return NullLoggerFactory.Instance;
+            }
+            return null;
+        }
+        public object GetRequiredService(Type serviceType)
+        {
+            return GetService(serviceType);
+        }
     }
 }

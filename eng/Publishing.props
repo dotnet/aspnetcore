@@ -23,7 +23,8 @@
     <_InstallersToPublish Remove="@(_InstallersToPublish)" />
     <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.jar" UploadPathSegment="jar" />
     <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.pom" UploadPathSegment="jar" />
-    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tgz" UploadPathSegment="npm" />
+    <!-- All builds produce npm assets - only publish them once -->
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tgz" UploadPathSegment="npm" Condition="'$(OS)' == 'Windows_NT'" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.deb" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" />
@@ -43,12 +44,11 @@
     DependsOnTargets="_WriteProductVersionFile">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
-      and npm project. We use SignalR.Npm.FunctionalTests.npmproj because it is non-shipping (we need a non-stable
-      version string to use as our publish location), non-packed (won't be shipped in the future), and it is _not_ a
-      C# or F# project. For now at least, C# and F# projects should not be referenced when using desktop msbuild.
+      and npm project. We use Microsoft.AspNetCore.InternalTesting.csproj because it is non-shipping (we need a non-stable
+      version string to use as our publish location) non-packed (won't be shipped in the future).
     -->
-    <MSBuild Projects="$(RepoRoot)src\SignalR\clients\ts\FunctionalTests\SignalR.Npm.FunctionalTests.npmproj"
-        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+    <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
+        Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
     </MSBuild>
@@ -102,18 +102,17 @@
     Condition=" '$(PublishInstallerBaseVersion)' == 'true'">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
-      and npm project. We use Microsoft.JSInterop.JS.npmproj because it is shipping (we need a stable
-      version string to use for productVersion.txt), and because it won't break when the SDK requires a newer
-      desktop MSBuild than exists on the build machine.
+      and npm project. We use Microsoft.AspNetCore.InternalTesting.csproj because it is non-shipping (we need a non-stable
+      version string to use as our publish location) non-packed (won't be shipped in the future).
     -->
-    <MSBuild Projects="$(RepoRoot)src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
-        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
+    <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
+        Properties="ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedProductVersionInfo" />
     </MSBuild>
 
     <PropertyGroup>
-      <_ProductVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</_ProductVersion>
+      <_ProductVersion>%(_ResolvedProductVersionInfo.PackageVersion)</_ProductVersion>
     </PropertyGroup>
 
     <!-- Generate productVersion.txt containing the value of $(PackageVersion) -->

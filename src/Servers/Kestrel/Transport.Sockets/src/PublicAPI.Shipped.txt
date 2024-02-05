@@ -21,6 +21,7 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOpt
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionFactoryOptions.WaitForDataBeforeAllocatingBuffer.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(System.Net.EndPoint! endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener!>
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.CanBind(System.Net.EndPoint! endpoint) -> bool
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions
 Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.Backlog.get -> int

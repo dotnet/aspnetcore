@@ -22,47 +22,60 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
+    private readonly Dispatcher _dispatcher;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
 
+        // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
+        _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
+            ? NullDispatcher.Instance
+            : new WebAssemblyDispatcher();
+
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private void OnUpdateRootComponents(OperationDescriptor[] operations)
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
-        for (var i = 0; i < operations.Length; i++)
+        for (var i = 0; i < batch.Operations.Length; i++)
         {
-            var (operation, componentType, parameters) = operations[i];
+            var operation = batch.Operations[i];
             switch (operation.Type)
             {
                 case RootComponentOperationType.Add:
                     _ = webRootComponentManager.AddRootComponentAsync(
                         operation.SsrComponentId,
-                        componentType!,
+                        operation.Descriptor!.ComponentType,
                         operation.Marker!.Value.Key!,
-                        parameters);
+                        operation.Descriptor!.Parameters);
                     break;
                 case RootComponentOperationType.Update:
                     _ = webRootComponentManager.UpdateRootComponentAsync(
                         operation.SsrComponentId,
-                        componentType!,
+                        operation.Descriptor!.ComponentType,
                         operation.Marker?.Key,
-                        parameters);
+                        operation.Descriptor!.Parameters);
                     break;
                 case RootComponentOperationType.Remove:
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
         }
+
+        NotifyEndUpdateRootComponents(batch.BatchId);
     }
 
-    public override Dispatcher Dispatcher => NullDispatcher.Instance;
+    public static void NotifyEndUpdateRootComponents(long batchId)
+    {
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
+    }
+
+    public override Dispatcher Dispatcher => _dispatcher;
 
     public Task AddComponentAsync([DynamicallyAccessedMembers(Component)] Type componentType, ParameterView parameters, string domElementSelector)
     {

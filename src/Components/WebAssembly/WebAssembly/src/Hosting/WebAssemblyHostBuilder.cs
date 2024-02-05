@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
+using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
@@ -75,6 +77,14 @@ public sealed class WebAssemblyHostBuilder
         Services = new ServiceCollection();
         Logging = new LoggingBuilder(Services);
 
+        var assembly = Assembly.GetEntryAssembly();
+        if (assembly != null)
+        {
+            InitializeRoutingAppContextSwitch(assembly);
+        }
+
+        InitializeWebAssemblyRenderer();
+
         // Retrieve required attributes from JSRuntimeInvoker
         InitializeNavigationManager(jsMethods);
         InitializeRegisteredRootComponents(jsMethods);
@@ -88,6 +98,22 @@ public sealed class WebAssemblyHostBuilder
         {
             return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
         };
+    }
+
+    private static void InitializeRoutingAppContextSwitch(Assembly assembly)
+    {
+        var assemblyMetadataAttributes = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
+        foreach (var ama in assemblyMetadataAttributes)
+        {
+            if (string.Equals(ama.Key, "Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", StringComparison.Ordinal))
+            {
+                if (ama.Value != null && string.Equals((string?)ama.Value, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    AppContext.SetSwitch("Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", true);
+                }
+                return;
+            }
+        }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
@@ -174,6 +200,28 @@ public sealed class WebAssemblyHostBuilder
         }
 
         return hostEnvironment;
+    }
+
+    private static void InitializeWebAssemblyRenderer()
+    {
+        // note that when this is running in single-threaded context or multi-threaded-CoreCLR unit tests, we don't want to install WebAssemblyDispatcher
+        if (OperatingSystem.IsBrowser())
+        {
+            var currentThread = Thread.CurrentThread;
+            if (currentThread.IsThreadPoolThread || currentThread.IsBackground)
+            {
+                throw new InvalidOperationException("WebAssemblyHostBuilder needs to be instantiated in the UI thread.");
+            }
+
+            // capture the JSSynchronizationContext from the main thread, which runtime already installed.
+            // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
+            // if user somehow installed SynchronizationContext different from JSSynchronizationContext, they need to make sure the behavior is consistent with JSSynchronizationContext.
+            if (WebAssemblyDispatcher._mainSynchronizationContext == null && SynchronizationContext.Current != null)
+            {
+                WebAssemblyDispatcher._mainSynchronizationContext = SynchronizationContext.Current;
+                WebAssemblyDispatcher._mainManagedThreadId = currentThread.ManagedThreadId;
+            }
+        }
     }
 
     /// <summary>

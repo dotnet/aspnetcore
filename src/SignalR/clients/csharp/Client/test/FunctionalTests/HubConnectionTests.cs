@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Test.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -2316,7 +2316,7 @@ public class HubConnectionTests : FunctionalTestBase
     [MemberData(nameof(TransportTypes))]
     public async Task CanBlockOnAsyncOperationsWithOneAtATimeSynchronizationContext(HttpTransportType transportType)
     {
-        const int DefaultTimeout = Testing.TaskExtensions.DefaultTimeoutDuration;
+        const int DefaultTimeout = InternalTesting.TaskExtensions.DefaultTimeoutDuration;
 
         await using var server = await StartServer<Startup>();
         await using var connection = CreateHubConnection(server.Url, "/default", transportType, HubProtocols["json"], LoggerFactory);
@@ -2667,6 +2667,7 @@ public class HubConnectionTests : FunctionalTestBase
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52408")]
     [Fact]
     public async Task ChangingUserNameDuringReconnectLogsWarning()
     {
@@ -2834,6 +2835,7 @@ public class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/51361")]
     public async Task ServerWithOldProtocolVersionClientWithNewProtocolVersionWorksDoesNotAllowStatefulReconnect()
     {
         bool ExpectedErrors(WriteContext writeContext)

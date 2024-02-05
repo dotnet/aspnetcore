@@ -12,7 +12,7 @@
 
   <!--#if (IndividualLocalAuth && !UseLocalDB) -->
   <ItemGroup>
-    <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <None Update="Data\app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
   <!--#endif -->

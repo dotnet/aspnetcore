@@ -511,10 +511,7 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new(path, contentType)
         {
@@ -547,10 +544,7 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new(path, contentType)
         {
@@ -576,10 +570,7 @@ public static class TypedResults
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
     public static RedirectHttpResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new(url, permanent, preserveMethod);
     }
@@ -599,10 +590,7 @@ public static class TypedResults
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
     public static RedirectHttpResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
     }
@@ -837,7 +825,7 @@ public static class TypedResults
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
     public static Created Created()
     {

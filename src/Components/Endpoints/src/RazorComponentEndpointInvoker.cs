@@ -107,7 +107,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                     return;
                 }
 
-                await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+                await _renderer.WaitForNonStreamingPendingTasks();
             }
             catch (NavigationException ex)
             {
@@ -125,6 +125,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
+        }
+        else
+        {
+            _renderer.EmitInitializersIfNecessary(context, bufferWriter);
         }
 
         // Emit comment containing state.

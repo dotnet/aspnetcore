@@ -666,7 +666,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(default(string), value) as Created<object>;
 
         //Assert
@@ -680,7 +680,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act        
+        // Act
         var result = Results.Created(string.Empty, value) as Created<object>;
 
         //Assert
@@ -694,7 +694,7 @@ public partial class ResultsTests
         //Arrange
         object value = new { };
 
-        // Act       
+        // Act
         var result = Results.Created(default(Uri), value) as Created<object>;
 
         //Assert
@@ -895,7 +895,7 @@ public partial class ResultsTests
         var options = new JsonSerializerOptions();
         var contentType = "application/custom+json";
         var statusCode = StatusCodes.Status208AlreadyReported;
-            
+
         // Act
         var result = Results.Json(data, options, contentType, statusCode) as JsonHttpResult<object>;
 
@@ -1035,7 +1035,7 @@ public partial class ResultsTests
     [Fact]
     public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("localUrl", () => Results.LocalRedirect(default(string)));
+        Assert.Throws<ArgumentNullException>("localUrl", () => Results.LocalRedirect(default(string)));
     }
 
     [Fact]
@@ -1339,7 +1339,7 @@ public partial class ResultsTests
     [Fact]
     public void Redirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("url", () => Results.Redirect(default(string)));
+        Assert.Throws<ArgumentNullException>("url", () => Results.Redirect(default(string)));
     }
 
     [Fact]

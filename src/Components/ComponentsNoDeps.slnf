@@ -9,6 +9,7 @@
       "src\\Components\\Components\\perf\\Microsoft.AspNetCore.Components.Performance.csproj",
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
       "src\\Components\\Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
+      "src\\Components\\CustomElements\\src\\Microsoft.AspNetCore.Components.CustomElements.csproj",
       "src\\Components\\Endpoints\\src\\Microsoft.AspNetCore.Components.Endpoints.csproj",
       "src\\Components\\Endpoints\\test\\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",
@@ -33,6 +34,7 @@
       "src\\Components\\WebAssembly\\testassets\\HostedInAspNet.Client\\HostedInAspNet.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\HostedInAspNet.Server\\HostedInAspNet.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\StandaloneApp\\StandaloneApp.csproj",
+      "src\\Components\\WebAssembly\\testassets\\ThreadingApp\\ThreadingApp.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Prerendered.Client\\Wasm.Prerendered.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Prerendered.Server\\Wasm.Prerendered.Server.csproj",
       "src\\Components\\WebAssembly\\testassets\\WasmLinkerTest\\WasmLinkerTest.csproj",
@@ -53,6 +55,7 @@
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\test\\testassets\\GlobalizationWasmApp\\GlobalizationWasmApp.csproj",
       "src\\Components\\test\\testassets\\LazyTestContentPackage\\LazyTestContentPackage.csproj",
+      "src\\Components\\test\\testassets\\NotReferencedInWasmCodePackage\\NotReferencedInWasmCodePackage.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj"
     ]
   }

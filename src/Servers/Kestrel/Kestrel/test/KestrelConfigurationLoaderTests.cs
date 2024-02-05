@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -238,6 +238,7 @@ public class KestrelConfigurationLoaderTests
         Assert.True(serverOptions.CodeBackedListenOptions[0].IsTls);
     }
 
+    // On helix retry list - inherently flaky (writes to a well-known path)
     [Fact]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
@@ -840,6 +841,7 @@ public class KestrelConfigurationLoaderTests
         Assert.Null(end1.EndpointConfig.SslProtocols);
     }
 
+    // On helix retry list - inherently flaky (FS events)
     [Theory]
     [InlineData(true)] // This might be flaky, since it depends on file system events (or polling)
     [InlineData(false)] // This will be slow (1 seconds)
@@ -922,6 +924,7 @@ public class KestrelConfigurationLoaderTests
         }
     }
 
+    // On helix retry list - inherently flaky (FS events)
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows)] // Windows has poor support for directory symlinks (e.g. https://github.com/dotnet/runtime/issues/27826)
     public async Task CertificateChangedOnDisk_Symlink()

@@ -56,7 +56,13 @@
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
 
     <script>
-        (function(){
+        (function () {
+            if (location.hash.indexOf('initializer') !== -1) {
+                const element = document.createElement('div');
+                element.id = 'initializers-content';
+                document.body.append(element);
+            }
+
             Blazor.start({
                 configureRuntime: dotnet => {
                     dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");

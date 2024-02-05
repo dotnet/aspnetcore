@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrerenderer
 {
     private readonly IServiceProvider _services;
+    private readonly RazorComponentsServiceOptions _options;
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
 
@@ -50,6 +52,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         : base(serviceProvider, loggerFactory)
     {
         _services = serviceProvider;
+        _options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
     }
 
     internal HttpContext? HttpContext => _httpContext;
@@ -128,7 +131,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     // For tests only
-    internal List<Task> NonStreamingPendingTasks => _nonStreamingPendingTasks;
+    internal Task? NonStreamingPendingTasksCompletion;
 
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
@@ -136,6 +139,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (_streamingUpdatesWriter is { } writer)
         {
+            // Important: SendBatchAsStreamingUpdate *must* be invoked synchronously
+            // before any 'await' in this method. That's enforced by the compiler
+            // (the method has an 'in' parameter) but even if it wasn't, it would still
+            // be important, because the RenderBatch buffers may be overwritten as soon
+            // as we yield the sync context. The only alternative would be to clone the
+            // batch deeply, or serialize it synchronously (e.g., via RenderBatchWriter).
             SendBatchAsStreamingUpdate(renderBatch, writer);
             return FlushThenComplete(writer, base.UpdateDisplayAsync(renderBatch));
         }

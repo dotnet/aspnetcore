@@ -87,7 +87,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         if (_jsRuntime == null)
         {
-            var absoluteUriString = ToAbsoluteUri(uri).ToString();
+            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
             throw new NavigationException(absoluteUriString);
         }
 
@@ -106,6 +106,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
                 }
 
                 await _jsRuntime.InvokeVoidAsync(Interop.NavigateTo, uri, options);
+                Log.NavigationCompleted(_logger, uri);
+            }
+            catch (TaskCanceledException)
+            when (_jsRuntime is RemoteJSRuntime remoteRuntime && remoteRuntime.IsPermanentlyDisconnected)
+            {
+                Log.NavigationStoppedSessionEnded(_logger, uri);
             }
             catch (Exception ex)
             {
@@ -120,6 +126,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     /// <inheritdoc />
     public override void Refresh(bool forceReload = false)
     {
+        if (_jsRuntime == null)
+        {
+            var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
+            throw new NavigationException(absoluteUriString);
+        }
+
         _ = RefreshAsync();
 
         async Task RefreshAsync()
@@ -157,7 +169,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     {
         try
         {
-            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, value);
+            await _jsRuntime.InvokeVoidAsync(Interop.SetHasLocationChangingListeners, WebRendererId.Server, value);
         }
         catch (JSDisconnectedException)
         {
@@ -184,5 +196,11 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(5, LogLevel.Error, "Failed to refresh", EventName = "RefreshFailed")]
         public static partial void RefreshFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(6, LogLevel.Debug, "Navigation completed when changing the location to {Uri}", EventName = "NavigationCompleted")]
+        public static partial void NavigationCompleted(ILogger logger, string uri);
+
+        [LoggerMessage(7, LogLevel.Debug, "Navigation stopped because the session ended when navigating to {Uri}", EventName = "NavigationStoppedSessionEnded")]
+        public static partial void NavigationStoppedSessionEnded(ILogger logger, string uri);
     }
 }

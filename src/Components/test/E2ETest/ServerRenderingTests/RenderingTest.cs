@@ -7,7 +7,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -49,5 +49,22 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
         // We can't see the response status code using Selenium, so make a direct request
         var response = await new HttpClient().GetAsync(Browser.Url);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public void RendersEndStateOfComponentsOnSSRPage()
+    {
+        Navigate($"{ServerPathBase}/ssr-page-that-delays-loading");
+        Browser.Equal("loaded child", () => Browser.Exists(By.Id("child")).Text);
+    }
+
+    [Fact]
+    public void PostRequestRendersEndStateOfComponentsOnSSRPage()
+    {
+        Navigate($"{ServerPathBase}/forms/post-form-with-component-that-delays-loading");
+
+        Browser.Exists(By.Id("submit-button")).Click();
+
+        Browser.Equal("loaded child", () => Browser.Exists(By.Id("child")).Text);
     }
 }

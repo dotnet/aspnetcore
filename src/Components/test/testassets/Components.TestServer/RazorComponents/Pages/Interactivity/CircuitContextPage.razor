@@ -1,0 +1,25 @@
+﻿@page "/interactivity/circuit-context"
+@rendermode RenderMode.InteractiveServer
+@inject TestCircuitContextAccessor CircuitContextAccessor
+
+<h1>Circuit context</h1>
+
+<p>
+    Has circuit context: <span id="has-circuit-context">@_hasCircuitContext</span>
+</p>
+
+@code {
+    private bool _hasCircuitContext;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Yield();
+
+            _hasCircuitContext = CircuitContextAccessor.HasCircuitContext;
+
+            StateHasChanged();
+        }
+    }
+}

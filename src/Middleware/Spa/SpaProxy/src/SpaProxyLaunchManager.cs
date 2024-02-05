@@ -74,8 +74,8 @@ internal sealed class SpaProxyLaunchManager : IDisposable
     {
         var httpClient = CreateHttpClient();
 
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(10));
         try
         {
             var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);
@@ -105,8 +105,8 @@ internal sealed class SpaProxyLaunchManager : IDisposable
 
     private async Task<bool> ProbeSpaDevelopmentServerUrl(HttpClient httpClient, CancellationToken cancellationToken)
     {
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(10));
         try
         {
             var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);

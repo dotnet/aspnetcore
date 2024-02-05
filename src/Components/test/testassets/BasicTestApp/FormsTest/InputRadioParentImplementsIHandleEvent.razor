@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@implements IHandleEvent
+
+<InputRadioGroup @bind-Value="N">
+  <InputRadio id="inputradiogroup-parent-ihandle-event-0" Value="0" />
+  <InputRadio id="inputradiogroup-parent-ihandle-event-1" Value="1" />
+</InputRadioGroup>
+
+@code {
+
+  [SupplyParameterFromQuery(Name = "n")] int? N { get; set; }
+
+  Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object arg) => callback.InvokeAsync(arg);
+}

@@ -89,6 +89,7 @@ REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
     return ShuttingDownHandler::ServerShutdownMessage(m_pW3Context);
 }
 
+// Called from native IIS
 VOID
 IN_PROCESS_HANDLER::NotifyDisconnect()
 {
@@ -112,20 +113,28 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
         m_disconnectFired = true;
     }
 
+    // This could be null if the request is completed before the http context is set
+    // for example this can happen when the client cancels the request very quickly after making it
     if (pManagedHttpContext != nullptr)
     {
         m_pDisconnectHandler(pManagedHttpContext);
-        {
-            // lock before notifying, this prevents the condition where m_queueNotified is already checked but
-            // the condition_variable isn't waiting yet, which would cause notify_all to NOOP and block
-            // IndicateManagedRequestComplete until a spurious wakeup
-            std::lock_guard<std::mutex> lock(m_lockQueue);
-            m_queueNotified = true;
-        }
-        m_queueCheck.notify_all();
     }
+
+    // Make sure we unblock any potential current or future m_queueCheck.wait(...) calls
+    // We could make this conditional, but it would need to be duplicated in SetManagedHttpContext
+    // to avoid a race condition where the http context is null but we called disconnect which could make IndicateManagedRequestComplete hang
+    // It's more future proof to just always do this even if nothing will be waiting on the conditional_variable
+    {
+        // lock before notifying, this prevents the condition where m_queueNotified is already checked but
+        // the condition_variable isn't waiting yet, which would cause notify_all to NOOP and block
+        // IndicateManagedRequestComplete until a spurious wakeup
+        std::lock_guard<std::mutex> lock(m_lockQueue);
+        m_queueNotified = true;
+    }
+    m_queueCheck.notify_all();
 }
 
+// Called from managed server
 VOID
 IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
     VOID
@@ -164,6 +173,7 @@ IN_PROCESS_HANDLER::SetAsyncCompletionStatus(
     m_requestNotificationStatus = requestNotificationStatus;
 }
 
+// Called from managed server
 VOID
 IN_PROCESS_HANDLER::SetManagedHttpContext(
     PVOID pManagedHttpContext
@@ -179,6 +189,8 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
 
     if (disconnectFired && pManagedHttpContext != nullptr)
     {
+        // Safe to call, managed code is waiting on SetManagedHttpContext in the process request loop and doesn't dispose
+        // the GCHandle until after the request loop completes
         m_pDisconnectHandler(pManagedHttpContext);
     }
 }

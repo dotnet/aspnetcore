@@ -59,6 +59,7 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 restore=false
 build=false
 source_build=false
+vertical_build=false
 rebuild=false
 test=false
 integration_test=false
@@ -105,7 +106,7 @@ while [[ $# > 0 ]]; do
     -binarylog|-bl)
       binary_log=true
       ;;
-    -excludeCIBinarylog|-nobl)
+    -excludecibinarylog|-nobl)
       exclude_ci_binary_log=true
       ;;
     -pipelineslog|-pl)
@@ -126,6 +127,12 @@ while [[ $# > 0 ]]; do
     -sourcebuild|-sb)
       build=true
       source_build=true
+      restore=true
+      pack=true
+      ;;
+    -verticalbuild|-vb)
+      build=true
+      vertical_build=true
       restore=true
       pack=true
       ;;
@@ -220,6 +227,7 @@ function Build {
     /p:Restore=$restore \
     /p:Build=$build \
     /p:ArcadeBuildFromSource=$source_build \
+    /p:ArcadeBuildVertical=$vertical_build \
     /p:Rebuild=$rebuild \
     /p:Test=$test \
     /p:Pack=$pack \

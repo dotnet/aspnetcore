@@ -26,25 +26,10 @@ public class OAuthOptions : RemoteAuthenticationOptions
     {
         base.Validate();
 
-        if (string.IsNullOrEmpty(ClientId))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(ClientId)), nameof(ClientId));
-        }
-
-        if (string.IsNullOrEmpty(ClientSecret))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(ClientSecret)), nameof(ClientSecret));
-        }
-
-        if (string.IsNullOrEmpty(AuthorizationEndpoint))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(AuthorizationEndpoint)), nameof(AuthorizationEndpoint));
-        }
-
-        if (string.IsNullOrEmpty(TokenEndpoint))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(TokenEndpoint)), nameof(TokenEndpoint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(ClientId);
+        ArgumentException.ThrowIfNullOrEmpty(ClientSecret);
+        ArgumentException.ThrowIfNullOrEmpty(AuthorizationEndpoint);
+        ArgumentException.ThrowIfNullOrEmpty(TokenEndpoint);
 
         if (!CallbackPath.HasValue)
         {

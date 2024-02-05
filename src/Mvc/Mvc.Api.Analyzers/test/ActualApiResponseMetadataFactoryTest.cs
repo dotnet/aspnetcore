@@ -14,6 +14,12 @@ public class ActualApiResponseMetadataFactoryTest
 {
     private static readonly string Namespace = typeof(ActualApiResponseMetadataFactoryTest).Namespace;
 
+    public enum ReturnOperationTestVariant
+    {
+        Default,
+        SwitchExpression
+    }
+
     [Fact]
     public async Task GetDefaultStatusCode_ReturnsValueDefinedUsingStatusCodeConstants()
     {
@@ -77,151 +83,191 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             returnOperation);
 
         // Assert
-        Assert.Null(actualResponseMetadata);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.Null(metadata);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReturnsStatusCodeFromDefaultStatusCodeAttributeOnActionResult()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReturnsStatusCodeFromDefaultStatusCodeAttributeOnActionResult(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(401, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(401, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReturnsDefaultResponseMetadata_IfReturnedTypeIsNotActionResult()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReturnsDefaultResponseMetadata_IfReturnedTypeIsNotActionResult(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.True(actualResponseMetadata.Value.IsDefaultResponse);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.True(metadata.Value.IsDefaultResponse);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReturnsStatusCodeFromStatusCodePropertyAssignment()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReturnsStatusCodeFromStatusCodePropertyAssignment(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(201, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(201, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReturnsStatusCodeFromConstructorAssignment()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReturnsStatusCodeFromConstructorAssignment(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(204, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(204, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReturnsStatusCodeFromHelperMethod()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReturnsStatusCodeFromHelperMethod(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(302, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(302, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_UsesExplicitlySpecifiedStatusCode_ForActionResultWithDefaultStatusCode()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_UsesExplicitlySpecifiedStatusCode_ForActionResultWithDefaultStatusCode(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(422, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(422, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReadsStatusCodeConstant()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReadsStatusCodeConstant(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(423, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(423, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_DoesNotReadLocalFieldWithConstantValue()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_DoesNotReadLocalFieldWithConstantValue(ReturnOperationTestVariant variant)
     {
         // This is a gap in the analyzer. We're using this to document the current behavior and not an expecation.
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.Null(actualResponseMetadata);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.Null(metadata);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_FallsBackToDefaultStatusCode_WhenAppliedStatusCodeCannotBeRead()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_FallsBackToDefaultStatusCode_WhenAppliedStatusCodeCannotBeRead(ReturnOperationTestVariant variant)
     {
         // This is a gap in the analyzer. We're using this to document the current behavior and not an expecation.
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Equal(400, actualResponseMetadata.Value.StatusCode);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Equal(400, metadata.Value.StatusCode);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_SetsReturnType_WhenLiteralTypeIsSpecifiedInConstructor()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_SetsReturnType_WhenLiteralTypeIsSpecifiedInConstructor(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata?.ReturnType);
-        Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata?.ReturnType);
+        Assert.Equal("TestModel", metadata.Value.ReturnType.Name);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_SetsReturnType_WhenLocalValueIsSpecifiedInConstructor()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_SetsReturnType_WhenLocalValueIsSpecifiedInConstructor(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata?.ReturnType);
-        Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata?.ReturnType);
+        Assert.Equal("TestModel", metadata.Value.ReturnType.Name);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_SetsReturnType_WhenValueIsReturned()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_SetsReturnType_WhenValueIsReturned(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata?.ReturnType);
-        Assert.Equal("TestModel", actualResponseMetadata.Value.ReturnType.Name);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata?.ReturnType);
+        Assert.Equal("TestModel", metadata.Value.ReturnType.Name);
     }
 
-    [Fact]
-    public async Task InspectReturnExpression_ReturnsNullReturnType_IfValueIsNotSpecified()
+    [Theory]
+    [InlineData(ReturnOperationTestVariant.Default)]
+    [InlineData(ReturnOperationTestVariant.SwitchExpression)]
+    public async Task InspectReturnExpression_ReturnsNullReturnType_IfValueIsNotSpecified(ReturnOperationTestVariant variant)
     {
         // Arrange & Act
-        var actualResponseMetadata = await RunInspectReturnStatementSyntax();
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(variant);
 
         // Assert
-        Assert.NotNull(actualResponseMetadata);
-        Assert.Null(actualResponseMetadata.Value.ReturnType);
+        var metadata = Assert.Single(actualResponseMetadata);
+        Assert.NotNull(metadata);
+        Assert.Null(metadata.Value.ReturnType);
     }
 
     [Fact]
@@ -333,13 +379,15 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         return (result, responseMetadatas, testSource);
     }
 
-    private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax([CallerMemberName] string test = null)
+    private async Task<ActualApiResponseMetadata?[]> RunInspectReturnStatementSyntax(ReturnOperationTestVariant variant = ReturnOperationTestVariant.Default, [CallerMemberName] string test = null)
     {
-        // Arrange
-        var compilation = await GetCompilation("InspectReturnExpressionTests");
+        var testClassName = GetTestClassName(variant);
+        var controllerTypeName = GetControllerTypeName(variant);
+
+        var compilation = await GetCompilation(testClassName);
         Assert.True(ApiControllerSymbolCache.TryCreate(compilation, out var symbolCache));
 
-        var controllerType = compilation.GetTypeByMetadataName(typeof(TestFiles.InspectReturnExpressionTests.TestController).FullName);
+        var controllerType = compilation.GetTypeByMetadataName(controllerTypeName);
         var syntaxTree = controllerType.DeclaringSyntaxReferences[0].SyntaxTree;
 
         var method = (IMethodSymbol)Assert.Single(controllerType.GetMembers(test));
@@ -352,7 +400,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             returnOperation);
     }
 
-    private async Task<ActualApiResponseMetadata?> RunInspectReturnStatementSyntax(string source, string test)
+    private async Task<ActualApiResponseMetadata?[]> RunInspectReturnStatementSyntax(string source, string test)
     {
         var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { source });
         var compilation = await project.GetCompilationAsync();
@@ -377,5 +425,25 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
         return project.GetCompilationAsync();
+    }
+
+    private string GetTestClassName(ReturnOperationTestVariant variant)
+    {
+        return variant switch
+        {
+            ReturnOperationTestVariant.SwitchExpression => "InspectReturnExpressionTestsForSwitchExpression",
+            _ => "InspectReturnExpressionTests",
+        };
+    }
+
+    private string GetControllerTypeName(ReturnOperationTestVariant variant)
+    {
+        var controllerType = variant switch
+        {
+            ReturnOperationTestVariant.SwitchExpression => typeof(TestFiles.InspectReturnExpressionTestsForSwitchExpression.TestController),
+            _ => typeof(TestFiles.InspectReturnExpressionTests.TestController),
+        };
+
+        return controllerType.FullName;
     }
 }

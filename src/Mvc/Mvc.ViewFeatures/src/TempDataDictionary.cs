@@ -6,15 +6,15 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 /// <inheritdoc />
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(TempDataDictionaryDebugView))]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class TempDataDictionary : ITempDataDictionary
 {
     // Perf: Everything here is lazy because the TempDataDictionary is frequently created and passed around
@@ -312,13 +312,5 @@ public class TempDataDictionary : ITempDataDictionary
         {
             _enumerator.Dispose();
         }
-    }
-
-    private sealed class TempDataDictionaryDebugView(TempDataDictionary dictionary)
-    {
-        private readonly TempDataDictionary _dictionary = dictionary;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object?>[] Items => _dictionary.ToArray();
     }
 }

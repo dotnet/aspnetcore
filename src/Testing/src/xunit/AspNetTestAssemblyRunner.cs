@@ -11,7 +11,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class AspNetTestAssemblyRunner : XunitTestAssemblyRunner
 {

@@ -1,0 +1,49 @@
+{
+  "name": "aspnetcore",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "src/SignalR/clients/ts/signalr",
+    "src/SignalR/clients/ts/signalr-protocol-msgpack",
+    "src/SignalR/clients/ts/FunctionalTests",
+    "src/SignalR/clients/ts",
+    "src/JSInterop/Microsoft.JSInterop.JS/src",
+    "src/Components/dotnet-runtime-js",
+    "src/Components/Web.JS/",
+    "src/Components/WebAssembly/WebAssembly.Authentication/src/Interop",
+    "src/Components/WebAssembly/Authentication.Msal/src/Interop",
+    "src/Components/CustomElements/src/js",
+    "src/ProjectTemplates/test/Templates.Tests"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "integration-test": "npm run integration-test --workspaces --if-present",
+    "coverage": "npm run coverage --workspaces --if-present",
+    "get-version": "npm run get-version --workspaces --if-present"
+  },
+  "overrides": {
+    "got": "^11.8.2",
+    "http-cache-semantics": "^4.1.1",
+    "semver-regex": "^3.1.3",
+    "saucelabs": ">=7.2.0"
+  },
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=9.3.1"
+  },
+  "devDependencies": {
+    "karma-sauce-launcher": "^4.3.6",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.2",
+    "rollup-plugin-filesize": "^10.0.0",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2"
+  }
+}

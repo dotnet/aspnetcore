@@ -123,6 +123,7 @@ virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUse
 virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.Roles.set -> void
 virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.UserRoles.get -> Microsoft.EntityFrameworkCore.DbSet<TUserRole!>!
 virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>.UserRoles.set -> void
+virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.SchemaVersion.get -> System.Version!
 virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserClaims.get -> Microsoft.EntityFrameworkCore.DbSet<TUserClaim!>!
 virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserClaims.set -> void
 virtual Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.UserLogins.get -> Microsoft.EntityFrameworkCore.DbSet<TUserLogin!>!

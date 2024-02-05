@@ -115,7 +115,7 @@ public static class ComponentEndpointRouteBuilderExtensions
             .WithDisplayName("Blazor static files");
 
         blazorEndpoint.Add((builder) => ((RouteEndpointBuilder)builder).Order = int.MinValue);
-        
+
 #if DEBUG
         // We only need to serve the sourcemap when working on the framework, not in the distributed packages
         endpoints.Map("/_framework/blazor.server.js.map", app.Build())
