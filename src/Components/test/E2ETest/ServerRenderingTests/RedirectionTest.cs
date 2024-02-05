@@ -39,7 +39,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         AssertElementRemoved(_originalH1Element);
         Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.True(() => Browser.GetScrollY() > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82#some-content", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -61,7 +61,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         AssertElementRemoved(_originalH1Element);
         Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.True(() => Browser.GetScrollY() > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82#some-content", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -87,7 +87,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
         Browser.Exists(By.LinkText("Enhanced GET with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -108,7 +108,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -129,7 +129,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.LinkText("Streaming enhanced GET with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -150,7 +150,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();

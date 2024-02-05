@@ -39,10 +39,12 @@ public class UnifiedRoutingTests : ServerTestBase<BasicTestAppServerSiteFixture<
         ExecuteRoutingTestCore(url, expectedValue);
     }
 
-    [Fact]
-    public void Routing_CanRenderPagesWithConstrainedParameters_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/constraints/5", "5")]
+    [InlineData("%F0%9F%99%82/routing/constraints/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback", "http://www.example.com/login/callback")]
+    public void Routing_CanRenderPagesWithConstrainedParameters_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/constraints/5", "5");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
     [Theory]
@@ -73,10 +75,12 @@ public class UnifiedRoutingTests : ServerTestBase<BasicTestAppServerSiteFixture<
         ExecuteRoutingTestCore(url, expectedValue);
     }
 
-    [Fact]
-    public void Routing_CanRenderPagesWithConstrainedCatchAllParameters_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/constrained-catch-all/a/b", "a/b")]
+    [InlineData("%F0%9F%99%82/routing/constrained-catch-all/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback/another", "http://www.example.com/login/callback/another")]
+    public void Routing_CanRenderPagesWithConstrainedCatchAllParameters_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/constrained-catch-all/a/b", "a/b");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
     private void ExecuteRoutingTestCore(string url, string expectedValue)
