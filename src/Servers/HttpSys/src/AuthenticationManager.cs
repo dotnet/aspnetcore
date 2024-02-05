@@ -68,13 +68,18 @@ public sealed class AuthenticationManager
     /// If true, the Kerberos authentication credentials are persisted per connection
     /// and re-used for subsequent anonymous requests on the same connection.
     /// Kerberos or Negotiate authentication must be enabled. The default is false.
+    /// This option maps to the native HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING flag.
+    /// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_server_authentication_info"/>
     /// </summary>
     public bool EnableKerberosCredentialCaching { get; set; }
 
     /// <summary>
-    /// If true, the server captures the caller's credentials and uses them for Kerberos
-    /// or Negotiate authentication. Kerberos or Negotiate authentication must be enabled.
-    /// The default is false.
+    /// If true, the server captures the current caller's credentials and impersonates
+    /// them during Kerberos or Negotiate authentication. The credentials are captured
+    /// from the security context of a thread that performs the host initialization.
+    /// Kerberos or Negotiate authentication must be enabled. The default is false.
+    /// This option maps to the native HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL flag.
+    /// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_server_authentication_info"/>
     /// </summary>
     public bool CaptureCredentials { get; set; }
 
