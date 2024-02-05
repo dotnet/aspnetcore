@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 /// Represents the context during authentication operations.
 /// </summary>
 /// <typeparam name="TRemoteAuthenticationState"></typeparam>
+[DynamicallyAccessedMembers(JsonSerialized)]
 public class RemoteAuthenticationContext<[DynamicallyAccessedMembers(JsonSerialized)] TRemoteAuthenticationState> where TRemoteAuthenticationState : RemoteAuthenticationState
 {
     /// <summary>
