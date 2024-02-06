@@ -48,9 +48,12 @@ public interface IXmlRepository
     /// The second argument gives the contents of the collection before any removals.
     /// Returning true will cause the element to be removed from the repository.
     /// </param>
+    /// <returns>
+    /// True if all deletions succeeded.
+    /// </returns>
     /// <exception cref="NotSupportedException">
     /// If <see cref="CanRemoveElements"/> is false.
     /// </exception>
-    void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove) => throw new NotSupportedException();
+    bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove) => throw new NotSupportedException();
 #endif
 }

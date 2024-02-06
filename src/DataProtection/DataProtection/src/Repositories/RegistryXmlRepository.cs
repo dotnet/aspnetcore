@@ -160,7 +160,7 @@ public class RegistryXmlRepository : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
-    public virtual void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
+    public virtual bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
     {
         ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
 
@@ -177,6 +177,8 @@ public class RegistryXmlRepository : IXmlRepository
             }
         }
 
+        var allSucceeded = true;
+
         for (var i = 0; i < valueNames.Count; i++)
         {
             if (shouldRemove(elements[i], elements))
@@ -190,8 +192,11 @@ public class RegistryXmlRepository : IXmlRepository
                 catch (Exception ex)
                 {
                     _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                    allSucceeded = false;
                 }
             }
         }
+
+        return allSucceeded;
     }
 }

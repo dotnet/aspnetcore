@@ -84,7 +84,7 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc />
-    public virtual void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
+    public virtual bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
     {
         using (var scope = _services.CreateScope())
         {
@@ -101,6 +101,8 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
                 }
             }
 
+            var allSucceeded = true;
+
             for (var i = 0; i < keys.Count; i++)
             {
                 if (shouldRemove(elements[i], elements))
@@ -114,11 +116,22 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
                     catch (Exception ex)
                     {
                         _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
+                        allSucceeded = false;
                     }
                 }
             }
 
-            context.SaveChanges();
+            try
+            {
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                _logger.FailedToSaveKeyDeletionsToDbContext(typeof(TContext).Name, ex);
+                allSucceeded = false;
+            }
+
+            return allSucceeded;
         }
     }
 }

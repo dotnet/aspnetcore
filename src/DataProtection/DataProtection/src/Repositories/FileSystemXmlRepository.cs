@@ -180,7 +180,7 @@ public class FileSystemXmlRepository : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
-    public virtual void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
+    public virtual bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
     {
         ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
 
@@ -194,6 +194,8 @@ public class FileSystemXmlRepository : IXmlRepository
             fileSystemInfos.Add(fileSystemInfo);
             elements.Add(element);
         }
+
+        var allSucceeded = true;
 
         for (var i = 0; i < fileSystemInfos.Count; i++)
         {
@@ -209,8 +211,11 @@ public class FileSystemXmlRepository : IXmlRepository
                 {
                     Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
                     _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
+                    allSucceeded = false;
                 }
             }
         }
+
+        return allSucceeded;
     }
 }
