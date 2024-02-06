@@ -91,4 +91,10 @@ internal static class Error
         var message = string.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DuplicateKey, keyId);
         return new InvalidOperationException(message);
     }
+
+    public static NotSupportedException XmlKeyManager_DoesNotSupportKeyDeletion()
+    {
+        var message = string.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DoesNotSupportKeyDeletion);
+        return new NotSupportedException(message);
+    }
 }

@@ -1,6 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.CanDeleteKeys.get -> bool
-Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete, bool unsafeIncludeUnexpired = false) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete, bool unsafeIncludeUnexpired = false) -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CanDeleteKeys.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete, bool unsafeIncludeUnexpired = false) -> bool
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.CanRemoveElements.get -> bool
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!, bool>! shouldRemove) -> void
 virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.CanRemoveElements.get -> bool
