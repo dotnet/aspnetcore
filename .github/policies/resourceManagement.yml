@@ -153,6 +153,7 @@ configuration:
           hour: 12
       filters:
       - isNotDraftPullRequest
+      - isPullRequest
       - isOpen
       - noActivitySince:
           days: 7
