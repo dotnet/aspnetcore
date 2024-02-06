@@ -13,4 +13,7 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(3, LogLevel.Debug, "Deleting key '{FriendlyName}' from '{DbContext}'.", EventName = "DeletingKeyFromDbContext")]
     public static partial void DeletingKeyFromDbContext(this ILogger logger, string? friendlyName, string dbContext);
+
+    [LoggerMessage(4, LogLevel.Error, "Failed to delete key '{FriendlyName}' from '{DbContext}'.", EventName = "FailedToDeleteKeyFromDbContext")]
+    public static partial void FailedToDeleteKeyFromDbContext(this ILogger logger, string? friendlyName, string dbContext, Exception exception);
 }

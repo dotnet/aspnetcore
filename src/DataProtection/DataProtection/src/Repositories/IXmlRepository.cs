@@ -45,11 +45,12 @@ public interface IXmlRepository
     /// </summary>
     /// <param name="shouldRemove">
     /// A predicate applied to each element.
+    /// The second argument gives the contents of the collection before any removals.
     /// Returning true will cause the element to be removed from the repository.
     /// </param>
     /// <exception cref="NotSupportedException">
     /// If <see cref="CanRemoveElements"/> is false.
     /// </exception>
-    void RemoveElements(Func<XElement, bool> shouldRemove) => throw new NotSupportedException();
+    void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove) => throw new NotSupportedException();
 #endif
 }

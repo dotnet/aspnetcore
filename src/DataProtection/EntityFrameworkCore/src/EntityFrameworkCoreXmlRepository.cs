@@ -84,18 +84,37 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc />
-    public virtual void RemoveElements(Func<XElement, bool> shouldRemove)
+    public virtual void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
     {
         using (var scope = _services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<TContext>();
-            var keys = context.DataProtectionKeys.AsNoTracking().ToList();
-            foreach (var key in keys)
+            var keys = new List<DataProtectionKey>();
+            var elements = new List<XElement>();
+
+            foreach (var key in context.DataProtectionKeys.AsNoTracking())
             {
-                if (!string.IsNullOrEmpty(key.Xml) && shouldRemove(XElement.Parse(key.Xml)))
+                if (!string.IsNullOrEmpty(key.Xml))
                 {
-                    context.DataProtectionKeys.Remove(key);
+                    keys.Add(key);
+                    elements.Add(XElement.Parse(key.Xml));
+                }
+            }
+
+            for (var i = 0; i < keys.Count; i++)
+            {
+                if (shouldRemove(elements[i], elements))
+                {
+                    var key = keys[i];
                     _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
+                    try
+                    {
+                        context.DataProtectionKeys.Remove(key);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
+                    }
                 }
             }
 
