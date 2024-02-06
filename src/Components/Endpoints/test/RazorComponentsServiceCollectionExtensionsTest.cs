@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
@@ -90,7 +91,7 @@ public class RazorComponentsServiceCollectionExtensionsTest
                 [typeof(ICascadingValueSupplier)] = new[]
                 {
                     typeof(SupplyParameterFromFormValueProvider),
-                    typeof(SupplyParameterFromQueryProviderServiceCollectionExtensions.SupplyValueFromQueryValueProvider),
+                    typeof(SupplyParameterFromQueryValueProvider),
                 }
             };
         }
