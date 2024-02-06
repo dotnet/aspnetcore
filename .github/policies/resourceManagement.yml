@@ -492,7 +492,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: main
       then:
@@ -502,7 +502,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/9.0-preview1
       then:
@@ -679,7 +679,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/6.0
       then:
@@ -690,7 +690,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/7.0
       then:
@@ -701,7 +701,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/8.0
       then:
