@@ -319,6 +319,284 @@ internal class Program
     }
 
     [Fact]
+    public async Task ActionRouteToken_DifferentActionNames_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public class WeatherForecastController : ControllerBase
+{
+    [Route(""{action}"")]
+    public object Get() => new object();
+
+    [Route(""{action}"")]
+    public object Get1() => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_SameActionName_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public class WeatherForecastController : ControllerBase
+{
+    [Route({|#0:""{action}""|})]
+    public object Get() => new object();
+
+    [Route({|#1:""{action}""|})]
+    public object Get(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_ActionNameAttribute_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public class WeatherForecastController : ControllerBase
+{
+    [Route({|#0:""{action}""|})]
+    public object Get() => new object();
+
+    [Route({|#1:""{action}""|})]
+    [ActionName(""get"")]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{action}").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_ActionNameAttributeNullValue_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public class WeatherForecastController : ControllerBase
+{
+    [Route({|#0:""{action}""|})]
+    public object Get() => new object();
+
+    [Route({|#1:""{action}""|})]
+    [ActionName(null)]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_OnController_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+[Route(""{controller}/{action}"")]
+public class WeatherForecastController : ControllerBase
+{
+    [Route(""{i}"")]
+    public object Get(int i) => new object();
+
+    [Route(""{i}"")]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_OnBaseController_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+[Route(""{controller}/{action}"")]
+public class MyControllerBase : ControllerBase
+{
+}
+public class WeatherForecastController : MyControllerBase
+{
+    [Route(""{i}"")]
+    public object Get(int i) => new object();
+
+    [Route(""{i}"")]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_OnBaseControllerButOverridden_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+[Route(""{controller}/{action}"")]
+public class MyControllerBase : ControllerBase
+{
+}
+[Route(""api"")]
+public class WeatherForecastController : MyControllerBase
+{
+    [Route({|#0:""{i}""|})]
+    public object Get(int i) => new object();
+
+    [Route({|#1:""{i}""|})]
+    public object Get1(int i) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        var expectedDiagnostics = new[] {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{i}").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousActionRoute).WithArguments("{i}").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_OnController_ActionName_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+[Route(""{controller}/{action}"")]
+public class WeatherForecastController : ControllerBase
+{
+    [Route(""{i}"")]
+    public object Get(int i) => new object();
+
+    [Route(""{s}"")]
+    [ActionName(name: ""getWithString"")]
+    public object Get(string s) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task ActionRouteToken_OnController_ActionNameOnBase_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+public abstract class MyControllerBase : ControllerBase
+{
+    [ActionName(name: ""getWithString"")]
+    public abstract object Get(string s);
+}
+[Route(""{controller}/{action}"")]
+public class WeatherForecastController : MyControllerBase
+{
+    [Route(""{i}"")]
+    public object Get(int i) => new object();
+
+    [Route(""{s}"")]
+    public override object Get(string s) => new object();
+}
+internal class Program
+{
+    static void Main(string[] args)
+    {
+    }
+}
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
     public async Task MixedRoutes_DifferentAction_HasDiagnostics()
     {
         // Arrange

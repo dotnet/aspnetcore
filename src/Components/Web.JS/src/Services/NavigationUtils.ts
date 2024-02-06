@@ -105,42 +105,26 @@ function eventHasSpecialKey(event: MouseEvent) {
   return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
 }
 
-function canProcessAnchor(anchorTarget: HTMLAnchorElement) {
+function canProcessAnchor(anchorTarget: HTMLAnchorElement | SVGAElement) {
   const targetAttributeValue = anchorTarget.getAttribute('target');
   const opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
   return opensInSameFrame && anchorTarget.hasAttribute('href') && !anchorTarget.hasAttribute('download');
 }
 
-function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | null {
-  // _blazorDisableComposedPath is a temporary escape hatch in case any problems are discovered
-  // in this logic. It can be removed in a later release, and should not be considered supported API.
-  const path = !window['_blazorDisableComposedPath'] && event.composedPath && event.composedPath();
+function findAnchorTarget(event: MouseEvent): HTMLAnchorElement | SVGAElement | null {
+  const path = event.composedPath && event.composedPath();
   if (path) {
     // This logic works with events that target elements within a shadow root,
     // as long as the shadow mode is 'open'. For closed shadows, we can't possibly
     // know what internal element was clicked.
     for (let i = 0; i < path.length; i++) {
       const candidate = path[i];
-      if (candidate instanceof Element && candidate.tagName === 'A') {
-        return candidate as HTMLAnchorElement;
+      if (candidate instanceof HTMLAnchorElement || candidate instanceof SVGAElement) {
+        return candidate;
       }
-    }
-    return null;
-  } else {
-    // Since we're adding use of composedPath in a patch, retain compatibility with any
-    // legacy browsers that don't support it by falling back on the older logic, even
-    // though it won't work properly with ShadowDOM. This can be removed in the next
-    // major release.
-    return findClosestAnchorAncestorLegacy(event.target as Element | null, 'A');
-  }
-}
-
-function findClosestAnchorAncestorLegacy(element: Element | null, tagName: string) {
-  return !element
-    ? null
-    : element.tagName === tagName
-      ? element
-      : findClosestAnchorAncestorLegacy(element.parentElement, tagName);
+    } 
+  } 
+  return null;
 }
 
 export function hasInteractiveRouter(): boolean {
