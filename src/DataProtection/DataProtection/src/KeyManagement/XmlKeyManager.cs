@@ -164,11 +164,28 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     public IReadOnlyCollection<IKey> GetAllKeys()
     {
         var allElements = KeyRepository.GetAllElements();
+        var keyIdToKeyMap = GetKeysWorker(allElements, collectElements: false, out _, out _, out _, out _, out _);
 
-        // We aggregate all the information we read into three buckets
-        Dictionary<Guid, Key> keyIdToKeyMap = new Dictionary<Guid, Key>();
-        HashSet<Guid>? revokedKeyIds = null;
-        DateTimeOffset? mostRecentMassRevocationDate = null;
+        // And we're finished!
+        return keyIdToKeyMap.Values.ToList().AsReadOnly();
+    }
+
+    private Dictionary<Guid, Key> GetKeysWorker(
+        IReadOnlyCollection<XElement> allElements,
+        bool collectElements,
+        out Dictionary<XElement, Guid>? keyElementToKeyIdMap,
+        out Dictionary<Guid, XElement>? revocationIdToElementMap,
+        out DateTimeOffset? mostRecentMassRevocationDate,
+        out XElement? mostRecentMassRevocationElement,
+        out List<XElement>? redundantRevocationElements)
+    {
+        Dictionary<Guid, Key> keyIdToKeyMap = [];
+
+        keyElementToKeyIdMap = null; // Depends on collectElements
+        revocationIdToElementMap = null;
+        mostRecentMassRevocationDate = null;
+        mostRecentMassRevocationElement = null; // Depends on collectElements
+        redundantRevocationElements = null; // Depends on collectElements
 
         foreach (var element in allElements)
         {
@@ -184,26 +201,55 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                         throw Error.XmlKeyManager_DuplicateKey(key.KeyId);
                     }
                     keyIdToKeyMap[key.KeyId] = key;
+
+                    if (collectElements)
+                    {
+                        keyElementToKeyIdMap ??= new Dictionary<XElement, Guid>(ReferenceEqualityComparer.Instance);
+                        keyElementToKeyIdMap[element] = key.KeyId;
+                    }
                 }
             }
             else if (element.Name == RevocationElementName)
             {
                 var revocationInfo = ProcessRevocationElement(element);
-                if (revocationInfo is Guid)
+                if (revocationInfo is Guid revocationGuid)
                 {
                     // a single key was revoked
-                    if (revokedKeyIds == null)
+                    revocationIdToElementMap ??= [];
+                    if (revocationIdToElementMap.ContainsKey(revocationGuid))
                     {
-                        revokedKeyIds = new HashSet<Guid>();
+                        // TODO (acasey): log duplicate revocation
+
+                        if (collectElements)
+                        {
+                            redundantRevocationElements ??= [];
+                            redundantRevocationElements.Add(element);
+                        }
                     }
-                    revokedKeyIds.Add((Guid)revocationInfo);
+                    else
+                    {
+                        revocationIdToElementMap[revocationGuid] = element;
+                    }
                 }
                 else
                 {
                     // all keys as of a certain date were revoked
-                    DateTimeOffset thisMassRevocationDate = (DateTimeOffset)revocationInfo;
+                    var thisMassRevocationDate = (DateTimeOffset)revocationInfo;
                     if (!mostRecentMassRevocationDate.HasValue || mostRecentMassRevocationDate < thisMassRevocationDate)
                     {
+                        if (collectElements)
+                        {
+                            if (mostRecentMassRevocationElement is not null)
+                            {
+                                // TODO (acasey): log redundant mass revocation
+
+                                redundantRevocationElements ??= [];
+                                redundantRevocationElements.Add(mostRecentMassRevocationElement!);
+                            }
+
+                            mostRecentMassRevocationElement = element;
+                        }
+
                         mostRecentMassRevocationDate = thisMassRevocationDate;
                     }
                 }
@@ -216,12 +262,11 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         }
 
         // Apply individual revocations
-        if (revokedKeyIds != null)
+        if (revocationIdToElementMap is not null)
         {
-            foreach (Guid revokedKeyId in revokedKeyIds)
+            foreach (Guid revokedKeyId in revocationIdToElementMap.Keys)
             {
-                keyIdToKeyMap.TryGetValue(revokedKeyId, out var key);
-                if (key != null)
+                if (keyIdToKeyMap.TryGetValue(revokedKeyId, out var key))
                 {
                     key.SetRevoked();
                     _logger.MarkedKeyAsRevokedInTheKeyring(revokedKeyId);
@@ -251,8 +296,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             }
         }
 
-        // And we're finished!
-        return keyIdToKeyMap.Values.ToList().AsReadOnly();
+        return keyIdToKeyMap;
     }
 
     /// <inheritdoc/>
@@ -383,6 +427,47 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             keyId: keyId,
             revocationDate: GetUtcNow(),
             reason: reason);
+    }
+
+    /// <inheritdoc/>
+    public bool CanDeleteKeys => KeyRepository.CanRemoveElements;
+
+    /// <inheritdoc/>
+    public bool DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeUnexpired = false)
+    {
+        if (!CanDeleteKeys)
+        {
+            throw Error.XmlKeyManager_DoesNotSupportKeyDeletion();
+        }
+
+        Dictionary<Guid, Key>? keyIdToKeyMap = null;
+        Dictionary<XElement, Guid>? keyElementToKeyIdMap = null;
+        Dictionary<Guid, XElement>? revocationIdToElementMap = null;
+        DateTimeOffset? mostRecentMassRevocationDate = null;
+        XElement? mostRecentMassRevocationElement = null;
+        List<XElement>? redundantRevocationElements = null;
+
+        KeyRepository.RemoveElements((element, allElements) =>
+        {
+            keyIdToKeyMap ??= GetKeysWorker(
+                allElements,
+                collectElements: true,
+                out keyElementToKeyIdMap,
+                out revocationIdToElementMap,
+                out mostRecentMassRevocationDate,
+                out mostRecentMassRevocationElement,
+                out redundantRevocationElements);
+
+            var keyId = keyElementToKeyIdMap![element]!;
+            var key = keyIdToKeyMap[keyId];
+            if (shouldDelete(key))
+            {
+                return true;
+            }
+            return false;
+        });
+
+        return true;
     }
 
     private void TriggerAndResetCacheExpirationToken([CallerMemberName] string? opName = null, bool suppressLogging = false)

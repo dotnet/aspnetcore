@@ -97,6 +97,9 @@ public interface IKeyManager
     /// passed to <paramref name="shouldDelete"/>.
     /// Use with caution as deleting active keys will normally cause data loss.
     /// </param>
+    /// <returns>
+    /// True if all attempted deletions succeeded.
+    /// </returns>
     /// <remarks>
     /// Generally, keys should only be deleted to save space.  If space is not a concern, keys
     /// should be revoked or allowed to expire instead.
@@ -107,6 +110,6 @@ public interface IKeyManager
     /// <exception cref="NotSupportedException">
     /// If <see cref="CanDeleteKeys"/> is false.
     /// </exception>
-    void DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeUnexpired = false) => throw new NotSupportedException();
+    bool DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeUnexpired = false) => throw new NotSupportedException();
 #endif
 }
