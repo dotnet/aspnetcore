@@ -86,14 +86,15 @@ public interface IKeyManager
     bool CanDeleteKeys => false;
 
     /// <summary>
-    /// Deletes a specific key and its revocations.
+    /// Deletes keys matching a predicate.
     /// </summary>
     /// <param name="shouldDelete">
-    /// A predicate applied to each expired key (and active key if <paramref name="unsafeIncludeActive"/> is true).
+    /// A predicate applied to each expired key (and unexpired key if <paramref name="unsafeIncludeUnexpired"/> is true).
     /// Returning true will cause the key to be deleted.
     /// </param>
-    /// <param name="unsafeIncludeActive">
-    /// True indicates that active keys should also be passed to <paramref name="shouldDelete"/>.
+    /// <param name="unsafeIncludeUnexpired">
+    /// True indicates that unexpired keys (which may be presently or yet to be activated) should also be
+    /// passed to <paramref name="shouldDelete"/>.
     /// Use with caution as deleting active keys will normally cause data loss.
     /// </param>
     /// <remarks>
@@ -106,6 +107,6 @@ public interface IKeyManager
     /// <exception cref="NotSupportedException">
     /// If <see cref="CanDeleteKeys"/> is false.
     /// </exception>
-    void DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeActive = false) => throw new NotSupportedException();
+    void DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeUnexpired = false) => throw new NotSupportedException();
 #endif
 }

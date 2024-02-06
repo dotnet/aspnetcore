@@ -160,16 +160,37 @@ public class RegistryXmlRepository : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
-    public virtual void RemoveElements(Func<XElement, bool> shouldRemove)
+    public virtual void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
     {
         ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
 
-        foreach (string valueName in RegistryKey.GetValueNames())
+        var valueNames = new List<string>();
+        var elements = new List<XElement>();
+
+        foreach (var valueName in RegistryKey.GetValueNames())
         {
-            if (shouldRemove(ReadElementFromRegKey(RegistryKey, valueName)!))
+            var element = ReadElementFromRegKey(RegistryKey, valueName);
+            if (element is not null)
             {
+                valueNames.Add(valueName);
+                elements.Add(element);
+            }
+        }
+
+        for (var i = 0; i < valueNames.Count; i++)
+        {
+            if (shouldRemove(elements[i], elements))
+            {
+                var valueName = valueNames[i];
                 _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
-                RegistryKey.DeleteValue(valueName);
+                try
+                {
+                    RegistryKey.DeleteValue(valueName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                }
             }
         }
     }
