@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -179,18 +180,36 @@ public class FileSystemXmlRepository : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
-    public virtual void RemoveElements(Func<XElement, bool> shouldRemove)
+    public virtual void RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
     {
         ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
 
-        foreach (var fileSystemInfo in EnumerateFileSystemInfos().ToArray()) // ToArray() to avoid modifying the collection while enumerating
+        var fileSystemInfos = new List<FileSystemInfo>();
+        var elements = new List<XElement>();
+
+        foreach (var fileSystemInfo in EnumerateFileSystemInfos())
         {
             var fullPath = fileSystemInfo.FullName;
             var element = ReadElementFromFile(fullPath);
-            if (shouldRemove(element))
+            fileSystemInfos.Add(fileSystemInfo);
+            elements.Add(element);
+        }
+
+        for (var i = 0; i < fileSystemInfos.Count; i++)
+        {
+            if (shouldRemove(elements[i], elements))
             {
-                _logger.DeletingFile(fullPath);
-                File.Delete(fullPath);
+                var fileSystemInfo = fileSystemInfos[i];
+                _logger.DeletingFile(fileSystemInfo.FullName);
+                try
+                {
+                    fileSystemInfo.Delete();
+                }
+                catch (Exception ex)
+                {
+                    Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
+                    _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
+                }
             }
         }
     }
