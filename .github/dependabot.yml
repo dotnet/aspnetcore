@@ -26,6 +26,9 @@ updates:
     commit-message:
       prefix: "[main] "
       include: scope
+    ignore:
+      # Ignore updates to the update-dotnet-sdk action
+      - dependency-name: "martincostello*"
     labels:
       - area-infrastructure
 
