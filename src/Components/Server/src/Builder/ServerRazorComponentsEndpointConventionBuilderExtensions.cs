@@ -20,25 +20,29 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
     public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(this RazorComponentsEndpointConventionBuilder builder)
     {
-        return AddInteractiveServerRenderMode(builder, null);
+        return AddInteractiveServerRenderMode(builder, (_) => { });
     }
 
     /// <summary>
     /// Maps the Blazor <see cref="Hub" /> to the default path.
     /// </summary>
     /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
-    /// <param name="callback">A callback to configure server endpoint options.</param>
+    /// <param name="configure">A configure to configure server endpoint options.</param>
     /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
     public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(
         this RazorComponentsEndpointConventionBuilder builder,
-        Action<ServerComponentsEndpointOptions>? callback = null)
+        Action<ServerComponentsEndpointOptions> configure)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
+
         var options = new ServerComponentsEndpointOptions();
-        callback?.Invoke(options);
+        configure?.Invoke(options);
 
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(options));
 
-        if (options.ConfigureWebsocketOptions is not null && options.ContentSecurityFrameAncestorPolicy != null)
+        if ((options.ConfigureWebSocketAcceptContext is not null || !options.DisableWebSocketCompression) &&
+            options.ContentSecurityFrameAncestorsPolicy != null)
         {
             builder.Add(b =>
             {
@@ -50,7 +54,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
                         var original = b.RequestDelegate;
                         b.RequestDelegate = async context =>
                         {
-                            context.Response.Headers.Add("Content-Security-Policy", $"frame-ancestors {options.ContentSecurityFrameAncestorPolicy}");
+                            context.Response.Headers.Add("Content-Security-Policy", $"frame-ancestors {options.ContentSecurityFrameAncestorsPolicy}");
                             await original(context);
                         };
                     }

@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -20,8 +20,10 @@ public abstract partial class AllowedWebSocketCompressionTests(
     ITestOutputHelper output)
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>(browserFixture, serverFixture, output)
 {
+    public string ExpectedPolicy { get; set; }
+
     [Fact]
-    public void EmbeddingServerAppInsideIframe_Works()
+    public async Task EmbeddingServerAppInsideIframe_WorksAsync()
     {
         Navigate("/subdir/iframe");
 
@@ -33,6 +35,20 @@ public abstract partial class AllowedWebSocketCompressionTests(
         var iframe = Browser.FindElement(By.TagName("iframe"));
         Browser.SwitchTo().Frame(iframe);
         Browser.Exists(By.Id("inside-iframe"));
+
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.GetAsync("/subdir/iframe");
+        response.EnsureSuccessStatusCode();
+
+        if (ExpectedPolicy != null)
+        {
+            var csp = Assert.Single(response.Headers.GetValues("Content-Security-Policy"));
+            Assert.Equal($"frame-ancestors {ExpectedPolicy}", csp);
+        }
+        else
+        {
+            Assert.DoesNotContain("Content-Security-Policy", response.Headers.Select(h => h.Key));
+        }
     }
 }
 
@@ -58,12 +74,15 @@ public abstract partial class BlockedWebSocketCompressionTests(
     private static partial Regex ParseErrorMessage();
 }
 
-public partial class DefaultConfigurationWebSocketCompressionTests(
-    BrowserFixture browserFixture,
-    BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
-    ITestOutputHelper output)
-    : AllowedWebSocketCompressionTests(browserFixture, serverFixture, output)
+public partial class DefaultConfigurationWebSocketCompressionTests : AllowedWebSocketCompressionTests
 {
+    public DefaultConfigurationWebSocketCompressionTests(
+        BrowserFixture browserFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        ITestOutputHelper output) : base(browserFixture, serverFixture, output)
+    {
+        ExpectedPolicy = "'self'";
+    }
 }
 
 public partial class CustomConfigurationCallbackWebSocketCompressionTests : AllowedWebSocketCompressionTests
@@ -73,10 +92,17 @@ public partial class CustomConfigurationCallbackWebSocketCompressionTests : Allo
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output) : base(browserFixture, serverFixture, output)
     {
+        ExpectedPolicy = "'self'";
         serverFixture.UpdateHostServices = services =>
         {
             var configuration = services.GetService<WebSocketCompressionConfiguration>();
-            configuration.ConnectionDispatcherOptions = context => new() { DangerousEnableCompression = true };
+            // Callback wins over setting.
+            configuration.IsCompressionDisabled = true;
+            configuration.ConfigureWebSocketAcceptContext = (context, acceptContext) =>
+            {
+                acceptContext.DangerousEnableCompression = true;
+                return Task.CompletedTask;
+            };
         };
     }
 }
@@ -91,9 +117,11 @@ public partial class CompressionDisabledWebSocketCompressionTests : AllowedWebSo
     {
         serverFixture.UpdateHostServices = services =>
         {
+            // Ensures that the policy does not get applied when compression is disabled and
+            // no callback is set.
             var configuration = services.GetService<WebSocketCompressionConfiguration>();
-            configuration.IsCompressionEnabled = false;
-            configuration.ConnectionDispatcherOptions = null;
+            configuration.IsCompressionDisabled = true;
+            configuration.CspPolicy = "'none'";
         };
     }
 }
@@ -106,9 +134,34 @@ public partial class NoneAncestorWebSocketCompressionTests : BlockedWebSocketCom
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+        // Ensures the policy gets applied whenever compression is enabled, which is the default.
         serverFixture.UpdateHostServices = services =>
         {
             var configuration = services.GetService<WebSocketCompressionConfiguration>();
+            configuration.CspPolicy = "'none'";
+        };
+    }
+}
+
+public partial class NoneAncestorWebSocketAppliesPolicyOnCallbackCompressionTests : BlockedWebSocketCompressionTests
+{
+    public NoneAncestorWebSocketAppliesPolicyOnCallbackCompressionTests(
+        BrowserFixture browserFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
+    {
+        serverFixture.UpdateHostServices = services =>
+        {
+            var configuration = services.GetService<WebSocketCompressionConfiguration>();
+            // Ensures that the policy gets applied whenever the callback is set, even if
+            // the compression is disabled via the property.
+            configuration.IsCompressionDisabled = true;
+            configuration.ConfigureWebSocketAcceptContext = (context, acceptContext) =>
+            {
+                acceptContext.DangerousEnableCompression = true;
+                return Task.CompletedTask;
+            };
             configuration.CspPolicy = "'none'";
         };
     }

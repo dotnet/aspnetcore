@@ -71,7 +71,8 @@ public static class ServerRazorComponentsBuilderExtensions
             var endpointRouteBuilder = new EndpointRouteBuilder(Services, applicationBuilder);
             var hub = endpointRouteBuilder.MapBlazorHub("/_blazor");
 
-            if (renderMode is InternalServerRenderMode { Options.ConfigureWebsocketOptions: { } configureConnection })
+            if (renderMode is InternalServerRenderMode { Options.ConfigureWebSocketAcceptContext: var configureConnection, Options.DisableWebSocketCompression: var disableCompression } &&
+                (configureConnection is not null || !disableCompression))
             {
                 hub.Finally(c =>
                 {
@@ -88,13 +89,13 @@ public static class ServerRazorComponentsBuilderExtensions
                             var originalDelegate = c.RequestDelegate;
                             var builder = endpointRouteBuilder.CreateApplicationBuilder();
                             builder.UseWebSockets();
-                            builder.Use(static (ctx, nxt) =>
+                            builder.Use((ctx, nxt) =>
                             {
                                 if (ctx.WebSockets.IsWebSocketRequest)
                                 {
                                     var currentFeature = ctx.Features.Get<IHttpWebSocketFeature>();
 
-                                    ctx.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!));
+                                    ctx.Features.Set<IHttpWebSocketFeature>(new ServerComponentsSocketFeature(currentFeature!, ctx, configureConnection, disableCompression));
                                 }
                                 return nxt(ctx);
                             });
@@ -158,14 +159,40 @@ public static class ServerRazorComponentsBuilderExtensions
 
         }
 
-        private sealed class ServerComponentsSocketFeature(IHttpWebSocketFeature originalFeature) : IHttpWebSocketFeature
+        private sealed class ServerComponentsSocketFeature(
+            IHttpWebSocketFeature originalFeature,
+            HttpContext httpContext,
+            Func<HttpContext, WebSocketAcceptContext, Task>? configureConnection,
+            bool compressionDisabled)
+            : IHttpWebSocketFeature
         {
             public bool IsWebSocketRequest => originalFeature.IsWebSocketRequest;
 
             public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
             {
-                context.DangerousEnableCompression = true;
-                return originalFeature.AcceptAsync(context);
+                context.DangerousEnableCompression = !compressionDisabled;
+                if (configureConnection is null)
+                {
+                    return originalFeature.AcceptAsync(context);
+                }
+                else
+                {
+                    var result = configureConnection.Invoke(httpContext, context);
+                    if (result.IsCompleted)
+                    {
+                        return originalFeature.AcceptAsync(context);
+                    }
+                    else
+                    {
+                        return ReturnAwaited(result, context);
+                    }
+                }
+            }
+
+            private async Task<WebSocket> ReturnAwaited(Task result, WebSocketAcceptContext context)
+            {
+                await result;
+                return await originalFeature.AcceptAsync(context);
             }
         }
     }
