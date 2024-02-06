@@ -84,7 +84,7 @@ function onDocumentClick(event: MouseEvent) {
     return;
   }
 
-  if (event.target instanceof HTMLElement && !enhancedNavigationIsEnabledForElement(event.target)) {
+  if (event.target instanceof Element && !enhancedNavigationIsEnabledForElement(event.target)) {
     return;
   }
 
@@ -421,7 +421,7 @@ function splitStream(frameBoundaryMarker: string) {
   });
 }
 
-function enhancedNavigationIsEnabledForElement(element: HTMLElement): boolean {
+function enhancedNavigationIsEnabledForElement(element: Element): boolean {
   // For links, they default to being enhanced, but you can override at any ancestor level (both positively and negatively)
   const closestOverride = element.closest('[data-enhance-nav]');
   if (closestOverride) {
