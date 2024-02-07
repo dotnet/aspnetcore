@@ -180,28 +180,28 @@ public class FileSystemXmlRepository : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
-    public virtual bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
     {
-        ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
 
-        var fileSystemInfos = new List<FileSystemInfo>();
-        var elements = new List<XElement>();
+        var deletableElements = new List<DeletableElement>();
 
         foreach (var fileSystemInfo in EnumerateFileSystemInfos())
         {
             var fullPath = fileSystemInfo.FullName;
             var element = ReadElementFromFile(fullPath);
-            fileSystemInfos.Add(fileSystemInfo);
-            elements.Add(element);
+            deletableElements.Add(new DeletableElement(fileSystemInfo, element));
         }
+
+        chooseElements(deletableElements);
 
         var allSucceeded = true;
 
-        for (var i = 0; i < fileSystemInfos.Count; i++)
+        foreach (var deletableElement in deletableElements)
         {
-            if (shouldRemove(elements[i], elements))
+            if (deletableElement.ShouldDelete)
             {
-                var fileSystemInfo = fileSystemInfos[i];
+                var fileSystemInfo = deletableElement.FileSystemInfo;
                 _logger.DeletingFile(fileSystemInfo.FullName);
                 try
                 {
@@ -217,5 +217,20 @@ public class FileSystemXmlRepository : IXmlRepository
         }
 
         return allSucceeded;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(FileSystemInfo fileSystemInfo, XElement element)
+        {
+            FileSystemInfo = fileSystemInfo;
+            Element = element;
+        }
+
+        public XElement Element { get; }
+
+        public FileSystemInfo FileSystemInfo { get; }
+
+        public bool ShouldDelete { get; set; }
     }
 }
