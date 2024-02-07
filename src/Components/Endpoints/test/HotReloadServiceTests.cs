@@ -137,27 +137,50 @@ public class HotReloadServiceTests
         Assert.Empty(compositeEndpointDataSource.Endpoints);
     }
 
+    public class WrappedChangeTokenDisposable : IDisposable
+    {
+        public bool IsDisposed { get; private set;}
+        private readonly IDisposable _innerDisposable;
+
+        public WrappedChangeTokenDisposable(IDisposable innerDisposable)
+        { 
+            _innerDisposable = innerDisposable;
+        }
+
+        public void Dispose()
+        { 
+             IsDisposed = true;
+             _innerDisposable.Dispose();
+        }
+    }
+
     [Fact]
-    public void ComfirmChangeTokenDisposedHotReload()
+    public void ConfirmChangeTokenDisposedHotReload()
     {
         // Arrange
         var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
         var endpointDataSource = CreateDataSource<App>(builder, services);
-        endpointDataSource.EnableChangeTokenDisposeTracking();
 
-        // Assert - 1
+        WrappedChangeTokenDisposable wrappedChangeTokenDisposable = null;
+
+        endpointDataSource.SetDisposableChangeTokenAction = (IDisposable disposableChangeToken) => {
+            wrappedChangeTokenDisposable = new WrappedChangeTokenDisposable(disposableChangeToken); 
+            return wrappedChangeTokenDisposable;
+        };
+
         var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
         Assert.DoesNotContain(endpoint.Metadata, (element) => element is TestMetadata);
 
-        // Act - 2
+        // Make a modification and then perform a hot reload.
         endpointDataSource.Conventions.Add(builder =>
             builder.Metadata.Add(new TestMetadata()));
         HotReloadService.UpdateApplication(null);
-        var disposableChangeToken = endpointDataSource.GetChangeTokenDisposable();
         HotReloadService.ClearCache(null);
-        Assert.True(disposableChangeToken.IsDisposed);
+
+        // Confirm the change token is disposed after ClearCache
+        Assert.True(wrappedChangeTokenDisposable.IsDisposed);
     }
 
     private class TestMetadata { }

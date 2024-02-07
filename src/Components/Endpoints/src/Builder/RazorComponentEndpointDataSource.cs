@@ -29,7 +29,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private CancellationTokenSource _cancellationTokenSource;
     private IChangeToken _changeToken;
     private IDisposable? _disposableChangeToken;   // THREADING: protected by _lock
-    private bool _enableChangeTokenDisposeTracking;
+
+    public Func<IDisposable, IDisposable> SetDisposableChangeTokenAction = disposableChangeToken => disposableChangeToken;
 
     // Internal for testing.
     internal ComponentApplicationBuilder Builder => _builder;
@@ -146,11 +147,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             if (_hotReloadService is { MetadataUpdateSupported : true })
             {
                 _disposableChangeToken?.Dispose();
-                _disposableChangeToken = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
-                if (_enableChangeTokenDisposeTracking)
-                {
-                   _disposableChangeToken = new WrappedChangeTokenDisposable(_disposableChangeToken);
-                }
+                _disposableChangeToken = SetDisposableChangeTokenAction(ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints));
             }
         }
     }
@@ -170,35 +167,5 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
         Debug.Assert(_changeToken != null);
         Debug.Assert(_endpoints != null);
         return _changeToken;
-    }
-
-    // Test only method to allow tracking change token dipose calls in unit tests.
-    internal void EnableChangeTokenDisposeTracking()
-    {
-        _enableChangeTokenDisposeTracking = true;
-    }
-
-    public class WrappedChangeTokenDisposable : IDisposable
-    {
-        public bool IsDisposed { get; private set;}
-        private readonly IDisposable _innerDisposable;
-
-        public WrappedChangeTokenDisposable(IDisposable innerDisposable)
-        { 
-            _innerDisposable = innerDisposable;
-        }
-
-        public void Dispose()
-        { 
-             IsDisposed = true;
-             _innerDisposable.Dispose();
-        }
-    }
-
-    // Test only method to return the disposable from the last change token.
-    // If  _enableChangeTokenDisposeTracking is set, this will be wrapped
-    public WrappedChangeTokenDisposable? GetChangeTokenDisposable()
-    {
-        return _disposableChangeToken as WrappedChangeTokenDisposable;
     }
 }
