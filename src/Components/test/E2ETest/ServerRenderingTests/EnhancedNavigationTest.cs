@@ -35,7 +35,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         var h1Elem = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello", () => h1Elem.Text);
-        
+
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Streaming")).Click();
 
         // Important: we're checking the *same* <h1> element as earlier, showing that we got to the
@@ -170,6 +170,20 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var asyncContentHeader = Browser.Exists(By.Id("some-content"));
         Browser.Equal("Some content", () => asyncContentHeader.Text);
         Browser.True(() => Browser.GetScrollY() > 500);
+    }
+
+    [Fact]
+    public void CanScrollToHashWithoutPerformingFullNavigation()
+    {
+        Navigate($"{ServerPathBase}/nav/scroll-to-hash");
+        Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.Id("scroll-anchor")).Click();
+        Browser.True(() => Browser.GetScrollY() > 500);
+        Browser.True(() => Browser
+            .Exists(By.Id("uri-on-page-load"))
+            .GetAttribute("data-value")
+            .EndsWith("scroll-to-hash", StringComparison.Ordinal));
     }
 
     [Theory]
@@ -327,7 +341,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
-        
+
         // Normally, you shouldn't store references to elements because they could become stale references
         // after the page re-renders. However, we want to explicitly test that the element becomes stale
         // across renders to ensure that a full page reload occurs.
@@ -602,7 +616,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData("wasm")]
     public void CanReceiveNullParameterValueOnEnhancedNavigation(string renderMode)
     {
-        // See: https://github.com/dotnet/aspnetcore/issues/52434 
+        // See: https://github.com/dotnet/aspnetcore/issues/52434
         Navigate($"{ServerPathBase}/nav");
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
 
