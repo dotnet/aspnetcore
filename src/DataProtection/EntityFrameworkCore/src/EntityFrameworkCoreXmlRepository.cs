@@ -84,30 +84,30 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc />
-    public virtual bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
     {
         using (var scope = _services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<TContext>();
-            var keys = new List<DataProtectionKey>();
-            var elements = new List<XElement>();
+            var deletableElements = new List<DeletableElement>();
 
             foreach (var key in context.DataProtectionKeys.AsNoTracking())
             {
                 if (!string.IsNullOrEmpty(key.Xml))
                 {
-                    keys.Add(key);
-                    elements.Add(XElement.Parse(key.Xml));
+                    deletableElements.Add(new DeletableElement(key, XElement.Parse(key.Xml)));
                 }
             }
 
+            chooseElements(deletableElements);
+
             var allSucceeded = true;
 
-            for (var i = 0; i < keys.Count; i++)
+            foreach (var deletableElement in deletableElements)
             {
-                if (shouldRemove(elements[i], elements))
+                if (deletableElement.ShouldDelete)
                 {
-                    var key = keys[i];
+                    var key = deletableElement.Key;
                     _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
                     try
                     {
@@ -133,5 +133,20 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
 
             return allSucceeded;
         }
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(DataProtectionKey key, XElement element)
+        {
+            Key = key;
+            Element = element;
+        }
+
+        public XElement Element { get; }
+
+        public DataProtectionKey Key { get; }
+
+        public bool ShouldDelete { get; set; }
     }
 }

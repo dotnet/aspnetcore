@@ -43,10 +43,9 @@ public interface IXmlRepository
     /// <summary>
     /// Removes elements satisfying the given predicate.
     /// </summary>
-    /// <param name="shouldRemove">
-    /// A predicate applied to each element.
-    /// The second argument gives the contents of the collection before any removals.
-    /// Returning true will cause the element to be removed from the repository.
+    /// <param name="chooseElements">
+    /// A snapshot of the elements in this repository.
+    /// For each, set <see cref="IDeletableElement.ShouldDelete"/> to true if it should be deleted.
     /// </param>
     /// <returns>
     /// True if all deletions succeeded.
@@ -54,6 +53,6 @@ public interface IXmlRepository
     /// <exception cref="NotSupportedException">
     /// If <see cref="CanRemoveElements"/> is false.
     /// </exception>
-    bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove) => throw new NotSupportedException();
+    bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements) => throw new NotSupportedException();
 #endif
 }

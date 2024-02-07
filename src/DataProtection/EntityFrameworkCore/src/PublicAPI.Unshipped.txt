@@ -1,3 +1,3 @@
 #nullable enable
 virtual Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.CanRemoveElements.get -> bool
-virtual Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.RemoveElements(System.Func<System.Xml.Linq.XElement!, System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!, bool>! shouldRemove) -> bool
+virtual Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.EntityFrameworkCoreXmlRepository<TContext>.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
