@@ -206,7 +206,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                     revocationIdToElementMap ??= [];
                     if (revocationIdToElementMap.ContainsKey(revocationGuid))
                     {
-                        // TODO (acasey): log duplicate revocation
+                        _logger.KeyRevokedMultipleTimes(revocationGuid);
 
                         if (collectElements)
                         {
@@ -229,7 +229,8 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                         {
                             if (mostRecentMassRevocationElement is not null)
                             {
-                                // TODO (acasey): log redundant mass revocation
+                                // Ideally, this would report the most recent revocation date, but it's not worth an extra iteration
+                                _logger.DateBasedRevocationSuperseded(mostRecentMassRevocationDate!.Value, thisMassRevocationDate);
 
                                 redundantRevocationElements ??= [];
                                 redundantRevocationElements.Add(mostRecentMassRevocationElement!);
@@ -432,6 +433,8 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                 var keyId = pair.Key;
                 if (shouldDelete(key))
                 {
+                    _logger.DeletingKey(keyId);
+
                     var keyElement = keyIdToKeyElementMap![keyId];
                     elementsToRemove.Add(keyElement);
 
