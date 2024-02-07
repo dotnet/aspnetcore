@@ -170,7 +170,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var results = new object?[elementCount];
 
         Dictionary<Guid, KeyBase> keyIdToKeyMap = [];
-        HashSet<Guid>? revokedIds = null;
+        HashSet<Guid>? revokedKeyIds = null;
 
         mostRecentMassRevocationDate = null;
 
@@ -200,8 +200,8 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                 if (revocationInfo is Guid revocationGuid)
                 {
                     // a single key was revoked
-                    revokedIds ??= [];
-                    if (!revokedIds.Add(revocationGuid))
+                    revokedKeyIds ??= [];
+                    if (!revokedKeyIds.Add(revocationGuid))
                     {
                         _logger.KeyRevokedMultipleTimes(revocationGuid);
                     }
@@ -227,9 +227,9 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         }
 
         // Apply individual revocations
-        if (revokedIds is not null)
+        if (revokedKeyIds is not null)
         {
-            foreach (Guid revokedKeyId in revokedIds)
+            foreach (var revokedKeyId in revokedKeyIds)
             {
                 if (keyIdToKeyMap.TryGetValue(revokedKeyId, out var key))
                 {
@@ -261,6 +261,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             }
         }
 
+        // And we're finished!
         return results;
     }
 
