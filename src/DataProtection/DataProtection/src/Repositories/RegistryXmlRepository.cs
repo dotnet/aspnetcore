@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Principal;
@@ -160,30 +161,30 @@ public class RegistryXmlRepository : IXmlRepository
     public virtual bool CanRemoveElements => true;
 
     /// <inheritdoc/>
-    public virtual bool RemoveElements(Func<XElement, IReadOnlyCollection<XElement>, bool> shouldRemove)
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
     {
-        ArgumentNullThrowHelper.ThrowIfNull(shouldRemove);
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
 
-        var valueNames = new List<string>();
-        var elements = new List<XElement>();
+        var deletableElements = new List<DeletableElement>();
 
         foreach (var valueName in RegistryKey.GetValueNames())
         {
             var element = ReadElementFromRegKey(RegistryKey, valueName);
             if (element is not null)
             {
-                valueNames.Add(valueName);
-                elements.Add(element);
+                deletableElements.Add(new DeletableElement(valueName, element));
             }
         }
 
+        chooseElements(deletableElements);
+
         var allSucceeded = true;
 
-        for (var i = 0; i < valueNames.Count; i++)
+        foreach (var deletableElement in deletableElements)
         {
-            if (shouldRemove(elements[i], elements))
+            if (deletableElement.ShouldDelete)
             {
-                var valueName = valueNames[i];
+                var valueName = deletableElement.ValueName;
                 _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
                 try
                 {
@@ -198,5 +199,20 @@ public class RegistryXmlRepository : IXmlRepository
         }
 
         return allSucceeded;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(string valueName, XElement element)
+        {
+            ValueName = valueName;
+            Element = element;
+        }
+
+        public XElement Element { get; }
+
+        public string ValueName { get; }
+
+        public bool ShouldDelete { get; set; }
     }
 }

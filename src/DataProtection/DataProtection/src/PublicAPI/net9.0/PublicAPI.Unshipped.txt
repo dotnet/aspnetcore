@@ -3,9 +3,13 @@ Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.CanDeleteKeys.get 
 Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete, bool unsafeIncludeUnexpired = false) -> bool
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CanDeleteKeys.get -> bool
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete, bool unsafeIncludeUnexpired = false) -> bool
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.Element.get -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.ShouldDelete.get -> bool
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.ShouldDelete.set -> void
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.CanRemoveElements.get -> bool
-Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!, bool>! shouldRemove) -> bool
+Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
 virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.CanRemoveElements.get -> bool
-virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!, bool>! shouldRemove) -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
 virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.CanRemoveElements.get -> bool
-virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.RemoveElements(System.Func<System.Xml.Linq.XElement!, System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!, bool>! shouldRemove) -> bool
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
