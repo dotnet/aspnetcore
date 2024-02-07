@@ -267,4 +267,13 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(77, LogLevel.Error, "Failed to delete registry key '{RegistryKeyName}', value '{ValueName}'.", EventName = "FailedToRemoveDataFromRegistryKeyValue")]
     public static partial void FailedToRemoveDataFromRegistryKeyValue(this ILogger logger, RegistryKey registryKeyName, string valueName, Exception exception);
+
+    [LoggerMessage(75, LogLevel.Trace, "Found multiple revocation entries for key {KeyId:B}.", EventName = "KeyRevokedMultipleTimes")]
+    public static partial void KeyRevokedMultipleTimes(this ILogger logger, Guid keyId);
+
+    [LoggerMessage(76, LogLevel.Trace, "Ignoring revocation of keys created before {OlderDate:u} in favor of revocation of keys created before {NewerDate:u}.", EventName = "DateBasedRevocationSuperseded")]
+    public static partial void DateBasedRevocationSuperseded(this ILogger logger, DateTimeOffset olderDate, DateTimeOffset newerDate);
+
+    [LoggerMessage(77, LogLevel.Debug, "Deleting key {KeyId:B}.", EventName = "DeletingKey")]
+    public static partial void DeletingKey(this ILogger logger, Guid keyId);
 }
