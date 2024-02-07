@@ -461,12 +461,14 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                 out var redundantRevocationElements);
 
             var elementsToRemove = new HashSet<XElement>(ReferenceEqualityComparer.Instance);
+            var now = DateTimeOffset.Now;
 
             foreach (var pair in keyIdToKeyMap)
             {
                 var key = pair.Value;
                 var keyId = pair.Key;
-                if (shouldDelete(key))
+
+                if ((unsafeIncludeUnexpired || key.ExpirationDate < now) && shouldDelete(key))
                 {
                     _logger.DeletingKey(keyId);
 
