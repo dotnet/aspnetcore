@@ -137,9 +137,9 @@ public class HotReloadServiceTests
         Assert.Empty(compositeEndpointDataSource.Endpoints);
     }
 
-    public class WrappedChangeTokenDisposable : IDisposable
+    private sealed class WrappedChangeTokenDisposable : IDisposable
     {
-        public bool IsDisposed { get; private set;}
+        public bool IsDisposed { get; private set; }
         private readonly IDisposable _innerDisposable;
 
         public WrappedChangeTokenDisposable(IDisposable innerDisposable)
