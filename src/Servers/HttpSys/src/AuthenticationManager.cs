@@ -74,9 +74,8 @@ public sealed class AuthenticationManager
     public bool EnableKerberosCredentialCaching { get; set; }
 
     /// <summary>
-    /// If true, the server captures the current caller's credentials and impersonates
-    /// them during Kerberos or Negotiate authentication. The credentials are captured
-    /// from the security context of a thread that performs the host initialization.
+    /// If true, the server captures user credentials from the thread that starts the
+    /// host and impersonates that user during Kerberos or Negotiate authentication.
     /// Kerberos or Negotiate authentication must be enabled. The default is false.
     /// This option maps to the native HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL flag.
     /// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_server_authentication_info"/>
