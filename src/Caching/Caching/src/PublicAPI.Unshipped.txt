@@ -10,10 +10,11 @@ Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.SetAsync(string
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.TryGetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>
 Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.Deserialize(System.Buffers.ReadOnlySequence<byte> source) -> T
+Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.IsSupported.get -> bool
 Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.Serialize(T value, System.Buffers.IBufferWriter<byte>! target) -> void
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.CacheKeyInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
 Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions
 Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions.TypedDistributedCacheOptions() -> void
-static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddTypedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddTypedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddAdvancedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddAdvancedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

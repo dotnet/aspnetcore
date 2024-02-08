@@ -9,4 +9,6 @@ public interface ICacheSerializer<T>
 {
     T Deserialize(ReadOnlySequence<byte> source);
     void Serialize(T value, IBufferWriter<byte> target);
+
+    bool IsSupported { get; }
 }

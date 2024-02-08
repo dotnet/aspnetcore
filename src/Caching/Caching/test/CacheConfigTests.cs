@@ -3,28 +3,82 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Runtime.Serialization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Tests;
 
 public class CacheConfigTests
 {
+    private readonly ITestOutputHelper _log;
+
+    public CacheConfigTests(ITestOutputHelper log) => _log = log;
+
+    [Fact]
+    public void SerializerConfig()
+    {
+        var services = new ServiceCollection();
+        services.AddAdvancedDistributedCache();
+        services.AddCacheSerializerProtobufNet();
+        var s = services.BuildServiceProvider();
+        object final = null;
+        foreach (var ser in s.GetServices<ICacheSerializer<string>>().Reverse())
+        {
+            _log.WriteLine($"string: {ser.GetType().Name}, {ser.IsSupported}");
+            if (final is null && ser.IsSupported)
+            {
+                final = ser;
+            }
+        }
+        Assert.IsType<StringSerializer>(final);
+
+        final = null;
+        foreach (var ser in s.GetServices<ICacheSerializer<Foo>>().Reverse())
+        {
+            _log.WriteLine($"Foo: {ser.GetType().Name}, {ser.IsSupported}");
+            if (final is null && ser.IsSupported)
+            {
+                final = ser;
+            }
+        }
+        Assert.IsType<DefaultJsonSerializer<Foo>>(final);
+
+        final = null;
+        foreach (var ser in s.GetServices<ICacheSerializer<Bar>>().Reverse())
+        {
+            _log.WriteLine($"Foo: {ser.GetType().Name}, {ser.IsSupported}");
+            if (final is null && ser.IsSupported)
+            {
+                final = ser;
+            }
+        }
+        Assert.IsType<ProtobufDistributedCacheServiceExtensions.ProtobufNetSerializer<Bar>>(final);
+    }
+
+    public class Foo
+    {
+    }
+
+    [DataContract]
+    public class Bar
+    {
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task BasicUsage(bool useCustomBackend)
     {
         var services = new ServiceCollection();
-
         if (useCustomBackend)
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
         }
-        services.AddTypedDistributedCache();
+        services.AddAdvancedDistributedCache();
         services.AddScoped<SomeService>();
         var provider = services.BuildServiceProvider();
-
         var s = provider.GetService<SomeService>();
         Assert.NotNull(s);
 
@@ -63,7 +117,7 @@ public class CacheConfigTests
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
         }
-        services.AddTypedDistributedCache();
+        services.AddAdvancedDistributedCache();
         services.AddScoped<SomeService>();
         var provider = services.BuildServiceProvider();
 

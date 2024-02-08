@@ -22,4 +22,6 @@ internal sealed class DefaultJsonSerializer<T> : ICacheSerializer<T>
         JsonSerializer.Serialize<T>(writer, value, JsonSerializerOptions.Default);
 #pragma warning restore IL2026, IL3050
     }
+
+    bool ICacheSerializer<T>.IsSupported => true;
 }

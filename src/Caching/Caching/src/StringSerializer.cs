@@ -12,4 +12,6 @@ internal sealed class StringSerializer : ICacheSerializer<string>
 
     public void Serialize(string value, IBufferWriter<byte> target)
         => Encoding.UTF8.GetBytes(value, target);
+
+    bool ICacheSerializer<string>.IsSupported => true;
 }

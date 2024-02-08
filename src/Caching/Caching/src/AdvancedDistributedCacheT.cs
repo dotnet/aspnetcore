@@ -1,19 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Distributed;
-internal sealed class DistributedCache : IAdvancedDistributedCache
+internal sealed class AdvancedDistributedCache : IAdvancedDistributedCache
 {
     private readonly IServiceProvider _services;
     private readonly IDistributedCache _backend;
     private readonly IBufferDistributedCache? _bufferBackend;
 
-    public DistributedCache(IOptions<TypedDistributedCacheOptions> options, IServiceProvider services, IDistributedCache backend)
+    public AdvancedDistributedCache(IOptions<TypedDistributedCacheOptions> options, IServiceProvider services, IDistributedCache backend)
     {
         _services = services;
         _backend = backend;
@@ -63,7 +64,7 @@ internal sealed class DistributedCache : IAdvancedDistributedCache
         // fall back to main code-path, but without the pending bytes (we've already checked those)
         return AwaitedBackend(this, key, state, callback, options, cancellationToken, buffer, default);
 
-        static async ValueTask<T> AwaitedBackend(DistributedCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options,
+        static async ValueTask<T> AwaitedBackend(AdvancedDistributedCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options,
              CancellationToken cancellationToken, RecyclableArrayBufferWriter<byte> buffer, ValueTask<bool> pendingGet)
         {
             using (buffer)
@@ -92,13 +93,20 @@ internal sealed class DistributedCache : IAdvancedDistributedCache
 
     private ICacheSerializer<T> GetSerializer<T>()
     {
-        var obj = (ICacheSerializer<T>?)_services.GetService(typeof(ICacheSerializer<T>));
-        if (obj is null)
+        ICacheSerializer<T>? serializer = null;
+        foreach (var svc in _services.GetServices<ICacheSerializer<T>>())
+        {
+            // *last* wins, "Add" meaning "make more specific"
+            if (svc.IsSupported)
+            {
+                serializer = svc;
+            }
+        }
+        if (serializer is null)
         {
             ThrowNoSerializer(typeof(T));
         }
-        return obj!;
-
+        return serializer!;
     }
 
     static void ThrowNoSerializer(Type type) => throw new InvalidOperationException("No serializer registered for " + type.FullName);
@@ -121,7 +129,7 @@ internal sealed class DistributedCache : IAdvancedDistributedCache
         // fall back to main code-path, but without the pending bytes (we've already checked those)
         return AwaitedBackend(this, key, state, callback, options, cancellationToken, null);
 
-        static async ValueTask<T> AwaitedBackend(DistributedCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options,
+        static async ValueTask<T> AwaitedBackend(AdvancedDistributedCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options,
              CancellationToken cancellationToken, Task<byte[]?>? pendingBytes)
         {
             if (pendingBytes is not null)
