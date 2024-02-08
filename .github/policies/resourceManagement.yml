@@ -492,7 +492,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: main
       then:
@@ -502,7 +502,7 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/9.0-preview1
       then:
@@ -679,35 +679,35 @@ configuration:
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/6.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 6.0.27
+          milestone: 6.0.28
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/7.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 7.0.16
+          milestone: 7.0.17
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/7.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
-          action: Null
+          action: Closed
       - targetsBranch:
           branch: release/8.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.2
+          milestone: 8.0.3
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
