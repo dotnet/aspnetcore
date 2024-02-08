@@ -250,15 +250,24 @@ public class FieldIdentifierTest
     [Fact]
     public void CanCreateFromExpression_DifferentCasePropertyAndField()
     {
-        var model = new DifferentCasePropertyFieldModel();
         var fieldIdentifier = FieldIdentifier.Create(() => model3.Value);
         Assert.Same(model3, fieldIdentifier.Model);
         Assert.Equal(nameof(Model3.Value), fieldIdentifier.FieldName);
     }
 
+    [Fact]
+    public void CanCreateFromExpression_NonAsciiCharacters()
+    {
+        var fieldIdentifier = FieldIdentifier.Create(() => @ÖvrigAnställning.Ort);
+        Assert.Same(@ÖvrigAnställning, fieldIdentifier.Model);
+        Assert.Equal(nameof(@ÖvrigAnställning.Ort), fieldIdentifier.FieldName);
+    }
+
     public DifferentCasePropertyFieldModel Model3 { get; } = new() { value = 1 };
 
     public DifferentCasePropertyFieldModel model3 = new() { Value = 2 };
+
+    public ÖvrigAnställningModel @ÖvrigAnställning { get; set; } = new();
 
     string StringPropertyOnThisClass { get; set; }
 
@@ -291,6 +300,11 @@ public class FieldIdentifierTest
         {
             return StringComparer.Ordinal.GetHashCode(Property);
         }
+    }
+
+    public class ÖvrigAnställningModel
+    {
+        public int Ort { get; set; }
     }
 
     private class DifferentCaseFieldModel
