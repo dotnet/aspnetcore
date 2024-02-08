@@ -178,13 +178,13 @@ public static class ServerRazorComponentsBuilderExtensions
                 else
                 {
                     var result = configureConnection.Invoke(httpContext, context);
-                    if (result.IsCompleted)
+                    if (!result.IsCompletedSuccessfully)
                     {
-                        return originalFeature.AcceptAsync(context);
+                        return ReturnAwaited(result, context);
                     }
                     else
                     {
-                        return ReturnAwaited(result, context);
+                        return originalFeature.AcceptAsync(context);
                     }
                 }
             }
