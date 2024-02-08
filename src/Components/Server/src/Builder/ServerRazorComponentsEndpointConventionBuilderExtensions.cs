@@ -27,7 +27,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
     /// Maps the Blazor <see cref="Hub" /> to the default path.
     /// </summary>
     /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
-    /// <param name="configure">A configure to configure server endpoint options.</param>
+    /// <param name="configure">A callback to configure server endpoint options.</param>
     /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
     public static RazorComponentsEndpointConventionBuilder AddInteractiveServerRenderMode(
         this RazorComponentsEndpointConventionBuilder builder,
@@ -37,7 +37,7 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
         ArgumentNullException.ThrowIfNull(configure);
 
         var options = new ServerComponentsEndpointOptions();
-        configure?.Invoke(options);
+        configure.Invoke(options);
 
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new InternalServerRenderMode(options));
 

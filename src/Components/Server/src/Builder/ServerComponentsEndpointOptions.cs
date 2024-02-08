@@ -32,10 +32,10 @@ public class ServerComponentsEndpointOptions
     public string? ContentSecurityFrameAncestorsPolicy { get; set; } = "'self'";
 
     /// <summary>
-    /// Gets or sets a value that determines if the websocket compression should be disabled.
+    /// Gets or sets a value that determines if WebSocket compression should be disabled.
     /// </summary>
     /// <remarks>
-    /// Websocket compression is enabled by default, but it can be disabled by setting this value to <see langword="true" />.
+    /// WebSocket compression is enabled by default, but it can be disabled by setting this value to <see langword="true" />.
     /// When a callback for <see cref="ConfigureWebSocketAcceptContext"/> is provided, the value of this property will be
     /// ignored, whether compression is enabled or not will be determined by the callback, and the Content Security Policy
     /// will be applied according to the value of <see cref="ContentSecurityFrameAncestorsPolicy"/>.
