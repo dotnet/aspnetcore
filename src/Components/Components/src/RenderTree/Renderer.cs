@@ -1067,6 +1067,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // already on the sync context (and if not, we have a bug we want to know about).
         Dispatcher.AssertAccess();
 
+        // We don't allow NavigationException instances to be caught by error boundaries.
+        // These are special exceptions whose purpose is to be as invisible as possible to
+        // user code and bubble all the way up to get handled by the framework as a redirect.
+        if (error is NavigationException)
+        {
+            HandleException(error);
+            return;
+        }
+
         // Find the closest error boundary, if any
         var candidate = errorSourceOrNull;
         while (candidate is not null)
