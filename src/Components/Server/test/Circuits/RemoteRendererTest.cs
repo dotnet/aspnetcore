@@ -738,7 +738,7 @@ public class RemoteRendererTest
         {
         }
 
-        public TestComponent(RenderFragment renderFragment)
+        internal TestComponent(RenderFragment renderFragment)
         {
             _renderFragment = renderFragment;
         }
