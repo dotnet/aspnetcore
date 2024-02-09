@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.CaptureCredentials.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.CaptureCredentials.set -> void
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.EnableKerberosCredentialCaching.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.EnableKerberosCredentialCaching.set -> void

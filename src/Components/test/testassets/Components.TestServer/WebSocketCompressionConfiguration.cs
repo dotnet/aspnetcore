@@ -7,12 +7,9 @@ namespace TestServer;
 
 public class WebSocketCompressionConfiguration
 {
-    public bool IsCompressionEnabled { get; set; } = true;
+    public bool IsCompressionDisabled { get; set; }
 
     public string CspPolicy { get; set; } = "'self'";
 
-    public Func<HttpContext, WebSocketAcceptContext> ConnectionDispatcherOptions { get; set; } = (context) => new WebSocketAcceptContext
-    {
-        DangerousEnableCompression = true
-    };
+    public Func<HttpContext, WebSocketAcceptContext, Task> ConfigureWebSocketAcceptContext { get; set; }
 }

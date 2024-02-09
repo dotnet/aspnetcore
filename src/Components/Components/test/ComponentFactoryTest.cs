@@ -15,8 +15,9 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(EmptyComponent);
-        var factory = new ComponentFactory(new DefaultComponentActivator(), new TestRenderer());
-
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new TestRenderer());
+        
         // Act
         var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
 
@@ -30,8 +31,9 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(List<string>);
-        var factory = new ComponentFactory(new DefaultComponentActivator(), new TestRenderer());
-
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new TestRenderer());
+        
         // Assert
         var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType, null, null));
         Assert.StartsWith($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", ex.Message);
@@ -99,10 +101,11 @@ public class ComponentFactoryTest
     {
         // Arrange
         var componentType = typeof(ComponentWithNonInjectableProperties);
-        var factory = new ComponentFactory(new DefaultComponentActivator(), new TestRenderer());
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), new TestRenderer());
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
+        var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
 
         // Assert
         Assert.NotNull(instance);
@@ -119,10 +122,11 @@ public class ComponentFactoryTest
         var componentType = typeof(ComponentWithInjectProperties);
         var renderer = new RendererWithResolveComponentForRenderMode(
             /* won't be used */ new ComponentWithRenderMode());
-        var factory = new ComponentFactory(new DefaultComponentActivator(), renderer);
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(new DefaultComponentActivator(serviceProvider), renderer);
 
         // Act
-        var instance = factory.InstantiateComponent(GetServiceProvider(), componentType, null, null);
+        var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
 
         // Assert
         Assert.IsType<ComponentWithInjectProperties>(instance);
@@ -136,11 +140,12 @@ public class ComponentFactoryTest
         var resolvedComponent = new ComponentWithInjectProperties();
         var componentType = typeof(ComponentWithRenderMode);
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
-        var componentActivator = new DefaultComponentActivator();
+        var serviceProvider = GetServiceProvider();
+        var componentActivator = new DefaultComponentActivator(serviceProvider);
         var factory = new ComponentFactory(componentActivator, renderer);
 
         // Act
-        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(GetServiceProvider(), componentType, null, 1234);
+        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(serviceProvider, componentType, null, 1234);
 
         // Assert
         Assert.True(renderer.ResolverWasCalled);
@@ -167,12 +172,13 @@ public class ComponentFactoryTest
         var resolvedComponent = new ComponentWithInjectProperties();
         var componentType = typeof(DerivedComponentWithRenderMode);
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
-        var componentActivator = new DefaultComponentActivator();
+        var serviceProvider = GetServiceProvider();
+        var componentActivator = new DefaultComponentActivator(serviceProvider);
         var factory = new ComponentFactory(componentActivator, renderer);
 
         // Act/Assert
         Assert.Throws<AmbiguousMatchException>(
-            () => factory.InstantiateComponent(GetServiceProvider(), componentType, null, 1234));
+            () => factory.InstantiateComponent(serviceProvider, componentType, null, 1234));
     }
 
     [Fact]
@@ -185,11 +191,12 @@ public class ComponentFactoryTest
         var componentType = typeof(ComponentWithNonInjectableProperties);
         var callSiteRenderMode = new TestRenderMode();
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
-        var componentActivator = new DefaultComponentActivator();
+        var serviceProvider = GetServiceProvider();
+        var componentActivator = new DefaultComponentActivator(serviceProvider);
         var factory = new ComponentFactory(componentActivator, renderer);
 
         // Act
-        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(GetServiceProvider(), componentType, callSiteRenderMode, 1234);
+        var instance = (ComponentWithInjectProperties)factory.InstantiateComponent(serviceProvider, componentType, callSiteRenderMode, 1234);
 
         // Assert
         Assert.Same(resolvedComponent, instance);
@@ -207,7 +214,8 @@ public class ComponentFactoryTest
         var resolvedComponent = new ComponentWithInjectProperties();
         var componentType = typeof(ComponentWithRenderMode);
         var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
-        var componentActivator = new DefaultComponentActivator();
+        var serviceProvider = GetServiceProvider();
+        var componentActivator = new DefaultComponentActivator(serviceProvider);
         var factory = new ComponentFactory(componentActivator, renderer);
 
         // Even though the two rendermodes are literally the same object, we don't allow specifying any nonnull
@@ -218,6 +226,28 @@ public class ComponentFactoryTest
         var ex = Assert.Throws<InvalidOperationException>(() =>
             factory.InstantiateComponent(GetServiceProvider(), componentType, callsiteRenderMode, 1234));
         Assert.Equal($"The component type '{componentType}' has a fixed rendermode of '{typeof(TestRenderMode)}', so it is not valid to specify any rendermode when using this component.", ex.Message);
+    }
+
+    [Fact]
+    public void InstantiateComponent_CreatesInstance_WithTypeActivation()
+    {
+        // Arrange
+        var serviceProvider = GetServiceProvider();
+        var componentType = typeof(ComponentWithConstructorInjection);
+        var resolvedComponent = new ComponentWithInjectProperties();
+        var renderer = new RendererWithResolveComponentForRenderMode(resolvedComponent);
+        var defaultComponentActivator = new DefaultComponentActivator(serviceProvider);
+        var factory = new ComponentFactory(defaultComponentActivator, renderer);
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, componentType, null, null);
+
+        // Assert
+        Assert.NotNull(instance);
+        var component = Assert.IsType<ComponentWithConstructorInjection>(instance);
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.Property2);
+        Assert.NotNull(component.Property3); // Property injection should still work.
     }
 
     private const string KeyedServiceKey = "my-keyed-service";
@@ -280,6 +310,31 @@ public class ComponentFactoryTest
         public TestService1 Property1 { get; set; }
 
         public TestService1 Property2 { get; set; }
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ComponentWithConstructorInjection : IComponent
+    {
+        public ComponentWithConstructorInjection(TestService1 property1, TestService2 property2)
+        {
+            Property1 = property1;
+            Property2 = property2;
+        }
+
+        public TestService1 Property1 { get; }
+        public TestService2 Property2 { get; }
+
+        [Inject]
+        public TestService2 Property3 { get; set; }
 
         public void Attach(RenderHandle renderHandle)
         {
