@@ -189,11 +189,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b4c400a27ed648ab40ca280ec6bf48641be5de91</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24101.1">
-      <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>949db2fd23b687c0d545e954943feada8b361ed6</Sha>
-      <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="System.Configuration.ConfigurationManager" Version="9.0.0-preview.2.24109.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b4c400a27ed648ab40ca280ec6bf48641be5de91</Sha>
@@ -315,6 +310,7 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b4c400a27ed648ab40ca280ec6bf48641be5de91</Sha>
     </Dependency>
+    <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-preview.2.24109.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b4c400a27ed648ab40ca280ec6bf48641be5de91</Sha>
@@ -331,8 +327,14 @@
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24105.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
       <Sha>c54253c7c4413357772589c6c243b12ba4e7c595</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24105.2">
+      <Uri>https://github.com/dotnet/xdt</Uri>
+      <Sha>c54253c7c4413357772589c6c243b12ba4e7c595</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
+    <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24105.3">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
       <Sha>ffac2194c39660f03761ba81bdd6026202942184</Sha>
@@ -342,7 +344,6 @@
     <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.8.0-3.23518.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
-      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.8.0-3.23518.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -355,10 +356,22 @@
     <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0-3.23518.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
+      </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.8.0-3.23518.7">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>1aa759af23d2a29043ea44fcef5bd6823dafa5d0</Sha>
+      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Composition" Version="9.0.0-preview.2.24109.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b4c400a27ed648ab40ca280ec6bf48641be5de91</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24101.1">
+      <Uri>https://github.com/dotnet/source-build-externals</Uri>
+      <Sha>949db2fd23b687c0d545e954943feada8b361ed6</Sha>
+      <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -372,6 +385,11 @@
       <Sha>9ad7f22913cf15b0b82ae027ca4a3fdf57417923</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24062.5">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>d731f58a502086842739a358ab490bec08fdb8a7</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24062.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>d731f58a502086842739a358ab490bec08fdb8a7</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
@@ -412,6 +430,7 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
+    <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.24067.2">
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>2902dcf06494391dc65552fd0743b7d426c550fb</Sha>
