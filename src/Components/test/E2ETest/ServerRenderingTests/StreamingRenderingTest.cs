@@ -52,7 +52,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
         using var response = await httpClient.GetAsync(new Uri(_serverFixture.RootUri, $"{ServerPathBase}/streaming"), HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
 
-        Assert.Equal("identity2", response.Content.Headers.ContentEncoding.Single());
+        Assert.Equal("identity", response.Content.Headers.ContentEncoding.Single());
     }
 
     [Theory]
