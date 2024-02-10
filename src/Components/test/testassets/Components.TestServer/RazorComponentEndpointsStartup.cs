@@ -36,6 +36,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
+        services.AddSingleton<WebSocketCompressionConfiguration>();
 
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
@@ -65,11 +66,19 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
+            _ = app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorComponents<TRootComponent>()
+                _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode()
+                    .AddInteractiveServerRenderMode(options =>
+                    {
+                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                        options.DisableWebSocketCompression = config.IsCompressionDisabled;
+
+                        options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
+
+                        options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
+                    })
                     .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
                 NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
