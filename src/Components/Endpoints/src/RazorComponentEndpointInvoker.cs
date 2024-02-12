@@ -117,7 +117,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
 
-        if (!htmlContent.QuiescenceTask.IsCompleted)
+        if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
             // Disable all response buffering and compression on IIS like SignalR's ServerSentEventsServerTransport does.
