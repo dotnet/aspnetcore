@@ -5,10 +5,9 @@ using System.Buffers;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-public interface ICacheSerializer<T>
+public interface IReadThroughCacheSerializer<T>
 {
     T Deserialize(ReadOnlySequence<byte> source);
     void Serialize(T value, IBufferWriter<byte> target);
-
-    bool IsSupported { get; }
 }
+

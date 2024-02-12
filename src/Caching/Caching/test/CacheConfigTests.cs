@@ -6,55 +6,23 @@ using System.Collections.Concurrent;
 using System.Runtime.Serialization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Tests;
 
 public class CacheConfigTests
 {
-    private readonly ITestOutputHelper _log;
-
-    public CacheConfigTests(ITestOutputHelper log) => _log = log;
-
     [Fact]
     public void SerializerConfig()
     {
         var services = new ServiceCollection();
-        services.AddAdvancedDistributedCache();
-        services.AddCacheSerializerProtobufNet();
+        services.AddReadThroughCache();
+        services.AddReadThroughCacheSerializerProtobufNet();
         var s = services.BuildServiceProvider();
-        object final = null;
-        foreach (var ser in s.GetServices<ICacheSerializer<string>>().Reverse())
-        {
-            _log.WriteLine($"string: {ser.GetType().Name}, {ser.IsSupported}");
-            if (final is null && ser.IsSupported)
-            {
-                final = ser;
-            }
-        }
-        Assert.IsType<StringSerializer>(final);
+        var cache = Assert.IsType<ReadThroughCache>(s.GetService<IReadThroughCache>());
 
-        final = null;
-        foreach (var ser in s.GetServices<ICacheSerializer<Foo>>().Reverse())
-        {
-            _log.WriteLine($"Foo: {ser.GetType().Name}, {ser.IsSupported}");
-            if (final is null && ser.IsSupported)
-            {
-                final = ser;
-            }
-        }
-        Assert.IsType<DefaultJsonSerializer<Foo>>(final);
-
-        final = null;
-        foreach (var ser in s.GetServices<ICacheSerializer<Bar>>().Reverse())
-        {
-            _log.WriteLine($"Foo: {ser.GetType().Name}, {ser.IsSupported}");
-            if (final is null && ser.IsSupported)
-            {
-                final = ser;
-            }
-        }
-        Assert.IsType<ProtobufDistributedCacheServiceExtensions.ProtobufNetSerializer<Bar>>(final);
+        Assert.IsType<StringSerializer>(cache.GetSerializer<string>());
+        Assert.IsType<DefaultJsonSerializerFactory.DefaultJsonSerializer<Foo>>(cache.GetSerializer<Foo>());
+        Assert.IsType<ProtobufDistributedCacheServiceExtensions.ProtobufNetSerializer<Bar>>(cache.GetSerializer<Bar>());
     }
 
     public class Foo
@@ -76,7 +44,7 @@ public class CacheConfigTests
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
         }
-        services.AddAdvancedDistributedCache();
+        services.AddReadThroughCache();
         services.AddScoped<SomeService>();
         var provider = services.BuildServiceProvider();
         var s = provider.GetService<SomeService>();
@@ -87,7 +55,7 @@ public class CacheConfigTests
         Assert.NotNull(x);
         Assert.Equal(1, s.BackendCalls);
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var y = await s.GetFromCacheAsync();
             Assert.NotNull(y);
@@ -97,7 +65,7 @@ public class CacheConfigTests
 
         await Task.Delay(TimeSpan.FromSeconds(1.5)); // timeout
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var y = await s.GetFromCacheAsync();
             Assert.NotNull(y);
@@ -117,7 +85,7 @@ public class CacheConfigTests
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
         }
-        services.AddAdvancedDistributedCache();
+        services.AddReadThroughCache();
         services.AddScoped<SomeService>();
         var provider = services.BuildServiceProvider();
 
@@ -130,7 +98,7 @@ public class CacheConfigTests
         Assert.Equal(42, x.Id);
         Assert.Equal(1, s.BackendCalls);
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var y = await s.GetFromCacheWithStateAsync(42);
             Assert.NotNull(y);
@@ -141,7 +109,7 @@ public class CacheConfigTests
 
         await Task.Delay(TimeSpan.FromSeconds(1.5)); // timeout
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var y = await s.GetFromCacheWithStateAsync(42);
             Assert.NotNull(y);
@@ -158,7 +126,7 @@ public class CacheConfigTests
     }
 }
 
-public class SomeService(IAdvancedDistributedCache cache)
+public class SomeService(IReadThroughCache cache)
 {
     private int _backendCalls;
     public int BackendCalls => _backendCalls;
@@ -174,11 +142,11 @@ public class SomeService(IAdvancedDistributedCache cache)
         return new(obj);
     }
 
-    public async Task<Foo> GetFromCacheAsync() => await cache.GetAsync("foos", _ => BackendAsync(), CacheExpiration);
+    public async Task<Foo> GetFromCacheAsync() => await cache.GetOrCreateAsync("foos", _ => BackendAsync(), _cacheExpiration);
 
-    public async Task<Foo> GetFromCacheWithStateAsync(int id) => await cache.GetAsync($"foos_{id}", (obj: this, id), static (state, ct) => state.obj.BackendAsync(state.id), CacheExpiration);
+    public async Task<Foo> GetFromCacheWithStateAsync(int id) => await cache.GetOrCreateAsync($"foos_{id}", (obj: this, id), static (state, ct) => state.obj.BackendAsync(state.id), _cacheExpiration);
 
-    private static readonly DistributedCacheEntryOptions CacheExpiration = new DistributedCacheEntryOptions
+    private static readonly DistributedCacheEntryOptions _cacheExpiration = new()
     {
         AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1)
     };
@@ -195,7 +163,7 @@ class CustomBackend : IBufferDistributedCache
         public bool IsAlive() => DateTime.UtcNow < Expiration;
     }
 
-    private ConcurrentDictionary<string, ExpiringBuffer> _cache = new();
+    private readonly ConcurrentDictionary<string, ExpiringBuffer> _cache = new();
 
     Task IDistributedCache.RemoveAsync(string key, CancellationToken token)
     {

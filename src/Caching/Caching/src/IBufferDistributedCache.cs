@@ -10,7 +10,3 @@ public interface IBufferDistributedCache : IDistributedCache
     ValueTask SetAsync(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options, CancellationToken cancellationToken);
 }
 
-public interface IDistributedCacheInvalidation : IDistributedCache
-{
-    event Func<string, ValueTask> CacheKeyInvalidated;
-}

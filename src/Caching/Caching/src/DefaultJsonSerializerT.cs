@@ -2,26 +2,37 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.Extensions.Caching.Distributed;
-internal sealed class DefaultJsonSerializer<T> : ICacheSerializer<T>
+
+internal sealed class DefaultJsonSerializerFactory : IReadThroughCacheSerializerFactory
 {
-    T ICacheSerializer<T>.Deserialize(ReadOnlySequence<byte> source)
+    public bool TryCreateSerializer<T>([NotNullWhen(true)] out IReadThroughCacheSerializer<T>? serializer)
     {
-        Utf8JsonReader reader = new Utf8JsonReader(source);
-#pragma warning disable IL2026, IL3050 // AOT bits
-        return JsonSerializer.Deserialize<T>(ref reader)!;
-#pragma warning restore IL2026, IL3050
+        // no restriction
+        serializer = new DefaultJsonSerializer<T>();
+        return true;
     }
 
-    void ICacheSerializer<T>.Serialize(T value, IBufferWriter<byte> target)
+    internal sealed class DefaultJsonSerializer<T> : IReadThroughCacheSerializer<T>
     {
-        using var writer = new Utf8JsonWriter(target);
+        T IReadThroughCacheSerializer<T>.Deserialize(ReadOnlySequence<byte> source)
+        {
+            var reader = new Utf8JsonReader(source);
 #pragma warning disable IL2026, IL3050 // AOT bits
-        JsonSerializer.Serialize<T>(writer, value, JsonSerializerOptions.Default);
+            return JsonSerializer.Deserialize<T>(ref reader)!;
 #pragma warning restore IL2026, IL3050
+        }
+
+        void IReadThroughCacheSerializer<T>.Serialize(T value, IBufferWriter<byte> target)
+        {
+            using var writer = new Utf8JsonWriter(target);
+#pragma warning disable IL2026, IL3050 // AOT bits
+            JsonSerializer.Serialize<T>(writer, value, JsonSerializerOptions.Default);
+#pragma warning restore IL2026, IL3050
+        }
     }
 
-    bool ICacheSerializer<T>.IsSupported => true;
 }

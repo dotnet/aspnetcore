@@ -1,20 +1,23 @@
 #nullable enable
-Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions
-Microsoft.Extensions.Caching.Distributed.IAdvancedDistributedCache
-Microsoft.Extensions.Caching.Distributed.IAdvancedDistributedCache.GetAsync<T>(string! key, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
-Microsoft.Extensions.Caching.Distributed.IAdvancedDistributedCache.GetAsync<TState, T>(string! key, TState state, System.Func<TState, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
-Microsoft.Extensions.Caching.Distributed.IAdvancedDistributedCache.RefreshAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
-Microsoft.Extensions.Caching.Distributed.IAdvancedDistributedCache.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.SetAsync(string! key, System.Buffers.ReadOnlySequence<byte> value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions! options, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.TryGetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
-Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>
-Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.Deserialize(System.Buffers.ReadOnlySequence<byte> source) -> T
-Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.IsSupported.get -> bool
-Microsoft.Extensions.Caching.Distributed.ICacheSerializer<T>.Serialize(T value, System.Buffers.IBufferWriter<byte>! target) -> void
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.CacheKeyInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
-Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions
-Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions.TypedDistributedCacheOptions() -> void
-static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddAdvancedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.Caching.Distributed.DistributedCacheServiceExtensions.AddAdvancedDistributedCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Distributed.TypedDistributedCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<T>(string! key, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<TState, T>(string! key, TState state, System.Func<TState, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RefreshAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>
+Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>.Deserialize(System.Buffers.ReadOnlySequence<byte> source) -> T
+Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>.Serialize(T value, System.Buffers.IBufferWriter<byte>! target) -> void
+Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializerFactory
+Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializerFactory.TryCreateSerializer<T>(out Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>? serializer) -> bool
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.DefaultOptions.get -> Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions?
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.DefaultOptions.set -> void
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.ReadThroughCacheOptions() -> void
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions
+static Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions.AddReadThroughCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions.AddReadThroughCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
