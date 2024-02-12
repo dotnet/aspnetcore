@@ -72,7 +72,7 @@ jobs:
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
-    - task: NuGetAuthenticate@0
+    - task: NuGetAuthenticate@1
 
     - task: PowerShell@2 
       displayName: Enable cross-org NuGet feed authentication 
@@ -87,7 +87,7 @@ jobs:
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
           /p:BuildAssetRegistryToken=$(MaestroAccessToken)
-          /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
+          /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:OfficialBuildId=$(Build.BuildNumber)
       condition: ${{ parameters.condition }}
