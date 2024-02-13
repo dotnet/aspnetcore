@@ -36,7 +36,7 @@ jobs:
 
       - name: List current path
         shell: pwsh
-        run: ls $PWD && ls $PWD/main && ls $PWD/node-externals
+        run: ls $PWD && ls $PWD/main && ls $PWD/main/.github/workflows
 
       - name: Run npm install to update package-lock.json
         shell: pwsh
