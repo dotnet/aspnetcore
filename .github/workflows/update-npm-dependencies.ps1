@@ -1,5 +1,5 @@
 $repoRoot = Resolve-Path -Path "$PSScriptRoot/../..";
-
+Set-Location $repoRoot;
 # Update the .npmrc file to point to the cache location as a repo instead of a submodule
 $npmrcPath = Join-Path -Path $repoRoot -ChildPath ".npmrc"
 $content = Get-Content -Path $npmrcPath;
