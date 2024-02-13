@@ -20,24 +20,23 @@ jobs:
         with:
           repository: 'dotnet/aspnetcore'
           ref: 'main'
-          path: 'aspnetcore'
 
       - name: Checkout Node-Externals repository
         uses: actions/checkout@v2
         with:
           repository: 'dotnet/Node-Externals'
           ref: 'main'
-          path: 'node-externals'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
-      - name: Run script
+      - name: Run npm install to update package-lock.json
         shell: pwsh
-        id: update-npm-dependencies
-        run: ./aspnetcore/.github/workflows/update-npm-dependencies.ps1
+        id: npm-install-script
+        run:
+          ./aspnetcore/.github/workflows/update-npm-dependencies.ps1
 
       - name: Create PR to update the offline package cache
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
