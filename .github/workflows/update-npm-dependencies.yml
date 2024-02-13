@@ -38,7 +38,9 @@ jobs:
         shell: pwsh
         id: npm-install-script
         run: |
-          ./main/.github/workflows/update-npm-dependencies.ps1
+          ./.github/workflows/update-npm-dependencies.ps1
+        with:
+          working-directory: ./main/
 
       - name: Create PR to update the offline package cache
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
@@ -58,7 +60,9 @@ jobs:
       - name: Update offline-cache submodule
         shell: pwsh
         run: |
-          ./main/.github/workflows/update-submodule-commit.ps1 ${{ steps.update-offline-package-cache.outputs.pull-request-head-sha }}
+          ./.github/workflows/update-submodule-commit.ps1 ${{ steps.update-offline-package-cache.outputs.pull-request-head-sha }}
+        with:
+          working-directory: ./main/
 
       - name: Create PR to update package-lock.json and the offline package cache submodule
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
