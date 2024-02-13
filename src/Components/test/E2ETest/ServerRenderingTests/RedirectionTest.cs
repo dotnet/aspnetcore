@@ -205,6 +205,22 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     // response to something like a 200 that the 'fetch' is allowed to read (embedding the
     // destination URL).
 
+    [Fact]
+    public void RedirectEnhancedGetToInternalWithErrorBoundary()
+    {
+        // This test verifies that redirection works even if an ErrorBoundary wraps
+        // a component throwing a NavigationException.
+
+        Browser.Exists(By.LinkText("Enhanced GET with redirect inside error boundary")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
     private void AssertElementRemoved(IWebElement element)
     {
         Browser.True(() =>

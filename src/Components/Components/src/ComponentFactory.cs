@@ -90,9 +90,9 @@ internal sealed class ComponentFactory
     private static void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
     {
         // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
-        #pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
+#pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
         var componentTypeInfo = GetComponentTypeInfo(instance.GetType());
-        #pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
+#pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
 
         componentTypeInfo.PerformPropertyInjection(serviceProvider, instance);
     }

@@ -1,8 +1,10 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebsocketOptions.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!>?
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebsocketOptions.set -> void
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.get -> string?
-Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorPolicy.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.get -> string?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.DisableWebSocketCompression.get -> bool
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.DisableWebSocketCompression.set -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void
-static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>? callback = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
