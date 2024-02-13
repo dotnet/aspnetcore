@@ -41,7 +41,7 @@ jobs:
       - name: Run npm install to update package-lock.json
         shell: pwsh
         id: npm-install-script
-        run: echo $PWD; ./aspnetcore/main/.github/workflows/update-npm-dependencies.ps1
+        run: ($script = Resolve-Path .\main\.github\workflows\update-npm-dependencies.ps1); & $script
 
       - name: Create PR to update the offline package cache
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
