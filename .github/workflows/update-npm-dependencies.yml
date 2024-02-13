@@ -37,7 +37,7 @@ jobs:
         run: ./.github/workflows/update-npm-dependencies.ps1
 
       - name: Create PR to update the offline package cache
-        if: steps.update-npm-dependencies.outputs.changes == 'true'
+        # if: steps.update-npm-dependencies.outputs.changes == 'true'
         uses: dotnet/actions-create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -50,7 +50,7 @@ jobs:
           branch-suffix: timestamp
 
       - name: Create PR to update package-lock.json and the offline package cache submodule
-        if: steps.update-npm-dependencies.outputs.changes == 'true'
+        # if: steps.update-npm-dependencies.outputs.changes == 'true'
         uses: dotnet/actions-create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
