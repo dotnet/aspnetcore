@@ -34,10 +34,14 @@ jobs:
         with:
           node-version: 20.x
 
+      - name: List current path
+        shell: pwsh
+        run: echo $PWD;
+
       - name: Run npm install to update package-lock.json
         shell: pwsh
         id: npm-install-script
-        run: echo $PWD; ./main/.github/workflows/update-npm-dependencies.ps1
+        run: echo $PWD; ./aspnetcore/main/.github/workflows/update-npm-dependencies.ps1
 
       - name: Create PR to update the offline package cache
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
@@ -56,7 +60,7 @@ jobs:
 
       - name: Update offline-cache submodule
         shell: pwsh
-        working-directory: ./main/
+        working-directory: ./aspnetcore/main/
         run: |
           ./.github/workflows/update-submodule-commit.ps1 ${{ steps.update-offline-package-cache.outputs.pull-request-head-sha }}
 
