@@ -1,4 +1,4 @@
-name: Update NPM Dependencies
+name: update-npm-dependencies
 
 on:
   # Manual run
