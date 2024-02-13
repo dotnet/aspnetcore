@@ -26,15 +26,15 @@ jobs:
         with:
           node-version: 20.x
 
+      - name: Set up git user name and email
+        run: |
+          git config --global user.name "dotnet-maestro[bot]"
+          git config --global user.email "42748379+dotnet-maestro[bot]@users.noreply.github.com"
+
       - name: Run script
         shell: pwsh
         id: update-npm-dependencies
         run: ./.github/workflows/update-npm-dependencies.ps1
-
-      - name: Set up git to github-actions
-        run: |
-          git config --global user.name "dotnet-maestro[bot]"
-          git config --global user.email "42748379+dotnet-maestro[bot]@users.noreply.github.com"
 
       - name: Create PR to update the offline package cache
         if: steps.update-npm-dependencies.outputs.has-changes == 'true'
