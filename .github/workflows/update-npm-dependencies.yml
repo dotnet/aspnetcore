@@ -21,6 +21,11 @@ jobs:
       - name: Checkout submodule
         run: git submodule update --init --recursive
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
       - name: Run script
         shell: pwsh
         id: update-npm-dependencies
