@@ -37,9 +37,7 @@ jobs:
       - name: Run npm install to update package-lock.json
         shell: pwsh
         id: npm-install-script
-        working-directory: ./main/
-        run: |
-          ./.github/workflows/update-npm-dependencies.ps1
+        run: echo $PWD; ./main/.github/workflows/update-npm-dependencies.ps1
 
       - name: Create PR to update the offline package cache
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
