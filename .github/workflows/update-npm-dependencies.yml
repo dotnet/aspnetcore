@@ -31,8 +31,13 @@ jobs:
         id: update-npm-dependencies
         run: ./.github/workflows/update-npm-dependencies.ps1
 
+      - name: Set up git to github-actions
+        run: |
+          git config --global user.name "dotnet-maestro[bot]"
+          git config --global user.email "42748379+dotnet-maestro[bot]@users.noreply.github.com"
+
       - name: Create PR to update the offline package cache
-        if: steps.update-npm-dependencies.outputs.result == 'true'
+        if: steps.update-npm-dependencies.outputs.has-changes == 'true'
         uses: dotnet/actions-create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +50,7 @@ jobs:
           branch-suffix: timestamp
 
       - name: Create PR to update package-lock.json and the offline package cache submodule
-        if: steps.update-npm-dependencies.outputs.result == 'true'
+        if: steps.update-npm-dependencies.outputs.has-changes == 'true'
         uses: dotnet/actions-create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

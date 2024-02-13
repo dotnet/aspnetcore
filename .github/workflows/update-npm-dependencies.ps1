@@ -31,6 +31,6 @@ if ($null -eq $diffResult) {
   git commit -m "[Infrastructure] Update Node-Externals submodule"
 
   # Notify the github workflow by setting the result output variable
-  Write-Host "::set-output name=result::true"
+  Write-Output "{has-changes}=true" >> $GITHUB_OUTPUT
 }
 
