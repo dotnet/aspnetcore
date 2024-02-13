@@ -120,7 +120,6 @@ public class HttpConnectionDispatcherOptions
             }
 
             _transportSendTimeout = value;
-            TransportSendTimeoutTicks = value.Ticks;
         }
     }
 
@@ -133,7 +132,6 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public bool CloseOnAuthenticationExpiration { get; set; }
 
-    internal long TransportSendTimeoutTicks { get; private set; }
     internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.
