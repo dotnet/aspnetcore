@@ -1,0 +1,51 @@
+name: Update NPM Dependencies
+
+on:
+  # Manual run
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  update-npm-dependencies:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Checkout submodule
+        run: git submodule update --init --recursive
+
+      - name: Run script
+        shell: pwsh
+        id: update-npm-dependencies
+        run: ./.github/workflows/update-npm-dependencies.ps1
+
+      - name: Create PR to update the offline package cache
+        if: steps.update-npm-dependencies.outputs.result == 'true'
+        uses: dotnet/actions-create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./src/submodules/Node-Externals/
+          title: '[Infrastructure] Update the NPM offline cache'
+          body: 'Updates the npm offline cache to match the associated package-lock.json file in dotnet/aspnetcore.'
+          labels: 'Type: Dependency Update :arrow_up_small:'
+          base: main
+          branch: github-action/update-npm-dependencies
+          branch-suffix: timestamp
+
+      - name: Create PR to update package-lock.json and the offline package cache submodule
+        if: steps.update-npm-dependencies.outputs.result == 'true'
+        uses: dotnet/actions-create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: '[Infrastructure] Update npm dependencies'
+          body: 'Updates the package-lock.json file and the offline package cache submodule to match it.'
+          labels: 'Type: Dependency Update :arrow_up_small:'
+          base: main
+          branch: github-action/update-npm-dependencies
+          branch-suffix: timestamp
