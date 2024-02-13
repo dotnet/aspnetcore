@@ -557,7 +557,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 await task.DefaultTimeout();
 
                 // We've been gone longer than the expiration time
-                connection.LastSeenTicks = Environment.TickCount64 - (long)disconnectTimeout.TotalMilliseconds - 1;
+                connection.LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64) - disconnectTimeout - TimeSpan.FromTicks(1);
 
                 // The application is still running here because the poll is only killed
                 // by the heartbeat so we pretend to do a scan and this should force the application task to complete
@@ -1190,6 +1190,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
         using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
         {
+            var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
@@ -1200,16 +1201,23 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var builder = new ConnectionBuilder(services.BuildServiceProvider());
             builder.UseConnectionHandler<TestConnectionHandler>();
             var app = builder.Build();
-            var options = new HttpConnectionDispatcherOptions();
             // First poll completes immediately
+            var options = new HttpConnectionDispatcherOptions();
             await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
             var sync = new SyncPoint();
             context.Response.Body = new BlockingStream(sync);
             var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
             await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
             await sync.WaitForSyncPoint().DefaultTimeout();
+
+            // Try cancel before cancellation should occur
+            connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+            Assert.False(connection.SendingToken.IsCancellationRequested);
+
             // Cancel write to response body
-            connection.TryCancelSend(long.MaxValue);
+            connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+            Assert.True(connection.SendingToken.IsCancellationRequested);
+
             sync.Continue();
             await dispatcherTask.DefaultTimeout();
             // Connection should be removed on canceled write
@@ -1223,6 +1231,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
+            var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.ServerSentEvents;
@@ -1240,8 +1249,15 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
             await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
             await sync.WaitForSyncPoint().DefaultTimeout();
+
+            // Try cancel before cancellation should occur
+            connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+            Assert.False(connection.SendingToken.IsCancellationRequested);
+
             // Cancel write to response body
-            connection.TryCancelSend(long.MaxValue);
+            connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+            Assert.True(connection.SendingToken.IsCancellationRequested);
+
             sync.Continue();
             await dispatcherTask.DefaultTimeout();
             // Connection should be removed on canceled write
@@ -1260,6 +1276,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
         using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
         {
+            var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.WebSockets;
@@ -1277,8 +1294,15 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
             await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
             await sync.WaitForSyncPoint().DefaultTimeout();
+
+            // Try cancel before cancellation should occur
+            connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+            Assert.False(connection.SendingToken.IsCancellationRequested);
+
             // Cancel write to response body
-            connection.TryCancelSend(long.MaxValue);
+            connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+            Assert.True(connection.SendingToken.IsCancellationRequested);
+
             sync.Continue();
             await dispatcherTask.DefaultTimeout();
             // Connection should be removed on canceled write
