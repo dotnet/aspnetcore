@@ -36,7 +36,7 @@ jobs:
 
       - name: List current path
         shell: pwsh
-        run: echo $PWD;
+        run: ls $PWD && ls $PWD/main && ls $PWD/node-externals
 
       - name: Run npm install to update package-lock.json
         shell: pwsh
