@@ -3,6 +3,7 @@ name: update-npm-dependencies
 on:
   # Manual run
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: write
