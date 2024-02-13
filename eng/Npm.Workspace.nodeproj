@@ -15,9 +15,14 @@
     <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
   </PropertyGroup>
 
-  <Target Name="Restore">
+  <Target Name="_VerifyNPMCache">
+    <Message Text="Verifying NPM cache..." Importance="high" />
+    <Exec Command="npm cache verify" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+  </Target>
+
+  <Target Name="Restore" DependsOnTargets="_VerifyNPMCache">
     <Message Text="Restoring NPM packages..." Importance="high" />
-    <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec Command="npm ci --offline" WorkingDirectory="$(MSBuildThisFileDirectory).." />
   </Target>
 
   <Target Name="Build">
