@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await task.DefaultTimeout();
 
                     // We've been gone longer than the expiration time
-                    connection.LastSeenTicks = Environment.TickCount64 - (long)disconnectTimeout.TotalMilliseconds - 1;
+                    connection.LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64) - disconnectTimeout - TimeSpan.FromTicks(1);
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
@@ -1145,6 +1145,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
             using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
+                var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
                 var manager = CreateConnectionManager(LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
@@ -1163,8 +1164,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
                 await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
                 await sync.WaitForSyncPoint().DefaultTimeout();
+
+                // Try cancel before cancellation should occur
+                connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+                Assert.False(connection.SendingToken.IsCancellationRequested);
+
                 // Cancel write to response body
-                connection.TryCancelSend(long.MaxValue);
+                connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+                Assert.True(connection.SendingToken.IsCancellationRequested);
+
                 sync.Continue();
                 await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
@@ -1178,6 +1186,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             using (StartVerifiableLog())
             {
+                var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
                 var manager = CreateConnectionManager(LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.ServerSentEvents;
@@ -1195,8 +1204,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
                 await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
                 await sync.WaitForSyncPoint().DefaultTimeout();
+
+                // Try cancel before cancellation should occur
+                connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+                Assert.False(connection.SendingToken.IsCancellationRequested);
+
                 // Cancel write to response body
-                connection.TryCancelSend(long.MaxValue);
+                connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+                Assert.True(connection.SendingToken.IsCancellationRequested);
+
                 sync.Continue();
                 await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write
@@ -1215,6 +1231,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
             using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
+                var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
                 var manager = CreateConnectionManager(LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.WebSockets;
@@ -1232,8 +1249,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
                 await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
                 await sync.WaitForSyncPoint().DefaultTimeout();
+
+                // Try cancel before cancellation should occur
+                connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+                Assert.False(connection.SendingToken.IsCancellationRequested);
+
                 // Cancel write to response body
-                connection.TryCancelSend(long.MaxValue);
+                connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+                Assert.True(connection.SendingToken.IsCancellationRequested);
+
                 sync.Continue();
                 await dispatcherTask.DefaultTimeout();
                 // Connection should be removed on canceled write

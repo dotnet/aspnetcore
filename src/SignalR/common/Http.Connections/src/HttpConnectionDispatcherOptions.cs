@@ -123,7 +123,6 @@ namespace Microsoft.AspNetCore.Http.Connections
                 }
 
                 _transportSendTimeout = value;
-                TransportSendTimeoutTicks = value.Ticks;
             }
         }
 
@@ -136,7 +135,6 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// </remarks>
         public bool CloseOnAuthenticationExpiration { get; set; }
 
-        internal long TransportSendTimeoutTicks { get; private set; }
         internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
         // We initialize these lazily based on the state of the options specified here.

@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly PeriodicTimer _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
-        private readonly long _disconnectTimeoutTicks;
+        private readonly TimeSpan _disconnectTimeout;
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
-            _disconnectTimeoutTicks = (long)(connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout).TotalMilliseconds;
+            _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
 
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public void Scan()
         {
             var now = DateTimeOffset.UtcNow;
-            var ticks = Environment.TickCount64;
+            var ticks = TimeSpan.FromMilliseconds(Environment.TickCount64);
 
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeoutTicks)
+                if (!Debugger.IsAttached && lastSeenTick.HasValue && (ticks - lastSeenTick.Value) > _disconnectTimeout)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
