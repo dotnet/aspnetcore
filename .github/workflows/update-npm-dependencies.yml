@@ -20,12 +20,14 @@ jobs:
         with:
           repository: 'dotnet/aspnetcore'
           ref: 'main'
+          path: 'main'
 
       - name: Checkout Node-Externals repository
         uses: actions/checkout@v2
         with:
           repository: 'dotnet/Node-Externals'
           ref: 'main'
+          path: 'node-externals'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -36,7 +38,7 @@ jobs:
         shell: pwsh
         id: npm-install-script
         run:
-          ./aspnetcore/.github/workflows/update-npm-dependencies.ps1
+          ./main/.github/workflows/update-npm-dependencies.ps1
 
       - name: Create PR to update the offline package cache
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
@@ -56,7 +58,7 @@ jobs:
       - name: Update offline-cache submodule
         shell: pwsh
         run:
-          ./aspnetcore/.github/workflows/update-submodule-commit.ps1 ${{ steps.update-offline-package-cache.outputs.pull-request-head-sha }}
+          ./main/.github/workflows/update-submodule-commit.ps1 ${{ steps.update-offline-package-cache.outputs.pull-request-head-sha }}
 
       - name: Create PR to update package-lock.json and the offline package cache submodule
         # if: steps.update-npm-dependencies.outputs.changes == 'true'
@@ -64,7 +66,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'Update npm dependencies and offline cache submodule'
-          path: ./aspnetcore/
+          path: ./main/
           title: '[Infrastructure] Update npm dependencies'
           body: 'Updates the package-lock.json file and the offline package cache submodule to match it.'
           labels: 'Type: Dependency Update :arrow_up_small:'
