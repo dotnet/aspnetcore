@@ -45,6 +45,9 @@ updates:
     commit-message:
       prefix: "[main] "
       include: scope
+    ignore:
+      # Don't auto-update the Node-Externals submodule
+      - dependency-name: "Node-Externals*"
     labels:
       - area-infrastructure
 
