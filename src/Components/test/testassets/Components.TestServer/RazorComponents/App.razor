@@ -21,10 +21,8 @@
         const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
         const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
-        const useLongWebAssemblyTimeout = sessionStorage.getItem('use-long-auto-timeout') === 'true';
         sessionStorage.removeItem('suppress-enhanced-navigation');
         sessionStorage.removeItem('block-load-boot-resource');
-        sessionStorage.removeItem('use-long-auto-timeout');
         sessionStorage.removeItem('enable-classic-initializers');
 
         let loadBootResourceUnblocked = null;
@@ -33,6 +31,9 @@
                 window.unblockLoadBootResource = resolve;
             });
         }
+
+        let maxParallelResourceDownloadCount = 0;
+        let currentParallelResourceDownloadCount = 0;
 
         function callBlazorStart() {
             Blazor.start({
@@ -55,19 +56,21 @@
                                 // The following allows us to arbitrarily delay the loading of WebAssembly resources.
                                 // This is useful for guaranteeing that auto mode components will fall back on
                                 // using Blazor server.
+                                currentParallelResourceDownloadCount++;
                                 return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
                                     method: "GET",
                                 }).then(async (response) => {
+                                    if (currentParallelResourceDownloadCount > maxParallelResourceDownloadCount) {
+                                        maxParallelResourceDownloadCount = currentParallelResourceDownloadCount;
+                                        window['__aspnetcore__testing__max__parallel__resource__download__count'] = maxParallelResourceDownloadCount;
+                                    }
+                                    currentParallelResourceDownloadCount--;
                                     await loadBootResourceUnblocked;
                                     return response;
                                 });
                         }
                     },
                 },
-            }).then(() => {
-                if (useLongWebAssemblyTimeout) {
-                    Blazor._internal.loadWebAssemblyQuicklyTimeout = 10000000;
-                }
             }).then(() => {
                 const startedParagraph = document.createElement('p');
                 startedParagraph.id = 'blazor-started';

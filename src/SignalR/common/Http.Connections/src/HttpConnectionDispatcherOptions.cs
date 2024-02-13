@@ -112,7 +112,6 @@ public class HttpConnectionDispatcherOptions
             ArgumentOutOfRangeException.ThrowIfEqual(value, TimeSpan.Zero);
 
             _transportSendTimeout = value;
-            TransportSendTimeoutTicks = value.Ticks;
         }
     }
 
@@ -133,7 +132,6 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public bool AllowStatefulReconnects { get; set; }
 
-    internal long TransportSendTimeoutTicks { get; private set; }
     internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.
