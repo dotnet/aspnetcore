@@ -51,6 +51,12 @@ internal class RazorComponentEndpointFactory
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(configuredRenderModesMetadata);
 
+        builder.RequestDelegate = static httpContext =>
+        {
+            var invoker = httpContext.RequestServices.GetRequiredService<IRazorComponentEndpointInvoker>();
+            return invoker.Render(httpContext);
+        };
+
         foreach (var convention in conventions)
         {
             convention(builder);
@@ -66,12 +72,6 @@ internal class RazorComponentEndpointFactory
 
         // The display name is for debug purposes by endpoint routing.
         builder.DisplayName = $"{builder.RoutePattern.RawText} ({pageDefinition.DisplayName})";
-
-        builder.RequestDelegate = httpContext =>
-        {
-            var invoker = httpContext.RequestServices.GetRequiredService<IRazorComponentEndpointInvoker>();
-            return invoker.Render(httpContext);
-        };
 
         endpoints.Add(builder.Build());
     }

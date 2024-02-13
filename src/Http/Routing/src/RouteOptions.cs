@@ -3,6 +3,8 @@
 
 #if !COMPONENTS
 using System.Diagnostics;
+#else
+using Microsoft.AspNetCore.Components.Routing;
 #endif
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Routing.Constraints;
@@ -126,8 +128,13 @@ internal class RouteOptions
 
 #if !COMPONENTS
         AddConstraint<RegexErrorStubRouteConstraint>(defaults, "regex"); // Used to generate error message at runtime with helpful message.
-
         AddConstraint<RequiredRouteConstraint>(defaults, "required");
+#else
+        // Check if the feature is not enabled in the browser context
+        if (OperatingSystem.IsBrowser() && !RegexConstraintSupport.IsEnabled)
+        {
+            AddConstraint<RegexErrorStubRouteConstraint>(defaults, "regex"); // Used to generate error message at runtime with helpful message.
+        }
 #endif
 
         // Files

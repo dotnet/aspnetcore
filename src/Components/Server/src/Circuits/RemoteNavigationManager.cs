@@ -87,7 +87,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         if (_jsRuntime == null)
         {
-            var absoluteUriString = ToAbsoluteUri(uri).ToString();
+            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
             throw new NavigationException(absoluteUriString);
         }
 
@@ -128,7 +128,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     {
         if (_jsRuntime == null)
         {
-            var absoluteUriString = ToAbsoluteUri(Uri).ToString();
+            var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
             throw new NavigationException(absoluteUriString);
         }
 

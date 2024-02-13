@@ -55,6 +55,68 @@ public partial class DefaultProblemDetailsWriterTest
     }
 
     [Fact]
+    public async Task WriteAsync_Works_ProperCasing()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedProblem = new ProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
+            Title = "Custom Bad Request",
+            Extensions = new Dictionary<string, object>() { { "extensionKey", 1 } }
+        };
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var result = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(stream, JsonSerializerOptions.Default);
+        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "extensionKey", 5 } }));
+    }
+
+    [Fact]
+    public async Task WriteAsync_Works_ProperCasing_ValidationProblemDetails()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        var expectedProblem = new ValidationProblemDetails()
+        {
+            Detail = "Custom Bad Request",
+            Instance = "Custom Bad Request",
+            Status = StatusCodes.Status400BadRequest,
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
+            Title = "Custom Bad Request",
+            Errors = new Dictionary<string, string[]>() { { "name", ["Name is invalid."] } }
+        };
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = expectedProblem
+        };
+
+        //Act
+        await writer.WriteAsync(problemDetailsContext);
+
+        //Assert
+        stream.Position = 0;
+        var result = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(stream, JsonSerializerOptions.Default);
+        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "errors", 5 } }));
+    }
+
+    [Fact]
     public async Task WriteAsync_Works_WhenReplacingProblemDetailsUsingSetter()
     {
         // Arrange

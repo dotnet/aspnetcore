@@ -1475,44 +1475,48 @@ public static partial class RequestDelegateFactory
             object? formValue = null;
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
-            if (feature?.CanHaveBody == true)
+            if (feature?.CanHaveBody == false)
             {
-                if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
-                {
-                    Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
+                Log.UnexpectedRequestWithoutBody(httpContext, parameterTypeName, parameterName, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
 
-                if (!httpContext.Request.HasFormContentType)
-                {
-                    Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
-                    return (null, false);
-                }
+            if (httpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                Log.InvalidAntiforgeryToken(httpContext, parameterTypeName, parameterName, antiforgeryValidationFeature.Error!, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
 
-                try
-                {
-                    formValue = await httpContext.Request.ReadFormAsync();
-                }
-                catch (BadHttpRequestException ex)
-                {
-                    Log.RequestBodyIOException(httpContext, ex);
-                    httpContext.Response.StatusCode = ex.StatusCode;
-                    return (null, false);
-                }
-                catch (IOException ex)
-                {
-                    Log.RequestBodyIOException(httpContext, ex);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
-                catch (InvalidDataException ex)
-                {
-                    Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
-                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    return (null, false);
-                }
+            if (!httpContext.Request.HasFormContentType)
+            {
+                Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
+                return (null, false);
+            }
+
+            try
+            {
+                formValue = await httpContext.Request.ReadFormAsync();
+            }
+            catch (BadHttpRequestException ex)
+            {
+                Log.RequestBodyIOException(httpContext, ex);
+                httpContext.Response.StatusCode = ex.StatusCode;
+                return (null, false);
+            }
+            catch (IOException ex)
+            {
+                Log.RequestBodyIOException(httpContext, ex);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
+            }
+            catch (InvalidDataException ex)
+            {
+                Log.InvalidFormRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return (null, false);
             }
 
             return (formValue, true);
@@ -2738,6 +2742,20 @@ public static partial class RequestDelegateFactory
 
         [LoggerMessage(RequestDelegateCreationLogging.FormDataMappingFailedEventId, LogLevel.Debug, RequestDelegateCreationLogging.FormDataMappingFailedLogMessage, EventName = RequestDelegateCreationLogging.FormDataMappingFailedEventName)]
         private static partial void FormDataMappingFailed(ILogger logger, string parameterType, string parameterName, Exception exception);
+
+        public static void UnexpectedRequestWithoutBody(HttpContext httpContext, string parameterTypeName, string parameterName, bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyExceptionMessage, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message);
+            }
+
+            UnexpectedRequestWithoutBody(GetLogger(httpContext), parameterTypeName, parameterName);
+        }
+
+        [LoggerMessage(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventId, LogLevel.Debug, RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyLogMessage, EventName = RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventName)]
+        private static partial void UnexpectedRequestWithoutBody(ILogger logger, string parameterType, string parameterName);
 
         private static ILogger GetLogger(HttpContext httpContext)
         {

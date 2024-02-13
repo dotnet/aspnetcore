@@ -31,6 +31,10 @@
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Update="$(InteropWorkingDir)**" Pack="false" />
+  </ItemGroup>
+
   <Target Name="IncludeCompileInteropOutput">
     <ItemGroup>
       <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
