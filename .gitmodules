@@ -9,3 +9,5 @@
 [submodule "Node-Externals"]
 	path = src/submodules/Node-Externals
 	url = https://github.com/dotnet/Node-Externals
+	branch = main
+	depth = 1
