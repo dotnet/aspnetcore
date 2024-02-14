@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -1674,8 +1675,9 @@ public partial class ResultsTests
         (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
-        (() => Results.InternalServerError(null), typeof(InternalServerError)),
-        (() => Results.InternalServerError(new()), typeof(InternalServerError<object>)),
+        (() => Results.InternalServerError(), typeof(InternalServerError)),
+        (() => Results.InternalServerError<object>(new()), typeof(InternalServerError<object>)),
+        (() => Results.InternalServerError(ExceptionDispatchInfo.Capture(new ArgumentException("Test"))), typeof(InternalServerError)),
         (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),
