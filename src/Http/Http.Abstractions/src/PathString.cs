@@ -103,7 +103,7 @@ public readonly struct PathString : IEquatable<PathString>
                 {
                     // the current segment requires escape
                     buffer ??= new StringBuilder(value.Length * 3);
-                    buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
+                    buffer.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
 
                     requiresEscaping = false;
                     start = i;
@@ -160,7 +160,7 @@ public readonly struct PathString : IEquatable<PathString>
 
             if (requiresEscaping)
             {
-                buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
+                buffer.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
             }
             else
             {
