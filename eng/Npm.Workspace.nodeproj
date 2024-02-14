@@ -22,7 +22,11 @@
 
   <Target Name="Restore" DependsOnTargets="_VerifyNPMCache">
     <Message Text="Restoring NPM packages..." Importance="high" />
-    <Exec Command="npm ci --offline" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <PropertyGroup>
+      <!-- Disable installing puppeteer browsers when running in source build -->
+      <_AdditionalEnvironmentVariable Condition="$(ArcadeBuildFromSource) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1</_AdditionalEnvironmentVariable>
+    </PropertyGroup>
+    <Exec Command="npm ci --offline" WorkingDirectory="$(MSBuildThisFileDirectory).." EnvironmentVariables="$(_AdditionalEnvironmentVariable)" />
   </Target>
 
   <Target Name="Build">
