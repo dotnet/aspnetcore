@@ -7,6 +7,8 @@ permissions:
 # make it in GitHub a required check for PR's
 on:
   pull_request:
+    branches:    
+      - main
 
 jobs:
   lint:
