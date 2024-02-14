@@ -304,10 +304,10 @@
     <GrpcNetClientVersion>2.57.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.57.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.108</MessagePackVersion>
-    <MicrosoftIdentityWebVersion>2.13.4</MicrosoftIdentityWebVersion>
-    <MicrosoftIdentityWebGraphServiceClientVersion>2.13.4</MicrosoftIdentityWebGraphServiceClientVersion>
-    <MicrosoftIdentityWebUIVersion>2.13.4</MicrosoftIdentityWebUIVersion>
-    <MicrosoftIdentityWebDownstreamApiVersion>2.13.4</MicrosoftIdentityWebDownstreamApiVersion>
+    <MicrosoftIdentityWebVersion>2.17.0</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebGraphServiceClientVersion>2.17.0</MicrosoftIdentityWebGraphServiceClientVersion>
+    <MicrosoftIdentityWebUIVersion>2.17.0</MicrosoftIdentityWebUIVersion>
+    <MicrosoftIdentityWebDownstreamApiVersion>2.17.0</MicrosoftIdentityWebDownstreamApiVersion>
     <MicrosoftWindowsCsWin32Version>0.3.46-beta</MicrosoftWindowsCsWin32Version>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <MoqVersion>4.10.0</MoqVersion>
