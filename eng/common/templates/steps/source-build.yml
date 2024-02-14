@@ -83,6 +83,10 @@ steps:
       assetManifestFileName=SourceBuild_${{ parameters.platform.name }}.xml
     fi
 
+    # Setup environment variables to support offline builds before calling into
+    # the build script.
+    export PUPPETEER_SKIP_DOWNLOAD=1
+
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
       --configuration $buildConfig \
       --restore --build --pack $publishArgs -bl \
