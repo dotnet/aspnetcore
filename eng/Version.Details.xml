@@ -385,12 +385,12 @@
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24102.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>d731f58a502086842739a358ab490bec08fdb8a7</Sha>
+      <Sha>2fb543a45580400a559b5ae41c96a815ea14dac5</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24102.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>d731f58a502086842739a358ab490bec08fdb8a7</Sha>
+      <Sha>2fb543a45580400a559b5ae41c96a815ea14dac5</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24102.4">
