@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -693,10 +694,9 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
     /// </summary>
-    /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult InternalServerError(object? error = null)
-        => InternalServerError<object>(error);
+    public static IResult InternalServerError()
+        => InternalServerError<object>(null);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
@@ -705,6 +705,14 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult InternalServerError<TValue>(TValue? error)
         => error is null ? TypedResults.InternalServerError() : TypedResults.InternalServerError(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <param name="exception">The exception to be thrown.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult InternalServerError(ExceptionDispatchInfo exception)
+        => TypedResults.InternalServerError(exception);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.

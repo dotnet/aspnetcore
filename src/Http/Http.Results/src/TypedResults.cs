@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -747,6 +748,13 @@ public static class TypedResults
     /// <param name="error">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="HttpResults.InternalServerError{TValue}"/> for the response.</returns>
     public static InternalServerError<TValue> InternalServerError<TValue>(TValue? error) => new(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <param name="exception">The exception to be thrown</param>
+    /// <returns>The created <see cref="HttpResults.InternalServerError"/> for the response.</returns>
+    public static InternalServerError InternalServerError(ExceptionDispatchInfo exception) => new(exception);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.

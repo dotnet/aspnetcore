@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,20 @@ public sealed class InternalServerError : IResult, IEndpointMetadataProvider, IS
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="InternalServerError"/> class with the values
+    /// </summary>
+    /// <param name="exception">The exception to be thrown.</param>
+    internal InternalServerError(ExceptionDispatchInfo exception)
+    {
+        Exception = exception;
+    }
+
+    /// <summary>
+    /// Gets the exception to be thrown.
+    /// </summary>
+    public ExceptionDispatchInfo? Exception { get; }
+
+    /// <summary>
     /// Gets the HTTP status code: <see cref="StatusCodes.Status500InternalServerError"/>
     /// </summary>
     public int StatusCode => StatusCodes.Status500InternalServerError;
@@ -30,6 +45,7 @@ public sealed class InternalServerError : IResult, IEndpointMetadataProvider, IS
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
+        Exception?.Throw();
         ArgumentNullException.ThrowIfNull(httpContext);
 
         // Creating the logger with a string to preserve the category after the refactoring.
