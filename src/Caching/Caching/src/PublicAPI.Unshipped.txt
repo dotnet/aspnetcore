@@ -1,7 +1,15 @@
 #nullable enable
+Microsoft.Extensions.Caching.Distributed.CacheGetResult
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult() -> void
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult(bool exists) -> void
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult(System.DateTime expiry) -> void
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult(System.TimeSpan expiry) -> void
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.Exists.get -> bool
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.ExpiryAbsolute.get -> System.DateTime?
+Microsoft.Extensions.Caching.Distributed.CacheGetResult.ExpiryRelative.get -> System.TimeSpan?
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache
+Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.GetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.Extensions.Caching.Distributed.CacheGetResult>
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.SetAsync(string! key, System.Buffers.ReadOnlySequence<byte> value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions! options, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
-Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.TryGetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.CacheKeyInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
 Microsoft.Extensions.Caching.Distributed.IReadThroughCache

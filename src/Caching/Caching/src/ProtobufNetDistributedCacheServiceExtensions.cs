@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-[SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
+[SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "demo code only")]
 public static class ProtobufDistributedCacheServiceExtensions
 {
     public static IServiceCollection AddReadThroughCacheSerializerProtobufNet(this IServiceCollection services)

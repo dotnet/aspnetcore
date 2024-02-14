@@ -176,12 +176,12 @@ class CustomBackend : IBufferDistributedCache
         _cache[key] = new ExpiringBuffer(expiration, value.ToArray());
         return default;
     }
-    ValueTask<bool> IBufferDistributedCache.TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
+    ValueTask<CacheGetResult> IBufferDistributedCache.GetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
     {
         if (_cache.TryGetValue(key, out var found) && found.IsAlive())
         {
             destination.Write(found.Payload);
-            return new(true);
+            return new(new CacheGetResult(found.Expiration));
         }
         return default;
     }
