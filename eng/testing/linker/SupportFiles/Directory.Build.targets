@@ -49,19 +49,19 @@
       -->
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
           '%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
-      <RuntimePackRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
     <KnownAppHostPack Update="Microsoft.NETCore.App">
       <AppHostPackVersion
         Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</AppHostPackVersion>
-      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+      <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownAppHostPack>
 
     <KnownRuntimePack Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
         Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
-      <AppHostRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
+      <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
 
   </ItemGroup>
