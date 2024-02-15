@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 
 export function applyVersions(defaultPackageVersion, workspacePath) {
   // Get the workspace package.json from the provided path
-  const workspacePackage = import(workspacePath);
+  const workspacePackage = fs.readJsonSync(workspacePath);
 
   // Get the workspace directory
   const workspaceDir = path.dirname(workspacePath);
@@ -31,14 +31,14 @@ export function applyVersions(defaultPackageVersion, workspacePath) {
   }
 
   // For each package to be packed, run npm version to apply the version
-  var renames = applyPackageVersion(packagesToPack);
+  var renames = applyPackageVersion(packagesToPack, defaultPackageVersion);
 
   updateDependencyVersions(packagesToPack);
 
   return [packagesToPack, renames];
 }
 
-function applyPackageVersion(packagesToPack) {
+function applyPackageVersion(packagesToPack, defaultPackageVersion) {
   const currentDir = process.cwd();
   const renames = [];
   for (const [packagePath, packageJson] of packagesToPack) {

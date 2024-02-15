@@ -1,6 +1,7 @@
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
-import { existsSync, writeJsonSync, readJsonSync, moveSync } from 'fs-extra';
+import fsExtra from 'fs-extra';
+const { existsSync, writeJsonSync, readJsonSync, moveSync } = fsExtra;
 import { applyVersions } from './update-dependency-versions.mjs';
 
 // Get the action to perform from the process arguments list
@@ -42,16 +43,16 @@ console.log(`Default Package Version: ${defaultPackageVersion}`);
 console.log(`Package Output Path: ${packageOutputPath}`);
 console.log(`Intermediate Output Path: ${intermediateOutputPath}`);
 
-if (!existsSync(packageOutputPath)) {
-  throw new Error(`The package output path ${packageOutputPath} does not exist.`);
-}
-
 if (action === '--update-versions') {
   const [packagesToPack, renames] = applyVersions(defaultPackageVersion, workspacePath);
   // Write packagesToPack and renames to a file
   writeJsonSync(resolve(intermediateOutputPath, 'packagesToPack.json'), packagesToPack);
   writeJsonSync(resolve(intermediateOutputPath, 'renames.json'), renames);
 }else if (action === '--create-packages') {
+  if (!existsSync(packageOutputPath)) {
+    throw new Error(`The package output path ${packageOutputPath} does not exist.`);
+  }
+
   // Read packagesToPack and renames from a file
   const packagesToPack = readJsonSync(resolve(intermediateOutputPath, 'packagesToPack.json'));
   const renames = readJsonSync(resolve(intermediateOutputPath, 'renames.json'));

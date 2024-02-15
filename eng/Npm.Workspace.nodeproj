@@ -12,25 +12,41 @@
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
+    <_NpmAdditionalEnvironmentVariables>npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
-  <Target Name="_VerifyNPMCache">
+  <Target Name="_VerifyNPMCache" Condition="$(ContinuousIntegrationBuild) == 'true'" >
     <Message Text="Verifying NPM cache..." Importance="high" />
-    <Exec Command="npm cache verify" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec
+      Command="npm cache verify"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
   <Target Name="Restore" DependsOnTargets="_VerifyNPMCache">
     <Message Text="Restoring NPM packages..." Importance="high" />
-    <Exec Command="npm ci --offline" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec
+      Command="npm ci --offline"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
   <Target Name="Build">
     <PropertyGroup>
       <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
     </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
     <Message Text="Building NPM packages..." Importance="high" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.js --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
-    <Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+
+    <Exec
+      Command="npm run build"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      />
   </Target>
 
   <Target Name="_Test" BeforeTargets="Test">
@@ -44,7 +60,7 @@
     </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.js --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
   </Target>
 
   <!-- Import Directory.Build.targets -->
