@@ -68,6 +68,8 @@ public class TestRunner
             DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
             DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
             DisplayContents(Path.Combine(Options.DotnetRoot, "packs", "Microsoft.AspNetCore.App.Ref"));
+            DisplayContents(Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD"));
+            DisplayContents(Path.Combine(Environment.GetEnvironmentVariable("HELIX_CORRELATION_PAYLOAD"), "package"));
 
             return true;
         }
@@ -140,7 +142,7 @@ public class TestRunner
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload} --version {Options.DotnetEfVersion}",
                 environmentVariables: EnvironmentVariables,
                 outputDataReceived: ProcessUtil.PrintMessage,
                 errorDataReceived: ProcessUtil.PrintErrorMessage,
