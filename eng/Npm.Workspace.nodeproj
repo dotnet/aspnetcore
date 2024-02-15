@@ -12,7 +12,6 @@
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
-    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
   </PropertyGroup>
 
   <Target Name="_VerifyNPMCache">
@@ -26,7 +25,11 @@
   </Target>
 
   <Target Name="Build">
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
     <Message Text="Building NPM packages..." Importance="high" />
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.js --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
     <Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory).." />
   </Target>
 
@@ -36,9 +39,12 @@
   </Target>
 
   <Target Name="Pack">
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts\pack-workspace.js $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath)" />
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.js --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
   </Target>
 
   <!-- Import Directory.Build.targets -->
