@@ -1,4 +1,5 @@
 #nullable enable
+abstract Microsoft.Extensions.Caching.Distributed.ReadThroughCache.GetOrCreateAsync<TState, T>(string! key, TState state, System.Func<TState, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions? options = null, System.ReadOnlyMemory<string!> tags = default(System.ReadOnlyMemory<string!>), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.SetAsync(string! key, System.Buffers.ReadOnlySequence<byte> value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions! options, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.TryGetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
@@ -6,16 +7,13 @@ Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.KeyInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.RemoveTagsAsync(System.ReadOnlyMemory<string!> tags, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.TagInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<T>(string! key, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions? options = null, System.ReadOnlyMemory<string!> tags = default(System.ReadOnlyMemory<string!>), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<TState, T>(string! key, TState state, System.Func<TState, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions? options = null, System.ReadOnlyMemory<string!> tags = default(System.ReadOnlyMemory<string!>), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RemoveTagsAsync(System.ReadOnlyMemory<string!> tags, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>.Deserialize(System.Buffers.ReadOnlySequence<byte> source) -> T
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>.Serialize(T value, System.Buffers.IBufferWriter<byte>! target) -> void
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializerFactory
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializerFactory.TryCreateSerializer<T>(out Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>? serializer) -> bool
+Microsoft.Extensions.Caching.Distributed.ReadThroughCache
+Microsoft.Extensions.Caching.Distributed.ReadThroughCache.ReadThroughCache() -> void
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.BypassCompression = 4 -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.BypassDistributedCache = 2 -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
@@ -36,3 +34,8 @@ Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.ReadThroughCach
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions
 static Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions.AddReadThroughCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions.AddReadThroughCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.Extensions.Caching.Distributed.ReadThroughCache.GetOrCreateAsync<T>(string! key, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions? options = null, System.ReadOnlyMemory<string!> tags = default(System.ReadOnlyMemory<string!>), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
+virtual Microsoft.Extensions.Caching.Distributed.ReadThroughCache.RemoveKeyAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.Extensions.Caching.Distributed.ReadThroughCache.RemoveKeysAsync(System.ReadOnlyMemory<string!> keys, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.Extensions.Caching.Distributed.ReadThroughCache.RemoveTagAsync(string! tag, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.Extensions.Caching.Distributed.ReadThroughCache.RemoveTagsAsync(System.ReadOnlyMemory<string!> tags, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask

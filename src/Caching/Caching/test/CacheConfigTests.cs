@@ -18,7 +18,7 @@ public class CacheConfigTests
         services.AddReadThroughCache();
         services.AddReadThroughCacheSerializerProtobufNet();
         var s = services.BuildServiceProvider();
-        var cache = Assert.IsType<ReadThroughCache>(s.GetService<IReadThroughCache>());
+        var cache = Assert.IsType<DefaultReadThroughCache>(s.GetService<ReadThroughCache>());
 
         Assert.IsType<StringSerializer>(cache.GetSerializer<string>());
         Assert.IsType<DefaultJsonSerializerFactory.DefaultJsonSerializer<Foo>>(cache.GetSerializer<Foo>());
@@ -125,7 +125,7 @@ public class CacheConfigTests
     }
 }
 
-public class SomeService(IReadThroughCache cache)
+public class SomeService(ReadThroughCache cache)
 {
     private int _backendCalls;
     public int BackendCalls => _backendCalls;

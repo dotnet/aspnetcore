@@ -25,7 +25,7 @@ public static class ReadThroughCacheServiceExtensions
         services.AddDistributedMemoryCache(); // we need a backend; use in-proc by default
         services.AddSingleton<IReadThroughCacheSerializerFactory, DefaultJsonSerializerFactory>();
         services.AddSingleton<IReadThroughCacheSerializer<string>, StringSerializer>();
-        services.AddSingleton(typeof(IReadThroughCache), typeof(ReadThroughCache));
+        services.AddSingleton<ReadThroughCache, DefaultReadThroughCache>();
         return services;
     }
 }
