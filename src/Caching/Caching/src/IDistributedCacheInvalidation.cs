@@ -5,5 +5,7 @@ namespace Microsoft.Extensions.Caching.Distributed;
 
 public interface IDistributedCacheInvalidation : IDistributedCache
 {
-    event Func<string, ValueTask> CacheKeyInvalidated;
+    event Func<string, ValueTask> KeyInvalidated;
+    event Func<string, ValueTask> TagInvalidated;
+    ValueTask RemoveTagsAsync(ReadOnlyMemory<string> tags, CancellationToken cancellationToken);
 }

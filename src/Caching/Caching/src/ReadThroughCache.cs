@@ -3,22 +3,35 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Distributed;
-internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options, IServiceProvider services, IMemoryCache frontent, IDistributedCache backend) : IReadThroughCache
+internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options, IServiceProvider services, IMemoryCache frontent, IDistributedCache backend,
+    TimeProvider clock) : IReadThroughCache
 {
     private readonly IServiceProvider _services = services;
     private readonly IMemoryCache _frontend = frontent;
     private readonly IDistributedCache _backend = backend;
-    private readonly IBufferDistributedCache? _bufferBackend = backend as IBufferDistributedCache;
-    private readonly DistributedCacheEntryOptions _defaultOptions = options.Value.DefaultOptions ?? new();
 
-    public ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
-        => GetOrCreateAsync(key, callback, WrappedCallbackCache<T>.Instance, options, cancellationToken);
+    private const int BackendBuffer = 1 << 0, BackendInvalidation = 1 << 1;
+    private readonly int _backendFeatures // avoid repeated type tests
+        = (backend is IBufferDistributedCache ? BackendBuffer : 0)
+        | (backend is IDistributedCacheInvalidation ? BackendInvalidation : 0);
+
+    private bool HasBackendBuffer => (_backendFeatures & BackendBuffer) != 0;
+    private bool HasBackendInvalidation => (_backendFeatures & BackendInvalidation) != 0;
+
+    private readonly ReadThroughCacheEntryOptions _defaultOptions = options.Value.DefaultOptions ?? new(TimeSpan.FromMinutes(1));
+    private readonly TimeProvider _clock = clock;
+
+    public ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> callback,
+        ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
+        => GetOrCreateAsync(key, callback, WrappedCallbackCache<T>.Instance, options, tags, cancellationToken);
 
     private static class ReadOnlyTypeCache<T>
     {
@@ -46,7 +59,8 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         return false;
     }
 
-    public ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
+    public ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback,
+        ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(callback);
@@ -66,12 +80,10 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
             }
         }
 
-        return _bufferBackend is not null
+        return HasBackendBuffer
             ? GetBufferedBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken)
             : GetLegacyBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken);
     }
-
-    ValueTask IReadThroughCache.RefreshAsync(string key, CancellationToken cancellationToken) => new(_backend.RefreshAsync(key, cancellationToken));
 
     private readonly ConcurrentDictionary<Type, object> _serializerCache = new();
 
@@ -105,21 +117,22 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
 
     private ValueTask<T> GetBufferedBackendAsync<TState, T>(string key, TState state,
         Func<TState, CancellationToken, ValueTask<T>> callback,
-        DistributedCacheEntryOptions options, CancellationToken cancellationToken)
+        ReadThroughCacheEntryOptions options, CancellationToken cancellationToken)
     {
         var buffer = new RecyclableArrayBufferWriter<byte>();
-        var pendingGet = _bufferBackend!.GetAsync(key, buffer, cancellationToken);
+        Debug.Assert(_backend is IBufferDistributedCache); // pre-validated
+        var pendingGet = Unsafe.As<IBufferDistributedCache>(_backend).TryGetAsync(key, buffer, cancellationToken);
 
         if (!pendingGet.IsCompletedSuccessfully)
         {
             return AwaitedBackend(this, key, state, callback, options, cancellationToken, buffer, pendingGet);
         }
 
-        var getResult = pendingGet.GetAwaiter().GetResult();
+        var tryGetResult = pendingGet.GetAwaiter().GetResult();
         // fast path; backend available immediately
-        if (getResult.Exists)
+        if (tryGetResult)
         {
-            var result = DeserializeAndCacheFrontend<T>(key, options, getResult, buffer);
+            var result = DeserializeAndCacheFrontend<T>(key, options, buffer);
             buffer.Dispose();
             return new(result);
         }
@@ -127,15 +140,15 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         // fall back to main code-path, but without the pending bytes (we've already checked those)
         return AwaitedBackend(this, key, state, callback, options, cancellationToken, buffer, default);
 
-        static async ValueTask<T> AwaitedBackend(ReadThroughCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions options,
-             CancellationToken cancellationToken, RecyclableArrayBufferWriter<byte> buffer, ValueTask<CacheGetResult> pendingGet)
+        static async ValueTask<T> AwaitedBackend(ReadThroughCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions options,
+             CancellationToken cancellationToken, RecyclableArrayBufferWriter<byte> buffer, ValueTask<bool> pendingGet)
         {
             using (buffer)
             {
                 var getResult = await pendingGet;
-                if (getResult.Exists)
+                if (getResult)
                 {
-                    return @this.DeserializeAndCacheFrontend<T>(key, options, getResult, buffer);
+                    return @this.DeserializeAndCacheFrontend<T>(key, options, buffer);
                 }
 
                 var value = await callback(state, cancellationToken);
@@ -146,7 +159,7 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
                 else
                 {
                     @this.SerializeAndCacheFrontend<T>(key, value, options, buffer, out _);
-                    await @this._bufferBackend!.SetAsync(key, new(buffer.GetCommittedMemory()), options, cancellationToken);
+                    await Unsafe.As<IBufferDistributedCache>(@this._backend).SetAsync(key, new(buffer.GetCommittedMemory()), options.AsDistributedCacheEntryOptions(), cancellationToken);
                 }
 
                 return value;
@@ -154,13 +167,13 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         }
     }
 
-    private void SerializeAndCacheFrontend<T>(string key, T value, DistributedCacheEntryOptions options, RecyclableArrayBufferWriter<byte> buffer,
+    private void SerializeAndCacheFrontend<T>(string key, T value, ReadThroughCacheEntryOptions options, RecyclableArrayBufferWriter<byte> buffer,
         out byte[]? arr)
     {
         buffer.Reset();
         GetSerializer<T>().Serialize(value, buffer);
 
-        var expiry = ComputeExpiration(options, default);
+        var expiry = ComputeExpiration(options);
         if (ReadOnlyTypeCache<T>.IsReadOnly)
         {
             arr = null;
@@ -172,36 +185,13 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         }
     }
 
-    private static DateTime ComputeExpiration(DistributedCacheEntryOptions options, CacheGetResult result)
-    {
-        if (result.ExpiryAbsolute.HasValue)
-        {
-            return result.ExpiryAbsolute.GetValueOrDefault();
-        }
-        if (result.ExpiryRelative.HasValue)
-        {
-            return DateTime.UtcNow.Add(result.ExpiryRelative.GetValueOrDefault());
-        }
-        if (options.AbsoluteExpiration.HasValue)
-        {
-            // DateTimeOffset to DateTime
-            return new DateTime(options.AbsoluteExpiration.GetValueOrDefault().UtcTicks, DateTimeKind.Utc);
-        }
-        if (options.AbsoluteExpirationRelativeToNow.HasValue)
-        {
-            return DateTime.UtcNow.Add(options.AbsoluteExpirationRelativeToNow.GetValueOrDefault());
-        }
-        if (options.SlidingExpiration.HasValue)
-        {
-            return DateTime.UtcNow.Add(options.SlidingExpiration.GetValueOrDefault());
-        }
-        const int HardDefaultExpiryMinutes = 5;
-        return DateTime.UtcNow.AddMinutes(HardDefaultExpiryMinutes);
-    }
+    private DateTimeOffset ComputeExpiration(ReadThroughCacheEntryOptions options)
+        => _clock.GetUtcNow().Add(options.Expiry);
 
-    private T DeserializeAndCacheFrontend<T>(string key, DistributedCacheEntryOptions options, CacheGetResult getResult, RecyclableArrayBufferWriter<byte> buffer)
+    private T DeserializeAndCacheFrontend<T>(string key, ReadThroughCacheEntryOptions options,
+        RecyclableArrayBufferWriter<byte> buffer)
     {
-        var expiry = ComputeExpiration(options, getResult);
+        var expiry = ComputeExpiration(options);
         if (!ReadOnlyTypeCache<T>.IsReadOnly)
         {
             _frontend.Set(key, buffer.ToArray(), expiry);
@@ -215,9 +205,9 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         return result;
     }
 
-    private T DeserializeAndCacheFrontend<T>(string key, DistributedCacheEntryOptions options, byte[] buffer)
+    private T DeserializeAndCacheFrontend<T>(string key, ReadThroughCacheEntryOptions options, byte[] buffer)
     {
-        var expiry = ComputeExpiration(options, default);
+        var expiry = ComputeExpiration(options);
         if (!ReadOnlyTypeCache<T>.IsReadOnly)
         {
             _frontend.Set(key, buffer, expiry);
@@ -231,7 +221,7 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         return result;
     }
 
-    private ValueTask<T> GetLegacyBackendAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions options, CancellationToken cancellationToken)
+    private ValueTask<T> GetLegacyBackendAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions options, CancellationToken cancellationToken)
     {
         var pendingBytes = _backend.GetAsync(key, cancellationToken);
         if (!pendingBytes.IsCompletedSuccessfully)
@@ -249,7 +239,7 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
         // fall back to main code-path, but without the pending bytes (we've already checked those)
         return AwaitedBackend(this, key, state, callback, options, cancellationToken, null);
 
-        static async ValueTask<T> AwaitedBackend(ReadThroughCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, DistributedCacheEntryOptions options,
+        static async ValueTask<T> AwaitedBackend(ReadThroughCache @this, string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions options,
              CancellationToken cancellationToken, Task<byte[]?>? pendingBytes)
         {
             if (pendingBytes is not null)
@@ -270,7 +260,7 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
             {
                 using var buffer = new RecyclableArrayBufferWriter<byte>();
                 @this.SerializeAndCacheFrontend<T>(key, value, options, buffer, out var arr);
-                await @this._backend.SetAsync(key, arr ?? buffer.ToArray(), options, cancellationToken);
+                await @this._backend.SetAsync(key, arr ?? buffer.ToArray(), options.AsDistributedCacheEntryOptions(), cancellationToken);
             }
 
             return value;
@@ -281,6 +271,21 @@ internal sealed class ReadThroughCache(IOptions<ReadThroughCacheOptions> options
     {
         _frontend.Remove(key);
         return new (_backend.RemoveAsync(key, cancellationToken));
+    }
+
+    public ValueTask RemoveTagsAsync(ReadOnlyMemory<string> tags, CancellationToken cancellationToken = default)
+    {
+        // TODO: local invalidation
+
+        if (HasBackendInvalidation)
+        {
+            Debug.Assert(_backend is IDistributedCacheInvalidation); // pre-validated
+            return Unsafe.As<IDistributedCacheInvalidation>(_backend).RemoveTagsAsync(tags, cancellationToken);
+        }
+        else
+        {
+            return default;
+        }
     }
 
     private static class WrappedCallbackCache<T>

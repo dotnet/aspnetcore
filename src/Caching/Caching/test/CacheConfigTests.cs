@@ -80,7 +80,6 @@ public class CacheConfigTests
     public async Task StatefulUsage(bool useCustomBackend)
     {
         var services = new ServiceCollection();
-
         if (useCustomBackend)
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
@@ -146,10 +145,7 @@ public class SomeService(IReadThroughCache cache)
 
     public async Task<Foo> GetFromCacheWithStateAsync(int id) => await cache.GetOrCreateAsync($"foos_{id}", (obj: this, id), static (state, ct) => state.obj.BackendAsync(state.id), _cacheExpiration);
 
-    private static readonly DistributedCacheEntryOptions _cacheExpiration = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1)
-    };
+    private static readonly ReadThroughCacheEntryOptions _cacheExpiration = new(TimeSpan.FromSeconds(1));
 }
 public class Foo
 {
@@ -176,12 +172,12 @@ class CustomBackend : IBufferDistributedCache
         _cache[key] = new ExpiringBuffer(expiration, value.ToArray());
         return default;
     }
-    ValueTask<CacheGetResult> IBufferDistributedCache.GetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
+    ValueTask<bool> IBufferDistributedCache.TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken cancellationToken)
     {
         if (_cache.TryGetValue(key, out var found) && found.IsAlive())
         {
             destination.Write(found.Payload);
-            return new(new CacheGetResult(found.Expiration));
+            return new(true);
         }
         return default;
     }

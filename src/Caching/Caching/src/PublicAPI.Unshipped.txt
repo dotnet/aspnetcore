@@ -1,30 +1,37 @@
 #nullable enable
-Microsoft.Extensions.Caching.Distributed.CacheGetResult
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult() -> void
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult(bool exists) -> void
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult(System.DateTime expiry) -> void
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.CacheGetResult(System.TimeSpan expiry) -> void
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.Exists.get -> bool
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.ExpiryAbsolute.get -> System.DateTime?
-Microsoft.Extensions.Caching.Distributed.CacheGetResult.ExpiryRelative.get -> System.TimeSpan?
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache
-Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.GetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.Extensions.Caching.Distributed.CacheGetResult>
 Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.SetAsync(string! key, System.Buffers.ReadOnlySequence<byte> value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions! options, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.IBufferDistributedCache.TryGetAsync(string! key, System.Buffers.IBufferWriter<byte>! destination, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation
-Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.CacheKeyInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
+Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.KeyInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
+Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.RemoveTagsAsync(System.ReadOnlyMemory<string!> tags, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.IDistributedCacheInvalidation.TagInvalidated -> System.Func<string!, System.Threading.Tasks.ValueTask>!
 Microsoft.Extensions.Caching.Distributed.IReadThroughCache
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<T>(string! key, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<TState, T>(string! key, TState state, System.Func<TState, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions? options = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
-Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RefreshAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<T>(string! key, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions? options = null, System.ReadOnlyMemory<string!> tags = default(System.ReadOnlyMemory<string!>), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.GetOrCreateAsync<TState, T>(string! key, TState state, System.Func<TState, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>>! callback, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions? options = null, System.ReadOnlyMemory<string!> tags = default(System.ReadOnlyMemory<string!>), System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<T>
 Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RemoveAsync(string! key, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Caching.Distributed.IReadThroughCache.RemoveTagsAsync(System.ReadOnlyMemory<string!> tags, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>.Deserialize(System.Buffers.ReadOnlySequence<byte> source) -> T
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>.Serialize(T value, System.Buffers.IBufferWriter<byte>! target) -> void
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializerFactory
 Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializerFactory.TryCreateSerializer<T>(out Microsoft.Extensions.Caching.Distributed.IReadThroughCacheSerializer<T>? serializer) -> bool
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.BypassCompression = 4 -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.BypassDistributedCache = 2 -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.BypassLocalCache = 1 -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.None = 0 -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions.Expiry.get -> System.TimeSpan
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions.Flags.get -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions.ReadThroughCacheEntryOptions(System.TimeSpan expiry, Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags flags = Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryFlags.None) -> void
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions
-Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.DefaultOptions.get -> Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions?
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.AllowCompression.get -> bool
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.AllowCompression.set -> void
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.DefaultOptions.get -> Microsoft.Extensions.Caching.Distributed.ReadThroughCacheEntryOptions?
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.DefaultOptions.set -> void
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.MaximumPayloadBytes.get -> long
+Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.MaximumPayloadBytes.set -> void
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheOptions.ReadThroughCacheOptions() -> void
 Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions
 static Microsoft.Extensions.Caching.Distributed.ReadThroughCacheServiceExtensions.AddReadThroughCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
