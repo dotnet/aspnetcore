@@ -55,6 +55,27 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
         return false;
     }
 
+    public override ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+    {
+        if (ReadOnlyTypeCache<T>.IsReadOnly)
+        {
+            if (_frontend.TryGetValue(key, out T? existing))
+            {
+                return new((true, existing!));
+            }
+        }
+        else
+        {
+            if (_frontend.TryGetValue(key, out byte[]? buffer))
+            {
+                return new((true, GetSerializer<T>().Deserialize(new(buffer!))));
+            }
+        }
+
+        return HasBackendBuffer
+            ? GetBufferedBackendAsync<T>(key, cancellationToken)
+            : GetLegacyBackendAsync<T>(key, cancellationToken);
+    }
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback,
         ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
     {
@@ -77,8 +98,8 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
         }
 
         return HasBackendBuffer
-            ? GetBufferedBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken)
-            : GetLegacyBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken);
+            ? GetOrCreateBufferedBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken)
+            : GetOrCreateLegacyBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken);
     }
 
     private readonly ConcurrentDictionary<Type, object> _serializerCache = new();
@@ -111,7 +132,7 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
         return serializer;
     }
 
-    private ValueTask<T> GetBufferedBackendAsync<TState, T>(string key, TState state,
+    private ValueTask<T> GetOrCreateBufferedBackendAsync<TState, T>(string key, TState state,
         Func<TState, CancellationToken, ValueTask<T>> callback,
         ReadThroughCacheEntryOptions options, CancellationToken cancellationToken)
     {
@@ -217,7 +238,7 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
         return result;
     }
 
-    private ValueTask<T> GetLegacyBackendAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions options, CancellationToken cancellationToken)
+    private ValueTask<T> GetOrCreateLegacyBackendAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions options, CancellationToken cancellationToken)
     {
         var pendingBytes = _backend.GetAsync(key, cancellationToken);
         if (!pendingBytes.IsCompletedSuccessfully)
@@ -283,4 +304,71 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
             return default;
         }
     }
+
+    private ValueTask<(bool Exists, T Value)> GetBufferedBackendAsync<T>(string key, CancellationToken cancellationToken)
+    {
+        var buffer = new RecyclableArrayBufferWriter<byte>();
+        Debug.Assert(_backend is IBufferDistributedCache); // pre-validated
+        var pendingGet = Unsafe.As<IBufferDistributedCache>(_backend).TryGetAsync(key, buffer, cancellationToken);
+
+        if (!pendingGet.IsCompletedSuccessfully)
+        {
+            return AwaitedBackend(this, key, buffer, pendingGet);
+        }
+
+        var tryGetResult = pendingGet.GetAwaiter().GetResult();
+        // fast path; backend available immediately
+        if (tryGetResult)
+        {
+            var result = DeserializeAndCacheFrontend<T>(key, _defaultOptions, buffer);
+            buffer.Dispose();
+            return new((true, result));
+        }
+
+        return default;
+
+        static async ValueTask<(bool Exists, T Value)> AwaitedBackend(DefaultReadThroughCache @this, string key,
+             RecyclableArrayBufferWriter<byte> buffer, ValueTask<bool> pendingGet)
+        {
+            using (buffer)
+            {
+                var getResult = await pendingGet;
+                if (getResult)
+                {
+                    return (true, @this.DeserializeAndCacheFrontend<T>(key, @this._defaultOptions, buffer));
+                }
+            }
+            return default;
+        }
+    }
+
+    private ValueTask<(bool Exists, T Value)> GetLegacyBackendAsync<T>(string key, CancellationToken cancellationToken)
+    {
+        var pendingBytes = _backend.GetAsync(key, cancellationToken);
+        if (!pendingBytes.IsCompletedSuccessfully)
+        {
+            return AwaitedBackend(this, key, pendingBytes);
+        }
+
+        // fast path; backend available immediately
+        var bytes = pendingBytes.Result;
+        if (bytes is not null)
+        {
+            return new((true, DeserializeAndCacheFrontend<T>(key, _defaultOptions, bytes)));
+        }
+
+        return default;
+
+        static async ValueTask<(bool Exists, T Value)> AwaitedBackend(DefaultReadThroughCache @this, string key, Task<byte[]?> pendingBytes)
+        {
+            var bytes = await pendingBytes;
+            if (bytes is not null)
+            {
+                return (true, @this.DeserializeAndCacheFrontend<T>(key, @this._defaultOptions, bytes));
+            }
+
+            return default;
+        }
+    }
+
 }
