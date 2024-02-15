@@ -22,7 +22,7 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveWebAssemblyRenderMode()
+    .AddInteractiveWebAssemblyRenderMode(options => { options.ServeMultithreadingHeaders = true; })
     .AddAdditionalAssemblies(typeof(ThreadingApp.Pages.Index).Assembly);
 
 app.Run();
