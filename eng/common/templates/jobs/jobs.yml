@@ -20,7 +20,7 @@ parameters:
     enabled: false
     # Optional: Include toolset dependencies in the generated graph files
     includeToolset: false
-    
+
   # Required: A collection of jobs to run - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   jobs: []
 
@@ -40,7 +40,7 @@ parameters:
 jobs:
 - ${{ each job in parameters.jobs }}:
   - template: ../job/job.yml
-    parameters: 
+    parameters:
       # pass along parameters
       ${{ each parameter in parameters }}:
         ${{ if ne(parameter.key, 'jobs') }}:
@@ -68,7 +68,7 @@ jobs:
         ${{ parameter.key }}: ${{ parameter.value }}
 
 - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  
+
   - ${{ if or(eq(parameters.enablePublishBuildAssets, true), eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, '')) }}:
     - template: ../job/publish-build-assets.yml
       parameters:
@@ -88,8 +88,8 @@ jobs:
             name: VSEngSS-MicroBuild2022-1ES
             demands: Cmd
           # If it's not devdiv, it's dnceng
-          ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-            name: NetCore1ESPool-Svc-Internal
+          ${{ else }}:
+            name: NetCore1ESPool-Publishing-Internal
             demands: ImageOverride -equals windows.vs2019.amd64
 
         runAsPublic: ${{ parameters.runAsPublic }}
