@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Endpoints;
-using System.Net;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
-using Microsoft.AspNetCore.Http;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Builder;
