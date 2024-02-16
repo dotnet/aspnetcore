@@ -192,6 +192,8 @@
   <!-- The location of the local installation of the .NET Core shared framework. -->
   <PropertyGroup>
     <LocalDotNetRoot>$(RepoRoot).dotnet\</LocalDotNetRoot>
+    <LocalDotNetRoot Condition="'$(DotNetBuild)' == 'true'">DontDareMutateThisSDK</LocalDotNetRoot>
+
     <!--
       Override the SDK default and point to local .dotnet folder. This is done to work around
       limitations in the way the .NET SDK finds shared frameworks and targeting packs. It allows
@@ -203,7 +205,12 @@
       to restore the AppHost pack as a prebuilt rather than using the one that's present in the SDK.
       Source-build doesn't run tests, so the property is simply conditioned out.
     -->
-    <NetCoreTargetingPackRoot Condition="'$(DotNetBuildFromSource)' != 'true'">$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
+    <NetCoreTargetingPackRoot Condition="'$(DotNetBuild)' != 'true'">$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
+    <!-- This is not correct and needs attention eventually. This is primarily used to find the nethost headers in the apphost pack.
+         These should be coming from a restored apphost pack, rather than a hard-coded local SDK. In fact, aspnetcore
+         should not rely on a local SDK or mutating one to build. -->
+    <NetCoreTargetingPackRoot Condition="'$(DotNetBuild)' == 'true'">$(DotNetRoot)packs\</NetCoreTargetingPackRoot>
+
   </PropertyGroup>
 
   <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />

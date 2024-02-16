@@ -61,9 +61,9 @@
       <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows.
            Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
            the nupkgs pushed. Do not do this if building from source, since we want the source build intermediate package
-           to be published. Use ArcadeBuildFromSource as DotNetBuildFromSource is only set in the internal source build,
+           to be published. Use DotNetBuildRepo is only set in the internal source build,
            and Build.proj is invoked from the wrapper build. -->
-      <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" />
+      <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true' and '$(DotNetBuildRepo)' != 'true'" />
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>

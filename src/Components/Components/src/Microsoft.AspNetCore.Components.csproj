@@ -68,7 +68,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <NuspecProperty Condition="'$(DotNetBuildFromSource)' != 'true'" Include="systemComponentModelAnnotationsVersion=$(SystemComponentModelAnnotationsVersion)" />
+    <NuspecProperty Condition="'$(DotnetBuildSourceOnly)' != 'true'" Include="systemComponentModelAnnotationsVersion=$(SystemComponentModelAnnotationsVersion)" />
     <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
     <NuspecProperty Include="DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework)" />
     <NuspecProperty Include="OutputPath=$(OutputPath)" />

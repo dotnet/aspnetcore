@@ -3,6 +3,6 @@
 
   <PropertyGroup>
     <!-- These projects depend on a 3rd party source -->
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 </Project>

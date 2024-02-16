@@ -41,11 +41,11 @@
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
 
-  <Target Name="PublishDotNetOpenApiOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
+  <Target Name="PublishDotNetOpenApiOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="$(OpenAPIToolCSProjPath)" Targets="Publish" Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
   </Target>
 
-  <Target Name="PublishDotNetOpenApiOnPublish" BeforeTargets="Publish"  Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
+  <Target Name="PublishDotNetOpenApiOnPublish" BeforeTargets="Publish"  Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="$(OpenAPIToolCSProjPath)" Targets="Publish" Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
   </Target>
 </Project>

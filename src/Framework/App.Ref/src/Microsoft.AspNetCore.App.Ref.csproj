@@ -254,7 +254,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- Workaround https://github.com/dotnet/sdk/issues/2910 by copying targeting pack into local installation. -->
   <Target Name="_InstallTargetingPackIntoLocalDotNet"
-          Condition="'$(DotNetBuildFromSource)' != 'true'"
+          Condition="'$(DotNetBuild)' != 'true'"
           Inputs="@(RefPackContent)"
           Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(RecursiveDir)%(FileName)%(Extension)')">
     <Copy SourceFiles="@(RefPackContent)"
