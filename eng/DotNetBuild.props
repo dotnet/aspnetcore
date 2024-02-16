@@ -16,7 +16,7 @@
   <Target Name="RemoveInnerGlobalConfig"
           DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
           BeforeTargets="RunInnerSourceBuildCommand"
-          Condition="'$(DotNetbuildSourceOnly)' == 'true'">
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
 
     <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
   </Target>
