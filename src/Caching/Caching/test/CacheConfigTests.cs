@@ -184,7 +184,7 @@ class CustomBackend : IBufferDistributedCache
 
     byte[] IDistributedCache.Get(string key) => throw new NotImplementedException();
 
-    Task<byte[]> IDistributedCache.GetAsync(string key, CancellationToken token) => throw new NotImplementedException();
+    Task<byte[]?> IDistributedCache.GetAsync(string key, CancellationToken token) => throw new NotImplementedException();
 
     void IDistributedCache.Refresh(string key) => throw new NotImplementedException();
 

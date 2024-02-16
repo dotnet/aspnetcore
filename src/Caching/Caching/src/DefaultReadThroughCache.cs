@@ -55,7 +55,7 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
         return false;
     }
 
-    public override ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, CancellationToken cancellationToken = default)
+    public override ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, ReadThroughCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
     {
         if (ReadOnlyTypeCache<T>.IsReadOnly)
         {
@@ -76,6 +76,39 @@ internal sealed class DefaultReadThroughCache(IOptions<ReadThroughCacheOptions> 
             ? GetBufferedBackendAsync<T>(key, cancellationToken)
             : GetLegacyBackendAsync<T>(key, cancellationToken);
     }
+
+    public override ValueTask SetAsync<T>(string key, T value, ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
+    {
+        var buffer = new RecyclableArrayBufferWriter<byte>();
+        options ??= _defaultOptions;
+        SerializeAndCacheFrontend<T>(key, value, options, buffer, out var arr);
+        ValueTask pending;
+        if (HasBackendBuffer)
+        {
+
+            pending = Unsafe.As<IBufferDistributedCache>(_backend).SetAsync(key, new(buffer.GetCommittedMemory()), options.AsDistributedCacheEntryOptions(), cancellationToken);
+        }
+        else
+        {
+            pending = new(_backend.SetAsync(key, arr ?? buffer.ToArray(), options.AsDistributedCacheEntryOptions(), cancellationToken));
+        }
+        if (pending.IsCompletedSuccessfully)
+        {
+            buffer.Dispose();
+            return pending;
+        }
+        else
+        {
+            return Awaited(pending, buffer);
+        }
+
+        static async ValueTask Awaited(ValueTask pending, RecyclableArrayBufferWriter<byte> buffer)
+        {
+            await pending;
+            buffer.Dispose();
+        }
+    }
+
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback,
         ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
     {

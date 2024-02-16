@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Caching.Distributed;
@@ -15,27 +14,30 @@ public abstract class ReadThroughCache
         ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
         => GetOrCreateAsync(key, callback, WrappedCallbackCache<T>.Instance, options, tags, cancellationToken);
 
-    public abstract ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, CancellationToken cancellationToken = default);
-    public async virtual ValueTask<ImmutableDictionary<string, T>> GetAllAsync<T>(ReadOnlyMemory<string> keys, CancellationToken cancellationToken = default)
-    {
-        ImmutableDictionary<string, T>.Builder? builder = null;
-        int len = keys.Length;
-        for (int i = 0; i < len; i++)
-        {
-            var pair = await GetAsync<T>(keys.Span[i], cancellationToken);
-            if (pair.Exists)
-            {
-                builder ??= ImmutableDictionary.CreateBuilder<string, T>(StringComparer.Ordinal);
-                builder.Add(keys.Span[i], pair.Value);
-            }
-        }
+    public abstract ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, ReadThroughCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
+    public abstract ValueTask SetAsync<T>(string key, T value, ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
 
-        if (builder is null)
-        {
-            return ImmutableDictionary<string, T>.Empty;
-        }
-        return builder.ToImmutable();
-    }
+    // don't like this...
+    //public async virtual ValueTask<ImmutableDictionary<string, T>> GetAllAsync<T>(ReadOnlyMemory<string> keys, CancellationToken cancellationToken = default)
+    //{
+    //    ImmutableDictionary<string, T>.Builder? builder = null;
+    //    int len = keys.Length;
+    //    for (int i = 0; i < len; i++)
+    //    {
+    //        var pair = await GetAsync<T>(keys.Span[i], cancellationToken);
+    //        if (pair.Exists)
+    //        {
+    //            builder ??= ImmutableDictionary.CreateBuilder<string, T>(StringComparer.Ordinal);
+    //            builder.Add(keys.Span[i], pair.Value);
+    //        }
+    //    }
+
+    //    if (builder is null)
+    //    {
+    //        return ImmutableDictionary<string, T>.Empty;
+    //    }
+    //    return builder.ToImmutable();
+    //}
 
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Does not cause ambiguity due to callback signature delta")]
     public abstract ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);

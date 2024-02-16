@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Distributed" />
+    <Reference Include="Microsoft.AspNetCore.OutputCaching" />
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>
