@@ -1,23 +1,20 @@
+// Handles packing of the packages in the workspace
+// The script iterates over all public packages in the workspace, updates their versions, and then packs them into tarballs.
 import { resolve, dirname } from 'path';
 import { execSync } from 'child_process';
 import fsExtra from 'fs-extra';
 const { existsSync, writeJsonSync, readJsonSync, moveSync } = fsExtra;
 import { applyVersions } from './update-dependency-versions.mjs';
 
-// Get the action to perform from the process arguments list
-// Valid actions are --update-versions and --pack
+// Valid actions are --update-versions and --create-packages
 const action = process.argv[2];
 
-// Get the path to the workspace package.json from the process arguments list
 const workspacePath = process.argv[3];
 
-// Get the package version from the process arguments list
 const defaultPackageVersion = process.argv[4];
 
-// Get the package output path from the process arguments list
 const packageOutputPath = process.argv[5];
 
-// Intermediate output path
 const intermediateOutputPath = process.argv[6];
 
 // Validate and throw if the arguments are not provided
@@ -48,7 +45,7 @@ if (action === '--update-versions') {
   // Write packagesToPack and renames to a file
   writeJsonSync(resolve(intermediateOutputPath, 'packagesToPack.json'), packagesToPack);
   writeJsonSync(resolve(intermediateOutputPath, 'renames.json'), renames);
-}else if (action === '--create-packages') {
+} else if (action === '--create-packages') {
   if (!existsSync(packageOutputPath)) {
     throw new Error(`The package output path ${packageOutputPath} does not exist.`);
   }
@@ -64,7 +61,7 @@ if (action === '--update-versions') {
       moveSync(from, to, { overwrite: true });
     }
   }
-}else {
+} else {
   throw new Error(`The action ${action} is not supported.`);
 }
 

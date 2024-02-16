@@ -42,7 +42,7 @@
 
     <Exec
       Condition="$(ContinuousIntegrationBuild) == 'true'"
-      Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
 
     <Exec
@@ -62,14 +62,14 @@
     </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts\npm\pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
     <ItemGroup>
-      <_NpmGeneratedPackages Include="$(PackageOutputPath)\*.tgz" />
+      <_NpmGeneratedPackages Include="$(PackageOutputPath)/*.tgz" />
     </ItemGroup>
     <PropertyGroup>
-      <_NpmFiles>@(_NpmGeneratedPackages->'📦 %(FileName)%(Extension)', '%0a%09')</_NpmFiles>
+      <_NpmFiles>@(_NpmGeneratedPackages->'📦 $(PackageOutputPath)%(FileName)%(Extension)', '%0a  ')</_NpmFiles>
     </PropertyGroup>
-    <Message Importance="High" Text="$(MSBuildProjectName) -> %0a%09$(_NpmFiles)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> %0a%20%20$(_NpmFiles)" />
   </Target>
 
   <!-- Import Directory.Build.targets -->
