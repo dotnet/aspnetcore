@@ -16,7 +16,7 @@ public class BlazorTemplateTest : LoggedTest
 
     public ProjectFactoryFixture ProjectFactory { get; set; }
 
-    public static TheoryData<string[]> ArgsData() =>
+    public static TheoryData<object[]> ArgsData() =>
     [
         [],
         [ArgConstants.UseProgramMain],

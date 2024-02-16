@@ -734,15 +734,6 @@ configuration:
       description: Remove pending-ci-rerun label when CI rerun requested
     - if:
       - payloadType: Pull_Request
-      - isActivitySender:
-          user: wtgodbe
-          issueAuthor: False
-      then:
-      - addLabel:
-          label: area-infrastructure
-      description: Add area-infrastructure to wtgodbe's PRs
-    - if:
-      - payloadType: Pull_Request
       - labelAdded:
           label: breaking-change
       then:

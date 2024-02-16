@@ -1,73 +1,46 @@
-const path = require('path');
-const { execSync } = require('child_process');
-const fs = require('fs-extra');
+import path from 'path';
+import { execSync } from 'child_process';
+import fs from 'fs-extra';
 
-// Get the path to the workspace package.json from the process arguments list
-const workspacePath = process.argv[2];
-const workspacePackage = require(workspacePath);
+export function applyVersions(defaultPackageVersion, workspacePath) {
+  // Get the workspace package.json from the provided path
+  const workspacePackage = fs.readJsonSync(workspacePath);
 
-// Get the package version from the process arguments list
-const defaultPackageVersion = process.argv[3];
+  // Get the workspace directory
+  const workspaceDir = path.dirname(workspacePath);
 
-// Get the package output path from the process arguments list
-const packageOutputPath = process.argv[4];
-
-// Get the workspace directory
-const workspaceDir = path.dirname(workspacePath);
-
-// Validate and throw if the arguments are not provided
-if (!workspacePath) {
-  throw new Error('The workspace path was not provided.');
-}
-
-if (!defaultPackageVersion) {
-  throw new Error('The default package version was not provided.');
-}
-
-if (!packageOutputPath) {
-  throw new Error('The package output path was not provided.');
-}
-
-// Log all the captured process arguments
-console.log(`Workspace Path: ${workspacePath}`);
-console.log(`Default Package Version: ${defaultPackageVersion}`);
-console.log(`Package Output Path: ${packageOutputPath}`);
-
-if (!fs.existsSync(packageOutputPath)) {
-  throw new Error(`The package output path ${packageOutputPath} does not exist.`);
-}
-
-const packages = workspacePackage.workspaces;
-const packagesToPack = [];
-for (const package of packages) {
-  const packagePath = path.resolve(workspaceDir, package, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));
-  const { execSync } = require('child_process');
-  if (!packageJson.private) {
-    packagesToPack.push([packagePath, packageJson]);
-  } else {
-    console.log(`Skipping ${packageJson.name} because it is marked as private.`);
+  // Validate and throw if the arguments are not provided
+  if (!workspacePath) {
+    throw new Error('The workspace path was not provided.');
   }
-}
 
-const currentDir = process.cwd();
-const renames = [];
+  if (!defaultPackageVersion) {
+    throw new Error('The default package version was not provided.');
+  }
 
-try {
+  const packages = workspacePackage.workspaces;
+  const packagesToPack = [];
+  for (const pkg of packages) {
+    const packagePath = path.resolve(workspaceDir, pkg, 'package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));
+    if (!packageJson.private) {
+      packagesToPack.push([packagePath, packageJson]);
+    } else {
+      console.log(`Skipping ${packageJson.name} because it is marked as private.`);
+    }
+  }
+
   // For each package to be packed, run npm version to apply the version
-  applyPackageVersion(packagesToPack);
+  var renames = applyPackageVersion(packagesToPack, defaultPackageVersion);
 
   updateDependencyVersions(packagesToPack);
 
-  createPackages(packagesToPack);
-} finally {
-  // Restore the package.json files to their "originals"
-  for (const [from, to] of renames) {
-    fs.moveSync(from, to, { overwrite: true });
-  }
+  return [packagesToPack, renames];
 }
 
-function applyPackageVersion(packagesToPack) {
+function applyPackageVersion(packagesToPack, defaultPackageVersion) {
+  const currentDir = process.cwd();
+  const renames = [];
   for (const [packagePath, packageJson] of packagesToPack) {
     const packageName = packageJson.name;
     const packageVersion = defaultPackageVersion;
@@ -83,24 +56,8 @@ function applyPackageVersion(packagesToPack) {
     process.chdir(currentDir);
     console.log(`Applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
   }
-}
 
-// For each package to pack run npm pack
-function createPackages(packagesToPack) {
-  for (const [packagePath, packageJson] of packagesToPack) {
-    const packageName = packageJson.name;
-    const packageVersion = defaultPackageVersion;
-    const packageDir = path.dirname(packagePath);
-    const normalizedPackageName = packageName.replace('@', '').replace('/', '-');
-    const packageFileName = `${normalizedPackageName}-${packageVersion}.tgz`;
-    const packageTarball = path.resolve(packageDir, `${packageFileName}`);
-    console.log(`Packing ${packageName}...`);
-    // Log and execute the command
-    console.log(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`);
-    execSync(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`, { stdio: 'inherit' });
-
-    console.log(`Packed ${packageName} to ${path.resolve(packageOutputPath, packageTarball)}`);
-  }
+  return renames;
 }
 
 // For each package to be packed, update the version for the dependencies that are part of the workspace.
@@ -139,4 +96,3 @@ function updateDependencyVersions(packagesToPack) {
     }
   }
 }
-
