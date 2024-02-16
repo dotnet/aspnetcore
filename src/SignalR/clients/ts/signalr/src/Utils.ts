@@ -7,11 +7,12 @@ import { NullLogger } from "./Loggers";
 import { IStreamSubscriber, ISubscription } from "./Stream";
 import { Subject } from "./Subject";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
+import { VERSION } from "./pkg-version";
 
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
 
-export const VERSION: string = "0.0.0-DEV_BUILD";
+export { VERSION };
 /** @private */
 export class Arg {
     public static isRequired(val: any, name: string): void {
