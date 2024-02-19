@@ -18,6 +18,22 @@
         currentCount++;
     }
 
+    async Task WaitUntilBackgroundThreadsReady()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            var backgroundThreadId = await Task.Run(() => Thread.CurrentThread.ManagedThreadId);
+            if (backgroundThreadId != 1)
+            {
+                return;
+            }
+
+            await Task.Delay(1000);
+        }
+
+        throw new InvalidOperationException("Timed out after 10 seconds waiting for background threads to become available");
+    }
+
     async Task TestThreads()
     {
         if (!OperatingSystem.IsBrowser())
@@ -31,6 +47,8 @@
             {
                 throw new Exception("We should be on main thread!");
             }
+
+            await WaitUntilBackgroundThreadsReady();
 
             Exception exc = null;
 

@@ -10,13 +10,18 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class ThreadingAppTest
-    : ServerTestBase<BlazorWasmTestAppFixture<ThreadingApp.Program>>, IDisposable
+public class ThreadingHostedAppTest
+    : ServerTestBase<ThreadingHostedAppTest.ThreadingAppServerSiteFixture>, IDisposable
 {
-    public ThreadingAppTest(
-        BrowserFixture browserFixture,
-        BlazorWasmTestAppFixture<ThreadingApp.Program> serverFixture,
-        ITestOutputHelper output)
+    public class ThreadingAppServerSiteFixture : AspNetSiteServerFixture
+    {
+        public ThreadingAppServerSiteFixture()
+        {
+            BuildWebHostMethod = ThreadingApp.Server.Program.BuildWebHost;
+        }
+    }
+
+    public ThreadingHostedAppTest(BrowserFixture browserFixture, ThreadingAppServerSiteFixture serverFixture, ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
     }
@@ -25,12 +30,6 @@ public class ThreadingAppTest
     {
         Navigate("/", noReload: true);
         WaitUntilLoaded();
-    }
-
-    [Fact]
-    public void HasTitle()
-    {
-        Assert.Equal("Blazor standalone", Browser.Title);
     }
 
     [Fact]
@@ -66,7 +65,6 @@ public class ThreadingAppTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53723")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
@@ -102,22 +100,6 @@ public class ThreadingAppTest
         {
             Assert.True(!string.IsNullOrEmpty(cell.Text));
         }
-    }
-
-    [Fact]
-    public void IsStarted()
-    {
-        // Read from property
-        var jsExecutor = (IJavaScriptExecutor)Browser;
-
-        var isStarted = jsExecutor.ExecuteScript("return window['__aspnetcore__testing__blazor_wasm__started__'];");
-        if (isStarted is null)
-        {
-            throw new InvalidOperationException("Blazor wasm started value not set");
-        }
-
-        // Confirm server has started
-        Assert.True((bool)isStarted);
     }
 
     private void WaitUntilLoaded()
