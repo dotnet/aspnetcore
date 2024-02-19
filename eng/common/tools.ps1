@@ -379,7 +379,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   # If the version of msbuild is going to be xcopied,
   # use this version. Version matches a package here:
-  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/RoslynTools.MSBuild/versions/17.8.5
+  # https://dev.azure.com/dnceng/public/_artifacts/feed/dotnet-eng/NuGet/Microsoft.DotNet.Arcade.MSBuild.Xcopy/versions/17.8.5
   $defaultXCopyMSBuildVersion = '17.8.5'
 
   if (!$vsRequirements) {
@@ -445,7 +445,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
     if ($xcopyMSBuildVersion.Trim() -ine "none") {
         $vsInstallDir = InitializeXCopyMSBuild $xcopyMSBuildVersion $install
         if ($vsInstallDir -eq $null) {
-            throw "Could not xcopy msbuild. Please check that package 'RoslynTools.MSBuild @ $xcopyMSBuildVersion' exists on feed 'dotnet-eng'."
+            throw "Could not xcopy msbuild. Please check that package 'Microsoft.DotNet.Arcade.MSBuild.Xcopy @ $xcopyMSBuildVersion' exists on feed 'dotnet-eng'."
         }
     }
     if ($vsInstallDir -eq $null) {
@@ -482,7 +482,7 @@ function InstallXCopyMSBuild([string]$packageVersion) {
 }
 
 function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
-  $packageName = 'RoslynTools.MSBuild'
+  $packageName = 'Microsoft.DotNet.Arcade.MSBuild.Xcopy'
   $packageDir = Join-Path $ToolsDir "msbuild\$packageVersion"
   $packagePath = Join-Path $packageDir "$packageName.$packageVersion.nupkg"
 

@@ -35,6 +35,10 @@ fi
 case "$CPUName" in
     arm64|aarch64)
         arch=arm64
+        if [ "$(getconf LONG_BIT)" -lt 64 ]; then
+            # This is 32-bit OS running on 64-bit CPU (for example Raspberry Pi OS)
+            arch=arm
+        fi
         ;;
 
     loongarch64)
