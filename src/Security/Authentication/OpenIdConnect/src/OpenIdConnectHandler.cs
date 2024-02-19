@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -449,6 +450,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         GenerateCorrelationId(properties);
+
+        foreach (var additionalParameter in Options.AdditionalAuthorizationParameters)
+        {
+            message.Parameters.Add(additionalParameter.Key, additionalParameter.Value);
+        }
 
         var redirectContext = new RedirectContext(Context, Scheme, Options, properties)
         {
