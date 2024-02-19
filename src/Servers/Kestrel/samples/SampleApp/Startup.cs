@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -29,7 +31,9 @@ public class Startup
         var logger = loggerFactory.CreateLogger("Default");
 
         app.UseClientCertBuffering();
-
+        var addresses = app.ApplicationServices
+           .GetRequiredService<IServer>().Features
+           .GetRequiredFeature<IServerAddressesFeature>().Addresses;
         // Add an exception handler that prevents throwing due to large request body size
         app.Use(async (context, next) =>
         {
@@ -56,7 +60,7 @@ public class Startup
                 + $"Sock: {connectionFeature.LocalIpAddress?.ToString()}:{connectionFeature.LocalPort}"
                 + $"{Environment.NewLine}"
                 + cert);
-
+           
             var response = $"hello, world{Environment.NewLine}";
             context.Response.ContentLength = response.Length;
             context.Response.ContentType = "text/plain";

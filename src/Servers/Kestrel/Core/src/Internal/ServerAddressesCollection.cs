@@ -97,6 +97,8 @@ internal sealed class ServerAddressesCollection : ICollection<string>
         return GetEnumerator();
     }
 
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(PublicServerAddressesCollectionDebugView))]
     private sealed class PublicServerAddressesCollection : ICollection<string>
     {
         private readonly ServerAddressesCollection _addressesCollection;
@@ -169,6 +171,12 @@ internal sealed class ServerAddressesCollection : ICollection<string>
         }
     }
 
+    private sealed class PublicServerAddressesCollectionDebugView(PublicServerAddressesCollection publicCollection)
+    {
+        private readonly PublicServerAddressesCollection _collection = publicCollection;
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public string[] Items => _collection.ToArray();
+    }
     private sealed class ServerAddressesCollectionDebugView(ServerAddressesCollection collection)
     {
         private readonly ServerAddressesCollection _collection = collection;
