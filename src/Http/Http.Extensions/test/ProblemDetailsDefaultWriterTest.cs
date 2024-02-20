@@ -600,6 +600,8 @@ public partial class DefaultProblemDetailsWriterTest
     [InlineData("application/*")]
     [InlineData("application/json")]
     [InlineData("application/problem+json")]
+    [InlineData("application/json; charset=utf-8")]
+    [InlineData("application/json; v=1.0")]
     public void CanWrite_ReturnsTrue_WhenJsonAccepted(string contentType)
     {
         // Arrange
