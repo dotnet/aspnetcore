@@ -103,7 +103,7 @@ public readonly struct PathString : IEquatable<PathString>
                 {
                     // the current segment requires escape
                     buffer ??= new StringBuilder(value.Length * 3);
-                    buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
+                    buffer.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
 
                     requiresEscaping = false;
                     start = i;
@@ -160,7 +160,7 @@ public readonly struct PathString : IEquatable<PathString>
 
             if (requiresEscaping)
             {
-                buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
+                buffer.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
             }
             else
             {
@@ -212,6 +212,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// </summary>
     /// <param name="other">The <see cref="PathString"/> to compare.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// </remarks>
     public bool StartsWithSegments(PathString other)
     {
         return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase);
@@ -224,6 +230,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="other">The <see cref="PathString"/> to compare.</param>
     /// <param name="comparisonType">One of the enumeration values that determines how this <see cref="PathString"/> and value are compared.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType)
     {
         var value1 = Value ?? string.Empty;
@@ -242,6 +254,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="other">The <see cref="PathString"/> to compare.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// </remarks>
     public bool StartsWithSegments(PathString other, out PathString remaining)
     {
         return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase, out remaining);
@@ -255,6 +273,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="comparisonType">One of the enumeration values that determines how this <see cref="PathString"/> and value are compared.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString remaining)
     {
         var value1 = Value ?? string.Empty;
@@ -279,6 +303,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="matched">The matched segments with the original casing in the source value.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// </remarks>
     public bool StartsWithSegments(PathString other, out PathString matched, out PathString remaining)
     {
         return StartsWithSegments(other, StringComparison.OrdinalIgnoreCase, out matched, out remaining);
@@ -293,6 +323,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// <param name="matched">The matched segments with the original casing in the source value.</param>
     /// <param name="remaining">The remaining segments after the match.</param>
     /// <returns>true if value matches the beginning of this string; otherwise, false.</returns>
+    /// <remarks>
+    /// When the <paramref name="other"/> parameter contains a trailing slash, the <see cref="PathString"/> being checked
+    /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
+    /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
+    /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString matched, out PathString remaining)
     {
         var value1 = Value ?? string.Empty;

@@ -42,7 +42,18 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             return Task.CompletedTask;
         }
 
-        _groups.Add(connection, groupName);
+        // Track groups in the connection object
+        lock (connection.GroupNames)
+        {
+            if (!connection.GroupNames.Add(groupName))
+            {
+                // Connection already in group
+                return Task.CompletedTask;
+            }
+
+            _groups.Add(connection, groupName);
+        }
+
         // Connection disconnected while adding to group, remove it in case the Add was called after OnDisconnectedAsync removed items from the group
         if (connection.ConnectionAborted.IsCancellationRequested)
         {
@@ -64,7 +75,17 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             return Task.CompletedTask;
         }
 
-        _groups.Remove(connectionId, groupName);
+        // Remove from previously saved groups
+        lock (connection.GroupNames)
+        {
+            if (!connection.GroupNames.Remove(groupName))
+            {
+                // Connection not in group
+                return Task.CompletedTask;
+            }
+
+            _groups.Remove(connectionId, groupName);
+        }
 
         return Task.CompletedTask;
     }
@@ -277,8 +298,16 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     /// <inheritdoc />
     public override Task OnDisconnectedAsync(HubConnectionContext connection)
     {
+        lock (connection.GroupNames)
+        {
+            // Remove from tracked groups one by one
+            foreach (var groupName in connection.GroupNames)
+            {
+                _groups.Remove(connection.ConnectionId, groupName);
+            }
+        }
+
         _connections.Remove(connection);
-        _groups.RemoveDisconnectedConnection(connection.ConnectionId);
 
         return Task.CompletedTask;
     }
