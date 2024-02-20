@@ -681,12 +681,8 @@ public class OpenIdConnectChallengeTests
             opt.AdditionalAuthorizationParameters.Add("prompt", "login");
             opt.AdditionalAuthorizationParameters.Add("audience", "https://api.example.com");
         });
-        var properties = new OpenIdConnectChallengeProperties()
-        {
-            MaxAge = TimeSpan.FromSeconds(1234),
-        };
 
-        var server = settings.CreateTestServer(properties);
+        var server = settings.CreateTestServer();
         var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
 
         var res = transaction.Response;
