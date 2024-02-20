@@ -16,13 +16,13 @@
     @*#if (!InteractiveAtRoot)
     <HeadOutlet />
     ##elseif (IndividualLocalAuth)
-    <HeadOutlet @rendermode="@RenderModeForPage" />
+    <HeadOutlet @rendermode="RenderModeForPage" />
     ##elseif (UseServer && UseWebAssembly)
-    <HeadOutlet @rendermode="@InteractiveAuto" />
+    <HeadOutlet @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
-    <HeadOutlet @rendermode="@InteractiveServer" />
+    <HeadOutlet @rendermode="InteractiveServer" />
     ##else
-    <HeadOutlet @rendermode="@InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
     ##endif*@
 </head>
 
@@ -30,13 +30,13 @@
     @*#if (!InteractiveAtRoot)
     <Routes />
     ##elseif (IndividualLocalAuth)
-    <Routes @rendermode="@RenderModeForPage" />
+    <Routes @rendermode="RenderModeForPage" />
     ##elseif (UseServer && UseWebAssembly)
-    <Routes @rendermode="@InteractiveAuto" />
+    <Routes @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
-    <Routes @rendermode="@InteractiveServer" />
+    <Routes @rendermode="InteractiveServer" />
     ##else
-    <Routes @rendermode="@InteractiveWebAssembly" />
+    <Routes @rendermode="InteractiveWebAssembly" />
     ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>

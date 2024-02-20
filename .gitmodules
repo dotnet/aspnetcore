@@ -6,3 +6,8 @@
 	path = src/submodules/MessagePack-CSharp
 	url = https://github.com/aspnet/MessagePack-CSharp.git
 	branch = master
+[submodule "Node-Externals"]
+	path = src/submodules/Node-Externals
+	url = https://github.com/dotnet/Node-Externals
+	branch = main
+	depth = 1
