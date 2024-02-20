@@ -177,6 +177,7 @@ internal sealed class ServerAddressesCollection : ICollection<string>
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         public string[] Items => _collection.ToArray();
     }
+
     private sealed class ServerAddressesCollectionDebugView(ServerAddressesCollection collection)
     {
         private readonly ServerAddressesCollection _collection = collection;
