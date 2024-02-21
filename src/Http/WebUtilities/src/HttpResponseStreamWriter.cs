@@ -105,7 +105,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(char value)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(HttpResponseStreamWriter));
 
         if (_charBufferCount == _charBufferSize)
         {
@@ -119,7 +119,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(char[] values, int index, int count)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(HttpResponseStreamWriter));
 
         if (values == null)
         {
@@ -140,7 +140,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(ReadOnlySpan<char> value)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(HttpResponseStreamWriter));
 
         var remaining = value.Length;
         while (remaining > 0)
@@ -160,7 +160,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Write(string? value)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(HttpResponseStreamWriter));
 
         if (value == null)
         {
@@ -183,7 +183,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void WriteLine(ReadOnlySpan<char> value)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(HttpResponseStreamWriter));
 
         Write(value);
         Write(NewLine);
@@ -505,7 +505,7 @@ public class HttpResponseStreamWriter : TextWriter
     /// <inheritdoc/>
     public override void Flush()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(HttpResponseStreamWriter));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(HttpResponseStreamWriter));
 
         FlushInternal(flushEncoder: true);
     }

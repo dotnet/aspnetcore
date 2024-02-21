@@ -46,7 +46,7 @@ public class ListLoggerFactory : ILoggerFactory
 
     private void CheckDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(ListLoggerFactory));
+        ObjectDisposedException.ThrowIf(_disposed, typeof(ListLoggerFactory));
     }
 
     public void AddProvider(ILoggerProvider provider)
