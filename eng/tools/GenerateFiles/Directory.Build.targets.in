@@ -121,7 +121,7 @@
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 
-  <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="$(UpdateAspNetCoreKnownFramework)">
+  <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="$(UpdateAspNetCoreKnownFramework)" AfterTargets="ResolveFrameworkReferences">
     <Error Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRefVersion} ref pack does not exist."
         Condition="!Exists('$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}\data\FrameworkList.xml') " />
     <ItemGroup>
