@@ -129,8 +129,8 @@
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
       <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
       <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
-      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRefSubPath)'))</_AppRefPath>
-      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
+      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(TargetingPackLayoutRoot)', '$(_AppRefSubPath)'))</_AppRefPath>
+      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(SharedFrameworkLayoutRoot)', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
 
       <!--
         Don't bother checking for App.Runtime layout because we want both and App.Ref project depends on the
