@@ -115,8 +115,7 @@
 
   <!--
     In inner (per-queue) builds, tell the Helix SDK to pack up our just-built App.Ref / App.Runtime layouts w/
-    the current versions. Warning: When using RunHelix.ps1, .dotnet/ folder may contain older App.Ref and
-    App.Runtime layouts.
+    the current versions.
   -->
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
