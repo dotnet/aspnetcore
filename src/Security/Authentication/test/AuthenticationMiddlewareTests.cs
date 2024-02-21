@@ -177,7 +177,7 @@ public class AuthenticationMiddlewareTests
         Assert.True(app.Properties.ContainsKey("__AuthorizationMiddlewareSet"));
 
         var options = app.Services.GetService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-        Assert.Equal(new[] { "SomeIssuer" }, options.TokenValidationParameters.ValidIssuers);
+        Assert.Equal("SomeIssuer", options.TokenValidationParameters.ValidIssuer);
         Assert.Equal(new[] { "https://localhost:5001" }, options.TokenValidationParameters.ValidAudiences);
     }
 
