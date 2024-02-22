@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
-    <PackageReference Include="NuGet.Protocol" Version="5.9.3" />
+    <PackageReference Include="NuGet.Protocol" Version="6.9.1" />
   </ItemGroup>
 
 </Project>

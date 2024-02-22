@@ -14,6 +14,7 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rimraf ./dist",
+    "prebuild": "rimraf ./src/pkg-version.ts && node -e \"const fs = require('fs'); const packageJson = require('./package.json'); fs.writeFileSync('./src/pkg-version.ts', 'export const VERSION = \\'' + packageJson.version + '\\';');\"",
     "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
     "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
