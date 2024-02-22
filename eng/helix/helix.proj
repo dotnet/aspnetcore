@@ -127,6 +127,7 @@
     <PropertyGroup>
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
       <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
+      <_AppRefDestinationSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRefDestinationSubPath>
       <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
       <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'TargetingPack.Layout', '$(Configuration)', '$(_AppRefSubPath)'))</_AppRefPath>
       <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'SharedFx.Layout', '$(Configuration)', '$(TargetRuntimeIdentifier)', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
@@ -150,10 +151,10 @@
     <ItemGroup Condition=" $(_AppRefPathExists) ">
       <HelixCorrelationPayload Include="$(_AppRefPath)"
           Condition=" $(IsWindowsHelixQueue) "
-          Destination="$(DotNetCliDestination)\$(_AppRefSubPath)" />
+          Destination="$(DotNetCliDestination)\$(_AppRefDestinationSubPath)" />
       <HelixCorrelationPayload Include="$(_AppRefPath)"
           Condition=" !$(IsWindowsHelixQueue) "
-          Destination="$(DotNetCliDestination)/$(_AppRefSubPath.Replace('\','/'))" />
+          Destination="$(DotNetCliDestination)/$(_AppRefDestinationSubPath.Replace('\','/'))" />
       <HelixCorrelationPayload Include="$(_AppRuntimePath)"
           Condition=" $(IsWindowsHelixQueue) "
           Destination="$(DotNetCliDestination)\$(_AppRuntimeSubPath)" />
