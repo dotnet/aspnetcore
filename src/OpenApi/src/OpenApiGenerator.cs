@@ -59,18 +59,18 @@ internal sealed class OpenApiGenerator
         RoutePattern pattern)
     {
         if (metadata.GetMetadata<IHttpMethodMetadata>() is { } httpMethodMetadata &&
-            httpMethodMetadata.HttpMethods.SingleOrDefault() is { } method &&
+            httpMethodMetadata.HttpMethods is { Count: >= 1 } httpMethods &&
             metadata.GetMetadata<IExcludeFromDescriptionMetadata>() is null or { ExcludeFromDescription: false })
         {
-            return GetOperation(method, methodInfo, metadata, pattern);
+            return GetOperation(httpMethods, methodInfo, metadata, pattern);
         }
 
         return null;
     }
 
-    private OpenApiOperation GetOperation(string httpMethod, MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
+    private OpenApiOperation GetOperation(IReadOnlyList<string> httpMethods, MethodInfo methodInfo, EndpointMetadataCollection metadata, RoutePattern pattern)
     {
-        var disableInferredBody = ShouldDisableInferredBody(httpMethod);
+        var disableInferredBody = ShouldDisableInferredBody(httpMethods);
         return new OpenApiOperation
         {
             OperationId = metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName,
@@ -82,15 +82,15 @@ internal sealed class OpenApiGenerator
             Responses = GetOpenApiResponses(methodInfo, metadata)
         };
 
-        static bool ShouldDisableInferredBody(string method)
+        static bool ShouldDisableInferredBody(IReadOnlyList<string> httpMethods)
         {
             // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
-            return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+            return httpMethods.Any(method => method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
+                   method.Equals(HttpMethods.Connect, StringComparison.Ordinal));
         }
     }
 

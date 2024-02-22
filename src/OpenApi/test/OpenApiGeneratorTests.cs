@@ -991,6 +991,19 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operation.RequestBody);
     }
 
+    // Coverage for https://github.com/dotnet/aspnetcore/issues/50965
+    [Fact]
+    public void SupportsMultipleHttpMethods()
+    {
+        var operation = GetOpenApiOperation((int id) => { }, httpMethods: ["GET", "HEAD"]);
+
+        var parameter = Assert.Single(operation.Parameters);
+
+        Assert.Equal("id", parameter.Name);
+        Assert.Equal(ParameterLocation.Query, parameter.In);
+        Assert.Null(operation.RequestBody);
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,

@@ -1,0 +1,92 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testhost",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    },
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/test-with-validations/": {
+      "get": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "get_test_with_validations",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "maximum": 10,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "ssn",
+            "in": "query",
+            "schema": {
+              "pattern": "^\\d{3}-\\d{2}-\\d{4}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "ValidatedTodo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ValidatedTodo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "maximum": 10,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": {
+            "maxLength": 40,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 10,
+            "type": "string"
+          },
+          "email": {
+            "pattern": "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTest"
+    }
+  ]
+}

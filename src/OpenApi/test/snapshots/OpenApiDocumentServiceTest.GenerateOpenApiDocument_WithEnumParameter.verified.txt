@@ -1,0 +1,49 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testhost",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    },
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/test-with-enum-param/": {
+      "get": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "get_test_with_enum_param",
+        "parameters": [
+          {
+            "name": "todo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                2
+              ],
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTest"
+    }
+  ]
+}

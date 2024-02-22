@@ -1,0 +1,76 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testhost",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    },
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/test-with-route-params/{id}/{name}/{age}/": {
+      "get": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "get_test_with_route_params_id_name_age",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "age",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTest"
+    }
+  ]
+}

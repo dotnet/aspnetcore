@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Json.Schema;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -74,7 +75,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         _ = builder.MapDelete("/{id}", GetString)
             .WithOpenApi(operation => new(operation)
             {
-                Parameters = new List<OpenApiParameter>() { new() { Schema = new() { Type = "number" } } }
+                Parameters = new List<OpenApiParameter>() { new() { Schema = new JsonSchemaBuilder().Type(SchemaValueType.Number).Build() } }
             });
 
         var dataSource = GetBuilderEndpointDataSource(builder);
@@ -84,7 +85,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
         Assert.NotNull(operation);
         var parameter = Assert.Single(operation.Parameters);
-        Assert.Equal("number", parameter.Schema.Type);
+        Assert.Equal(SchemaValueType.Number, parameter.Schema.GetKeyword<TypeKeyword>().Type);
     }
 
     [Fact]

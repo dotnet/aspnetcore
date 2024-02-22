@@ -1,1 +1,5 @@
 #nullable enable
+IEndpointRouteBuilderExtensions
+IServiceCollectionExtensions
+static IEndpointRouteBuilderExtensions.MapOpenApiDocument(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern = "/openapi.json") -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
+static IServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

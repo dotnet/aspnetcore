@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <ImplicitUsings>true</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,8 +14,10 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
+    <Reference Include="Verify.Xunit" />
   </ItemGroup>
 
 </Project>

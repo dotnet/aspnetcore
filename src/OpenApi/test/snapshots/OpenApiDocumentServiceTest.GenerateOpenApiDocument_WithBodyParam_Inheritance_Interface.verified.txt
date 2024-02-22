@@ -1,0 +1,67 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testhost",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    },
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/test-with-body-params/": {
+      "post": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "post_test_with_body_params",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "TodoFromInterface"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TodoFromInterface": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTest"
+    }
+  ]
+}

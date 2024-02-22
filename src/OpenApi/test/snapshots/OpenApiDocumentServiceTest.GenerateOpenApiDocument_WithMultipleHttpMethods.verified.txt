@@ -1,0 +1,67 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testhost",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    },
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/test-with-multiple-http-methods/": {
+      "post": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "post_test_with_multiple_http_methods",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "get_test_with_multiple_http_methods",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTest"
+    }
+  ]
+}

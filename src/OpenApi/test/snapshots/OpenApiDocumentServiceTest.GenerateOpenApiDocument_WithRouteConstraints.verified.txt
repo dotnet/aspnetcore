@@ -1,0 +1,75 @@
+﻿{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testhost",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5001"
+    },
+    {
+      "url": "http://localhost:5000"
+    }
+  ],
+  "paths": {
+    "/test-with-validations/{age}/{ssn}/{username}/{filename}/": {
+      "get": {
+        "tags": [
+          "OpenApiDocumentServiceTest"
+        ],
+        "operationId": "get_test_with_validations_age:min(18)_ssn:regex(^\\d3_\\d2_\\d4$)_username:minlength(4)_filename:length(12)",
+        "parameters": [
+          {
+            "name": "age",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minimum": 18,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "ssn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{3}-\\d{2}-\\d{4}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 4,
+              "type": "string"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "maxLength": 12,
+              "minLength": 12,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTest"
+    }
+  ]
+}
