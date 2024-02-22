@@ -147,7 +147,7 @@
     <Error Text="Targeting path location '$(_AppRefPath)' does not exist and some tests are guaranteed to fail."
         Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' != true " />
 
-    <!-- Grab only the portions of the .dotnet/ tree built in this run and have Helix zip that up. -->
+    <!-- Grab the ref pack and runtime pack that were just built and have Helix zip that up. -->
     <ItemGroup Condition=" $(_AppRefPathExists) ">
       <HelixCorrelationPayload Include="$(_AppRefPath)"
           Condition=" $(IsWindowsHelixQueue) "
