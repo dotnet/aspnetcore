@@ -21,7 +21,7 @@ public class FormFeature : IFormFeature
     private FormOptions _options;
     private Task<IFormCollection>? _parsedFormTask;
     private IFormCollection? _form;
-	private MediaTypeHeaderValue? _formContentType;
+	private MediaTypeHeaderValue? _formContentType; // null iff _form is null
 
     /// <summary>
     /// Initializes a new instance of <see cref="FormFeature"/>.
@@ -127,7 +127,7 @@ public class FormFeature : IFormFeature
             {
                 _formContentType = null;
             }
-			if (_form is not null && _formContentType is null)
+			else
             {
 				_formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             }
