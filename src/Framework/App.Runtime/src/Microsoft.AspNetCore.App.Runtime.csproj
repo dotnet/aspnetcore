@@ -172,7 +172,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SharedRuntimeSubPath>shared\$(SharedFxName)\$(SharedFxVersion)\</SharedRuntimeSubPath>
     <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
-    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
     <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
     <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
