@@ -13,7 +13,8 @@
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
-    <_NpmAdditionalEnvironmentVariables>npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_NpmAdditionalEnvironmentVariables>
+    <!-- Skip puppeteer tests until https://github.com/dotnet/aspnetcore/issues/54176 is resolved -->
+    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1;npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
   <Target Name="_VerifyNPMCache" Condition="$(ContinuousIntegrationBuild) == 'true'" >
