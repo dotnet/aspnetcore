@@ -129,7 +129,7 @@ public class FormFeature : IFormFeature
             }
 			if (_form is not null && _formContentType is null)
             {
-				_formContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+				_formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             }
         }
     }
