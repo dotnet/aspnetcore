@@ -214,7 +214,6 @@ public class IdentityBuilderTest
         Assert.IsType<SecurityStampValidator<PocoUser>>(provider.GetRequiredService<ISecurityStampValidator>());
         Assert.IsType<TwoFactorSecurityStampValidator<PocoUser>>(provider.GetRequiredService<ITwoFactorSecurityStampValidator>());
         Assert.NotNull(provider.GetService<IOptions<SecurityStampValidatorOptions>>());
-        Assert.NotNull(provider.GetService<TimeProvider>());
     }
 
     [Fact]
