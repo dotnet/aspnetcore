@@ -74,7 +74,7 @@ public class DefaultKeyResolverTests
     }
 
     [Fact]
-    public void ResolveDefaultKeyPolicy_ValidExistingKey_NoSuccessor_ReturnsExistingKey_SignalsGenerateNewKey()
+    public void ResolveDefaultKeyPolicy_ValidExistingKey_NoSuccessor_ReturnsExistingKey_DoesNotSignalGenerateNewKey()
     {
         // Arrange
         var resolver = CreateDefaultKeyResolver();
@@ -85,11 +85,11 @@ public class DefaultKeyResolverTests
 
         // Assert
         Assert.Same(key1, resolution.DefaultKey);
-        Assert.True(resolution.ShouldGenerateNewKey);
+        Assert.False(resolution.ShouldGenerateNewKey); // Does not reflect pending expiration
     }
 
     [Fact]
-    public void ResolveDefaultKeyPolicy_ValidExistingKey_NoLegitimateSuccessor_ReturnsExistingKey_SignalsGenerateNewKey()
+    public void ResolveDefaultKeyPolicy_ValidExistingKey_NoLegitimateSuccessor_ReturnsExistingKey_DoesNotSignalGenerateNewKey()
     {
         // Arrange
         var resolver = CreateDefaultKeyResolver();
@@ -102,7 +102,7 @@ public class DefaultKeyResolverTests
 
         // Assert
         Assert.Same(key1, resolution.DefaultKey);
-        Assert.True(resolution.ShouldGenerateNewKey);
+        Assert.False(resolution.ShouldGenerateNewKey); // Does not reflect pending expiration
     }
 
     [Fact]

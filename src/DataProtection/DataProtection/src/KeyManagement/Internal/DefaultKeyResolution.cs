@@ -30,8 +30,12 @@ public struct DefaultKeyResolution
     public IKey? FallbackKey;
 
     /// <summary>
-    /// 'true' if a new key should be persisted to the keyring, 'false' otherwise.
+    /// True if the caller should generate and persist a new key to the keyring.
+    /// False if the caller should determine for itself whether to generate a new key.
     /// This value may be 'true' even if a valid default key was found.
     /// </summary>
+    /// <remarks>
+    /// Does not reflect the time to expiration of the default key, if there is one.
+    /// </remarks>
     public bool ShouldGenerateNewKey;
 }
