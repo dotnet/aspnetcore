@@ -128,7 +128,6 @@
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
       <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
       <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
-      <_AppRuntimeDestinationSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRefDestinationSubPath>
       <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'TargetingPack.Layout', '$(Configuration)', '$(_AppRefSubPath)'))</_AppRefPath>
       <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'SharedFx.Layout', '$(Configuration)', '$(TargetRuntimeIdentifier)', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
 
