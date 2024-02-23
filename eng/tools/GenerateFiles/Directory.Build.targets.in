@@ -115,13 +115,13 @@
     </KnownFrameworkReference>
   </ItemGroup>
 
-  <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework)">
+  <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
+  <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''">
     <EnableTargetingPackDownload>false</EnableTargetingPackDownload>
     <EnableRuntimePackDownload>false</EnableRuntimePackDownload>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 
-  <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
   <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''" AfterTargets="ResolveFrameworkReferences">
     <Error Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRefVersion} ref pack does not exist."
         Condition="!Exists('$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}\data\FrameworkList.xml') " />
