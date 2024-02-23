@@ -242,6 +242,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <remarks>
     /// The additional parameters can be used to customize the authorization request,
     /// providing extra information or fulfilling specific requirements of the OpenIdConnect provider.
+    /// These parameters are typically, but not always, appended to the query string.
     /// </remarks>
     public IDictionary<string, string> AdditionalAuthorizationParameters { get; } = new Dictionary<string, string>();
 

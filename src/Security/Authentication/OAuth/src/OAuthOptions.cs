@@ -89,6 +89,7 @@ public class OAuthOptions : RemoteAuthenticationOptions
     /// <remarks>
     /// The additional parameters can be used to customize the authorization request,
     /// providing extra information or fulfilling specific requirements of the OAuth provider.
+    /// These parameters are typically, but not always, appended to the query string.
     /// </remarks>
     public IDictionary<string, string> AdditionalAuthorizationParameters { get; } = new Dictionary<string, string>();
 
