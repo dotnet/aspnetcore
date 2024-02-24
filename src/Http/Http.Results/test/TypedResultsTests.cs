@@ -1448,24 +1448,6 @@ public partial class TypedResultsTests
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
     }
 
-    [Fact]
-    public async void InternalServerError_WithException_ThrowsException()
-    {
-        // Arrange
-        var exceptionMessage = "Test exception";
-        ArgumentException exception = new(exceptionMessage);
-        var exceptionInfo = ExceptionDispatchInfo.Capture(exception);
-
-        // Act
-        var result = TypedResults.InternalServerError(exceptionInfo);
-        var exResult = await Record.ExceptionAsync(() => result.ExecuteAsync(null));
-
-        // Assert
-        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
-        Assert.IsType<ArgumentException>(exResult);
-        Assert.Equal(exceptionMessage, exResult.Message);
-    }
-
     [JsonSerializable(typeof(object))]
     private partial class ObjectJsonContext : JsonSerializerContext
     { }

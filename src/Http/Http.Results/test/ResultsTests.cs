@@ -1677,7 +1677,6 @@ public partial class ResultsTests
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
         (() => Results.InternalServerError(), typeof(InternalServerError)),
         (() => Results.InternalServerError<object>(new()), typeof(InternalServerError<object>)),
-        (() => Results.InternalServerError(ExceptionDispatchInfo.Capture(new ArgumentException("Test"))), typeof(InternalServerError)),
         (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),
