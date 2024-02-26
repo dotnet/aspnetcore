@@ -43,7 +43,7 @@ internal sealed class RedirectToWwwRule : IRule
             return;
         }
 
-        if (req.Host.Value.StartsWith(WwwDot, StringComparison.OrdinalIgnoreCase))
+        if (req.Host.HasValue && req.Host.Value.StartsWith(WwwDot, StringComparison.OrdinalIgnoreCase))
         {
             context.Result = RuleResult.ContinueRules;
             return;
