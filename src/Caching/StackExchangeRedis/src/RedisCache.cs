@@ -257,14 +257,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                 IConnectionMultiplexer connection;
                 if (_options.ConnectionMultiplexerFactory is null)
                 {
-                    if (_options.ConfigurationOptions is not null)
-                    {
-                        connection = ConnectionMultiplexer.Connect(_options.ConfigurationOptions);
-                    }
-                    else
-                    {
-                        connection = ConnectionMultiplexer.Connect(_options.Configuration!);
-                    }
+                    connection = ConnectionMultiplexer.Connect(_options.GetConfiguredOptions("asp.net DC"));
                 }
                 else
                 {

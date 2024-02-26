@@ -374,15 +374,15 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.23, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net8.0') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.23, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[8.0.0, )" />
-    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.6.122, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.7.23, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">

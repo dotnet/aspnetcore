@@ -324,7 +324,7 @@
     <SeleniumWebDriverVersion>4.17.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
-    <StackExchangeRedisVersion>2.6.122</StackExchangeRedisVersion>
+    <StackExchangeRedisVersion>2.7.23</StackExchangeRedisVersion>
     <SystemReactiveLinqVersion>5.0.0</SystemReactiveLinqVersion>
     <SwashbuckleAspNetCoreVersion>6.4.0</SwashbuckleAspNetCoreVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
