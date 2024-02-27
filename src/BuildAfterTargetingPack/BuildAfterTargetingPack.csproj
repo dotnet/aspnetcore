@@ -88,7 +88,7 @@
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Test" />
   </Target>
 
-  <Target Name="VSTestDelayedProjects" BeforeTargets="VSTest" Condition=" '$(DotNetBuDotNetBuildildFromSource)' != 'true' ">
+  <Target Name="VSTestDelayedProjects" BeforeTargets="VSTest" Condition=" '$(DotNetBuild)' != 'true' ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="VSTest" />
   </Target>
 
