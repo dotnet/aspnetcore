@@ -11,12 +11,13 @@
   <!--
     Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
     Leaving the inner will cause all conflicting settings to be ignored.
-    https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options
+    https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files#general-options.
+    This only needs to be done if there is an inner clone.
   -->
   <Target Name="RemoveInnerGlobalConfig"
           DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
           BeforeTargets="RunInnerSourceBuildCommand"
-          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+          Condition="'$(UseInnerClone)' == 'true'">
 
     <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
   </Target>
