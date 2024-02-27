@@ -13,7 +13,7 @@ build projects, run tests, and generate code.
 Sets up CI specific settings and variables.
 
 .PARAMETER PrepareMachine
-Prepare machine for a CI run, and clean up afterwards.
+In CI, Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
 
 .PARAMETER Restore
 Run restore.

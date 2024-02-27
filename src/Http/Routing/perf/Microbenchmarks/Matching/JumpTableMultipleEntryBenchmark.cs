@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BenchmarkDotNet.Attributes;
@@ -154,11 +154,20 @@ public class JumpTableMultipleEntryBenchmark
 
             // Between 5 and 36 characters
             var text = guid.Substring(0, Math.Max(5, Math.Min(i, 36)));
-            if (char.IsDigit(text[0]))
+
+            // Convert first half of text to letters
+            text = string.Create(text.Length, text, static (buffer, state) =>
             {
-                // Convert first character to a letter.
-                text = ((char)(text[0] + ('G' - '0'))) + text.Substring(1);
-            }
+                for (var c = 0; c < buffer.Length; c++)
+                {
+                    buffer[c] = char.ToUpperInvariant(state[c]);
+
+                    if (char.IsDigit(buffer[c]) && c < buffer.Length / 2)
+                    {
+                        buffer[c] = ((char)(state[c] + ('G' - '0')));
+                    }
+                }
+            });
 
             if (i % 2 == 0)
             {

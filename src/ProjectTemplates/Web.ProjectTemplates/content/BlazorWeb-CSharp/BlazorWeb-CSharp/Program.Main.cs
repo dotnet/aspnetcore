@@ -124,9 +124,7 @@ public class Program
         #else
         app.MapRazorComponents<App>();
         #endif
-        #if (UseWebAssembly && SampleContent)
-            .AddAdditionalAssemblies(typeof(Counter).Assembly);
-        #elif (UseWebAssembly)
+        #if (UseWebAssembly)
             .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
         #endif
 
