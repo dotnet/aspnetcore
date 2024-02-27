@@ -6,26 +6,27 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-public static class ReadThroughCacheServiceExtensions
+public static class HybridCacheServiceExtensions
 {
-    public static IServiceCollection AddReadThroughCache(this IServiceCollection services, Action<ReadThroughCacheOptions> setupAction)
+    public static IServiceCollection AddHybridCache(this IServiceCollection services, Action<HybridCacheOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(setupAction);
-        AddReadThroughCache(services);
+        AddHybridCache(services);
         services.Configure(setupAction);
         return services;
     }
 
-    public static IServiceCollection AddReadThroughCache(this IServiceCollection services)
+    public static IServiceCollection AddHybridCache(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions();
         services.AddMemoryCache();
         services.AddDistributedMemoryCache(); // we need a backend; use in-proc by default
-        services.AddSingleton<IReadThroughCacheSerializerFactory, DefaultJsonSerializerFactory>();
-        services.AddSingleton<IReadThroughCacheSerializer<string>, StringSerializer>();
-        services.AddSingleton<ReadThroughCache, DefaultReadThroughCache>();
+        services.AddSingleton<IHybridCacheSerializerFactory, DefaultJsonSerializerFactory>();
+        services.AddSingleton<IHybridCacheSerializer<string>>(InbuiltTypeSerializer.Instance);
+        services.AddSingleton<IHybridCacheSerializer<byte[]>>(InbuiltTypeSerializer.Instance);
+        services.AddSingleton<HybridCache, DefaultHybridCache>();
         return services;
     }
 }

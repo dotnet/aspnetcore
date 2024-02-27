@@ -5,17 +5,20 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-public abstract class ReadThroughCache
+public abstract class HybridCache
 {
-    protected ReadThroughCache() { }
+    protected HybridCache() { }
+
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Does not cause ambiguity due to callback signature delta")]
+    public abstract ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
 
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Does not cause ambiguity due to callback signature delta")]
     public virtual ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> callback,
-        ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
+        HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
         => GetOrCreateAsync(key, callback, WrappedCallbackCache<T>.Instance, options, tags, cancellationToken);
 
-    public abstract ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, ReadThroughCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
-    public abstract ValueTask SetAsync<T>(string key, T value, ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
+    public abstract ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
+    public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
 
     // don't like this...
     //public async virtual ValueTask<ImmutableDictionary<string, T>> GetAllAsync<T>(ReadOnlyMemory<string> keys, CancellationToken cancellationToken = default)
@@ -39,10 +42,7 @@ public abstract class ReadThroughCache
     //    return builder.ToImmutable();
     //}
 
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Does not cause ambiguity due to callback signature delta")]
-    public abstract ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> callback, ReadThroughCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
-
-    public virtual ValueTask RemoveKeyAsync(string key, CancellationToken cancellationToken = default) => default;
+    public abstract ValueTask RemoveKeyAsync(string key, CancellationToken cancellationToken = default);
 
     public virtual ValueTask RemoveKeysAsync(ReadOnlyMemory<string> keys, CancellationToken cancellationToken = default) => keys.Length switch
     {
@@ -73,18 +73,18 @@ public abstract class ReadThroughCache
 }
 
 [Flags]
-public enum ReadThroughCacheEntryFlags
+public enum HybridCacheEntryFlags
 {
     None = 0,
     BypassLocalCache = 1 << 0,
     BypassDistributedCache = 1 << 1,
     BypassCompression = 1 << 2,
 }
-public sealed class ReadThroughCacheEntryOptions(TimeSpan expiry, ReadThroughCacheEntryFlags flags = 0)
+public sealed class HybridCacheEntryOptions(TimeSpan expiry, HybridCacheEntryFlags flags = 0)
 {
     public TimeSpan Expiry { get; } = expiry;
 
-    public ReadThroughCacheEntryFlags Flags { get; } = flags;
+    public HybridCacheEntryFlags Flags { get; } = flags;
 
     private DistributedCacheEntryOptions? _distributedCacheEntryOptions;
     internal DistributedCacheEntryOptions AsDistributedCacheEntryOptions()

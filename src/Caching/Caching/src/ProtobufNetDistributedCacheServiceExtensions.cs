@@ -11,16 +11,16 @@ namespace Microsoft.Extensions.Caching.Distributed;
 [SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "demo code only")]
 public static class ProtobufDistributedCacheServiceExtensions
 {
-    public static IServiceCollection AddReadThroughCacheSerializerProtobufNet(this IServiceCollection services)
+    public static IServiceCollection AddHybridCacheSerializerProtobufNet(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IReadThroughCacheSerializerFactory, ProtobufNetSerializerFactory>();
+        services.AddSingleton<IHybridCacheSerializerFactory, ProtobufNetSerializerFactory>();
         return services;
     }
 
-    private sealed class ProtobufNetSerializerFactory : IReadThroughCacheSerializerFactory
+    private sealed class ProtobufNetSerializerFactory : IHybridCacheSerializerFactory
     {
-        public bool TryCreateSerializer<T>([NotNullWhen(true)] out IReadThroughCacheSerializer<T>? serializer)
+        public bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer)
         {
             // in real implementation, would use library rules
             if (Attribute.IsDefined(typeof(T), typeof(DataContractAttribute)))
@@ -32,7 +32,7 @@ public static class ProtobufDistributedCacheServiceExtensions
             return false;
         }
     }
-    internal sealed class ProtobufNetSerializer<T> : IReadThroughCacheSerializer<T>
+    internal sealed class ProtobufNetSerializer<T> : IHybridCacheSerializer<T>
     {
         // in real implementation, would use library serializer
         public T Deserialize(ReadOnlySequence<byte> source) => throw new NotImplementedException();

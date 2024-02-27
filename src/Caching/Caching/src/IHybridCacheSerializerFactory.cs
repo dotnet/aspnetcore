@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-public interface IReadThroughCacheSerializerFactory
+public interface IHybridCacheSerializerFactory
 {
-    bool TryCreateSerializer<T>([NotNullWhen(true)] out IReadThroughCacheSerializer<T>? serializer);
+    bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer);
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace Microsoft.Extensions.Caching.Distributed.Tests;
 
 // context: experiment for https://github.com/dotnet/aspnetcore/issues/44696
-internal class OutputCacheWrapper(ReadThroughCache underlying) : IOutputCacheStore
+internal class OutputCacheWrapper(HybridCache underlying) : IOutputCacheStore
 {
     ValueTask IOutputCacheStore.EvictByTagAsync(string tag, CancellationToken cancellationToken)
         => underlying.RemoveTagAsync(tag, cancellationToken);
@@ -17,5 +17,5 @@ internal class OutputCacheWrapper(ReadThroughCache underlying) : IOutputCacheSto
     ValueTask IOutputCacheStore.SetAsync(string key, byte[]? value, string[]? tags, TimeSpan validFor, CancellationToken cancellationToken)
         => value is null
             ? underlying.RemoveKeyAsync(key, cancellationToken)
-            : underlying.SetAsync<byte[]>(key, value, new ReadThroughCacheEntryOptions(validFor), tags, cancellationToken);
+            : underlying.SetAsync<byte[]>(key, value, new HybridCacheEntryOptions(validFor), tags, cancellationToken);
 }

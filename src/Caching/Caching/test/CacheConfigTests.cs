@@ -15,12 +15,12 @@ public class CacheConfigTests
     public void SerializerConfig()
     {
         var services = new ServiceCollection();
-        services.AddReadThroughCache();
-        services.AddReadThroughCacheSerializerProtobufNet();
+        services.AddHybridCache();
+        services.AddHybridCacheSerializerProtobufNet();
         var s = services.BuildServiceProvider();
-        var cache = Assert.IsType<DefaultReadThroughCache>(s.GetService<ReadThroughCache>());
+        var cache = Assert.IsType<DefaultHybridCache>(s.GetService<HybridCache>());
 
-        Assert.IsType<StringSerializer>(cache.GetSerializer<string>());
+        Assert.IsType<InbuiltTypeSerializer>(cache.GetSerializer<string>());
         Assert.IsType<DefaultJsonSerializerFactory.DefaultJsonSerializer<Foo>>(cache.GetSerializer<Foo>());
         Assert.IsType<ProtobufDistributedCacheServiceExtensions.ProtobufNetSerializer<Bar>>(cache.GetSerializer<Bar>());
     }
@@ -44,7 +44,7 @@ public class CacheConfigTests
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
         }
-        services.AddReadThroughCache();
+        services.AddHybridCache();
         services.AddScoped<SomeService>();
         var provider = services.BuildServiceProvider();
         var s = provider.GetService<SomeService>();
@@ -84,7 +84,7 @@ public class CacheConfigTests
         {
             services.AddSingleton<IDistributedCache, CustomBackend>();
         }
-        services.AddReadThroughCache();
+        services.AddHybridCache();
         services.AddScoped<SomeService>();
         var provider = services.BuildServiceProvider();
 
@@ -125,7 +125,7 @@ public class CacheConfigTests
     }
 }
 
-public class SomeService(ReadThroughCache cache)
+public class SomeService(HybridCache cache)
 {
     private int _backendCalls;
     public int BackendCalls => _backendCalls;
@@ -145,7 +145,7 @@ public class SomeService(ReadThroughCache cache)
 
     public async Task<Foo> GetFromCacheWithStateAsync(int id) => await cache.GetOrCreateAsync($"foos_{id}", (obj: this, id), static (state, ct) => state.obj.BackendAsync(state.id), _cacheExpiration);
 
-    private static readonly ReadThroughCacheEntryOptions _cacheExpiration = new(TimeSpan.FromSeconds(1));
+    private static readonly HybridCacheEntryOptions _cacheExpiration = new(TimeSpan.FromSeconds(1));
 }
 public class Foo
 {

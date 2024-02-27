@@ -7,18 +7,18 @@ using System.Text.Json;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-internal sealed class DefaultJsonSerializerFactory : IReadThroughCacheSerializerFactory
+internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFactory
 {
-    public bool TryCreateSerializer<T>([NotNullWhen(true)] out IReadThroughCacheSerializer<T>? serializer)
+    public bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer)
     {
         // no restriction
         serializer = new DefaultJsonSerializer<T>();
         return true;
     }
 
-    internal sealed class DefaultJsonSerializer<T> : IReadThroughCacheSerializer<T>
+    internal sealed class DefaultJsonSerializer<T> : IHybridCacheSerializer<T>
     {
-        T IReadThroughCacheSerializer<T>.Deserialize(ReadOnlySequence<byte> source)
+        T IHybridCacheSerializer<T>.Deserialize(ReadOnlySequence<byte> source)
         {
             var reader = new Utf8JsonReader(source);
 #pragma warning disable IL2026, IL3050 // AOT bits
@@ -26,7 +26,7 @@ internal sealed class DefaultJsonSerializerFactory : IReadThroughCacheSerializer
 #pragma warning restore IL2026, IL3050
         }
 
-        void IReadThroughCacheSerializer<T>.Serialize(T value, IBufferWriter<byte> target)
+        void IHybridCacheSerializer<T>.Serialize(T value, IBufferWriter<byte> target)
         {
             using var writer = new Utf8JsonWriter(target);
 #pragma warning disable IL2026, IL3050 // AOT bits

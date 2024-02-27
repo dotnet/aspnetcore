@@ -5,7 +5,7 @@ using System.Buffers;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
-public interface IReadThroughCacheSerializer<T>
+public interface IHybridCacheSerializer<T>
 {
     T Deserialize(ReadOnlySequence<byte> source);
     void Serialize(T value, IBufferWriter<byte> target);
