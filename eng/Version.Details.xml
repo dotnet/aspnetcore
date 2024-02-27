@@ -324,14 +324,14 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>ad25468103550b322351efb21a45fb54566a8127</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24112.2">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24119.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>b503f918c4ade1dbf33c310cb6848689e85b0b91</Sha>
+      <Sha>3ae12c7ded587740bb113b453b5a738c5017681d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24112.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24119.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>b503f918c4ade1dbf33c310cb6848689e85b0b91</Sha>
+      <Sha>3ae12c7ded587740bb113b453b5a738c5017681d</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24113.1">
@@ -409,13 +409,13 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>d731f58a502086842739a358ab490bec08fdb8a7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.2.24116.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.2.24123.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>147ee951affb4be749b6da254a6159918904ff13</Sha>
+      <Sha>229f1b4f6608363d35fde1b405dc39748d6035f5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-preview.2.24116.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-preview.2.24123.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>147ee951affb4be749b6da254a6159918904ff13</Sha>
+      <Sha>229f1b4f6608363d35fde1b405dc39748d6035f5</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>

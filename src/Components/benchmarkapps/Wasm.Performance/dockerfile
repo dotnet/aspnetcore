@@ -24,6 +24,7 @@ RUN git init \
     && git remote add origin https://github.com/aspnet/aspnetcore
 
 RUN ./restore.sh
+RUN npm run build
 RUN .dotnet/dotnet publish -c Release --no-restore -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
 RUN chmod +x /app/Wasm.Performance.Driver
 
