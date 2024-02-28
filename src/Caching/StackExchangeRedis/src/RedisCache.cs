@@ -257,7 +257,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                 IConnectionMultiplexer connection;
                 if (_options.ConnectionMultiplexerFactory is null)
                 {
-                    connection = ConnectionMultiplexer.Connect(_options.GetConfiguredOptions("asp.net DC"));
+                    connection = ConnectionMultiplexer.Connect(_options.GetConfiguredOptions());
                 }
                 else
                 {
@@ -301,7 +301,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                 IConnectionMultiplexer connection;
                 if (_options.ConnectionMultiplexerFactory is null)
                 {
-                    connection = await ConnectionMultiplexer.ConnectAsync(_options.GetConfiguredOptions("asp.net DC")).ConfigureAwait(false);
+                    connection = await ConnectionMultiplexer.ConnectAsync(_options.GetConfiguredOptions()).ConfigureAwait(false);
                 }
                 else
                 {
@@ -325,6 +325,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         WriteTimeTicks(ref _lastConnectTicks, DateTimeOffset.UtcNow);
         ValidateServerFeatures(connection);
         TryRegisterProfiler(connection);
+        TryAddSuffix(connection);
     }
 
     private void ValidateServerFeatures(IConnectionMultiplexer connection)
@@ -359,6 +360,19 @@ public partial class RedisCache : IDistributedCache, IDisposable
         if (_options.ProfilingSession is not null)
         {
             connection.RegisterProfiler(_options.ProfilingSession);
+        }
+    }
+
+    private static void TryAddSuffix(IConnectionMultiplexer connection)
+    {
+        try
+        {
+            connection.AddLibraryNameSuffix("aspnet");
+            connection.AddLibraryNameSuffix("DC");
+        }
+        catch (Exception ex)
+        {   // not critical
+            Debug.WriteLine(ex.Message);
         }
     }
 
