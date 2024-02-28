@@ -68,10 +68,12 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         var defaultKeyPolicy = _defaultKeyResolver.ResolveDefaultKeyPolicy(now, allKeys);
         var defaultKey = defaultKeyPolicy.DefaultKey;
 
-        // We shouldn't call CreateKey more than once, else we risk stack diving. This code path shouldn't
-        // get hit unless there was an ineligible key with an activation date slightly later than the one we
-        // just added. If this does happen, then we'll just use whatever key we can instead of creating
-        // new keys endlessly, eventually falling back to the one we just added if all else fails.
+        // We shouldn't call CreateKey more than once, else we risk stack diving. Thus, we don't even
+        // check defaultKeyPolicy.ShouldGenerateNewKey.  However, this code path shouldn't get hit
+        // with ShouldGenerateNewKey true unless there was an ineligible key with an activation date
+        // slightly later than the one we just added. If this does happen, then we'll just use whatever
+        // key we can instead of creating new keys endlessly, eventually falling back to the one we just
+        // added if all else fails.
         if (keyJustAdded != null)
         {
             var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
