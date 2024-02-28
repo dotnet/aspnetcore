@@ -16,7 +16,7 @@ public class BlazorTemplateTest : LoggedTest
 
     public ProjectFactoryFixture ProjectFactory { get; set; }
 
-    public static TheoryData<string[]> ArgsData() =>
+    public static TheoryData<object[]> ArgsData() =>
     [
         [],
         [ArgConstants.UseProgramMain],
@@ -69,7 +69,7 @@ public class BlazorTemplateTest : LoggedTest
         if (!args.Contains(ArgConstants.IndividualAuth))
         {
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
-            Assert.DoesNotContain(".db", projectFileContents);
+            Assert.DoesNotContain("app.db", projectFileContents);
         }
         else
         {
@@ -77,11 +77,11 @@ public class BlazorTemplateTest : LoggedTest
 
             if (args.Contains(ArgConstants.UseLocalDb))
             {
-                Assert.DoesNotContain(".db", projectFileContents);
+                Assert.DoesNotContain("app.db", projectFileContents);
             }
             else
             {
-                Assert.Contains(".db", projectFileContents);
+                Assert.Contains("app.db", projectFileContents);
             }
         }
 

@@ -234,13 +234,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, void (global::Microsoft.AspNetCore.Http.HttpContext arg0, global::Microsoft.AspNetCore.Http.IFormFile arg1, global::Microsoft.AspNetCore.Http.IFormFileCollection arg2, global::Microsoft.AspNetCore.Http.IFormCollection arg3, global::Microsoft.AspNetCore.Http.Generators.Tests.MyTryParseRecord arg4) => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 PostVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
 
@@ -251,9 +253,10 @@ namespace Microsoft.AspNetCore.Http.Generated
             Delegate handler,
             IEnumerable<string>? httpMethods,
             MetadataPopulator populateMetadata,
-            RequestDelegateFactoryFunc createRequestDelegate)
+            RequestDelegateFactoryFunc createRequestDelegate,
+            MethodInfo methodInfo)
         {
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate, methodInfo);
         }
 
         private static T Cast<T>(Delegate d, T _) where T : Delegate

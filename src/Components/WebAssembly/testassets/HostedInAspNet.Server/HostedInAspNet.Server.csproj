@@ -13,7 +13,7 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
-    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <!-- Avoid MSB3277 warnings due to dependencies brought in through Microsoft.AspNetCore.Blazor targeting netstandard2.0. -->
     <Reference Include="System.Text.Json" />
   </ItemGroup>

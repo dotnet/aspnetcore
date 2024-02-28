@@ -65,7 +65,7 @@ public class MvcTemplateTest : LoggedTest
 
         var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
         var projectFileContents = project.ReadFile($"{project.ProjectName}.{projectExtension}");
-        Assert.DoesNotContain(".db", projectFileContents);
+        Assert.DoesNotContain("app.db", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
         Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
@@ -164,7 +164,7 @@ public class MvcTemplateTest : LoggedTest
         var projectFileContents = project.ReadFile($"{project.ProjectName}.csproj");
         if (!useLocalDB)
         {
-            Assert.Contains(".db", projectFileContents);
+            Assert.Contains("app.db", projectFileContents);
         }
 
         await project.RunDotNetPublishAsync();

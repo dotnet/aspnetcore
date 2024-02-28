@@ -844,6 +844,30 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("False", () => tuesday.GetDomProperty("checked"));
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public void InputRadioGroupWorksWithParentImplementingIHandleEvent(int n)
+    {
+        Browser.Url = new UriBuilder(Browser.Url) { Query = ($"?n={n}") }.ToString();
+        var appElement = Browser.MountTestComponent<InputRadioParentImplementsIHandleEvent>();
+        var zero = appElement.FindElement(By.Id("inputradiogroup-parent-ihandle-event-0"));
+        var one = appElement.FindElement(By.Id("inputradiogroup-parent-ihandle-event-1"));
+
+        Browser.Equal(n == 0 ? "True" : "False", () => zero.GetDomProperty("checked"));
+        Browser.Equal("False", () => one.GetDomProperty("checked"));
+
+        // Observe the changes after a click
+        one.Click();
+        Browser.Equal("False", () => zero.GetDomProperty("checked"));
+        Browser.Equal("True", () => one.GetDomProperty("checked"));
+
+        // Ensure other options can be selected
+        zero.Click();
+        Browser.Equal("False", () => one.GetDomProperty("checked"));
+        Browser.Equal("True", () => zero.GetDomProperty("checked"));
+    }
+
     [Fact]
     public void InputSelectWorksWithMutatingSetter()
     {

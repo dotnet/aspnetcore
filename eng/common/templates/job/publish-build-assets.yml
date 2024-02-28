@@ -63,6 +63,10 @@ jobs:
 
   steps:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - checkout: self
+      fetchDepth: 3
+      clean: true
+      
     - task: DownloadBuildArtifacts@0
       displayName: Download artifact
       inputs:
@@ -72,7 +76,7 @@ jobs:
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
-    - task: NuGetAuthenticate@0
+    - task: NuGetAuthenticate@1
 
     - task: PowerShell@2
       displayName: Publish Build Assets

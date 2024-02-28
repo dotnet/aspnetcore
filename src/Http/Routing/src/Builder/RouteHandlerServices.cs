@@ -29,7 +29,7 @@ public static class RouteHandlerServices
     /// <param name="httpMethods">The set of supported HTTP methods.</param>
     /// <param name="populateMetadata">A delegate for populating endpoint metadata.</param>
     /// <param name="createRequestDelegate">A delegate for constructing a RequestDelegate.</param>
-    /// <returns></returns>
+    /// <returns>The <see cref="RouteHandlerBuilder"/>>.</returns>
     public static RouteHandlerBuilder Map(
             IEndpointRouteBuilder endpoints,
             string pattern,
@@ -44,6 +44,37 @@ public static class RouteHandlerServices
         ArgumentNullException.ThrowIfNull(populateMetadata);
         ArgumentNullException.ThrowIfNull(createRequestDelegate);
 
+        return Map(endpoints, pattern, handler, httpMethods, populateMetadata, createRequestDelegate, handler.Method);
+    }
+
+    /// <summary>
+    /// Registers an endpoint with custom functions for constructing
+    /// a request delegate for its handler and populating metadata for
+    /// the endpoint. Intended for consumption in the RequestDelegateGenerator.
+    /// </summary>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+    /// <param name="pattern">The route pattern.</param>
+    /// <param name="handler">The delegate executed when the endpoint is matched.</param>
+    /// <param name="httpMethods">The set of supported HTTP methods.</param>
+    /// <param name="populateMetadata">A delegate for populating endpoint metadata.</param>
+    /// <param name="createRequestDelegate">A delegate for constructing a RequestDelegate.</param>
+    /// <param name="methodInfo">The MethodInfo associated with the incoming delegate.</param>
+    /// <returns>The <see cref="RouteHandlerBuilder"/>>.</returns>
+    public static RouteHandlerBuilder Map(
+            IEndpointRouteBuilder endpoints,
+            string pattern,
+            Delegate handler,
+            IEnumerable<string>? httpMethods,
+            Func<MethodInfo, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult> populateMetadata,
+            Func<Delegate, RequestDelegateFactoryOptions, RequestDelegateMetadataResult?, RequestDelegateResult> createRequestDelegate,
+            MethodInfo methodInfo)
+    {
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(pattern);
+        ArgumentNullException.ThrowIfNull(handler);
+        ArgumentNullException.ThrowIfNull(populateMetadata);
+        ArgumentNullException.ThrowIfNull(createRequestDelegate);
+
         return endpoints
               .GetOrAddRouteEndpointDataSource()
               .AddRouteHandler(RoutePatternFactory.Parse(pattern),
@@ -51,6 +82,7 @@ public static class RouteHandlerServices
                                httpMethods,
                                isFallback: false,
                                populateMetadata,
-                               createRequestDelegate);
+                               createRequestDelegate,
+                               methodInfo);
     }
 }

@@ -164,7 +164,7 @@
     <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework.
          The list is a semicolon separated list of RIDs. Whitespace may not be added to the property. -->
     <SupportedRuntimeIdentifiers>win-x64;win-x86;win-arm;win-arm64;osx-x64;osx-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;freebsd-x64</SupportedRuntimeIdentifiers>
-    <SupportedRuntimeIdentifiers Condition=" '$(PortableBuild)' == 'false' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
+    <SupportedRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
 
     <!-- Playwright provides binaries for Windows (x86 and x64), macOS (x64) and Linux (x64, non musl). We can't use it on other architectures. -->
     <IsPlaywrightAvailable Condition="'$(TargetOsName)' == 'linux-musl' OR ('$(TargetArchitecture)' != 'x86' AND '$(TargetArchitecture)' != 'x64')">false</IsPlaywrightAvailable>

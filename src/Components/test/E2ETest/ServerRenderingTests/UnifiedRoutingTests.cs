@@ -24,22 +24,35 @@ public class UnifiedRoutingTests : ServerTestBase<BasicTestAppServerSiteFixture<
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
-    [Fact]
-    public void Routing_CanRenderPagesWithParameters_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/parameters/value", "value")]
+    // Issue 53138
+    [InlineData("%F0%9F%99%82/routing/parameters/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback", "http://www.example.com/login/callback")]
+    // Note this double encodes the final 2 slashes
+    [InlineData("%F0%9F%99%82/routing/parameters/http%3A%2F%2Fwww.example.com%2520login%2520callback", "http://www.example.com%20login%20callback")]
+    // Issue 53262
+    [InlineData("routing/parameters/%21%40%23%24%25%5E%26%2A%28%29_%2B-%3D%5B%5D%7B%7D%5C%5C%7C%3B%27%3A%5C%22%3E%3F.%2F", """!@#$%^&*()_+-=[]{}\\|;':\">?./""")]
+    // Issue 52808
+    [InlineData("routing/parameters/parts%20w%2F%20issue", "parts w/ issue")]
+    public void Routing_CanRenderPagesWithParameters_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/parameters/value", "value");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
-    [Fact]
-    public void Routing_CanRenderPagesWithConstrainedParameters_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/constraints/5", "5")]
+    [InlineData("%F0%9F%99%82/routing/constraints/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback", "http://www.example.com/login/callback")]
+    public void Routing_CanRenderPagesWithConstrainedParameters_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/constraints/5", "5");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
-    [Fact]
-    public void Routing_CanRenderPagesWithComplexSegments_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/complex-segment(value)", "value")]
+    [InlineData("%F0%9F%99%82/routing/%F0%9F%99%82complex-segment(http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback)", "http://www.example.com/login/callback")]
+    public void Routing_CanRenderPagesWithComplexSegments_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/complex-segment(value)", "value");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
     [Fact]
@@ -54,16 +67,20 @@ public class UnifiedRoutingTests : ServerTestBase<BasicTestAppServerSiteFixture<
         ExecuteRoutingTestCore("routing/optional", "null");
     }
 
-    [Fact]
-    public void Routing_CanRenderPagesWithCatchAllParameters_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/catch-all/rest/of/the/path", "rest/of/the/path")]
+    [InlineData("%F0%9F%99%82/routing/catch-all/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback/another", "http://www.example.com/login/callback/another")]
+    public void Routing_CanRenderPagesWithCatchAllParameters_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/catch-all/rest/of/the/path", "rest/of/the/path");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
-    [Fact]
-    public void Routing_CanRenderPagesWithConstrainedCatchAllParameters_And_TransitionToInteractive()
+    [Theory]
+    [InlineData("routing/constrained-catch-all/a/b", "a/b")]
+    [InlineData("%F0%9F%99%82/routing/constrained-catch-all/http%3A%2F%2Fwww.example.com%2Flogin%2Fcallback/another", "http://www.example.com/login/callback/another")]
+    public void Routing_CanRenderPagesWithConstrainedCatchAllParameters_And_TransitionToInteractive(string url, string expectedValue)
     {
-        ExecuteRoutingTestCore("routing/constrained-catch-all/a/b", "a/b");
+        ExecuteRoutingTestCore(url, expectedValue);
     }
 
     private void ExecuteRoutingTestCore(string url, string expectedValue)

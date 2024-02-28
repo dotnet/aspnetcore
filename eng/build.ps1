@@ -12,6 +12,9 @@ build projects, run tests, and generate code.
 .PARAMETER CI
 Sets up CI specific settings and variables.
 
+.PARAMETER PrepareMachine
+In CI, Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
+
 .PARAMETER Restore
 Run restore.
 
@@ -26,6 +29,9 @@ Do not build project-to-project references and only build the specified project.
 
 .PARAMETER NoBuildRepoTasks
 Skip building eng/tools/RepoTasks/
+
+.PARAMETER OnlyBuildRepoTasks
+Only build eng/tools/RepoTasks/ and nothing else.
 
 .PARAMETER Pack
 Produce packages.
@@ -121,6 +127,7 @@ Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSou
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
     [switch]$CI,
+    [switch]$PrepareMachine,
 
     # Build lifecycle options
     [switch]$Restore,
@@ -159,6 +166,7 @@ param(
     [switch]$NoBuildInstallers,
 
     [switch]$NoBuildRepoTasks,
+    [switch]$OnlyBuildRepoTasks,
 
     # Diagnostics
     [Alias('bl')]
@@ -205,7 +213,7 @@ if ($Projects) {
     }
 }
 # When adding new sub-group build flags, add them to this check.
-elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava)) {
+elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava -or $OnlyBuildRepoTasks)) {
     Write-Warning "No default group of projects was specified, so building the managed and native projects and their dependencies. Run ``build.cmd -help`` for more details."
 
     # The goal of this is to pick a sensible default for `build.cmd` with zero arguments.
@@ -437,20 +445,22 @@ try {
             @ToolsetBuildArguments
     }
 
-    if ($performDesktopBuild) {
-        Write-Host
-        Remove-Item variable:global:_BuildTool -ErrorAction Ignore
-        $msbuildEngine = 'vs'
+    if (-not $OnlyBuildRepoTasks) {
+        if ($performDesktopBuild) {
+            Write-Host
+            Remove-Item variable:global:_BuildTool -ErrorAction Ignore
+            $msbuildEngine = 'vs'
 
-        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments
-    }
+            MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments
+        }
 
-    if ($performDotnetBuild) {
-        Write-Host
-        Remove-Item variable:global:_BuildTool -ErrorAction Ignore
-        $msbuildEngine = 'dotnet'
+        if ($performDotnetBuild) {
+            Write-Host
+            Remove-Item variable:global:_BuildTool -ErrorAction Ignore
+            $msbuildEngine = 'dotnet'
 
-        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @dotnetBuildArguments
+            MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @dotnetBuildArguments
+        }
     }
 }
 catch {
@@ -472,10 +482,6 @@ finally {
     if ($DumpProcesses -or $ci) {
         Stop-Job -Name DumpProcesses
         Remove-Job -Name DumpProcesses
-    }
-
-    if ($ci) {
-        & "$PSScriptRoot/scripts/KillProcesses.ps1"
     }
 }
 

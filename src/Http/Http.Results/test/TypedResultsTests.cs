@@ -349,7 +349,7 @@ public partial class TypedResultsTests
     [Fact]
     public void PhysicalFile_WithNullPath_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("path", () => TypedResults.PhysicalFile(default(string)));
+        Assert.Throws<ArgumentNullException>("path", () => TypedResults.PhysicalFile(default(string)));
     }
 
     [Fact]
@@ -361,7 +361,7 @@ public partial class TypedResultsTests
     [Fact]
     public void VirtualFile_WithNullPath_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("path", () => TypedResults.VirtualFile(default(string)));
+        Assert.Throws<ArgumentNullException>("path", () => TypedResults.VirtualFile(default(string)));
     }
 
     [Fact]
@@ -916,7 +916,7 @@ public partial class TypedResultsTests
     [Fact]
     public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("localUrl", () => TypedResults.LocalRedirect(default(string)));
+        Assert.Throws<ArgumentNullException>("localUrl", () => TypedResults.LocalRedirect(default(string)));
     }
 
     [Fact]
@@ -1187,7 +1187,7 @@ public partial class TypedResultsTests
     [Fact]
     public void Redirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("url", () => TypedResults.Redirect(default(string)));
+        Assert.Throws<ArgumentNullException>("url", () => TypedResults.Redirect(default(string)));
     }
 
     [Fact]

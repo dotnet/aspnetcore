@@ -113,7 +113,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(PortableBuild)' == 'false' " />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
 
     <!-- Crossgen2 compiler -->
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
@@ -129,7 +130,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
     <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(PortableBuild)' == 'false' " />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
   </ItemGroup>
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">

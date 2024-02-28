@@ -4,6 +4,8 @@
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 
   <PropertyGroup>
+    <IsShippingPackage>true</IsShippingPackage>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
     <IsTestProject>true</IsTestProject>
     <IsUnitTestProject>true</IsUnitTestProject>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
@@ -11,17 +13,43 @@
     <TestDependsOnAspNetRuntime>false</TestDependsOnAspNetRuntime>
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
-    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    <!-- Skip puppeteer tests until https://github.com/dotnet/aspnetcore/issues/54176 is resolved -->
+    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1;npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
-  <Target Name="Restore">
+  <Target Name="_VerifyNPMCache" Condition="$(ContinuousIntegrationBuild) == 'true'" >
+    <Message Text="Verifying NPM cache..." Importance="high" />
+    <Exec
+      Command="npm cache verify"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+  </Target>
+
+  <Target Name="Restore" DependsOnTargets="_VerifyNPMCache">
     <Message Text="Restoring NPM packages..." Importance="high" />
-    <Exec Command="npm ci" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec
+      Command="npm ci --offline"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
   <Target Name="Build">
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
     <Message Text="Building NPM packages..." Importance="high" />
-    <Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+
+    <Exec
+      Condition="$(ContinuousIntegrationBuild) == 'true'"
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+
+    <Exec
+      Command="npm run build"
+      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      />
   </Target>
 
   <Target Name="_Test" BeforeTargets="Test">
@@ -30,33 +58,19 @@
   </Target>
 
   <Target Name="Pack">
+    <PropertyGroup>
+      <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    </PropertyGroup>
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
-    <Exec Command="node $(MSBuildThisFileDirectory)scripts\pack-workspace.js $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath)" />
-  </Target>
-
-  <Target Name="_GetPackageVersionInfo" Returns="@(_NodePackageNameAndVersions)">
-    <!-- 
-    <Exec Command="npm run get-version" ConsoleToMsBuild="true">
-      <Output TaskParameter="ConsoleOutput" ItemName="_GetNpmVersionOutput" />
-    </Exec>
+    <Exec Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)" />
     <ItemGroup>
-      <_FilteredNpmVersionOuput Include="@(_GetNpmVersionOutput)" Condition="'%(Identity)' == '' or $([System.String]::Copy('%(Identity)').StartsWith('>')) " />
-      <_NodePackageNameAndVersions Include="@(_GetNpmVersionOutput)"  Exclude="@(_FilteredNpmVersionOuput)">
-      </_NodePackageNameAndVersions>
-      <_NodePackageNameAndVersions Condition="$([System.String]::new('%(_NodePackageNameAndVersions.Identity)').Contains(';'))">
-        <PackageName>$([System.String]::new('%(_NodePackageNameAndVersions.Identity)').Split(';')[0])</PackageName>
-        <PackageVersion>$([System.String]::new('%(_NodePackageNameAndVersions.Identity)').Split(';')[1])</PackageVersion>
-      </_NodePackageNameAndVersions>
+      <_NpmGeneratedPackages Include="$(PackageOutputPath)/*.tgz" />
     </ItemGroup>
-
-    <Message Text="Computed package version info: %(_NodePackageNameAndVersions.PackageName)=%(_NodePackageNameAndVersions.PackageVersion)" Importance="high" />
-    -->
-    <ItemGroup>
-      <_NodePackageNameAndVersions>
-        <PackageVersion>$(PackageVersion)</PackageVersion>
-      </_NodePackageNameAndVersions>
-    </ItemGroup>
+    <PropertyGroup>
+      <_NpmFiles>@(_NpmGeneratedPackages->'📦 $(PackageOutputPath)%(FileName)%(Extension)', '%0a  ')</_NpmFiles>
+    </PropertyGroup>
+    <Message Importance="High" Text="$(MSBuildProjectName) -> %0a%20%20$(_NpmFiles)" />
   </Target>
 
   <!-- Import Directory.Build.targets -->

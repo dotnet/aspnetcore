@@ -20,8 +20,7 @@ internal sealed class WebAssemblyJSObjectReferenceJsonConverter : JsonConverter<
     {
         return typeToConvert == typeof(WebAssemblyJSObjectReference) ||
             typeToConvert == typeof(IJSObjectReference) ||
-            typeToConvert == typeof(IJSInProcessObjectReference) ||
-            typeToConvert == typeof(IJSUnmarshalledObjectReference);
+            typeToConvert == typeof(IJSInProcessObjectReference);
     }
 
     public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

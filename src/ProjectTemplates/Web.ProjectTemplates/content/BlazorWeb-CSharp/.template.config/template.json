@@ -73,13 +73,15 @@
         {
           "condition": "(!UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.Main.cs"
+            "BlazorWeb-CSharp/Program.Main.cs",
+            "BlazorWeb-CSharp.Client/Program.Main.cs"
           ]
         },
         {
           "condition": "(UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.cs"
+            "BlazorWeb-CSharp/Program.cs",
+            "BlazorWeb-CSharp.Client/Program.cs"
           ],
           "rename": {
             "Program.Main.cs": "Program.cs"
