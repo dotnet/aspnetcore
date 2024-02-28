@@ -50,6 +50,37 @@ public class XmlEncryptionExtensionsTests
     }
 
     [Fact]
+    public void DecryptElement_MissingDecryptorType_Success()
+    {
+        // Arrange
+        // We want to simulate an error loading the specified decryptor type, i.e.
+        // Could not load file or assembly 'Azure.Extensions.AspNetCore.DataProtection.Keys,
+        // Version=1.2.2.0, Culture=neutral, PublicKeyToken=92742159e12e44c8' or one of its dependencies.
+        XmlEncryptionExtensions._getType = _ => throw new TypeLoadException();
+
+        var decryptorTypeName = typeof(MyXmlDecryptor).AssemblyQualifiedName;
+
+        var original = XElement.Parse(@$"
+                <x:encryptedSecret decryptorType='{decryptorTypeName}' xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
+                  <node />
+                </x:encryptedSecret>");
+
+        var mockActivator = new Mock<IActivator>();
+        mockActivator.ReturnDecryptedElementGivenDecryptorTypeNameAndInput(decryptorTypeName, "<node />", "<newNode />");
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IActivator>(mockActivator.Object);
+        var services = serviceCollection.BuildServiceProvider();
+        var activator = services.GetActivator();
+
+        // Act
+        var retVal = original.DecryptElement(activator);
+
+        // Assert
+        XmlAssert.Equal("<newNode />", retVal);
+    }
+
+    [Fact]
     public void DecryptElement_MultipleNodesRequireDecryption_AvoidsRecursion_Success()
     {
         // Arrange
