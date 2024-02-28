@@ -16,6 +16,9 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 internal static unsafe class XmlEncryptionExtensions
 {
+    // Used for testing edge case assembly loading errors
+    internal static Func<string, Type> _getType = name => Type.GetType(name, throwOnError: false);
+
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
         // If no decryption necessary, return original element.
@@ -73,7 +76,7 @@ internal static unsafe class XmlEncryptionExtensions
         var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
             ? forwardedTypeName
             : decryptorTypeName;
-        var type = Type.GetType(resolvedTypeName, throwOnError: false);
+        var type = _getType(resolvedTypeName);
 
         if (type == typeof(DpapiNGXmlDecryptor))
         {
