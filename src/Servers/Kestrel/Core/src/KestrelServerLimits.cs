@@ -25,7 +25,7 @@ public class KestrelServerLimits
     // Matches the default large_client_header_buffers in nginx.
     private int _maxRequestHeadersTotalSize = 32 * 1024;
 
-    // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
+    // Matches the default maxAllowedContentLength in IIS (~28.6 MiB)
     // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
     private long? _maxRequestBodySize = 30000000;
 
@@ -46,7 +46,7 @@ public class KestrelServerLimits
     /// Gets or sets the maximum size of the response buffer before write
     /// calls begin to block or return tasks that don't complete until the
     /// buffer size drops below the configured limit.
-    /// Defaults to 65,536 bytes (64 KB).
+    /// Defaults to 65,536 bytes (64 KiB).
     /// </summary>
     /// <remarks>
     /// When set to null, the size of the response buffer is unlimited.
@@ -68,7 +68,7 @@ public class KestrelServerLimits
 
     /// <summary>
     /// Gets or sets the maximum size of the request buffer.
-    /// Defaults to 1,048,576 bytes (1 MB).
+    /// Defaults to 1,048,576 bytes (1 MiB).
     /// </summary>
     /// <remarks>
     /// When set to null, the size of the request buffer is unlimited.
@@ -88,7 +88,7 @@ public class KestrelServerLimits
 
     /// <summary>
     /// Gets or sets the maximum allowed size for the HTTP request line.
-    /// Defaults to 8,192 bytes (8 KB).
+    /// Defaults to 8,192 bytes (8 KiB).
     /// </summary>
     /// <remarks>
     /// For HTTP/2 and HTTP/3 this measures the total size of the required pseudo headers
@@ -109,7 +109,7 @@ public class KestrelServerLimits
 
     /// <summary>
     /// Gets or sets the maximum allowed size for the HTTP request headers.
-    /// Defaults to 32,768 bytes (32 KB).
+    /// Defaults to 32,768 bytes (32 KiB).
     /// </summary>
     /// <remarks>
     /// </remarks>
@@ -150,7 +150,7 @@ public class KestrelServerLimits
     /// When set to null, the maximum request body size is unlimited.
     /// This limit has no effect on upgraded connections which are always unlimited.
     /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
-    /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
+    /// Defaults to 30,000,000 bytes, which is approximately 28.6 MiB.
     /// </summary>
     /// <remarks>
     /// </remarks>
