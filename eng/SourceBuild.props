@@ -74,7 +74,6 @@
           BeforeTargets="GetSourceBuildCommandConfiguration">
 
     <PropertyGroup>
-      <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
       <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
     </PropertyGroup>
   </Target>
@@ -108,9 +107,15 @@
       Command="npm --version"
       WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
 
+    <PropertyGroup>
+      <!-- Disable installing puppeteer browsers when running in source build -->
+      <_AdditionalEnvironmentVariable Condition="$(ArcadeBuildFromSource) == 'true'">PUPPETEER_SKIP_DOWNLOAD=1;npm_config_cache=$(RepoRoot)src/submodules/Node-Externals/cache</_AdditionalEnvironmentVariable>
+    </PropertyGroup>
+
     <Exec
-      Command="npm ci"
-      WorkingDirectory="$(InnerSourceBuildRepoRoot)" />
+      Command="npm ci --offline"
+      WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+      EnvironmentVariables="$(_AdditionalEnvironmentVariable)" />
 
   </Target>
 
