@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 internal static unsafe class XmlEncryptionExtensions
 {
     // Used for testing edge case assembly loading errors
-    internal static Func<string, Type?> _getType = name => Type.GetType(name, throwOnError: false);
+    internal static Func<string, Type?> _getType = GetType;
 
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
@@ -70,7 +70,6 @@ internal static unsafe class XmlEncryptionExtensions
         return doc.Root!;
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
     private static IXmlDecryptor CreateDecryptor(IActivator activator, string decryptorTypeName)
     {
         if (!TryGetDecryptorType(decryptorTypeName, out var type))
@@ -114,6 +113,9 @@ internal static unsafe class XmlEncryptionExtensions
             return false;
         }
     }
+
+    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
+    private static Type? GetType(string typeName) => Type.GetType(typeName, throwOnError: false);
 
     public static XElement? EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)
     {
