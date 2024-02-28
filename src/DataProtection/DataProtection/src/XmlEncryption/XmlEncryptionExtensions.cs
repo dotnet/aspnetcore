@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 internal static unsafe class XmlEncryptionExtensions
 {
     // Used for testing edge case assembly loading errors
-    internal static Func<string, Type> _getType = name => Type.GetType(name, throwOnError: false);
+    internal static Func<string, Type?> _getType = name => Type.GetType(name, throwOnError: false);
 
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
@@ -73,10 +73,10 @@ internal static unsafe class XmlEncryptionExtensions
     [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
     private static IXmlDecryptor CreateDecryptor(IActivator activator, string decryptorTypeName)
     {
-        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
-            ? forwardedTypeName
-            : decryptorTypeName;
-        var type = _getType(resolvedTypeName);
+        if (!TryGetDecryptorType(decryptorTypeName, out var type))
+        {
+            return activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
+        }
 
         if (type == typeof(DpapiNGXmlDecryptor))
         {
@@ -96,6 +96,23 @@ internal static unsafe class XmlEncryptionExtensions
         }
 
         return activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
+    }
+
+    private static bool TryGetDecryptorType(string decryptorTypeName, [NotNullWhen(true)] out Type? type)
+    {
+        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
+            ? forwardedTypeName
+            : decryptorTypeName;
+        try
+        {
+            type = _getType(resolvedTypeName);
+            return type is not null;
+        }
+        catch
+        {
+            type = default;
+            return false;
+        }
     }
 
     public static XElement? EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)
