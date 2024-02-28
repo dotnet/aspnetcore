@@ -438,16 +438,12 @@ public class KeyRingProviderTests
 
         if (expectGeneration)
         {
-            var expectedCallSequenceCount = expectedCallSequence.Count; // Snap count before adding CreateNewKey
             expectedCallSequence.Add("CreateNewKey");
-            // Repeat all the calls that led up to CreateNewKey
-            for (int i = 0; i < expectedCallSequenceCount; i++)
+            // Repeat the initial calls, but not the second resolution
+            for (int i = 0; i < 3; i++)
             {
                 expectedCallSequence.Add(expectedCallSequence[i]);
             }
-
-            // We can't just duplicate the entries from resolveDefaultKeyPolicyReturnValues because
-            // the allKeys argument now includes the generated key
 
             resolveDefaultKeyPolicyReturnValues.Add(
                 Tuple.Create(now, (IEnumerable<IKey>)allKeysAfterGeneration, new DefaultKeyResolution()
@@ -456,16 +452,7 @@ public class KeyRingProviderTests
                     ShouldGenerateNewKey = false // Let the key ring provider decide
                 }));
 
-            if (expectSecondResolution)
-            {
-                resolveDefaultKeyPolicyReturnValues.Add(
-                    Tuple.Create(expiration1, (IEnumerable<IKey>)allKeysAfterGeneration, new DefaultKeyResolution()
-                    {
-                        DefaultKey = key2ValidWhenKey1Expires ? key2 : null,
-                        FallbackKey = key2ValidWhenKey1Expires ? null : key2,
-                        ShouldGenerateNewKey = !key2ValidWhenKey1Expires
-                    }));
-            }
+            // We don't repeat the second resolution because the key ring provider should not need to resolve again
         }
 
         var keyRingProvider = SetupCreateCacheableKeyRingTestAndCreateKeyManager(

@@ -68,6 +68,16 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         var defaultKeyPolicy = _defaultKeyResolver.ResolveDefaultKeyPolicy(now, allKeys);
         var defaultKey = defaultKeyPolicy.DefaultKey;
 
+        // We shouldn't call CreateKey more than once, else we risk stack diving. This code path shouldn't
+        // get hit unless there was an ineligible key with an activation date slightly later than the one we
+        // just added. If this does happen, then we'll just use whatever key we can instead of creating
+        // new keys endlessly, eventually falling back to the one we just added if all else fails.
+        if (keyJustAdded != null)
+        {
+            var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
+        }
+
         // Determine whether we need to generate a new key
         bool shouldGenerateNewKey;
         if (defaultKeyPolicy.ShouldGenerateNewKey || defaultKey == null)
@@ -96,16 +106,6 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         }
 
         _logger.PolicyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing();
-
-        // We shouldn't call CreateKey more than once, else we risk stack diving. This code path shouldn't
-        // get hit unless there was an ineligible key with an activation date slightly later than the one we
-        // just added. If this does happen, then we'll just use whatever key we can instead of creating
-        // new keys endlessly, eventually falling back to the one we just added if all else fails.
-        if (keyJustAdded != null)
-        {
-            var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
-        }
 
         // At this point, we know we need to generate a new key.
 
