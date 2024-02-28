@@ -128,6 +128,9 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             }
         }
 
+        // We're going to generate a new key.  You'd think we could just take for granted what effect
+        // this would have on the final result, but the key resolver is an extension point, so we have
+        // to give it a chance to weigh in - hence the recursive call, triggering re-resolution.
         if (defaultKey == null)
         {
             // The case where there's no default key is the easiest scenario, since it
