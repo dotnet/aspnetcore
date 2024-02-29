@@ -460,7 +460,8 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
             connection.AddLibraryNameSuffix("OC");
         }
         catch (Exception ex)
-        {   // not critical
+        {
+            // not critical
             Debug.WriteLine(ex.Message);
         }
     }

@@ -371,7 +371,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
             connection.AddLibraryNameSuffix("DC");
         }
         catch (Exception ex)
-        {   // not critical
+        {
+            // not critical
             Debug.WriteLine(ex.Message);
         }
     }
