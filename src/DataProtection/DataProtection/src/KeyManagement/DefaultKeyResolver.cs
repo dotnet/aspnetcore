@@ -102,7 +102,7 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
         // propagation period), and we cannot use revoked keys. The fallback key may be expired.
 
         // Note that the two sort orders are opposite: we want the *newest* key that's old enough
-        // or the *oldest* key that's too new.
+        // (to have been propagated) or the *oldest* key that's too new.
 
         // Unlike for the preferred key, we don't choose a fallback key and then reject it if
         // CanCreateAuthenticatedEncryptor is false.  We want to end up with *some* key, so we
