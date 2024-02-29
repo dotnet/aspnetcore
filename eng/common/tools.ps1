@@ -65,6 +65,11 @@ $ErrorActionPreference = 'Stop'
 # Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
 [string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }
 
+# True if the build is a product build
+[bool]$productBuild = if (Test-Path variable:productBuild) { $productBuild } else { $false }
+
+[String[]]$properties = if (Test-Path variable:properties) { $properties } else { @() }
+
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
 }
@@ -850,7 +855,8 @@ function MSBuild-Core() {
     }
 
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null) {
+    # Skip this when the build is a child of the VMR orchestrator build.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$productBuild -and $properties -notlike "*DotNetBuildRepo=true*") {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error

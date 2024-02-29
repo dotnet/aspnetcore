@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Use uname to determine what the OS is.
 OSName=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -54,6 +54,7 @@ case "$CPUName" in
         ;;
 
     armv7l|armv8l)
+        # shellcheck disable=SC1091
         if (NAME=""; . /etc/os-release; test "$NAME" = "Tizen"); then
             arch=armel
         else
