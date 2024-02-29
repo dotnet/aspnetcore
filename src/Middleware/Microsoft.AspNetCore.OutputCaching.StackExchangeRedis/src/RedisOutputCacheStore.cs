@@ -332,7 +332,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
                 IConnectionMultiplexer connection;
                 if (_options.ConnectionMultiplexerFactory is null)
                 {
-                    connection = await ConnectionMultiplexer.ConnectAsync(_options.GetConfiguredOptions("asp.net OC")).ConfigureAwait(false);
+                    connection = await ConnectionMultiplexer.ConnectAsync(_options.GetConfiguredOptions()).ConfigureAwait(false);
                 }
                 else
                 {
@@ -415,6 +415,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         WriteTimeTicks(ref _lastConnectTicks, DateTimeOffset.UtcNow);
         ValidateServerFeatures(connection);
         TryRegisterProfiler(connection);
+        TryAddSuffix(connection);
     }
 
     private void ValidateServerFeatures(IConnectionMultiplexer connection)
@@ -448,6 +449,19 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         if (_options.ProfilingSession is not null)
         {
             connection.RegisterProfiler(_options.ProfilingSession);
+        }
+    }
+
+    private void TryAddSuffix(IConnectionMultiplexer connection)
+    {
+        try
+        {
+            connection.AddLibraryNameSuffix("aspnet");
+            connection.AddLibraryNameSuffix("OC");
+        }
+        catch (Exception ex)
+        {
+            UnableToAddLibraryNameSuffix(_logger, ex);
         }
     }
 
