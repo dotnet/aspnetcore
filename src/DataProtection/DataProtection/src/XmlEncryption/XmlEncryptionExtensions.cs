@@ -104,6 +104,9 @@ internal static unsafe class XmlEncryptionExtensions
             : decryptorTypeName;
         try
         {
+            // Some exceptions are thrown regardless of the value of throwOnError.
+            // For example, if the type is found but cannot be loaded,
+            // a System.TypeLoadException is thrown even if throwOnError is false.
             type = _getType(resolvedTypeName);
             return type is not null;
         }
