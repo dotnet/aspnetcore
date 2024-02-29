@@ -452,7 +452,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         }
     }
 
-    private static void TryAddSuffix(IConnectionMultiplexer connection)
+    private void TryAddSuffix(IConnectionMultiplexer connection)
     {
         try
         {
@@ -461,8 +461,7 @@ internal partial class RedisOutputCacheStore : IOutputCacheStore, IOutputCacheBu
         }
         catch (Exception ex)
         {
-            // not critical
-            Debug.WriteLine(ex.Message);
+            UnableToAddLibraryNameSuffix(_logger, ex);
         }
     }
 

@@ -363,7 +363,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
     }
 
-    private static void TryAddSuffix(IConnectionMultiplexer connection)
+    private void TryAddSuffix(IConnectionMultiplexer connection)
     {
         try
         {
@@ -372,8 +372,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
         catch (Exception ex)
         {
-            // not critical
-            Debug.WriteLine(ex.Message);
+            Log.UnableToAddLibraryNameSuffix(_logger, ex);;
         }
     }
 
