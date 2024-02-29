@@ -91,4 +91,10 @@ internal static class Error
         var message = string.Format(CultureInfo.CurrentCulture, Resources.XmlKeyManager_DuplicateKey, keyId);
         return new InvalidOperationException(message);
     }
+
+    public static InvalidOperationException KeyRingProvider_DefaultKeyRevoked(Guid id)
+    {
+        var message = string.Format(CultureInfo.CurrentCulture, Resources.KeyRingProvider_DefaultKeyRevoked, id);
+        return new InvalidOperationException(message);
+    }
 }
