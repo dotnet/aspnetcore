@@ -37,7 +37,8 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         for (var i = 0; i < acceptHeader.Count; i++)
         {
             var acceptHeaderValue = acceptHeader[i];
-            // One of the media types needs to be checked if it's a subset of the accepted header value
+            // Check to see if the Accepted header values support `application/json` or `application/problem+json`
+            // with  support for argument parameters. Support handling `*/*` and `application/*` as Accepts header values.
             // Application/json is a subset of */* but */* is not a subset of application/json
             if (acceptHeaderValue.IsSubsetOf(_jsonMediaType) || acceptHeaderValue.IsSubsetOf(_problemDetailsJsonMediaType) || _jsonMediaType.IsSubsetOf(acceptHeaderValue))
             {
