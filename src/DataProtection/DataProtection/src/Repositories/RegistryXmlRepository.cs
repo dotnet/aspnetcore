@@ -155,4 +155,63 @@ public class RegistryXmlRepository : IXmlRepository
         // but the window for that should be small enough that we shouldn't have to worry about it.
         RegistryKey.SetValue(valueName, element.ToString(), RegistryValueKind.String);
     }
+
+    /// <inheritdoc/>
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc/>
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
+
+        var deletableElements = new List<DeletableElement>();
+
+        foreach (var valueName in RegistryKey.GetValueNames())
+        {
+            var element = ReadElementFromRegKey(RegistryKey, valueName);
+            if (element is not null)
+            {
+                deletableElements.Add(new DeletableElement(valueName, element));
+            }
+        }
+
+        chooseElements(deletableElements);
+
+        var allSucceeded = true;
+
+        foreach (var deletableElement in deletableElements)
+        {
+            if (deletableElement.ShouldDelete)
+            {
+                var valueName = deletableElement.ValueName;
+                _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
+                try
+                {
+                    RegistryKey.DeleteValue(valueName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                    allSucceeded = false;
+                }
+            }
+        }
+
+        return allSucceeded;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(string valueName, XElement element)
+        {
+            ValueName = valueName;
+            Element = element;
+        }
+
+        public XElement Element { get; }
+
+        public string ValueName { get; }
+
+        public bool ShouldDelete { get; set; }
+    }
 }

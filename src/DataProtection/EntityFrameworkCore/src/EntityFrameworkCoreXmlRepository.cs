@@ -79,4 +79,74 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
             context.SaveChanges();
         }
     }
+
+    /// <inheritdoc />
+    public virtual bool CanRemoveElements => true;
+
+    /// <inheritdoc />
+    public virtual bool RemoveElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        using (var scope = _services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<TContext>();
+            var deletableElements = new List<DeletableElement>();
+
+            foreach (var key in context.DataProtectionKeys.AsNoTracking())
+            {
+                if (!string.IsNullOrEmpty(key.Xml))
+                {
+                    deletableElements.Add(new DeletableElement(key, XElement.Parse(key.Xml)));
+                }
+            }
+
+            chooseElements(deletableElements);
+
+            var allSucceeded = true;
+
+            foreach (var deletableElement in deletableElements)
+            {
+                if (deletableElement.ShouldDelete)
+                {
+                    var key = deletableElement.Key;
+                    _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
+                    try
+                    {
+                        context.DataProtectionKeys.Remove(key);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
+                        allSucceeded = false;
+                    }
+                }
+            }
+
+            try
+            {
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                _logger.FailedToSaveKeyDeletionsToDbContext(typeof(TContext).Name, ex);
+                allSucceeded = false;
+            }
+
+            return allSucceeded;
+        }
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(DataProtectionKey key, XElement element)
+        {
+            Key = key;
+            Element = element;
+        }
+
+        public XElement Element { get; }
+
+        public DataProtectionKey Key { get; }
+
+        public bool ShouldDelete { get; set; }
+    }
 }
