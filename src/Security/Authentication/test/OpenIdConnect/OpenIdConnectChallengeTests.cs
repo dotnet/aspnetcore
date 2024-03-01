@@ -670,4 +670,25 @@ public class OpenIdConnectChallengeTests
         settings.ValidateChallengeRedirect(res.Headers.Location);
         Assert.Contains("max_age=1234", res.Headers.Location.Query);
     }
+
+    [Fact]
+    public async Task Challenge_WithAdditionalAuthorizationParameters()
+    {
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.Authority = TestServerBuilder.DefaultAuthority;
+            opt.AdditionalAuthorizationParameters.Add("prompt", "login");
+            opt.AdditionalAuthorizationParameters.Add("audience", "https://api.example.com");
+        });
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        settings.ValidateChallengeRedirect(res.Headers.Location);
+        Assert.Contains("prompt=login&audience=https%3A%2F%2Fapi.example.com", res.Headers.Location.Query);
+    }
 }

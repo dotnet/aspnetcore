@@ -303,12 +303,12 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         var scope = scopeParameter != null ? FormatScope(scopeParameter) : FormatScope();
 
         var parameters = new Dictionary<string, string>
-            {
-                { "client_id", Options.ClientId },
-                { "scope", scope },
-                { "response_type", "code" },
-                { "redirect_uri", redirectUri },
-            };
+        {
+            { "client_id", Options.ClientId },
+            { "scope", scope },
+            { "response_type", "code" },
+            { "redirect_uri", redirectUri },
+        };
 
         if (Options.UsePkce)
         {
@@ -327,6 +327,11 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         }
 
         parameters["state"] = Options.StateDataFormat.Protect(properties);
+
+        foreach (var additionalParameter in Options.AdditionalAuthorizationParameters)
+        {
+            parameters.Add(additionalParameter.Key, additionalParameter.Value);
+        }
 
         return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters!);
     }

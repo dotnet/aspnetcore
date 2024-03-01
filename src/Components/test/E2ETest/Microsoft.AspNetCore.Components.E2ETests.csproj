@@ -51,6 +51,7 @@
     <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp.Server\ThreadingApp.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
