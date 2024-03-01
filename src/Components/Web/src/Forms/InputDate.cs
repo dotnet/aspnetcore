@@ -89,7 +89,7 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
         builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
         builder.AddAttribute(4, "class", CssClass);
         builder.AddAttribute(5, "value", CurrentValueAsString);
-        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, SetCurrentValueAsStringAsync, CurrentValueAsString));
         builder.SetUpdatesAttributeName("value");
         builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
         builder.CloseElement();

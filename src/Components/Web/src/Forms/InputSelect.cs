@@ -47,13 +47,13 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         if (_isMultipleSelect)
         {
             builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
-            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArray, default));
+            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArrayAsync, default));
             builder.SetUpdatesAttributeName("value");
         }
         else
         {
             builder.AddAttribute(7, "value", CurrentValueAsString);
-            builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
+            builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string?>(this, SetCurrentValueAsStringAsync, default));
             builder.SetUpdatesAttributeName("value");
         }
 
@@ -82,10 +82,10 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         return base.FormatValueAsString(value);
     }
 
-    private void SetCurrentValueAsStringArray(string?[]? value)
+    private Task SetCurrentValueAsStringArrayAsync(string?[]? value)
     {
-        CurrentValue = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var result)
+        return SetCurrentValueAsync(BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var result)
             ? result
-            : default;
+            : default);
     }
 }

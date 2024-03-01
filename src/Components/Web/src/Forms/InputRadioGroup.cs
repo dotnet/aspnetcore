@@ -35,7 +35,7 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         // On the first render, we can instantiate the InputRadioContext
         if (_context is null)
         {
-            var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
+            var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, SetCurrentValueAsStringAsync, CurrentValueAsString);
             _context = new InputRadioContext(this, CascadedContext, changeEventCallback);
         }
         else if (_context.ParentContext != CascadedContext)
