@@ -26,7 +26,7 @@ jobs:
         # Test this script using changes in a fork
         repository: 'dotnet/aspnetcore'
         path: aspnetcore
-        ref: main
+        ref: FixRuntimeSync
     - name: Checkout runtime
       uses: actions/checkout@v4
       with:
