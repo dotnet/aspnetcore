@@ -13,6 +13,7 @@
       <_SpaProxyServerLaunchConfigLines Include="    &quot;LaunchCommand&quot;: &quot;$(SpaProxyLaunchCommand)&quot;," />
       <_SpaProxyServerLaunchConfigLines Include="    &quot;WorkingDirectory&quot;: &quot;$(_SpaRootFullPath)&quot;," />
       <_SpaProxyServerLaunchConfigLines Include="    &quot;MaxTimeoutInSeconds&quot;: &quot;$(SpaProxyTimeoutInSeconds)&quot;" />
+      <_SpaProxyServerLaunchConfigLines Include="    &quot;WindowStyle&quot;: &quot;$(SpaProxyWindowStyle)&quot;" />
       <_SpaProxyServerLaunchConfigLines Include="  }" />
       <_SpaProxyServerLaunchConfigLines Include="}" />
     </ItemGroup>

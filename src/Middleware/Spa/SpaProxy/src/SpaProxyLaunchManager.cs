@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.SpaProxy
                     // run the proxy manually.
                     CreateNoWindow = false,
                     UseShellExecute = true,
-                    WindowStyle = ProcessWindowStyle.Normal,
+                    WindowStyle = GetWindowStyle(_options.WindowStyle).GetValueOrDefault(ProcessWindowStyle.Normal),
                     WorkingDirectory = Path.Combine(AppContext.BaseDirectory, _options.WorkingDirectory)
                 };
                 _spaProcess = Process.Start(info);
@@ -344,6 +344,18 @@ rm {scriptPath};
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        private static ProcessWindowStyle? GetWindowStyle(string configuredStyle)
+        {
+            if (string.IsNullOrEmpty(configuredStyle))
+            {
+                return null;
+            }
+
+            return Enum.TryParse<ProcessWindowStyle>(configuredStyle, true, out var style)
+                ? style
+                : null;
         }
     }
 }
