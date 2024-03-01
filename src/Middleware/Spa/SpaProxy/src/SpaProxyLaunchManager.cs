@@ -71,21 +71,7 @@ namespace Microsoft.AspNetCore.SpaProxy
         {
             var httpClient = CreateHttpClient();
 
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
-            try
-            {
-                var response = await httpClient.GetAsync(_options.ServerUrl, cancellationTokenSource.Token);
-                var running = response.IsSuccessStatusCode;
-                return running;
-            }
-            catch (Exception exception) when (exception is HttpRequestException ||
-                  exception is TaskCanceledException ||
-                  exception is OperationCanceledException)
-            {
-                _logger.LogDebug(exception, "Failed to connect to the SPA Development proxy.");
-                return false;
-            }
+            return await ProbeSpaDevelopmentServerUrl(httpClient, cancellationToken);
         }
 
         private static HttpClient CreateHttpClient()
