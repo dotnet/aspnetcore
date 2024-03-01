@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<ErrorBoundary>
+	<ErrorContent>
+		<span id="errorcontent">ErrorContent</span>
+	</ErrorContent>
+	<ChildContent>
+		<EditForm Model="_model">
+			<InputText id="inputtext" @bind-Value:get="_model.Text" @bind-Value:set="HandleTextValueChanged" />
+			<InputTextArea id="inputtextarea" @bind-Value:get="_model.Text" @bind-Value:set="HandleTextValueChanged" />
+			<InputCheckbox id="inputcheckbox" @bind-Value:get="_model.Bool" @bind-Value:set="HandleBoolValueChanged" />
+			<InputDate id="inputdate" @bind-Value:get="_model.Date" @bind-Value:set="HandleDateValueChanged" />
+			<InputNumber id="inputnumber" @bind-Value:get="_model.Number" @bind-Value:set="HandleNumberValueChanged" />
+			<InputRadioGroup @bind-Value:get="@_model.DayOfWeek" @bind-Value:set="HandleDayOfWeekValueChanged">
+				<InputRadio Value="@DayOfWeek.Monday" id="inputradiogroup-monday" />
+				<InputRadio Value="@DayOfWeek.Tuesday" id="inputradiogroup-tuesday" />
+				<InputRadio Value="@DayOfWeek.Wednesday" id="inputradiogroup-wednesday" />
+			</InputRadioGroup>
+			<InputSelect id="inputselect" @bind-Value:get="@_model.DayOfWeek" @bind-Value:set="HandleDayOfWeekValueChanged">
+				<option value="@DayOfWeek.Monday">Monday</option>
+				<option value="@DayOfWeek.Tuesday">Tuesday</option>
+				<option value="@DayOfWeek.Wednesday">Wednesday</option>
+			</InputSelect>
+			<InputSelect id="inputselectmultiple" @bind-Value:get="@_model.DayOfWeekArray" @bind-Value:set="HandleDayOfWeekArrayValueChanged">
+				<option value="@DayOfWeek.Monday">Monday</option>
+				<option value="@DayOfWeek.Tuesday">Tuesday</option>
+				<option value="@DayOfWeek.Wednesday">Wednesday</option>
+			</InputSelect>
+		</EditForm>
+	</ChildContent>
+</ErrorBoundary>
+
+@code {
+	private Model _model = new();
+
+	private void HandleTextValueChanged(string value) => throw new Exception("This is a test exception");
+	private void HandleBoolValueChanged(bool value) => throw new Exception("This is a test exception");
+	private void HandleDateValueChanged(DateTime value) => throw new Exception("This is a test exception");
+	private void HandleNumberValueChanged(int value) => throw new Exception("This is a test exception");
+	private void HandleDayOfWeekValueChanged(DayOfWeek value) => throw new Exception("This is a test exception");
+	private void HandleDayOfWeekArrayValueChanged(DayOfWeek[] value) => throw new Exception("This is a test exception");
+
+	private class Model
+	{
+		public string Text { get; set; }
+		public bool Bool { get; set; }
+		public DateTime Date { get; set; }
+		public int Number { get; set; }
+		public DayOfWeek DayOfWeek { get; set; }
+		public DayOfWeek[] DayOfWeekArray { get; set; } = Array.Empty<DayOfWeek>();
+	}
+}
