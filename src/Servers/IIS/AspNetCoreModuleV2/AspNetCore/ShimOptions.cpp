@@ -58,7 +58,7 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     auto shutdownDelay = find_element(handlerSettings, CS_ASPNETCORE_SHUTDOWN_DELAY).value_or(std::wstring());
     if (shutdownDelay.empty())
     {
-        m_fShutdownDelay = std::chrono::seconds(1);
+        m_fShutdownDelay = std::chrono::seconds(0);
     }
     else
     {

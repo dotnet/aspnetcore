@@ -125,14 +125,25 @@ HRESULT
                                   moduleFactory.release(),
                                   RQ_EXECUTE_REQUEST_HANDLER,
                                   0));
-;
+
+    auto delay = applicationManager->GetShutdownDelay();
     auto pGlobalModule = std::make_unique<ASPNET_CORE_GLOBAL_MODULE>(std::move(applicationManager));
 
-    RETURN_IF_FAILED(pModuleInfo->SetGlobalNotifications(
-                                     pGlobalModule.release(),
-                                     GL_CONFIGURATION_CHANGE | // Configuration change triggers IIS application stop
-                                     GL_STOP_LISTENING | // worker process stop
-                                     GL_APPLICATION_STOP)); // app pool recycle
+    if (delay == std::chrono::milliseconds::zero())
+    {
+        RETURN_IF_FAILED(pModuleInfo->SetGlobalNotifications(
+            pGlobalModule.release(),
+            GL_CONFIGURATION_CHANGE | // Configuration change triggers IIS application stop
+            GL_STOP_LISTENING)); // worker process stop
+    }
+    else
+    {
+        RETURN_IF_FAILED(pModuleInfo->SetGlobalNotifications(
+            pGlobalModule.release(),
+            GL_CONFIGURATION_CHANGE | // Configuration change triggers IIS application stop
+            GL_STOP_LISTENING | // worker process stop
+            GL_APPLICATION_STOP)); // app pool recycle
+    }
 
     return S_OK;
 }
