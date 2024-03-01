@@ -23,7 +23,7 @@ public class InputNumberTest
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
-        await inputComponent.SetCurrentValueAsStringAsync("notANumber");
+        await inputComponent.InvokeCurrentValueAsStringSetterAsync("notANumber");
 
         // Assert
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
@@ -56,7 +56,7 @@ public class InputNumberTest
 
     private class TestInputNumberComponent : InputNumber<int>
     {
-        public async Task SetCurrentValueAsStringAsync(string value)
+        public async Task InvokeCurrentValueAsStringSetterAsync(string value)
         {
             // This is equivalent to the subclass writing to CurrentValueAsString
             // (e.g., from @bind), except to simplify the test code there's an InvokeAsync

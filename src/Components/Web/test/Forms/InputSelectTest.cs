@@ -181,7 +181,7 @@ public class InputSelectTest
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Act
-        await inputSelectComponent.SetCurrentValueAsStringAsync("invalidNumber");
+        await inputSelectComponent.InvokeCurrentValueAsStringSetterAsync("invalidNumber");
 
         // Assert
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
@@ -239,7 +239,7 @@ public class InputSelectTest
             get => base.CurrentValueAsString;
             set => base.CurrentValueAsString = value;
         }
-        public async Task SetCurrentValueAsStringAsync(string value)
+        public async Task InvokeCurrentValueAsStringSetterAsync(string value)
         {
             // This is equivalent to the subclass writing to CurrentValueAsString
             // (e.g., from @bind), except to simplify the test code there's an InvokeAsync
