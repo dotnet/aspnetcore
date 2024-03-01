@@ -6,7 +6,7 @@
 extern BOOL         g_fInShutdown;
 
 ASPNET_CORE_GLOBAL_MODULE::ASPNET_CORE_GLOBAL_MODULE(std::shared_ptr<APPLICATION_MANAGER> pApplicationManager) noexcept
-    :m_pApplicationManager(std::move(pApplicationManager))
+    : m_pApplicationManager(std::move(pApplicationManager))
 {
 }
 
