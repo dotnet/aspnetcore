@@ -145,6 +145,30 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         private void LaunchDevelopmentProxy()
         {
+            var strategy = GetStartStrategy(_options.StartStrategy).GetValueOrDefault(SpaDevelopmentServerStartStrategy.ReLaunch);
+
+            if (_spaProcess != null)
+            {
+                switch (strategy)
+                {
+                    case SpaDevelopmentServerStartStrategy.Restart:
+                        // The back-end process is already running, kill it before continuing to prevent the process from being orphaned.
+                        _logger.LogInformation($"SPA development server isn't available, killing existing process and starting another");
+                        _spaProcess.Kill();
+                        _spaProcess.WaitForExit();
+                        break;
+                    case SpaDevelopmentServerStartStrategy.Wait:
+                        // The back-end process is already running, it may be taking longer than normal - lets wait for it
+                        _logger.LogInformation($"SPA development server isn't available, waiting for process to respond");
+                        return;
+                    case SpaDevelopmentServerStartStrategy.ReLaunch:
+                        // The back-end process is already running, it may have halted, or something else gone wrong
+                        // Lets launch a new process and leave this one running
+                        _logger.LogWarning($"SPA development server isn't available, will launch a new process. Existing process will need to be terminated manually, PID: {_spaProcess.Id}");
+                        break;
+                }
+            }
+
             try
             {
                 // Launch command is going to be something like `npm/yarn <<verb>> <<options>>`
@@ -354,6 +378,18 @@ rm {scriptPath};
             }
 
             return Enum.TryParse<ProcessWindowStyle>(configuredStyle, true, out var style)
+                ? style
+                : null;
+        }
+
+        private static SpaDevelopmentServerStartStrategy? GetStartStrategy(string configuredStrategy)
+        {
+            if (string.IsNullOrEmpty(configuredStrategy))
+            {
+                return null;
+            }
+
+            return Enum.TryParse<SpaDevelopmentServerStartStrategy>(configuredStrategy, true, out var style)
                 ? style
                 : null;
         }

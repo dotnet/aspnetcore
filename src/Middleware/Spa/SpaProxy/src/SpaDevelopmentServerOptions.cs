@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.SpaProxy
 
         public string WorkingDirectory { get; set; } = "";
 
+        public string StartStrategy { get; set; } = "";
+
         public string WindowStyle { get; set; } = "";
     }
 }
