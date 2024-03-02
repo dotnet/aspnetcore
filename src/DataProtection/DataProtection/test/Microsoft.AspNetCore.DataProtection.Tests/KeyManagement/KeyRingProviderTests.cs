@@ -71,11 +71,16 @@ public class KeyRingProviderTests
             createNewKeyCallbacks: null,
             resolveDefaultKeyPolicyReturnValues: new[]
             {
-                        Tuple.Create((DateTimeOffset)now, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
-                        {
-                            DefaultKey = key1,
-                            ShouldGenerateNewKey = false
-                        })
+                Tuple.Create((DateTimeOffset)now, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+                {
+                    DefaultKey = key1,
+                    ShouldGenerateNewKey = false
+                }),
+                Tuple.Create(key1.ExpirationDate, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+                {
+                    DefaultKey = key2,
+                    ShouldGenerateNewKey = false
+                }),
             });
 
         // Act
@@ -87,7 +92,7 @@ public class KeyRingProviderTests
         Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now));
         expirationCts.Cancel();
         Assert.False(CacheableKeyRing.IsValid(cacheableKeyRing, now));
-        Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
+        Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy", "ResolveDefaultKeyPolicy" }, callSequence);
     }
 
     [Fact]
@@ -346,6 +351,181 @@ public class KeyRingProviderTests
         expirationCts.Cancel();
         Assert.False(CacheableKeyRing.IsValid(cacheableKeyRing, now));
         Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
+    }
+
+    // The interesting time offsets are:
+    //   0. now
+    //   1. 24 hours from now, after a single refresh period
+    //   2. 48 hours from now, after a single propagation cycle
+    //   3. 72 hours from now, after a single refresh period and a single propagation cycle
+    // Therefore, we test at:
+    //   A. 12 hours from now, between (0) and (1)
+    //   B. 36 hours from now, between (1) and (2)
+    //   C. 60 hours from now, between (2) and (3)
+    //   D. 84 hours from now, after (3)
+    [Theory]
+    [InlineData(12, 12, true, true)]
+    [InlineData(12, 36, true, true)]
+    [InlineData(12, 60, true, true)]
+    [InlineData(12, 84, true, false)]
+    [InlineData(36, 12, true, true)]
+    [InlineData(36, 36, true, true)]
+    [InlineData(36, 60, true, true)]
+    [InlineData(36, 84, true, false)]
+    [InlineData(60, 12, true, true)]
+    [InlineData(60, 36, true, true)]
+    [InlineData(60, 60, true, true)]
+    [InlineData(60, 84, true, false)]
+    [InlineData(84, 12, false, false)]
+    [InlineData(84, 36, false, false)]
+    [InlineData(84, 60, false, false)]
+    [InlineData(84, 84, false, false)]
+    public void CreateCacheableKeyRing_UnactivatedKeyAvailable(int hoursToExpiration1, int hoursToExpiration2, bool expectSecondResolution, bool expectGeneration)
+    {
+        // Arrange
+        var actualCallSequence = new List<string>();
+
+        DateTimeOffset now = StringToDateTime("2016-02-01 00:00:00Z");
+
+        // Key1 is active, but Key2 is not
+        DateTimeOffset activation1 = now - TimeSpan.FromHours(1);
+        DateTimeOffset activation2 = now + TimeSpan.FromHours(1);
+
+        DateTimeOffset expiration1 = now + TimeSpan.FromHours(hoursToExpiration1);
+        DateTimeOffset expiration2 = now + TimeSpan.FromHours(hoursToExpiration2);
+
+        // Some basic timeline constraints - if these fail, it's a test issue
+        Assert.True(activation1 < now); // Key1 is active
+        Assert.True(now < activation2); // Key2 is not yet active
+        Assert.True(now < expiration1); // Key1 is not expired (also implies activation1 < expiration1)
+        Assert.True(activation2 < expiration2); // Key2 is not well-formed (also implies Key2 is unexpired, now < expiration2)
+        Assert.True(activation2 < expiration1); // Key1 and Key2 have overlapping activation periods - the alternative is covered in other tests
+        // Specifically do not require that expiration1 < expiration2
+
+        var key1 = CreateKey(activation1, expiration1);
+        var key2 = CreateKey(activation2, expiration2);
+
+        var generatedKey = CreateKey(expiration1, now + TimeSpan.FromDays(90));
+
+        var key2ValidWhenKey1Expires = expiration1 < expiration2;
+
+        var allKeys = new[] { key1, key2 };
+        var allKeysAfterGeneration = new[] { key1, key2, generatedKey };
+
+        var expectedCallSequence = new List<string> { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" };
+
+        var resolveDefaultKeyPolicyReturnValues = new List<Tuple<DateTimeOffset, IEnumerable<IKey>, DefaultKeyResolution>>()
+        {
+            Tuple.Create(now, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+            {
+                DefaultKey = key1,
+                ShouldGenerateNewKey = false // Let the key ring provider decide
+            }),
+        };
+
+        if (expectSecondResolution)
+        {
+            expectedCallSequence.Add("ResolveDefaultKeyPolicy");
+
+            resolveDefaultKeyPolicyReturnValues.Add(
+                Tuple.Create(expiration1, (IEnumerable<IKey>)allKeys, new DefaultKeyResolution()
+                {
+                    DefaultKey = key2ValidWhenKey1Expires ? key2 : null,
+                    FallbackKey = key2ValidWhenKey1Expires ? null : key2,
+                    ShouldGenerateNewKey = !key2ValidWhenKey1Expires
+                }));
+        }
+
+        if (expectGeneration)
+        {
+            expectedCallSequence.Add("CreateNewKey");
+            // Repeat the initial calls, but not the second resolution
+            for (int i = 0; i < 3; i++)
+            {
+                expectedCallSequence.Add(expectedCallSequence[i]);
+            }
+
+            resolveDefaultKeyPolicyReturnValues.Add(
+                Tuple.Create(now, (IEnumerable<IKey>)allKeysAfterGeneration, new DefaultKeyResolution()
+                {
+                    DefaultKey = key1,
+                    ShouldGenerateNewKey = false // Let the key ring provider decide
+                }));
+
+            // We don't repeat the second resolution because the key ring provider should not need to resolve again
+        }
+
+        var keyRingProvider = SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+            callSequence: actualCallSequence,
+            getCacheExpirationTokenReturnValues: new[] { CancellationToken.None, CancellationToken.None },
+            getAllKeysReturnValues: new[] { allKeys, allKeysAfterGeneration },
+            createNewKeyCallbacks: new[] {
+                Tuple.Create(expiration1, now + TimeSpan.FromDays(90), CreateKey())
+            },
+            resolveDefaultKeyPolicyReturnValues: resolveDefaultKeyPolicyReturnValues);
+
+        // Act
+        var cacheableKeyRing = keyRingProvider.GetCacheableKeyRing(now);
+
+        // Assert
+        Assert.Equal(key1.KeyId, cacheableKeyRing.KeyRing.DefaultKeyId);
+        Assert.Equal(expectedCallSequence, actualCallSequence);
+    }
+
+    [Fact]
+    public void CreateCacheableKeyRing_ForceKeyGeneration()
+    {
+        // Arrange
+        var actualCallSequence = new List<string>();
+
+        DateTimeOffset now = StringToDateTime("2016-02-01 00:00:00Z");
+
+        // Key is activate and not close to expiration
+        DateTimeOffset activation = now - TimeSpan.FromDays(30);
+        DateTimeOffset expiration = now + TimeSpan.FromDays(30);
+
+        var key = CreateKey(activation, expiration);
+        var generatedKey = CreateKey(expiration, now + TimeSpan.FromDays(90));
+
+        var allKeysBefore = new[] { key };
+        var allKeysAfter = new[] { key, generatedKey };
+
+        var keyRingProvider = SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+            callSequence: actualCallSequence,
+            getCacheExpirationTokenReturnValues: new[] { CancellationToken.None, CancellationToken.None },
+            getAllKeysReturnValues: new[] { allKeysBefore, allKeysAfter },
+            createNewKeyCallbacks: new[] {
+                Tuple.Create(expiration, now + TimeSpan.FromDays(90), generatedKey)
+            },
+            resolveDefaultKeyPolicyReturnValues: new[] {
+                Tuple.Create(now, (IEnumerable<IKey>)allKeysBefore, new DefaultKeyResolution()
+                {
+                    DefaultKey = key,
+                    ShouldGenerateNewKey = true, // Force re-generation
+                }),
+                Tuple.Create(now, (IEnumerable<IKey>)allKeysAfter, new DefaultKeyResolution()
+                {
+                    DefaultKey = key,
+                    ShouldGenerateNewKey = true, // Force re-generation
+                }),
+            });
+
+        // Act
+        var cacheableKeyRing = keyRingProvider.GetCacheableKeyRing(now);
+
+        // Assert
+        Assert.Equal(key.KeyId, cacheableKeyRing.KeyRing.DefaultKeyId);
+        string[] expectedCallSequence =
+        [
+            "GetCacheExpirationToken",
+            "GetAllKeys",
+            "ResolveDefaultKeyPolicy",
+            "CreateNewKey",
+            "GetCacheExpirationToken",
+            "GetAllKeys",
+            "ResolveDefaultKeyPolicy",
+        ];
+        Assert.Equal(expectedCallSequence, actualCallSequence);
     }
 
     [Fact]
@@ -613,10 +793,11 @@ public class KeyRingProviderTests
             .Returns<DateTimeOffset, IEnumerable<IKey>>((now, allKeys) =>
             {
                 callSequence.Add("ResolveDefaultKeyPolicy");
-                resolveDefaultKeyPolicyReturnValuesEnumerator.MoveNext();
-                Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item1, now);
-                Assert.Equal(resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item2, allKeys);
-                return resolveDefaultKeyPolicyReturnValuesEnumerator.Current.Item3;
+                Assert.True(resolveDefaultKeyPolicyReturnValuesEnumerator.MoveNext());
+                var current = resolveDefaultKeyPolicyReturnValuesEnumerator.Current;
+                Assert.Equal(current.Item1, now);
+                Assert.Equal(current.Item2, allKeys);
+                return current.Item3;
             });
 
         return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
@@ -674,10 +855,18 @@ public class KeyRingProviderTests
 
     private static IKey CreateKey(string activationDate, string expirationDate, bool isRevoked = false)
     {
+        return CreateKey(
+            DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture),
+            DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture),
+            isRevoked);
+    }
+
+    private static IKey CreateKey(DateTimeOffset activationDate, DateTimeOffset expirationDate, bool isRevoked = false)
+    {
         var mockKey = new Mock<IKey>();
         mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
-        mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
-        mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
+        mockKey.Setup(o => o.ActivationDate).Returns(activationDate);
+        mockKey.Setup(o => o.ExpirationDate).Returns(expirationDate);
         mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
         mockKey.Setup(o => o.Descriptor).Returns(new Mock<IAuthenticatedEncryptorDescriptor>().Object);
         mockKey.Setup(o => o.CreateEncryptor()).Returns(new Mock<IAuthenticatedEncryptor>().Object);

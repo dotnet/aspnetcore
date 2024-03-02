@@ -5,6 +5,8 @@ parameters:
   HelixBuild: $(Build.BuildNumber)       # required -- the build number Helix will use to identify this -- automatically set to the AzDO build number
   HelixTargetQueues: ''                  # required -- semicolon-delimited list of Helix queues to test on; see https://helix.dot.net/ for a list of queues
   HelixAccessToken: ''                   # required -- access token to make Helix API requests; should be provided by the appropriate variable group
+  HelixProjectPath: 'eng/common/helixpublish.proj'  # optional -- path to the project file to build relative to BUILD_SOURCESDIRECTORY
+  HelixProjectArguments: ''              # optional -- arguments passed to the build command
   HelixConfiguration: ''                 # optional -- additional property attached to a job
   HelixPreCommands: ''                   # optional -- commands to run before Helix work item execution
   HelixPostCommands: ''                  # optional -- commands to run after Helix work item execution
@@ -29,7 +31,7 @@ parameters:
   continueOnError: false                 # optional -- determines whether to continue the build if the step errors; defaults to false
 
 steps:
-  - powershell: 'powershell "$env:BUILD_SOURCESDIRECTORY\eng\common\msbuild.ps1 $env:BUILD_SOURCESDIRECTORY\eng\common\helixpublish.proj /restore /p:TreatWarningsAsErrors=false /t:Test /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\log\$env:BuildConfig\SendToHelix.binlog"'
+  - powershell: 'powershell "$env:BUILD_SOURCESDIRECTORY\eng\common\msbuild.ps1 $env:BUILD_SOURCESDIRECTORY/${{ parameters.HelixProjectPath }} /restore /p:TreatWarningsAsErrors=false ${{ parameters.HelixProjectArguments }} /t:Test /bl:$env:BUILD_SOURCESDIRECTORY\artifacts\log\$env:BuildConfig\SendToHelix.binlog"'
     displayName: ${{ parameters.DisplayNamePrefix }} (Windows)
     env:
       BuildConfig: $(_BuildConfig)
@@ -59,7 +61,7 @@ steps:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: and(${{ parameters.condition }}, eq(variables['Agent.Os'], 'Windows_NT'))
     continueOnError: ${{ parameters.continueOnError }}
-  - script: $BUILD_SOURCESDIRECTORY/eng/common/msbuild.sh $BUILD_SOURCESDIRECTORY/eng/common/helixpublish.proj /restore /p:TreatWarningsAsErrors=false /t:Test /bl:$BUILD_SOURCESDIRECTORY/artifacts/log/$BuildConfig/SendToHelix.binlog
+  - script: $BUILD_SOURCESDIRECTORY/eng/common/msbuild.sh $BUILD_SOURCESDIRECTORY/${{ parameters.HelixProjectPath }} /restore /p:TreatWarningsAsErrors=false ${{ parameters.HelixProjectArguments }} /t:Test /bl:$BUILD_SOURCESDIRECTORY/artifacts/log/$BuildConfig/SendToHelix.binlog
     displayName: ${{ parameters.DisplayNamePrefix }} (Unix)
     env:
       BuildConfig: $(_BuildConfig)

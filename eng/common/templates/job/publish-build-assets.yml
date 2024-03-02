@@ -58,7 +58,7 @@ jobs:
       demands: Cmd
     # If it's not devdiv, it's dnceng
     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
-      name: $(DncEngInternalBuildPool)
+      name: NetCore1ESPool-Publishing-Internal
       demands: ImageOverride -equals windows.vs2019.amd64
 
   steps:
@@ -66,7 +66,7 @@ jobs:
     - checkout: self
       fetchDepth: 3
       clean: true
-      
+
     - task: DownloadBuildArtifacts@0
       displayName: Download artifact
       inputs:
@@ -75,7 +75,7 @@ jobs:
         checkDownloadedFiles: true
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: NuGetAuthenticate@1
 
     - task: PowerShell@2
@@ -90,7 +90,7 @@ jobs:
           /p:OfficialBuildId=$(Build.BuildNumber)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
-    
+
     - task: powershell@2
       displayName: Create ReleaseConfigs Artifact
       inputs:
@@ -99,7 +99,7 @@ jobs:
           Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(BARBuildId)
           Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value "$(DefaultChannels)"
           Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsStableBuild)
-    
+
     - task: PublishBuildArtifacts@1
       displayName: Publish ReleaseConfigs Artifact
       inputs:
@@ -125,7 +125,7 @@ jobs:
 
     - task: PublishBuildArtifacts@1
       displayName: Publish SymbolPublishingExclusionsFile Artifact
-      condition: eq(variables['SymbolExclusionFile'], 'true') 
+      condition: eq(variables['SymbolExclusionFile'], 'true')
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
         PublishLocation: Container
@@ -141,7 +141,7 @@ jobs:
         displayName: Publish Using Darc
         inputs:
           filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
-          arguments: -BuildId $(BARBuildId) 
+          arguments: -BuildId $(BARBuildId)
             -PublishingInfraVersion 3
             -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
             -MaestroToken '$(MaestroApiAccessToken)'
@@ -152,4 +152,4 @@ jobs:
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/templates/steps/publish-logs.yml
         parameters:
-          JobLabel: 'Publish_Artifacts_Logs'     
+          JobLabel: 'Publish_Artifacts_Logs'

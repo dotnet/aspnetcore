@@ -48,6 +48,7 @@
       <InnerBuildEnv Condition="'$(FullAssemblySigningSupported)' != ''" Include="FullAssemblySigningSupported=$(FullAssemblySigningSupported)" />
       <InnerBuildEnv Include="DotNetBuildFromSource=$(ArcadeBuildFromSource)" />
       <InnerBuildEnv Include="DotNetBuildVertical=$(ArcadeBuildVertical)" />
+      <InnerBuildEnv Include="DotNetBuildSourceOnly=$(DotNetBuildSourceOnly)" />
     </ItemGroup>
 
     <!-- Call the build.sh script to build the repo tasks. Set IgnoreStandardErrorWarningFormat
@@ -73,7 +74,6 @@
           BeforeTargets="GetSourceBuildCommandConfiguration">
 
     <PropertyGroup>
-      <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildRuntimeIdentifier=$(TargetRuntimeIdentifier)</InnerBuildArgs>
       <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:CrossgenOutput=false</InnerBuildArgs>
     </PropertyGroup>
   </Target>

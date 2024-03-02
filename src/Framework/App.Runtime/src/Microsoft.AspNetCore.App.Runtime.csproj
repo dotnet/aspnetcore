@@ -172,7 +172,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <SharedRuntimeSubPath>shared\$(SharedFxName)\$(SharedFxVersion)\</SharedRuntimeSubPath>
     <SharedFxLayoutTargetDir>$(SharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</SharedFxLayoutTargetDir>
     <RedistLayoutTargetDir>$(RedistSharedFrameworkLayoutRoot)$(SharedRuntimeSubPath)</RedistLayoutTargetDir>
-    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(SharedRuntimeSubPath)</LocalInstallationOutputPath>
 
     <RuntimeListFileName>RuntimeList.xml</RuntimeListFileName>
     <RuntimeListOutputPath>$(BaseIntermediateOutputPath)$(RuntimeListFileName)</RuntimeListOutputPath>
@@ -202,7 +201,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       _GenerateRuntimeListFile;
       _ResolveRuntimePackContent;
       _ResolveSharedFrameworkContent;
-      _InstallFrameworkIntoLocalDotNet;
       _DownloadAndExtractDotNetRuntime;
       _BatchCopyToSharedFrameworkLayout;
       _BatchCopyToRedistLayout;
@@ -682,30 +680,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <Copy SourceFiles="@(AspnetCompositesByName->'$(CompositeTargetDir)%(Filename)%(Extension)')"
           DestinationFolder="$(LayoutAspnetPath)" />
-  </Target>
-
-  <Target Name="_CleanLocalDotNet" BeforeTargets="_InstallFrameworkIntoLocalDotNet">
-    <ItemGroup>
-      <_ExtraDotNetFiles Include="$(LocalInstallationOutputPath)**\*.*"
-          Exclude="@(RefPackContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')" />
-    </ItemGroup>
-    <Delete Files="@(_ExtraDotNetFiles)" />
-  </Target>
-
-  <!--
-    Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework
-    into the $reporoot/.dotnet folder so tests can run against the shared framework. This workaround is not
-    needed in source build.
-  -->
-  <Target Name="_InstallFrameworkIntoLocalDotNet"
-          Condition="'$(DotNetBuildFromSource)' != 'true'"
-          Inputs="@(SharedFxContent)"
-          Outputs="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')">
-
-    <Copy SourceFiles="@(SharedFxContent)"
-          DestinationFiles="@(SharedFxContent->'$(LocalInstallationOutputPath)%(FileName)%(Extension)')"
-          UseHardlinksIfPossible="true" />
-    <Message Importance="High" Text="$(MSbuildProjectFile) -> $(LocalInstallationOutputPath)" />
   </Target>
 
   <Target Name="_CreateRedistCompositeArchive"
