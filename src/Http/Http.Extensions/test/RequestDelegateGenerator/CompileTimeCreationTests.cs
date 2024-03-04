@@ -464,8 +464,8 @@ app.MapGet("/", {innerSource});
     public async Task AwaitableRequestDelegateThrowsNullReferenceExceptionOnUnannotatedNullDelegate(string innerSource)
     {
         var source = $"""
-                      app.MapGet("/", {innerSource});
-                      """;
+app.MapGet("/", {innerSource});
+""";
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
