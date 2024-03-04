@@ -52,6 +52,7 @@ public class AuthenticationStartupBase
         // Mount the server-side Blazor app on /subdir
         app.Map("/subdir", app =>
         {
+            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
