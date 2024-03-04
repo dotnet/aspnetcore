@@ -672,6 +672,7 @@ namespace Microsoft.AspNetCore.Builder
     public async Task TestHandlingOfGenericWithNullableReferenceTypes()
     {
         var source = """
+#nullable enable
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
