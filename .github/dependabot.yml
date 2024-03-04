@@ -3,7 +3,7 @@ registries:
   dev.azure.com:
     token: ${{secrets.DEPENDABOT_NPM_TOKEN}}
     type: npm-registry
-    url: https://pkgs.dev.azure.com/
+    url: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/
 
 updates:
   - package-ecosystem: npm
