@@ -97,7 +97,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         // Check we got there, but we did *not* retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() => originalH1Elem.Text);
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         // Check we got there, but we did *not* retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() => originalH1Elem.Text);
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         // Check we got there, but we did *not* retain the <h1> element
         Browser.Equal("Other", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.Throws<StaleElementReferenceException>(() => originalH1Elem.Text);
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() => originalH1Elem.Text);
     }
 
     [Fact]
@@ -653,7 +653,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             _ = element.Enabled;
             return false;
         }
-        catch (StaleElementReferenceException)
+        catch (Exception ex) when (WebDriverStaleElementAssertion.ExceptionMeansElementWasRemoved(ex))
         {
             return true;
         }

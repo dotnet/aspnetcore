@@ -433,7 +433,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
         // Because this was a full-page load, our element references should no longer be valid
-        Assert.Throws<StaleElementReferenceException>(() =>
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() =>
         {
             testSelector.SelectedOption.GetAttribute("value");
         });
@@ -470,7 +470,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.DoesNotExist(By.Id("test-state"));
 
         // We check if we had a force load
-        Assert.Throws<StaleElementReferenceException>(() =>
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() =>
             testSelector.SelectedOption.GetAttribute("value"));
 
         // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
@@ -549,7 +549,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
         // We check if we had a force load
-        Assert.Throws<StaleElementReferenceException>(() =>
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() =>
             testSelector.SelectedOption.GetAttribute("value"));
 
         // But still we should be able to navigate back, and end up at the "/ProgrammaticNavigationCases" page
@@ -602,7 +602,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.True(() => Browser.Url.EndsWith("/Other", StringComparison.Ordinal));
 
         // We check if we had a force load
-        Assert.Throws<StaleElementReferenceException>(() =>
+        WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(() =>
             testSelector.SelectedOption.GetAttribute("value"));
 
         // After we press back, we should end up at the "/" page so we know browser history has been replaced

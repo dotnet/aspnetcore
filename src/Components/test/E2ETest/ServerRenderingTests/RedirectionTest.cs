@@ -229,7 +229,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
             {
                 element.GetDomProperty("tagName");
             }
-            catch (StaleElementReferenceException)
+            catch (Exception ex) when (WebDriverStaleElementAssertion.ExceptionMeansElementWasRemoved(ex))
             {
                 return true;
             }
