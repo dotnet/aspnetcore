@@ -237,6 +237,60 @@ public class DefaultKeyResolverTests
         Assert.True(resolution.ShouldGenerateNewKey);
     }
 
+    [Fact]
+    public void ResolveDefaultKeyPolicy_PropagatedKeyPreferred()
+    {
+        // Arrange
+        var resolver = CreateDefaultKeyResolver();
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var creation1 = now - KeyManagementOptions.KeyPropagationWindow;
+        var creation2 = now;
+        var activation1 = now + TimeSpan.FromMinutes(1);
+        var activation2 = activation1 + TimeSpan.FromMinutes(1); // More recently activated, but not propagated
+        var expiration1 = creation1 + TimeSpan.FromDays(90);
+        var expiration2 = creation2 + TimeSpan.FromDays(90);
+
+        // Both active (key 2 more recently), key 1 propagated, key 2 not
+        var key1 = CreateKey(activation1, expiration1, creationDate: creation1);
+        var key2 = CreateKey(activation2, expiration2, creationDate: creation2);
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [key1, key2]);
+
+        // Assert
+        Assert.Same(key1, resolution.DefaultKey);
+        Assert.False(resolution.ShouldGenerateNewKey);
+    }
+
+    [Fact]
+    public void ResolveDefaultKeyPolicy_OlderUnpropagatedKeyPreferred()
+    {
+        // Arrange
+        var resolver = CreateDefaultKeyResolver();
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var creation1 = now - TimeSpan.FromHours(1);
+        var creation2 = creation1 - TimeSpan.FromHours(1);
+        var activation1 = creation1;
+        var activation2 = creation2;
+        var expiration1 = creation1 + TimeSpan.FromDays(90);
+        var expiration2 = creation2 + TimeSpan.FromDays(90);
+
+        // Both active (key 1 more recently), neither propagated
+        var key1 = CreateKey(activation1, expiration1, creationDate: creation1);
+        var key2 = CreateKey(activation2, expiration2, creationDate: creation2);
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [key1, key2]);
+
+        // Assert
+        Assert.Same(key2, resolution.DefaultKey);
+        Assert.False(resolution.ShouldGenerateNewKey);
+    }
+
     private static IDefaultKeyResolver CreateDefaultKeyResolver()
     {
         return new DefaultKeyResolver(NullLoggerFactory.Instance);
@@ -244,11 +298,16 @@ public class DefaultKeyResolverTests
 
     private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)
     {
+        return CreateKey(ParseDateTimeOffset(activationDate), ParseDateTimeOffset(expirationDate), creationDate == null ? (DateTimeOffset?)null : ParseDateTimeOffset(creationDate), isRevoked, createEncryptorThrows);
+    }
+
+    private static IKey CreateKey(DateTimeOffset activationDate, DateTimeOffset expirationDate, DateTimeOffset? creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)
+    {
         var mockKey = new Mock<IKey>();
         mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
-        mockKey.Setup(o => o.CreationDate).Returns((creationDate != null) ? DateTimeOffset.ParseExact(creationDate, "u", CultureInfo.InvariantCulture) : DateTimeOffset.MinValue);
-        mockKey.Setup(o => o.ActivationDate).Returns(DateTimeOffset.ParseExact(activationDate, "u", CultureInfo.InvariantCulture));
-        mockKey.Setup(o => o.ExpirationDate).Returns(DateTimeOffset.ParseExact(expirationDate, "u", CultureInfo.InvariantCulture));
+        mockKey.Setup(o => o.CreationDate).Returns(creationDate ?? DateTimeOffset.MinValue);
+        mockKey.Setup(o => o.ActivationDate).Returns(activationDate);
+        mockKey.Setup(o => o.ExpirationDate).Returns(expirationDate);
         mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);
         if (createEncryptorThrows)
         {
@@ -260,6 +319,11 @@ public class DefaultKeyResolverTests
         }
 
         return mockKey.Object;
+    }
+
+    private static DateTimeOffset ParseDateTimeOffset(string dto)
+    {
+        return DateTimeOffset.ParseExact(dto, "u", CultureInfo.InvariantCulture);
     }
 }
 
