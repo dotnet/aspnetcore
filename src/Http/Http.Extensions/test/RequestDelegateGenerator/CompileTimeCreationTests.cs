@@ -435,7 +435,7 @@ app.MapGet("/", () => "Hello world!");
             {
                 new object[] { "IResult? () => null", "The IResult returned by the Delegate must not be null." },
                 new object[] { "Task<IResult?>? () => null", "The Task returned by the Delegate must not be null." },
-                new object[] { "Task<bool>? () => null", "The Task returned by the Delegate must not be null." },
+                new object[] { "Task<bool?>? () => null", "The Task returned by the Delegate must not be null." },
                 new object[] { "Task<IResult?> () => Task.FromResult<IResult?>(null)", "The IResult returned by the Delegate must not be null." },
                 new object[] { "ValueTask<IResult?> () => ValueTask.FromResult<IResult?>(null)", "The IResult returned by the Delegate must not be null." },
             };
