@@ -10,7 +10,7 @@
       headers if and only if this flag is set. Note that until https://github.com/dotnet/runtime/issues/98502
       is fixed, you will have to delete artifacts\obj directories after changing this flag.
     -->
-    <WasmEnableThreads>true</WasmEnableThreads>
+    <!--<WasmEnableThreads>true</WasmEnableThreads>-->
   </PropertyGroup>
 
   <ItemGroup>
