@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     #nullable disable
                     (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.Todo)),
                     (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.TestService)),
-                    #nullable restore
+                    #nullable enable
                 };
                 foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
                 {
