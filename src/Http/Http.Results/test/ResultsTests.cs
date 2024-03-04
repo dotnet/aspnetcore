@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -395,6 +396,44 @@ public partial class ResultsTests
         // Assert
         Assert.Equal(properties, result.Properties);
         Assert.Equal(authenticationSchemes ?? new ReadOnlyCollection<string>(new List<string>()), result.AuthenticationSchemes);
+    }
+
+    [Fact]
+    public void InternalServerError_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        object value = new { };
+
+        // Act
+        var result = Results.InternalServerError(value) as InternalServerError<object>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void InternalServerErrorOfT_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new Todo(1);
+
+        // Act
+        var result = Results.InternalServerError(value) as InternalServerError<Todo>;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void InternalServerError_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = Results.InternalServerError() as InternalServerError;
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
     }
 
     [Theory]
@@ -1636,6 +1675,8 @@ public partial class ResultsTests
         (() => Results.File(Path.Join(Path.DirectorySeparatorChar.ToString(), "rooted", "path"), null, null, null, null, false), typeof(PhysicalFileHttpResult)),
         (() => Results.File("path", null, null, null, null, false), typeof(VirtualFileHttpResult)),
         (() => Results.Forbid(null, null), typeof(ForbidHttpResult)),
+        (() => Results.InternalServerError(), typeof(InternalServerError)),
+        (() => Results.InternalServerError<object>(new()), typeof(InternalServerError<object>)),
         (() => Results.Json(new(), (JsonSerializerOptions)null, null, null), typeof(JsonHttpResult<object>)),
         (() => Results.NoContent(), typeof(NoContent)),
         (() => Results.NotFound(null), typeof(NotFound)),
