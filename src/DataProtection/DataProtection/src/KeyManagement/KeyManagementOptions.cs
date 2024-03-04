@@ -118,6 +118,20 @@ public class KeyManagementOptions
     }
 
     /// <summary>
+    /// If a key is required and none is available, one will be generated and immediately
+    /// activated.  Immediately-activated keys are problematic because they may be used
+    /// before they have propagated to other app instances.  What's more, in a scenario
+    /// where one instance needs to generate an immediately-activated key, it's likely that
+    /// other instances will need to do the same.  A given instance has no control over when
+    /// other instances pick up its immediately-activated keys, but it can do its best to
+    /// pick up theirs.  Therefore, every time it generates an immediately-activated key,
+    /// it assumes other instances may have as well and pre-emptively schedules a refresh
+    /// of its own key ring cache.  This property controls how long after an immediately-
+    /// activated key is generated the key ring cache will be refreshed.
+    /// </summary>
+    internal static TimeSpan ShortKeyRingRefreshPeriod { get; set; } = TimeSpan.FromSeconds(15);
+
+    /// <summary>
     /// Controls the lifetime (number of days before expiration)
     /// for newly-generated keys.
     /// </summary>

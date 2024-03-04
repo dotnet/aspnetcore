@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -225,7 +226,7 @@ public class KeyRingProviderTests
 
         // Assert
         Assert.Equal(newlyCreatedKey.KeyId, cacheableKeyRing.KeyRing.DefaultKeyId);
-        AssertWithinJitterRange(cacheableKeyRing.ExpirationTimeUtc, now);
+        AssertWithinJitterRange(cacheableKeyRing.ExpirationTimeUtc, now, isImmediatelyActivated: true);
         Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now));
         expirationCts1.Cancel();
         Assert.True(CacheableKeyRing.IsValid(cacheableKeyRing, now));
@@ -787,6 +788,158 @@ public class KeyRingProviderTests
         mockCacheableKeyRingProvider.Verify(o => o.GetCacheableKeyRing(updatedKeyRingTime), Times.Once);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RefreshWhenDefaultKeyIsNearExpiration_KeyGenerated(bool hasPropagated)
+    {
+        // This test validates that a short refresh can be used in cases where the default key is not immediately-activated
+
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var maxRefreshTime = now + (hasPropagated ? KeyManagementOptions.KeyRingRefreshPeriod : KeyManagementOptions.ShortKeyRingRefreshPeriod);
+
+        var key = CreateKey(
+            creationDate: now - KeyManagementOptions.KeyPropagationWindow + (hasPropagated ? -1 : +1) * TimeSpan.FromHours(1), // May have propagated
+            activationDate: now - TimeSpan.FromHours(1), // Has been activated
+            expirationDate: now + TimeSpan.FromHours(1)); // Will expire before a replacement can be propagated
+
+        var keyManagementOptions = Options.Create<KeyManagementOptions>(null); // Default options are fine
+        var keyManager = (IKeyManager)new InMemoryKeyManager(now); // Semi-realistic key manager
+
+        var defaultKeyResolver = new Mock<IDefaultKeyResolver>(MockBehavior.Strict);
+        defaultKeyResolver
+            .Setup(o => o.ResolveDefaultKeyPolicy(now, It.IsAny<IEnumerable<IKey>>()))
+            .Returns(new DefaultKeyResolution()
+            {
+                DefaultKey = key,
+                ShouldGenerateNewKey = false
+            });
+        defaultKeyResolver
+            .Setup(o => o.ResolveDefaultKeyPolicy(key.ExpirationDate, It.IsAny<IEnumerable<IKey>>()))
+            .Returns(new DefaultKeyResolution()
+            {
+                ShouldGenerateNewKey = true
+            });
+
+        ICacheableKeyRingProvider provider = new KeyRingProvider(keyManager, keyManagementOptions, defaultKeyResolver.Object);
+        var keyRing = provider.GetCacheableKeyRing(now);
+        Assert.InRange(keyRing.ExpirationTimeUtc, now, maxRefreshTime); // Actual range is based on jitter - this lower bound is loose
+
+        // The generation of this new key, which won't have time to propagate before it's activated, is why we need to refresh
+        var newKey = Assert.Single(keyManager.GetAllKeys().Where(k => !ReferenceEquals(k, key)));
+        Assert.Equal(key.ExpirationDate, newKey.ActivationDate);
+    }
+
+    [Fact]
+    public void RefreshWhenDefaultKeyIsNearExpiration_KeyReceived()
+    {
+        // This test validates that a short refresh can be used in cases where the default key is not immediately-activated
+
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var maxRefreshTime = now + KeyManagementOptions.ShortKeyRingRefreshPeriod;
+
+        var keyManagementOptions = Options.Create<KeyManagementOptions>(null); // Default options are fine
+        var keyManager = (IKeyManager)new InMemoryKeyManager(now); // Semi-realistic key manager
+        var key = keyManager.CreateNewKey(now, now + TimeSpan.FromDays(90)); // Pre-populated key
+        Assert.Equal(key.CreationDate, key.ActivationDate); // Immediately-activated
+
+        var defaultKeyResolver = new Mock<IDefaultKeyResolver>(MockBehavior.Strict);
+        defaultKeyResolver
+            .Setup(o => o.ResolveDefaultKeyPolicy(now, It.IsAny<IEnumerable<IKey>>()))
+            .Returns(new DefaultKeyResolution()
+            {
+                DefaultKey = key,
+                ShouldGenerateNewKey = false
+            });
+
+        ICacheableKeyRingProvider provider = new KeyRingProvider(keyManager, keyManagementOptions, defaultKeyResolver.Object);
+        var keyRing = provider.GetCacheableKeyRing(now);
+        Assert.InRange(keyRing.ExpirationTimeUtc, now, maxRefreshTime); // Actual range is based on jitter - this lower bound is loose
+
+        // No new key was generated
+        Assert.Single(keyManager.GetAllKeys());
+    }
+
+    [Fact]
+    public async Task MultipleInstanceGenerateImmediatelyActivatedKeys()
+    {
+        const int taskCount = 10;
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var maxRefreshTime = now + KeyManagementOptions.ShortKeyRingRefreshPeriod;
+
+        // Multiple instances wouldn't really share a key manager, but it's a reasonable simulation of shared storage
+        var keyManager = new InMemoryKeyManager(now);
+        var keyManagementOptions = new Mock<IOptions<KeyManagementOptions>>();
+        var defaultKeyResolver = new DefaultKeyResolver();
+
+        var tasks1 = new Task<ValueTuple<ICacheableKeyRingProvider, CacheableKeyRing>>[taskCount];
+        for (var i = 0; i < taskCount; i++)
+        {
+            tasks1[i] = Task.Run(() =>
+            {
+                ICacheableKeyRingProvider provider = new KeyRingProvider(keyManager, keyManagementOptions.Object, defaultKeyResolver);
+                var keyRing = provider.GetCacheableKeyRing(now);
+                return (provider, keyRing);
+            });
+        }
+        var tuples1 = await Task.WhenAll(tasks1);
+        Assert.All(tuples1, tuple => Assert.InRange(tuple.Item2.ExpirationTimeUtc, now, maxRefreshTime)); // Actual range is based on jitter - this lower bound is loose
+
+        var tasks2 = new Task<ValueTuple<ICacheableKeyRingProvider, CacheableKeyRing>>[taskCount];
+        for (var t = 0; t < taskCount; t++)
+        {
+            var i = t;
+            tasks2[i] = Task.Run(() =>
+            {
+                var (provider, keyRing) = tuples1[i];
+                var newKeyRing = provider.GetCacheableKeyRing(keyRing.ExpirationTimeUtc);
+                return (provider, newKeyRing);
+            });
+        }
+        var tuples2 = await Task.WhenAll(tasks2);
+
+        var keyId = tuples2[0].Item2.KeyRing.DefaultKeyId;
+        Assert.All(tuples2, tuple => Assert.Equal(keyId, tuple.Item2.KeyRing.DefaultKeyId)); // They should all be the same
+    }
+
+    private sealed class InMemoryKeyManager : IKeyManager
+    {
+        private readonly ConcurrentBag<IKey> _keys = new();
+        private readonly DateTimeOffset _now;
+
+        public InMemoryKeyManager(DateTimeOffset now)
+        {
+            _now = now;
+        }
+
+        IKey IKeyManager.CreateNewKey(DateTimeOffset activationDate, DateTimeOffset expirationDate)
+        {
+            var newKey = CreateKey(creationDate: _now, activationDate, expirationDate);
+            _keys.Add(newKey);
+            return newKey;
+        }
+
+        IReadOnlyCollection<IKey> IKeyManager.GetAllKeys()
+        {
+            return _keys.ToArray();
+        }
+
+        CancellationToken IKeyManager.GetCacheExpirationToken()
+        {
+            return CancellationToken.None; // This is not a valid implementation, but it's good enough for testing
+        }
+
+        void IKeyManager.RevokeAllKeys(DateTimeOffset revocationDate, string reason)
+        {
+            throw new NotImplementedException();
+        }
+
+        void IKeyManager.RevokeKey(Guid keyId, string reason)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     private static ICacheableKeyRingProvider SetupCreateCacheableKeyRingTestAndCreateKeyManager(
         IList<string> callSequence,
         IEnumerable<CancellationToken> getCacheExpirationTokenReturnValues,
@@ -875,10 +1028,14 @@ public class KeyRingProviderTests
             loggerFactory: NullLoggerFactory.Instance);
     }
 
-    private static void AssertWithinJitterRange(DateTimeOffset actual, DateTimeOffset now)
+    private static void AssertWithinJitterRange(DateTimeOffset actual, DateTimeOffset now, bool isImmediatelyActivated = false)
     {
+        var period = isImmediatelyActivated
+            ? KeyManagementOptions.ShortKeyRingRefreshPeriod
+            : KeyManagementOptions.KeyRingRefreshPeriod;
+
         // The jitter can cause the actual value to fall in the range [now + 80% of refresh period, now + 100% of refresh period)
-        Assert.InRange(actual, now + TimeSpan.FromHours(24 * 0.8), now + TimeSpan.FromHours(24));
+        Assert.InRange(actual, now + (period * 0.8), now + period);
     }
 
     private static DateTime StringToDateTime(string input)
@@ -904,8 +1061,15 @@ public class KeyRingProviderTests
 
     private static IKey CreateKey(DateTimeOffset activationDate, DateTimeOffset expirationDate, bool isRevoked = false)
     {
+        // For tests that don't care about creation time, just assume the key has always existed
+        return CreateKey(creationDate: default, activationDate, expirationDate, isRevoked);
+    }
+
+    private static IKey CreateKey(DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, bool isRevoked = false)
+    {
         var mockKey = new Mock<IKey>();
         mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
+        mockKey.Setup(o => o.CreationDate).Returns(creationDate);
         mockKey.Setup(o => o.ActivationDate).Returns(activationDate);
         mockKey.Setup(o => o.ExpirationDate).Returns(expirationDate);
         mockKey.Setup(o => o.IsRevoked).Returns(isRevoked);

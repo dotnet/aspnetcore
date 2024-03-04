@@ -77,7 +77,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         if (keyJustAdded != null)
         {
             var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, keyJustAdded, allKeys);
         }
 
         // Determine whether we need to generate a new key
@@ -104,7 +104,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         if (!shouldGenerateNewKey)
         {
             CryptoUtil.Assert(defaultKey != null, "Expected to see a default key.");
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKey, allKeys);
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKey, keyJustAdded, allKeys);
         }
 
         _logger.PolicyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing();
@@ -124,7 +124,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             else
             {
                 _logger.UsingFallbackKeyWithExpirationAsDefaultKey(keyToUse.KeyId, keyToUse.ExpirationDate);
-                return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
+                return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, keyJustAdded, allKeys);
             }
         }
 
@@ -148,7 +148,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         }
     }
 
-    private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IEnumerable<IKey> allKeys)
+    private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IKey? generatedKey, IEnumerable<IKey> allKeys)
     {
         Debug.Assert(defaultKey != null);
 
@@ -164,7 +164,24 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
         _logger.UsingKeyAsDefaultKey(defaultKey.KeyId);
 
-        var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(KeyManagementOptions.KeyRingRefreshPeriod);
+        // If we're in a scenario where we think other app instances may be generating keys that will be
+        // activated before they are propagated, we'll use a shorter refresh period to ensure that we pick
+        // up those keys so that we can select from the same pool of candidates as the other instances.
+        // 
+        // These not-yet-propagated keys are usually immediately-activated, but an app restarted after a period
+        // of downtime may discover that it has a valid, but soon-to-be-expired key. The replacement will not
+        // be immediately-activated, but may be activated before it has propagated.
+        var useShortRefreshPeriod = generatedKey is not null
+            // Either we had to generate a key and it will be activated before it has time to propagate
+            // (in which case, other instances may have done the same)
+            ? (generatedKey.ActivationDate < now + KeyManagementOptions.KeyPropagationWindow) // No clock skew on a key we generated
+            // Or we selected a key that has yet to propagate (presumably, from another instance)
+            : (defaultKey.CreationDate > now - KeyManagementOptions.KeyPropagationWindow);
+
+        var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(
+            useShortRefreshPeriod
+                ? KeyManagementOptions.ShortKeyRingRefreshPeriod
+                : KeyManagementOptions.KeyRingRefreshPeriod);
 
         // The cached keyring should expire at the earliest of (default key expiration, next auto-refresh time).
         // Since the refresh period and safety window are not user-settable, we can guarantee that there's at
