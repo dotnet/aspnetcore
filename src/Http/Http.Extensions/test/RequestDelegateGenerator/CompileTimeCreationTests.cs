@@ -427,7 +427,7 @@ app.MapGet("/", () => "Hello world!");
         Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
     }
 
-    public static IEnumerable<object[]> NullResult
+    public static IEnumerable<object[]> NullResultWithNullAnnotation
     {
         get
         {
@@ -443,7 +443,7 @@ app.MapGet("/", () => "Hello world!");
     }
 
     [Theory]
-    [MemberData(nameof(NullResult))]
+    [MemberData(nameof(NullResultWithNullAnnotation))]
     public async Task RequestDelegateThrowsInvalidOperationExceptionOnNullDelegate(string innerSource, string message)
     {
         var source = $"""
@@ -456,6 +456,21 @@ app.MapGet("/", {innerSource});
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endpoint.RequestDelegate(httpContext));
 
         Assert.Equal(message, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("Task<bool> () => null!")]
+    [InlineData("Task<bool?> () => null!")]
+    public async Task AwaitableRequestDelegateThrowsNullReferenceExceptionOnUnannotatedNullDelegate(string innerSource)
+    {
+        var source = $"""
+app.MapGet("/", {innerSource});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        _ = await Assert.ThrowsAsync<NullReferenceException>(async () => await endpoint.RequestDelegate(httpContext));
     }
 
     [Theory]
@@ -672,6 +687,7 @@ namespace Microsoft.AspNetCore.Builder
     public async Task TestHandlingOfGenericWithNullableReferenceTypes()
     {
         var source = """
+#nullable enable
 using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;

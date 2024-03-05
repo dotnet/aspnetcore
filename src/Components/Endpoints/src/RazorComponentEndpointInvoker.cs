@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -114,6 +115,16 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 await EndpointHtmlRenderer.HandleNavigationException(context, ex);
                 quiesceTask = Task.CompletedTask;
             }
+        }
+
+        if (!quiesceTask.IsCompleted)
+        {
+            // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
+            // Disable all response buffering and compression on IIS like SignalR's ServerSentEventsServerTransport does.
+            var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
+            bufferingFeature.DisableBuffering();
+
+            context.Response.Headers.ContentEncoding = "identity";
         }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)

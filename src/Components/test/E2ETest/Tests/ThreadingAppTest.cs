@@ -46,27 +46,26 @@ public class ThreadingAppTest
         var mainHeaderSelector = By.TagName("h1");
 
         // Verify we start at home, with the home link highlighted
-        Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+        Browser.Equal("Hello, world!", () => Browser.Exists(mainHeaderSelector).Text);
+        Browser.Collection(() => Browser.FindElements(activeNavLinksSelector),
             item => Assert.Equal("Home", item.Text.Trim()));
 
         // Click on the "counter" link
         Browser.Exists(By.LinkText("Counter")).Click();
 
         // Verify we're now on the counter page, with that nav link (only) highlighted
-        Assert.Equal("Counter", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+        Browser.Equal("Counter", () => Browser.Exists(mainHeaderSelector).Text);
+        Browser.Collection(() => Browser.FindElements(activeNavLinksSelector),
             item => Assert.Equal("Counter", item.Text.Trim()));
 
         // Verify we can navigate back to home too
         Browser.Exists(By.LinkText("Home")).Click();
-        Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
-        Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+        Browser.Equal("Hello, world!", () => Browser.Exists(mainHeaderSelector).Text);
+        Browser.Collection(() => Browser.FindElements(activeNavLinksSelector),
             item => Assert.Equal("Home", item.Text.Trim()));
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53723")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
@@ -88,7 +87,7 @@ public class ThreadingAppTest
     {
         // Navigate to "Fetch data"
         Browser.Exists(By.LinkText("Fetch data")).Click();
-        Assert.Equal("Weather forecast", Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Weather forecast", () => Browser.Exists(By.TagName("h1")).Text);
 
         // Wait until loaded
         var tableSelector = By.CssSelector("table.table");
