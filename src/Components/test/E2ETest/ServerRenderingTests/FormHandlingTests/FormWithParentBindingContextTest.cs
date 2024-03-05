@@ -1592,8 +1592,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             if (!dispatch.FormIsEnhanced)
             {
                 // Verify the same form element is *not* still in the page
-                WebDriverStaleElementAssertion.AssertThrowsDueToElementRemovedFromPage(
-                    () => form.GetAttribute("method"));
+                Assert.Throws<StaleElementReferenceException>(() => form.GetAttribute("method"));
             }
             else if (!dispatch.SuppressEnhancedNavigation)
             {
