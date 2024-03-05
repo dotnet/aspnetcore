@@ -34,13 +34,13 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         {
             return true;
         }
-
         for (var i = 0; i < acceptHeader.Count; i++)
         {
             var acceptHeaderValue = acceptHeader[i];
-
-            if (_jsonMediaType.IsSubsetOf(acceptHeaderValue) ||
-                _problemDetailsJsonMediaType.IsSubsetOf(acceptHeaderValue))
+            // Check to see if the Accepted header values support `application/json` or `application/problem+json`
+            // with  support for argument parameters. Support handling `*/*` and `application/*` as Accepts header values.
+            // Application/json is a subset of */* but */* is not a subset of application/json
+            if (acceptHeaderValue.IsSubsetOf(_jsonMediaType) || acceptHeaderValue.IsSubsetOf(_problemDetailsJsonMediaType) || _jsonMediaType.IsSubsetOf(acceptHeaderValue))
             {
                 return true;
             }

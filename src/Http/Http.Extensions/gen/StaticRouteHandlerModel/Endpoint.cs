@@ -108,7 +108,7 @@ internal class Endpoint
 
     public static bool SignatureEquals(Endpoint a, Endpoint b)
     {
-        if (!string.Equals(a.Response?.WrappedResponseType, b.Response?.WrappedResponseType, StringComparison.Ordinal) ||
+        if (!string.Equals(a.Response?.WrappedResponseTypeDisplayName, b.Response?.WrappedResponseTypeDisplayName, StringComparison.Ordinal) ||
             !a.HttpMethod.Equals(b.HttpMethod, StringComparison.Ordinal) ||
             a.Parameters.Length != b.Parameters.Length)
         {
@@ -129,7 +129,7 @@ internal class Endpoint
     public static int GetSignatureHashCode(Endpoint endpoint)
     {
         var hashCode = new HashCode();
-        hashCode.Add(endpoint.Response?.WrappedResponseType);
+        hashCode.Add(endpoint.Response?.WrappedResponseTypeDisplayName);
         hashCode.Add(endpoint.HttpMethod);
 
         foreach (var parameter in endpoint.Parameters)
