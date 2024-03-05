@@ -157,7 +157,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var allElements = KeyRepository.GetAllElements();
 
         // We aggregate all the information we read into three buckets
-        Dictionary<Guid, KeyBase> keyIdToKeyMap = new Dictionary<Guid, KeyBase>();
+        Dictionary<Guid, Key> keyIdToKeyMap = new Dictionary<Guid, Key>();
         HashSet<Guid>? revokedKeyIds = null;
         DateTimeOffset? mostRecentMassRevocationDate = null;
 
@@ -254,7 +254,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         return Interlocked.CompareExchange<CancellationTokenSource?>(ref _cacheExpirationTokenSource, null, null).Token;
     }
 
-    private KeyBase? ProcessKeyElement(XElement keyElement)
+    private Key? ProcessKeyElement(XElement keyElement)
     {
         Debug.Assert(keyElement.Name == KeyElementName);
 
@@ -268,7 +268,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
             _logger.FoundKey(keyId);
 
-            return new DeferredKey(
+            return new Key(
                 keyId: keyId,
                 creationDate: creationDate,
                 activationDate: activationDate,
