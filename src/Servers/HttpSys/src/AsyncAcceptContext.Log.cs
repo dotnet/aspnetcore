@@ -12,13 +12,15 @@ internal partial class AsyncAcceptContext
         [LoggerMessage(LoggerEventIds.AcceptSetResultFailed, LogLevel.Error, "Error attempting to set 'accept' outcome", EventName = "AcceptSetResultFailed")]
         public static partial void AcceptSetResultFailed(ILogger logger, Exception exception);
 
-        [LoggerMessage(LoggerEventIds.AcceptSetExpectationMismatch, LogLevel.Error, "Mismatch setting callback expectation - {Value}", EventName = "AcceptSetExpectationMismatch")]
+        // note on "critical": these represent an unexpected IO callback state that needs investigation; see https://github.com/dotnet/aspnetcore/pull/54368/
+
+        [LoggerMessage(LoggerEventIds.AcceptSetExpectationMismatch, LogLevel.Critical, "Mismatch setting callback expectation - {Value}", EventName = "AcceptSetExpectationMismatch")]
         public static partial void AcceptSetExpectationMismatch(ILogger logger, int value);
 
-        [LoggerMessage(LoggerEventIds.AcceptCancelExpectationMismatch, LogLevel.Error, "Mismatch canceling accept state - {Value}", EventName = "AcceptCancelExpectationMismatch")]
+        [LoggerMessage(LoggerEventIds.AcceptCancelExpectationMismatch, LogLevel.Critical, "Mismatch canceling accept state - {Value}", EventName = "AcceptCancelExpectationMismatch")]
         public static partial void AcceptCancelExpectationMismatch(ILogger logger, int value);
 
-        [LoggerMessage(LoggerEventIds.AcceptObserveExpectationMismatch, LogLevel.Error, "Mismatch observing accept callback - {Value}", EventName = "AcceptObserveExpectationMismatch")]
+        [LoggerMessage(LoggerEventIds.AcceptObserveExpectationMismatch, LogLevel.Critical, "Mismatch observing accept callback - {Value}", EventName = "AcceptObserveExpectationMismatch")]
         public static partial void AcceptObserveExpectationMismatch(ILogger logger, int value);
     }
 }
