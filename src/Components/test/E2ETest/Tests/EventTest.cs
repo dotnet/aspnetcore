@@ -73,7 +73,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
 
-        var other = Browser.Exists(By.Id("other"));
+        var other = Browser.Exists(By.Id("mouseover_label"));
 
         // Mouse over the button and then back off
         var actions = new Actions(Browser)
@@ -154,8 +154,6 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         var output = Browser.Exists(By.Id("output"));
         Assert.Equal(string.Empty, output.Text);
-
-        var other = Browser.Exists(By.Id("other"));
 
         // Mousedown
         var actions = new Actions(Browser).ClickAndHold(input);
