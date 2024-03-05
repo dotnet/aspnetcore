@@ -162,7 +162,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         Debug.Assert(RequestContextFactory != null);
 
         // Allocate and accept context per loop and reuse it for all accepts
-        var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory);
+        var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory, _logger);
 
         var loop = new AcceptLoop(acceptContext, this);
 
