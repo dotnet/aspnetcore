@@ -12,7 +12,7 @@ internal partial class AsyncAcceptContext
         [LoggerMessage(LoggerEventIds.AcceptSetResultFailed, LogLevel.Error, "Error attempting to set 'accept' outcome", EventName = "AcceptSetResultFailed")]
         public static partial void AcceptSetResultFailed(ILogger logger, Exception exception);
 
-        [LoggerMessage(LoggerEventIds.AcceptSetExpectationMismatch, LogLevel.Error, "Mismatch setting callback expectation {Value}", EventName = "AcceptSetExpectationMismatch")]
+        [LoggerMessage(LoggerEventIds.AcceptSetExpectationMismatch, LogLevel.Error, "Mismatch setting callback expectation - {Value}", EventName = "AcceptSetExpectationMismatch")]
         public static partial void AcceptSetExpectationMismatch(ILogger logger, int value);
 
         [LoggerMessage(LoggerEventIds.AcceptCancelExpectationMismatch, LogLevel.Error, "Mismatch canceling accept state - {Value}", EventName = "AcceptCancelExpectationMismatch")]
