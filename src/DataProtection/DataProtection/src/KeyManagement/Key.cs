@@ -119,6 +119,20 @@ internal sealed class Key : IKey
         IsRevoked = true;
     }
 
+    internal Key Clone()
+    {
+        return new Key(
+            keyId: KeyId,
+            creationDate: CreationDate,
+            activationDate: ActivationDate,
+            expirationDate: ExpirationDate,
+            lazyDescriptor: _lazyDescriptor,
+            encryptorFactories: _encryptorFactories)
+        {
+            IsRevoked = IsRevoked,
+        };
+    }
+
     private static Func<IAuthenticatedEncryptorDescriptor> GetLazyDescriptorDelegate(IInternalXmlKeyManager keyManager, XElement keyElement)
     {
         // The <key> element will be held around in memory for a potentially lengthy period
