@@ -695,7 +695,6 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 // This has to be caught here so StatusCode is set properly before disposing the HttpContext
                 // (DisposeContext logs StatusCode).
                 SetBadRequestState(ex);
-                ReportApplicationError(ex);
             }
             catch (Exception ex)
             {
