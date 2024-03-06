@@ -10,7 +10,6 @@
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}}, // depends on FS event timing
     {"testName": {"contains": "BlazorWebTemplate_IndividualAuth_LocalDb"}}, // randomly-generated string could contain forbidden substring
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
-    {"testName": {"contains": "CheckStdoutWithLargeWrites_TestSink" }},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
