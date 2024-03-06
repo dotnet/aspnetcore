@@ -225,11 +225,11 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
         return response.IsSuccessStatusCode switch
         {
             true => OAuthTokenResponse.Success(JsonDocument.Parse(body)),
-            false => PrepareFailedOAuthTokenReponse(response, body)
+            false => PrepareFailedOAuthTokenResponse(response, body)
         };
     }
 
-    private static OAuthTokenResponse PrepareFailedOAuthTokenReponse(HttpResponseMessage response, string body)
+    private static OAuthTokenResponse PrepareFailedOAuthTokenResponse(HttpResponseMessage response, string body)
     {
         var exception = OAuthTokenResponse.GetStandardErrorException(JsonDocument.Parse(body));
 
