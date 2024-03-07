@@ -155,6 +155,13 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         // Invariant: our caller ensures that CreateEncryptorInstance succeeded at least once
         Debug.Assert(defaultKey.CreateEncryptor() != null);
 
+        // This can happen if there's a date-based revocation that's in the future (e.g. because of clock skew)
+        if (defaultKey.IsRevoked)
+        {
+            _logger.KeyRingDefaultKeyIsRevoked(defaultKey.KeyId);
+            throw Error.KeyRingProvider_DefaultKeyRevoked(defaultKey.KeyId);
+        }
+
         _logger.UsingKeyAsDefaultKey(defaultKey.KeyId);
 
         var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(KeyManagementOptions.KeyRingRefreshPeriod);

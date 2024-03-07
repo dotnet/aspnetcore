@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var jsonBodyOrServiceTypeTuples = new (bool, Type)[] {
                     #nullable disable
                     (false, typeof(global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter)),
-                    #nullable restore
+                    #nullable enable
                 };
                 foreach (var (isOptional, type) in jsonBodyOrServiceTypeTuples)
                 {

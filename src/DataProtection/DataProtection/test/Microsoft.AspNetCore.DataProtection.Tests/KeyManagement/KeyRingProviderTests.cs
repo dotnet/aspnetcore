@@ -146,6 +146,47 @@ public class KeyRingProviderTests
     }
 
     [Fact]
+    public void CreateCacheableKeyRing_GenerationRequired_NoDefaultKey_CreatesNewKeyWithImmediateActivation_NewKeyIsRevoked()
+    {
+        // Arrange
+        var callSequence = new List<string>();
+
+        var now = (DateTimeOffset)StringToDateTime("2015-03-01 00:00:00Z");
+        var allKeys1 = Array.Empty<IKey>();
+
+        // This could happen if there were a date-based revocation newer than 2015-03-01
+        var newKey = CreateKey("2015-03-01 00:00:00Z", "2016-03-01 00:00:00Z", isRevoked: true);
+        var allKeys2 = new[] { newKey };
+
+        var keyRingProvider = SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+            callSequence: callSequence,
+            getCacheExpirationTokenReturnValues: new[] { CancellationToken.None, CancellationToken.None },
+            getAllKeysReturnValues: new[] { allKeys1, allKeys2 },
+            createNewKeyCallbacks: new[] {
+                Tuple.Create(now, now + TimeSpan.FromDays(90), newKey)
+            },
+            resolveDefaultKeyPolicyReturnValues: new[]
+            {
+                Tuple.Create(now, (IEnumerable<IKey>)allKeys1, new DefaultKeyResolution()
+                {
+                    DefaultKey = null, // Since there are no keys
+                    ShouldGenerateNewKey = true
+                }),
+                Tuple.Create(now, (IEnumerable<IKey>)allKeys2, new DefaultKeyResolution()
+                {
+                    DefaultKey = null, // Since all keys are revoked
+                    ShouldGenerateNewKey = true
+                })
+            });
+
+        // Act/Assert
+        Assert.Throws<InvalidOperationException>(() => keyRingProvider.GetCacheableKeyRing(now)); // The would-be default key is revoked
+
+        // Still make the usual calls - just throw before creating a keyring
+        Assert.Equal(new[] { "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy", "CreateNewKey", "GetCacheExpirationToken", "GetAllKeys", "ResolveDefaultKeyPolicy" }, callSequence);
+    }
+
+    [Fact]
     public void CreateCacheableKeyRing_GenerationRequired_NoDefaultKey_CreatesNewKeyWithImmediateActivation_StillNoDefaultKey_ReturnsNewlyCreatedKey()
     {
         // Arrange
