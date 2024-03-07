@@ -3,12 +3,9 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
-using System.Data.Common;
 using System.Runtime.Serialization;
-using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.Extensions.Caching.Tests;
 
@@ -39,6 +36,7 @@ public class CacheConfigTests
 
     public class OldStyleExample(IDistributedCache Cache)
     {
+        #region predone
         public async Task<List<Order>> GetCachedOrdersAsync(int ownerId)
         {
             var key = $"orders/{ownerId}";
@@ -55,19 +53,23 @@ public class CacheConfigTests
                 return value;
             }
         }
+        #endregion predone
     }
 
     public class NewStyleExample(HybridCache Cache)
     {
+        #region predone
         public async Task<List<Order>> GetCachedOrdersAsync(int ownerId)
             => await Cache.GetOrCreateAsync(
                 $"orders/{ownerId}",
                 _ => OrderDatabase.GetOrdersAsync(ownerId));
+        #endregion predone
     }
 
-
+    #region just plumbing for demo
     static class SomeSerializer
     {
+        
         public static T Deserialize<T>(byte[] data) => throw new NotImplementedException();
         public static byte[] Serialize<T>(T value) => throw new NotImplementedException();
     }
@@ -77,6 +79,7 @@ public class CacheConfigTests
     {
         public static ValueTask<List<Order>> GetOrdersAsync(int ownerId) => throw new NotImplementedException();
     }
+    #endregion just plumbing for demo
 
     [Theory]
     [InlineData(false)]
