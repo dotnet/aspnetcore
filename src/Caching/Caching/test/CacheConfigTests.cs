@@ -3,9 +3,12 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Data.Common;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.Extensions.Caching.Tests;
 
@@ -32,6 +35,47 @@ public class CacheConfigTests
     [DataContract]
     public class Bar
     {
+    }
+
+    public class OldStyleExample(IDistributedCache Cache)
+    {
+        public async Task<List<Order>> GetCachedOrdersAsync(int ownerId)
+        {
+            var key = $"orders/{ownerId}";
+            var arr = await Cache.GetAsync(key);
+            if (arr is not null)
+            {
+                return SomeSerializer.Deserialize<List<Order>>(arr);
+            }
+            else
+            {
+                var value = await OrderDatabase.GetOrdersAsync(ownerId);
+                arr = SomeSerializer.Serialize(value);
+                await Cache.SetAsync(key, arr);
+                return value;
+            }
+        }
+    }
+
+    public class NewStyleExample(HybridCache Cache)
+    {
+        public async Task<List<Order>> GetCachedOrdersAsync(int ownerId)
+            => await Cache.GetOrCreateAsync(
+                $"orders/{ownerId}",
+                _ => OrderDatabase.GetOrdersAsync(ownerId));
+    }
+
+
+    static class SomeSerializer
+    {
+        public static T Deserialize<T>(byte[] data) => throw new NotImplementedException();
+        public static byte[] Serialize<T>(T value) => throw new NotImplementedException();
+    }
+    public class Order { }
+
+    public class OrderDatabase
+    {
+        public static ValueTask<List<Order>> GetOrdersAsync(int ownerId) => throw new NotImplementedException();
     }
 
     [Theory]
