@@ -15,6 +15,9 @@ Sets up CI specific settings and variables.
 .PARAMETER PrepareMachine
 In CI, Turns on machine preparation/clean up code that changes the machine state (e.g. kills build processes).
 
+.PARAMETER NativeToolsOnMachine
+Turns on native tooling handling. On CI machines, promotes native tools listed in global.json to the path.
+
 .PARAMETER Restore
 Run restore.
 
@@ -128,6 +131,7 @@ Online version: https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSou
 param(
     [switch]$CI,
     [switch]$PrepareMachine,
+    [switch]$NativeToolsOnMachine,
 
     # Build lifecycle options
     [switch]$Restore,
@@ -312,58 +316,6 @@ $performDesktopBuild = ($BuildInstallers -and $Architecture -ne "arm") -or `
 $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
-$foundJdk = $false
-$javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-$localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
-if (Test-Path "$localJdkPath\bin\javac.exe") {
-    $foundJdk = $true
-    Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
-    $env:JAVA_HOME = $localJdkPath
-}
-elseif ($env:JAVA_HOME) {
-    if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
-        Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
-    }
-    else {
-        Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
-        $foundJdk = $true
-    }
-}
-elseif ($javac) {
-    $foundJdk = $true
-    $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
-    $env:JAVA_HOME = $javaHome
-    Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
-}
-else {
-    try {
-        $jdkRegistryKeys = @(
-            "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
-            "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
-        )
-        $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
-        if ($jdkRegistryKey) {
-            $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
-            $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
-            if (Test-Path "${javaHome}\bin\javac.exe") {
-                $env:JAVA_HOME = $javaHome
-                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
-                $foundJdk = $true
-            }
-        }
-    }
-    catch {
-        Write-Verbose "Failed to detect Java: $_"
-    }
-}
-
-if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
-    $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
-}
-
-if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
-    Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
-}
 
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
@@ -391,6 +343,62 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 
 # Import Arcade
 . "$PSScriptRoot/common/tools.ps1"
+
+function LocateJava {
+    Write-Host "Locating java"
+    $foundJdk = $false
+    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
+    $localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
+    if (Test-Path "$localJdkPath\bin\javac.exe") {
+        $foundJdk = $true
+        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+        $env:JAVA_HOME = $localJdkPath
+    }
+    elseif ($env:JAVA_HOME) {
+        if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
+            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
+        }
+        else {
+            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+            $foundJdk = $true
+        }
+    }
+    elseif ($javac) {
+        $foundJdk = $true
+        $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
+        $env:JAVA_HOME = $javaHome
+        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+    }
+    else {
+        try {
+            $jdkRegistryKeys = @(
+                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+            )
+            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if ($jdkRegistryKey) {
+                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+                if (Test-Path "${javaHome}\bin\javac.exe") {
+                    $env:JAVA_HOME = $javaHome
+                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                    $foundJdk = $true
+                }
+            }
+        }
+        catch {
+            Write-Verbose "Failed to detect Java: $_"
+        }
+    }
+
+    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
+    }
+
+    if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
+        Write-Error "Could not find the JDK. Either run $PSScriptRoot\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\..\docs\BuildFromSource.md for details)."
+    }
+}
 
 # Add default .binlog location if not already on the command line. tools.ps1 does not handle this; it just checks
 # $BinaryLog, $CI and $ExcludeCIBinarylog values for an error case. But tools.ps1 provides a nice function to help.
@@ -423,6 +431,15 @@ try {
     # the toolset is a better default behavior.
     $tmpRestore = $restore
     $restore = $true
+
+    # Initialize the native tools before locating java.
+    if ($NativeToolsOnMachine) {
+        $env:NativeToolsOnMachine=$true
+        InitializeNativeTools
+    }
+
+    # Locate java, now that we may have java available after initializing native tools.
+    LocateJava
 
     $toolsetBuildProj = InitializeToolset
 
