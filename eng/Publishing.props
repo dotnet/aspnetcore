@@ -32,14 +32,12 @@
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.rpm" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.tar.gz" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime"
-        Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
+        Condition=" '$(PublishInstallerBaseVersion)' == 'true' or '$(DotNetBuildRepo)' == 'true'" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" />
     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
     <_InstallersToPublish Remove="@(WixPacksToPublish)" Condition="'$(PostBuildSign)' != 'true'" />
     <_ChecksumsToPublish Include="$(ArtifactsDir)installers\**\*.sha512" />
-    <!-- Version file, for VMR build -->
-    <_VersionFileToPublish Include="$(ArtifactsDir)installers\**\aspnetcore_base_runtime.version" UploadPathSegment="Runtime" Condition="'$(DotNetBuildRepo)' == 'true'" />
   </ItemGroup>
 
   <Target
@@ -69,12 +67,6 @@
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true' and '$(DotNetBuildRepo)' != 'true'" />
 
       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
-        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-        <PublishFlatContainer>true</PublishFlatContainer>
-        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
-      </ItemsToPushToBlobFeed>
-
-      <ItemsToPushToBlobFeed Include="@(_VersionFileToPublish)">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
         <PublishFlatContainer>true</PublishFlatContainer>
         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
