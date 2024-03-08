@@ -49,6 +49,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     private const string RevokeAllKeysValue = "*";
 
     private readonly IActivator _activator;
+    private readonly ITypeNameResolver _typeNameResolver;
     private readonly AlgorithmConfiguration _authenticatedEncryptorConfiguration;
     private readonly IKeyEscrowSink? _keyEscrowSink;
     private readonly IInternalXmlKeyManager _internalKeyManager;
@@ -112,6 +113,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var escrowSinks = keyManagementOptions.Value.KeyEscrowSinks;
         _keyEscrowSink = escrowSinks.Count > 0 ? new AggregateKeyEscrowSink(escrowSinks) : null;
         _activator = activator;
+        _typeNameResolver = activator as ITypeNameResolver ?? DefaultTypeNameResolver.Instance;
         TriggerAndResetCacheExpirationToken(suppressLogging: true);
         _internalKeyManager = _internalKeyManager ?? this;
         _encryptorFactories = keyManagementOptions.Value.AuthenticatedEncryptorFactories;
@@ -469,21 +471,20 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(descriptorDeserializerTypeName, out var forwardedTypeName)
             ? forwardedTypeName
             : descriptorDeserializerTypeName;
-        var type = Type.GetType(resolvedTypeName, throwOnError: false);
 
-        if (type == typeof(AuthenticatedEncryptorDescriptorDeserializer))
+        if (TypeExtensions.MatchType(resolvedTypeName, _typeNameResolver, typeof(AuthenticatedEncryptorDescriptorDeserializer)))
         {
             return _activator.CreateInstance<AuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && TypeExtensions.MatchType(resolvedTypeName, _typeNameResolver, typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer)))
         {
             return _activator.CreateInstance<CngCbcAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && TypeExtensions.MatchType(resolvedTypeName, _typeNameResolver, typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer)))
         {
             return _activator.CreateInstance<CngGcmAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer))
+        else if (TypeExtensions.MatchType(resolvedTypeName, _typeNameResolver, typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer)))
         {
             return _activator.CreateInstance<ManagedAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
