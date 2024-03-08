@@ -1250,6 +1250,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54447")]
     public void CanBindToFormWithFiles()
     {
         var profilePicture = TempFile.Create(_tempDirectory, "txt", "This is a profile picture.");
