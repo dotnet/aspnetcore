@@ -20,7 +20,7 @@ internal partial class AsyncAcceptContext
         [LoggerMessage(LoggerEventIds.AcceptCancelExpectationMismatch, LogLevel.Critical, "Mismatch canceling accept state - {Value}", EventName = "AcceptCancelExpectationMismatch")]
         public static partial void AcceptCancelExpectationMismatch(ILogger logger, int value);
 
-        [LoggerMessage(LoggerEventIds.AcceptObserveExpectationMismatch, LogLevel.Critical, "Mismatch observing accept callback - {Value}", EventName = "AcceptObserveExpectationMismatch")]
-        public static partial void AcceptObserveExpectationMismatch(ILogger logger, int value);
+        [LoggerMessage(LoggerEventIds.AcceptObserveExpectationMismatch, LogLevel.Critical, "Mismatch observing {Kind} accept callback - {Value}", EventName = "AcceptObserveExpectationMismatch")]
+        public static partial void AcceptObserveExpectationMismatch(ILogger logger, string kind, int value);
     }
 }
