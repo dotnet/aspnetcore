@@ -372,7 +372,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
         catch (Exception ex)
         {
-            Log.UnableToAddLibraryNameSuffix(_logger, ex);;
+            Log.UnableToAddLibraryNameSuffix(_logger, ex);
         }
     }
 
