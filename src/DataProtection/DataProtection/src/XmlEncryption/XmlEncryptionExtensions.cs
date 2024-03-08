@@ -16,9 +16,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption;
 
 internal static unsafe class XmlEncryptionExtensions
 {
-    // Used for testing edge case assembly loading errors
-    internal static Func<string, Type?> _getType = GetType;
-
     public static XElement DecryptElement(this XElement element, IActivator activator)
     {
         // If no decryption necessary, return original element.
@@ -72,53 +69,30 @@ internal static unsafe class XmlEncryptionExtensions
 
     private static IXmlDecryptor CreateDecryptor(IActivator activator, string decryptorTypeName)
     {
-        if (!TryGetDecryptorType(decryptorTypeName, out var type))
-        {
-            return activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
-        }
+        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
+            ? forwardedTypeName
+            : decryptorTypeName;
+        var typeNameResolver = activator as ITypeNameResolver ?? DefaultTypeNameResolver.Instance;
 
-        if (type == typeof(DpapiNGXmlDecryptor))
+        if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(DpapiNGXmlDecryptor)))
         {
             return activator.CreateInstance<DpapiNGXmlDecryptor>(decryptorTypeName);
         }
-        else if (type == typeof(DpapiXmlDecryptor))
+        else if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(DpapiXmlDecryptor)))
         {
             return activator.CreateInstance<DpapiXmlDecryptor>(decryptorTypeName);
         }
-        else if (type == typeof(EncryptedXmlDecryptor))
+        else if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(EncryptedXmlDecryptor)))
         {
             return activator.CreateInstance<EncryptedXmlDecryptor>(decryptorTypeName);
         }
-        else if (type == typeof(NullXmlDecryptor))
+        else if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(NullXmlDecryptor)))
         {
             return activator.CreateInstance<NullXmlDecryptor>(decryptorTypeName);
         }
 
         return activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
     }
-
-    private static bool TryGetDecryptorType(string decryptorTypeName, [NotNullWhen(true)] out Type? type)
-    {
-        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
-            ? forwardedTypeName
-            : decryptorTypeName;
-        try
-        {
-            // Some exceptions are thrown regardless of the value of throwOnError.
-            // For example, if the type is found but cannot be loaded,
-            // a System.TypeLoadException is thrown even if throwOnError is false.
-            type = _getType(resolvedTypeName);
-            return type is not null;
-        }
-        catch
-        {
-            type = default;
-            return false;
-        }
-    }
-
-    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
-    private static Type? GetType(string typeName) => Type.GetType(typeName, throwOnError: false);
 
     public static XElement? EncryptIfNecessary(this IXmlEncryptor encryptor, XElement element)
     {

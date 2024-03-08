@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -38,5 +39,16 @@ internal static class TypeExtensions
         {
             throw new InvalidOperationException($"Unable to load type '{typeName}'. If the app is published with trimming then this type may have been trimmed. Ensure the type's assembly is excluded from trimming.", ex);
         }
+    }
+
+    public static bool MatchType(string resolvedTypeName, ITypeNameResolver typeNameResolver, Type matchType)
+    {
+        // Before attempting to resolve the name to a type, check if it starts with the full name of the type.
+        if (matchType.FullName != null && resolvedTypeName.StartsWith(matchType.FullName, StringComparison.Ordinal))
+        {
+            return typeNameResolver.TryResolveType(resolvedTypeName, out var resolvedType) && resolvedType == matchType;
+        }
+
+        return false;
     }
 }
