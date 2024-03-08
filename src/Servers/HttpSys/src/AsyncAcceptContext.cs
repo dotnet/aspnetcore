@@ -17,6 +17,9 @@ internal sealed unsafe partial class AsyncAcceptContext : IValueTaskSource<Reque
 
     private NativeOverlapped* _overlapped;
 
+    private readonly bool _logExpectationFailures = AppContext.TryGetSwitch(
+        "Microsoft.AspNetCore.Server.HttpSys.LogAcceptExpectationFailure", out var enabled) && enabled;
+
     // mutable struct; do not make this readonly
     private ManualResetValueTaskSourceCore<RequestContext> _mrvts = new()
     {
@@ -54,11 +57,11 @@ internal sealed unsafe partial class AsyncAcceptContext : IValueTaskSource<Reque
         return new ValueTask<RequestContext>(this, _mrvts.Version);
     }
 
-    private void IOCompleted(uint errorCode, uint numBytes)
+    private void IOCompleted(uint errorCode, uint numBytes, bool managed)
     {
         try
         {
-            ObserveCompletion(); // expectation tracking
+            ObserveCompletion(managed); // expectation tracking
             if (errorCode != ErrorCodes.ERROR_SUCCESS &&
                 errorCode != ErrorCodes.ERROR_MORE_DATA)
             {
@@ -118,7 +121,7 @@ internal sealed unsafe partial class AsyncAcceptContext : IValueTaskSource<Reque
     private static unsafe void IOWaitCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlapped)
     {
         var acceptContext = (AsyncAcceptContext)ThreadPoolBoundHandle.GetNativeOverlappedState(nativeOverlapped)!;
-        acceptContext.IOCompleted(errorCode, numBytes);
+        acceptContext.IOCompleted(errorCode, numBytes, false);
     }
 
     private void SetExpectCompletion() // we anticipate a completion *might* occur
@@ -128,7 +131,10 @@ internal sealed unsafe partial class AsyncAcceptContext : IValueTaskSource<Reque
         var value = Interlocked.Exchange(ref _expectedCompletionCount, 1); // should have been 0
         if (value != 0)
         {
-            Log.AcceptSetExpectationMismatch(_logger, value);
+            if (_logExpectationFailures)
+            {
+                Log.AcceptSetExpectationMismatch(_logger, value);
+            }
             Debug.Assert(false, nameof(SetExpectCompletion)); // fail hard in debug
         }
     }
@@ -137,16 +143,22 @@ internal sealed unsafe partial class AsyncAcceptContext : IValueTaskSource<Reque
         var value = Interlocked.Decrement(ref _expectedCompletionCount); // should have been 1, so now 0
         if (value != 0)
         {
-            Log.AcceptCancelExpectationMismatch(_logger, value);
+            if (_logExpectationFailures)
+            {
+                Log.AcceptCancelExpectationMismatch(_logger, value);
+            }
             Debug.Assert(false, nameof(CancelExpectCompletion)); // fail hard in debug
         }
     }
-    private void ObserveCompletion() // a completion was invoked
+    private void ObserveCompletion(bool managed) // a completion was invoked
     {
         var value = Interlocked.Decrement(ref _expectedCompletionCount); // should have been 1, so now 0
         if (value != 0)
         {
-            Log.AcceptObserveExpectationMismatch(_logger, value);
+            if (_logExpectationFailures)
+            {
+                Log.AcceptObserveExpectationMismatch(_logger, managed ? "managed" : "unmanaged", value);
+            }
             Debug.Assert(false, nameof(ObserveCompletion)); // fail hard in debug
         }
     }
@@ -201,7 +213,7 @@ internal sealed unsafe partial class AsyncAcceptContext : IValueTaskSource<Reque
                     if (HttpSysListener.SkipIOCPCallbackOnSuccess)
                     {
                         // IO operation completed synchronously - callback won't be called to signal completion.
-                        IOCompleted(statusCode, bytesTransferred); // marks completion
+                        IOCompleted(statusCode, bytesTransferred, true); // marks completion
                     }
                     // else: callback fired by IOCP (at some point), which marks completion
                     break;
