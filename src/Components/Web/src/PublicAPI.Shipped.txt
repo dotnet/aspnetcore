@@ -365,6 +365,8 @@ Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.ShiftKey.get -> bool
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.ShiftKey.set -> void
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Type.get -> string!
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.Type.set -> void
+Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
+Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.set -> void
 Microsoft.AspNetCore.Components.Web.MouseEventArgs
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.AltKey.get -> bool
 Microsoft.AspNetCore.Components.Web.MouseEventArgs.AltKey.set -> void
