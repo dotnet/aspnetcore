@@ -260,6 +260,7 @@ function parseKeyboardEvent(event: KeyboardEvent): KeyboardEventArgs {
     altKey: event.altKey,
     metaKey: event.metaKey,
     type: event.type,
+    isComposing: event.isComposing,
   };
 }
 
