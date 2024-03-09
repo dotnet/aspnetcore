@@ -412,6 +412,7 @@ interface KeyboardEventArgs {
   altKey: boolean;
   metaKey: boolean;
   type: string;
+  isComposing: boolean;
 }
 
 interface MouseEventArgs {
