@@ -40,4 +40,10 @@
       <_Parameter2>$(RepoRoot)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="RouteEmbeddedLanguage\Class1.cs.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

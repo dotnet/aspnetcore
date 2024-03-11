@@ -1,16 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 public partial class RoutePatternAnalyzerTests
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
+
+    public RoutePatternAnalyzerTests(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
 
     [Fact]
     public async Task CommentOnString_ReportResults()
@@ -511,5 +520,40 @@ public class TestController
 
         // Assert
         Assert.Empty(diagnostics);
+    }
+
+
+
+    [Fact]
+    public async Task ControllerAction_MatchedRouteParameter_NoDiagnosticssdfsdf()
+    {
+        // Arrange
+        var fileText = File.ReadAllText("RouteEmbeddedLanguage\\Class1.cs.txt");
+
+        var source = TestSource.Read(@"
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+" + fileText);
+
+        // Act 1
+        var diagnostics1 = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert 1
+        Assert.Empty(diagnostics1);
+
+        // Act 2
+        var stopwatch = Stopwatch.StartNew();
+
+        var diagnostics2 = await Runner.GetDiagnosticsAsync(source.Source);
+
+        _testOutputHelper.WriteLine($"Elapsed time: {stopwatch.Elapsed}");
+
+        // Assert 2
+        Assert.Empty(diagnostics2);
     }
 }
