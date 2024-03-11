@@ -525,7 +525,7 @@ public class TestController
 
 
     [Fact]
-    public async Task ControllerAction_MatchedRouteParameter_NoDiagnosticssdfsdf()
+    public async Task ConcatString_PerformanceTest()
     {
         // Arrange
         var fileText = File.ReadAllText("RouteEmbeddedLanguage\\Class1.cs.txt");
@@ -541,16 +541,17 @@ class Program
 " + fileText);
 
         // Act 1
+        // Warm up.
         var diagnostics1 = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert 1
         Assert.Empty(diagnostics1);
 
         // Act 2
+        // Measure analysis.
         var stopwatch = Stopwatch.StartNew();
 
         var diagnostics2 = await Runner.GetDiagnosticsAsync(source.Source);
-
         _testOutputHelper.WriteLine($"Elapsed time: {stopwatch.Elapsed}");
 
         // Assert 2
