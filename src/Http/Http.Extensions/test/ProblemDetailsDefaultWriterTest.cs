@@ -1,18 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Http.Json;
-using System.Text.Json.Serialization;
-using Microsoft.CodeAnalysis;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
