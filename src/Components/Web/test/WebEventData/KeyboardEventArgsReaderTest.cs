@@ -22,7 +22,7 @@ public class KeyboardEventArgsReaderTest
             Repeat = true,
             ShiftKey = true,
             Type = "type1",
-            IsComposing = false,
+            IsComposing = true,
         };
 
         var jsonElement = GetJsonElement(args);

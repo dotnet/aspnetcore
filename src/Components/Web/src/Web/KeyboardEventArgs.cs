@@ -58,7 +58,7 @@ public class KeyboardEventArgs : EventArgs
     public string Type { get; set; } = default!;
 
     /// <summary>
-    /// true if the event is fired after a composition session, otherwise false.
+    /// true if the event is fired within a composition session, otherwise false.
     /// </summary>
     public bool IsComposing { get; set; }
 }
