@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
@@ -53,6 +54,10 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     {
         var httpContext = context.HttpContext;
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
+
+        var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+        context.ProblemDetails.Extensions["traceId"] = traceId;
+
         _options.CustomizeProblemDetails?.Invoke(context);
 
         var problemDetailsType = context.ProblemDetails.GetType();
