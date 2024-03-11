@@ -523,7 +523,6 @@ public class TestController
     }
 
 
-
     [Fact]
     public async Task ConcatString_PerformanceTest()
     {
