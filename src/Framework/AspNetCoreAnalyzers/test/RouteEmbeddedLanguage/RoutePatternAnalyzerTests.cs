@@ -522,7 +522,6 @@ public class TestController
         Assert.Empty(diagnostics);
     }
 
-
     [Fact]
     public async Task ConcatString_PerformanceTest()
     {
