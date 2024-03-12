@@ -40,8 +40,6 @@ internal static class OutputCacheEntryFormatter
     public static async ValueTask StoreAsync(string key, OutputCacheEntry value, HashSet<string>? tags, TimeSpan duration, IOutputCacheStore store, ILogger logger, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
-        ArgumentNullException.ThrowIfNull(value.Body);
-        ArgumentNullException.ThrowIfNull(value.Headers);
 
         var buffer = new RecyclableArrayBufferWriter<byte>();
         Serialize(buffer, value);
