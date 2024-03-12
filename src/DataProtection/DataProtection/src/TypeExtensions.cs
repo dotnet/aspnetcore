@@ -44,6 +44,7 @@ internal static class TypeExtensions
     public static bool MatchType(string resolvedTypeName, ITypeNameResolver typeNameResolver, Type matchType)
     {
         // Before attempting to resolve the name to a type, check if it starts with the full name of the type.
+        // Use StartsWith to ignore potential assembly version differences.
         if (matchType.FullName != null && resolvedTypeName.StartsWith(matchType.FullName, StringComparison.Ordinal))
         {
             return typeNameResolver.TryResolveType(resolvedTypeName, out var resolvedType) && resolvedType == matchType;
