@@ -48,7 +48,8 @@ internal sealed class RouteUsageCache
 
             var semanticModel = _compilation.GetSemanticModel(syntaxToken.SyntaxTree);
 
-            if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, cancellationToken, out var options))
+            LastInspectedStringNode? lastInspectedStringNode = null;
+            if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, ref lastInspectedStringNode, cancellationToken, out var options))
             {
                 return null;
             }

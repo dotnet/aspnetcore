@@ -34,17 +34,34 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         var routeUsageCache = RouteUsageCache.GetOrCreate(context.SemanticModel.Compilation);
 
         // Update to use FilterSpan when available. See https://github.com/dotnet/aspnetcore/issues/48157
-        foreach (var item in root.DescendantTokens())
+
+        LastInspectedStringNode? lastInspectedStringNode = null;
+
+        var stack = new Stack<SyntaxNode>();
+        stack.Push(root);
+
+        while (stack.Count != 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var current = stack.Pop();
 
-            AnalyzeToken(context, routeUsageCache, item, cancellationToken);
+            foreach (var child in current.ChildNodesAndTokens())
+            {
+                if (child.IsNode)
+                {
+                    stack.Push(child.AsNode()!);
+                }
+                else
+                {
+                    AnalyzeToken(context, routeUsageCache, child.AsToken(), ref lastInspectedStringNode, cancellationToken);
+                }
+            }
         }
     }
 
-    private static void AnalyzeToken(SemanticModelAnalysisContext context, RouteUsageCache routeUsageCache, SyntaxToken token, CancellationToken cancellationToken)
+    private static void AnalyzeToken(SemanticModelAnalysisContext context, RouteUsageCache routeUsageCache, SyntaxToken token, ref LastInspectedStringNode? lastInspectedStringNode, CancellationToken cancellationToken)
     {
-        if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, cancellationToken, out var options))
+        if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, context.SemanticModel, ref lastInspectedStringNode, cancellationToken, out var options))
         {
             return;
         }
