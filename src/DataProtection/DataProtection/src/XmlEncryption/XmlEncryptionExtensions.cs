@@ -69,24 +69,28 @@ internal static unsafe class XmlEncryptionExtensions
 
     private static IXmlDecryptor CreateDecryptor(IActivator activator, string decryptorTypeName)
     {
-        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
+        // typeNameToMatch will be used for matching against known types but not passed to the activator.
+        // The activator will do its own forwarding.
+        var typeNameToMatch = TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName)
             ? forwardedTypeName
             : decryptorTypeName;
+
+        // Note: ITypeNameResolver is only implemented on the activator in tests. In production, it's always DefaultTypeNameResolver.
         var typeNameResolver = activator as ITypeNameResolver ?? DefaultTypeNameResolver.Instance;
 
-        if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(DpapiNGXmlDecryptor)))
+        if (typeof(DpapiNGXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
         {
             return activator.CreateInstance<DpapiNGXmlDecryptor>(decryptorTypeName);
         }
-        else if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(DpapiXmlDecryptor)))
+        else if (typeof(DpapiXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
         {
             return activator.CreateInstance<DpapiXmlDecryptor>(decryptorTypeName);
         }
-        else if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(EncryptedXmlDecryptor)))
+        else if (typeof(EncryptedXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
         {
             return activator.CreateInstance<EncryptedXmlDecryptor>(decryptorTypeName);
         }
-        else if (TypeExtensions.MatchType(resolvedTypeName, typeNameResolver, typeof(NullXmlDecryptor)))
+        else if (typeof(NullXmlDecryptor).MatchName(typeNameToMatch, typeNameResolver))
         {
             return activator.CreateInstance<NullXmlDecryptor>(decryptorTypeName);
         }

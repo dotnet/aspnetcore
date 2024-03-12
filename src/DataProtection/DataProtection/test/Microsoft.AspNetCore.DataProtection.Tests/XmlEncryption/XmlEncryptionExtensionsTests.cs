@@ -83,6 +83,7 @@ public class XmlEncryptionExtensionsTests
     {
         // Arrange
         var decryptorTypeName = typeof(NullXmlDecryptor).AssemblyQualifiedName;
+        TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName);
 
         var original = XElement.Parse(@$"
                 <x:encryptedSecret decryptorType='{decryptorTypeName}' xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
@@ -95,7 +96,7 @@ public class XmlEncryptionExtensionsTests
         mockActivator.Setup(o => o.CreateInstance(typeof(NullXmlDecryptor), decryptorTypeName)).Returns(new NullXmlDecryptor());
         var mockTypeNameResolver = mockActivator.As<ITypeNameResolver>();
         var resolvedType = typeof(NullXmlDecryptor);
-        mockTypeNameResolver.Setup(mockTypeNameResolver => mockTypeNameResolver.TryResolveType(It.IsAny<string>(), out resolvedType)).Returns(true);
+        mockTypeNameResolver.Setup(mockTypeNameResolver => mockTypeNameResolver.TryResolveType(forwardedTypeName, out resolvedType)).Returns(true);
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IActivator>(mockActivator.Object);
@@ -107,7 +108,7 @@ public class XmlEncryptionExtensionsTests
 
         // Assert
         XmlAssert.Equal("<value />", retVal);
-        mockTypeNameResolver.Verify(o => o.TryResolveType(It.IsAny<string>(), out resolvedType), Times.Once());
+        mockTypeNameResolver.Verify(o => o.TryResolveType(forwardedTypeName, out resolvedType), Times.Once());
     }
 
     [Fact]
@@ -126,7 +127,7 @@ public class XmlEncryptionExtensionsTests
         var mockActivator = new Mock<IActivator>();
         mockActivator.Setup(o => o.CreateInstance(typeof(IXmlDecryptor), decryptorTypeName)).Returns(new NullXmlDecryptor());
         var mockTypeNameResolver = mockActivator.As<ITypeNameResolver>();
-        var resolvedType = typeof(NullXmlDecryptor);
+        Type resolvedType = null;
         mockTypeNameResolver.Setup(mockTypeNameResolver => mockTypeNameResolver.TryResolveType(It.IsAny<string>(), out resolvedType)).Returns(false);
 
         var serviceCollection = new ServiceCollection();
