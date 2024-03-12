@@ -735,6 +735,20 @@ public static class TypedResults
     public static UnprocessableEntity<TValue> UnprocessableEntity<TValue>(TValue? error) => new(error);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="HttpResults.InternalServerError"/> for the response.</returns>
+    public static InternalServerError InternalServerError() => ResultsCache.InternalServerError;
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="error">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.InternalServerError{TValue}"/> for the response.</returns>
+    public static InternalServerError<TValue> InternalServerError<TValue>(TValue? error) => new(error);
+
+    /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
     /// </summary>
     /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>

@@ -147,6 +147,6 @@ internal sealed class ReferenceReadStream : Stream
 
     private void ThrowIfDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(ReferenceReadStream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

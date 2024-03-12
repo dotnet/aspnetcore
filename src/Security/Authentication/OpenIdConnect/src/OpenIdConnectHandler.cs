@@ -450,6 +450,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         GenerateCorrelationId(properties);
 
+        foreach (var additionalParameter in Options.AdditionalAuthorizationParameters)
+        {
+            message.Parameters.Add(additionalParameter.Key, additionalParameter.Value);
+        }
+
         var redirectContext = new RedirectContext(Context, Scheme, Options, properties)
         {
             ProtocolMessage = message

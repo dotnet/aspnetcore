@@ -288,6 +288,6 @@ public sealed class FileBufferingWriteStream : Stream
 
     private void ThrowIfDisposed()
     {
-        ObjectDisposedException.ThrowIf(Disposed, nameof(FileBufferingWriteStream));
+        ObjectDisposedException.ThrowIf(Disposed, this);
     }
 }

@@ -47,12 +47,12 @@ public class TestRazorCompiledItem : RazorCompiledItem
     public static string GetChecksum(string content)
     {
         var bytes = SHA1.HashData(Encoding.UTF8.GetBytes(content));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Convert.ToHexStringLower(bytes);
     }
 
     public static string GetChecksumSHA256(string content)
     {
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return Convert.ToHexStringLower(bytes);
     }
 }

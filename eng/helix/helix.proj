@@ -115,8 +115,7 @@
 
   <!--
     In inner (per-queue) builds, tell the Helix SDK to pack up our just-built App.Ref / App.Runtime layouts w/
-    the current versions. Warning: When using RunHelix.ps1, .dotnet/ folder may contain older App.Ref and
-    App.Runtime layouts.
+    the current versions.
   -->
   <Target Name="IncludeAspNetRuntime" BeforeTargets="Gather">
     <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
@@ -129,8 +128,8 @@
       <SharedFxVersion>@(_ResolvedProductVersionInfo->'%(PackageVersion)')</SharedFxVersion>
       <_AppRefSubPath>$([System.IO.Path]::Combine('packs', 'Microsoft.AspNetCore.App.Ref', '$(SharedFxVersion)'))</_AppRefSubPath>
       <_AppRuntimeSubPath>$([System.IO.Path]::Combine('shared', 'Microsoft.AspNetCore.App', '$(SharedFxVersion)'))</_AppRuntimeSubPath>
-      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRefSubPath)'))</_AppRefPath>
-      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.dotnet', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
+      <_AppRefPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'TargetingPack.Layout', '$(Configuration)', '$(_AppRefSubPath)'))</_AppRefPath>
+      <_AppRuntimePath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'obj', 'SharedFx.Layout', '$(Configuration)', '$(TargetRuntimeIdentifier)', '$(_AppRuntimeSubPath)'))</_AppRuntimePath>
 
       <!--
         Don't bother checking for App.Runtime layout because we want both and App.Ref project depends on the
@@ -147,7 +146,7 @@
     <Error Text="Targeting path location '$(_AppRefPath)' does not exist and some tests are guaranteed to fail."
         Condition=" !$(_AppRefPathExists) AND '$(DoNotRequireSharedFxHelix)' != true " />
 
-    <!-- Grab only the portions of the .dotnet/ tree built in this run and have Helix zip that up. -->
+    <!-- Grab the ref pack and runtime pack that were just built and have Helix zip that up. -->
     <ItemGroup Condition=" $(_AppRefPathExists) ">
       <HelixCorrelationPayload Include="$(_AppRefPath)"
           Condition=" $(IsWindowsHelixQueue) "

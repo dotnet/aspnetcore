@@ -249,4 +249,7 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(64, LogLevel.Debug, "Not enabling read-only key access because an XML encryptor has been specified", EventName = "NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor")]
     public static partial void NotUsingReadOnlyKeyConfigurationBecauseOfEncryptor(this ILogger logger);
+
+    [LoggerMessage(72, LogLevel.Error, "The key ring's default data protection key {KeyId:B} has been revoked.", EventName = "KeyRingDefaultKeyIsRevoked")]
+    public static partial void KeyRingDefaultKeyIsRevoked(this ILogger logger, Guid keyId);
 }

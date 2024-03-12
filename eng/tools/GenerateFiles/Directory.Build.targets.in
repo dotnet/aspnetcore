@@ -115,35 +115,28 @@
     </KnownFrameworkReference>
   </ItemGroup>
 
-  <!-- Warn if the "just-built" ASP.NET Core shared framework does not exist. -->
-  <Target Name="WarnAboutMissingSharedFramework"
-      BeforeTargets="Restore;Build;Rebuild;RunTests;Test;VSTest;Pack"
-      Condition=" $(UpdateAspNetCoreKnownFramework) ">
-    <PropertyGroup>
-      <!--
-        Property (already normalized) from Arcade SDK's RepoLayout.props. This covers all projects using the
-        Arcade SDK. Ignore $(LocalDotNetRoot) because that is set in root Directory.Build.props (where Arcade SDK
-        is imported) and therefore doesn't cover additional projects.
-      -->
-      <_DotNetRoot Condition=" '$(DotNetRoot)' != '' ">$(DotNetRoot)</_DotNetRoot>
-      <!--
-        Environment variable from eng/common/tools.ps1 scripts. This covers tests and assets that do not use the
-        Arcade SDK but are run from our build.* scripts.
-      -->
-      <_DotNetRoot Condition=" '$(_DotNetRoot)' == '' AND
-          '$(DOTNET_INSTALL_DIR)' != '' ">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</_DotNetRoot>
-      <!--
-        Environment variable from root activate.* and Helix runtest.* scripts. This covers tests and assets on
-        Helix agents and when run locally using 'msbuild' after activation.
-      -->
-      <_DotNetRoot Condition=" '$(_DotNetRoot)' == '' AND
-          '$(DOTNET_ROOT)' != '' ">$([MSBuild]::NormalizeDirectory('$(DOTNET_ROOT)'))</_DotNetRoot>
-    </PropertyGroup>
+  <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
+  <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''">
+    <EnableTargetingPackDownload>false</EnableTargetingPackDownload>
+    <EnableRuntimePackDownload>false</EnableRuntimePackDownload>
+    <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
+  </PropertyGroup>
 
-    <Error Text="Unable to determine dotnet root location." Condition=" '$(_DotNetRoot)' == '' " />
-    <Error Text="Dotnet root location '$(_DotNetRoot)' does not exist." Condition=" !EXISTS('$(_DotNetRoot)') " />
-    <Warning Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRuntimeVersion} does not exist."
-        Condition=" !EXISTS('$(_DotNetRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}') " />
+  <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''" AfterTargets="ResolveFrameworkReferences">
+    <Error Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRefVersion} ref pack does not exist."
+        Condition="!Exists('$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}\data\FrameworkList.xml') " />
+    <ItemGroup>
+      <ResolvedTargetingPack Path="$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}"
+                             NugetPackageVersion="${MicrosoftAspNetCoreAppRefVersion}"
+                             PackageDirectory="$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}"
+                             Condition="'%(ResolvedTargetingPack.RuntimeFrameworkName)' == 'Microsoft.AspNetCore.App'" />
+      <ResolvedRuntimePack PackageDirectory="$(SharedFrameworkLayoutRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}"
+                           Condition="'%(ResolvedRuntimePack.RuntimeFrameworkName)' == 'Microsoft.AspNetCore.App'" />
+      <ResolvedFrameworkReference TargetingPackPath="$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}"
+                                  TargetingPackVersion="${MicrosoftAspNetCoreAppRefVersion}"
+                                  RuntimePackPath="$(SharedFrameworkLayoutRoot)shared\Microsoft.AspNetCore.App\${MicrosoftAspNetCoreAppRuntimeVersion}"
+                                  Condition="'%(Identity)' == 'Microsoft.AspNetCore.App'" />
+    </ItemGroup>
   </Target>
 
   <!--

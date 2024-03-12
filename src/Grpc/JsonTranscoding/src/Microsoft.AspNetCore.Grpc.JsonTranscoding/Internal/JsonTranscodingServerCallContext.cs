@@ -61,7 +61,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
 
     protected override string MethodCore => _method.FullName;
 
-    protected override string HostCore => HttpContext.Request.Host.Value;
+    protected override string HostCore => HttpContext.Request.Host.Value ?? string.Empty;
 
     protected override string PeerCore
     {

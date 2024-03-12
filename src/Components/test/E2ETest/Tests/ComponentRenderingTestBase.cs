@@ -431,7 +431,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46835")]
     public void CanUseFocusExtensionToFocusElementPreventScroll()
     {
-        Browser.Manage().Window.Size = new System.Drawing.Size(100, 300);
+        Browser.Manage().Window.Size = new System.Drawing.Size(600, 600);
         var appElement = Browser.MountTestComponent<ElementFocusComponent>();
 
         var buttonElement = Browser.Exists(By.Id("focus-button-prevented"));
@@ -451,7 +451,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
         var pageYOffsetAfter = getPageYOffset();
 
         //  Verify that not scrolled
-        Assert.Equal(pageYOffsetAfter, pageYOffsetBefore);
+        Assert.Equal(pageYOffsetBefore, pageYOffsetAfter);
 
         // A local helper that gets the ID of the focused element.
         string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");

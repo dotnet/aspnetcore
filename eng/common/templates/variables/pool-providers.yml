@@ -1,15 +1,15 @@
-# Select a pool provider based off branch name. Anything with branch name containing 'release' must go into an -Svc pool, 
+# Select a pool provider based off branch name. Anything with branch name containing 'release' must go into an -Svc pool,
 # otherwise it should go into the "normal" pools. This separates out the queueing and billing of released branches.
 
-# Motivation: 
+# Motivation:
 #   Once a given branch of a repository's output has been officially "shipped" once, it is then considered to be COGS
 #   (Cost of goods sold) and should be moved to a servicing pool provider. This allows both separation of queueing
 #   (allowing release builds and main PR builds to not intefere with each other) and billing (required for COGS.
-#   Additionally, the pool provider name itself may be subject to change when the .NET Core Engineering Services 
-#   team needs to move resources around and create new and potentially differently-named pools. Using this template 
+#   Additionally, the pool provider name itself may be subject to change when the .NET Core Engineering Services
+#   team needs to move resources around and create new and potentially differently-named pools. Using this template
 #   file from an Arcade-ified repo helps guard against both having to update one's release/* branches and renaming.
 
-# How to use: 
+# How to use:
 #  This yaml assumes your shipped product branches use the naming convention "release/..." (which many do).
 #  If we find alternate naming conventions in broad usage it can be added to the condition below.
 #

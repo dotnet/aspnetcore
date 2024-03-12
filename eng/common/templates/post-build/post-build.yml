@@ -39,7 +39,7 @@ parameters:
     displayName: Enable NuGet validation
     type: boolean
     default: true
-    
+
   - name: publishInstallersAndChecksums
     displayName: Publish installers and checksums
     type: boolean
@@ -131,8 +131,8 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/nuget-validation.ps1
-            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/ 
-              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/ 
+            arguments: -PackagesPath $(Build.ArtifactStagingDirectory)/PackageArtifacts/
+              -ToolDestinationPath $(Agent.BuildDirectory)/Extract/
 
     - job:
       displayName: Signing Validation
@@ -222,9 +222,9 @@ stages:
           displayName: Validate
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/sourcelink-validation.ps1
-            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/ 
-              -ExtractPath $(Agent.BuildDirectory)/Extract/ 
-              -GHRepoName $(Build.Repository.Name) 
+            arguments: -InputPath $(Build.ArtifactStagingDirectory)/BlobArtifacts/
+              -ExtractPath $(Agent.BuildDirectory)/Extract/
+              -GHRepoName $(Build.Repository.Name)
               -GHCommit $(Build.SourceVersion)
               -SourcelinkCliVersion $(SourceLinkCLIVersion)
           continueOnError: true
@@ -259,7 +259,7 @@ stages:
           demands: Cmd
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: $(DncEngInternalBuildPool)
+          name: NetCore1ESPool-Publishing-Internal
           demands: ImageOverride -equals windows.vs2019.amd64
       steps:
         - template: setup-maestro-vars.yml
@@ -273,7 +273,7 @@ stages:
           displayName: Publish Using Darc
           inputs:
             filePath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
-            arguments: -BuildId $(BARBuildId) 
+            arguments: -BuildId $(BARBuildId)
               -PublishingInfraVersion ${{ parameters.publishingInfraVersion }}
               -AzdoToken '$(publishing-dnceng-devdiv-code-r-build-re)'
               -MaestroToken '$(MaestroApiAccessToken)'

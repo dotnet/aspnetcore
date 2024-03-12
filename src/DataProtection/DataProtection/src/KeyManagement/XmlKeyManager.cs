@@ -135,9 +135,12 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     /// <inheritdoc />
     public IKey CreateNewKey(DateTimeOffset activationDate, DateTimeOffset expirationDate)
     {
+        // For an immediately-activated key, the caller's Now may be slightly before ours,
+        // so we'll compensate to ensure that activation is never before creation.
+        var now = DateTimeOffset.UtcNow;
         return _internalKeyManager.CreateNewKey(
             keyId: Guid.NewGuid(),
-            creationDate: DateTimeOffset.UtcNow,
+            creationDate: activationDate < now ? activationDate : now,
             activationDate: activationDate,
             expirationDate: expirationDate);
     }

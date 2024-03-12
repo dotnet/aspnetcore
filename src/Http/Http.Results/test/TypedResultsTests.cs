@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.IO.Pipelines;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -1420,6 +1422,30 @@ public partial class TypedResultsTests
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+    }
+
+    [Fact]
+    public void InternalServerError_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new { };
+
+        // Act
+        var result = TypedResults.InternalServerError(value);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void InternalServerError_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = TypedResults.InternalServerError();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
     }
 
     [JsonSerializable(typeof(object))]
