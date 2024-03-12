@@ -57,6 +57,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
+            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
             if (!env.IsDevelopment())
             {
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
