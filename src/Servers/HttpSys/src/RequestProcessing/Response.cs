@@ -528,7 +528,7 @@ internal sealed class Response
                 if (!HttpApiTypes.KnownResponseHeaders.TryGetValue(headerName, out lookup) ||
                     (isOpaqueUpgrade && lookup == (int)HTTP_HEADER_ID.HttpHeaderConnection))
                 {
-                    if (unknownHeaders == null)
+                    if (unknownHeaders.Length == 0)
                     {
                         var unknownAlloc = allocator.AllocAsPointer<HTTP_UNKNOWN_HEADER>(numUnknownHeaders);
                         unknownHeaders = new Span<HTTP_UNKNOWN_HEADER>(unknownAlloc, numUnknownHeaders);
@@ -559,7 +559,7 @@ internal sealed class Response
                 }
                 else
                 {
-                    if (knownHeaderInfo == null)
+                    if (knownHeaderInfo.Length == 0)
                     {
                         var responseAlloc = allocator.AllocAsPointer<HTTP_RESPONSE_INFO>(numKnownMultiHeaders);
                         knownHeaderInfo = new Span<HTTP_RESPONSE_INFO>(responseAlloc, numKnownMultiHeaders);
