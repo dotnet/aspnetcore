@@ -40,6 +40,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54497")]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
