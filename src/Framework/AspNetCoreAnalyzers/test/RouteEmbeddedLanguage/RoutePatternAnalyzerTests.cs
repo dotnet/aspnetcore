@@ -526,7 +526,7 @@ public class TestController
     public async Task ConcatString_PerformanceTest()
     {
         // Arrange
-        var fileText = File.ReadAllText("RouteEmbeddedLanguage\\Class1.cs.txt");
+        var fileText = File.ReadAllText(System.IO.Path.Combine("RouteEmbeddedLanguage", "Class1.cs.txt"));
 
         var source = TestSource.Read(@"
 class Program
