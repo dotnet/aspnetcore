@@ -345,7 +345,6 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 . "$PSScriptRoot/common/tools.ps1"
 
 function LocateJava {
-    Write-Host "Locating java"
     $foundJdk = $false
     $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
     $localJdkPath = "$PSScriptRoot\..\.tools\jdk\win-x64\"
@@ -435,6 +434,8 @@ try {
     # Initialize the native tools before locating java.
     if ($NativeToolsOnMachine) {
         $env:NativeToolsOnMachine=$true
+        # Do not promote native tools except in cases where -NativeToolsOnMachine is passed.
+        # Currently the JDK is laid out in an incorrect pattern: https://github.com/dotnet/dnceng/issues/2185
         InitializeNativeTools
     }
 
