@@ -29,27 +29,45 @@ internal sealed class RouteUsageCache
 
     public RouteUsageModel? Get(SyntaxToken syntaxToken, CancellationToken cancellationToken)
     {
+        LastInspectedStringNode? lastInspectedStringNode = null;
+        return Get(syntaxToken, ref lastInspectedStringNode, cancellationToken);
+    }
+
+    public RouteUsageModel? Get(SyntaxToken syntaxToken, ref LastInspectedStringNode? lastInspectedStringNode, CancellationToken cancellationToken)
+    {
         if (_lazyRoutePatterns.TryGetValue(syntaxToken, out var routeUsageModel))
         {
             return routeUsageModel;
         }
 
-        return GetAndCache(syntaxToken, cancellationToken);
+        return GetAndCache(syntaxToken, ref lastInspectedStringNode, cancellationToken);
     }
 
-    private RouteUsageModel? GetAndCache(SyntaxToken syntaxToken, CancellationToken cancellationToken)
+    private sealed class RouteUsageModelLoader
     {
-        return _lazyRoutePatterns.GetOrAdd(syntaxToken, token =>
+        private readonly Compilation _compilation;
+        private readonly CancellationToken _cancellationToken;
+        private LastInspectedStringNode? _lastInspectedStringNode;
+
+        public LastInspectedStringNode? LastInspectedStringNode => _lastInspectedStringNode;
+
+        public RouteUsageModelLoader(Compilation compilation, LastInspectedStringNode? lastInspectedStringNode, CancellationToken cancellationToken)
         {
-            if (syntaxToken.SyntaxTree == null)
+            _compilation = compilation;
+            _lastInspectedStringNode = lastInspectedStringNode;
+            _cancellationToken = cancellationToken;
+        }
+
+        public RouteUsageModel? Load(SyntaxToken token)
+        {
+            if (token.SyntaxTree == null)
             {
                 return null;
             }
 
-            var semanticModel = _compilation.GetSemanticModel(syntaxToken.SyntaxTree);
+            var semanticModel = _compilation.GetSemanticModel(token.SyntaxTree);
 
-            LastInspectedStringNode? lastInspectedStringNode = null;
-            if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, ref lastInspectedStringNode, cancellationToken, out var options))
+            if (!RouteStringSyntaxDetector.IsRouteStringSyntaxToken(token, semanticModel, ref _lastInspectedStringNode, _cancellationToken, out var options))
             {
                 return null;
             }
@@ -60,10 +78,9 @@ internal sealed class RouteUsageCache
                 token,
                 semanticModel,
                 wellKnownTypes,
-                cancellationToken);
+                _cancellationToken);
 
             var virtualChars = CSharpVirtualCharService.Instance.TryConvertToVirtualChars(token);
-            var isMvc = usageContext.UsageType == RouteUsageType.MvcAction || usageContext.UsageType == RouteUsageType.MvcController;
             var tree = RoutePatternParser.TryParse(virtualChars, usageContext.RoutePatternOptions);
             if (tree == null)
             {
@@ -75,6 +92,15 @@ internal sealed class RouteUsageCache
                 RoutePattern = tree,
                 UsageContext = usageContext
             };
-        });
+        }
+    }
+
+    private RouteUsageModel? GetAndCache(SyntaxToken syntaxToken, ref LastInspectedStringNode? lastInspectedStringNode, CancellationToken cancellationToken)
+    {
+        var routeUsageModelLoader = new RouteUsageModelLoader(_compilation, lastInspectedStringNode, cancellationToken);
+        var model = _lazyRoutePatterns.GetOrAdd(syntaxToken, routeUsageModelLoader.Load);
+        lastInspectedStringNode = routeUsageModelLoader.LastInspectedStringNode;
+
+        return model;
     }
 }
