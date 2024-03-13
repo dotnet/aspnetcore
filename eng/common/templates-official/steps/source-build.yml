@@ -1,0 +1,108 @@
+parameters:
+  # This template adds arcade-powered source-build to CI.
+
+  # This is a 'steps' template, and is intended for advanced scenarios where the existing build
+  # infra has a careful build methodology that must be followed. For example, a repo
+  # (dotnet/runtime) might choose to clone the GitHub repo only once and store it as a pipeline
+  # artifact for all subsequent jobs to use, to reduce dependence on a strong network connection to
+  # GitHub. Using this steps template leaves room for that infra to be included.
+
+  # Defines the platform on which to run the steps. See 'eng/common/templates-official/job/source-build.yml'
+  # for details. The entire object is described in the 'job' template for simplicity, even though
+  # the usage of the properties on this object is split between the 'job' and 'steps' templates.
+  platform: {}
+
+steps:
+# Build. Keep it self-contained for simple reusability. (No source-build-specific job variables.)
+- script: |
+    set -x
+    df -h
+
+    # If building on the internal project, the artifact feeds variable may be available (usually only if needed)
+    # In that case, call the feed setup script to add internal feeds corresponding to public ones.
+    # In addition, add an msbuild argument to copy the WIP from the repo to the target build location.
+    # This is because SetupNuGetSources.sh will alter the current NuGet.config file, and we need to preserve those
+    # changes.
+    $internalRestoreArgs=
+    if [ '$(dn-bot-dnceng-artifact-feeds-rw)' != '$''(dn-bot-dnceng-artifact-feeds-rw)' ]; then
+      # Temporarily work around https://github.com/dotnet/arcade/issues/7709
+      chmod +x $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+      $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $(dn-bot-dnceng-artifact-feeds-rw)
+      internalRestoreArgs='/p:CopyWipIntoInnerSourceBuildRepo=true'
+
+      # The 'Copy WIP' feature of source build uses git stash to apply changes from the original repo.
+      # This only works if there is a username/email configured, which won't be the case in most CI runs.
+      git config --get user.email
+      if [ $? -ne 0 ]; then
+        git config user.email dn-bot@microsoft.com
+        git config user.name dn-bot
+      fi
+    fi
+
+    # If building on the internal project, the internal storage variable may be available (usually only if needed)
+    # In that case, add variables to allow the download of internal runtimes if the specified versions are not found
+    # in the default public locations.
+    internalRuntimeDownloadArgs=
+    if [ '$(dotnetbuilds-internal-container-read-token-base64)' != '$''(dotnetbuilds-internal-container-read-token-base64)' ]; then
+      internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64) --runtimesourcefeed https://dotnetbuilds.blob.core.windows.net/internal --runtimesourcefeedkey $(dotnetbuilds-internal-container-read-token-base64)'
+    fi
+
+    buildConfig=Release
+    # Check if AzDO substitutes in a build config from a variable, and use it if so.
+    if [ '$(_BuildConfig)' != '$''(_BuildConfig)' ]; then
+      buildConfig='$(_BuildConfig)'
+    fi
+
+    officialBuildArgs=
+    if [ '${{ and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}' = 'True' ]; then
+      officialBuildArgs='/p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
+    fi
+
+    targetRidArgs=
+    if [ '${{ parameters.platform.targetRID }}' != '' ]; then
+      targetRidArgs='/p:TargetRid=${{ parameters.platform.targetRID }}'
+    fi
+
+    runtimeOsArgs=
+    if [ '${{ parameters.platform.runtimeOS }}' != '' ]; then
+      runtimeOsArgs='/p:RuntimeOS=${{ parameters.platform.runtimeOS }}'
+    fi
+
+    publishArgs=
+    if [ '${{ parameters.platform.skipPublishValidation }}' != 'true' ]; then
+      publishArgs='--publish'
+    fi
+
+    ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
+      --configuration $buildConfig \
+      --restore --build --pack $publishArgs -bl \
+      $officialBuildArgs \
+      $internalRuntimeDownloadArgs \
+      $internalRestoreArgs \
+      $targetRidArgs \
+      $runtimeOsArgs \
+      /p:SourceBuildNonPortable=${{ parameters.platform.nonPortable }} \
+      /p:ArcadeBuildFromSource=true
+  displayName: Build
+
+# Upload build logs for diagnosis.
+- task: CopyFiles@2
+  displayName: Prepare BuildLogs staging directory
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: |
+      **/*.log
+      **/*.binlog
+      artifacts/source-build/self/prebuilt-report/**
+    TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
+    CleanTargetFolder: true
+  continueOnError: true
+  condition: succeededOrFailed()
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish BuildLogs
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/BuildLogs'
+    artifactName: BuildLogs_SourceBuild_${{ parameters.platform.name }}_Attempt$(System.JobAttempt)
+  continueOnError: true
+  condition: succeededOrFailed()
