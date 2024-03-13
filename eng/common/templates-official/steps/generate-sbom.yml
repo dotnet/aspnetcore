@@ -1,0 +1,44 @@
+# BuildDropPath - The root folder of the drop directory for which the manifest file will be generated.
+# PackageName - The name of the package this SBOM represents.
+# PackageVersion - The version of the package this SBOM represents. 
+# ManifestDirPath - The path of the directory where the generated manifest files will be placed
+
+parameters:
+  PackageVersion: 6.0.0
+  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+  PackageName: '.NET'
+  ManifestDirPath: $(Build.ArtifactStagingDirectory)/sbom
+  sbomContinueOnError: true
+
+steps:
+- task: PowerShell@2 
+  displayName: Prep for SBOM generation in (Non-linux)
+  condition: or(eq(variables['Agent.Os'], 'Windows_NT'), eq(variables['Agent.Os'], 'Darwin'))
+  inputs: 
+    filePath: ./eng/common/generate-sbom-prep.ps1
+    arguments: ${{parameters.manifestDirPath}}
+
+# Chmodding is a workaround for https://github.com/dotnet/arcade/issues/8461
+- script: |
+    chmod +x ./eng/common/generate-sbom-prep.sh
+    ./eng/common/generate-sbom-prep.sh ${{parameters.manifestDirPath}}
+  displayName: Prep for SBOM generation in (Linux)
+  condition: eq(variables['Agent.Os'], 'Linux')
+  continueOnError: ${{ parameters.sbomContinueOnError }}
+
+- task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+  displayName: 'Generate SBOM manifest'
+  continueOnError: ${{ parameters.sbomContinueOnError }}
+  inputs:
+      PackageName: ${{ parameters.packageName }}
+      BuildDropPath: ${{ parameters.buildDropPath }}
+      PackageVersion: ${{ parameters.packageVersion }}
+      ManifestDirPath: ${{ parameters.manifestDirPath }}
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish SBOM manifest
+  continueOnError: ${{parameters.sbomContinueOnError}}
+  inputs:
+    targetPath: '${{parameters.manifestDirPath}}'
+    artifactName: $(ARTIFACT_NAME)
+
