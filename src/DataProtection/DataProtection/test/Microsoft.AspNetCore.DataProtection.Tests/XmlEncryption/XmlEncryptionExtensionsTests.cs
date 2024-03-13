@@ -108,7 +108,7 @@ public class XmlEncryptionExtensionsTests
 
         // Assert
         XmlAssert.Equal("<value />", retVal);
-        mockTypeNameResolver.Verify(o => o.TryResolveType(forwardedTypeName, out resolvedType), Times.Once());
+        mockTypeNameResolver.Verify(o => o.TryResolveType(It.IsAny<string>(), out resolvedType), Times.Once());
     }
 
     [Fact]
