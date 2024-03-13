@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -39,11 +39,5 @@
       <_Parameter1>RepoRoot</_Parameter1>
       <_Parameter2>$(RepoRoot)</_Parameter2>
     </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="RouteEmbeddedLanguage\Class1.cs.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>
