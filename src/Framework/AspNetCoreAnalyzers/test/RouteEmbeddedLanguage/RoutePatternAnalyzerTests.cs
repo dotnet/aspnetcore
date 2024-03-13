@@ -574,7 +574,7 @@ public class TestController
         // lang=Route
         static readonly string _s =
     """);
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 2000; i++)
         {
             builder.AppendLine("        \"a{}bc\" +");
         }
@@ -588,6 +588,6 @@ public class TestController
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert
-        Assert.Equal(100, diagnostics.Length);
+        Assert.Equal(2000, diagnostics.Length);
     }
 }

@@ -66,7 +66,7 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var routeUsage = routeUsageCache.Get(token, cancellationToken);
+        var routeUsage = routeUsageCache.Get(token, ref lastInspectedStringNode, cancellationToken);
         if (routeUsage is null)
         {
             return;
