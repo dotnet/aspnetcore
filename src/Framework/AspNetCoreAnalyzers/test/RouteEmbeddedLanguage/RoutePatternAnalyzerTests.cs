@@ -534,7 +534,7 @@ public class TestController
         static void Main() { }
         static readonly string _s =
     """);
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < 2000; i++)
         {
             builder.AppendLine("        \"a{}bc\" +");
         }
