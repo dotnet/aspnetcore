@@ -12,8 +12,6 @@
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
       ]
     },
-    "Git": "2.22.0",
-    "jdk": "11.0.3",
     "vs": {
       "version": "17.2",
       "components": [
@@ -24,6 +22,9 @@
       ]
     },
     "xcopy-msbuild": "17.1.0"
+  },
+  "native-tools": {
+    "jdk": "11.0.22"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.24159.1",
