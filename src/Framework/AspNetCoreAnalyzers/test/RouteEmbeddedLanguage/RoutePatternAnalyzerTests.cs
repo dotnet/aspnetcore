@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -526,17 +527,22 @@ public class TestController
     public async Task ConcatString_PerformanceTest()
     {
         // Arrange
-        var fileText = File.ReadAllText(System.IO.Path.Combine("RouteEmbeddedLanguage", "Class1.cs.txt"));
-
-        var source = TestSource.Read(@"
-class Program
-{
-    static void Main()
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
     {
+        static void Main() { }
+        static readonly string _s =
+    """);
+        for (var i = 0; i < 3; i++)
+        {
+            builder.AppendLine("        \"a{}bc\" +");
+        }
+        builder.AppendLine("""
+            "";
     }
-}
-
-" + fileText);
+    """);
+        var source = TestSource.Read(builder.ToString());
 
         // Act 1
         // Warm up.
@@ -554,5 +560,34 @@ class Program
 
         // Assert 2
         Assert.Empty(diagnostics2);
+    }
+
+    [Fact]
+    public async Task ConcatString_DetectLanguage_WarningsReported()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        // lang=Route
+        static readonly string _s =
+    """);
+        for (var i = 0; i < 100; i++)
+        {
+            builder.AppendLine("        \"a{}bc\" +");
+        }
+        builder.AppendLine("""
+            "";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Equal(100, diagnostics.Length);
     }
 }
