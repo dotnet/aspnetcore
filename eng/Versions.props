@@ -172,8 +172,8 @@
     <!-- Packages from dotnet/winforms -->
     <SystemDrawingCommonVersion>9.0.0-preview.3.24160.1</SystemDrawingCommonVersion>
     <!-- Packages from dotnet/xdt -->
-    <MicrosoftWebXdtVersion>9.0.0-preview.24160.4</MicrosoftWebXdtVersion>
-    <MicrosoftSourceBuildIntermediatexdtVersion>9.0.0-preview.24160.4</MicrosoftSourceBuildIntermediatexdtVersion>
+    <MicrosoftWebXdtVersion>9.0.0-preview.24161.2</MicrosoftWebXdtVersion>
+    <MicrosoftSourceBuildIntermediatexdtVersion>9.0.0-preview.24161.2</MicrosoftSourceBuildIntermediatexdtVersion>
   </PropertyGroup>
   <!--
 
