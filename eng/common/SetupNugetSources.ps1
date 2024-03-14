@@ -49,7 +49,7 @@ function AddPackageSource($sources, $SourceName, $SourceEndPoint, $creds, $Usern
         Write-Host "Package source $SourceName already present."
     }
     
-    AddCredential -Creds $creds -Source $SourceName -Username $Username -Password $pwd
+    AddCredential -Creds $creds -Source $SourceName -Username $Username -pwd $pwd
 }
 
 # Add a credential node for the specified source
