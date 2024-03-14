@@ -25,7 +25,7 @@
   <!-- Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild.
        https://github.com/dotnet/source-build/issues/3807 -->
   <Target Name="BuildRepoTasks"
-          Condition="'$(DotNetBuildInnerRepo)' == 'true'"
+          Condition="'$(DotNetBuildInnerRepo)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
           BeforeTargets="Execute">
     <!-- If the alternative runtime location and key are present, pass those through -->
     <PropertyGroup>
@@ -88,7 +88,7 @@
   </Target>
 
   <Target Name="RestoreNpmPackages"
-          Condition="'$(BuildNodeJS)' == 'true'"
+          Condition="'$(BuildNodeJS)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
           BeforeTargets="RunInnerSourceBuildCommand">
 
     <Message Text="Checking node version..." Importance="high" />
@@ -114,7 +114,7 @@
   </Target>
 
   <Target Name="BuildNpmFiles"
-          Condition="'$(BuildNodeJS)' == 'true'"
+          Condition="'$(BuildNodeJS)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'"
           DependsOnTargets="RestoreNpmPackages"
           BeforeTargets="RunInnerSourceBuildCommand">
 
