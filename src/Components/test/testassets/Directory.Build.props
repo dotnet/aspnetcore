@@ -3,5 +3,20 @@
 
   <PropertyGroup>
     <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+
+    <!--
+      This controls whether the WebAssembly E2E tests run with the multithreaded runtime or not.
+      It also implicitly sets an assembly metadata attribute so the test servers will serve the COOP
+      headers if and only if this flag is set. Note that until https://github.com/dotnet/runtime/issues/98502
+      is fixed, you will have to delete artifacts\obj directories after changing this flag.
+    -->
+    <!--<WasmEnableThreads>true</WasmEnableThreads>-->
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(WasmEnableThreads)' == 'true'">
+      <_Parameter1>Microsoft.AspNetCore.InternalTesting.RunWebAssemblyE2ETestsWithMultithreading</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

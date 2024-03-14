@@ -3,3 +3,6 @@
 # but it's unlikely one will be available.
 
 use_installed_dotnet_cli="false"
+
+# Working around issue https://github.com/dotnet/arcade/issues/2673
+DisableNativeToolsetInstalls=true

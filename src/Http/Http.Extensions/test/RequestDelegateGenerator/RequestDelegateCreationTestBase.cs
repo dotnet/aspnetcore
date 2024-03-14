@@ -309,7 +309,7 @@ public static class {{className}}
     {
         var projectName = $"TestProject-{Guid.NewGuid()}";
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable);
+                .WithNullableContextOptions(NullableContextOptions.Disable);
         if (modifyCompilationOptions is not null)
         {
             compilationOptions = modifyCompilationOptions(compilationOptions);

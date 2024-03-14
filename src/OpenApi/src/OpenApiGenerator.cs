@@ -47,12 +47,12 @@ internal sealed class OpenApiGenerator
     }
 
     /// <summary>
-    /// Generates an <see cref="OpenApiPathItem"/> for a given <see cref="Endpoint" />.
+    /// Generates an <see cref="OpenApiOperation"/> for a given <see cref="Endpoint" />.
     /// </summary>
     /// <param name="methodInfo">The <see cref="MethodInfo"/> associated with the route handler of the endpoint.</param>
     /// <param name="metadata">The endpoint <see cref="EndpointMetadataCollection"/>.</param>
     /// <param name="pattern">The route pattern.</param>
-    /// <returns>An <see cref="OpenApiPathItem"/> annotation derived from the given inputs.</returns>
+    /// <returns>An <see cref="OpenApiOperation"/> annotation derived from the given inputs.</returns>
     internal OpenApiOperation? GetOpenApiOperation(
         MethodInfo methodInfo,
         EndpointMetadataCollection metadata,

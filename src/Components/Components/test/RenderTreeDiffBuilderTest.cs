@@ -1756,8 +1756,8 @@ public class RenderTreeDiffBuilderTest : IDisposable
             tree.AddComponentParameter(1, "MyULong", ulong.MaxValue);
             tree.AddComponentParameter(1, "MyChar", 'c');
             tree.AddComponentParameter(1, "MyEnum", StringComparison.OrdinalIgnoreCase);
-            tree.AddComponentParameter(1, "MyEventCallBack", EventCallback.Empty);
-            tree.AddComponentParameter(1, "MyEventCallBackOfT", EventCallback<int>.Empty);
+            tree.AddComponentParameter(1, "MyEventCallback", EventCallback.Empty);
+            tree.AddComponentParameter(1, "MyEventCallbackOfT", EventCallback<int>.Empty);
             tree.CloseComponent();
         }
 

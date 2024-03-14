@@ -691,6 +691,21 @@ public static partial class Results
         => error is null ? TypedResults.UnprocessableEntity() : TypedResults.UnprocessableEntity(error);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult InternalServerError()
+        => InternalServerError<object>(null);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult InternalServerError<TValue>(TValue? error)
+        => error is null ? TypedResults.InternalServerError() : TypedResults.InternalServerError(error);
+
+    /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
     /// </summary>
     /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
