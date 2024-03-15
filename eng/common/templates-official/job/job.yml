@@ -15,6 +15,7 @@ parameters:
   timeoutInMinutes: ''
   variables: []
   workspace: ''
+  templateContext: ''
 
 # Job base template specific parameters
   # See schema documentation - https://github.com/dotnet/arcade/blob/master/Documentation/AzureDevOps/TemplateSchema.md
@@ -67,6 +68,9 @@ jobs:
 
   ${{ if ne(parameters.timeoutInMinutes, '') }}:
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+
+  ${{ if ne(parameters.templateContext, '') }}:
+    templateContext: ${{ parameters.templateContext }}
 
   variables:
   - ${{ if ne(parameters.enableTelemetry, 'false') }}:

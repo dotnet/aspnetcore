@@ -320,8 +320,11 @@ internal class DeveloperExceptionPageMiddlewareImpl
         EndpointModel? endpointModel = null;
         if (endpoint != null)
         {
-            endpointModel = new EndpointModel();
-            endpointModel.DisplayName = endpoint.DisplayName;
+            endpointModel = new EndpointModel
+            {
+                DisplayName = endpoint.DisplayName,
+                Metadata = endpoint.Metadata
+            };
 
             if (endpoint is RouteEndpoint routeEndpoint)
             {

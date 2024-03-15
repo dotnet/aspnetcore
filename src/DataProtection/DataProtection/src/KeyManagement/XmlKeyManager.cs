@@ -49,6 +49,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     private const string RevokeAllKeysValue = "*";
 
     private readonly IActivator _activator;
+    private readonly ITypeNameResolver _typeNameResolver;
     private readonly AlgorithmConfiguration _authenticatedEncryptorConfiguration;
     private readonly IKeyEscrowSink? _keyEscrowSink;
     private readonly IInternalXmlKeyManager _internalKeyManager;
@@ -112,6 +113,8 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var escrowSinks = keyManagementOptions.Value.KeyEscrowSinks;
         _keyEscrowSink = escrowSinks.Count > 0 ? new AggregateKeyEscrowSink(escrowSinks) : null;
         _activator = activator;
+        // Note: ITypeNameResolver is only implemented on the activator in tests. In production, it's always DefaultTypeNameResolver.
+        _typeNameResolver = activator as ITypeNameResolver ?? DefaultTypeNameResolver.Instance;
         TriggerAndResetCacheExpirationToken(suppressLogging: true);
         _internalKeyManager = _internalKeyManager ?? this;
         _encryptorFactories = keyManagementOptions.Value.AuthenticatedEncryptorFactories;
@@ -463,27 +466,27 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         }
     }
 
-    [UnconditionalSuppressMessage("Trimmer", "IL2057", Justification = "Type.GetType result is only useful with types that are referenced by DataProtection assembly.")]
     private IAuthenticatedEncryptorDescriptorDeserializer CreateDeserializer(string descriptorDeserializerTypeName)
     {
-        var resolvedTypeName = TypeForwardingActivator.TryForwardTypeName(descriptorDeserializerTypeName, out var forwardedTypeName)
+        // typeNameToMatch will be used for matching against known types but not passed to the activator.
+        // The activator will do its own forwarding.
+        var typeNameToMatch = TypeForwardingActivator.TryForwardTypeName(descriptorDeserializerTypeName, out var forwardedTypeName)
             ? forwardedTypeName
             : descriptorDeserializerTypeName;
-        var type = Type.GetType(resolvedTypeName, throwOnError: false);
 
-        if (type == typeof(AuthenticatedEncryptorDescriptorDeserializer))
+        if (typeof(AuthenticatedEncryptorDescriptorDeserializer).MatchName(typeNameToMatch, _typeNameResolver))
         {
             return _activator.CreateInstance<AuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && typeof(CngCbcAuthenticatedEncryptorDescriptorDeserializer).MatchName(typeNameToMatch, _typeNameResolver))
         {
             return _activator.CreateInstance<CngCbcAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && typeof(CngGcmAuthenticatedEncryptorDescriptorDeserializer).MatchName(typeNameToMatch, _typeNameResolver))
         {
             return _activator.CreateInstance<CngGcmAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
-        else if (type == typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer))
+        else if (typeof(ManagedAuthenticatedEncryptorDescriptorDeserializer).MatchName(typeNameToMatch, _typeNameResolver))
         {
             return _activator.CreateInstance<ManagedAuthenticatedEncryptorDescriptorDeserializer>(descriptorDeserializerTypeName);
         }
