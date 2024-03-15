@@ -31,6 +31,11 @@ export interface WebAssemblyStartOptions {
   initializers?: WebAssemblyInitializers;
 
   /**
+   * Allows nested options to be evaluated in Boot.WebAssembly.ts
+   */
+  webAssembly?: WebAssemblyStartOptions;
+
+  /**
    * Allows to override .NET runtime configuration.
    */
   configureRuntime(builder: DotnetHostBuilder): void;
