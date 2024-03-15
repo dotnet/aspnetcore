@@ -2,7 +2,9 @@
   <!-- This file gets copied above the template test projects so that we disconnect the templates from the rest of the repository. -->
   <PropertyGroup>
     <RepoRoot>${RepoRoot}</RepoRoot>
+    <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
     <ArtifactsBinDir>${ArtifactsBinDir}</ArtifactsBinDir>
+    <TargetingPackLayoutRoot>${ArtifactsBinDir}..\obj\TargetingPack.Layout\$(Configuration)\</TargetingPackLayoutRoot>
   </PropertyGroup>
 
   <Import Project="${ArtifactsBinDir}GenerateFiles\Directory.Build.props" />
