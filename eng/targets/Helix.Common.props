@@ -2,7 +2,7 @@
   <!-- This file is shared between Helix.proj and .csproj files. -->
   <PropertyGroup>
     <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
-    <HelixQueueAlpine316>(Alpine.316.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.16-helix-amd64</HelixQueueAlpine316>
+    <HelixQueueAlpine318>(Alpine.318.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.18-helix-amd64</HelixQueueAlpine318>
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
     <HelixQueueMariner>(Mariner)Ubuntu.2004.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-1.0-helix</HelixQueueMariner>
@@ -42,7 +42,7 @@
         <HelixAvailableTargetQueue Include="$(HelixQueueAlmaLinux8)" Platform="Linux" />
 
         <!-- Containers -->
-        <HelixAvailableTargetQueue Include="$(HelixQueueAlpine316)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueAlpine318)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
