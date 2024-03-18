@@ -11,7 +11,7 @@
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <PreReleaseVersionIteration>3</PreReleaseVersionIteration>
     <ValidateBaseline>true</ValidateBaseline>
-    <IdentityModelVersion>7.1.2</IdentityModelVersion>
+    <IdentityModelVersion>7.4.1</IdentityModelVersion>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
