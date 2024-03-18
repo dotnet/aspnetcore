@@ -1,2 +1,2 @@
 #nullable enable
-static Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions.AddHubOptions<THub>(this IServiceCollection! services, Action<HubOptions<THub>> configure) where THub : Hub -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions.AddHubOptions<THub>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.SignalR.HubOptions<THub!>!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
