@@ -199,8 +199,6 @@ param(
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-echo "Building All: $All"
-
 if ($Help) {
     Get-Help $PSCommandPath
     exit 1
