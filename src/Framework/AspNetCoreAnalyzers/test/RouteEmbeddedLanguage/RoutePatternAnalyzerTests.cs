@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.CodeAnalysis;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
@@ -589,5 +590,37 @@ public class TestController
 
         // Assert
         Assert.Equal(2000, diagnostics.Length);
+    }
+
+    [Fact]
+    public async Task NestedLangComments_CorrectAnalysis()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        static readonly string _s =
+            "{test1}" +
+            // lang=Route
+            "{/*MM1*/te*st1}" +
+            "{/*MM2*/te*st2}" +
+            // lang=regex
+            "{test2}";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Collection(diagnostics,
+            d =>
+            {
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], d.Location);
+                Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
+            });
     }
 }
