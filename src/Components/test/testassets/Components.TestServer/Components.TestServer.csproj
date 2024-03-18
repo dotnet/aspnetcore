@@ -28,11 +28,13 @@
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\Components.WasmMinimal\Components.WasmMinimal.csproj" />
+    <ProjectReference Include="..\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj" />
   </ItemGroup>
 
   <ItemGroup>
