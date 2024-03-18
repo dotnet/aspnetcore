@@ -270,15 +270,17 @@ function attachInteropInvoker(): void {
     sendByteArray: (id: number, data: Uint8Array): void => {
       Blazor._internal.dotNetExports!.ReceiveByteArrayFromJS(id, data);
     },
-    invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
-      assertHeapIsNotLocked();
-      return Blazor._internal.dotNetExports!.InvokeDotNet(
-        assemblyName ? assemblyName : null,
-        methodIdentifier,
-        dotNetObjectId ?? 0,
-        argsJson,
-      ) as string;
-    },
+    invokeDotNetFromJS: runtime.runtimeBuildInfo.wasmEnableThreads
+      ? undefined
+      : (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+        assertHeapIsNotLocked();
+        return Blazor._internal.dotNetExports!.InvokeDotNet(
+          assemblyName ? assemblyName : null,
+          methodIdentifier,
+          dotNetObjectId ?? 0,
+          argsJson,
+        ) as string;
+      },
   });
 }
 

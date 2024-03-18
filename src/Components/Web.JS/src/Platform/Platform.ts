@@ -3,7 +3,6 @@
 
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { MonoObject, MonoString, MonoArray } from 'dotnet-runtime/dotnet-legacy';
 import { WebAssemblyStartOptions } from './WebAssemblyStartOptions';
 import { MonoConfig } from 'dotnet-runtime';
 
@@ -39,10 +38,16 @@ export interface HeapLock {
 // use the original 'number' instances without any boxing. The definitions are just
 // for compile-time checking, since TypeScript doesn't support nominal types.
 export interface MethodHandle { MethodHandle__DO_NOT_IMPLEMENT: unknown }
-export type System_Object = MonoObject;
+export type System_Object = {
+  __brand: 'MonoObject';
+};
 export interface System_Boolean { System_Boolean__DO_NOT_IMPLEMENT: unknown }
 export interface System_Byte { System_Byte__DO_NOT_IMPLEMENT: unknown }
 export interface System_Int { System_Int__DO_NOT_IMPLEMENT: unknown }
-export interface System_String extends System_Object, MonoString { }
-export interface System_Array<T> extends System_Object, MonoArray { }
+export interface System_String extends System_Object {
+  __brandMonoString: 'MonoString';
+}
+export interface System_Array<T> extends System_Object {
+  __brandMonoArray: 'MonoArray';
+}
 export interface Pointer { Pointer__DO_NOT_IMPLEMENT: unknown }
