@@ -34,25 +34,11 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
         var routeUsageCache = RouteUsageCache.GetOrCreate(context.SemanticModel.Compilation);
 
         // Update to use FilterSpan when available. See https://github.com/dotnet/aspnetcore/issues/48157
-        var stack = new Stack<SyntaxNode>();
-        stack.Push(root);
-
-        while (stack.Count != 0)
+        foreach (var item in root.DescendantTokens())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var current = stack.Pop();
 
-            foreach (var child in current.ChildNodesAndTokens())
-            {
-                if (child.IsNode)
-                {
-                    stack.Push(child.AsNode()!);
-                }
-                else
-                {
-                    AnalyzeToken(context, routeUsageCache, child.AsToken(), cancellationToken);
-                }
-            }
+            AnalyzeToken(context, routeUsageCache, item, cancellationToken);
         }
     }
 
