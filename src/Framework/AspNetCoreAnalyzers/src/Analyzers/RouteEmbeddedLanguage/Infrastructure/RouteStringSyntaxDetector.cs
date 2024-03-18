@@ -152,9 +152,10 @@ internal static class RouteStringSyntaxDetector
         bool first = true;
         for (var node = token.Parent; node != null; node = node.Parent)
         {
-            // Deeply nested tree of strings can cause poor performance. The identified case of this is highly concatenated strings.
-            // GetLeadingTrivia is a hot path for this analyzer so don't call it for every binary node.
+            // Deeply nested tree of strings can cause poor performance. The scenario is highly concatenated strings.
+            // GetLeadingTrivia is a hot path for this analyzer so don't call it for every parent binary node.
             // Just check the first parent and then resume checking once out of nested binary nodes.
+            // The "ConcatString_PerformanceTest" test runs to check for this scenario.
             if (first || (node is not BinaryExpressionSyntax && node.Parent is not BinaryExpressionSyntax))
             {
                 if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
