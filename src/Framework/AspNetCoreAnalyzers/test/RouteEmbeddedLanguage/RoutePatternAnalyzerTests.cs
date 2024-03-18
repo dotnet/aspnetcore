@@ -593,7 +593,7 @@ public class TestController
     }
 
     [Fact]
-    public async Task NestedLangComments_CorrectAnalysis()
+    public async Task NestedLangComment_CorrectAnalysis()
     {
         // Arrange
         var builder = new StringBuilder();
@@ -602,12 +602,11 @@ public class TestController
     {
         static void Main() { }
         static readonly string _s =
-            "{test1}" +
+            "{/*MM0*/te*st0}" +
             // lang=Route
             "{/*MM1*/te*st1}" +
             "{/*MM2*/te*st2}" +
-            // lang=regex
-            "{test2}";
+            "{test3}";
     }
     """);
         var source = TestSource.Read(builder.ToString());
@@ -620,6 +619,38 @@ public class TestController
             d =>
             {
                 AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], d.Location);
+                Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
+            });
+    }
+
+    [Fact]
+    public async Task TopLangComment_CorrectAnalysis()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        static readonly string _s =
+            // lang=Route
+            "{/*MM0*/te*st0}" +
+            "{/*MM1*/te*st1}" +
+            "{/*MM2*/te*st2}" +
+            // lang=regex
+            "{test3}";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Collection(diagnostics,
+            d =>
+            {
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM0"], d.Location);
                 Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
             });
     }

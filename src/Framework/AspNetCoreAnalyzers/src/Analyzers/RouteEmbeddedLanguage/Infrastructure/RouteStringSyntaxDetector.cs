@@ -16,7 +16,7 @@ internal static class RouteStringSyntaxDetector
 {
     private static readonly EmbeddedLanguageCommentDetector _commentDetector = new(ImmutableArray.Create("Route"));
 
-    public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, ref LastInspectedStringNode? lastInspectedStringNode, CancellationToken cancellationToken, out RouteOptions options)
+    public static bool IsRouteStringSyntaxToken(SyntaxToken token, SemanticModel semanticModel, CancellationToken cancellationToken, out RouteOptions options)
     {
         options = default;
 
@@ -25,19 +25,7 @@ internal static class RouteStringSyntaxDetector
             return false;
         }
 
-        var match = TryGetStringFormat(token, semanticModel, lastInspectedStringNode, cancellationToken, out var identifier, out var stringOptions);
-
-        // Remember the last inspected string node. Used in future calls to quickly exit from deeply nested trees.
-        if (token.Parent is { } stringParentNode)
-        {
-            lastInspectedStringNode = new LastInspectedStringNode(stringParentNode, identifier, stringOptions);
-        }
-        else
-        {
-            lastInspectedStringNode = null;
-        }
-
-        if (!match)
+        if (!TryGetStringFormat(token, semanticModel, cancellationToken, out var identifier, out var stringOptions))
         {
             return false;
         }
@@ -68,7 +56,6 @@ internal static class RouteStringSyntaxDetector
     private static bool TryGetStringFormat(
         SyntaxToken token,
         SemanticModel semanticModel,
-        LastInspectedStringNode? lastInspectedStringNode,
         CancellationToken cancellationToken,
         [NotNullWhen(true)] out string? identifier,
         out IEnumerable<string>? options)
@@ -81,7 +68,7 @@ internal static class RouteStringSyntaxDetector
             return false;
         }
 
-        if (HasLanguageComment(token, lastInspectedStringNode, out identifier, out options))
+        if (HasLanguageComment(token, out identifier, out options))
         {
             return true;
         }
@@ -154,30 +141,26 @@ internal static class RouteStringSyntaxDetector
 
     private static bool HasLanguageComment(
         SyntaxToken token,
-        LastInspectedStringNode? lastInspectedStringNode,
         [NotNullWhen(true)] out string? identifier,
         [NotNullWhen(true)] out IEnumerable<string>? options)
     {
-        if (TryMatchPreviousStringNode(token.Parent, lastInspectedStringNode, out identifier, out options))
-        {
-            return identifier != null;
-        }
-
         if (HasLanguageComment(token.GetPreviousToken().TrailingTrivia, out identifier, out options))
         {
             return true;
         }
 
+        bool first = true;
         for (var node = token.Parent; node != null; node = node.Parent)
         {
-            if (TryMatchPreviousStringNode(node.Parent, lastInspectedStringNode, out identifier, out options))
+            // Deeply nested tree of strings can cause poor performance. The identified case of this is highly concatenated strings.
+            // GetLeadingTrivia is a hot path for this analyzer so don't call it for every additional node.
+            // Just check the first parent and then resume checking once out of the concatenation.
+            if (first || (node is not BinaryExpressionSyntax && node.Parent is not BinaryExpressionSyntax))
             {
-                return identifier != null;
-            }
-
-            if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
-            {
-                return true;
+                if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
+                {
+                    return true;
+                }
             }
 
             // Stop walking up once we hit a statement.  We don't need/want statements higher up the parent chain to
@@ -186,33 +169,11 @@ internal static class RouteStringSyntaxDetector
             {
                 break;
             }
+
+            first = false;
         }
 
         return false;
-
-        // Searching for the language comment on all parents is expensive (GetLeadingTrivia) if the token is deeply nested.
-        // An example of this is a string with hundreds of concatenations. Avoid this by checking the last inspected string node.
-        // The last inspected string will be a parent and allows us to exit quickly from a deeply nested tree.
-        static bool TryMatchPreviousStringNode(
-            SyntaxNode? node,
-            LastInspectedStringNode? lastInspectedStringNode,
-            out string? identifier,
-            out IEnumerable<string>? options)
-        {
-            if (lastInspectedStringNode is { } previousNode)
-            {
-                if (node != null && node == previousNode.Node.Parent)
-                {
-                    identifier = previousNode.Identifier;
-                    options = previousNode.Options;
-                    return true;
-                }
-            }
-
-            identifier = null;
-            options = null;
-            return false;
-        }
     }
 
     private static bool HasLanguageComment(
@@ -573,19 +534,5 @@ internal static class RouteStringSyntaxDetector
         }
 
         return ImmutableArray<ISymbol>.Empty;
-    }
-}
-
-internal readonly struct LastInspectedStringNode
-{
-    public SyntaxNode Node { get; }
-    public string? Identifier { get; }
-    public IEnumerable<string>? Options { get; }
-
-    public LastInspectedStringNode(SyntaxNode node, string? identifier, IEnumerable<string>? options)
-    {
-        Node = node;
-        Identifier = identifier;
-        Options = options;
     }
 }
