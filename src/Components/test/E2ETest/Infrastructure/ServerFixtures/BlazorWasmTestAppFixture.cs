@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TestServer;
 using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -58,6 +59,11 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
         {
             args.Add("--environment");
             args.Add(Environment);
+        }
+
+        if (WebAssemblyTestHelper.MultithreadingIsEnabled())
+        {
+            args.Add("--apply-cop-headers");
         }
 
         return DevHostServerProgram.BuildWebHost(args.ToArray());

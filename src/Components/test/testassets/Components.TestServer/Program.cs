@@ -54,14 +54,21 @@ public class Program
         var contentRoot = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.BasicTestApp.ContentRoot")
             .Value;
+        var finalArgs = new List<string>();
+        finalArgs.AddRange(args);
+        finalArgs.AddRange(
+        [
+            "--contentroot", contentRoot,
+            "--pathbase", "/subdir",
+            "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
+        ]);
 
-        var finalArgs = args.Concat(new[]
+        if (WebAssemblyTestHelper.MultithreadingIsEnabled())
         {
-                "--contentroot", contentRoot,
-                "--pathbase", "/subdir",
-                "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
-            }).ToArray();
-        var host = DevServerProgram.BuildWebHost(finalArgs);
+            finalArgs.Add("--apply-cop-headers");
+        }
+
+        var host = DevServerProgram.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }
 

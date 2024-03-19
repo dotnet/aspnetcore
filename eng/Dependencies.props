@@ -137,7 +137,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="@(_LatestRuntimePackageReference->Distinct())" />
   </ItemGroup>
 
-  <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" />
@@ -191,7 +191,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
-  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="AngleSharp" />
     <LatestPackageReference Include="Azure.Identity" />
     <LatestPackageReference Include="BenchmarkDotNet" />
