@@ -76,9 +76,9 @@ public abstract class HybridCache
 public enum HybridCacheEntryFlags
 {
     None = 0,
-    BypassLocalCache = 1 << 0,
-    BypassDistributedCache = 1 << 1,
-    BypassCompression = 1 << 2,
+    DisableLocalCache = 1 << 0,
+    DisableDistributedCache = 1 << 1,
+    DisableCompression = 1 << 2,
 }
 public sealed class HybridCacheEntryOptions(TimeSpan expiry, HybridCacheEntryFlags flags = 0)
 {

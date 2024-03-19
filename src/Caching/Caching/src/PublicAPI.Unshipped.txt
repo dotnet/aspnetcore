@@ -6,9 +6,9 @@ abstract Microsoft.Extensions.Caching.Distributed.HybridCache.SetAsync<T>(string
 Microsoft.Extensions.Caching.Distributed.HybridCache
 Microsoft.Extensions.Caching.Distributed.HybridCache.HybridCache() -> void
 Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
-Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.BypassCompression = 4 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
-Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.BypassDistributedCache = 2 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
-Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.BypassLocalCache = 1 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.DisableCompression = 4 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.DisableDistributedCache = 2 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
+Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.DisableLocalCache = 1 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
 Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags.None = 0 -> Microsoft.Extensions.Caching.Distributed.HybridCacheEntryFlags
 Microsoft.Extensions.Caching.Distributed.HybridCacheEntryOptions
 Microsoft.Extensions.Caching.Distributed.HybridCacheEntryOptions.Expiry.get -> System.TimeSpan
