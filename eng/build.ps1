@@ -45,6 +45,9 @@ Run tests.
 .PARAMETER Sign
 Run code signing.
 
+.PARAMETER Publish
+Run publishing.
+
 .PARAMETER Configuration
 Debug or Release
 
@@ -141,6 +144,7 @@ param(
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
+    [switch]$Publish, # Run arcade publishing
 
     [Alias('c')]
     [ValidateSet('Debug', 'Release')]
@@ -262,6 +266,7 @@ if (-not $RunBuild) { $MSBuildArguments += "/p:NoBuild=true" }
 $MSBuildArguments += "/p:Pack=$Pack"
 $MSBuildArguments += "/p:Test=$Test"
 $MSBuildArguments += "/p:Sign=$Sign"
+$MSBuildArguments += "/p:Publish=$Publish"
 
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
