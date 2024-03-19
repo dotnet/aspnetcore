@@ -8,7 +8,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
@@ -58,59 +57,11 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         return page;
     }
 
-    [Theory(Skip="https://github.com/dotnet/aspnetcore/issues/46430")]
-    [InlineData(BrowserKind.Chromium)]
-    public async Task BlazorWasmHostedTemplate_Works(BrowserKind browserKind)
-    {
-        var project = await CreateBuildPublishAsync(args: new[] { "--hosted" }, serverProject: true);
-
-        var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-        await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
-
-        using var aspNetProcess = serverProject.StartPublishedProjectAsync();
-
-        Assert.False(
-            aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
-
-        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-        await AssertCompressionFormat(aspNetProcess, "br");
-
-        if (BrowserManager.IsAvailable(browserKind))
-        {
-            await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-            var page = await browser.NewPageAsync();
-            await aspNetProcess.VisitInBrowserAsync(page);
-            await TestBasicNavigation(project.ProjectName, page);
-        }
-        else
-        {
-            EnsureBrowserAvailable(browserKind);
-        }
-    }
-
-    private static async Task AssertCompressionFormat(AspNetProcess aspNetProcess, string expectedEncoding)
-    {
-        var response = await aspNetProcess.SendRequest(() =>
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri(aspNetProcess.ListeningUri, "/_framework/blazor.boot.json"));
-            // These are the same as chrome
-            request.Headers.AcceptEncoding.Clear();
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("gzip"));
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("deflate"));
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("br"));
-
-            return request;
-        });
-        Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
-    }
-
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/45736")]
+    [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
-        var project = await CreateBuildPublishAsync(args: new[] { "--pwa" });
+        var project = await CreateBuildPublishAsync(args: ["--pwa"]);
 
         await BuildAndRunTest(project.ProjectName, project, browserKind);
 
@@ -129,53 +80,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
             // so we can continue working even without the server.
-            await page.GotoAsync("about:blank");
-            await browser.SetOfflineAsync(true);
-            await page.GotoAsync(listeningUri);
-            await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
-            await page.CloseAsync();
-        }
-        else
-        {
-            EnsureBrowserAvailable(browserKind);
-        }
-    }
-
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/45736")]
-    [InlineData(BrowserKind.Chromium)]
-    public async Task BlazorWasmHostedPwaTemplate_Works(BrowserKind browserKind)
-    {
-        var project = await CreateBuildPublishAsync(args: new[] { "--hosted", "--pwa" }, serverProject: true);
-
-        var serverProject = GetSubProject(project, "Server", $"{project.ProjectName}.Server");
-
-        await BuildAndRunTest(project.ProjectName, serverProject, browserKind);
-
-        ValidatePublishedServiceWorker(serverProject);
-
-        string listeningUri = null;
-        if (BrowserManager.IsAvailable(browserKind))
-        {
-            await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-            IPage page = null;
-            using (var aspNetProcess = serverProject.StartPublishedProjectAsync())
-            {
-                Assert.False(
-                    aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", serverProject, aspNetProcess.Process));
-
-                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-                page = await browser.NewPageAsync();
-                await aspNetProcess.VisitInBrowserAsync(page);
-                await TestBasicNavigation(project.ProjectName, page);
-
-                // Note: we don't want to use aspNetProcess.ListeningUri because that isn't necessarily the HTTPS URI
-                listeningUri = new Uri(page.Url).GetLeftPart(UriPartial.Authority);
-            }
-
-            // The PWA template supports offline use. By now, the browser should have cached everything it needs,
-            // so we can continue working even without the server.
-            // Since this is the hosted project, backend APIs won't work offline, so we need to skip "fetchdata"
             await page.GotoAsync("about:blank");
             await browser.SetOfflineAsync(true);
             await page.GotoAsync(listeningUri);
@@ -214,46 +118,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
         {
             new TemplateInstance(
-                "blazorwasmhostedaadb2c", "-ho",
-                "-au", "IndividualB2C",
-                "--aad-b2c-instance", "example.b2clogin.com",
-                "-ssp", "b2c_1_siupin",
-                "--client-id", "clientId",
-                "--domain", "my-domain",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
-            new TemplateInstance(
-                "blazorwasmhostedaad", "-ho",
-                "-au", "SingleOrg",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
-            new TemplateInstance(
-                "blazorwasmhostedaadgraph", "-ho",
-                "-au", "SingleOrg",
-                "--calls-graph",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
-            new TemplateInstance(
-                "blazorwasmhostedaadapi", "-ho",
-                "-au", "SingleOrg",
-                "--called-api-url", "\"https://graph.microsoft.com\"",
-                "--called-api-scopes", "user.readwrite",
-                "--domain", "my-domain",
-                "--tenant-id", "tenantId",
-                "--client-id", "clientId",
-                "--default-scope", "full",
-                "--app-id-uri", "ApiUri",
-                "--api-client-id", "1234123413241324"),
-            new TemplateInstance(
                 "blazorwasmstandaloneaadb2c",
                 "-au", "IndividualB2C",
                 "--aad-b2c-instance", "example.b2clogin.com",
@@ -280,9 +144,9 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         public string[] Arguments { get; }
     }
 
-    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/37782")]
+    [Theory]
     [MemberData(nameof(TemplateData))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
 
     protected async Task BuildAndRunTest(string appName, Project project, BrowserKind browserKind, bool usesAuth = false)
