@@ -8,7 +8,7 @@
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <!-- Do not exclude this project from source build -->
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.
@@ -44,7 +44,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Optimize the framework using the crossgen2 tool. Crossgen2 is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
     <CrossgenOutput Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' ">false</CrossgenOutput>
     <!-- VMR doesn't produce valid crossgen for the host/build machine https://github.com/dotnet/source-build/issues/3793 -->
-    <CrossgenOutput Condition=" '$(DotnetBuildVertical)' == 'true' AND '$(Crossbuild)' == 'true' ">false</CrossgenOutput>
+    <CrossgenOutput Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</CrossgenOutput>
     <CrossgenOutput Condition=" '$(CrossgenOutput)' == '' AND '$(Configuration)' != 'Debug' ">true</CrossgenOutput>
 
     <!-- Produce crossgen2 profiling symbols (.ni.pdb or .r2rmap files). -->
@@ -311,8 +311,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true" />
 
     <ItemGroup>
-      <VersionLines Include="$(DotNetGitCommitHash)" Condition="'$(DotNetGitCommitHash)' != ''" />
-      <VersionLines Include="$(SourceRevisionId)" Condition="'$(DotNetGitCommitHash)' == ''" />
+      <VersionLines Include="$(SourceRevisionId)" />
       <VersionLines Include="$(SharedFxVersion)" />
     </ItemGroup>
 
@@ -557,7 +556,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   Targets related to creating .zip/.tar.gz
   #########################################
   -->
-  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuild)' != 'true'">
     <!-- Try various places to find the runtime. It's either released (use official version),
          public but un-released (use dotnetbuilds/public), or internal and unreleased (use dotnetbuilds/internal) -->
     <ItemGroup>
