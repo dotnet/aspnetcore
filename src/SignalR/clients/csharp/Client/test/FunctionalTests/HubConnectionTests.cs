@@ -2543,7 +2543,7 @@ public class HubConnectionTests : FunctionalTestBase
     public async Task CanReconnectAndSendMessageWhileDisconnected()
     {
         var protocol = HubProtocols["json"];
-        await using (var server = await StartServer<Startup>(w => w.EventId.Name == "ReceivedUnexpectedResponse"))
+        await using (var server = await StartServer<Startup>())
         {
             var websocket = new ClientWebSocket();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2602,7 +2602,7 @@ public class HubConnectionTests : FunctionalTestBase
     public async Task CanReconnectAndSendMessageOnceConnected()
     {
         var protocol = HubProtocols["json"];
-        await using (var server = await StartServer<Startup>(w => w.EventId.Name == "ReceivedUnexpectedResponse"))
+        await using (var server = await StartServer<Startup>())
         {
             var websocket = new ClientWebSocket();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2898,6 +2898,143 @@ public class HubConnectionTests : FunctionalTestBase
                 await closedTcs.Task;
 
                 Assert.Equal(HubConnectionState.Disconnected, connection.State);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MultipleReconnectAttemptsWhenUsingStatefulReconnectFailure()
+    {
+        bool ExpectedErrors(WriteContext writeContext)
+        {
+            return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                   (writeContext.EventId.Name == "ShutdownWithError" ||
+                   writeContext.EventId.Name == "ServerDisconnectedWithError");
+        }
+
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>(ExpectedErrors))
+        {
+            var websocketConnectAttempts = 0;
+            var websocket = new ClientWebSocket();
+
+            const string originalMessage = "SignalR";
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.WebSocketFactory = async (context, token) =>
+                    {
+                        websocketConnectAttempts++;
+                        if (websocketConnectAttempts > 1)
+                        {
+                            throw new Exception("from websocket connect");
+                        }
+                        await websocket.ConnectAsync(context.Uri, token);
+                        return websocket;
+                    };
+                    o.UseStatefulReconnect = true;
+                });
+            connectionBuilder.Services.AddSingleton(protocol);
+            var connection = connectionBuilder.Build();
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+                Assert.Equal(1, websocketConnectAttempts);
+
+                var originalConnectionId = connection.ConnectionId;
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                Assert.Equal(originalMessage, result);
+
+                var originalWebsocket = websocket;
+                websocket = new ClientWebSocket();
+                originalWebsocket.Dispose();
+
+                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                await Assert.ThrowsAsync<TaskCanceledException>(() => resultTask);
+
+                // Initial connection + 3 failed reconnect attempts
+                Assert.Equal(4, websocketConnectAttempts);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await connection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MultipleReconnectAttemptsWhenUsingStatefulReconnectSuccessful()
+    {
+        var protocol = HubProtocols["json"];
+        await using (var server = await StartServer<Startup>())
+        {
+            var websocketConnectAttempts = 0;
+            var websocket = new ClientWebSocket();
+
+            const string originalMessage = "SignalR";
+            var connectionBuilder = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/default", HttpTransportType.WebSockets, o =>
+                {
+                    o.WebSocketFactory = async (context, token) =>
+                    {
+                        websocketConnectAttempts++;
+                        if (websocketConnectAttempts is > 1 and < 4)
+                        {
+                            throw new Exception("from websocket connect");
+                        }
+                        await websocket.ConnectAsync(context.Uri, token);
+                        return websocket;
+                    };
+                    o.UseStatefulReconnect = true;
+                });
+            connectionBuilder.Services.AddSingleton(protocol);
+            var connection = connectionBuilder.Build();
+
+            try
+            {
+                await connection.StartAsync().DefaultTimeout();
+                Assert.Equal(1, websocketConnectAttempts);
+
+                var originalConnectionId = connection.ConnectionId;
+
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                Assert.Equal(originalMessage, result);
+
+                var originalWebsocket = websocket;
+                websocket = new ClientWebSocket();
+                originalWebsocket.Dispose();
+
+                var resultTask = connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+
+                result = await resultTask;
+                Assert.Equal(originalMessage, result);
+
+                // Initial connection + 2 failed reconnect attempts + 1 successful attempt
+                Assert.Equal(4, websocketConnectAttempts);
+
+                result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage).DefaultTimeout();
+                Assert.Equal(originalMessage, result);
             }
             catch (Exception ex)
             {
