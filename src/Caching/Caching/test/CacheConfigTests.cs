@@ -15,8 +15,7 @@ public class CacheConfigTests
     public void SerializerConfig()
     {
         var services = new ServiceCollection();
-        services.AddHybridCache();
-        services.AddHybridCacheSerializerProtobufNet();
+        services.AddHybridCache().WithProtobufNet();
         var s = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(s.GetService<HybridCache>());
 

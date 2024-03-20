@@ -5,6 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Caching.Distributed;
 
+public sealed class HybridCacheEntry<T>
+{
+    public T Value { get; set; } = default!;
+    public ReadOnlyMemory<string> Tags { get; set; }
+    public DateTime Expiry { get; set; } // absolute time of expiry
+    public DateTime LocalExpiry { get; set; } // absolute time of L1 expiry
+}
+
 public abstract class HybridCache
 {
     protected HybridCache() { }
@@ -17,7 +25,7 @@ public abstract class HybridCache
         HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
         => GetOrCreateAsync(key, callback, WrappedCallbackCache<T>.Instance, options, tags, cancellationToken);
 
-    public abstract ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
+    public abstract ValueTask<HybridCacheEntry<T>?> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
     public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
 
     // don't like this...
@@ -80,13 +88,26 @@ public enum HybridCacheEntryFlags
     DisableDistributedCache = 1 << 1,
     DisableCompression = 1 << 2,
 }
-public sealed class HybridCacheEntryOptions(TimeSpan expiry, HybridCacheEntryFlags flags = 0)
-{
-    public TimeSpan Expiry { get; } = expiry;
 
-    public HybridCacheEntryFlags Flags { get; } = flags;
+public sealed class HybridCacheEntryOptions
+{
+    public HybridCacheEntryOptions(TimeSpan expiry, TimeSpan? localCacheExpiry = null, HybridCacheEntryFlags flags = 0)
+    {
+        Expiry = expiry;
+        LocalCacheExpiry = localCacheExpiry ?? expiry; // TODO range check
+    }
+    public TimeSpan Expiry { get; } // overall cache duration
+
+    /// <summary>
+    /// Cache duration in local cache; when retrieving a cached value
+    /// from an external cache store, this value will be used to calculate the local
+    /// cache expiration, not exceeding the remaining overall cache lifetime
+    /// </summary>
+    public TimeSpan LocalCacheExpiry { get; } // TTL in L1
+
+    public HybridCacheEntryFlags Flags { get; }
 
     private DistributedCacheEntryOptions? _distributedCacheEntryOptions;
     internal DistributedCacheEntryOptions AsDistributedCacheEntryOptions()
-        => _distributedCacheEntryOptions ??= new() { AbsoluteExpirationRelativeToNow = Expiry };
+        => _distributedCacheEntryOptions ??= new() { AbsoluteExpirationRelativeToNow = LocalCacheExpiry };
 }

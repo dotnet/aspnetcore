@@ -58,12 +58,18 @@ public static class HybridCacheServiceExtensions
     public static IHybridCacheBuilder AddHybridCache(this IServiceCollection services);
     // adds HybridCache using custom options
     public static IHybridCacheBuilder AddHybridCache(this IServiceCollection services, Action<HybridCacheOptions> configureOptions);
-    // adds TSerializer via DI as the serializer for T
-    public static IHybridCacheBuilder WithSerializer<T, TSerializer>(this IHybridCacheBuilder builder);
+
+    // adds TImplementation via DI as the serializer for T
+    public static IHybridCacheBuilder WithSerializer<T, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+        this IHybridCacheBuilder builder)
+        where TImplementation : class, IHybridCacheSerializer<T>;
     // adds a concrete custom serializer for a given type
     public static IHybridCacheBuilder WithSerializer<T>(this IHybridCacheBuilder builder, IHybridCacheSerializer<T> serializer);
+
     // adds T via DI as a serializer factory
-    public static IHybridCacheBuilder WithSerializerFactory<T>(this IHybridCacheBuilder builder);
+    public static IHybridCacheBuilder WithSerializerFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
+        this IHybridCacheBuilder builder)
+        where TImplementation : class, IHybridCacheSerializerFactory;
     // adds a concrete custom serializer factory
     public static IHybridCacheBuilder WithSerializerFactory(this IHybridCacheBuilder builder, IHybridCacheSerializerFactory factory);
 }
@@ -87,10 +93,17 @@ public class HybridCacheOptions
 {
     // default expiration etc configuration, if omitted
     public HybridCacheEntryOptions? DefaultOptions { get; set; }
-    // maximum payload quota
+
+    // quotas
     public long MaximumPayloadBytes { get; set; } = 1 << 20; // 1MiB
+    public int MaximumKeyLength { get; set; } = 1024; // characters
+
     // whether compression is enabled
     public bool AllowCompression { get; set; } = true;
+
+    // opt-in support for using "tags" as dimensions on metric reporting; this is opt-in
+    // because "tags" could contain user data, which we do not want to expose by default
+    public bool ReportTagMetrics { get; set; }
 }
 public class HybridCacheEntryOptions
 { /* more detail below */ }
@@ -161,21 +174,20 @@ Optionally, this API allows:
 For the options, timeout is only described in relative terms:
 
 ``` c#
-public sealed class HybridCacheEntryOptions(TimeSpan expiry, TimeSpan localCacheExpiry, HybridCacheEntryFlags flags = 0)
+public sealed class HybridCacheEntryOptions
 {
-    // convenience .ctor to use same expiry for L1+L2
-    public HybridCacheEntryOptions(TimeSpan expiry, HybridCacheEntryFlags flags = 0) : this(expiry, expiry, flags) { }
+    public HybridCacheEntryOptions(TimeSpan expiry, TimeSpan? localCacheExpiry = null, HybridCacheEntryFlags flags = 0);
 
-    public TimeSpan Expiry { get; } = backendExpiry; // overall cache duration
+    public TimeSpan Expiry { get; } // overall cache duration
 
     /// <summary>
     /// Cache duration in local cache; when retrieving a cached value
     /// from an external cache store, this value will be used to calculate the local
     /// cache expiration, not exceeding the remaining overall cache lifetime
     /// </summary>
-    public TimeSpan LocalCacheExpiry { get; } = localExpiry; // TTL in L1
+    public TimeSpan LocalCacheExpiry { get; } // TTL in L1
 
-    public HybridCacheEntryFlags Flags { get; } = flags;
+    public HybridCacheEntryFlags Flags { get; }
 }
 [Flags]
 public enum HybridCacheEntryFlags
@@ -196,15 +208,26 @@ the default from `HybridCacheOptions` is used; this has an implied "reasonable" 
 In many cases, `GetOrCreateAsync` *is the only API needed*, but additionally, `HybridCache` has auxiliary APIs:
 
 ``` c#
-public abstract ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
+public abstract ValueTask<HybridCacheEntry<T>?> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default);
 public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default);
 public abstract ValueTask RemoveKeyAsync(string key, CancellationToken cancellationToken = default);
 public virtual ValueTask RemoveKeysAsync(ReadOnlyMemory<string> keys, CancellationToken cancellationToken = default) // implemented via RemoveKeyAsync
 public virtual ValueTask RemoveTagAsync(string tag, CancellationToken cancellationToken = default) // implemented via RemoveTags
-public abstract ValueTask RemoveTagsAsync(ReadOnlyMemory<string> tags, CancellationToken cancellationToken = default) 
+public abstract ValueTask RemoveTagsAsync(ReadOnlyMemory<string> tags, CancellationToken cancellationToken = default)
+
+// ...
+public sealed class HybridCacheEntry<T>
+{
+    public T Value { get; set; } = default!;
+    public ReadOnlyMemory<string> Tags { get; set; }
+    public DateTime Expiry { get; set; } // absolute time of expiry
+    public DateTime LocalExpiry { get; set; } // absolute time of L1 expiry
+}
 ```
 
 These APIs provide for explicit manual fetch/assignment, and for explicit invalidation at the `key` or `tag` level.
+The `HybridCacheEntry` type is used only to encapsulate return state for `GetAsync`; a `null` response indicates
+a cache-miss.
 
 ---
 
@@ -228,6 +251,10 @@ If the `IDistributedCache` service injected *also* implements this optional API,
 to implement this API efficiently in the Redis implementation, and advice on others.
 
 Similarly, invalidation (at the `key` and `tag` level) will be implemented via an optional auxiliary service; however this API is still in design and is not discussed here.
+
+It is anticipated that cache hit/miss/etc usage metrics will be reported via normal profiling APIs. By default this
+will be global, but by enabling `HybridCacheOptions.ReportTagMetrics`, per-tag reporting will be enabled.
+
 
 ## Serializer configuration
 
@@ -284,6 +311,7 @@ not efficient or effective to implement in Redis, for example).
 ## Additional implementation notes and assumptions
 
 - Valid keys and tags are always non-`null``, non-empty `string` values
+- Cache entries have maximum key and payload lengths that are enforced with reasonable (but configurable) defaults
 - The header and payload are treated as an opaque BLOB for the purposes of `IDistributedCache`
   - Due the the header and possible compression, it should not be assumed that the value is inspectable in storage
   - The key/value will be inserted/updated/deleted as an atomic operation ("torn" values are not considered, although the payload length in the header will be verified
@@ -303,4 +331,3 @@ not efficient or effective to implement in Redis, for example).
 - It is assumed that the backend storage will be lossless vs the stored data; payload length will be validated with mismatches logged and the entry discarded
 - It is assumed that inserting / modifying / retrieving / deleting an entry in the backing store takes, at worst, amortized O((n ln n) + m)​ time,
   where n := number of chars in the key and m := number of bytes in the value
-- 

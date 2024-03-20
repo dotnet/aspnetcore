@@ -11,12 +11,8 @@ namespace Microsoft.Extensions.Caching.Distributed;
 [SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "demo code only")]
 public static class ProtobufDistributedCacheServiceExtensions
 {
-    public static IServiceCollection AddHybridCacheSerializerProtobufNet(this IServiceCollection services)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        services.AddSingleton<IHybridCacheSerializerFactory, ProtobufNetSerializerFactory>();
-        return services;
-    }
+    public static IHybridCacheBuilder WithProtobufNet(this IHybridCacheBuilder builder)
+        => builder.WithSerializerFactory<ProtobufNetSerializerFactory>();
 
     private sealed class ProtobufNetSerializerFactory : IHybridCacheSerializerFactory
     {
