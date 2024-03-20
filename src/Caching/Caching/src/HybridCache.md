@@ -161,9 +161,19 @@ Optionally, this API allows:
 For the options, timeout is only described in relative terms:
 
 ``` c#
-public sealed class HybridCacheEntryOptions(TimeSpan expiry, HybridCacheEntryFlags flags = 0)
+public sealed class HybridCacheEntryOptions(TimeSpan expiry, TimeSpan localCacheExpiry, HybridCacheEntryFlags flags = 0)
 {
-    public TimeSpan Expiry { get; } = expiry;
+    // convenience .ctor to use same expiry for L1+L2
+    public HybridCacheEntryOptions(TimeSpan expiry, HybridCacheEntryFlags flags = 0) : this(expiry, expiry, flags) { }
+
+    public TimeSpan Expiry { get; } = backendExpiry; // overall cache duration
+
+    /// <summary>
+    /// Cache duration in local cache; when retrieving a cached value
+    /// from an external cache store, this value will be used to calculate the local
+    /// cache expiration, not exceeding the remaining overall cache lifetime
+    /// </summary>
+    public TimeSpan LocalCacheExpiry { get; } = localExpiry; // TTL in L1
 
     public HybridCacheEntryFlags Flags { get; } = flags;
 }
