@@ -39,7 +39,7 @@
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.rpm" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.tar.gz" UploadPathSegment="Runtime" />
-    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime" Condition=" '$(PublishInstallerBaseVersion)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" />
     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
@@ -84,7 +84,7 @@
                              RelativeBlobPath="$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(ProductVersionFileName)" />
 
       <ItemsToPushToBlobFeed Include="$(RepoProductVersionFileLocation)"
-                             Condition="'$(PublishInstallerBaseVersion)' == 'true'">
+                             Condition="'$(PublishInstallerBaseVersion)' == 'true'"
                              IsShipping="false"
                              PublishFlatContainer="true"
                              RelativeBlobPath="$(_UploadPathRoot)/Runtime/$(_PackageVersion)/$(RepoProductVersionFileName)" />
