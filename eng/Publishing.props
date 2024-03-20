@@ -7,7 +7,6 @@
     <RepoProductVersionFileName>$(_UploadPathRoot)-$(ProductVersionFileName)</RepoProductVersionFileName>
     <ProductVersionFileLocation>$(ArtifactsShippingPackagesDir)$(ProductVersionFileName)</ProductVersionFileLocation>
     <RepoProductVersionFileLocation>$(ArtifactsShippingPackagesDir)$(RepoProductVersionFileName)</RepoProductVersionFileLocation>
-    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == '' and '$(DotNetBuildRepo)' == 'true'">true</PublishInstallerBaseVersion>
 
     <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows.
          Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
@@ -17,6 +16,8 @@
     <EnableDefaultPublishItems Condition="'$(OS)' != 'Windows_NT' and
                                           '$(PostBuildSign)' != 'true' and
                                           '$(DotNetBuildRepo)' != 'true'">false</EnableDefaultPublishItems>
+
+    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == '' and '$(EnableDefaultPublishItems)' == 'true'">true</PublishInstallerBaseVersion>
     <!-- This avoids creating VS.*.symbols.nupkg packages that are identical to the original package. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
   </PropertyGroup>
