@@ -164,17 +164,16 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
 
         Output.WriteLine("Running dotnet serve on published output...");
-        var developmentCertificate = DevelopmentCertificate.Create(project.TemplateOutputDir);
-        var args = $"-S --pfx \"{developmentCertificate.CertificatePath}\" --pfx-pwd \"{developmentCertificate.CertificatePassword}\" --port 0";
         var command = DotNetMuxer.MuxerPathOrDefault();
+        string args;
         if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
         {
-            args = $"serve " + args;
+            args = $"serve ";
         }
         else
         {
             command = "dotnet-serve";
-            args = "--roll-forward LatestMajor " + args; // dotnet-serve targets net5.0 by default
+            args = "--roll-forward LatestMajor"; // dotnet-serve targets net5.0 by default
         }
 
         var serveProcess = ProcessEx.Run(TestOutputHelper, publishDir, command, args);
