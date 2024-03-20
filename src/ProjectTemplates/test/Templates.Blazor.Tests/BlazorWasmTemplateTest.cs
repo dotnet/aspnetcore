@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.BrowserTesting;
@@ -14,11 +12,8 @@ using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
 
-public class BlazorWasmTemplateTest : BlazorTemplateTest
+public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
-    public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory)
-        : base(projectFactory) { }
-
     public override string ProjectType { get; } = "blazorwasm";
 
     [Theory]
@@ -26,35 +21,29 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public async Task BlazorWasmStandaloneTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync();
+        var appName = project.ProjectName;
 
         // The service worker assets manifest isn't generated for non-PWA projects
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
         Assert.False(File.Exists(Path.Combine(publishDir, "service-worker-assets.js")), "Non-PWA templates should not produce service-worker-assets.js");
 
-        await BuildAndRunTest(project.ProjectName, project, browserKind);
+        // Test the built project
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName);
+        }
+
+        // Test the published project
         var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
         using (serveProcess)
         {
-            Output.WriteLine($"Opening browser at {listeningUri}...");
-            if (BrowserManager.IsAvailable(browserKind))
-            {
-                await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-                var page = await NavigateToPage(browser, listeningUri);
-                await TestBasicNavigation(project.ProjectName, page);
-            }
-            else
-            {
-                EnsureBrowserAvailable(browserKind);
-            }
+            await TestBasicInteractionInNewPageAsync(browserKind, listeningUri, appName);
         }
-    }
-
-    private static async Task<IPage> NavigateToPage(IBrowserContext browser, string listeningUri)
-    {
-        var page = await browser.NewPageAsync();
-        await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
-        return page;
     }
 
     [Theory]
@@ -62,20 +51,32 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     public async Task BlazorWasmStandalonePwaTemplate_Works(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["--pwa"]);
+        var appName = project.ProjectName;
 
-        await BuildAndRunTest(project.ProjectName, project, browserKind);
+        // Test the built project
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName);
+        }
 
         ValidatePublishedServiceWorker(project);
 
+        // Test the published project
         if (BrowserManager.IsAvailable(browserKind))
         {
             var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
             await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
             Output.WriteLine($"Opening browser at {listeningUri}...");
-            var page = await NavigateToPage(browser, listeningUri);
+            var page = await browser.NewPageAsync();
+            await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
             using (serveProcess)
             {
-                await TestBasicNavigation(project.ProjectName, page);
+                await TestBasicInteractionAsync(page, project.ProjectName);
             }
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
@@ -83,7 +84,7 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
             await page.GotoAsync("about:blank");
             await browser.SetOfflineAsync(true);
             await page.GotoAsync(listeningUri);
-            await TestBasicNavigation(project.ProjectName, page, skipFetchData: true);
+            await TestBasicInteractionAsync(page, project.ProjectName, pagesToExclude: BlazorTemplatePages.Weather);
             await page.CloseAsync();
         }
         else
@@ -91,6 +92,11 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
             EnsureBrowserAvailable(browserKind);
         }
     }
+
+    [Theory]
+    [MemberData(nameof(TemplateData))]
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
+        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
 
     private static void ValidatePublishedServiceWorker(Project project)
     {
@@ -113,6 +119,15 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         var serviceWorkerAssetsManifestVersionJson = serviceWorkerAssetsManifestVersionMatch.Groups[1].Captures[0].Value;
         var serviceWorkerAssetsManifestVersion = JsonSerializer.Deserialize<string>(serviceWorkerAssetsManifestVersionJson);
         Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
+
+        static string ReadFile(string basePath, string path)
+        {
+            var fullPath = Path.Combine(basePath, path);
+            var doesExist = File.Exists(fullPath);
+
+            Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
+            return File.ReadAllText(Path.Combine(basePath, path));
+        }
     }
 
     public static TheoryData<TemplateInstance> TemplateData => new TheoryData<TemplateInstance>
@@ -144,115 +159,6 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         public string[] Arguments { get; }
     }
 
-    [Theory]
-    [MemberData(nameof(TemplateData))]
-    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
-        => CreateBuildPublishAsync(args: instance.Arguments, targetFramework: "netstandard2.1");
-
-    protected async Task BuildAndRunTest(string appName, Project project, BrowserKind browserKind, bool usesAuth = false)
-    {
-        using var aspNetProcess = project.StartBuiltProjectAsync();
-
-        Assert.False(
-            aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
-
-        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-        if (BrowserManager.IsAvailable(browserKind))
-        {
-            await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-            var page = await browser.NewPageAsync();
-            await aspNetProcess.VisitInBrowserAsync(page);
-            await TestBasicNavigation(appName, page, usesAuth);
-            await page.CloseAsync();
-        }
-        else
-        {
-            EnsureBrowserAvailable(browserKind);
-        }
-    }
-
-    private static async Task TestBasicNavigation(string appName, IPage page, bool usesAuth = false, bool skipFetchData = false)
-    {
-        await page.WaitForSelectorAsync("nav");
-
-        // Initially displays the home page
-        await page.WaitForSelectorAsync("h1 >> text=Hello, world!");
-
-        Assert.Equal("Home", (await page.TitleAsync()).Trim());
-
-        // Can navigate to the counter page
-        await Task.WhenAll(
-            page.WaitForNavigationAsync(new() { UrlString = "**/counter" }),
-            page.WaitForSelectorAsync("h1 >> text=Counter"),
-            page.WaitForSelectorAsync("p >> text=Current count: 0"),
-            page.ClickAsync("a[href=counter]"));
-
-        // Clicking the counter button works
-        await Task.WhenAll(
-            page.WaitForSelectorAsync("p >> text=Current count: 1"),
-            page.ClickAsync("p+button >> text=Click me"));
-
-        if (usesAuth)
-        {
-            await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Login**", WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("text=Log in"));
-
-            await Task.WhenAll(
-                page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/Register**", WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("text=Register as a new user"));
-
-            var userName = $"{Guid.NewGuid()}@example.com";
-            var password = "[PLACEHOLDER]-1a";
-
-            await page.TypeAsync("[name=\"Input.Email\"]", userName);
-            await page.TypeAsync("[name=\"Input.Password\"]", password);
-            await page.TypeAsync("[name=\"Input.ConfirmPassword\"]", password);
-
-            // We will be redirected to the RegisterConfirmation
-            await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/RegisterConfirmation**", WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("#registerSubmit"));
-
-            // We will be redirected to the ConfirmEmail
-            await Task.WhenAll(
-                page.WaitForNavigationAsync(new() { UrlString = "**/Identity/Account/ConfirmEmail**", WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("text=Click here to confirm your account"));
-
-            // Now we can login
-            await page.ClickAsync("text=Login");
-            await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
-            await page.TypeAsync("[name=\"Input.Email\"]", userName);
-            await page.TypeAsync("[name=\"Input.Password\"]", password);
-            await page.ClickAsync("#login-submit");
-
-            // Need to navigate to fetch page
-            await page.GotoAsync(new Uri(page.Url).GetLeftPart(UriPartial.Authority));
-            Assert.Equal(appName.Trim(), (await page.TitleAsync()).Trim());
-        }
-
-        if (!skipFetchData)
-        {
-            await page.ClickAsync("a[href=weather]");
-            await page.WaitForSelectorAsync("h1 >> text=Weather");
-
-            // Asynchronously loads and displays the table of weather forecasts
-            await page.WaitForSelectorAsync("table>tbody>tr");
-            Assert.Equal(5, await page.Locator("p+table>tbody>tr").CountAsync());
-        }
-    }
-
-    private static string ReadFile(string basePath, string path)
-    {
-        var fullPath = Path.Combine(basePath, path);
-        var doesExist = File.Exists(fullPath);
-
-        Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
-        return File.ReadAllText(Path.Combine(basePath, path));
-    }
-
     private (ProcessEx, string url) RunPublishedStandaloneBlazorProject(Project project)
     {
         var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
@@ -274,30 +180,30 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
         var serveProcess = ProcessEx.Run(TestOutputHelper, publishDir, command, args);
         var listeningUri = ResolveListeningUrl(serveProcess);
         return (serveProcess, listeningUri);
-    }
 
-    private static string ResolveListeningUrl(ProcessEx process)
-    {
-        var buffer = new List<string>();
-        try
+        static string ResolveListeningUrl(ProcessEx process)
         {
-            foreach (var line in process.OutputLinesAsEnumerable)
+            var buffer = new List<string>();
+            try
             {
-                if (line != null)
+                foreach (var line in process.OutputLinesAsEnumerable)
                 {
-                    buffer.Add(line);
-                    if (line.Trim().Contains("https://", StringComparison.Ordinal) || line.Trim().Contains("http://", StringComparison.Ordinal))
+                    if (line != null)
                     {
-                        return line.Trim();
+                        buffer.Add(line);
+                        if (line.Trim().Contains("https://", StringComparison.Ordinal) || line.Trim().Contains("http://", StringComparison.Ordinal))
+                        {
+                            return line.Trim();
+                        }
                     }
                 }
             }
-        }
-        catch (OperationCanceledException)
-        {
-        }
+            catch (OperationCanceledException)
+            {
+            }
 
-        throw new InvalidOperationException(@$"Couldn't find listening url:
-{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
+            throw new InvalidOperationException(
+                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
+        }
     }
 }
