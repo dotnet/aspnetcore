@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+
+    <HeadOutlet @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+</head>
+
+<body>
+    <Components.WasmRemoteAuthentication.Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script>
+        Blazor.start({
+            webAssembly: {
+                loadBootResource: (type, name, defaultUri, integrity) => `WasmRemoteAuthentication/_framework/${name}`
+            }
+        });
+    </script>
+</body>
+
+</html>
