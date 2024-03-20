@@ -124,6 +124,8 @@ public class Project : IDisposable
             result.ExitCode = -1;
         }
 
+        CaptureBinLogOnFailure(execution);
+
         Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", this, result));
     }
 
