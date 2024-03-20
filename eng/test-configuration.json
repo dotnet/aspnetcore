@@ -8,7 +8,6 @@
     {"testName": {"contains": "MaxRequestBufferSizeTests.LargeUpload" }}, // tries to manipulate the state of the server's buffer
     {"testName": {"contains": "CertificateChangedOnDisk"}}, // depends on FS event timing
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}}, // depends on FS event timing
-    {"testName": {"contains": "BlazorWebTemplate_IndividualAuth_LocalDb"}}, // randomly-generated string could contain forbidden substring
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
