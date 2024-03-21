@@ -861,7 +861,7 @@ public class KeyRingProviderTests
     }
 
     [Fact]
-    public async Task MultipleInstanceGenerateImmediatelyActivatedKeys()
+    public async Task MultipleInstancesGenerateImmediatelyActivatedKeys()
     {
         const int taskCount = 10;
         var now = StringToDateTime("2015-03-01 00:00:00Z");
