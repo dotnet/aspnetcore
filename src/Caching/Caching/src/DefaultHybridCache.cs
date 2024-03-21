@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Distributed;
-internal sealed class DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services, IMemoryCache frontent, IDistributedCache backend,
+internal sealed partial class DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services, IMemoryCache frontent, IDistributedCache backend,
     TimeProvider clock) : HybridCache
 {
     private readonly IServiceProvider _services = services;
@@ -55,26 +55,28 @@ internal sealed class DefaultHybridCache(IOptions<HybridCacheOptions> options, I
         return false;
     }
 
-    public override ValueTask<(bool Exists, T Value)> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
+    public override ValueTask<HybridCacheEntry<T>?> GetAsync<T>(string key, HybridCacheEntryOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (ReadOnlyTypeCache<T>.IsReadOnly)
-        {
-            if (_frontend.TryGetValue(key, out T? existing))
-            {
-                return new((true, existing!));
-            }
-        }
-        else
-        {
-            if (_frontend.TryGetValue(key, out byte[]? buffer))
-            {
-                return new((true, GetSerializer<T>().Deserialize(new(buffer!))));
-            }
-        }
+        throw new NotImplementedException();
+        //if (ReadOnlyTypeCache<T>.IsReadOnly)
+        //{
+        //    if (_frontend.TryGetValue(key, out T? existing))
+        //    {
+        //        return new((true, existing!));
+        //    }
+        //}
+        //else
+        //{
+        //    if (_frontend.TryGetValue(key, out byte[]? buffer))
+        //    {
+        //        return new((true, GetSerializer<T>().Deserialize(new(buffer!))));
+        //    }
+        //}
 
-        return HasBackendBuffer
-            ? GetBufferedBackendAsync<T>(key, cancellationToken)
-            : GetLegacyBackendAsync<T>(key, cancellationToken);
+
+        //return HasBackendBuffer
+        //    ? GetBufferedBackendAsync<T>(key, cancellationToken)
+        //    : GetLegacyBackendAsync<T>(key, cancellationToken);
     }
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ReadOnlyMemory<string> tags = default, CancellationToken cancellationToken = default)
@@ -130,9 +132,10 @@ internal sealed class DefaultHybridCache(IOptions<HybridCacheOptions> options, I
             }
         }
 
-        return HasBackendBuffer
-            ? GetOrCreateBufferedBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken)
-            : GetOrCreateLegacyBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken);
+        return new(GetDownstreamAsync<TState, T>(key, state, callback, cancellationToken));
+        //return HasBackendBuffer
+        //    ? GetOrCreateBufferedBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken)
+        //    : GetOrCreateLegacyBackendAsync(key, state, callback, options ?? _defaultOptions, cancellationToken);
     }
 
     private readonly ConcurrentDictionary<Type, object> _serializerCache = new();
