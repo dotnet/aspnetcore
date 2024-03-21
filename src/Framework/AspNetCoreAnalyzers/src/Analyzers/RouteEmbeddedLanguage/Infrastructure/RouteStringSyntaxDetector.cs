@@ -168,7 +168,6 @@ internal static class RouteStringSyntaxDetector
             {
                 return true;
             }
-
             // Stop walking up once we hit a statement.  We don't need/want statements higher up the parent chain to
             // have any impact on this token.
             if (IsStatement(node))
