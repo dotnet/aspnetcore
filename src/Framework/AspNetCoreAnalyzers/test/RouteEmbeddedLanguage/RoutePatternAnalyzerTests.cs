@@ -564,7 +564,7 @@ public class TestController
     }
 
     [Fact]
-    public async Task ConcatString_DetectLanguage_WarningsReported()
+    public async Task ConcatString_DetectLanguage_NoWarningsBecauseConcatString()
     {
         // Arrange
         var builder = new StringBuilder();
@@ -589,11 +589,11 @@ public class TestController
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert
-        Assert.Equal(2000, diagnostics.Length);
+        Assert.Empty(diagnostics);
     }
 
     [Fact]
-    public async Task NestedLangComment_CorrectAnalysis()
+    public async Task NestedLangComment_NoWarningsBecauseConcatString()
     {
         // Arrange
         var builder = new StringBuilder();
@@ -615,16 +615,11 @@ public class TestController
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert
-        Assert.Collection(diagnostics,
-            d =>
-            {
-                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], d.Location);
-                Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
-            });
+        Assert.Empty(diagnostics);
     }
 
     [Fact]
-    public async Task TopLangComment_CorrectAnalysis()
+    public async Task TopLangComment_NoWarningsBecauseConcatString()
     {
         // Arrange
         var builder = new StringBuilder();
@@ -647,11 +642,6 @@ public class TestController
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert
-        Assert.Collection(diagnostics,
-            d =>
-            {
-                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM0"], d.Location);
-                Assert.Same(DiagnosticDescriptors.RoutePatternIssue, d.Descriptor);
-            });
+        Assert.Empty(diagnostics);
     }
 }

@@ -149,19 +149,24 @@ internal static class RouteStringSyntaxDetector
             return true;
         }
 
-        bool first = true;
+        // Check for the common case of a string literal in a large binary expression.  For example `"..." + "..." +
+        // "..."` We never want to consider these as regex/json tokens as processing them would require knowing the
+        // contents of every string literal, and having our lexers/parsers somehow stitch them all together.  This is
+        // beyond what those systems support (and would only work for constant strings anyways).  This prevents both
+        // incorrect results *and* avoids heavy perf hits walking up large binary expressions (often while a caller is
+        // themselves walking down such a large expression).
+        if (token.Parent.IsLiteralExpression() &&
+            token.Parent.Parent.IsBinaryExpression() &&
+            token.Parent.Parent.RawKind == (int)SyntaxKind.AddExpression)
+        {
+            return false;
+        }
+
         for (var node = token.Parent; node != null; node = node.Parent)
         {
-            // Deeply nested tree of strings can cause poor performance. The scenario is highly concatenated strings.
-            // GetLeadingTrivia is a hot path for this analyzer so don't call it for every parent binary node.
-            // Just check the first parent and then resume checking once out of nested binary nodes.
-            // The "ConcatString_PerformanceTest" test runs to check for this scenario.
-            if (first || (node is not BinaryExpressionSyntax && node.Parent is not BinaryExpressionSyntax))
+            if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
             {
-                if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
-                {
-                    return true;
-                }
+                return true;
             }
 
             // Stop walking up once we hit a statement.  We don't need/want statements higher up the parent chain to
@@ -170,8 +175,6 @@ internal static class RouteStringSyntaxDetector
             {
                 break;
             }
-
-            first = false;
         }
 
         return false;
