@@ -70,7 +70,7 @@ public class Project : IDisposable
         // Used to set special options in MSBuild
         IDictionary<string, string> environmentVariables = null)
     {
-        var hiveArg = $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
+        var hiveArg = $"--no-restore --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var argString = $"new {templateName} {hiveArg}";
         environmentVariables ??= new Dictionary<string, string>();
         if (!string.IsNullOrEmpty(auth))
@@ -113,20 +113,27 @@ public class Project : IDisposable
             Directory.Delete(TemplateOutputDir, recursive: true);
         }
 
-        using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
-        await execution.Exited;
+        using var createExecution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+        await createExecution.Exited;
 
-        var result = new ProcessResult(execution);
+        var createResult = new ProcessResult(createExecution);
+        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, createResult));
+
+        argString = "restore /bl";
+        using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+        await restoreExecution.Exited;
+
+        var restoreResult = new ProcessResult(restoreExecution);
 
         // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-        if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
+        if (errorOnRestoreError && (restoreExecution.Output.Contains("Restore failed.") || restoreExecution.Error.Contains("Restore failed.")))
         {
-            result.ExitCode = -1;
+            restoreResult.ExitCode = -1;
         }
 
-        CaptureBinLogOnFailure(execution);
+        CaptureBinLogOnFailure(restoreExecution);
 
-        Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", this, result));
+        Assert.True(0 == restoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, restoreResult));
     }
 
     internal async Task RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
