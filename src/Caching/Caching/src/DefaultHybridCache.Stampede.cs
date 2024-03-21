@@ -157,8 +157,14 @@ internal partial class DefaultHybridCache
 
         static void StartExecution(StampedeToken<TValue> token, TState state, Func<TState, CancellationToken, ValueTask<TValue>> callback)
         {
-            // the main reason this method is split out is to avoid a capture context in the "reused" case
-            _ = Task.Run(() => token.ExecuteAsync(state, callback), CancellationToken.None);
+            // logically what we want here is as below, but we want to do it without the capture and delegate allocs;
+            // note that ExecuteAsync is non-faulting (it reports faults back via the TCS)
+            // _ = Task.Run(() => token.ExecuteAsync(state, callback), CancellationToken.None);
+
+            ThreadPool.QueueUserWorkItem(static async tuple =>
+            {
+                await tuple.token.ExecuteAsync(tuple.state, tuple.callback);
+            }, (token, state, callback), false);
         }
     }
 
