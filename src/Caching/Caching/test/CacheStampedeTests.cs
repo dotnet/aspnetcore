@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Distributed.Tests;
@@ -110,12 +111,13 @@ public class CacheStampedeTests
         bool hasBeenInvoked = false, cancellationObserved = false;
         var a = cache.GetOrCreateAsync<string>("dummy", async ct => {
             Volatile.Write(ref hasBeenInvoked, true);
+            Assert.True(ct.CanBeCanceled);
             ct.Register(() =>
             {
                 Volatile.Write(ref cancellationObserved, true);
             });
             return await pendingResult.Task;
-        }).AsTask();
+        }, cancellationToken: firstCts.Token).AsTask();
         var b = cache.GetOrCreateAsync<string>("dummy", _ => throw new InvalidOperationException("should not be used"), cancellationToken: secondCts.Token).AsTask();
 
         Assert.False(a.IsCompleted);
@@ -141,6 +143,14 @@ public class CacheStampedeTests
             Assert.Equal("abc", await b);
         }
         Assert.True(Volatile.Read(ref hasBeenInvoked), "was invoked");
-        Assert.Equal(cancelFirst && cancelSecond, Volatile.Read(ref cancellationObserved));
+        if (cancelFirst && cancelSecond)
+        {
+            Assert.True(Volatile.Read(ref cancellationObserved), "cancellation observed");
+        }
+        else
+        {
+            Assert.False(Volatile.Read(ref cancellationObserved), "cancellation observed");
+        }
+        
     }
 }

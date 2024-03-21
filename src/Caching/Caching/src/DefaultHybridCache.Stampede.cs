@@ -25,16 +25,17 @@ internal partial class DefaultHybridCache
     }
     private sealed class StampedeToken<T> : TaskCompletionSource<T>, IStampedeToken
     {
-        public StampedeToken(bool canBeCancelled) : base(TaskCreationOptions.RunContinuationsAsynchronously)
+        public StampedeToken(CancellationToken cancellationToken) : base(TaskCreationOptions.RunContinuationsAsynchronously)
         {
             // if the *first* caller can't cancel: we don't need to track CTS at all
             // (strictly speaking, as soon as *any* caller can't cancel, we don't need to track CTS,
             // but in reality common callers are going to share a code-path, so it isn't worth
             // worrying too much about the "first caller could, second couldn't, third could" scenario
             // (we can revisit this later if we want)
-            if (canBeCancelled)
+            if (cancellationToken.CanBeCanceled)
             {
                 _combinedCancellation = new();
+                ObserveCancellation(cancellationToken);
             }
         }
 
@@ -77,23 +78,37 @@ internal partial class DefaultHybridCache
                 do
                 {
                     oldCount = Volatile.Read(ref _callerCount);
-                    if (oldCount <= 0)
+                    if (oldCount == 0)
                     {
                         return false; // already dead, sorry
                     }
                 } while (Interlocked.CompareExchange(ref _callerCount, checked(oldCount + 1), oldCount) != oldCount);
 
-                if (cancellationToken.CanBeCanceled)
-                {
-                    cancellationToken.Register(static obj => ((IStampedeToken)obj!).RemoveCaller(), this);
-                }
+                ObserveCancellation(cancellationToken);
             }
             return true;
         }
+
+        private void ObserveCancellation(CancellationToken cancellationToken)
+        {
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationToken.Register(static obj => ((IStampedeToken)obj!).RemoveCaller(), this);
+            }
+        }
+
         public void RemoveCaller() // one of the callers became cancelled; if that leaves zero interested: cancel the underlying data operation
         {
             if (_combinedCancellation is not null && Interlocked.Decrement(ref _callerCount) == 0)
             {
+                // there is a possibility that the down-stream operation can fault in weird ways
+                // when cancelled, and there's no-one left to observe it; add an observer ourselves
+                // (this just prevents unobserved task exception reports)
+                _ = Task.ContinueWith(static task =>
+                {
+                    _ = task.Exception;
+                }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
+
                 _combinedCancellation.Cancel();
             }
         }
@@ -165,7 +180,7 @@ internal partial class DefaultHybridCache
         // is a niche case where the existing value is an outgoing cancelled item
         // (i.e. TryAddCaller failed); in that scenario, we'll risk having two
         // concurrent down-stream operations
-        var newToken = new StampedeToken<T>(cancellationToken.CanBeCanceled);
+        var newToken = new StampedeToken<T>(cancellationToken);
         _inFlightOperations[key] = newToken;
         isNew = true;
         return newToken;
