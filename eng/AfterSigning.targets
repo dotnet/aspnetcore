@@ -1,14 +1,13 @@
 <Project>
-  <PropertyGroup Condition="'$(GenerateChecksums)' == 'true'">
+  <PropertyGroup>
     <!-- $(InstallersOutputPath) is not defined. Root Directory.Build.props is not imported. -->
     <InstallersOutputPath>$(ArtifactsDir)installers\</InstallersOutputPath>
     <_SuppressSdkImports>false</_SuppressSdkImports>
   </PropertyGroup>
 
   <Target Name="PopulateGenerateChecksumItems"
-          Condition="'$(GenerateChecksums)' == 'true'"
           AfterTargets="Build"
-          BeforeTargets="GenerateChecksums" >
+          BeforeTargets="GenerateChecksums">
 
     <ItemGroup>
       <InstallerFiles Include="$(InstallersOutputPath)**\*.msi" />
@@ -25,6 +24,6 @@
 
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(GenerateChecksums)' == 'true'" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
 </Project>

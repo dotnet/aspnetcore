@@ -17,7 +17,7 @@
                                           '$(PostBuildSign)' != 'true' and
                                           '$(DotNetBuildRepo)' != 'true'">false</EnableDefaultPublishItems>
 
-    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == '' and '$(EnableDefaultPublishItems)' == 'true'">true</PublishInstallerBaseVersion>
+    <PublishInstallerBaseVersion Condition="'$(OS)' == 'Windows_NT' or '$(DotNetBuildRepo)' == 'true'">true</PublishInstallerBaseVersion>
     <!-- This avoids creating VS.*.symbols.nupkg packages that are identical to the original package. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
   </PropertyGroup>
