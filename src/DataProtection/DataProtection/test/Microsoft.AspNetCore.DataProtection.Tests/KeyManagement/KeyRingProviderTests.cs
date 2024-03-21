@@ -900,6 +900,7 @@ public class KeyRingProviderTests
 
         var keyId = tuples2[0].Item2.KeyRing.DefaultKeyId;
         Assert.All(tuples2, tuple => Assert.Equal(keyId, tuple.Item2.KeyRing.DefaultKeyId)); // They should all be the same
+        Assert.All(tuples2, tuple => Assert.InRange(tuple.Item2.ExpirationTimeUtc, now.AddHours(1), now.AddDays(1))); // This range is loose - just want it not to be a short refresh
     }
 
     private sealed class InMemoryKeyManager : IKeyManager
