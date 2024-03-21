@@ -1,0 +1,88 @@
+parameters:
+  overrideGuardianVersion: ''
+  executeAllSdlToolsScript: ''
+  overrideParameters: ''
+  additionalParameters: ''
+  publishGuardianDirectoryToPipeline: false
+  sdlContinueOnError: false
+  condition: ''
+
+steps:
+- task: NuGetAuthenticate@1
+  inputs:
+    nuGetServiceConnections: GuardianConnect
+
+- task: NuGetToolInstaller@1
+  displayName: 'Install NuGet.exe'
+  
+- ${{ if ne(parameters.overrideGuardianVersion, '') }}:
+  - pwsh: |
+      Set-Location -Path $(Build.SourcesDirectory)\eng\common\sdl
+      . .\sdl.ps1
+      $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts -Version ${{ parameters.overrideGuardianVersion }}
+      Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
+    displayName: Install Guardian (Overridden)
+
+- ${{ if eq(parameters.overrideGuardianVersion, '') }}:
+  - pwsh: |
+      Set-Location -Path $(Build.SourcesDirectory)\eng\common\sdl
+      . .\sdl.ps1
+      $guardianCliLocation = Install-Gdn -Path $(Build.SourcesDirectory)\.artifacts
+      Write-Host "##vso[task.setvariable variable=GuardianCliLocation]$guardianCliLocation"
+    displayName: Install Guardian
+
+- ${{ if ne(parameters.overrideParameters, '') }}:
+  - powershell: ${{ parameters.executeAllSdlToolsScript }} ${{ parameters.overrideParameters }}
+    displayName: Execute SDL (Overridden)
+    continueOnError: ${{ parameters.sdlContinueOnError }}
+    condition: ${{ parameters.condition }}
+
+- ${{ if eq(parameters.overrideParameters, '') }}:
+  - powershell: ${{ parameters.executeAllSdlToolsScript }}
+      -GuardianCliLocation $(GuardianCliLocation)
+      -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
+      -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
+      ${{ parameters.additionalParameters }}
+    displayName: Execute SDL
+    continueOnError: ${{ parameters.sdlContinueOnError }}
+    condition: ${{ parameters.condition }}
+
+- ${{ if ne(parameters.publishGuardianDirectoryToPipeline, 'false') }}:
+  # We want to publish the Guardian results and configuration for easy diagnosis. However, the
+  # '.gdn' dir is a mix of configuration, results, extracted dependencies, and Guardian default
+  # tooling files. Some of these files are large and aren't useful during an investigation, so
+  # exclude them by simply deleting them before publishing. (As of writing, there is no documented
+  # way to selectively exclude a dir from the pipeline artifact publish task.)
+  - task: DeleteFiles@1
+    displayName: Delete Guardian dependencies to avoid uploading
+    inputs:
+      SourceFolder: $(Agent.BuildDirectory)/.gdn
+      Contents: |
+        c
+        i
+    condition: succeededOrFailed()
+
+  - publish: $(Agent.BuildDirectory)/.gdn
+    artifact: GuardianConfiguration
+    displayName: Publish GuardianConfiguration
+    condition: succeededOrFailed()
+
+  # Publish the SARIF files in a container named CodeAnalysisLogs to enable integration
+  # with the "SARIF SAST Scans Tab" Azure DevOps extension
+  - task: CopyFiles@2
+    displayName: Copy SARIF files
+    inputs:
+      flattenFolders: true
+      sourceFolder:  $(Agent.BuildDirectory)/.gdn/rc/
+      contents: '**/*.sarif'
+      targetFolder: $(Build.SourcesDirectory)/CodeAnalysisLogs
+    condition: succeededOrFailed()
+
+  # Use PublishBuildArtifacts because the SARIF extension only checks this case
+  # see microsoft/sarif-azuredevops-extension#4
+  - task: PublishBuildArtifacts@1
+    displayName: Publish SARIF files to CodeAnalysisLogs container
+    inputs:
+      pathToPublish:  $(Build.SourcesDirectory)/CodeAnalysisLogs
+      artifactName: CodeAnalysisLogs
+    condition: succeededOrFailed()

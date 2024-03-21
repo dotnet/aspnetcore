@@ -163,7 +163,7 @@ jobs:
         uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true
 
-  - template: /eng/common/templates/steps/component-governance.yml
+  - template: /eng/common/templates-official/steps/component-governance.yml
     parameters:
       ${{ if eq(parameters.disableComponentGovernance, '') }}:
         ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.runAsPublic, 'false'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dotnet/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/microsoft/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
@@ -197,7 +197,7 @@ jobs:
           SourceFolder: 'artifacts/packages'
           Contents: '**'
           TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/packages'
-      - task: PublishBuildArtifacts@1
+      - task: 1ES.PublishBuildArtifacts@1
         displayName: Publish pipeline artifacts
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)/artifacts'
@@ -206,14 +206,16 @@ jobs:
         continueOnError: true
         condition: always()
     - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
-      - publish: artifacts/log
-        artifact: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
-        displayName: Publish logs
+      - task: 1ES.PublishPipelineArtifact@1
+        inputs:
+          targetPath: 'artifacts/log'
+          artifactName: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
+        displayName: 'Publish logs'
         continueOnError: true
         condition: always()
 
   - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
-    - task: PublishBuildArtifacts@1
+    - task: 1ES.PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
@@ -246,14 +248,16 @@ jobs:
       condition: always()
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
-    - template: /eng/common/templates/steps/generate-sbom.yml
+    - template: /eng/common/templates-official/steps/generate-sbom.yml
       parameters:
         PackageVersion: ${{ parameters.packageVersion}}
         BuildDropPath: ${{ parameters.buildDropPath }}
         IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
-    - publish: $(Build.SourcesDirectory)\eng\common\BuildConfiguration
-      artifact: BuildConfiguration
-      displayName: Publish build retry configuration
+    - task: 1ES.PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)\eng\common\BuildConfiguration'
+        artifactName: 'BuildConfiguration'
+      displayName: 'Publish build retry configuration'
       continueOnError: true
