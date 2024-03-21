@@ -117,7 +117,7 @@ public class Project : IDisposable
         await createExecution.Exited;
 
         var createResult = new ProcessResult(createExecution);
-        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, createResult));
+        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", this, createResult));
 
         argString = "restore /bl";
         using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
