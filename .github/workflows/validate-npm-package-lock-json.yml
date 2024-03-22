@@ -4,8 +4,6 @@ on:
   # Manual run
   workflow_dispatch:
   pull_request:
-    paths:
-      - 'package-lock.json'
 
 jobs:
   validate-package-lock-json:
