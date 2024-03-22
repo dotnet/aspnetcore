@@ -351,9 +351,7 @@ public class KeyRingBasedDataProtectorTests
 
         public TestKeyRingProvider(CacheableKeyRing keys) => _keyRing = keys;
 
-        CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now) => throw new NotSupportedException();
-
-        CacheableKeyRing ICacheableKeyRingProvider2.GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod) => _keyRing;
+        public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod) => _keyRing;
     }
 
     private class RefreshTestKeyRingProvider : ICacheableKeyRingProvider2
@@ -368,9 +366,7 @@ public class KeyRingBasedDataProtectorTests
             _refreshKeyRing = refreshKeys;
         }
 
-        CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now) => throw new NotSupportedException();
-
-        CacheableKeyRing ICacheableKeyRingProvider2.GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod)
+        public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod)
         {
             if (!_called)
             {

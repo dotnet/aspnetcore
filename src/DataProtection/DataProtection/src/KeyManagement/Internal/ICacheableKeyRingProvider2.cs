@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
-internal interface ICacheableKeyRingProvider2 : ICacheableKeyRingProvider
+internal interface ICacheableKeyRingProvider2
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now, bool allowShortRefreshPeriod);
+    CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now, bool allowShortRefreshPeriod = true);
 }
