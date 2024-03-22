@@ -155,37 +155,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
                 var batch = cache.CreateBatch();
                 var setFields = batch.HashSetAsync(prefixedKey, fields);
                 var setTtl = batch.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault()));
-                batch.Execute(); // synchronous wait-for-all
-
-                // we *expect* that they are both complete; if not, something is *already*
-                // horribly wrong, so: we'll assert that
-                if (setFields.IsCompleted && setTtl.IsCompleted)
-                {
-                    // can check synchronously without adding a sync-over-async
-                    if (setFields.IsFaulted && setTtl.IsFaulted)
-                    {
-                        // both faulted? look at ttl so not "unobserved", and
-                        // use the error from the fiels as the primary fault
-                        try
-                        {
-                            setTtl.GetAwaiter().GetResult();
-                        }
-                        catch { } // this is a deliberate swallow; we know setFields is also doomed
-                        setFields.GetAwaiter().GetResult();
-                    }
-                    else
-                    {
-                        // at most one faulted; just check the results the simple way
-                        // (emphasis: they're already complete)
-                        setFields.GetAwaiter().GetResult();
-                        setTtl.GetAwaiter().GetResult();
-                    }
-                }
-                else
-                {
-                    // something weird happened; we do not want to add a sync-over-async
-                    throw new InvalidOperationException("Batch did not complete setting cache entry");
-                }
+                batch.Execute(); // synchronous wait-for-all; the two tasks should be either complete or *literally about to* (race conditions)
+                cache.WaitAll(setFields, setTtl); // note this applies usual SE.Redis timeouts etc
             }
         }
         catch (Exception ex)
@@ -555,6 +526,9 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
     }
 
+    // it is not an oversight that this returns seconds rather than TimeSpan (which SE.Redis can accept directly); by
+    // leaving this as an integer, we use TTL rather than PTTL, which has better compatibility between servers
+    // (it also takes a handful fewer bytes, but that isn't a motivating factor)
     private static long? GetExpirationInSeconds(DateTimeOffset creationTime, DateTimeOffset? absoluteExpiration, DistributedCacheEntryOptions options)
     {
         if (absoluteExpiration.HasValue && options.SlidingExpiration.HasValue)
