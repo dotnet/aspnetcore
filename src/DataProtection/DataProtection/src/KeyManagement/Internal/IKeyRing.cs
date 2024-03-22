@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 /// <summary>
 /// The basic interface for accessing a read-only keyring.
 /// </summary>
-public interface IKeyRing
+internal interface IKeyRing
 {
     /// <summary>
     /// The authenticated encryptor that shall be used for new encryption operations.

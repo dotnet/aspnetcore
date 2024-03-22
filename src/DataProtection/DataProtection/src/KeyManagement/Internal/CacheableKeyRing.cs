@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 /// <summary>
 /// Wraps both a keyring and its expiration policy.
 /// </summary>
-public sealed class CacheableKeyRing
+internal sealed class CacheableKeyRing
 {
     private readonly CancellationToken _expirationToken;
 
