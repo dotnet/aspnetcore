@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 /// This API supports infrastructure and is not intended to be used
 /// directly from your code. This API may change or be removed in future releases.
 /// </summary>
-internal interface ICacheableKeyRingProvider2
+/// <remarks>
+/// Replaces <see cref="ICacheableKeyRingProvider"/> as a test hook for validating
+/// <see cref="KeyRingProvider"/>.
+/// </remarks>
+internal interface IInternalCacheableKeyRingProvider
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used

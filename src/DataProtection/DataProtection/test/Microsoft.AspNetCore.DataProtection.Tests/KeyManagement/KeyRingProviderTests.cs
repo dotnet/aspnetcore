@@ -576,7 +576,7 @@ public class KeyRingProviderTests
         // Arrange
         var now = StringToDateTime("2015-03-01 00:00:00Z");
         var expectedKeyRing = new Mock<IKeyRing>().Object;
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider2>();
+        var mockCacheableKeyRingProvider = new Mock<IInternalCacheableKeyRingProvider>();
         mockCacheableKeyRingProvider
             .Setup(o => o.GetCacheableKeyRing(now, true))
             .Returns(new CacheableKeyRing(
@@ -603,7 +603,7 @@ public class KeyRingProviderTests
         var now = StringToDateTime("2015-03-01 00:00:00Z");
         var expectedKeyRing1 = new Mock<IKeyRing>().Object;
         var expectedKeyRing2 = new Mock<IKeyRing>().Object;
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider2>();
+        var mockCacheableKeyRingProvider = new Mock<IInternalCacheableKeyRingProvider>();
         mockCacheableKeyRingProvider
             .Setup(o => o.GetCacheableKeyRing(now, true))
             .Returns(new CacheableKeyRing(
@@ -644,7 +644,7 @@ public class KeyRingProviderTests
         var now = StringToDateTime("2015-03-01 00:00:00Z");
         var expectedKeyRing1 = new Mock<IKeyRing>().Object;
         var expectedKeyRing2 = new Mock<IKeyRing>().Object;
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider2>();
+        var mockCacheableKeyRingProvider = new Mock<IInternalCacheableKeyRingProvider>();
         mockCacheableKeyRingProvider
             .Setup(o => o.GetCacheableKeyRing(now, true))
             .Returns(new CacheableKeyRing(
@@ -676,7 +676,7 @@ public class KeyRingProviderTests
         // Arrange
         var now = StringToDateTime("2015-03-01 00:00:00Z");
         var expectedKeyRing = new Mock<IKeyRing>().Object;
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider2>();
+        var mockCacheableKeyRingProvider = new Mock<IInternalCacheableKeyRingProvider>();
         var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
 
         // This test spawns a background thread which calls GetCurrentKeyRing then waits
@@ -727,7 +727,7 @@ public class KeyRingProviderTests
         var originalKeyRingTime = StringToDateTime("2015-03-01 00:00:00Z");
         var updatedKeyRing = new Mock<IKeyRing>().Object;
         var updatedKeyRingTime = StringToDateTime("2015-03-02 00:00:00Z");
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider2>();
+        var mockCacheableKeyRingProvider = new Mock<IInternalCacheableKeyRingProvider>();
         var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
 
         // In this test, the foreground thread acquires the critial section in GetCurrentKeyRing,
@@ -764,7 +764,7 @@ public class KeyRingProviderTests
     {
         // Arrange
         var cts = new CancellationTokenSource();
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider2>();
+        var mockCacheableKeyRingProvider = new Mock<IInternalCacheableKeyRingProvider>();
         var originalKeyRing = new Mock<IKeyRing>().Object;
         var originalKeyRingTime = StringToDateTime("2015-03-01 00:00:00Z");
         mockCacheableKeyRingProvider.Setup(o => o.GetCacheableKeyRing(originalKeyRingTime, true))
@@ -821,7 +821,7 @@ public class KeyRingProviderTests
                 ShouldGenerateNewKey = true
             });
 
-        ICacheableKeyRingProvider2 provider = new KeyRingProvider(keyManager, keyManagementOptions, defaultKeyResolver.Object);
+        IInternalCacheableKeyRingProvider provider = new KeyRingProvider(keyManager, keyManagementOptions, defaultKeyResolver.Object);
         var keyRing = provider.GetCacheableKeyRing(now);
         Assert.InRange(keyRing.ExpirationTimeUtc, now, maxRefreshTime); // Actual range is based on jitter - this lower bound is loose
 
@@ -852,7 +852,7 @@ public class KeyRingProviderTests
                 ShouldGenerateNewKey = false
             });
 
-        ICacheableKeyRingProvider2 provider = new KeyRingProvider(keyManager, keyManagementOptions, defaultKeyResolver.Object);
+        IInternalCacheableKeyRingProvider provider = new KeyRingProvider(keyManager, keyManagementOptions, defaultKeyResolver.Object);
         var keyRing = provider.GetCacheableKeyRing(now);
         Assert.InRange(keyRing.ExpirationTimeUtc, now, maxRefreshTime); // Actual range is based on jitter - this lower bound is loose
 
@@ -872,12 +872,12 @@ public class KeyRingProviderTests
         var keyManagementOptions = new Mock<IOptions<KeyManagementOptions>>();
         var defaultKeyResolver = new DefaultKeyResolver();
 
-        var tasks1 = new Task<ValueTuple<ICacheableKeyRingProvider2, CacheableKeyRing>>[taskCount];
+        var tasks1 = new Task<ValueTuple<IInternalCacheableKeyRingProvider, CacheableKeyRing>>[taskCount];
         for (var i = 0; i < taskCount; i++)
         {
             tasks1[i] = Task.Run(() =>
             {
-                ICacheableKeyRingProvider2 provider = new KeyRingProvider(keyManager, keyManagementOptions.Object, defaultKeyResolver);
+                IInternalCacheableKeyRingProvider provider = new KeyRingProvider(keyManager, keyManagementOptions.Object, defaultKeyResolver);
                 var keyRing = provider.GetCacheableKeyRing(now);
                 return (provider, keyRing);
             });
@@ -885,7 +885,7 @@ public class KeyRingProviderTests
         var tuples1 = await Task.WhenAll(tasks1);
         Assert.All(tuples1, tuple => Assert.InRange(tuple.Item2.ExpirationTimeUtc, now, maxRefreshTime)); // Actual range is based on jitter - this lower bound is loose
 
-        var tasks2 = new Task<ValueTuple<ICacheableKeyRingProvider2, CacheableKeyRing>>[taskCount];
+        var tasks2 = new Task<ValueTuple<IInternalCacheableKeyRingProvider, CacheableKeyRing>>[taskCount];
         for (var t = 0; t < taskCount; t++)
         {
             var i = t;
@@ -969,7 +969,7 @@ public class KeyRingProviderTests
         }
     }
 
-    private static ICacheableKeyRingProvider2 SetupCreateCacheableKeyRingTestAndCreateKeyManager(
+    private static IInternalCacheableKeyRingProvider SetupCreateCacheableKeyRingTestAndCreateKeyManager(
         IList<string> callSequence,
         IEnumerable<CancellationToken> getCacheExpirationTokenReturnValues,
         IEnumerable<IReadOnlyCollection<IKey>> getAllKeysReturnValues,
@@ -1026,7 +1026,7 @@ public class KeyRingProviderTests
         return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
     }
 
-    private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider2 cacheableKeyRingProvider)
+    private static KeyRingProvider CreateKeyRingProvider(IInternalCacheableKeyRingProvider cacheableKeyRingProvider)
     {
         var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
         mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
@@ -1043,7 +1043,7 @@ public class KeyRingProviderTests
         };
     }
 
-    private static ICacheableKeyRingProvider2 CreateKeyRingProvider(IKeyManager keyManager, IDefaultKeyResolver defaultKeyResolver, KeyManagementOptions keyManagementOptions = null)
+    private static IInternalCacheableKeyRingProvider CreateKeyRingProvider(IKeyManager keyManager, IDefaultKeyResolver defaultKeyResolver, KeyManagementOptions keyManagementOptions = null)
     {
         var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
         mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);

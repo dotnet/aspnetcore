@@ -226,7 +226,7 @@ public class KeyRingBasedDataProtectorTests
         return DateTimeOffset.ParseExact(input, "u", CultureInfo.InvariantCulture).UtcDateTime;
     }
 
-    private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider2 cacheableKeyRingProvider)
+    private static KeyRingProvider CreateKeyRingProvider(IInternalCacheableKeyRingProvider cacheableKeyRingProvider)
     {
         var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
         mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
@@ -345,7 +345,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Empty(result);
     }
 
-    private class TestKeyRingProvider : ICacheableKeyRingProvider2
+    private class TestKeyRingProvider : IInternalCacheableKeyRingProvider
     {
         private CacheableKeyRing _keyRing;
 
@@ -354,7 +354,7 @@ public class KeyRingBasedDataProtectorTests
         public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod) => _keyRing;
     }
 
-    private class RefreshTestKeyRingProvider : ICacheableKeyRingProvider2
+    private class RefreshTestKeyRingProvider : IInternalCacheableKeyRingProvider
     {
         private CacheableKeyRing _keyRing;
         private CacheableKeyRing _refreshKeyRing;

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-internal sealed class KeyRingProvider : ICacheableKeyRingProvider, ICacheableKeyRingProvider2, IKeyRingProvider
+internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IInternalCacheableKeyRingProvider, IKeyRingProvider
 {
     private CacheableKeyRing? _cacheableKeyRing;
     private readonly object _cacheableKeyRingLockObj = new object();
@@ -55,7 +55,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, ICacheableKey
     internal CacheableKeyRing? CacheableKeyRing => Volatile.Read(ref _cacheableKeyRing);
 
     // for testing
-    internal ICacheableKeyRingProvider2 CacheableKeyRingProvider { get; set; }
+    internal IInternalCacheableKeyRingProvider CacheableKeyRingProvider { get; set; }
 
     internal DateTime AutoRefreshWindowEnd { get; set; }
 
@@ -338,7 +338,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, ICacheableKey
         return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod: false, keyJustAdded: null);
     }
 
-    CacheableKeyRing ICacheableKeyRingProvider2.GetCacheableKeyRing(DateTimeOffset now, bool allowShortRefreshPeriod)
+    CacheableKeyRing IInternalCacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now, bool allowShortRefreshPeriod)
     {
         // the entry point allows one recursive call
         return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod, keyJustAdded: null);
