@@ -65,7 +65,7 @@
     </MSBuild>
 
     <PropertyGroup>
-      <ProductVersion>%(_ResolvedProductVersionInfo.PackageVersion)</ProductVersion>
+      <ProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</ProductVersion>
     </PropertyGroup>
   </Target>
 
