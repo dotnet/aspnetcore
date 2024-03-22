@@ -141,7 +141,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         try
         {
             var prefixedKey = _instancePrefix.Append(key);
-            var ttl = GetExpiration(creationTime, absoluteExpiration, options);
+            var ttl = GetExpirationInSeconds(creationTime, absoluteExpiration, options);
             var fields = GetHashFields(value, absoluteExpiration, options.SlidingExpiration);
 
             if (ttl is null)
@@ -154,7 +154,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
                 // SE.Redis reuses the async API shape for this scenario
                 var batch = cache.CreateBatch();
                 var setFields = batch.HashSetAsync(prefixedKey, fields);
-                var setTtl = batch.KeyExpireAsync(prefixedKey, ttl.GetValueOrDefault());
+                var setTtl = batch.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault()));
                 batch.Execute(); // synchronous wait-for-all
 
                 // we *expect* that they are both complete; if not, something is *already*
@@ -214,7 +214,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         try
         {
             var prefixedKey = _instancePrefix.Append(key);
-            var ttl = GetExpiration(creationTime, absoluteExpiration, options);
+            var ttl = GetExpirationInSeconds(creationTime, absoluteExpiration, options);
             var fields = GetHashFields(value, absoluteExpiration, options.SlidingExpiration);
 
             if (ttl is null)
@@ -225,7 +225,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
             {
                 await Task.WhenAll(
                     cache.HashSetAsync(prefixedKey, fields),
-                    cache.KeyExpireAsync(prefixedKey, ttl.GetValueOrDefault())
+                    cache.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault()))
                     ).ConfigureAwait(false);
             }
         }
@@ -555,23 +555,21 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
     }
 
-    private static TimeSpan? GetExpiration(DateTimeOffset creationTime, DateTimeOffset? absoluteExpiration, DistributedCacheEntryOptions options)
+    private static long? GetExpirationInSeconds(DateTimeOffset creationTime, DateTimeOffset? absoluteExpiration, DistributedCacheEntryOptions options)
     {
         if (absoluteExpiration.HasValue && options.SlidingExpiration.HasValue)
         {
-            var absolute = absoluteExpiration.GetValueOrDefault() - creationTime;
-            var sliding = options.SlidingExpiration.GetValueOrDefault();
-
-            // take whichever is smaller
-            return absolute < sliding ? absolute : sliding;
+            return (long)Math.Min(
+                (absoluteExpiration.Value - creationTime).TotalSeconds,
+                options.SlidingExpiration.Value.TotalSeconds);
         }
         else if (absoluteExpiration.HasValue)
         {
-            return absoluteExpiration.GetValueOrDefault() - creationTime;
+            return (long)(absoluteExpiration.Value - creationTime).TotalSeconds;
         }
         else if (options.SlidingExpiration.HasValue)
         {
-            return options.SlidingExpiration.GetValueOrDefault();
+            return (long)options.SlidingExpiration.Value.TotalSeconds;
         }
         return null;
     }
