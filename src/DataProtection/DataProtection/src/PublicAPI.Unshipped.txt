@@ -1,21 +1,21 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.CacheableKeyRing'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.DefaultKey -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey?'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.DefaultKeyResolution() -> void'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.FallbackKey -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey?'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.ShouldGenerateNewKey -> bool'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.ICacheableKeyRingProvider'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.ICacheableKeyRingProvider.GetCacheableKeyRing(System.DateTimeOffset now) -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.CacheableKeyRing!'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IDefaultKeyResolver'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IDefaultKeyResolver.ResolveDefaultKeyPolicy(System.DateTimeOffset now, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!>! allKeys) -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.CreateNewKey(System.Guid keyId, System.DateTimeOffset creationDate, System.DateTimeOffset activationDate, System.DateTimeOffset expirationDate) -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(System.Xml.Linq.XElement! keyElement) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.RevokeSingleKey(System.Guid keyId, System.DateTimeOffset revocationDate, string? reason) -> void'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.DefaultAuthenticatedEncryptor.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.DefaultKeyId.get -> System.Guid'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.GetAuthenticatedEncryptorByKeyId(System.Guid keyId, out bool isRevoked) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRingProvider'
-*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRingProvider.GetCurrentKeyRing() -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing!'
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.CacheableKeyRing
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.DefaultKey -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey?
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.DefaultKeyResolution() -> void
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.FallbackKey -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey?
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.ShouldGenerateNewKey -> bool
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.ICacheableKeyRingProvider
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.ICacheableKeyRingProvider.GetCacheableKeyRing(System.DateTimeOffset now) -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.CacheableKeyRing!
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IDefaultKeyResolver
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IDefaultKeyResolver.ResolveDefaultKeyPolicy(System.DateTimeOffset now, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!>! allKeys) -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.CreateNewKey(System.Guid keyId, System.DateTimeOffset creationDate, System.DateTimeOffset activationDate, System.DateTimeOffset expirationDate) -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(System.Xml.Linq.XElement! keyElement) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.RevokeSingleKey(System.Guid keyId, System.DateTimeOffset revocationDate, string? reason) -> void
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.DefaultAuthenticatedEncryptor.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.DefaultKeyId.get -> System.Guid
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.GetAuthenticatedEncryptorByKeyId(System.Guid keyId, out bool isRevoked) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRingProvider
+*REMOVED*Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRingProvider.GetCurrentKeyRing() -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing!
