@@ -1,16 +1,27 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Analyzers.RenderTreeBuilder;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
+using Microsoft.CodeAnalysis;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
 public partial class RoutePatternAnalyzerTests
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
     private TestDiagnosticAnalyzerRunner Runner { get; } = new(new RoutePatternAnalyzer());
+
+    public RoutePatternAnalyzerTests(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
 
     [Fact]
     public async Task CommentOnString_ReportResults()
@@ -505,6 +516,127 @@ public class TestController
     }
 }
 ");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task ConcatString_PerformanceTest()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        static readonly string _s =
+    """);
+        for (var i = 0; i < 2000; i++)
+        {
+            builder.AppendLine("        \"a{}bc\" +");
+        }
+        builder.AppendLine("""
+            "";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
+
+        // Act 1
+        // Warm up.
+        var diagnostics1 = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert 1
+        Assert.Empty(diagnostics1);
+
+        // Act 2
+        // Measure analysis.
+        var stopwatch = Stopwatch.StartNew();
+
+        var diagnostics2 = await Runner.GetDiagnosticsAsync(source.Source);
+        _testOutputHelper.WriteLine($"Elapsed time: {stopwatch.Elapsed}");
+
+        // Assert 2
+        Assert.Empty(diagnostics2);
+    }
+
+    [Fact]
+    public async Task ConcatString_DetectLanguage_NoWarningsBecauseConcatString()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        // lang=Route
+        static readonly string _s =
+    """);
+        for (var i = 0; i < 2000; i++)
+        {
+            builder.AppendLine("        \"a{}bc\" +");
+        }
+        builder.AppendLine("""
+            "";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task NestedLangComment_NoWarningsBecauseConcatString()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        static readonly string _s =
+            "{/*MM0*/te*st0}" +
+            // lang=Route
+            "{/*MM1*/te*st1}" +
+            "{/*MM2*/te*st2}" +
+            "{test3}";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task TopLangComment_NoWarningsBecauseConcatString()
+    {
+        // Arrange
+        var builder = new StringBuilder();
+        builder.AppendLine("""
+    class Program
+    {
+        static void Main() { }
+        static readonly string _s =
+            // lang=Route
+            "{/*MM0*/te*st0}" +
+            "{/*MM1*/te*st1}" +
+            "{/*MM2*/te*st2}" +
+            // lang=regex
+            "{test3}";
+    }
+    """);
+        var source = TestSource.Read(builder.ToString());
 
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
