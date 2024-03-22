@@ -4,13 +4,21 @@ on:
   # Manual run
   workflow_dispatch:
   pull_request:
-  
+    paths:
+      - 'package-lock.json'
+
 jobs:
   validate-package-lock-json:
     name: 'Validate package-lock.json against source feeds'
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout aspnetcore repository
+        uses: actions/checkout@v4
+        with:
+          repository: 'dotnet/aspnetcore'
+          path: 'main'
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
