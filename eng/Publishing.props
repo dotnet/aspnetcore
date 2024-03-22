@@ -23,28 +23,30 @@
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
 
     <!-- Prepare for _PublishInstallersAndChecksums target. -->
-    <Artifact Include="$(ArtifactsDir)packages\**\*.jar" UploadPathSegment="jar" PublishFlatContainer="true" />
-    <Artifact Include="$(ArtifactsDir)packages\**\*.pom" UploadPathSegment="jar" PublishFlatContainer="true" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.jar" UploadPathSegment="jar" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.pom" UploadPathSegment="jar" />
     <!-- All builds produce npm assets - only publish them once -->
-    <Artifact Include="$(ArtifactsDir)packages\**\*.tgz" UploadPathSegment="npm" PublishFlatContainer="true"
-              Condition="'$(OS)' == 'Windows_NT' or '$(DotNetBuildOrchestrator)' == 'true'" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime" PublishFlatContainer="true"
-              Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsDir)packages\**\*.tgz" UploadPathSegment="npm" Condition="'$(OS)' == 'Windows_NT' or '$(DotNetBuildOrchestrator)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.version" UploadPathSegment="Runtime" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
 
     <!-- The following installers create checksums -->
-    <Artifact Include="$(ArtifactsDir)installers\**\*.deb" UploadPathSegment="Runtime" PublishFlatContainer="true" ChecksumPath="%(FullPath).sha512" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" PublishFlatContainer="true" ChecksumPath="%(FullPath).sha512" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" PublishFlatContainer="true" ChecksumPath="%(FullPath).sha512" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.rpm" UploadPathSegment="Runtime" PublishFlatContainer="true" ChecksumPath="%(FullPath).sha512" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.tar.gz" UploadPathSegment="Runtime" PublishFlatContainer="true" ChecksumPath="%(FullPath).sha512" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" PublishFlatContainer="true" ChecksumPath="%(FullPath).sha512" />
-    <Artifact Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" PublishFlatContainer="true">
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.deb" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.exe" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.msi" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.rpm" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.tar.gz" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.wixlib" UploadPathSegment="Runtime" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\**\*.zip" UploadPathSegment="Runtime" >
       <!-- Exclude wixpack.zip files from checksum generation -->
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
-    </Artifact>
+    </_InstallersToPublish>
 
     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
-    <Artifact Remove="$(ArtifactsDir)installers\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
+    <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
+
+    <Artifact Include="@(_InstallersToPublish)"
+              PublishFlatContainer="true"
+              IsShipping="!$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal'))" />
   </ItemGroup>
 
   <Target Name="GetProductVersion">
