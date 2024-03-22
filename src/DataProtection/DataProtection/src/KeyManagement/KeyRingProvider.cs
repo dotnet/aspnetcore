@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvider
+internal sealed class KeyRingProvider : ICacheableKeyRingProvider2, IKeyRingProvider
 {
     private CacheableKeyRing? _cacheableKeyRing;
     private readonly object _cacheableKeyRingLockObj = new object();
@@ -52,13 +52,16 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
     }
 
     // for testing
-    internal ICacheableKeyRingProvider CacheableKeyRingProvider { get; set; }
+    internal CacheableKeyRing? CacheableKeyRing => Volatile.Read(ref _cacheableKeyRing);
+
+    // for testing
+    internal ICacheableKeyRingProvider2 CacheableKeyRingProvider { get; set; }
 
     internal DateTime AutoRefreshWindowEnd { get; set; }
 
     internal bool InAutoRefreshWindow() => DateTime.UtcNow < AutoRefreshWindowEnd;
 
-    private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey? keyJustAdded)
+    private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, bool allowShortRefreshPeriod, IKey? keyJustAdded)
     {
         // Refresh the list of all keys
         var cacheExpirationToken = _keyManager.GetCacheExpirationToken();
@@ -77,7 +80,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         if (keyJustAdded != null)
         {
             var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, keyJustAdded, allKeys);
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, keyJustAdded, allowShortRefreshPeriod, allKeys);
         }
 
         // Determine whether we need to generate a new key
@@ -104,7 +107,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         if (!shouldGenerateNewKey)
         {
             CryptoUtil.Assert(defaultKey != null, "Expected to see a default key.");
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKey, keyJustAdded, allKeys);
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKey, keyJustAdded, allowShortRefreshPeriod, allKeys);
         }
 
         _logger.PolicyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing();
@@ -124,7 +127,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             else
             {
                 _logger.UsingFallbackKeyWithExpirationAsDefaultKey(keyToUse.KeyId, keyToUse.ExpirationDate);
-                return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, keyJustAdded, allKeys);
+                return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, keyJustAdded, allowShortRefreshPeriod, allKeys);
             }
         }
 
@@ -136,7 +139,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             // The case where there's no default key is the easiest scenario, since it
             // means that we need to create a new key with immediate activation.
             var newKey = _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
-            return CreateCacheableKeyRingCore(now, keyJustAdded: newKey); // recursively call
+            return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod, keyJustAdded: newKey); // recursively call
         }
         else
         {
@@ -144,11 +147,11 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             // expiration of the default key. The new key lifetime is measured from the creation
             // date (now), not the activation date.
             var newKey = _keyManager.CreateNewKey(activationDate: defaultKey.ExpirationDate, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
-            return CreateCacheableKeyRingCore(now, keyJustAdded: newKey); // recursively call
+            return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod, keyJustAdded: newKey); // recursively call
         }
     }
 
-    private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IKey? generatedKey, IEnumerable<IKey> allKeys)
+    private CacheableKeyRing CreateCacheableKeyRingCoreStep2(DateTimeOffset now, CancellationToken cacheExpirationToken, IKey defaultKey, IKey? generatedKey, bool allowShortRefreshPeriod, IEnumerable<IKey> allKeys)
     {
         Debug.Assert(defaultKey != null);
 
@@ -171,12 +174,13 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         // These not-yet-propagated keys are usually immediately-activated, but an app restarted after a period
         // of downtime may discover that it has a valid, but soon-to-be-expired key. The replacement will not
         // be immediately-activated, but may be activated before it has propagated.
-        var useShortRefreshPeriod = generatedKey is not null
-            // Either we had to generate a key and it will be activated before it has time to propagate
-            // (in which case, other instances may have done the same)
-            ? (generatedKey.ActivationDate < now + KeyManagementOptions.KeyPropagationWindow) // No clock skew on a key we generated
-            // Or we selected a key that has yet to propagate (presumably, from another instance)
-            : (defaultKey.CreationDate > now - KeyManagementOptions.KeyPropagationWindow);
+        var useShortRefreshPeriod = allowShortRefreshPeriod &&
+            (generatedKey is not null
+                // Either we had to generate a key and it will be activated before it has time to propagate
+                // (in which case, other instances may have done the same)
+                ? (generatedKey.ActivationDate < now + KeyManagementOptions.KeyPropagationWindow) // No clock skew on a key we generated
+                // Or we selected a key that has yet to propagate (presumably, from another instance)
+                : (defaultKey.CreationDate > now - KeyManagementOptions.KeyPropagationWindow));
 
         var nextAutoRefreshTime = now + GetRefreshPeriodWithJitter(
             useShortRefreshPeriod
@@ -193,8 +197,8 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         return new CacheableKeyRing(
             expirationToken: cacheExpirationToken,
             expirationTime: (defaultKey.ExpirationDate <= now) ? nextAutoRefreshTime : Min(defaultKey.ExpirationDate, nextAutoRefreshTime),
-            defaultKey: defaultKey,
-            allKeys: allKeys);
+            hasShortRefreshPeriod: useShortRefreshPeriod,
+            keyRing: new KeyRing(defaultKey, allKeys));
     }
 
     public IKeyRing GetCurrentKeyRing()
@@ -255,7 +259,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
                 try
                 {
-                    newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+                    newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow, allowShortRefreshPeriod: existingCacheableKeyRing?.HasShortRefreshPeriod != true);
                 }
                 catch (Exception ex)
                 {
@@ -325,9 +329,18 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         return (a < b) ? a : b;
     }
 
+    // This is only here to support external consumers of our internal test hook.
+    // The object returned has no public properties, so we could probably return a dummy
+    // without doing any work, but maybe they're calling it for side-effects?
     CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now)
     {
         // the entry point allows one recursive call
-        return CreateCacheableKeyRingCore(now, keyJustAdded: null);
+        return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod: false, keyJustAdded: null);
+    }
+
+    CacheableKeyRing ICacheableKeyRingProvider2.GetCacheableKeyRing(DateTimeOffset now, bool allowShortRefreshPeriod)
+    {
+        // the entry point allows one recursive call
+        return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod, keyJustAdded: null);
     }
 }

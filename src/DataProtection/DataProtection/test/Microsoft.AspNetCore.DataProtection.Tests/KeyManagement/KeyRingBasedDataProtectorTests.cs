@@ -226,7 +226,7 @@ public class KeyRingBasedDataProtectorTests
         return DateTimeOffset.ParseExact(input, "u", CultureInfo.InvariantCulture).UtcDateTime;
     }
 
-    private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider cacheableKeyRingProvider)
+    private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider2 cacheableKeyRingProvider)
     {
         var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
         mockEncryptorFactory.Setup(m => m.CreateEncryptorInstance(It.IsAny<IKey>())).Returns(new Mock<IAuthenticatedEncryptor>().Object);
@@ -345,16 +345,18 @@ public class KeyRingBasedDataProtectorTests
         Assert.Empty(result);
     }
 
-    private class TestKeyRingProvider : ICacheableKeyRingProvider
+    private class TestKeyRingProvider : ICacheableKeyRingProvider2
     {
         private CacheableKeyRing _keyRing;
 
         public TestKeyRingProvider(CacheableKeyRing keys) => _keyRing = keys;
 
-        public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now) => _keyRing;
+        CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now) => throw new NotSupportedException();
+
+        CacheableKeyRing ICacheableKeyRingProvider2.GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod) => _keyRing;
     }
 
-    private class RefreshTestKeyRingProvider : ICacheableKeyRingProvider
+    private class RefreshTestKeyRingProvider : ICacheableKeyRingProvider2
     {
         private CacheableKeyRing _keyRing;
         private CacheableKeyRing _refreshKeyRing;
@@ -366,7 +368,9 @@ public class KeyRingBasedDataProtectorTests
             _refreshKeyRing = refreshKeys;
         }
 
-        public CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now)
+        CacheableKeyRing ICacheableKeyRingProvider.GetCacheableKeyRing(DateTimeOffset now) => throw new NotSupportedException();
+
+        CacheableKeyRing ICacheableKeyRingProvider2.GetCacheableKeyRing(DateTimeOffset now, bool _allowShortRefreshPeriod)
         {
             if (!_called)
             {
