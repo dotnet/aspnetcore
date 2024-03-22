@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout aspnetcore repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: 'dotnet/aspnetcore'
-          path: 'main'
+        fetch-depth: 0
+        submodules: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
