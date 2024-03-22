@@ -91,7 +91,7 @@
           AfterTargets="GenerateChecksumsFromArtifacts"
           DependsOnTargets="GetProductVersion">
     <ItemGroup>
-      <Artifact Condition="'%(Artifact.UploadPathSegment)' != ''"
+      <Artifact Condition="'%(Artifact.PublishFlatContainer)' == 'true' and '%(Artifact.UploadPathSegment)' != ''"
                 RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)/$(ProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
