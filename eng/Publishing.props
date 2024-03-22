@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-    <_UploadPathRoot>aspnetcore</_UploadPathRoot>
 
     <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows.
          Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
@@ -71,7 +70,7 @@
           Condition="'$(PublishInstallerBaseVersion)' == 'true'">
     <ItemGroup>
       <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
-      <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)$(_UploadPathRoot)-productVersion.txt" />
+      <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)aspnetcore-productVersion.txt" />
     </ItemGroup>
 
     <!-- Generate productVersion.txt file containing the product version. -->
@@ -83,7 +82,7 @@
     <ItemGroup>
       <Artifact Include="@(ProductVersionFile)"
                 PublishFlatContainer="true"
-                RelativeBlobPath="$(_UploadPathRoot)/Runtime/$(ProductVersion)/%(Filename)%(Extension)" />
+                RelativeBlobPath="aspnetcore/Runtime/$(ProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
@@ -93,7 +92,7 @@
           DependsOnTargets="GetProductVersion">
     <ItemGroup>
       <Artifact Condition="'%(Artifact.UploadPathSegment)' != ''"
-                RelativeBlobPath="$(_UploadPathRoot)/%(Artifact.UploadPathSegment)/$(ProductVersion)/%(Filename)%(Extension)" />
+                RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)/$(ProductVersion)/%(Filename)%(Extension)" />
       </Artifact>
     </ItemGroup>
   </Target>
