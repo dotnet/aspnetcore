@@ -73,7 +73,7 @@ if ($WhatIf -or $SkipPullRequestCreation) {
 }
 else {
     Write-Host "Creating pull request for Node-Externals submodule"
-    git --set-upstream-to=origin/main
+    git branch --set-upstream-to=origin/main
     git push origin $branchName`:$branchName --force;
     gh repo set-default dotnet/Node-Externals
     gh pr create --base main --head "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')" --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body ""
@@ -97,7 +97,7 @@ if ($WhatIf -or $SkipPullRequestCreation) {
 }
 else {
     Write-Host "Creating pull request for the root of the repository"
-    git --set-upstream-to=origin/main
+    git branch --set-upstream-to=origin/main
     git push origin $branchName`:$branchName --force;
     gh repo set-default dotnet/aspnetcore
     gh pr create --base main --head $branchName --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body ""
