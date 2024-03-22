@@ -93,7 +93,6 @@
     <ItemGroup>
       <Artifact Condition="'%(Artifact.UploadPathSegment)' != ''"
                 RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)/$(ProductVersion)/%(Filename)%(Extension)" />
-      </Artifact>
     </ItemGroup>
   </Target>
 
