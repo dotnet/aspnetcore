@@ -291,9 +291,113 @@ public class DefaultKeyResolverTests
         Assert.False(resolution.ShouldGenerateNewKey);
     }
 
+    [Fact]
+    public void CreateEncryptor_NoRetryOnNullReturn()
+    {
+        // Arrange
+        var resolver = CreateDefaultKeyResolver();
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var mockKey = new Mock<IKey>();
+        mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
+        mockKey.Setup(o => o.CreationDate).Returns(now.AddDays(-3)); // Propagated
+        mockKey.Setup(o => o.ActivationDate).Returns(now.AddDays(-1)); // Activated
+        mockKey.Setup(o => o.ExpirationDate).Returns(now.AddDays(14)); // Unexpired
+        mockKey.Setup(o => o.IsRevoked).Returns(false); // Unrevoked
+        mockKey.Setup(o => o.CreateEncryptor()).Returns((IAuthenticatedEncryptor)null); // Anomalous null return
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [mockKey.Object]);
+
+        // Assert
+        Assert.Null(resolution.DefaultKey);
+        Assert.Null(resolution.FallbackKey);
+        Assert.True(resolution.ShouldGenerateNewKey);
+
+        mockKey.Verify(o => o.CreateEncryptor(), Times.Once); // Not retried
+    }
+
+    [Fact]
+    public void CreateEncryptor_FirstAttemptIsNotARetry()
+    {
+        // Arrange
+        var options = Options.Create(new KeyManagementOptions()
+        {
+            MaximumDefaultKeyResolverRetries = 3,
+            DefaultKeyResolverRetryDelay = TimeSpan.Zero,
+        });
+
+        var resolver = new DefaultKeyResolver(options, NullLoggerFactory.Instance);
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var creation1 = now.AddDays(-3);
+        var activation1 = creation1.AddDays(2);
+        var expiration1 = creation1.AddDays(90);
+
+        // Newer but still propagated => preferred
+        var creation2 = creation1.AddHours(1);
+        var activation2 = activation1.AddHours(1);
+        var expiration2 = expiration1.AddHours(1);
+
+        var mockKey1 = CreateMockKey(activation1, expiration1, creation1, isRevoked: false, createEncryptorThrows: false);
+        var mockKey2 = CreateMockKey(activation2, expiration2, creation2, isRevoked: false, createEncryptorThrows: true); // Uses up all the retries
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [mockKey1.Object, mockKey2.Object]);
+
+        // Assert
+        Assert.Null(resolution.DefaultKey);
+        Assert.Same(mockKey1.Object, resolution.FallbackKey);
+        Assert.True(resolution.ShouldGenerateNewKey);
+
+        mockKey1.Verify(o => o.CreateEncryptor(), Times.Once); // 1 try
+        mockKey2.Verify(o => o.CreateEncryptor(), Times.Exactly(4)); // 1 try plus max (3) retries
+    }
+
+    [Fact]
+    public void CreateEncryptor_SucceedsOnRetry()
+    {
+        // Arrange
+        var options = Options.Create(new KeyManagementOptions()
+        {
+            MaximumDefaultKeyResolverRetries = 3,
+            DefaultKeyResolverRetryDelay = TimeSpan.Zero,
+        });
+
+        var resolver = new DefaultKeyResolver(options, NullLoggerFactory.Instance);
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var creation = now.AddDays(-3);
+        var activation = creation.AddDays(2);
+        var expiration = creation.AddDays(90);
+
+        var mockKey = CreateMockKey(activation, expiration, creation);
+        mockKey
+            .Setup(o => o.CreateEncryptor())
+            .Returns(() =>
+            {
+                // Added to list before the callback is called
+                if (mockKey.Invocations.Count(i => i.Method.Name == nameof(IKey.CreateEncryptor)) == 1)
+                {
+                    throw new Exception("This method fails.");
+                }
+                return new Mock<IAuthenticatedEncryptor>().Object;
+            });
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [mockKey.Object]);
+
+        // Assert
+        Assert.Same(mockKey.Object, resolution.DefaultKey);
+        mockKey.Verify(o => o.CreateEncryptor(), Times.Exactly(2)); // 1 try plus 1 retry
+    }
+
     private static IDefaultKeyResolver CreateDefaultKeyResolver()
     {
-        return new DefaultKeyResolver(NullLoggerFactory.Instance);
+        return new DefaultKeyResolver(Options.Create(new KeyManagementOptions()), NullLoggerFactory.Instance);
     }
 
     private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)
@@ -302,6 +406,11 @@ public class DefaultKeyResolverTests
     }
 
     private static IKey CreateKey(DateTimeOffset activationDate, DateTimeOffset expirationDate, DateTimeOffset? creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)
+    {
+        return CreateMockKey(activationDate, expirationDate, creationDate, isRevoked, createEncryptorThrows).Object;
+    }
+
+    private static Mock<IKey> CreateMockKey(DateTimeOffset activationDate, DateTimeOffset expirationDate, DateTimeOffset? creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)
     {
         var mockKey = new Mock<IKey>();
         mockKey.Setup(o => o.KeyId).Returns(Guid.NewGuid());
@@ -318,7 +427,7 @@ public class DefaultKeyResolverTests
             mockKey.Setup(o => o.CreateEncryptor()).Returns(Mock.Of<IAuthenticatedEncryptor>());
         }
 
-        return mockKey.Object;
+        return mockKey;
     }
 
     private static DateTimeOffset ParseDateTimeOffset(string dto)

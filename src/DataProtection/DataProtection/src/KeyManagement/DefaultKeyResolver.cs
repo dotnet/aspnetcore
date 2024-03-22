@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
@@ -28,6 +30,9 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
     /// </remarks>
     private readonly TimeSpan _keyPropagationWindow;
 
+    private readonly int _maxDecryptRetries;
+    private readonly TimeSpan _decryptRetryDelay;
+
     private readonly ILogger _logger;
 
     /// <summary>
@@ -41,33 +46,65 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
     /// </remarks>
     private readonly TimeSpan _maxServerToServerClockSkew;
 
-    public DefaultKeyResolver()
-        : this(NullLoggerFactory.Instance)
+    public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions)
+        : this(keyManagementOptions, NullLoggerFactory.Instance)
     { }
 
-    public DefaultKeyResolver(ILoggerFactory loggerFactory)
+    public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions, ILoggerFactory loggerFactory)
     {
         _keyPropagationWindow = KeyManagementOptions.KeyPropagationWindow;
         _maxServerToServerClockSkew = KeyManagementOptions.MaxServerClockSkew;
+        _maxDecryptRetries = keyManagementOptions.Value.MaximumDefaultKeyResolverRetries;
+        _decryptRetryDelay = keyManagementOptions.Value.DefaultKeyResolverRetryDelay;
         _logger = loggerFactory.CreateLogger<DefaultKeyResolver>();
     }
 
-    private bool CanCreateAuthenticatedEncryptor(IKey key)
+    private bool CanCreateAuthenticatedEncryptor(IKey key, ref int retriesRemaining)
     {
-        try
+        List<Exception>? exceptions = null;
+        while (true)
         {
-            var encryptorInstance = key.CreateEncryptor();
-            if (encryptorInstance == null)
+            try
             {
-                CryptoUtil.Fail<IAuthenticatedEncryptor>("CreateEncryptorInstance returned null.");
+                var encryptorInstance = key.CreateEncryptor();
+                if (encryptorInstance is null)
+                {
+                    // This generally indicates a key (descriptor) without a corresponding IAuthenticatedEncryptorFactory,
+                    // which is not something that can succeed on retry - return immediately
+                    _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(
+                        key.KeyId,
+                        nameof(IKey.CreateEncryptor),
+                        new InvalidOperationException($"{nameof(IKey.CreateEncryptor)} returned null."));
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (exceptions is null)
+                {
+                    // The first failure doesn't count as a retry
+                    exceptions = new();
+                }
+                else
+                {
+                    retriesRemaining--;
+                }
+
+                exceptions.Add(ex);
+
+                if (retriesRemaining == 0)
+                {
+                    _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptor), new AggregateException(exceptions));
+                    return false;
+                }
+
+                _logger.RetryingMethodOfKeyAfterFailure(key.KeyId, nameof(IKey.CreateEncryptor), ex);
             }
 
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptor), ex);
-            return false;
+            // Don't retry immediately
+            Thread.Sleep(_decryptRetryDelay);
         }
     }
 
@@ -94,12 +131,14 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
                                                       orderby key.ActivationDate ascending, key.KeyId ascending
                                                       select key).FirstOrDefault();
 
+        var decryptRetriesRemaining = _maxDecryptRetries;
+
         if (preferredDefaultKey != null)
         {
             _logger.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
 
             // if the key has been revoked or is expired, it is no longer a candidate
-            if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey))
+            if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey, ref decryptRetriesRemaining))
             {
                 _logger.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
             }
@@ -123,13 +162,14 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
         // keep trying until we find one that works.
         var unrevokedKeys = allKeys.Where(key => !key.IsRevoked);
         fallbackKey = (from key in (from key in unrevokedKeys
+                                    where !ReferenceEquals(key, preferredDefaultKey) // Don't reconsider it as a fallback
                                     where key.CreationDate <= propagationCutoff
                                     orderby key.CreationDate descending
                                     select key).Concat(from key in unrevokedKeys
                                                        where key.CreationDate > propagationCutoff
                                                        orderby key.CreationDate ascending
                                                        select key)
-                       where CanCreateAuthenticatedEncryptor(key)
+                       where CanCreateAuthenticatedEncryptor(key, ref decryptRetriesRemaining)
                        select key).FirstOrDefault();
 
         _logger.RepositoryContainsNoViableDefaultKey();

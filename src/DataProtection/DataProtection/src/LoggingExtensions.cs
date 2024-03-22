@@ -252,4 +252,7 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(72, LogLevel.Error, "The key ring's default data protection key {KeyId:B} has been revoked.", EventName = "KeyRingDefaultKeyIsRevoked")]
     public static partial void KeyRingDefaultKeyIsRevoked(this ILogger logger, Guid keyId);
+
+    [LoggerMessage(73, LogLevel.Debug, "Key {KeyId:B} method {MethodName} failed. Retrying.", EventName = "RetryingMethodOfKeyAfterFailure")]
+    public static partial void RetryingMethodOfKeyAfterFailure(this ILogger logger, Guid keyId, string methodName, Exception exception);
 }
