@@ -44,15 +44,14 @@
     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
     <_InstallersToPublish Remove="$(ArtifactsDir)installers\**\*.wixpack.zip" Condition="'$(PostBuildSign)' != 'true'" />
 
-    <Artifact Include="@(_InstallersToPublish)"
-              PublishFlatContainer="true">
+    <Artifact Include="@(_InstallersToPublish)">
       <!-- Working around msbuild not being able to negate the result of Contains() outside of targets -->
       <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) == 'True'">false</IsShipping>
       <IsShipping Condition="$([System.String]::Copy('%(Filename)').ToLowerInvariant().Contains('internal')) != 'True'">true</IsShipping>
     </Artifact>
   </ItemGroup>
 
-  <Target Name="GetProductVersion">
+  <Target Name="GetNonStableProductVersion">
     <!--
       This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
       and npm project. We use Microsoft.AspNetCore.InternalTesting.csproj because it is non-shipping (we need a non-stable
@@ -65,14 +64,24 @@
     </MSBuild>
 
     <PropertyGroup>
-      <ProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</ProductVersion>
+      <NonStableProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</NonStableProductVersion>
     </PropertyGroup>
   </Target>
 
   <Target Name="GenerateProductVersionFiles"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
-          DependsOnTargets="GetProductVersion"
+          DependsOnTargets="GetNonStableProductVersion"
           Condition="'$(PublishInstallerBaseVersion)' == 'true'">
+    <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
+        Properties="ExcludeFromBuild=false;IsShipping=true"
+        Targets="_GetPackageVersionInfo">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <ProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</ProductVersion>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
       <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)aspnetcore-productVersion.txt" />
@@ -86,18 +95,17 @@
 
     <ItemGroup>
       <Artifact Include="@(ProductVersionFile)"
-                PublishFlatContainer="true"
-                RelativeBlobPath="aspnetcore/Runtime/$(ProductVersion)/%(Filename)%(Extension)" />
+                RelativeBlobPath="aspnetcore/Runtime/$(NonStableProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
   <Target Name="AddRelativeBlobPathToInstallerArtifacts"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
           AfterTargets="GenerateChecksumsFromArtifacts"
-          DependsOnTargets="GetProductVersion">
+          DependsOnTargets="GetNonStableProductVersion">
     <ItemGroup>
       <Artifact Condition="'%(Artifact.PublishFlatContainer)' == 'true' and '%(Artifact.UploadPathSegment)' != ''"
-                RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)/$(ProductVersion)/%(Filename)%(Extension)" />
+                RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)/$(NonStableProductVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
