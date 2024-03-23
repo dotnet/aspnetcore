@@ -30,6 +30,7 @@
       BasePath="_content\$(PackageId)"
       CandidateAssets="@(_JsBuildOutput)"
       RelativePathFilter="**.js"
+      RelativePathPattern="**"
     >
       <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
