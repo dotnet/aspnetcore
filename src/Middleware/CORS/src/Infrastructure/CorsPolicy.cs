@@ -34,9 +34,6 @@ public class CorsPolicy
             {
                 return false;
             }
-            {
-                return false;
-            }
 
             return true;
         }
