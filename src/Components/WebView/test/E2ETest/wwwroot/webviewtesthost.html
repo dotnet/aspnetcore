@@ -46,7 +46,7 @@
                 console.log("FILTER: Received message: " + event.data);
 
                 if (event.data === "wvt:GetControlDivValue") {
-                    var controlDivValue = document.getElementById('controlDiv').innerText;
+                    var controlDivValue = document.getElementById('controlDiv')?.innerText;
                     PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
                 }
                 else if (event.data.startsWith("wvt:ClickButton:")) {

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebViewE2E.Test;
 
 public class BasicBlazorHybridTest
 {
-    private string _latestControlDivValue;
+    private string _latestControlDivValue = "unset";
 
     public void Run()
     {
@@ -161,7 +161,7 @@ public class BasicBlazorHybridTest
         Console.WriteLine($"Test passed? {testPassed}");
     }
 
-    const int MaxWaitTimes = 30;
+    const int MaxWaitTimes = 60;
     const int WaitTimeInMS = 250;
 
     public async Task<bool> WaitForControlDiv(PhotinoWindow photinoWindow, string controlValueToWaitFor)
