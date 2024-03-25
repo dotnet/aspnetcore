@@ -9,6 +9,7 @@
     {"testName": {"contains": "CertificateChangedOnDisk"}}, // depends on FS event timing
     {"testName": {"contains": "CertificateChangedOnDisk_Symlink"}}, // depends on FS event timing
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
+    {"testName": {"contains": "Microsoft.AspNetCore.Components.WebViewE2E.Test.WebViewManagerE2ETests.CanLaunchPhotinoWebViewAndClickButton"}},
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
