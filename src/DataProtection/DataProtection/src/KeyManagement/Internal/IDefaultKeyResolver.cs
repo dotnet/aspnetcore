@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 /// <summary>
 /// Implements policy for resolving the default key from a candidate keyring.
 /// </summary>
-public interface IDefaultKeyResolver
+internal interface IDefaultKeyResolver
 {
     /// <summary>
     /// Locates the default key from the keyring.
