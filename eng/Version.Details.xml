@@ -367,9 +367,9 @@
       <Sha>a264a7e4134a5a70bb0cc422bac5c232ba8ff97c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24162.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24168.3">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>3167c0a9379f52145af31057aca31f45528eb123</Sha>
+      <Sha>b46b7e6859f4094cd7f3e00dc0471d62f5d8d051</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
   </ProductDependencies>
