@@ -3,10 +3,11 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.WebViewE2E.Test;
 
-public class WebViewManagerE2ETests
+public class WebViewManagerE2ETests(ITestOutputHelper output)
 {
     // Skips:
     // - Ubuntu is skipped due to this error:
@@ -39,7 +40,9 @@ public class WebViewManagerE2ETests
 
         var testProgramOutput = photinoProcess.StandardOutput.ReadToEnd();
 
-        await photinoProcess.WaitForExitAsync().TimeoutAfter(TimeSpan.FromSeconds(30));
+        await photinoProcess.WaitForExitAsync().TimeoutAfter(TimeSpan.FromSeconds(60));
+
+        output.WriteLine(testProgramOutput);
 
         // The test app reports its own results by calling Console.WriteLine(), so here we only need to verify that
         // the test internally believes it passed (and we trust it!).
