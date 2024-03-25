@@ -56,7 +56,7 @@ public class WebAssemblyPrerenderedTest : ServerTestBase<AspNetSiteServerFixture
 
     private static string GetPublishedContentRoot(Assembly assembly)
     {
-        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed", assembly.GetName().Name);
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed-or-threading", assembly.GetName().Name);
 
         if (!Directory.Exists(contentRoot))
         {

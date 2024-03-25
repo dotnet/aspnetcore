@@ -19,6 +19,7 @@ public class Program
         var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
         {
             ["Client authentication"] = (BuildWebHost<AuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Remote client authentication"] = (BuildWebHost<RemoteAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
