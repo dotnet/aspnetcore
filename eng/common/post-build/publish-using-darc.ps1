@@ -12,7 +12,7 @@ param(
 try {
   . $PSScriptRoot\post-build-utils.ps1
 
-  $darc = Get-Darc 
+  $darc = Get-Darc
 
   $optionalParams = [System.Collections.ArrayList]::new()
 
@@ -46,7 +46,7 @@ try {
   }
 
   Write-Host 'done.'
-} 
+}
 catch {
   Write-Host $_
   Write-PipelineTelemetryError -Category 'PromoteBuild' -Message "There was an error while trying to publish build '$BuildId' to default channels."

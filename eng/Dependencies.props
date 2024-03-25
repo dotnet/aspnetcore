@@ -100,41 +100,44 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.ValueTuple" />
 
     <!-- Runtime packages required for crossgen -->
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.win-arm" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.osx-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.osx-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true'" />
 
     <!-- Crossgen2 compiler -->
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-arm" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x86" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
-    <LatestPackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.win-x86" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.win-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.osx-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-arm" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
+
+    <!-- Remove duplicates potentially introduced by the 'unknown' target runtime identifier in source-only modes. -->
+    <LatestPackageReference Include="@(_LatestRuntimePackageReference->Distinct())" />
   </ItemGroup>
 
-  <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" />
@@ -188,7 +191,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
-  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="AngleSharp" />
     <LatestPackageReference Include="Azure.Identity" />
     <LatestPackageReference Include="BenchmarkDotNet" />
@@ -232,6 +235,7 @@ and are generated based on the last package release.
   </ItemGroup>
 
   <ItemGroup Label="Dependencies with versions.">
+
     <!-- Get name prefixes for version properties. -->
     <LatestPackageReference Update="@(LatestPackageReference)">
       <VersionName>$([System.String]::new('%(Identity)').Replace('.',''))</VersionName>

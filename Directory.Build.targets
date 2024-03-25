@@ -157,7 +157,7 @@
   </PropertyGroup>
 
   <!-- Properties for Package Validation -->
-  <PropertyGroup Condition="'$(ExcludeFromSourceBuild)' != 'true'">
+  <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">
     <EnablePackageValidation Condition="'$(EnablePackageValidation)' == ''">true</EnablePackageValidation>
     <DisablePackageBaselineValidation Condition="'$(IsServicingBuild)' != 'true'">true</DisablePackageBaselineValidation>
     <GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile>

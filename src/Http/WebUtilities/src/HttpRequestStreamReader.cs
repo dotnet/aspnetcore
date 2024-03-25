@@ -167,11 +167,6 @@ public class HttpRequestStreamReader : TextReader
     /// <inheritdoc />
     public override int Read(Span<char> buffer)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer));
-        }
-
         ThrowIfDisposed();
 
         var count = buffer.Length;

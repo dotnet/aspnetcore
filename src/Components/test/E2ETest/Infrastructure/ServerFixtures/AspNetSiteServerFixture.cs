@@ -35,7 +35,7 @@ public class AspNetSiteServerFixture : WebHostServerFixture
         }
 
         var assembly = ApplicationAssembly ?? BuildWebHostMethod.Method.DeclaringType.Assembly;
-        var sampleSitePath = DefaultGetContentRoot(assembly);
+        var sampleSitePath = GetContentRootMethod(assembly);
 
         var host = "127.0.0.1";
         if (E2ETestOptions.Instance.SauceTest)

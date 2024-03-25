@@ -21,7 +21,7 @@
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
   </ItemGroup>
-  <Target Name="ILLinkTrimWasmProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' AND '$(SkipTestBuild)' != 'true'">
+  <Target Name="ILLinkTrimWasmProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition=" ('$(DotNetBuild)' != true OR '$(DotNetBuildTests)' == 'true') AND '$(SkipTestBuild)' != 'true' ">
     <PropertyGroup>
       <LibrariesTrimmedArtifactsPath>$(TargetDir)wasm-linked\</LibrariesTrimmedArtifactsPath>
       <!-- Link all assemblies -->

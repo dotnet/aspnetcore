@@ -3,7 +3,7 @@ parameters:
   JobLabel: ''
   CustomSensitiveDataList: ''
   # A default - in case value from eng/common/templates/post-build/common-variables.yml is not passed
-  BinlogToolVersion: '1.0.9'
+  BinlogToolVersion: '1.0.11'
 
 steps:
 - task: Powershell@2

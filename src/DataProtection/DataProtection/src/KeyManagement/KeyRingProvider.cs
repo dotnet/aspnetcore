@@ -19,7 +19,8 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
     private CacheableKeyRing? _cacheableKeyRing;
     private readonly object _cacheableKeyRingLockObj = new object();
     private readonly IDefaultKeyResolver _defaultKeyResolver;
-    private readonly KeyManagementOptions _keyManagementOptions;
+    private readonly bool _autoGenerateKeys;
+    private readonly TimeSpan _newKeyLifetime;
     private readonly IKeyManager _keyManager;
     private readonly ILogger _logger;
 
@@ -41,7 +42,9 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         IDefaultKeyResolver defaultKeyResolver,
         ILoggerFactory loggerFactory)
     {
-        _keyManagementOptions = new KeyManagementOptions(keyManagementOptions.Value); // clone so new instance is immutable
+        var options = keyManagementOptions.Value ?? new();
+        _autoGenerateKeys = options.AutoGenerateKeys;
+        _newKeyLifetime = options.NewKeyLifetime;
         _keyManager = keyManager;
         CacheableKeyRingProvider = this;
         _defaultKeyResolver = defaultKeyResolver;
@@ -66,31 +69,56 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
         // Fetch the current default key from the list of all keys
         var defaultKeyPolicy = _defaultKeyResolver.ResolveDefaultKeyPolicy(now, allKeys);
-        if (!defaultKeyPolicy.ShouldGenerateNewKey)
+        var defaultKey = defaultKeyPolicy.DefaultKey;
+
+        // We shouldn't call CreateKey more than once, else we risk stack diving. Thus, we don't even
+        // check defaultKeyPolicy.ShouldGenerateNewKey.  However, this code path shouldn't get hit
+        // with ShouldGenerateNewKey true unless there was an ineligible key with an activation date
+        // slightly later than the one we just added. If this does happen, then we'll just use whatever
+        // key we can instead of creating new keys endlessly, eventually falling back to the one we just
+        // added if all else fails.
+        if (keyJustAdded != null)
         {
-            CryptoUtil.Assert(defaultKeyPolicy.DefaultKey != null, "Expected to see a default key.");
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKeyPolicy.DefaultKey, allKeys);
+            var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
+        }
+
+        // Determine whether we need to generate a new key
+        bool shouldGenerateNewKey;
+        if (defaultKeyPolicy.ShouldGenerateNewKey || defaultKey == null)
+        {
+            shouldGenerateNewKey = true;
+        }
+        else
+        {
+            // If we have a default key, we have to consider its expiration date.  We have to generate a replacement
+            // if it will expire within the propagation window starting now (so that all other consumers pick up the
+            // replacement before the current default key expires).  However, we also have to factor in the refresh
+            // period, since we need to ensure that key generation occurs during the refresh that *precedes* the
+            // propagation window ending at the expiration date.
+            var minExpirationDate = now + KeyManagementOptions.KeyRingRefreshPeriod + KeyManagementOptions.KeyPropagationWindow;
+            var defaultKeyExpirationDate = defaultKey.ExpirationDate;
+            shouldGenerateNewKey =
+                defaultKeyExpirationDate < minExpirationDate &&
+                    (_defaultKeyResolver.ResolveDefaultKeyPolicy(defaultKeyExpirationDate, allKeys).DefaultKey is not { } nextDefaultKey ||
+                    nextDefaultKey.ExpirationDate < minExpirationDate);
+        }
+
+        if (!shouldGenerateNewKey)
+        {
+            CryptoUtil.Assert(defaultKey != null, "Expected to see a default key.");
+            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, defaultKey, allKeys);
         }
 
         _logger.PolicyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing();
-
-        // We shouldn't call CreateKey more than once, else we risk stack diving. This code path shouldn't
-        // get hit unless there was an ineligible key with an activation date slightly later than the one we
-        // just added. If this does happen, then we'll just use whatever key we can instead of creating
-        // new keys endlessly, eventually falling back to the one we just added if all else fails.
-        if (keyJustAdded != null)
-        {
-            var keyToUse = defaultKeyPolicy.DefaultKey ?? defaultKeyPolicy.FallbackKey ?? keyJustAdded;
-            return CreateCacheableKeyRingCoreStep2(now, cacheExpirationToken, keyToUse, allKeys);
-        }
 
         // At this point, we know we need to generate a new key.
 
         // We have been asked to generate a new key, but auto-generation of keys has been disabled.
         // We need to use the fallback key or fail.
-        if (!_keyManagementOptions.AutoGenerateKeys)
+        if (!_autoGenerateKeys)
         {
-            var keyToUse = defaultKeyPolicy.DefaultKey ?? defaultKeyPolicy.FallbackKey;
+            var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey;
             if (keyToUse == null)
             {
                 _logger.KeyRingDoesNotContainValidDefaultKey();
@@ -103,11 +131,14 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             }
         }
 
-        if (defaultKeyPolicy.DefaultKey == null)
+        // We're going to generate a new key.  You'd think we could just take for granted what effect
+        // this would have on the final result, but the key resolver is an extension point, so we have
+        // to give it a chance to weigh in - hence the recursive call, triggering re-resolution.
+        if (defaultKey == null)
         {
             // The case where there's no default key is the easiest scenario, since it
             // means that we need to create a new key with immediate activation.
-            var newKey = _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
+            var newKey = _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _newKeyLifetime);
             return CreateCacheableKeyRingCore(now, keyJustAdded: newKey); // recursively call
         }
         else
@@ -115,7 +146,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             // If there is a default key, then the new key we generate should become active upon
             // expiration of the default key. The new key lifetime is measured from the creation
             // date (now), not the activation date.
-            var newKey = _keyManager.CreateNewKey(activationDate: defaultKeyPolicy.DefaultKey.ExpirationDate, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
+            var newKey = _keyManager.CreateNewKey(activationDate: defaultKey.ExpirationDate, expirationDate: now + _newKeyLifetime);
             return CreateCacheableKeyRingCore(now, keyJustAdded: newKey); // recursively call
         }
     }
@@ -126,6 +157,13 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
         // Invariant: our caller ensures that CreateEncryptorInstance succeeded at least once
         Debug.Assert(defaultKey.CreateEncryptor() != null);
+
+        // This can happen if there's a date-based revocation that's in the future (e.g. because of clock skew)
+        if (defaultKey.IsRevoked)
+        {
+            _logger.KeyRingDefaultKeyIsRevoked(defaultKey.KeyId);
+            throw Error.KeyRingProvider_DefaultKeyRevoked(defaultKey.KeyId);
+        }
 
         _logger.UsingKeyAsDefaultKey(defaultKey.KeyId);
 
