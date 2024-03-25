@@ -140,7 +140,7 @@ public class TestRunner
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload} --version {Options.DotnetEfVersion}",
                 environmentVariables: EnvironmentVariables,
                 outputDataReceived: ProcessUtil.PrintMessage,
                 errorDataReceived: ProcessUtil.PrintErrorMessage,
