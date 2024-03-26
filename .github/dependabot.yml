@@ -47,7 +47,7 @@ updates:
       include: scope
     ignore:
       # Don't auto-update the Node-Externals submodule
-      - dependency-name: "Node-Externals*"
+      - dependency-name: "src/submodules/Node-Externals"
     labels:
       - area-infrastructure
 
