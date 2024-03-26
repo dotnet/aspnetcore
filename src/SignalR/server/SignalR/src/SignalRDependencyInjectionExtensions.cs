@@ -25,9 +25,24 @@ public static class SignalRDependencyInjectionExtensions
     {
         ArgumentNullException.ThrowIfNull(signalrBuilder);
 
-        signalrBuilder.Services.AddSingleton<IConfigureOptions<HubOptions<THub>>, HubOptionsSetup<THub>>();
-        signalrBuilder.Services.Configure(configure);
+        signalrBuilder.Services.AddHubOptions<THub>(configure);
         return signalrBuilder;
+    }
+
+    /// <summary>
+    /// Adds hub specific options to an <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <typeparam name="THub">The hub type to configure.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="configure">A callback to configure the hub options.</param>
+    /// <returns>The same instance of the <see cref="IServiceCollection"/> for chaining.</returns>
+    public static IServiceCollection AddHubOptions<THub>(this IServiceCollection services, Action<HubOptions<THub>> configure) where THub : Hub
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IConfigureOptions<HubOptions<THub>>, HubOptionsSetup<THub>>();
+        services.Configure(configure);
+        return services;
     }
 
     /// <summary>
