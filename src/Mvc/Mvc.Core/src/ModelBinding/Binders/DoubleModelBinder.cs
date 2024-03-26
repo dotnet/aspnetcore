@@ -28,7 +28,7 @@ public class DoubleModelBinder : IModelBinder
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _supportedStyles = supportedStyles;
-        _logger = loggerFactory.CreateLogger<DoubleModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(DoubleModelBinder));
     }
 
     /// <inheritdoc />

@@ -230,7 +230,7 @@ public partial class HubConnection : IAsyncDisposable
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        _logger = _loggerFactory.CreateLogger<HubConnection>();
+        _logger = _loggerFactory.CreateLogger(typeof(HubConnection));
         _state = new ReconnectingConnectionState(_logger);
 
         _logScope = new ConnectionLogScope();

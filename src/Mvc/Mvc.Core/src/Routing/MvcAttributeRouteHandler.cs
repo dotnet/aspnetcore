@@ -26,7 +26,7 @@ internal sealed class MvcAttributeRouteHandler : IRouter
         _actionInvokerFactory = actionInvokerFactory;
         _actionSelector = actionSelector;
         _diagnosticListener = diagnosticListener;
-        _logger = loggerFactory.CreateLogger<MvcAttributeRouteHandler>();
+        _logger = loggerFactory.CreateLogger(typeof(MvcAttributeRouteHandler));
     }
 
     public ActionDescriptor[]? Actions { get; set; }
