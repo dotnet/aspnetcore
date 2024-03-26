@@ -152,7 +152,7 @@ internal sealed partial class HttpResponseHeaders : HttpHeaders
         {
             _collection = collection;
             _currentBits = collection._bits;
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
+            _next = GetNext(_currentBits, collection.ContentLength.HasValue);
             _current = default;
             _currentKnownType = default;
             _hasUnknown = collection.MaybeUnknown != null;
@@ -174,7 +174,7 @@ internal sealed partial class HttpResponseHeaders : HttpHeaders
         public void Reset()
         {
             _currentBits = _collection._bits;
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
+            _next = GetNext(_currentBits, _collection.ContentLength.HasValue);
         }
     }
 }
