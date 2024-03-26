@@ -1,7 +1,7 @@
 <Project>
   <!-- this file is shared between Helix.proj and .csproj files -->
   <PropertyGroup>
-    <HelixQueueAlpine317>(Alpine.317.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-helix-amd64</HelixQueueAlpine314>
+    <HelixQueueAlpine317>(Alpine.317.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-helix-amd64</HelixQueueAlpine317>
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
     <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix-amd64</HelixQueueMariner>
