@@ -4,7 +4,7 @@
     <HelixQueueAlpine317>(Alpine.317.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-helix-amd64</HelixQueueAlpine314>
     <HelixQueueDebian11>(Debian.11.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-amd64</HelixQueueDebian11>
     <HelixQueueFedora39>(Fedora.39.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39-helix</HelixQueueFedora34>
-    <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix</HelixQueueMariner>
+    <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix-amd64</HelixQueueMariner>
     <HelixQueueArmDebian11>(Debian.11.Arm64.Open)ubuntu.2204.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-helix-arm64v8</HelixQueueArmDebian11>
   </PropertyGroup>
 
