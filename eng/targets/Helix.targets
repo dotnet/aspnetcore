@@ -17,9 +17,9 @@
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux8);
-      $(HelixQueueAlpine316);
+      $(HelixQueueAlpine317);
       $(HelixQueueDebian11);
-      $(HelixQueueFedora34);
+      $(HelixQueueFedora38);
       $(HelixQueueMariner);
       Ubuntu.2004.Amd64.Open;
     </SkipHelixQueues>
