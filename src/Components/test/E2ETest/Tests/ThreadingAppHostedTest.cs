@@ -32,12 +32,14 @@ public class ThreadingHostedAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
@@ -64,6 +66,7 @@ public class ThreadingHostedAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
