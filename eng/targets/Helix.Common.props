@@ -4,8 +4,8 @@
     <HelixQueueAlmaLinux8>(AlmaLinux.8.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-helix-amd64</HelixQueueAlmaLinux8>
     <HelixQueueAlpine318>(Alpine.318.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.18-helix-amd64</HelixQueueAlpine318>
     <HelixQueueDebian12>(Debian.12.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-amd64</HelixQueueDebian12>
-    <HelixQueueFedora39>(Fedora.39.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39-helix</HelixQueueFedora39>
-    <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix</HelixQueueMariner>
+    <HelixQueueFedora38>(Fedora.38.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-helix</HelixQueueFedora38>
+    <HelixQueueMariner>(Mariner)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-helix-amd64</HelixQueueMariner>
     <HelixQueueArmDebian12>(Debian.12.Arm64.Open)ubuntu.2204.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-helix-arm64v8</HelixQueueArmDebian12>
 
     <!-- Do not attempt to override global property. -->
@@ -44,7 +44,7 @@
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine318)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian12)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueFedora39)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian12)" Platform="Linux" />
 

@@ -34,6 +34,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
@@ -105,6 +106,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void IsStarted()
     {
         // Read from property
