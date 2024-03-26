@@ -19,7 +19,8 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IInternalCach
     private CacheableKeyRing? _cacheableKeyRing;
     private readonly object _cacheableKeyRingLockObj = new object();
     private readonly IDefaultKeyResolver _defaultKeyResolver;
-    private readonly KeyManagementOptions _keyManagementOptions;
+    private readonly bool _autoGenerateKeys;
+    private readonly TimeSpan _newKeyLifetime;
     private readonly IKeyManager _keyManager;
     private readonly ILogger _logger;
 
@@ -41,7 +42,9 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IInternalCach
         IDefaultKeyResolver defaultKeyResolver,
         ILoggerFactory loggerFactory)
     {
-        _keyManagementOptions = new KeyManagementOptions(keyManagementOptions.Value); // clone so new instance is immutable
+        var options = keyManagementOptions.Value ?? new();
+        _autoGenerateKeys = options.AutoGenerateKeys;
+        _newKeyLifetime = options.NewKeyLifetime;
         _keyManager = keyManager;
         CacheableKeyRingProvider = this;
         _defaultKeyResolver = defaultKeyResolver;
@@ -116,7 +119,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IInternalCach
 
         // We have been asked to generate a new key, but auto-generation of keys has been disabled.
         // We need to use the fallback key or fail.
-        if (!_keyManagementOptions.AutoGenerateKeys)
+        if (!_autoGenerateKeys)
         {
             var keyToUse = defaultKey ?? defaultKeyPolicy.FallbackKey;
             if (keyToUse == null)
@@ -138,7 +141,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IInternalCach
         {
             // The case where there's no default key is the easiest scenario, since it
             // means that we need to create a new key with immediate activation.
-            var newKey = _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
+            var newKey = _keyManager.CreateNewKey(activationDate: now, expirationDate: now + _newKeyLifetime);
             return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod, keyJustAdded: newKey); // recursively call
         }
         else
@@ -146,7 +149,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IInternalCach
             // If there is a default key, then the new key we generate should become active upon
             // expiration of the default key. The new key lifetime is measured from the creation
             // date (now), not the activation date.
-            var newKey = _keyManager.CreateNewKey(activationDate: defaultKey.ExpirationDate, expirationDate: now + _keyManagementOptions.NewKeyLifetime);
+            var newKey = _keyManager.CreateNewKey(activationDate: defaultKey.ExpirationDate, expirationDate: now + _newKeyLifetime);
             return CreateCacheableKeyRingCore(now, allowShortRefreshPeriod, keyJustAdded: newKey); // recursively call
         }
     }

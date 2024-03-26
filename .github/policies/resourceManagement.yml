@@ -497,19 +497,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 9.0-preview3
+          milestone: 9.0-preview4
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-preview2
+          branch: release/9.0-preview3
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-preview2
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview2 branch'
+          milestone: 9.0-preview3
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview3 branch'
     - if:
       - payloadType: Issues
       - isAction:

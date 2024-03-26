@@ -16,7 +16,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- We don't need this unless building for tests. -->
-    <ExcludeFromBuild Condition=" '$(DotNetBuildFromSource)' == 'true' OR '$(SkipTestBuild)' == 'true' ">true</ExcludeFromBuild>
+    <ExcludeFromBuild Condition=" ('$(DotNetBuild)' == 'true' AND '$(DotNetBuildTests)' != 'true') OR '$(SkipTestBuild)' == 'true' ">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <ItemGroup>

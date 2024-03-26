@@ -108,7 +108,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context);
+        var result = await JSInvokeWithContextAsync<RemoteAuthenticationContext<TRemoteAuthenticationState>, RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -130,7 +130,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context);
+        var result = await JSInvokeWithContextAsync<RemoteAuthenticationContext<TRemoteAuthenticationState>, RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -186,6 +186,11 @@ public class RemoteAuthenticationService<
                 Scopes = options.Scopes ?? Array.Empty<string>(),
             } : null);
     }
+
+    // JSRuntime.InvokeAsync does not properly annotate all arguments with DynamicallyAccessedMembersAttribute. https://github.com/dotnet/aspnetcore/issues/39839
+    // Calling JsRuntime.InvokeAsync directly results allows the RemoteAuthenticationContext.State getter to be trimmed. https://github.com/dotnet/aspnetcore/issues/49956
+    private ValueTask<TResult> JSInvokeWithContextAsync<[DynamicallyAccessedMembers(JsonSerialized)] TContext, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(
+        string identifier, TContext context) => JsRuntime.InvokeAsync<TResult>(identifier, context);
 
     private string GetReturnUrl(string? customReturnUrl) =>
         customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).AbsoluteUri : Navigation.Uri;

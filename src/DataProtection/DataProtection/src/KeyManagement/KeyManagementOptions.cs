@@ -27,29 +27,6 @@ public class KeyManagementOptions
     {
     }
 
-    // copy ctor
-    internal KeyManagementOptions(KeyManagementOptions other)
-    {
-        if (other != null)
-        {
-            AutoGenerateKeys = other.AutoGenerateKeys;
-            _newKeyLifetime = other._newKeyLifetime;
-            XmlEncryptor = other.XmlEncryptor;
-            XmlRepository = other.XmlRepository;
-            AuthenticatedEncryptorConfiguration = other.AuthenticatedEncryptorConfiguration;
-
-            foreach (var keyEscrowSink in other.KeyEscrowSinks)
-            {
-                KeyEscrowSinks.Add(keyEscrowSink);
-            }
-
-            foreach (var encryptorFactory in other.AuthenticatedEncryptorFactories)
-            {
-                AuthenticatedEncryptorFactories.Add(encryptorFactory);
-            }
-        }
-    }
-
     /// <summary>
     /// Specifies whether the data protection system should auto-generate keys.
     /// </summary>
