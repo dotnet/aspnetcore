@@ -149,6 +149,19 @@ internal static class RouteStringSyntaxDetector
             return true;
         }
 
+        // Check for the common case of a string literal in a large binary expression.  For example `"..." + "..." +
+        // "..."` We never want to consider these as regex/json tokens as processing them would require knowing the
+        // contents of every string literal, and having our lexers/parsers somehow stitch them all together.  This is
+        // beyond what those systems support (and would only work for constant strings anyways).  This prevents both
+        // incorrect results *and* avoids heavy perf hits walking up large binary expressions (often while a caller is
+        // themselves walking down such a large expression).
+        if (token.Parent.IsLiteralExpression() &&
+            token.Parent.Parent.IsBinaryExpression() &&
+            token.Parent.Parent.RawKind == (int)SyntaxKind.AddExpression)
+        {
+            return false;
+        }
+
         for (var node = token.Parent; node != null; node = node.Parent)
         {
             if (HasLanguageComment(node.GetLeadingTrivia(), out identifier, out options))
