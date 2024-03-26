@@ -36,7 +36,7 @@
     <!-- Containers -->
     <HelixAvailableTargetQueue Include="$(HelixQueueAlpine317)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="$(HelixQueueDebian11)" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="$(HelixQueueFedora39)" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="$(HelixQueueFedora38)" Platform="Linux" />
     <HelixAvailableTargetQueue Include="$(HelixQueueMariner)" Platform="Linux" />
   </ItemGroup>
 
