@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -14,11 +15,12 @@ internal static class ParsingHelpers
         return headers.TryGetValue(key, out value) ? value : StringValues.Empty;
     }
 
-    public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
+    public static string[] GetHeaderSplit(IHeaderDictionary headers, string key)
     {
         var values = GetHeaderUnmodified(headers, key);
 
-        StringValues result = default;
+        FourStrings stackBuffer = default;
+        ValueListBuilder<string> strings = new(stackBuffer);
 
         foreach (var segment in new HeaderSegmentCollection(values))
         {
@@ -27,10 +29,13 @@ internal static class ParsingHelpers
                 var value = DeQuote(segment.Data.Value);
                 if (!string.IsNullOrEmpty(value))
                 {
-                    result = StringValues.Concat(in result, value);
+                    strings.Add(value);
                 }
             }
         }
+
+        string[] result = strings.AsSpan().ToArray();
+        strings.Dispose();
 
         return result;
     }
@@ -129,5 +134,13 @@ internal static class ParsingHelpers
 
         var existing = GetHeaderUnmodified(headers, key);
         SetHeaderUnmodified(headers, key, StringValues.Concat(existing, values));
+    }
+
+    [InlineArray(4)]
+    private struct FourStrings
+    {
+#pragma warning disable IDE0044, IDE0051 // Add readonly modifier, Remove unused private members
+        private string _item0;
+#pragma warning restore IDE0044, IDE0051
     }
 }
