@@ -12,10 +12,10 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class OpenApiServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds OpenAPI services related to the given document documentName to the specified <see cref="IServiceCollection"/>.
+    /// Adds OpenAPI services related to the given document name to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
-    /// <param name="documentName">The documentName of the OpenAPI document associated with registered services.</param>
+    /// <param name="documentName">The name of the OpenAPI document associated with registered services.</param>
     public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -26,11 +26,11 @@ public static class OpenApiServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds OpenAPI services related to the given document documentName to the specified <see cref="IServiceCollection"/> with the specified options.
+    /// Adds OpenAPI services related to the given document name to the specified <see cref="IServiceCollection"/> with the specified options.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
-    /// <param name="documentName">The documentName of the OpenAPI document associated with registered services.</param>
-    /// <param name="configureOptions">A function used to configure the target <see cref="OpenApiOptions"/>.</param>
+    /// <param name="documentName">The name of the OpenAPI document associated with registered services.</param>
+    /// <param name="configureOptions">A delegate used to configure the target <see cref="OpenApiOptions"/>.</param>
     public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -49,7 +49,7 @@ public static class OpenApiServiceCollectionExtensions
     /// Adds OpenAPI services related to the default document to the specified <see cref="IServiceCollection"/> with the specified options.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
-    /// <param name="configureOptions">A function used to configure the target <see cref="OpenApiOptions"/>.</param>
+    /// <param name="configureOptions">A delegate used to configure the target <see cref="OpenApiOptions"/>.</param>
     public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
             => services.AddOpenApi(OpenApiConstants.DefaultDocumentName, configureOptions);
 

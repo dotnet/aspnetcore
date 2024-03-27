@@ -31,7 +31,7 @@ public class OpenApiOptions
     public string DocumentName { get; internal set; } = OpenApiConstants.DefaultDocumentName;
 
     /// <summary>
-    /// A function to determine whether a given <see cref="ApiDescription"/> should be included in the given OpenAPI document.
+    /// A delegate to determine whether a given <see cref="ApiDescription"/> should be included in the given OpenAPI document.
     /// </summary>
     public Func<ApiDescription, bool> ShouldInclude { get; set; }
 }
