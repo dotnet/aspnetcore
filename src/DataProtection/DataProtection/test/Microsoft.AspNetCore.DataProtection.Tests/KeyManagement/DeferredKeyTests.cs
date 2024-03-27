@@ -31,7 +31,7 @@ public class DeferredKeyTests
         var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
 
         // Act
-        var key = new DeferredKey(keyId, creationDate, activationDate, expirationDate, mockInternalKeyManager.Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
+        var key = new Key(keyId, creationDate, activationDate, expirationDate, mockInternalKeyManager.Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
 
         // Assert
         Assert.Equal(keyId, key.KeyId);
@@ -47,7 +47,7 @@ public class DeferredKeyTests
         // Arrange
         var now = DateTimeOffset.UtcNow;
         var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
-        var key = new DeferredKey(Guid.Empty, now, now, now, new Mock<IInternalXmlKeyManager>().Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
+        var key = new Key(Guid.Empty, now, now, now, new Mock<IInternalXmlKeyManager>().Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
 
         // Act & assert
         Assert.False(key.IsRevoked);
@@ -70,7 +70,7 @@ public class DeferredKeyTests
 
         var now = DateTimeOffset.UtcNow;
         var encryptorFactory = Mock.Of<IAuthenticatedEncryptorFactory>();
-        var key = new DeferredKey(Guid.Empty, now, now, now, mockKeyManager.Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
+        var key = new Key(Guid.Empty, now, now, now, mockKeyManager.Object, XElement.Parse(@"<node />"), new[] { encryptorFactory });
 
         // Act & assert
         ExceptionAssert.Throws<Exception>(() => key.Descriptor, "How exceptional.");
