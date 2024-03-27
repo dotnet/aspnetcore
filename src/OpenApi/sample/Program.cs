@@ -1,10 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi("v1");
-builder.Services.AddOpenApi("v2");
+builder.Services.AddAuthentication().AddJwtBearer();
+
+builder.Services.AddOpenApi("v1", options =>
+{
+    options.AddHeader("X-Version", "1.0");
+    options.UseTransformer<BearerSecuritySchemeTransformer>();
+});
+builder.Services.AddOpenApi("v2", options => {
+    options.UseTransformer(new AddContactTransformer());
+    options.UseTransformer((document, context, token) => {
+        document.Info.License = new OpenApiLicense { Name = "MIT" };
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 

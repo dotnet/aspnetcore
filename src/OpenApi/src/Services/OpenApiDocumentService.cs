@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -16,11 +18,20 @@ internal sealed class OpenApiDocumentService(
     [ServiceKey] string documentName,
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
-    IOptionsMonitor<OpenApiOptions> optionsMonitor)
+    IOptionsMonitor<OpenApiOptions> optionsMonitor,
+    IServiceProvider serviceProvider)
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
 
-    public Task<OpenApiDocument> GetOpenApiDocumentAsync()
+    /// <summary>
+    /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
+    /// `ApiDescription.ActionDescriptor.Id` of the associated operation. ActionDescriptor IDs
+    /// are unique within the lifetime of an application and serve as helpful associators between
+    /// operations, API description, and their respective transformer contexts.
+    /// </summary>
+    internal ConcurrentDictionary<string, OpenApiOperationTransformerContext> OperationTransformerContextCache = new();
+
+    public async Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default)
     {
         // For good hygiene, operation-level tags must also appear in the document-level
         // tags collection. This set captures all tags that have been seen so far.
@@ -31,7 +42,34 @@ internal sealed class OpenApiDocumentService(
             Paths = GetOpenApiPaths(capturedTags),
             Tags = [.. capturedTags]
         };
-        return Task.FromResult(document);
+        await ApplyTransformers(document, cancellationToken);
+        return document;
+    }
+
+    private async Task ApplyTransformers(OpenApiDocument document, CancellationToken cancellationToken = default)
+    {
+        var documentTransformerContext = new OpenApiDocumentTransformerContext
+        {
+            DocumentName = documentName,
+            ApplicationServices = serviceProvider,
+            DescriptionGroups = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items,
+        };
+        for (var i = 0; i < _options.DocumentTransformers.Count; i++)
+        {
+            var transformer = _options.DocumentTransformers[i];
+            // Delayed initialization for DI-activated transformers
+            // until the first time they are used when we have access
+            // to the target service provider.
+            if (transformer is ActivatedOpenApiDocumentTransformer activatedTransformer)
+            {
+                activatedTransformer.Initialize(serviceProvider);
+                await activatedTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+            }
+            else
+            {
+                await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+            }
+        }
     }
 
     // Note: Internal for testing.
@@ -68,12 +106,20 @@ internal sealed class OpenApiDocumentService(
         return paths;
     }
 
-    private static Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions, HashSet<OpenApiTag> capturedTags)
+    private Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions, HashSet<OpenApiTag> capturedTags)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
         foreach (var description in descriptions)
         {
-            operations[description.GetOperationType()] = GetOperation(description, capturedTags);
+            var operation = GetOperation(description, capturedTags);
+            operation.Extensions.Add(OpenApiConstants.DescriptionId, new OpenApiString(description.ActionDescriptor.Id));
+            OperationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, new OpenApiOperationTransformerContext
+            {
+                DocumentName = documentName,
+                Description = description,
+                ApplicationServices = serviceProvider,
+            });
+            operations[description.GetOperationType()] = operation;
         }
         return operations;
     }

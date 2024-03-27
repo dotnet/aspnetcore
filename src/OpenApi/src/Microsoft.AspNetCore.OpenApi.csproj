@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Microbenchmarks" />
   </ItemGroup>
 
   <ItemGroup>
