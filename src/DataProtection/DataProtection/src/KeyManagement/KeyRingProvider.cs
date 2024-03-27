@@ -215,7 +215,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         var acquiredLock = false;
         try
         {
-            Monitor.TryEnter(_cacheableKeyRingLockObj, (existingCacheableKeyRing != null) ? 0 : Timeout.Infinite, ref acquiredLock);
+            Monitor.TryEnter(_cacheableKeyRingLockObj, (forceRefresh || existingCacheableKeyRing != null) ? 0 : Timeout.Infinite, ref acquiredLock);
             if (acquiredLock)
             {
                 if (!forceRefresh)
@@ -274,9 +274,23 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
                 return newCacheableKeyRing.KeyRing;
             }
+            else if (forceRefresh)
+            {
+                // If this is a forced refresh, we should not just reuse the existing key ring (if any).
+                // Instead, we'll wait for the thread that *did* acquire the critical section
+                // to release it, at which point it will have updated _cacheableKeyRing.
+                Monitor.Enter(_cacheableKeyRingLockObj, ref acquiredLock);
+                existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
+                if (existingCacheableKeyRing == null)
+                {
+                    // There will have been a better exception from the thread that acquired the critical section.
+                    throw Error.KeyRingProvider_RefreshFailedOnOtherThread();
+                }
+                return existingCacheableKeyRing.KeyRing;
+            }
             else
             {
-                // We didn't acquire the critical section. This should only occur if we passed
+                // We didn't acquire the critical section for a non-forced refresh. This should only occur if we passed
                 // zero for the Monitor.TryEnter timeout, which implies that we had an existing
                 // (but outdated) keyring that we can use as a fallback.
                 Debug.Assert(existingCacheableKeyRing != null);
