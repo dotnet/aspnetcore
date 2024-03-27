@@ -8,4 +8,6 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// an OpenAPI document. In particular, this is the API that is used to
 /// interact with the JSON schemas that are managed by a given OpenAPI document.
 /// </summary>
-internal class OpenApiComponentService { }
+internal class OpenApiComponentService
+{
+}

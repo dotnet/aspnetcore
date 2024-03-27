@@ -43,7 +43,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 document.Serialize(jsonWriter, documentOptions.OpenApiVersion);
                 context.Response.StatusCode = StatusCodes.Status200OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
-                await context.Response.WriteAsync(stringWriter.ToString(), new UTF8Encoding(false));
+                await context.Response.WriteAsync(stringWriter.ToString(), new UTF8Encoding(false), context.RequestAborted);
             }).ExcludeFromDescription();
     }
 }

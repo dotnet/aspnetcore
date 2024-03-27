@@ -20,6 +20,9 @@ internal class OpenApiDocumentProvider(IServiceProvider serviceProvider) : IDocu
     /// <param name="writer">A text writer associated with the document to write to.</param>
     public async Task GenerateAsync(string documentName, TextWriter writer)
     {
+        // Microsoft.OpenAPI does not provide async APIs for writing the JSON
+        // document to a file. See https://github.com/microsoft/OpenAPI.NET/issues/421 for
+        // more info.
         var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
         var namedOption = options.Get(documentName);
