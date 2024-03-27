@@ -392,6 +392,18 @@ public class HttpResponseHeadersTests
         Assert.Null(headers.ContentLength);
     }
 
+    [Fact]
+    public void ContentLengthEnumerableWithoutOtherKnownHeader()
+    {
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers["content-length"] = "1024";
+        Assert.Single(headers);
+        headers["unknown"] = "value";
+        Assert.Equal(2, headers.Count()); // NB: enumerable count, not property
+        headers["host"] = "myhost";
+        Assert.Equal(3, headers.Count()); // NB: enumerable count, not property
+    }
+
     private static long ParseLong(string value)
     {
         return long.Parse(value, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);

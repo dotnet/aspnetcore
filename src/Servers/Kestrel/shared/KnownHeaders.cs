@@ -1428,7 +1428,16 @@ $@"        private void Clear(long bitsToClear)
                     {(!loop.ClassName.Contains("Trailers") ? $@"_next = _collection._contentLength.HasValue ? {loop.Headers.Length - 1} : -1;" : "_next = -1;")}
                     return true;
                 }}
-            }}
+            }}{(loop.ClassName.Contains("Trailers") ? "" : $@"
+
+            private static int GetNext(long bits, bool hasContentLength)
+            {{
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? {loop.Headers.Length - 1}
+                        : -1;
+            }}")}
         }}
     }}
 ")}}}";
