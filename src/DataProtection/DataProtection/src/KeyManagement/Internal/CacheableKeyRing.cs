@@ -21,15 +21,23 @@ public sealed class CacheableKeyRing
     }
 
     internal CacheableKeyRing(CancellationToken expirationToken, DateTimeOffset expirationTime, IKeyRing keyRing)
+        : this(expirationToken, expirationTime, hasShortRefreshPeriod: false, keyRing)
+    {
+    }
+
+    internal CacheableKeyRing(CancellationToken expirationToken, DateTimeOffset expirationTime, bool hasShortRefreshPeriod, IKeyRing keyRing)
     {
         _expirationToken = expirationToken;
         ExpirationTimeUtc = expirationTime.UtcDateTime;
         KeyRing = keyRing;
+        HasShortRefreshPeriod = hasShortRefreshPeriod;
     }
 
     internal DateTime ExpirationTimeUtc { get; }
 
     internal IKeyRing KeyRing { get; }
+
+    internal bool HasShortRefreshPeriod { get; }
 
     internal static bool IsValid([NotNullWhen(true)] CacheableKeyRing? keyRing, DateTime utcNow)
     {
@@ -46,6 +54,6 @@ public sealed class CacheableKeyRing
     internal CacheableKeyRing WithTemporaryExtendedLifetime(DateTimeOffset now)
     {
         var extension = TimeSpan.FromMinutes(2);
-        return new CacheableKeyRing(CancellationToken.None, now + extension, KeyRing);
+        return new CacheableKeyRing(CancellationToken.None, now + extension, HasShortRefreshPeriod, KeyRing);
     }
 }
