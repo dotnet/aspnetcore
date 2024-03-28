@@ -10,7 +10,7 @@ using Microsoft.OpenApi.Extensions;
 
 namespace Microsoft.Extensions.ApiDescriptions;
 
-internal class OpenApiDocumentProvider(IServiceProvider serviceProvider) : IDocumentProvider
+internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) : IDocumentProvider
 {
     /// <summary>
     /// Serializes the OpenAPI document associated with a given document name to

@@ -6,10 +6,8 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal class OpenApiDocumentService(IHostEnvironment hostEnvironment)
+internal sealed class OpenApiDocumentService(IHostEnvironment hostEnvironment)
 {
-    private readonly string _defaultOpenApiVersion = "1.0.0";
-
     public Task<OpenApiDocument> GetOpenApiDocumentAsync()
     {
         var document = new OpenApiDocument
@@ -17,7 +15,7 @@ internal class OpenApiDocumentService(IHostEnvironment hostEnvironment)
             Info = new OpenApiInfo
             {
                 Title = hostEnvironment.ApplicationName,
-                Version = _defaultOpenApiVersion
+                Version = OpenApiConstants.DefaultOpenApiVersion
             }
         };
         return Task.FromResult(document);

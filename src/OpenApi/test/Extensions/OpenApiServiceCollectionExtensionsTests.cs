@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 
 public class OpenApiServiceCollectionExtensions
 {
@@ -137,5 +138,29 @@ public class OpenApiServiceCollectionExtensions
         var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
         var namedOption = options.Get(documentName);
         Assert.Equal(documentName, namedOption.DocumentName);
+    }
+
+    [Fact]
+    public void AddOpenApi_WithDuplicateDocumentNames_UsesLastRegistration()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var documentName = "v2";
+
+        // Act
+        services
+        .AddOpenApi(documentName, options => options.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0)
+        .AddOpenApi(documentName, options => options.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
+        var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
+        var namedOption = options.Get(documentName);
+        Assert.Equal(documentName, namedOption.DocumentName);
+        // Verify last registration is used
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_0, namedOption.OpenApiVersion);
     }
 }
