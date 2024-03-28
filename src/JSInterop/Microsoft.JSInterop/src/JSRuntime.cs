@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -68,6 +69,10 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, args);
 
+    /// <inheritdoc/>
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerContext jsonSerializerContext, object?[]? args)
+        => InvokeAsync<TValue>(0, identifier, jsonSerializerContext, args);
+
     /// <summary>
     /// Invokes the specified JavaScript function asynchronously.
     /// </summary>
@@ -82,22 +87,26 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
-    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
+    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, JsonSerializerContext? jsonSerializerContext, object?[]? args)
     {
         if (DefaultAsyncTimeout.HasValue)
         {
             using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
             // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, jsonSerializerContext, cts.Token, args);
         }
 
-        return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
+        return await InvokeAsync<TValue>(targetInstanceId, identifier, jsonSerializerContext, CancellationToken.None, args);
     }
+
+    internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
+        => InvokeAsync<TValue>(targetInstanceId, identifier, jsonSerializerContext: null, args);
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
         long targetInstanceId,
         string identifier,
+        JsonSerializerContext? jsonSerializerContext,
         CancellationToken cancellationToken,
         object?[]? args)
     {
@@ -123,9 +132,23 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(tcs.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ?
-                JsonSerializer.Serialize(args, JsonSerializerOptions) :
-                null;
+            string? argsJson = null;
+
+            if (args is not null && args.Length != 0)
+            {
+                var options = JsonSerializerOptions;
+
+                if (jsonSerializerContext is not null)
+                {
+                    options = new(JsonSerializerOptions)
+                    {
+                        TypeInfoResolver = jsonSerializerContext,
+                    };
+                }
+
+                argsJson = JsonSerializer.Serialize(args, options);
+            }
+
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
             BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
@@ -138,6 +161,13 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             throw;
         }
     }
+
+    internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
+        long targetInstanceId,
+        string identifier,
+        CancellationToken cancellationToken,
+        object?[]? args)
+        => InvokeAsync<TValue>(targetInstanceId, identifier, jsonSerializerContext: null, cancellationToken, args);
 
     private void CleanupTasksAndRegistrations(long taskId)
     {
@@ -244,7 +274,17 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             {
                 var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
-                var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
+                object? result;
+                if (resultType == typeof(IJSVoidResult))
+                {
+                    result = null;
+                }
+                else
+                {
+                    // TODO: Consider tracking a JsonSerializerContext if provided, and pass it back here.
+                    result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
+                }
+
                 ByteArraysToBeRevived.Clear();
                 TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
             }

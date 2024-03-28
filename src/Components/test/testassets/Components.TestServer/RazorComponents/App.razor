@@ -70,6 +70,11 @@
                                 });
                         }
                     },
+                    configureRuntime: (builder) => {
+                        builder.withConfig({
+                            browserProfilerOptions: {},
+                        });
+                    },
                 },
             }).then(() => {
                 const startedParagraph = document.createElement('p');

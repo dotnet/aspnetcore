@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -16,8 +17,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
+    private static readonly JsonSerializerOptions _rootComponentSerializerOptions = new(WebAssemblyComponentSerializationSettings.JsonSerializationOptions)
+    {
+        TypeInfoResolver = DefaultWebAssemblyJSRuntimeSerializerContext.Default,
+    };
+
+    public static readonly DefaultWebAssemblyJSRuntime Instance = new();
+
     private readonly RootComponentTypeCache _rootComponentCache = new();
-    internal static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -112,7 +119,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
             operationsJson,
-            WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+            _rootComponentSerializerOptions)!;
 
         for (var i = 0; i < deserialized.Operations.Length; i++)
         {
@@ -161,5 +168,10 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
+    }
+
+    [JsonSerializable(typeof(RootComponentOperationBatch))]
+    internal partial class DefaultWebAssemblyJSRuntimeSerializerContext : JsonSerializerContext
+    {
     }
 }

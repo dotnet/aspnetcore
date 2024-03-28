@@ -9,3 +9,6 @@
 *REMOVED*Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
 *REMOVED*Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
 *REMOVED*Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
+Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+static Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext, params object?[]? args) -> System.Threading.Tasks.ValueTask

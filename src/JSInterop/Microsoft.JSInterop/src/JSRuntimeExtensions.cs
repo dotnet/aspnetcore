@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -24,6 +25,21 @@ public static class JSRuntimeExtensions
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
         await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, args);
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <param name="jsRuntime"></param>
+    /// <param name="identifier"></param>
+    /// <param name="jsonSerializerContext"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, JsonSerializerContext jsonSerializerContext, params object?[]? args)
+    {
+        ArgumentNullException.ThrowIfNull(jsRuntime);
+
+        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, jsonSerializerContext, args);
     }
 
     /// <summary>

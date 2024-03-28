@@ -3,12 +3,14 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components;
 
 #pragma warning disable CA1852 // Seal internal types
-internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
+internal partial class PrerenderComponentApplicationStore : IPersistentComponentStateStore
 #pragma warning restore CA1852 // Seal internal types
 {
     private bool _stateIsPersisted;
@@ -29,12 +31,10 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
     protected void DeserializeState(byte[] existingState)
     {
-        var state = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(existingState);
-        if (state == null)
-        {
-            throw new ArgumentException("Could not deserialize state correctly", nameof(existingState));
-        }
-
+        var state = JsonSerializer.Deserialize(
+            existingState,
+            PrerenderComponentApplicationStoreSerializerContext.Default.DictionaryStringByteArray)
+            ?? throw new ArgumentException("Could not deserialize state correctly", nameof(existingState));
         ExistingState = state;
     }
 
@@ -72,4 +72,10 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public virtual bool SupportsRenderMode(IComponentRenderMode renderMode) =>
         renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
+
+    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+    [JsonSerializable(typeof(Dictionary<string, byte[]>))]
+    internal partial class PrerenderComponentApplicationStoreSerializerContext : JsonSerializerContext
+    {
+    }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop;
@@ -23,6 +24,18 @@ public interface IJSRuntime
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args);
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="identifier"></param>
+    /// <param name="jsonSerializerContext"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerContext jsonSerializerContext, object?[]? args)
+        => throw new InvalidOperationException("Not implemented");
 
     /// <summary>
     /// Invokes the specified JavaScript function asynchronously.

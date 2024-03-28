@@ -11,6 +11,9 @@ namespace Microsoft.JSInterop;
 /// </summary>
 public static class JSInProcessRuntimeExtensions
 {
+    // TODO: Remove as many references to this as possible and use the high-performance
+    // WASM interop APIs.
+
     /// <summary>
     /// Invokes the specified JavaScript function synchronously.
     /// </summary>

@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// <summary>
 /// A <see cref="Renderer"/> that attaches its components to a browser DOM.
 /// </summary>
-public abstract class WebRenderer : Renderer
+public abstract partial class WebRenderer : Renderer
 {
     private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
     private readonly int _rendererId;
@@ -41,12 +42,25 @@ public abstract class WebRenderer : Renderer
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        jsRuntime.InvokeVoidAsync(
-            "Blazor._internal.attachWebRendererInterop",
-            _rendererId,
-            _interopMethodsReference,
-            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
+        _ = AttachWebRendererInterop();
+
+        async Task AttachWebRendererInterop()
+        {
+            try
+            {
+                await jsRuntime.InvokeVoidAsync(
+                    "Blazor._internal.attachWebRendererInterop",
+                    WebRendererSerializerContext.Default,
+                    _rendererId,
+                    _interopMethodsReference,
+                    jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
+                    jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+            }
+        }
     }
 
     /// <summary>
@@ -143,5 +157,14 @@ public abstract class WebRenderer : Renderer
         [JSInvokable] // Linker preserves this if you call RootComponents.Add
         public void RemoveRootComponent(int componentId)
             => _jsComponentInterop.RemoveRootComponent(componentId);
+    }
+
+    [JsonSerializable(typeof(object[]))]
+    [JsonSerializable(typeof(int))]
+    [JsonSerializable(typeof(DotNetObjectReference<WebRendererInteropMethods>))]
+    [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
+    [JsonSerializable(typeof(Dictionary<string, List<string>>))]
+    internal partial class WebRendererSerializerContext : JsonSerializerContext
+    {
     }
 }

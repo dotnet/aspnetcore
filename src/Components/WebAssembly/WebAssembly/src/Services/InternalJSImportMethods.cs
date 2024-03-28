@@ -27,6 +27,12 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
     public string GetApplicationEnvironment()
         => GetApplicationEnvironmentCore();
 
+    public void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId)
+        => AttachRootComponentToElementCore(domElementSelector, componentId, rendererId);
+
+    public void EndUpdateRootComponents(long batchId)
+        => EndUpdateRootComponentsCore(batchId);
+
     public void NavigationManager_EnableNavigationInterception(int rendererId)
         => NavigationManager_EnableNavigationInterceptionCore(rendererId);
 
@@ -65,6 +71,12 @@ internal partial class InternalJSImportMethods : IInternalJSImportMethods
 
     [JSImport("Blazor._internal.getApplicationEnvironment", "blazor-internal")]
     private static partial string GetApplicationEnvironmentCore();
+
+    [JSImport("Blazor._internal.attachRootComponentToElement", "blazor-internal")]
+    private static partial void AttachRootComponentToElementCore(string domElementSelector, int componentId, int rendererId);
+
+    [JSImport("Blazor._internal.endUpdateRootComponents", "blazor-internal")]
+    private static partial void EndUpdateRootComponentsCore([JSMarshalAs<JSType.Number>] long batchId);
 
     [JSImport(BrowserNavigationManagerInterop.EnableNavigationInterception, "blazor-internal")]
     private static partial void NavigationManager_EnableNavigationInterceptionCore(int rendererId);

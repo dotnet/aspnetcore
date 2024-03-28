@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -105,6 +106,31 @@ public class PersistentComponentState
         {
             var reader = new Utf8JsonReader(data);
             instance = JsonSerializer.Deserialize<TValue>(ref reader, JsonSerializerOptionsProvider.Options)!;
+            return true;
+        }
+        else
+        {
+            instance = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <param name="key"></param>
+    /// <param name="jsonTypeInfo"></param>
+    /// <param name="instance"></param>
+    /// <returns></returns>
+    public bool TryTakeFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, JsonTypeInfo<TValue> jsonTypeInfo, [MaybeNullWhen(false)] out TValue? instance)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        if (TryTake(key, out var data))
+        {
+            var reader = new Utf8JsonReader(data);
+            instance = JsonSerializer.Deserialize(ref reader, jsonTypeInfo)!;
             return true;
         }
         else
