@@ -46,6 +46,38 @@ public class ValidationProblemResultTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_UsesDefaultsFromProblemDetailsService_ForProblemDetails()
+    {
+        // Arrange
+        var details = new HttpValidationProblemDetails();
+
+        var result = new ValidationProblem(details);
+        var stream = new MemoryStream();
+        var services = CreateServiceCollection()
+            .AddProblemDetails(options => options.CustomizeProblemDetails = x => x.ProblemDetails.Type = null)
+            .BuildServiceProvider();
+        var httpContext = new DefaultHttpContext()
+        {
+            RequestServices = services,
+            Response =
+                {
+                    Body = stream,
+                },
+        };
+
+        // Act
+        await result.ExecuteAsync(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        stream.Position = 0;
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.Null(responseDetails.Type);
+        Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
+        Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
+    }
+
+    [Fact]
     public void ExecuteAsync_ThrowsArgumentNullException_ForNullProblemDetails()
     {
         Assert.Throws<ArgumentNullException>("problemDetails", () => new ValidationProblem(null));
@@ -141,11 +173,17 @@ public class ValidationProblemResultTests
     private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
         where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
 
-    private static IServiceProvider CreateServices()
+    private static IServiceCollection CreateServiceCollection()
     {
         var services = new ServiceCollection();
         services.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        return services;
+    }
+
+    private static IServiceProvider CreateServices()
+    {
+        var services = CreateServiceCollection();
 
         return services.BuildServiceProvider();
     }
