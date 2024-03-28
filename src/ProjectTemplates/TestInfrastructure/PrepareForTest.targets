@@ -84,7 +84,7 @@
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.props.in"
-      Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir)"
+      Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir);ArtifactsObjDir=$(ArtifactsObjDir);Configuration=$(Configuration)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->
