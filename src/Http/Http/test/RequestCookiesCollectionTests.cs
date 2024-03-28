@@ -37,11 +37,12 @@ public class RequestCookiesCollectionTests
     [InlineData("er=dd,err=cc,errr=bb", new[] { "dd", "cc", "bb" })]
     [InlineData("errorcookie=dd,:(\"sa;", new[] { "dd" })]
     [InlineData("s;", null)]
+    [InlineData("er=;,err=,errr=\\,errrr=\"", null)]
     public void ParseInvalidCookies(string cookieToParse, string[] expectedCookieValues)
     {
         var cookies = RequestCookieCollection.Parse(new StringValues(new[] { cookieToParse }));
 
-        if(expectedCookieValues == null)
+        if (expectedCookieValues == null)
         {
             Assert.Equal(0, cookies.Count);
             return;
@@ -52,6 +53,23 @@ public class RequestCookiesCollectionTests
         {
             var value = expectedCookieValues[i];
             Assert.Equal(value, cookies.ElementAt(i).Value);
+        }
+    }
+
+    [Fact]
+    public void AllExpectedCookieValueCharsPresent()
+    {
+        foreach (var c in Enumerable.Range(0x00, 0xFF).Select(x => (char)x))
+        {
+            var cookies = RequestCookieCollection.Parse(new StringValues(new[] { $"something={c}" }));
+            if (c < 0x21 || c > 0x7E || c == '\\' || c == ',' || c == ';' || c == '\"')
+            {
+                Assert.Equal(0, cookies.Count);
+            }
+            else
+            {
+                Assert.Equal(c.ToString(), cookies.Single().Value);
+            }
         }
     }
 }
