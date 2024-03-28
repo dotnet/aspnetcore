@@ -61,12 +61,12 @@ public static class ComponentServiceCollectionExtensions
         // user's configuration. So even if the user has multiple independent server-side
         // Components entrypoints, this lot is the same and repeated registrations are a no-op.
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
-        services.TryAddSingleton<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
         services.TryAddSingleton<RootComponentTypeCache>();
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();
+        services.TryAddScoped<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
         services.TryAddScoped<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
 
