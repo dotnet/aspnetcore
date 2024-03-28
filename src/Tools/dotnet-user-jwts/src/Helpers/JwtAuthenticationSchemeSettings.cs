@@ -13,8 +13,10 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
     private const string AuthenticationKey = "Authentication";
     private const string SchemesKey = "Schemes";
 
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
         WriteIndented = true,
     };
 
@@ -69,7 +71,7 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
     public static void RemoveScheme(string filePath, string name)
     {
         using var reader = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var config = JsonSerializer.Deserialize<JsonObject>(reader);
+        var config = JsonSerializer.Deserialize<JsonObject>(reader, _jsonSerializerOptions);
         reader.Close();
 
         if (config[AuthenticationKey] is JsonObject authentication &&
