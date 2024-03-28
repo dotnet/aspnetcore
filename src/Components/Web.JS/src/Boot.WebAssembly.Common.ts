@@ -226,7 +226,7 @@ export function hasLoadedWebAssemblyPlatform(): boolean {
   return loadedWebAssemblyPlatform;
 }
 
-export function updateWebAssemblyRootComponents(operations: string): void {
+export async function updateWebAssemblyRootComponents(operations: string): Promise<void> {
   if (!startPromise) {
     throw new Error('Blazor WebAssembly has not started.');
   }
@@ -236,9 +236,9 @@ export function updateWebAssemblyRootComponents(operations: string): void {
   }
 
   if (!started) {
-    scheduleAfterStarted(operations);
+    await scheduleAfterStarted(operations);
   } else {
-    Blazor._internal.updateRootComponents(operations);
+    await Blazor._internal.updateRootComponents(operations);
   }
 }
 
@@ -249,7 +249,7 @@ async function scheduleAfterStarted(operations: string): Promise<void> {
     throw new Error('Blazor WebAssembly has not initialized.');
   }
 
-  Blazor._internal.updateRootComponents(operations);
+  await Blazor._internal.updateRootComponents(operations);
 }
 
 function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number): string | null {

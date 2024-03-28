@@ -91,7 +91,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [SupportedOSPlatform("browser")]
     [JSExport]
-    public static void UpdateRootComponentsCore(string operationsJson)
+    public static Task UpdateRootComponentsCore(string operationsJson)
     {
         try
         {
@@ -102,6 +102,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         {
             Console.Error.WriteLine($"Error deserializing root component operations: {ex}");
         }
+        return Task.CompletedTask;
     }
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
