@@ -9,13 +9,17 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 public class JwtStore
 {
+    private static readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+    };
+
     private const string FileName = "user-jwts.json";
-    private readonly string _userSecretsId;
     private readonly string _filePath;
 
     public JwtStore(string userSecretsId, Program program = null)
     {
-        _userSecretsId = userSecretsId;
         _filePath = Path.Combine(Path.GetDirectoryName(PathHelper.GetSecretsPathFromSecretsId(userSecretsId)), FileName);
         Load();
 
@@ -35,7 +39,7 @@ public class JwtStore
             using var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read);
             if (fileStream.Length > 0)
             {
-                Jwts = JsonSerializer.Deserialize<IDictionary<string, Jwt>>(fileStream) ?? new Dictionary<string, Jwt>();
+                Jwts = JsonSerializer.Deserialize<IDictionary<string, Jwt>>(fileStream, _serializerOptions) ?? new Dictionary<string, Jwt>();
             }
         }
     }
