@@ -43,7 +43,7 @@ public static class HeaderDictionaryExtensions
     {
         // GetHeaderSplit will return only non-null elements of the given IHeaderDictionary.
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-        return ParsingHelpers.GetHeaderSplit(headers, key).ToArray();
+        return ParsingHelpers.GetHeaderSplit(headers, key);
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
     }
 
