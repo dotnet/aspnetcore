@@ -18,7 +18,8 @@ function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   }
   started = true;
 
-  const configuredOptions = resolveOptions(userOptions);
+  const normalizedOptions = userOptions?.circuit ?? userOptions;
+  const configuredOptions = resolveOptions(normalizedOptions);
   setCircuitOptions(Promise.resolve(configuredOptions || {}));
 
   JSEventRegistry.create(Blazor);
