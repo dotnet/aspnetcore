@@ -93,6 +93,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     {
         if (g_fInShutdown)
         {
+            LOG_INFO(L"Received request during shutdown. Will return 503.");
             FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
         }
 
