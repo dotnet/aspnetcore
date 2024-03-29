@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// Options to support the construction of OpenAPI documents.
 /// </summary>
-public class OpenApiOptions
+public sealed class OpenApiOptions
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiOptions"/> class
