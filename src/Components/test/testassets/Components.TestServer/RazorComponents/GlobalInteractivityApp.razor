@@ -1,0 +1,34 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/subdir/" />
+
+    <HeadOutlet />
+</head>
+
+<body>
+    <Components.WasmMinimal.Routes @rendermode="@RenderModeForPage" />
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            webAssembly: {
+                loadBootResource: (type, name, defaultUri, integrity) => `WasmMinimal/_framework/${name}`
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    // Statically render pages in the "/Account" subdirectory like we do in the Blazor Web template with Individaul auth.
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/static")
+        ? null
+        : RenderMode.InteractiveAuto;
+}
