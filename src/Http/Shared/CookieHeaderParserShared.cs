@@ -199,7 +199,7 @@ internal static class CookieHeaderParserShared
         }
 
         var delta = input.AsSpan(offset).IndexOfAnyExcept(CookieValueChar);
-        if (delta == -1)
+        if (delta < 0)
         {
             offset = input.Length;
         }
