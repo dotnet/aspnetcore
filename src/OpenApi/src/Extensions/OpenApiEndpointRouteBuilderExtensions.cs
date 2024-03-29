@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,12 +45,20 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 {
                     var document = await documentService.GetOpenApiDocumentAsync();
                     var documentOptions = options.Get(documentName);
-                    using var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
-                    var jsonWriter = new OpenApiJsonWriter(stringWriter);
-                    document.Serialize(jsonWriter, documentOptions.OpenApiVersion);
-                    context.Response.StatusCode = StatusCodes.Status200OK;
-                    context.Response.ContentType = "application/json;charset=utf-8";
-                    await context.Response.WriteAsync(stringWriter.ToString(), context.RequestAborted);
+                    using var output = MemoryBufferWriter.Get();
+                    using var writer = Utf8BufferTextWriter.Get(output);
+                    try
+                    {
+                        document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
+                        await context.Response.BodyWriter.WriteAsync(output.ToArray());
+                        await context.Response.BodyWriter.FlushAsync();
+                    }
+                    finally
+                    {
+                        MemoryBufferWriter.Return(output);
+                        Utf8BufferTextWriter.Return(writer);
+                    }
+
                 }
             }).ExcludeFromDescription();
     }

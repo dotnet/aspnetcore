@@ -20,9 +20,7 @@ public static class OpenApiServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddOpenApiCore(documentName);
-        services.Configure<OpenApiOptions>(documentName, options => options.DocumentName = documentName);
-        return services;
+        return services.AddOpenApi(documentName, _ => { });
     }
 
     /// <summary>
@@ -67,6 +65,7 @@ public static class OpenApiServiceCollectionExtensions
         services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
+        // Required to resolve document names for build-time generation
         services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
         return services;
     }

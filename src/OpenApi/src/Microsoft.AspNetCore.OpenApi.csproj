@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;openapi</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Description>Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.</Description>
   </PropertyGroup>
 
@@ -26,6 +27,11 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/src/SignalR/common/Shared/Utf8BufferTextWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)/src/SignalR/common/Shared/MemoryBufferWriter.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

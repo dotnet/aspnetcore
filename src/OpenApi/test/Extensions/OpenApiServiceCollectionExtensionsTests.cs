@@ -163,4 +163,27 @@ public class OpenApiServiceCollectionExtensions
         // Verify last registration is used
         Assert.Equal(OpenApiSpecVersion.OpenApi3_0, namedOption.OpenApiVersion);
     }
+
+    [Fact]
+    public void AddOpenApi_WithDuplicateDocumentNames_UsesLastRegistration_ValidateOptionsOverride()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var documentName = "v2";
+
+        // Act
+        services
+        .AddOpenApi(documentName, options => options.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0)
+        .AddOpenApi(documentName);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiComponentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(OpenApiDocumentService) && sd.Lifetime == ServiceLifetime.Singleton && (string)sd.ServiceKey == documentName);
+        Assert.Contains(services, sd => sd.ServiceType == typeof(IDocumentProvider) && sd.Lifetime == ServiceLifetime.Singleton);
+        var options = serviceProvider.GetRequiredService<IOptionsSnapshot<OpenApiOptions>>();
+        var namedOption = options.Get(documentName);
+        Assert.Equal(documentName, namedOption.DocumentName);
+        Assert.Equal(OpenApiSpecVersion.OpenApi2_0, namedOption.OpenApiVersion);
+    }
 }
