@@ -11,7 +11,7 @@ namespace Microsoft.Net.Http.Headers;
 internal static class CookieHeaderParserShared
 {
     // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-    //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
+    //                     ; US-ASCII characters excluding CTLs, whitespace, DQUOTE, comma, semicolon, and backslash
     private static readonly SearchValues<char> CookieValueChar =
         SearchValues.Create("!#$%&'()*+-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~");
 
