@@ -26,7 +26,7 @@ public class FormCollectionModelBinder : IModelBinder
     {
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
-        _logger = loggerFactory.CreateLogger<FormCollectionModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(FormCollectionModelBinder));
     }
 
     /// <inheritdoc />

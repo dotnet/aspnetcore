@@ -24,7 +24,7 @@ public class HeaderModelBinder : IModelBinder
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
     public HeaderModelBinder(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<HeaderModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(HeaderModelBinder));
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class HeaderModelBinder : IModelBinder
         ArgumentNullException.ThrowIfNull(loggerFactory);
         ArgumentNullException.ThrowIfNull(innerModelBinder);
 
-        _logger = loggerFactory.CreateLogger<HeaderModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(HeaderModelBinder));
         InnerModelBinder = innerModelBinder;
     }
 
