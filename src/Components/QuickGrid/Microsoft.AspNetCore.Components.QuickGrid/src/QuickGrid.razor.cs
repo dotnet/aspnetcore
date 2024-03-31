@@ -91,6 +91,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public PaginationState? Pagination { get; set; }
 
+
+    /// <summary>
+    /// Display Footer so you can add in Grand Total of all Columns and so on.
+    /// </summary>
+    [Parameter] public bool IsShowFooter { get; set; }
+
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created element.
     /// </summary>
@@ -126,6 +132,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     // Caches of method->delegate conversions
     private readonly RenderFragment _renderColumnHeaders;
+	private readonly RenderFragment _renderColumnFooters;
     private readonly RenderFragment _renderNonVirtualizedRows;
 
     // We try to minimize the number of times we query the items provider, since queries may be expensive
@@ -148,6 +155,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _internalGridContext = new(this);
         _currentPageItemsChanged = new(EventCallback.Factory.Create<PaginationState>(this, RefreshDataCoreAsync));
         _renderColumnHeaders = RenderColumnHeaders;
+		_renderColumnFooters = RenderColumnFooters
         _renderNonVirtualizedRows = RenderNonVirtualizedRows;
 
         // As a special case, we don't issue the first data load request until we've collected the initial set of columns
@@ -388,6 +396,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             : "none";
 
     private string? ColumnHeaderClass(ColumnBase<TGridItem> column)
+        => _sortByColumn == column
+        ? $"{ColumnClass(column)} {(_sortByAscending ? "col-sort-asc" : "col-sort-desc")}"
+        : ColumnClass(column);
+
+    private string? ColumnFooterClass(ColumnBase<TGridItem> column)
         => _sortByColumn == column
         ? $"{ColumnClass(column)} {(_sortByAscending ? "col-sort-asc" : "col-sort-desc")}"
         : ColumnClass(column);
