@@ -11,7 +11,7 @@ public class NavigationException : Exception
     /// <summary>
     /// Initializes a new <see cref="NavigationException"/> instance.
     /// </summary>
-    public NavigationException(string uri)
+    public NavigationException(string uri) : base($"Could not navigate to {uri}")
     {
         Location = uri;
     }
@@ -19,15 +19,5 @@ public class NavigationException : Exception
     /// <summary>
     /// Gets the uri to which navigation was attempted.
     /// </summary>
-    public string Location { get; }
-
-    /// <summary>
-    /// Creates custom message.
-    /// </summary>
-    public override string Message
-    {
-        get {
-            return $"Could not navigate to {Location}";
-        }
-    }
+    public string Location { get; }   
 }  
