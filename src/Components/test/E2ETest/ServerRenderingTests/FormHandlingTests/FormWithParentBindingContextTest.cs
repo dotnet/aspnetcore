@@ -1466,9 +1466,10 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54757")]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry()
     {
-        GoTo("about:blank");
+        Navigate("about:blank");
 
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh");
@@ -1486,11 +1487,12 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Browser.Navigate().Back();
         Browser.Equal(startUrl, () => Browser.Url);
     }
-    
+
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54757")]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry_Streaming()
     {
-        GoTo("about:blank");
+        Navigate("about:blank");
 
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh-streaming");

@@ -4,13 +4,14 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public class ThreadingHostedAppTest
-    : ServerTestBase<ThreadingHostedAppTest.ThreadingAppServerSiteFixture>, IDisposable
+    : ServerTestBase<ThreadingHostedAppTest.ThreadingAppServerSiteFixture>
 {
     public class ThreadingAppServerSiteFixture : AspNetSiteServerFixture
     {
@@ -32,12 +33,14 @@ public class ThreadingHostedAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
@@ -64,6 +67,7 @@ public class ThreadingHostedAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
@@ -105,12 +109,5 @@ public class ThreadingHostedAppTest
     {
         var app = Browser.Exists(By.TagName("app"));
         Browser.NotEqual("Loading...", () => app.Text);
-    }
-
-    public void Dispose()
-    {
-        // Make the tests run faster by navigating back to the home page when we are done
-        // If we don't, then the next test will reload the whole page before it starts
-        Browser.Exists(By.LinkText("Home")).Click();
     }
 }

@@ -48,7 +48,7 @@ internal sealed class ControllerActionInvokerProvider : IActionInvokerProvider
         _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
         _maxValidationDepth = optionsAccessor.Value.MaxValidationDepth;
         _maxModelBindingRecursionDepth = optionsAccessor.Value.MaxModelBindingRecursionDepth;
-        _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
+        _logger = loggerFactory.CreateLogger(typeof(ControllerActionInvoker));
         _diagnosticListener = diagnosticListener;
         _mapper = mapper;
         _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
