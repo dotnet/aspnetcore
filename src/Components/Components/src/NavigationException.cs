@@ -22,7 +22,7 @@ public class NavigationException : Exception
     public string Location { get; }
 
     /// <summary>
-    /// Creates and returns a string representation of the current exception.
+    /// Creates custom message.
     /// </summary>
     public override string Message
     {
