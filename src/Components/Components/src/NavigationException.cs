@@ -20,4 +20,14 @@ public class NavigationException : Exception
     /// Gets the uri to which navigation was attempted.
     /// </summary>
     public string Location { get; }
-}
+
+    /// <summary>
+    /// Creates and returns a string representation of the current exception.
+    /// </summary>
+    public override string Message
+    {
+        get {
+            return $"Could not navigate to {Location}";
+        }
+    }
+}  
