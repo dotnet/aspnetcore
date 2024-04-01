@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,12 +20,18 @@ internal sealed class OpenApiDocumentService(
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
 
+    // For good hygiene, operation-level tags must also appear in the document-level
+    // tags collection. This set captures all tags that have been seen so far.
+    // Note: internal for testing.
+    internal readonly HashSet<OpenApiTag> _capturedTags = new(OpenApiTagComparer.Instance);
+
     public Task<OpenApiDocument> GetOpenApiDocumentAsync()
     {
         var document = new OpenApiDocument
         {
             Info = GetOpenApiInfo(),
-            Paths = GetOpenApiPaths()
+            Paths = GetOpenApiPaths(),
+            Tags = [.. _capturedTags]
         };
         return Task.FromResult(document);
     }
@@ -63,13 +70,50 @@ internal sealed class OpenApiDocumentService(
         return paths;
     }
 
-    private static Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions)
+    private Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
         foreach (var description in descriptions)
         {
-            operations[description.GetOperationType()] = new OpenApiOperation();
+            operations[description.GetOperationType()] = GetOperation(description);
         }
         return operations;
+    }
+
+    private OpenApiOperation GetOperation(ApiDescription description)
+    {
+        var tags = GetTags(description);
+        if (tags != null)
+        {
+            foreach (var tag in tags)
+            {
+                _capturedTags.Add(tag);
+            }
+        }
+        var operation = new OpenApiOperation
+        {
+            Summary = GetSummary(description),
+            Description = GetDescription(description),
+            Tags = tags,
+        };
+        return operation;
+    }
+
+    private static string? GetSummary(ApiDescription description)
+        => description.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().LastOrDefault()?.Summary;
+
+    private static string? GetDescription(ApiDescription description)
+        => description.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().LastOrDefault()?.Description;
+
+    private static List<OpenApiTag>? GetTags(ApiDescription description)
+    {
+        var actionDescriptor = description.ActionDescriptor;
+        if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
+        {
+            return tagsMetadata.Tags.Select(tag => new OpenApiTag { Name = tag }).ToList();
+        }
+        // If no tags are specified, use the controller name as the tag. This effectively
+        // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
+        return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
     }
 }
