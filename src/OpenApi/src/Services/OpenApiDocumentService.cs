@@ -15,9 +15,9 @@ internal sealed class OpenApiDocumentService(
     [ServiceKey] string documentName,
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
-    IOptionsSnapshot<OpenApiOptions> optionsSnapshot)
+    IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
-    private readonly OpenApiOptions _options = optionsSnapshot.Get(documentName);
+    private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
 
     public Task<OpenApiDocument> GetOpenApiDocumentAsync()
     {
