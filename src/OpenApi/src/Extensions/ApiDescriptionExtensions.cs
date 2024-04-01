@@ -14,8 +14,8 @@ internal static class ApiDescriptionExtensions
     /// </summary>
     /// <param name="apiDescription">The ApiDescription to resolve an operation type from.</param>
     /// <returns>The <see cref="OperationType"/> associated with the given <paramref name="apiDescription"/>.</returns>
-    public static OperationType TopOperationType(this ApiDescription apiDescription) =>
-        apiDescription.HttpMethod switch
+    public static OperationType ToOperationType(this ApiDescription apiDescription) =>
+        apiDescription.HttpMethod?.ToUpperInvariant() switch
         {
             "GET" => OperationType.Get,
             "POST" => OperationType.Post,
@@ -25,7 +25,7 @@ internal static class ApiDescriptionExtensions
             "HEAD" => OperationType.Head,
             "OPTIONS" => OperationType.Options,
             "TRACE" => OperationType.Trace,
-            _ => OperationType.Get
+            _ => throw new InvalidOperationException($"Unsupported HTTP method: {apiDescription.HttpMethod}"),
         };
 
     /// <summary>
@@ -41,9 +41,9 @@ internal static class ApiDescriptionExtensions
         Debug.Assert(apiDescription.RelativePath != null, "Relative path cannot be null.");
         var strippedRoute = new StringBuilder();
         var routePattern = RoutePatternFactory.Parse(apiDescription.RelativePath);
-        strippedRoute.Append('/');
         for (var i = 0; i < routePattern.PathSegments.Count; i++)
         {
+            strippedRoute.Append('/');
             var segment = routePattern.PathSegments[i];
             foreach (var part in segment.Parts)
             {
@@ -58,10 +58,11 @@ internal static class ApiDescriptionExtensions
                     strippedRoute.Append('}');
                 }
             }
-            if (i != routePattern.PathSegments.Count - 1)
-            {
-                strippedRoute.Append('/');
-            }
+        }
+        // "" -> "/"
+        if (routePattern.PathSegments.Count == 0)
+        {
+            strippedRoute.Append('/');
         }
         return strippedRoute.ToString();
     }

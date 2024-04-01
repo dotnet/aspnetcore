@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi.Models;
 
 public class ApiDescriptionExtensionsTests
 {
@@ -12,6 +13,8 @@ public class ApiDescriptionExtensionsTests
     [InlineData("{a}/{b}/{c=19}", "/{a}/{b}/{c}")]
     [InlineData("{a}/{b}/{c?}", "/{a}/{b}/{c}")]
     [InlineData("{a:int}/{b}/{c:int}", "/{a}/{b}/{c}")]
+    [InlineData("", "/")]
+    [InlineData("api", "/api")]
     public void MapRelativePathToItemPath_ReturnsItemPathForApiDescription(string relativePath, string expectedItemPath)
     {
         // Arrange
@@ -25,5 +28,44 @@ public class ApiDescriptionExtensionsTests
 
         // Assert
         Assert.Equal(expectedItemPath, itemPath);
+    }
+
+    [Theory]
+    [InlineData("GET", OperationType.Get)]
+    [InlineData("POST", OperationType.Post)]
+    [InlineData("PUT", OperationType.Put)]
+    [InlineData("DELETE", OperationType.Delete)]
+    [InlineData("PATCH", OperationType.Patch)]
+    [InlineData("HEAD", OperationType.Head)]
+    [InlineData("OPTIONS", OperationType.Options)]
+    [InlineData("TRACE", OperationType.Trace)]
+    [InlineData("gEt", OperationType.Get)]
+    public void ToOperationType_ReturnsOperationTypeForApiDescription(string httpMethod, OperationType expectedOperationType)
+    {
+        // Arrange
+        var apiDescription = new ApiDescription
+        {
+            HttpMethod = httpMethod
+        };
+
+        // Act
+        var operationType = apiDescription.ToOperationType();
+
+        // Assert
+        Assert.Equal(expectedOperationType, operationType);
+    }
+
+    [Fact]
+    public void ToOperationType_ThrowsForUnknownApiDescription()
+    {
+        // Arrange
+        var apiDescription = new ApiDescription
+        {
+            HttpMethod = "UNKNOWN"
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.ToOperationType());
+        Assert.Equal("Unsupported HTTP method: UNKNOWN", exception.Message);
     }
 }

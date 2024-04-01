@@ -11,7 +11,7 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal class OpenApiDocumentService(
+internal sealed class OpenApiDocumentService(
     [ServiceKey] string documentName,
     IApiDescriptionGroupCollectionProvider apiDescriptionGroupCollectionProvider,
     IHostEnvironment hostEnvironment,
@@ -67,7 +67,7 @@ internal class OpenApiDocumentService(
         var operations = new Dictionary<OperationType, OpenApiOperation>();
         foreach (var description in descriptions)
         {
-            operations[description.TopOperationType()] = new OpenApiOperation();
+            operations[description.ToOperationType()] = new OpenApiOperation();
         }
         return operations;
     }

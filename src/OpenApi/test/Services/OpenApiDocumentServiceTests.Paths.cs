@@ -52,6 +52,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         builder.MapGet("/api/todos", () => { }).WithMetadata(new EndpointGroupNameAttribute("v1"));
         builder.MapGet("/api/users", () => { }).WithMetadata(new EndpointGroupNameAttribute("v2"));
 
+        // Assert -- The default `ShouldInclude` implementation only includes endpoints that
+        // match the document name. Since we don't set a document name explicitly, this will
+        // match against the default document name ("v1") and the document will only contain
+        // the endpoint with that group name.
         await VerifyOpenApiDocument(builder, document =>
         {
             Assert.Collection(document.Paths.OrderBy(p => p.Key),
@@ -103,6 +107,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Act
         builder.MapGet("/api/todos/{id}", () => { });
         builder.MapPost("/api/todos/{id}", () => { });
+        builder.MapMethods("/api/todos/{id}", ["PATCH", "PUT"], () => { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -118,8 +123,17 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         },
                         operation =>
                         {
+                            Assert.Equal(OperationType.Put, operation.Key);
+                        },
+                        operation =>
+                        {
                             Assert.Equal(OperationType.Post, operation.Key);
+                        },
+                        operation =>
+                        {
+                            Assert.Equal(OperationType.Patch, operation.Key);
                         });
+
                 }
             );
         });
