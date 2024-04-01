@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -54,6 +55,7 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54889")]
     public void CanUpdateSimpleParameters()
     {
         app.FindElement(By.Id("add-custom-element")).Click();
@@ -104,6 +106,7 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54889")]
     public void CanUpdateComplexParameters()
     {
         app.FindElement(By.Id("add-custom-element")).Click();
