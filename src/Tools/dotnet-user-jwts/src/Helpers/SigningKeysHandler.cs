@@ -29,12 +29,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 //              }]
 internal static class SigningKeysHandler
 {
-    private static readonly JsonSerializerOptions _serializerOptions = new()
-    {
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-    };
-
     public static byte[] GetSigningKeyMaterial(string userSecretsId, string scheme, string issuer)
     {
         var projectConfiguration = new ConfigurationBuilder()
@@ -74,7 +68,7 @@ internal static class SigningKeysHandler
             using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
             if (secretsFileStream.Length > 0)
             {
-                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream, _serializerOptions);
+                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream, SerializerOptions.Default);
             }
         }
 
