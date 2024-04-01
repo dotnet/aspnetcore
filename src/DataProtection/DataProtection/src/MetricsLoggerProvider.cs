@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 internal sealed class MetricsLoggerProvider : ILoggerProvider
 {
     public const string MeterName = "Microsoft.AspNetCore.DataProtection";
+    private const string CategoryNamePrefix = "Microsoft.AspNetCore.DataProtection";
 
     private readonly Meter? _meter;
 
@@ -31,61 +32,66 @@ internal sealed class MetricsLoggerProvider : ILoggerProvider
     {
         _meter = meterFactory.Create(MeterName);
 
-        var errorCounter = _meter.CreateCounter<long>(
-            "errors",
-            unit: "{error}",
-            description: "Number of errors that have occurred.");
-        var warningCounter = _meter.CreateCounter<long>(
-            "warnings",
-            unit: "{warning}",
-            description: "Number of warnings that have occurred.");
+        var counter = _meter.CreateCounter<long>(
+            "aspnetcore.dataprotection.log_messages",
+            unit: "{message}",
+            description: "Number of messages that have been logged.");
 
-        _logger = new MetricsLogger(errorCounter, warningCounter);
+        _logger = new MetricsLogger(counter);
     }
 
-    ILogger ILoggerProvider.CreateLogger(string _categoryName) => _logger;
+    ILogger ILoggerProvider.CreateLogger(string categoryName) =>
+        categoryName.StartsWith(CategoryNamePrefix, StringComparison.Ordinal)
+            ? _logger
+            : NullLogger.Instance;
 
     void IDisposable.Dispose() => _meter?.Dispose();
 
     private sealed class MetricsLogger : ILogger
     {
-        private readonly Counter<long> _errorCounter;
-        private readonly Counter<long> _warningCounter;
+        private readonly Counter<long> _counter;
 
-        public MetricsLogger(Counter<long> errorCounter, Counter<long> warningCounter)
+        public MetricsLogger(Counter<long> counter)
         {
-            _errorCounter = errorCounter;
-            _warningCounter = warningCounter;
+            _counter = counter;
         }
 
         IDisposable? ILogger.BeginScope<TState>(TState state) => null;
 
-        bool ILogger.IsEnabled(LogLevel logLevel) => logLevel switch
+        bool ILogger.IsEnabled(LogLevel logLevel)
         {
-            LogLevel.Error => _errorCounter.Enabled,
-            LogLevel.Warning => _warningCounter.Enabled,
-            _ => false,
-        };
+            switch (logLevel)
+            {
+                case LogLevel.Critical:
+                case LogLevel.Error:
+                case LogLevel.Warning:
+                    return _counter.Enabled;
+                default:
+                    return false;
+            }
+        }
 
         void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState _state, Exception? _exception, Func<TState, Exception?, string> _formatter)
         {
-            switch(logLevel)
+            var levelName = logLevel switch
             {
-                case LogLevel.Error:
-                    if (_errorCounter.Enabled)
-                    {
-                        var tags = new TagList([new("id", eventId.Name ?? eventId.Id.ToString(CultureInfo.InvariantCulture))]);
-                        _errorCounter.Add(1, tags);
-                    }
-                    break;
-                case LogLevel.Warning:
-                    if (_warningCounter.Enabled)
-                    {
-                        var tags = new TagList([new("id", eventId.Name ?? eventId.Id.ToString(CultureInfo.InvariantCulture))]);
-                        _warningCounter.Add(1, tags);
-                    }
-                    break;
+                LogLevel.Critical => "critical",
+                LogLevel.Error => "error",
+                LogLevel.Warning => "warning",
+                _ => null,
+            };
+
+            if (levelName is null || !_counter.Enabled)
+            {
+                return;
             }
+
+            var tags = new TagList(
+            [
+                new("id", eventId.Name ?? eventId.Id.ToString(CultureInfo.InvariantCulture)),
+                new("level", levelName),
+            ]);
+            _counter.Add(1, tags);
         }
     }
 }
