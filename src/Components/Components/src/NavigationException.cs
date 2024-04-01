@@ -19,5 +19,5 @@ public class NavigationException : Exception
     /// <summary>
     /// Gets the uri to which navigation was attempted.
     /// </summary>
-    public string Location { get; }   
-}  
+    public string Location { get; }
+}
