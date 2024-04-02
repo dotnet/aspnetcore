@@ -21,12 +21,33 @@ public partial class OpenApiDocumentServiceTests
             "v1",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsSnapshot<OpenApiOptions>>().Object);
+            new Mock<IOptionsMonitor<OpenApiOptions>>().Object);
 
         // Act
         var info = docService.GetOpenApiInfo();
 
         // Assert
         Assert.Equal("TestApplication | v1", info.Title);
+    }
+
+    [Fact]
+    public void GetOpenApiInfo_RespectsDocumentName()
+    {
+        // Arrange
+        var hostEnvironment = new HostingEnvironment
+        {
+            ApplicationName = "TestApplication"
+        };
+        var docService = new OpenApiDocumentService(
+            "v2",
+            new Mock<IApiDescriptionGroupCollectionProvider>().Object,
+            hostEnvironment,
+            new Mock<IOptionsMonitor<OpenApiOptions>>().Object);
+
+        // Act
+        var info = docService.GetOpenApiInfo();
+
+        // Assert
+        Assert.Equal("TestApplication | v2", info.Title);
     }
 }

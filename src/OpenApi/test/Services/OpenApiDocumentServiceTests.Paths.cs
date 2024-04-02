@@ -133,7 +133,6 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         {
                             Assert.Equal(OperationType.Patch, operation.Key);
                         });
-
                 }
             );
         });

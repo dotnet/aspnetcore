@@ -21,7 +21,7 @@ public abstract class OpenApiDocumentServiceTestBase
         {
             ApplicationName = nameof(OpenApiDocumentServiceTests)
         };
-        var options = new Mock<IOptionsSnapshot<OpenApiOptions>>();
+        var options = new Mock<IOptionsMonitor<OpenApiOptions>>();
         options.Setup(o => o.Get(It.IsAny<string>())).Returns(new OpenApiOptions());
 
         var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);

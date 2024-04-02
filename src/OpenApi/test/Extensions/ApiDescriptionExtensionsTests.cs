@@ -15,6 +15,7 @@ public class ApiDescriptionExtensionsTests
     [InlineData("{a:int}/{b}/{c:int}", "/{a}/{b}/{c}")]
     [InlineData("", "/")]
     [InlineData("api", "/api")]
+    [InlineData("{p1}/{p2}.{p3?}", "/{p1}/{p2}.{p3}")]
     public void MapRelativePathToItemPath_ReturnsItemPathForApiDescription(string relativePath, string expectedItemPath)
     {
         // Arrange
@@ -49,23 +50,25 @@ public class ApiDescriptionExtensionsTests
         };
 
         // Act
-        var operationType = apiDescription.ToOperationType();
+        var operationType = apiDescription.GetOperationType();
 
         // Assert
         Assert.Equal(expectedOperationType, operationType);
     }
 
-    [Fact]
-    public void ToOperationType_ThrowsForUnknownApiDescription()
+    [Theory]
+    [InlineData("UNKNOWN")]
+    [InlineData("unknown")]
+    public void ToOperationType_ThrowsForUnknownHttpMethod(string methodName)
     {
         // Arrange
         var apiDescription = new ApiDescription
         {
-            HttpMethod = "UNKNOWN"
+            HttpMethod = methodName
         };
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.ToOperationType());
-        Assert.Equal("Unsupported HTTP method: UNKNOWN", exception.Message);
+        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.GetOperationType());
+        Assert.Equal($"Unsupported HTTP method: {methodName}", exception.Message);
     }
 }

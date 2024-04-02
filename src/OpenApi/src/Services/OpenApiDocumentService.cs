@@ -29,6 +29,7 @@ internal sealed class OpenApiDocumentService(
         return Task.FromResult(document);
     }
 
+    // Note: Internal for testing.
     internal OpenApiInfo GetOpenApiInfo()
     {
         return new OpenApiInfo
@@ -47,7 +48,7 @@ internal sealed class OpenApiDocumentService(
     /// the object to support filtering each
     /// description instance into its appropriate document.
     /// </remarks>
-    internal OpenApiPaths GetOpenApiPaths()
+    private OpenApiPaths GetOpenApiPaths()
     {
         var descriptionsByPath = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
             .SelectMany(group => group.Items)
@@ -62,12 +63,12 @@ internal sealed class OpenApiDocumentService(
         return paths;
     }
 
-    internal static Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions)
+    private static Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
         foreach (var description in descriptions)
         {
-            operations[description.ToOperationType()] = new OpenApiOperation();
+            operations[description.GetOperationType()] = new OpenApiOperation();
         }
         return operations;
     }

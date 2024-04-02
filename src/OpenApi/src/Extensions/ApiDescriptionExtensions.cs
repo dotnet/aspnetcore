@@ -14,7 +14,7 @@ internal static class ApiDescriptionExtensions
     /// </summary>
     /// <param name="apiDescription">The ApiDescription to resolve an operation type from.</param>
     /// <returns>The <see cref="OperationType"/> associated with the given <paramref name="apiDescription"/>.</returns>
-    public static OperationType ToOperationType(this ApiDescription apiDescription) =>
+    public static OperationType GetOperationType(this ApiDescription apiDescription) =>
         apiDescription.HttpMethod?.ToUpperInvariant() switch
         {
             "GET" => OperationType.Get,
@@ -39,6 +39,11 @@ internal static class ApiDescriptionExtensions
     public static string MapRelativePathToItemPath(this ApiDescription apiDescription)
     {
         Debug.Assert(apiDescription.RelativePath != null, "Relative path cannot be null.");
+        // "" -> "/"
+        if (string.IsNullOrEmpty(apiDescription.RelativePath))
+        {
+            return "/";
+        }
         var strippedRoute = new StringBuilder();
         var routePattern = RoutePatternFactory.Parse(apiDescription.RelativePath);
         for (var i = 0; i < routePattern.PathSegments.Count; i++)
@@ -57,12 +62,11 @@ internal static class ApiDescriptionExtensions
                     strippedRoute.Append(parameterPart.Name);
                     strippedRoute.Append('}');
                 }
+                else if (part is RoutePatternSeparatorPart separatorPart)
+                {
+                    strippedRoute.Append(separatorPart.Content);
+                }
             }
-        }
-        // "" -> "/"
-        if (routePattern.PathSegments.Count == 0)
-        {
-            strippedRoute.Append('/');
         }
         return strippedRoute.ToString();
     }
