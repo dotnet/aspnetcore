@@ -264,7 +264,6 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         {
             _currentBits = _collection._bits;
             _next = GetNext(_currentBits, _collection.ContentLength.HasValue);
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
         }
     }
 }
