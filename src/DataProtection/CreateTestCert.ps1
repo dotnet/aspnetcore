@@ -1,3 +1,5 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Justification='dev utility tool')]
+
 #
 # Generates a new test cert in a .pfx file
 # Obviously, don't actually use this to produce production certs
