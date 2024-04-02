@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Routing;
@@ -8,19 +11,13 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using System.Text;
 
-public class OpenApiEndpointRouteBuilderExtensionsTests
+public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentServiceTestBase
 {
     [Fact]
     public void MapOpenApi_ReturnsEndpointConventionBuilder()
     {
         // Arrange
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
-        var serviceProviderIsService = new ServiceProviderIsService();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddOpenApi()
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
 
         // Act
@@ -35,13 +32,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
     {
         // Arrange
         var expectedPath = "/custom/{documentName}/openapi.json";
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
-        var serviceProviderIsService = new ServiceProviderIsService();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddOpenApi()
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
 
         // Act
@@ -56,13 +47,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
     public async Task MapOpenApi_ReturnsRenderedDocument()
     {
         // Arrange
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
-        var serviceProviderIsService = new ServiceProviderIsService();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddOpenApi()
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         builder.MapOpenApi();
         var context = new DefaultHttpContext();
@@ -80,7 +65,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
-            Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests", document.Info.Title);
+            Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
         });
     }
@@ -89,13 +74,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
     public async Task MapOpenApi_ReturnsDefaultDocumentIfNoNameProvided()
     {
         // Arrange
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
-        var serviceProviderIsService = new ServiceProviderIsService();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddOpenApi()
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         builder.MapOpenApi("/openapi.json");
         var context = new DefaultHttpContext();
@@ -112,7 +91,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
-            Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests", document.Info.Title);
+            Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests | v1", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
         });
     }
@@ -121,13 +100,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
     public async Task MapOpenApi_Returns404ForUnresolvedDocument()
     {
         // Arrange
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
-        var serviceProviderIsService = new ServiceProviderIsService();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddOpenApi()
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         builder.MapOpenApi();
         var context = new DefaultHttpContext();
@@ -153,11 +126,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
         var documentName = "v2";
         var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
         var serviceProviderIsService = new ServiceProviderIsService();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddOpenApi(documentName)
-            .BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider(documentName);
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         builder.MapOpenApi("/openapi.json");
         var context = new DefaultHttpContext();
@@ -175,7 +144,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         ValidateOpenApiDocument(responseBodyStream, document =>
         {
-            Assert.Equal("OpenApiEndpointRouteBuilderExtensionsTests", document.Info.Title);
+            Assert.Equal($"OpenApiEndpointRouteBuilderExtensionsTests | {documentName}", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
         });
     }
@@ -185,5 +154,18 @@ public class OpenApiEndpointRouteBuilderExtensionsTests
         var document = new OpenApiStringReader().Read(Encoding.UTF8.GetString(documentStream.ToArray()), out var diagnostic);
         Assert.Empty(diagnostic.Errors);
         action(document);
+    }
+
+    private static IServiceProvider CreateServiceProvider(string documentName = Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName)
+    {
+        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiEndpointRouteBuilderExtensionsTests) };
+        var serviceProviderIsService = new ServiceProviderIsService();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
+            .AddSingleton<IHostEnvironment>(hostEnvironment)
+            .AddSingleton(CreateApiDescriptionGroupCollectionProvider())
+            .AddOpenApi(documentName)
+            .BuildServiceProvider();
+        return serviceProvider;
     }
 }

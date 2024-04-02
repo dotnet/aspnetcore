@@ -1,4 +1,6 @@
-using Microsoft.AspNetCore.OpenApi;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,21 +8,14 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
-public class OpenApiDocumentProviderTests
+public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
 {
     [Fact]
     public async Task GenerateAsync_ReturnsDocument()
     {
         // Arrange
         var documentName = "v1";
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiDocumentProviderTests) };
-        var documentService = new OpenApiDocumentService(hostEnvironment);
-        var serviceCollection = new ServiceCollection();
-        serviceCollection
-            .AddOpenApi(documentName)
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddSingleton(documentService);
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider([documentName]);
         var documentProvider = new OpenApiDocumentProvider(serviceProvider);
         var stringWriter = new StringWriter();
 
@@ -30,7 +25,7 @@ public class OpenApiDocumentProviderTests
         // Assert
         ValidateOpenApiDocument(stringWriter, document =>
         {
-            Assert.Equal(hostEnvironment.ApplicationName, document.Info.Title);
+            Assert.Equal($"{nameof(OpenApiDocumentProviderTests)} | {documentName}", document.Info.Title);
             Assert.Equal("1.0.0", document.Info.Version);
         });
     }
@@ -39,17 +34,7 @@ public class OpenApiDocumentProviderTests
     public void GetDocumentNames_ReturnsAllRegisteredDocumentName()
     {
         // Arrange
-        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiDocumentProviderTests) };
-        var documentService = new OpenApiDocumentService(hostEnvironment);
-        var serviceCollection = new ServiceCollection();
-        serviceCollection
-            .AddOpenApi("v2")
-            .AddOpenApi("internal")
-            .AddOpenApi("public")
-            .AddOpenApi("v1")
-            .AddSingleton<IHostEnvironment>(hostEnvironment)
-            .AddSingleton(documentService);
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider(["v2", "internal", "public", "v1"]);
         var documentProvider = new OpenApiDocumentProvider(serviceProvider);
 
         // Act
@@ -69,5 +54,21 @@ public class OpenApiDocumentProviderTests
         var document = new OpenApiStringReader().Read(stringWriter.ToString(), out var diagnostic);
         Assert.Empty(diagnostic.Errors);
         action(document);
+    }
+
+    private static IServiceProvider CreateServiceProvider(string[] documentNames)
+    {
+        var hostEnvironment = new HostEnvironment() { ApplicationName = nameof(OpenApiDocumentProviderTests) };
+        var serviceProviderIsService = new ServiceProviderIsService();
+        var serviceCollection = new ServiceCollection()
+            .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
+            .AddSingleton<IHostEnvironment>(hostEnvironment)
+            .AddSingleton(CreateApiDescriptionGroupCollectionProvider());
+        foreach (var documentName in documentNames)
+        {
+            serviceCollection.AddOpenApi(documentName);
+        }
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceProvider;
     }
 }
