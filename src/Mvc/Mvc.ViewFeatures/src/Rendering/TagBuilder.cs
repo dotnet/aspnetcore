@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 [DebuggerDisplay("{DebuggerToString()}")]
 public class TagBuilder : IHtmlContent
 {
-    // Note '.' is valid according to the HTML 4.01 specification. Disallowed here to avoid
-    // confusion with CSS class selectors or when using jQuery.
+    // Note '.' is valid according to the HTML 4.01 specification. Disallowed here
+    // to avoid confusion with CSS class selectors or when using jQuery.
     private static readonly SearchValues<char> _html401IdChars =
         SearchValues.Create("-0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz");
 
