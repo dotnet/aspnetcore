@@ -1430,6 +1430,7 @@ $@"        private void Clear(long bitsToClear)
                 }}
             }}{(loop.ClassName.Contains("Trailers") ? "" : $@"
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int GetNext(long bits, bool hasContentLength)
             {{
                 return bits != 0

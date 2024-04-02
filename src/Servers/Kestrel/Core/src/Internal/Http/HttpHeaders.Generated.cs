@@ -8671,6 +8671,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int GetNext(long bits, bool hasContentLength)
             {
                 return bits != 0
@@ -15506,6 +15507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int GetNext(long bits, bool hasContentLength)
             {
                 return bits != 0
