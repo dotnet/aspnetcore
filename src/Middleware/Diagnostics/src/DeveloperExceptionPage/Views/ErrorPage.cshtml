@@ -315,12 +315,11 @@
                     {
                         <tr>
                             <td><span title="@(metadata.GetType().FullName ?? string.Empty)">@metadata.GetType().Name</span></td>
-                            <td>@HtmlEncodeAndReplaceLineBreaks(metadata.ToString() ?? string.Empty)</td>
-                        </tr>
-
-                        <tr>
-                            <td><span title="@(metadata.GetType().FullName ?? string.Empty)">@metadata.GetType().Name</span></td>
-                            <td>@(metadata.ToString() ?? string.Empty)</td>
+                            <td>
+                                @{
+                                    Output.Write(HtmlEncodeAndReplaceLineBreaks(metadata.ToString() ?? string.Empty));
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>
