@@ -39,7 +39,7 @@ steps:
       ${{ if ne(parameters.IgnoreDirectories, '') }}:
         AdditionalComponentDetectorArgs: '--IgnoreDirectories ${{ parameters.IgnoreDirectories }}'
 
-- task: PublishPipelineArtifact@1
+- task: 1ES.PublishPipelineArtifact@1
   displayName: Publish SBOM manifest
   continueOnError: ${{parameters.sbomContinueOnError}}
   inputs:
