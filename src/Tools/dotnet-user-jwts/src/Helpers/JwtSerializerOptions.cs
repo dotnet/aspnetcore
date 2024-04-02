@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
-internal static class SerializerOptions
+internal static class JwtSerializerOptions
 {
     public static JsonSerializerOptions Default { get; } = new()
     {

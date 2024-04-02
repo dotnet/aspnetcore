@@ -68,7 +68,7 @@ internal static class SigningKeysHandler
             using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
             if (secretsFileStream.Length > 0)
             {
-                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream, SerializerOptions.Default);
+                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream, JwtSerializerOptions.Default);
             }
         }
 
