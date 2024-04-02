@@ -149,9 +149,16 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             {
                 try
                 {
-                    // Recycle the process to trigger OnGlobalStopListening
-                    // which will shutdown the server and stop listening for new requests for this app
-                    m_pHttpServer.RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+                    //if (GetShutdownDelay() == std::chrono::milliseconds::zero())
+                    //{
+                    //    application->ShutDownApplication(/* fServerInitiated */ false);
+                    //}
+                    //else
+                    {
+                        // Recycle the process to trigger OnGlobalStopListening
+                        // which will shutdown the server and stop listening for new requests for this app
+                        m_pHttpServer.RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+                    }
                 }
                 catch (...)
                 {

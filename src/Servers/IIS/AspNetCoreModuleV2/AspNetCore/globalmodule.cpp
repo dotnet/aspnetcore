@@ -40,6 +40,11 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     IN IHttpApplicationStopProvider* pProvider
 )
 {
+    if (!m_pApplicationManager || m_pApplicationManager->GetShutdownDelay() == std::chrono::milliseconds::zero())
+    {
+        return GL_NOTIFICATION_CONTINUE;
+    }
+
     UNREFERENCED_PARAMETER(pProvider);
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
 
