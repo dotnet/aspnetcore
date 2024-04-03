@@ -1466,7 +1466,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Fact]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry()
     {
-        GoTo("about:blank");
+        Navigate("about:blank");
 
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh");
@@ -1488,7 +1488,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Fact]
     public void EnhancedFormThatCallsNavigationManagerRefreshDoesNotPushHistoryEntry_Streaming()
     {
-        GoTo("about:blank");
+        Navigate("about:blank");
 
         var startUrl = Browser.Url;
         GoTo("forms/form-that-calls-navigation-manager-refresh-streaming");
