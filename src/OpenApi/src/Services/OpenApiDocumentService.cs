@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,10 +22,14 @@ internal sealed class OpenApiDocumentService(
 
     public Task<OpenApiDocument> GetOpenApiDocumentAsync()
     {
+        // For good hygiene, operation-level tags must also appear in the document-level
+        // tags collection. This set captures all tags that have been seen so far.
+        HashSet<OpenApiTag> capturedTags = new(OpenApiTagComparer.Instance);
         var document = new OpenApiDocument
         {
             Info = GetOpenApiInfo(),
-            Paths = GetOpenApiPaths()
+            Paths = GetOpenApiPaths(capturedTags),
+            Tags = [.. capturedTags]
         };
         return Task.FromResult(document);
     }
@@ -48,7 +53,7 @@ internal sealed class OpenApiDocumentService(
     /// the object to support filtering each
     /// description instance into its appropriate document.
     /// </remarks>
-    private OpenApiPaths GetOpenApiPaths()
+    private OpenApiPaths GetOpenApiPaths(HashSet<OpenApiTag> capturedTags)
     {
         var descriptionsByPath = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
             .SelectMany(group => group.Items)
@@ -58,18 +63,55 @@ internal sealed class OpenApiDocumentService(
         foreach (var descriptions in descriptionsByPath)
         {
             Debug.Assert(descriptions.Key != null, "Relative path mapped to OpenApiPath key cannot be null.");
-            paths.Add(descriptions.Key, new OpenApiPathItem { Operations = GetOperations(descriptions) });
+            paths.Add(descriptions.Key, new OpenApiPathItem { Operations = GetOperations(descriptions, capturedTags) });
         }
         return paths;
     }
 
-    private static Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions)
+    private static Dictionary<OperationType, OpenApiOperation> GetOperations(IGrouping<string?, ApiDescription> descriptions, HashSet<OpenApiTag> capturedTags)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
         foreach (var description in descriptions)
         {
-            operations[description.GetOperationType()] = new OpenApiOperation();
+            operations[description.GetOperationType()] = GetOperation(description, capturedTags);
         }
         return operations;
+    }
+
+    private static OpenApiOperation GetOperation(ApiDescription description, HashSet<OpenApiTag> capturedTags)
+    {
+        var tags = GetTags(description);
+        if (tags != null)
+        {
+            foreach (var tag in tags)
+            {
+                capturedTags.Add(tag);
+            }
+        }
+        var operation = new OpenApiOperation
+        {
+            Summary = GetSummary(description),
+            Description = GetDescription(description),
+            Tags = tags,
+        };
+        return operation;
+    }
+
+    private static string? GetSummary(ApiDescription description)
+        => description.ActionDescriptor.EndpointMetadata.OfType<IEndpointSummaryMetadata>().LastOrDefault()?.Summary;
+
+    private static string? GetDescription(ApiDescription description)
+        => description.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().LastOrDefault()?.Description;
+
+    private static List<OpenApiTag>? GetTags(ApiDescription description)
+    {
+        var actionDescriptor = description.ActionDescriptor;
+        if (actionDescriptor.EndpointMetadata?.OfType<ITagsMetadata>().LastOrDefault() is { } tagsMetadata)
+        {
+            return tagsMetadata.Tags.Select(tag => new OpenApiTag { Name = tag }).ToList();
+        }
+        // If no tags are specified, use the controller name as the tag. This effectively
+        // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
+        return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
     }
 }

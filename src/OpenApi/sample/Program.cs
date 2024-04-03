@@ -20,8 +20,13 @@ var v1 = app.MapGroup("v1")
 var v2 = app.MapGroup("v2")
     .WithGroupName("v2");
 
-v1.MapPost("/todos", (Todo todo) => Results.Created($"/todos/{todo.Id}", todo));
-v1.MapGet("/todos/{id}", (int id) => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now));
+v1.MapPost("/todos", (Todo todo) => Results.Created($"/todos/{todo.Id}", todo))
+    .WithSummary("Creates a new todo item.");
+v1.MapGet("/todos/{id}", (int id) => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
+    .WithDescription("Returns a specific todo item.");
+
+v2.MapGet("/users", () => new [] { "alice", "bob" })
+    .WithTags("users");
 
 v2.MapPost("/users", () => Results.Created("/users/1", new { Id = 1, Name = "Test user" }));
 
