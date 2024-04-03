@@ -120,6 +120,11 @@ internal partial class RemoteRenderer : WebRenderer
     }
 
     /// <inheritdoc />
+    protected override bool AllowsRenderMode(IComponentRenderMode renderMode) => renderMode
+        is InteractiveServerRenderMode
+        or InteractiveAutoRenderMode;
+
+    /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         _disposing = true;

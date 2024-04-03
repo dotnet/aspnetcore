@@ -51,6 +51,9 @@ public readonly struct RenderHandle
     internal bool IsRendererDisposed => _renderer?.Disposed
         ?? throw new InvalidOperationException("No renderer has been initialized.");
 
+    internal bool RendererAllowsRenderMode(IComponentRenderMode renderMode)
+        => _renderer!.AllowsRenderMode(renderMode);
+
     /// <summary>
     /// Notifies the renderer that the component should be rendered.
     /// </summary>

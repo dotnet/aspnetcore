@@ -31,14 +31,14 @@ internal class RouteTableFactory
 
     private readonly ConcurrentDictionary<RouteKey, RouteTable> _cache = new();
 
-    public RouteTable Create(RouteKey routeKey, IServiceProvider serviceProvider)
+    public RouteTable Create(RouteKey routeKey, IServiceProvider serviceProvider, Func<Type, bool> pageFilter)
     {
         if (_cache.TryGetValue(routeKey, out var resolvedComponents))
         {
             return resolvedComponents;
         }
 
-        var componentTypes = GetRouteableComponents(routeKey);
+        var componentTypes = GetRouteableComponents(routeKey, pageFilter);
         var routeTable = Create(componentTypes, serviceProvider);
         _cache.TryAdd(routeKey, routeTable);
         return routeTable;
@@ -47,12 +47,12 @@ internal class RouteTableFactory
     public void ClearCaches() => _cache.Clear();
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
-    private static List<Type> GetRouteableComponents(RouteKey routeKey)
+    private static List<Type> GetRouteableComponents(RouteKey routeKey, Func<Type, bool> pageFilter)
     {
         var routeableComponents = new List<Type>();
         if (routeKey.AppAssembly is not null)
         {
-            GetRouteableComponents(routeableComponents, routeKey.AppAssembly);
+            GetRouteableComponents(routeableComponents, routeKey.AppAssembly, pageFilter);
         }
 
         if (routeKey.AdditionalAssemblies is not null)
@@ -62,18 +62,18 @@ internal class RouteTableFactory
                 // We don't need process the assembly if it's the app assembly.
                 if (assembly != routeKey.AppAssembly)
                 {
-                    GetRouteableComponents(routeableComponents, assembly);
+                    GetRouteableComponents(routeableComponents, assembly, pageFilter);
                 }
             }
         }
 
         return routeableComponents;
 
-        static void GetRouteableComponents(List<Type> routeableComponents, Assembly assembly)
+        static void GetRouteableComponents(List<Type> routeableComponents, Assembly assembly, Func<Type, bool> pageFilter)
         {
             foreach (var type in assembly.ExportedTypes)
             {
-                if (typeof(IComponent).IsAssignableFrom(type) && type.IsDefined(typeof(RouteAttribute)))
+                if (typeof(IComponent).IsAssignableFrom(type) && type.IsDefined(typeof(RouteAttribute)) && pageFilter(type))
                 {
                     routeableComponents.Add(type);
                 }

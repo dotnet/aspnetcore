@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -52,6 +53,15 @@ internal sealed class WebViewRenderer : WebRenderer
         _ipcSender.ApplyRenderBatch(batchId, renderBatch);
         return tcs.Task;
     }
+
+    /// <inheritdoc />
+    protected override bool AllowsRenderMode(IComponentRenderMode renderMode) => renderMode
+        // Even though WebView isn't going to do anything with these rendermodes, we allow them in the sense
+        // that we'll treat them as interactive components. Note that StaticServerRenderMode isn't included
+        // in the list because it makes no sense to use it in a WebView scenario.
+        is InteractiveWebAssemblyRenderMode
+        or InteractiveServerRenderMode
+        or InteractiveAutoRenderMode;
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {

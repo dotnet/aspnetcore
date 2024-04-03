@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
@@ -161,6 +162,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             await completion;
         }
     }
+
+    /// <inheritdoc />
+    protected override bool AllowsRenderMode(IComponentRenderMode renderMode) => renderMode
+        is InteractiveWebAssemblyRenderMode
+        or InteractiveServerRenderMode
+        or InteractiveAutoRenderMode
+        or StaticServerRenderMode;
 
     private static string GetFullUri(HttpRequest request)
     {

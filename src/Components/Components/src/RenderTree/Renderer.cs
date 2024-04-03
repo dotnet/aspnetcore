@@ -143,6 +143,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         => null;
 
     /// <summary>
+    /// Gets a flag to indicate whether this renderer can host components that declare the specified <paramref name="renderMode"/>.
+    /// </summary>
+    /// <param name="renderMode">The <see cref="IComponentRenderMode"/>.</param>
+    /// <returns>True if the render mode is supported by this renderer, otherwise false.</returns>
+    protected internal virtual bool AllowsRenderMode(IComponentRenderMode renderMode) => false;
+
+    /// <summary>
     /// Resolves the component state for a given <see cref="IComponent"/> instance.
     /// </summary>
     /// <param name="component">The <see cref="IComponent"/> instance</param>

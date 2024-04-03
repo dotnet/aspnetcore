@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AllowsRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> bool

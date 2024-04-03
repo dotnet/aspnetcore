@@ -166,9 +166,20 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (!routeKey.Equals(_routeTableLastBuiltForRouteKey))
         {
-            Routes = RouteTableFactory.Instance.Create(routeKey, ServiceProvider);
+            Routes = RouteTableFactory.Instance.Create(routeKey, ServiceProvider, AllowInteractiveNavigationToPageType);
             _routeTableLastBuiltForRouteKey = routeKey;
         }
+    }
+
+    private bool AllowInteractiveNavigationToPageType(Type pageComponentType)
+    {
+        // When building the route table for interactive navigation, we exclude any page components
+        // that declare a rendermode unsupported by the current renderer. This is the basis for how
+        // "globally interactive" sites can still navigate from an interactive page to an SSR page,
+        // or how they can navigate from a Server page to a WebAssembly page. On these navigations,
+        // the destination won't be in the interactive route table, so we'll fall back on a full load.
+        var pageRenderMode = pageComponentType.GetCustomAttribute<RenderModeAttribute>()?.Mode;
+        return pageRenderMode is null || _renderHandle.RendererAllowsRenderMode(pageRenderMode);
     }
 
     private void ClearRouteCaches()
