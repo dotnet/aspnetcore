@@ -79,7 +79,7 @@ public class EventLogHelpers
         return string.Join(",", entries.Select(e => e.Message));
     }
 
-    private static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
+    internal static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
     {
         var eventLog = new EventLog("Application");
 

@@ -149,11 +149,11 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             {
                 try
                 {
-                    //if (GetShutdownDelay() == std::chrono::milliseconds::zero())
-                    //{
-                    //    application->ShutDownApplication(/* fServerInitiated */ false);
-                    //}
-                    //else
+                    if (GetShutdownDelay() == std::chrono::milliseconds::zero())
+                    {
+                        application->ShutDownApplication(/* fServerInitiated */ false);
+                    }
+                    else
                     {
                         // Recycle the process to trigger OnGlobalStopListening
                         // which will shutdown the server and stop listening for new requests for this app
@@ -178,6 +178,32 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                     }
                 }
             }
+        }
+
+        if (GetShutdownDelay() == std::chrono::milliseconds::zero())
+        {
+            // Remove apps after calling shutdown on each of them
+            // This is exclusive to in-process, as the shutdown of an in-process app recycles
+            // the entire worker process.
+            if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+            {
+                SRWExclusiveLock lock(m_srwLock);
+                const std::wstring configurationPath = pszApplicationId;
+
+                auto itr = m_pApplicationInfoHash.begin();
+                while (itr != m_pApplicationInfoHash.end())
+                {
+                    if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
+                        && std::find(applicationsToRecycle.begin(), applicationsToRecycle.end(), itr->second) != applicationsToRecycle.end())
+                    {
+                        itr = m_pApplicationInfoHash.erase(itr);
+                    }
+                    else
+                    {
+                        ++itr;
+                    }
+                }
+            } // Release Exclusive m_srwLock
         }
     }
     CATCH_RETURN()
