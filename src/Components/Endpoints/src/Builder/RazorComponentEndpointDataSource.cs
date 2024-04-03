@@ -104,10 +104,11 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             var context = _builder.Build();
             var configuredRenderModesMetadata = new ConfiguredRenderModesMetadata(
                 Options.ConfiguredRenderModes.ToArray());
+            var rootComponentMetadata = new RootComponentMetadata(typeof(TRootComponent));
 
             foreach (var definition in context.Pages)
             {
-                _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions, configuredRenderModesMetadata);
+                _factory.AddEndpoints(endpoints, rootComponentMetadata, definition, _conventions, _finallyConventions, configuredRenderModesMetadata);
             }
 
             ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;

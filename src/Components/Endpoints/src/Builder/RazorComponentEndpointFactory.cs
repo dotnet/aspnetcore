@@ -21,7 +21,7 @@ internal class RazorComponentEndpointFactory
     internal void AddEndpoints(
 #pragma warning restore CA1822 // It's a singleton
         List<Endpoint> endpoints,
-        [DynamicallyAccessedMembers(Component)] Type rootComponent,
+        RootComponentMetadata rootComponentMetadata,
         PageComponentInfo pageDefinition,
         IReadOnlyList<Action<EndpointBuilder>> conventions,
         IReadOnlyList<Action<EndpointBuilder>> finallyConventions,
@@ -48,7 +48,7 @@ internal class RazorComponentEndpointFactory
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
         builder.Metadata.Add(HttpMethodsMetadata);
         builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type, pageDefinition.RenderMode));
-        builder.Metadata.Add(new RootComponentMetadata(rootComponent));
+        builder.Metadata.Add(rootComponentMetadata);
         builder.Metadata.Add(configuredRenderModesMetadata);
 
         builder.RequestDelegate = static httpContext =>

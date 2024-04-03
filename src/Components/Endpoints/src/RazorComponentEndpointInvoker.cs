@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -46,8 +47,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
-        var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;
-        var pageComponent = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>().Type;
+        var componentTypeMetadata = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>();
+        var rootComponentMetadata = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>();
+        var rootComponent = rootComponentMetadata.Type;
+        var pageComponent = componentTypeMetadata.Type;
 
         Log.BeginRenderRootComponent(_logger, rootComponent.Name, pageComponent.Name);
 
@@ -86,10 +89,23 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
+        ParameterView rootComponentParameters;
+        if (rootComponentMetadata.AcceptsPageRenderModeParameter)
+        {
+            rootComponentParameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+            {
+                { "PageRenderMode", componentTypeMetadata.RenderMode }
+            });
+        }
+        else
+        {
+            rootComponentParameters = ParameterView.Empty;
+        }
+
         var htmlContent = await _renderer.RenderEndpointComponent(
             context,
             rootComponent,
-            ParameterView.Empty,
+            rootComponentParameters,
             waitForQuiescence: result.IsPost || isErrorHandler);
 
         Task quiesceTask;
