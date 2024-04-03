@@ -55,7 +55,6 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54889")]
     public void CanUpdateSimpleParameters()
     {
         app.FindElement(By.Id("add-custom-element")).Click();
@@ -106,7 +105,6 @@ public class CustomElementsTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54889")]
     public void CanUpdateComplexParameters()
     {
         app.FindElement(By.Id("add-custom-element")).Click();
