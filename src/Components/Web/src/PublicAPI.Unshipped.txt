@@ -1,3 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.set -> void
+Microsoft.AspNetCore.Components.Web.StaticServerRenderMode
+Microsoft.AspNetCore.Components.Web.StaticServerRenderMode.StaticServerRenderMode() -> void
+static Microsoft.AspNetCore.Components.Web.RenderMode.StaticServer.get -> Microsoft.AspNetCore.Components.Web.StaticServerRenderMode!

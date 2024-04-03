@@ -24,4 +24,9 @@ public static class RenderMode
     /// Gets an <see cref="IComponentRenderMode"/> that means the render mode will be determined automatically based on a policy.
     /// </summary>
     public static InteractiveAutoRenderMode InteractiveAuto { get; } = new();
+
+    /// <summary>
+    /// Gets an <see cref="IComponentRenderMode"/> that represents rendering statically to HTML on the server.
+    /// </summary>
+    public static StaticServerRenderMode StaticServer { get; } = new();
 }

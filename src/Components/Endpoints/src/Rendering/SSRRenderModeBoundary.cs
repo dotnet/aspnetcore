@@ -45,6 +45,7 @@ internal class SSRRenderModeBoundary : IComponent
             InteractiveServerRenderMode mode => mode.Prerender,
             InteractiveWebAssemblyRenderMode mode => mode.Prerender,
             InteractiveAutoRenderMode mode => mode.Prerender,
+            StaticServerRenderMode => true,
             _ => throw new ArgumentException($"Server-side rendering does not support the render mode '{renderMode}'.", nameof(renderMode))
         };
     }

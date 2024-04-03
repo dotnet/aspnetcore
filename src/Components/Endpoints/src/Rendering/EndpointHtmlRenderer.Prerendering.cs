@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -28,13 +29,24 @@ internal partial class EndpointHtmlRenderer
 
         if (closestRenderModeBoundary is not null)
         {
+            if (renderMode is StaticServerRenderMode)
+            {
+                throw new InvalidOperationException($"The component '{componentType}' with render mode '{renderMode}' cannot be placed inside an ancestor with render mode '{closestRenderModeBoundary.RenderMode}'.");
+            }
+
             // We're already inside a subtree with a rendermode. Once it becomes interactive, the entire DOM subtree
             // will get replaced anyway. So there is no point emitting further rendermode boundaries.
             return componentActivator.CreateInstance(componentType);
         }
+        else if (renderMode is StaticServerRenderMode)
+        {
+            // Since we're not yet in any subtree with an interactive rendermode, we must still be in a static rendering context
+            // (that's the default starting at the root level). So it's a no-op to declare StaticServerRenderMode here.
+            return componentActivator.CreateInstance(componentType);
+        }
         else
         {
-            // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
+            // This component is the start of a subtree with an interactive rendermode, so introduce a new rendermode boundary here
             return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
     }
