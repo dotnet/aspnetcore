@@ -33,7 +33,7 @@ internal sealed class MetricsLoggerProvider : ILoggerProvider
         _meter = meterFactory.Create(MeterName);
 
         var counter = _meter.CreateCounter<long>(
-            "aspnetcore.dataprotection.log_messages",
+            "aspnetcore.data_protection.log_messages",
             unit: "{message}",
             description: "Number of messages that have been logged.");
 
@@ -88,8 +88,8 @@ internal sealed class MetricsLoggerProvider : ILoggerProvider
 
             var tags = new TagList(
             [
-                new("id", eventId.Name ?? eventId.Id.ToString(CultureInfo.InvariantCulture)),
-                new("level", levelName),
+                new("aspnetcore.data_protection.log_message_id", eventId.Name ?? eventId.Id.ToString(CultureInfo.InvariantCulture)),
+                new("aspnetcore.data_protection.log_level", levelName),
             ]);
             _counter.Add(1, tags);
         }
