@@ -9,10 +9,15 @@
     <link rel="stylesheet" href="css/site.css" />
     <link href="BlazorUnitedApp.styles.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="@(PageRenderMode ?? InteractiveServer)" />
 </head>
 <body>
-    <Routes />
+    <Routes @rendermode="@(PageRenderMode ?? InteractiveServer)" />
     <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
 </body>
 </html>
+
+@code {
+    [Parameter]
+    public IComponentRenderMode? PageRenderMode { get; set; }
+}
