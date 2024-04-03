@@ -1,4 +1,6 @@
-﻿[CmdletBinding()]
+﻿[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Justification='dev utility tool')]
+
+[CmdletBinding()]
 param(
 	[Parameter(Mandatory=$true)]
 	[string]$serverName,
