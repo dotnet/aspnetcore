@@ -47,7 +47,7 @@ internal class RazorComponentEndpointFactory
         // We do not support link generation, so explicitly opt-out.
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
         builder.Metadata.Add(HttpMethodsMetadata);
-        builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
+        builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type, pageDefinition.RenderMode));
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(configuredRenderModesMetadata);
 

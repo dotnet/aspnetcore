@@ -28,6 +28,8 @@ internal interface IRazorComponentApplication
                 var candidate = exported[i];
                 if (candidate.IsAssignableTo(typeof(IComponent)))
                 {
+                    var renderMode = candidate.GetCustomAttribute<RenderModeAttribute>();
+
                     if (candidate.GetCustomAttributes<RouteAttribute>() is { } routes &&
                         routes.Any())
                     {
@@ -35,11 +37,11 @@ internal interface IRazorComponentApplication
                         {
                             RouteTemplates = routes.Select(r => r.Template).ToList(),
                             AssemblyName = name,
-                            PageType = candidate
+                            PageType = candidate,
+                            RenderMode = renderMode?.Mode,
                         });
                     }
 
-                    var renderMode = candidate.GetCustomAttribute<RenderModeAttribute>();
                     components.Add(new ComponentBuilder() { AssemblyName = name, ComponentType = candidate, RenderMode = renderMode });
                 }
             }

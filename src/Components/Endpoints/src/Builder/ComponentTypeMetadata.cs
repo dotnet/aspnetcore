@@ -15,9 +15,14 @@ public sealed class ComponentTypeMetadata
     /// Initializes a new instance of <see cref="ComponentTypeMetadata"/>.
     /// </summary>
     /// <param name="componentType">The component type.</param>
-    public ComponentTypeMetadata([DynamicallyAccessedMembers(Component)] Type componentType)
+    public ComponentTypeMetadata([DynamicallyAccessedMembers(Component)] Type componentType) : this(componentType, null)
+    {
+    }
+
+    internal ComponentTypeMetadata([DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode? renderMode)
     {
         Type = componentType;
+        RenderMode = renderMode;
     }
 
     /// <summary>
@@ -25,4 +30,9 @@ public sealed class ComponentTypeMetadata
     /// </summary>
     [DynamicallyAccessedMembers(Component)]
     public Type Type { get; }
+
+    /// <summary>
+    /// Gets the component type's declared rendermode, if any.
+    /// </summary>
+    internal IComponentRenderMode? RenderMode { get; }
 }

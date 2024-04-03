@@ -41,6 +41,11 @@ internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     public required Type PageType { get; set; }
 
     /// <summary>
+    /// Gets or sets the page render mode, if one is specified on the page component type.
+    /// </summary>
+    public required IComponentRenderMode? RenderMode { get; set; }
+
+    /// <summary>
     /// Compares the given <paramref name="source"/> against the source for this <see cref="PageComponentBuilder"/>.
     /// </summary>
     /// <param name="source">The source to compare against.</param>
@@ -83,7 +88,7 @@ internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 
     internal PageComponentInfo Build(string route, object[] pageMetadata)
     {
-        return new PageComponentInfo(route, PageType, route, pageMetadata);
+        return new PageComponentInfo(route, PageType, route, pageMetadata, RenderMode);
     }
 
     private string GetDebuggerDisplay()

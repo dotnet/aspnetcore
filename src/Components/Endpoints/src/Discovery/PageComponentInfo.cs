@@ -20,16 +20,19 @@ internal class PageComponentInfo
     /// <param name="type">The page <see cref="System.Type"/>.</param>
     /// <param name="route">The see list of routes for the page.</param>
     /// <param name="metadata">The page metadata.</param>
+    /// <param name="renderMode">The page rendermode, if any.</param>
     internal PageComponentInfo(
         string displayName,
         [DynamicallyAccessedMembers(Component)] Type type,
         string route,
-        IReadOnlyList<object> metadata)
+        IReadOnlyList<object> metadata,
+        IComponentRenderMode? renderMode)
     {
         DisplayName = displayName;
         Type = type;
         Route = route;
         Metadata = metadata;
+        RenderMode = renderMode;
     }
 
     /// <summary>
@@ -52,6 +55,11 @@ internal class PageComponentInfo
     /// Gets the metadata for the page.
     /// </summary>
     public IReadOnlyList<object> Metadata { get; }
+
+    /// <summary>
+    /// Gets the render mode for the page, if one is specified on the page type itself.
+    /// </summary>
+    public IComponentRenderMode? RenderMode { get; }
 
     private string GetDebuggerDisplay()
     {
