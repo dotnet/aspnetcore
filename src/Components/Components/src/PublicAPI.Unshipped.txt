@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Routing.AllowInteractiveRoutingAttribute
+Microsoft.AspNetCore.Components.Routing.AllowInteractiveRoutingAttribute.Allow.get -> bool
+Microsoft.AspNetCore.Components.Routing.AllowInteractiveRoutingAttribute.AllowInteractiveRoutingAttribute(bool allow) -> void
