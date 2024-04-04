@@ -24,4 +24,10 @@ public sealed class RouteAttribute : Attribute
     /// Gets the route template.
     /// </summary>
     public string Template { get; }
+    
+    /// <summary>
+    /// Gets or sets a flag to indicate whether the page should be rendered statically.
+    /// The effect of this flag is to suppress any <code>@rendermode</code> directives in the root component.
+    /// </summary>
+    public bool Static { get; set; }
 }
