@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+
+Despite declaring the following as interactive, it will render statically because root interactivity is suppressed.
+
+[Root:
+<StaticPagesChild Name="Hello!" @rendermode="@RenderMode.InteractiveServer" />
+]
+
+The following component will be interactive because it has @@rendermode declared on the component type itself.
+
+<InteractiveGreetingWebAssembly Name="InteractiveGreetingWebAssembly" />

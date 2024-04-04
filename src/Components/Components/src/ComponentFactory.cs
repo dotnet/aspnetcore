@@ -49,23 +49,16 @@ internal sealed class ComponentFactory
     public IComponent InstantiateComponent(IServiceProvider serviceProvider, [DynamicallyAccessedMembers(Component)] Type componentType, IComponentRenderMode? callerSpecifiedRenderMode, int? parentComponentId)
     {
         var (componentTypeRenderMode, propertyInjector) = GetComponentTypeInfo(componentType);
-        IComponent component;
 
-        if (componentTypeRenderMode is null && callerSpecifiedRenderMode is null)
-        {
-            // Typical case where no rendermode is specified in either location. We don't call ResolveComponentForRenderMode in this case.
-            component = _componentActivator.CreateInstance(componentType);
-        }
-        else
-        {
-            // At least one rendermode is specified. We require that it's exactly one, and use ResolveComponentForRenderMode with it.
-            var effectiveRenderMode = callerSpecifiedRenderMode is null
-                ? componentTypeRenderMode!
-                : componentTypeRenderMode is null
-                    ? callerSpecifiedRenderMode
-                    : throw new InvalidOperationException($"The component type '{componentType}' has a fixed rendermode of '{componentTypeRenderMode}', so it is not valid to specify any rendermode when using this component.");
-            component = _renderer.ResolveComponentForRenderMode(componentType, parentComponentId, _componentActivator, effectiveRenderMode);
-        }
+        // In the typical case where no rendermode is specified in either location, we don't even call
+        // ComputeEffectiveRenderMode and hence don't call ResolveComponentForRenderMode either.
+        var effectiveRenderMode = componentTypeRenderMode is null && callerSpecifiedRenderMode is null
+            ? null
+            : _renderer.ResolveEffectiveRenderMode(componentType, parentComponentId, componentTypeRenderMode, callerSpecifiedRenderMode);
+
+        var component = effectiveRenderMode is null
+            ? _componentActivator.CreateInstance(componentType)
+            : _renderer.ResolveComponentForRenderMode(componentType, parentComponentId, _componentActivator, effectiveRenderMode);
 
         if (component is null)
         {

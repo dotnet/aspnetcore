@@ -1229,6 +1229,27 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
+    /// Determines the rendermode to use for a component when one is specified either at the call site or on the component type.
+    /// Renderer subclasses may override this to impose additional rules about rendermode selection.
+    /// </summary>
+    /// <param name="componentType">The type of component that was requested.</param>
+    /// <param name="parentComponentId">The parent component ID, or null if it is a root component.</param>
+    /// <param name="componentTypeRenderMode">The <see cref="IComponentRenderMode"/> declared on <paramref name="componentType"/>.</param>
+    /// <param name="callerSpecifiedRenderMode">The <see cref="IComponentRenderMode"/> declared at the call site (for example, by the parent component).</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    protected internal virtual IComponentRenderMode? ResolveEffectiveRenderMode(Type componentType, int? parentComponentId, IComponentRenderMode? componentTypeRenderMode, IComponentRenderMode? callerSpecifiedRenderMode)
+    {
+        // To avoid confusion, we require that you don't specify the rendermode in two places. This means that
+        // the resolution is trivial - just use the nonnull one (if any).
+        return callerSpecifiedRenderMode is null
+            ? componentTypeRenderMode!
+            : componentTypeRenderMode is null
+                ? callerSpecifiedRenderMode
+                : throw new InvalidOperationException($"The component type '{componentType}' has a fixed rendermode of '{componentTypeRenderMode}', so it is not valid to specify any rendermode when using this component.");
+    }
+
+    /// <summary>
     /// Determines how to handle an <see cref="IComponentRenderMode"/> when obtaining a component instance.
     /// This is only called when a render mode is specified either at the call site or on the component type.
     ///

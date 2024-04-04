@@ -7,11 +7,13 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents.StaticPages;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -33,7 +35,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public class EndpointHtmlRendererTest
 {
     private const string MarkerPrefix = "<!--Blazor:";
-    private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
+    private const string PrerenderedComponentPattern = "<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->";
+    private const string SingleLinePrerenderedComponentPattern = $"^{PrerenderedComponentPattern}$";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
 
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
@@ -80,7 +83,7 @@ public class EndpointHtmlRendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.InteractiveWebAssembly, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
         Assert.True(match.Success);
@@ -195,7 +198,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
         Assert.True(match.Success);
@@ -244,7 +247,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
         Assert.True(match.Success);
@@ -335,7 +338,7 @@ public class EndpointHtmlRendererTest
         // Act
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.InteractiveServer, ParameterView.Empty);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
         Assert.True(match.Success);
@@ -396,7 +399,7 @@ public class EndpointHtmlRendererTest
         // Act
         var firstResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveServerRenderMode(true), ParameterView.Empty);
         var firstComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(firstResult));
-        var firstMatch = Regex.Match(firstComponent, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var firstMatch = Regex.Match(firstComponent, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         var secondResult = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveServerRenderMode(false), ParameterView.Empty);
         var secondComponent = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(secondResult));
@@ -532,7 +535,7 @@ public class EndpointHtmlRendererTest
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", "SomeName" } });
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.InteractiveServer, parameters);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
         Assert.True(match.Success);
@@ -583,7 +586,7 @@ public class EndpointHtmlRendererTest
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Name", null } });
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GreetingComponent), RenderMode.InteractiveServer, parameters);
         var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
         Assert.True(match.Success);
@@ -1061,9 +1064,9 @@ public class EndpointHtmlRendererTest
 
         // Assert
         var lines = content.Replace("\r\n", "\n").Split('\n');
-        var serverMarkerMatch = Regex.Match(lines[0], PrerenderedComponentPattern);
+        var serverMarkerMatch = Regex.Match(lines[0], SingleLinePrerenderedComponentPattern);
         var serverNonPrerenderedMarkerMatch = Regex.Match(lines[1], ComponentPattern);
-        var webAssemblyMarkerMatch = Regex.Match(lines[2], PrerenderedComponentPattern);
+        var webAssemblyMarkerMatch = Regex.Match(lines[2], SingleLinePrerenderedComponentPattern);
         var webAssemblyNonPrerenderedMarkerMatch = Regex.Match(lines[3], ComponentPattern);
 
         // Server
@@ -1167,7 +1170,7 @@ public class EndpointHtmlRendererTest
         var numMarkers = Regex.Matches(content, MarkerPrefix).Count;
         Assert.Equal(2, numMarkers); // A start and an end marker
 
-        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Singleline);
+        var match = Regex.Match(content, SingleLinePrerenderedComponentPattern, RegexOptions.Singleline);
         Assert.True(match.Success);
         var preamble = match.Groups["preamble"].Value;
         var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
@@ -1176,6 +1179,61 @@ public class EndpointHtmlRendererTest
 
         var prerenderedContent = match.Groups["content"].Value;
         Assert.Equal("<h1>This is InteractiveWithInteractiveChild</h1>\n\n<p>Hello from InteractiveGreetingServer!</p>", prerenderedContent.Replace("\r\n", "\n"));
+    }
+
+    [Fact]
+    public async Task CanSuppressCallSiteRenderModesInRootComponent()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+        renderer.SuppressRootComponentRenderModes();
+
+        // Act
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(StaticPagesRoot),
+            null,
+            ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+        var content = writer.ToString();
+
+        // Assert
+        var numMarkers = Regex.Matches(content, MarkerPrefix).Count;
+        Assert.Equal(4, numMarkers); // A start and an end marker for each of two interactive components
+
+        var matches = Regex.Matches(content, PrerenderedComponentPattern, RegexOptions.Singleline);
+        Assert.Collection(matches,
+            match =>
+            {
+                // This match will be the grandchild
+                Assert.True(match.Success);
+                var preamble = match.Groups["preamble"].Value;
+                var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+                Assert.NotNull(preambleMarker.PrerenderId);
+                Assert.Equal("server", preambleMarker.Type);
+
+                // The key thing we're observing here is that *only* the grandchild has interactivity markers.
+                // The root component and the child component are both static, even though the root component sets
+                // @rendermode=InteractiveServer on the child. This is suppressed by SuppressRootComponentRenderModes.
+                var prerenderedContent = match.Groups["content"].Value;
+                Assert.Equal("[Grandchild: Hello!]", prerenderedContent.ReplaceLineEndings(string.Empty));
+            },
+            match =>
+            {
+                // This match will be the top-level InteractiveGreetingWebAssembly
+                // The fact that interactivity is *not* suppressed here shows that SuppressRootComponentRenderModes
+                // only suppresses *call-site* rendermodes in the root. It does not stop a child from being interactive
+                // if it has a @rendermode on the child component type itself.
+                Assert.True(match.Success);
+                var preamble = match.Groups["preamble"].Value;
+                var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+                Assert.NotNull(preambleMarker.PrerenderId);
+                Assert.Equal("webassembly", preambleMarker.Type);
+
+                var prerenderedContent = match.Groups["content"].Value;
+                Assert.Equal("<p>Hello InteractiveGreetingWebAssembly!</p>", prerenderedContent.ReplaceLineEndings(string.Empty));
+            });
+
+        
     }
 
     [Fact]

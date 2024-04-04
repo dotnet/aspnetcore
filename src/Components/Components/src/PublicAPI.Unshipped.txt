@@ -1,3 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.Components.RouteAttribute.Static.get -> bool
 Microsoft.AspNetCore.Components.RouteAttribute.Static.set -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ResolveEffectiveRenderMode(System.Type! componentType, int? parentComponentId, Microsoft.AspNetCore.Components.IComponentRenderMode? componentTypeRenderMode, Microsoft.AspNetCore.Components.IComponentRenderMode? callerSpecifiedRenderMode) -> Microsoft.AspNetCore.Components.IComponentRenderMode?

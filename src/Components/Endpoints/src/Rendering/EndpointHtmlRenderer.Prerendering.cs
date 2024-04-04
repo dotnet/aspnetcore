@@ -15,38 +15,37 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+    protected override IComponentRenderMode? ResolveEffectiveRenderMode(Type componentType, int? parentComponentId, IComponentRenderMode? componentTypeRenderMode, IComponentRenderMode? callerSpecifiedRenderMode)
     {
         if (_isHandlingErrors)
         {
             // Ignore the render mode boundary in error scenarios.
-            return componentActivator.CreateInstance(componentType);
+            return null;
         }
-        var closestRenderModeBoundary = parentComponentId.HasValue
-            ? GetClosestRenderModeBoundary(parentComponentId.Value)
-            : null;
 
-        if (closestRenderModeBoundary is not null)
+        // If we're inside a subtree with a rendermode, we don't need to emit another rendermode boundary.
+        // Once the subtree becomes interactive, the entire DOM subtree will get replaced anyway.
+        if (parentComponentId.HasValue && GetClosestRenderModeBoundary(parentComponentId.Value) is not null)
         {
-            // We're already inside a subtree with a rendermode. Once it becomes interactive, the entire DOM subtree
-            // will get replaced anyway. So there is no point emitting further rendermode boundaries.
-            return componentActivator.CreateInstance(componentType);
+            return null;
         }
-        else if (_suppressRootComponentRenderModes && IsRootComponent(parentComponentId))
+
+        if (_suppressRootComponentRenderModes && IsRootComponent(parentComponentId))
         {
-            // Disregard the rendermode because this is in the root component (or is the root component itelf)
+            // Disregard the callsite rendermode because this is in the root component (or is the root component itelf)
             // and we've been configured to suppress render modes for the root component.
-            return componentActivator.CreateInstance(componentType);
+            callerSpecifiedRenderMode = null;
         }
-        else
-        {
-            // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
-        }
+
+        // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
+        return base.ResolveEffectiveRenderMode(componentType, parentComponentId, componentTypeRenderMode, callerSpecifiedRenderMode);
 
         bool IsRootComponent(int? componentId)
             => !componentId.HasValue || GetComponentState(componentId.Value).ParentComponentState is null;
     }
+
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+        => new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)
     {
