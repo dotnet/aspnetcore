@@ -4,13 +4,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components;
 
 #pragma warning disable CA1852 // Seal internal types
-internal partial class PrerenderComponentApplicationStore : IPersistentComponentStateStore
+internal class PrerenderComponentApplicationStore : IPersistentComponentStateStore
 #pragma warning restore CA1852 // Seal internal types
 {
     private bool _stateIsPersisted;
@@ -72,10 +71,8 @@ internal partial class PrerenderComponentApplicationStore : IPersistentComponent
 
     public virtual bool SupportsRenderMode(IComponentRenderMode renderMode) =>
         renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
-
-    [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
-    [JsonSerializable(typeof(Dictionary<string, byte[]>))]
-    internal partial class PrerenderComponentApplicationStoreSerializerContext : JsonSerializerContext
-    {
-    }
 }
+
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+[JsonSerializable(typeof(Dictionary<string, byte[]>))]
+internal sealed partial class PrerenderComponentApplicationStoreSerializerContext : JsonSerializerContext;

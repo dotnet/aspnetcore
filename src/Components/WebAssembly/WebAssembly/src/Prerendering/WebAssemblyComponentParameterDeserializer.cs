@@ -8,7 +8,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
-internal sealed partial class WebAssemblyComponentParameterDeserializer
+internal sealed class WebAssemblyComponentParameterDeserializer
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(WebAssemblyComponentSerializationSettings.JsonSerializationOptions)
     {
@@ -91,11 +91,9 @@ internal sealed partial class WebAssemblyComponentParameterDeserializer
     {
         return JsonSerializer.Deserialize<IList<object>>(parameterValues, _jsonSerializerOptions)!;
     }
-
-    [JsonSerializable(typeof(ComponentParameter[]))]
-    [JsonSerializable(typeof(JsonElement))]
-    [JsonSerializable(typeof(IList<object>))]
-    internal partial class WebAssemblyComponentParameterDeserializerSerializerContext : JsonSerializerContext
-    {
-    }
 }
+
+[JsonSerializable(typeof(ComponentParameter[]))]
+[JsonSerializable(typeof(JsonElement))]
+[JsonSerializable(typeof(IList<object>))]
+internal sealed partial class WebAssemblyComponentParameterDeserializerSerializerContext : JsonSerializerContext;

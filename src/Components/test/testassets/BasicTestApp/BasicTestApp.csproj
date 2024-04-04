@@ -11,9 +11,6 @@
 
     <!-- Project supports more than one language -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-
-    <WasmProfilers>browser;</WasmProfilers>
-    <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">

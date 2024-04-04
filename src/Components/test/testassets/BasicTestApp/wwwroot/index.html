@@ -66,6 +66,9 @@
             Blazor.start({
                 configureRuntime: dotnet => {
                     dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");
+                    dotnet.withConfig({
+                        browserProfilerOptions: {},
+                    });
                 }
             });
         })();

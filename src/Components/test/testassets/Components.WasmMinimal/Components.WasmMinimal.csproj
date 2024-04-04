@@ -5,9 +5,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <StaticWebAssetBasePath>WasmMinimal</StaticWebAssetBasePath>
-
-    <WasmProfilers>browser;</WasmProfilers>
-    <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
   <ItemGroup>

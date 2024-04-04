@@ -169,9 +169,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
     }
-
-    [JsonSerializable(typeof(RootComponentOperationBatch))]
-    internal partial class DefaultWebAssemblyJSRuntimeSerializerContext : JsonSerializerContext
-    {
-    }
 }
+
+[JsonSerializable(typeof(RootComponentOperationBatch))]
+internal sealed partial class DefaultWebAssemblyJSRuntimeSerializerContext : JsonSerializerContext;

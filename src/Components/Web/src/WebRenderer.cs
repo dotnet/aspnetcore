@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 /// <summary>
 /// A <see cref="Renderer"/> that attaches its components to a browser DOM.
 /// </summary>
-public abstract partial class WebRenderer : Renderer
+public abstract class WebRenderer : Renderer
 {
     private readonly DotNetObjectReference<WebRendererInteropMethods> _interopMethodsReference;
     private readonly int _rendererId;
@@ -42,25 +42,13 @@ public abstract partial class WebRenderer : Renderer
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        _ = AttachWebRendererInterop();
-
-        async Task AttachWebRendererInterop()
-        {
-            try
-            {
-                await jsRuntime.InvokeVoidAsync(
-                    "Blazor._internal.attachWebRendererInterop",
-                    WebRendererSerializerContext.Default,
-                    _rendererId,
-                    _interopMethodsReference,
-                    jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-                    jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(e);
-            }
-        }
+        jsRuntime.InvokeVoidAsync(
+            "Blazor._internal.attachWebRendererInterop",
+            WebRendererSerializerContext.Default,
+            _rendererId,
+            _interopMethodsReference,
+            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
+            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
     }
 
     /// <summary>
@@ -158,13 +146,9 @@ public abstract partial class WebRenderer : Renderer
         public void RemoveRootComponent(int componentId)
             => _jsComponentInterop.RemoveRootComponent(componentId);
     }
-
-    [JsonSerializable(typeof(object[]))]
-    [JsonSerializable(typeof(int))]
-    [JsonSerializable(typeof(DotNetObjectReference<WebRendererInteropMethods>))]
-    [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
-    [JsonSerializable(typeof(Dictionary<string, List<string>>))]
-    internal partial class WebRendererSerializerContext : JsonSerializerContext
-    {
-    }
 }
+
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
+[JsonSerializable(typeof(Dictionary<string, List<string>>))]
+internal sealed partial class WebRendererSerializerContext : JsonSerializerContext;

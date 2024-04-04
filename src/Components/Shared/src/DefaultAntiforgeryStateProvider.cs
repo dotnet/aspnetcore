@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-internal partial class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisposable
+internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisposable
 {
     private const string PersistenceKey = $"__internal__{nameof(AntiforgeryRequestToken)}";
     private readonly PersistingComponentStateSubscription _subscription;
@@ -41,10 +40,7 @@ internal partial class DefaultAntiforgeryStateProvider : AntiforgeryStateProvide
 
     /// <inheritdoc />
     public void Dispose() => _subscription.Dispose();
-
-    [JsonSourceGenerationOptions]
-    [JsonSerializable(typeof(AntiforgeryRequestToken))]
-    internal partial class DefaultAntiforgeryStateProviderSerializerContext : JsonSerializerContext
-    {
-    }
 }
+
+[JsonSerializable(typeof(AntiforgeryRequestToken))]
+internal sealed partial class DefaultAntiforgeryStateProviderSerializerContext : JsonSerializerContext;

@@ -2,26 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Globalization;
 
 namespace Microsoft.JSInterop.Infrastructure;
 
 internal static class TaskGenericsUtil
 {
-    private static readonly ConcurrentDictionary<Type, ITaskResultGetter> _cachedResultGetters
-        = new ConcurrentDictionary<Type, ITaskResultGetter>();
-
-    private static readonly ConcurrentDictionary<Type, ITcsResultSetter> _cachedResultSetters
-        = new ConcurrentDictionary<Type, ITcsResultSetter>();
-
-    public static void SetTaskCompletionSourceResult(object taskCompletionSource, object? result)
-        => CreateResultSetter(taskCompletionSource).SetResult(taskCompletionSource, result);
-
-    public static void SetTaskCompletionSourceException(object taskCompletionSource, Exception exception)
-        => CreateResultSetter(taskCompletionSource).SetException(taskCompletionSource, exception);
-
-    public static Type GetTaskCompletionSourceResultType(object taskCompletionSource)
-        => CreateResultSetter(taskCompletionSource).ResultType;
+    private static readonly ConcurrentDictionary<Type, ITaskResultGetter> _cachedResultGetters = [];
 
     public static object? GetTaskResult(Task task)
     {
@@ -52,13 +38,6 @@ internal static class TaskGenericsUtil
             : null;
     }
 
-    interface ITcsResultSetter
-    {
-        Type ResultType { get; }
-        void SetResult(object taskCompletionSource, object? result);
-        void SetException(object taskCompletionSource, Exception exception);
-    }
-
     private interface ITaskResultGetter
     {
         object? GetResult(Task task);
@@ -76,38 +55,5 @@ internal static class TaskGenericsUtil
             task.Wait(); // Throw if the task failed
             return null;
         }
-    }
-
-    private sealed class TcsResultSetter<T> : ITcsResultSetter
-    {
-        public Type ResultType => typeof(T);
-
-        public void SetResult(object tcs, object? result)
-        {
-            var typedTcs = (TaskCompletionSource<T>)tcs;
-
-            // If necessary, attempt a cast
-            var typedResult = result is T resultT
-                ? resultT
-                : (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture)!;
-
-            typedTcs.SetResult(typedResult!);
-        }
-
-        public void SetException(object tcs, Exception exception)
-        {
-            var typedTcs = (TaskCompletionSource<T>)tcs;
-            typedTcs.SetException(exception);
-        }
-    }
-
-    private static ITcsResultSetter CreateResultSetter(object taskCompletionSource)
-    {
-        return _cachedResultSetters.GetOrAdd(taskCompletionSource.GetType(), tcsType =>
-        {
-            var resultType = tcsType.GetGenericArguments()[0];
-            return (ITcsResultSetter)Activator.CreateInstance(
-                typeof(TcsResultSetter<>).MakeGenericType(resultType))!;
-        });
     }
 }

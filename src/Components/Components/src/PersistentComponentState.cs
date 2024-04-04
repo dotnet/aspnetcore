@@ -116,14 +116,14 @@ public class PersistentComponentState
     }
 
     /// <summary>
-    /// TODO
+    /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
+    /// instance of type <typeparamref name="TValue"/>.
     /// </summary>
-    /// <typeparam name="TValue"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="jsonTypeInfo"></param>
-    /// <param name="instance"></param>
-    /// <returns></returns>
-    public bool TryTakeFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, JsonTypeInfo<TValue> jsonTypeInfo, [MaybeNullWhen(false)] out TValue? instance)
+    /// <param name="key">The key used to persist the instance.</param>
+    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo{TValue}"/> to use when deserializing from JSON.</param>
+    /// <param name="instance">The persisted instance.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    public bool TryTakeFromJson<TValue>(string key, JsonTypeInfo<TValue> jsonTypeInfo, [MaybeNullWhen(false)] out TValue? instance)
     {
         ArgumentNullException.ThrowIfNull(key);
 
