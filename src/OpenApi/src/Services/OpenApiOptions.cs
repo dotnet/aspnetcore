@@ -58,6 +58,8 @@ public sealed class OpenApiOptions
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
     public OpenApiOptions UseTransformer(IOpenApiDocumentTransformer transformer)
     {
+        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+
         DocumentTransformers.Add(transformer);
         return this;
     }
@@ -69,6 +71,8 @@ public sealed class OpenApiOptions
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
     public OpenApiOptions UseTransformer(Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task> transformer)
     {
+        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+
         DocumentTransformers.Add(new DelegateOpenApiDocumentTransformer(transformer));
         return this;
     }
@@ -80,6 +84,8 @@ public sealed class OpenApiOptions
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
     public OpenApiOptions UseOperationTransformer(Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> transformer)
     {
+        ArgumentNullException.ThrowIfNull(transformer, nameof(transformer));
+
         DocumentTransformers.Add(new DelegateOpenApiDocumentTransformer(transformer));
         return this;
     }

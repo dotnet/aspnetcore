@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Extensions;
 
 public static class OperationTransformers
 {
@@ -11,15 +12,13 @@ public static class OperationTransformers
     {
         return options.UseOperationTransformer((operation, context, cancellationToken) =>
         {
+            var schema = OpenApiTypeMapper.MapTypeToOpenApiPrimitiveType(typeof(string));
+            schema.Default = new OpenApiString(defaultValue);
             operation.Parameters.Add(new OpenApiParameter
             {
                 Name = headerName,
                 In = ParameterLocation.Header,
-                Schema = new OpenApiSchema
-                {
-                    Type = "string",
-                    Default = new OpenApiString(defaultValue)
-                }
+                Schema = schema
             });
             return Task.CompletedTask;
         });

@@ -10,6 +10,12 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
 
+/// <summary>
+/// The following benchmarks are used to assess the memory and performance
+/// impact of different types of transformers. In particular, we want to
+/// measure the impact of (a) context-object creation and caching and (b)
+/// enumerator usage when processing operations in a given document.
+/// </summary>
 [MemoryDiagnoser]
 [EventPipeProfiler(EventPipeProfile.GcVerbose)]
 public class TransformersBenchmark : OpenApiDocumentServiceTestBase

@@ -123,4 +123,26 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
                 });
         });
     }
+
+    [Fact]
+    public async Task OperationTransformer_ThrowsExceptionIfDescriptionIdNotFound()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+
+        var options = new OpenApiOptions();
+        options.UseOperationTransformer((operation, context, cancellationToken) =>
+        {
+            operation.Extensions.Remove("x-aspnetcore-id");
+            return Task.CompletedTask;
+        });
+        options.UseOperationTransformer((operation, context, cancellationToken) =>
+        {
+            return Task.CompletedTask;
+        });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => VerifyOpenApiDocument(builder, options, _ => { }));
+        Assert.Equal("Cached operation transformer context not found.", exception.Message);
+    }
 }

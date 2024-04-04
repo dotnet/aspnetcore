@@ -16,7 +16,7 @@ public sealed class OpenApiOperationTransformerContext
     public required string DocumentName { get; init; }
 
     /// <summary>
-    /// Gets the API description associated with current document.
+    /// Gets the API description associated with target operation.
     /// </summary>
     public required ApiDescription Description { get; init; }
 
