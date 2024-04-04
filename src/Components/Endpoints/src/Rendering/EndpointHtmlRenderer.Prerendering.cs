@@ -32,11 +32,20 @@ internal partial class EndpointHtmlRenderer
             // will get replaced anyway. So there is no point emitting further rendermode boundaries.
             return componentActivator.CreateInstance(componentType);
         }
+        else if (_suppressRootComponentRenderModes && IsRootComponent(parentComponentId))
+        {
+            // Disregard the rendermode because this is in the root component (or is the root component itelf)
+            // and we've been configured to suppress render modes for the root component.
+            return componentActivator.CreateInstance(componentType);
+        }
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
             return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
+
+        bool IsRootComponent(int? componentId)
+            => !componentId.HasValue || GetComponentState(componentId.Value).ParentComponentState is null;
     }
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)

@@ -46,8 +46,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
+        var componentTypeMetadata = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>();
         var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;
-        var pageComponent = endpoint.Metadata.GetRequiredMetadata<ComponentTypeMetadata>().Type;
+        var pageComponent = componentTypeMetadata.Type;
+
+        if (componentTypeMetadata.IsStaticPage)
+        {
+            _renderer.SuppressRootComponentRenderModes();
+        }
 
         Log.BeginRenderRootComponent(_logger, rootComponent.Name, pageComponent.Name);
 

@@ -41,6 +41,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private readonly RazorComponentsServiceOptions _options;
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
+    private bool _suppressRootComponentRenderModes;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -67,6 +68,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         {
             throw new InvalidOperationException("The HttpContext cannot change value once assigned.");
         }
+    }
+
+    public void SuppressRootComponentRenderModes()
+    {
+        _suppressRootComponentRenderModes = true;
     }
 
     internal static async Task InitializeStandardComponentServicesAsync(
