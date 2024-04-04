@@ -34,7 +34,8 @@ public class Program
             ["Blazor web with server-side blazor root component"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
-            ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
+            ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
+            ["Global Interactivity"] = (BuildWebHost<RazorComponentEndpointsStartup<GlobalInteractivityApp>>(CreateAdditionalArgs(args)), "/subdir"),
         };
 
         var mainHost = BuildWebHost(args);
