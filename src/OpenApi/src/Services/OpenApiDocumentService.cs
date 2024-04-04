@@ -4,9 +4,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -132,6 +136,7 @@ internal sealed class OpenApiDocumentService(
         {
             Summary = GetSummary(description),
             Description = GetDescription(description),
+            Responses = GetResponses(description),
             Tags = tags,
         };
         return operation;
@@ -153,5 +158,68 @@ internal sealed class OpenApiDocumentService(
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
         return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
+    }
+
+    private static OpenApiResponses GetResponses(ApiDescription description)
+    {
+        // OpenAPI requires that each operation have a response, usually a successful one.
+        // if there are no response types defined, we assume a successful 200 OK response
+        // with no content by default.
+        if (description.SupportedResponseTypes.Count == 0)
+        {
+            return new OpenApiResponses
+            {
+                ["200"] = GetResponse(description, StatusCodes.Status200OK, new ApiResponseType { StatusCode = StatusCodes.Status200OK })
+            };
+        }
+
+        var responses = new OpenApiResponses();
+        foreach (var responseType in description.SupportedResponseTypes)
+        {
+            // The "default" response type is a special case in OpenAPI used to describe
+            // the response for all HTTP status codes that are not explicitly defined
+            // for a given operation. This is typically used to describe catch-all scenarios
+            // like error responses.
+            var statusCode = responseType.IsDefaultResponse
+                ? OpenApiConstants.DefaultResponseStatusCode
+                : responseType.StatusCode.ToString(CultureInfo.InvariantCulture);
+            responses.Add(statusCode, GetResponse(description, responseType.StatusCode, responseType));
+        }
+        return responses;
+    }
+
+    private static OpenApiResponse GetResponse(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType)
+    {
+        var description = ReasonPhrases.GetReasonPhrase(statusCode);
+        HashSet<string> responseContentTypes = [];
+        var response = new OpenApiResponse
+        {
+            Description = description,
+            Content = new Dictionary<string, OpenApiMediaType>()
+        };
+
+        // ApiResponseFormats aggregates information about the support response content types
+        // from different types of Produces metadata. This is handled by ApiExplorer so looking
+        // up values in ApiResponseFormats should provide us a complete set of the information
+        // encoded in Produces metadata added via attributes or extension methods.
+        var apiResponseFormatContentTypes = apiResponseType.ApiResponseFormats
+            .Select(responseFormat => responseFormat.MediaType);
+        foreach (var contentType in apiResponseFormatContentTypes)
+        {
+            response.Content[contentType] = new OpenApiMediaType();
+        }
+
+        // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
+        // looks for when generating ApiResponseFormats above so we need to pull the content
+        // types defined there separately.
+        var explicitContentTypes = apiDescription.ActionDescriptor.EndpointMetadata
+            .OfType<ProducesAttribute>()
+            .SelectMany(attr => attr.ContentTypes);
+        foreach (var contentType in explicitContentTypes)
+        {
+            response.Content[contentType] = new OpenApiMediaType();
+        }
+
+        return response;
     }
 }

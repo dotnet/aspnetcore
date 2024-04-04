@@ -18,4 +18,8 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../test/Microsoft.AspNetCore.OpenApi.Tests.csproj" />
+  </ItemGroup>
+
 </Project>
