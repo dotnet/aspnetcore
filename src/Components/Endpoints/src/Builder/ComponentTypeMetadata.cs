@@ -21,8 +21,24 @@ public sealed class ComponentTypeMetadata
     }
 
     /// <summary>
+    /// Initializes a new instance of <see cref="ComponentTypeMetadata"/>.
+    /// </summary>
+    /// <param name="componentType">The component type.</param>
+    /// <param name="isStaticPage">A flag indicating whether the page's route is declared as static.</param>
+    public ComponentTypeMetadata([DynamicallyAccessedMembers(Component)] Type componentType, bool isStaticPage)
+        : this(componentType)
+    {
+        IsStaticPage = isStaticPage;
+    }
+
+    /// <summary>
     /// Gets the component type.
     /// </summary>
     [DynamicallyAccessedMembers(Component)]
     public Type Type { get; }
+
+    /// <summary>
+    /// Gets a flag indicating whether the page's route is declared as static.
+    /// </summary>
+    public bool IsStaticPage { get; }
 }

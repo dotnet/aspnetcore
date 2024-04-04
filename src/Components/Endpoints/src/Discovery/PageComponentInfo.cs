@@ -23,7 +23,7 @@ internal class PageComponentInfo
     internal PageComponentInfo(
         string displayName,
         [DynamicallyAccessedMembers(Component)] Type type,
-        string route,
+        RouteAttribute route,
         IReadOnlyList<object> metadata)
     {
         DisplayName = displayName;
@@ -46,7 +46,7 @@ internal class PageComponentInfo
     /// <summary>
     /// Gets the routes for the page.
     /// </summary>
-    public string Route { get; }
+    public RouteAttribute Route { get; }
 
     /// <summary>
     /// Gets the metadata for the page.

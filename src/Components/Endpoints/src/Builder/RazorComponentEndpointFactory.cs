@@ -32,7 +32,7 @@ internal class RazorComponentEndpointFactory
         // Name is only relevant for Link generation, which we don't support either.
         var builder = new RouteEndpointBuilder(
             null,
-            RoutePatternFactory.Parse(pageDefinition.Route),
+            RoutePatternFactory.Parse(pageDefinition.Route.Template),
             order: 0);
 
         // Require antiforgery by default, let the page override it.
@@ -47,7 +47,7 @@ internal class RazorComponentEndpointFactory
         // We do not support link generation, so explicitly opt-out.
         builder.Metadata.Add(new SuppressLinkGenerationMetadata());
         builder.Metadata.Add(HttpMethodsMetadata);
-        builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type));
+        builder.Metadata.Add(new ComponentTypeMetadata(pageDefinition.Type, pageDefinition.Route.Static));
         builder.Metadata.Add(new RootComponentMetadata(rootComponent));
         builder.Metadata.Add(configuredRenderModesMetadata);
 

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Discovery;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
 {
-    private IReadOnlyList<string> _routeTemplates = Array.Empty<string>();
+    private IReadOnlyList<RouteAttribute> _routeTemplates = Array.Empty<RouteAttribute>();
 
     /// <summary>
     /// Gets or sets the assembly name where this component comes from.
@@ -24,7 +24,7 @@ internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     /// <summary>
     /// Gets or sets the route templates for this page component.
     /// </summary>
-    public required IReadOnlyList<string> RouteTemplates
+    public required IReadOnlyList<RouteAttribute> RouteTemplates
     {
         get => _routeTemplates;
         set
@@ -61,7 +61,7 @@ internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
     {
         return other is not null &&
                AssemblyName == other.AssemblyName &&
-               RouteTemplates.SequenceEqual(other.RouteTemplates!, StringComparer.OrdinalIgnoreCase) &&
+               RouteTemplates.SequenceEqual(other.RouteTemplates!, RouteAttributeComparer.Instance) &&
                EqualityComparer<Type>.Default.Equals(PageType, other.PageType);
     }
 
@@ -81,13 +81,33 @@ internal class PageComponentBuilder : IEquatable<PageComponentBuilder?>
         return hash.ToHashCode();
     }
 
-    internal PageComponentInfo Build(string route, object[] pageMetadata)
+    internal PageComponentInfo Build(RouteAttribute route, object[] pageMetadata)
     {
-        return new PageComponentInfo(route, PageType, route, pageMetadata);
+        return new PageComponentInfo(route.Template, PageType, route, pageMetadata);
     }
 
     private string GetDebuggerDisplay()
     {
-        return $"Type = {PageType.FullName}, RouteTemplates = {string.Join(", ", RouteTemplates ?? Enumerable.Empty<string>())}";
+        return $"Type = {PageType.FullName}, RouteTemplates = {string.Join(", ", RouteTemplates?.Select(r => r.Template) ?? Enumerable.Empty<string>())}";
+    }
+
+    private class RouteAttributeComparer : IEqualityComparer<RouteAttribute>
+    {
+        public static RouteAttributeComparer Instance { get; } = new();
+
+        public bool Equals(RouteAttribute? x, RouteAttribute? y)
+        {
+            if (x is null)
+            {
+                return y is null;
+            }
+
+            return y is not null
+                && string.Equals(x.Template, y.Template, StringComparison.OrdinalIgnoreCase)
+                && x.Static == y.Static;
+        }
+
+        public int GetHashCode([DisallowNull] RouteAttribute value)
+            => HashCode.Combine(value.Template, value.Static);
     }
 }

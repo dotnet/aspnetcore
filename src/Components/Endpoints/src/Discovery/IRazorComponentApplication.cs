@@ -33,7 +33,7 @@ internal interface IRazorComponentApplication
                     {
                         pages.Add(new PageComponentBuilder()
                         {
-                            RouteTemplates = routes.Select(r => r.Template).ToList(),
+                            RouteTemplates = routes.ToList(),
                             AssemblyName = name,
                             PageType = candidate
                         });
