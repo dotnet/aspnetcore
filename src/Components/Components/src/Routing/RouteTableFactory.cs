@@ -83,35 +83,40 @@ internal class RouteTableFactory
 
     internal static RouteTable Create(List<Type> componentTypes, IServiceProvider serviceProvider)
     {
-        var templatesByHandler = new Dictionary<Type, string[]>();
+        var templatesByHandler = new Dictionary<Type, IReadOnlyList<string>>();
         foreach (var componentType in componentTypes)
         {
             // We're deliberately using inherit = false here.
             //
             // RouteAttribute is defined as non-inherited, because inheriting a route attribute always causes an
             // ambiguity. You end up with two components (base class and derived class) with the same route.
-            var templates = GetTemplates(componentType);
-
-            templatesByHandler.Add(componentType, templates);
+            // We exclude static routes because this is the interactive router.
+            var templates = GetTemplates(componentType, includeStaticRoutes: false);
+            if (templates.Count > 0)
+            {
+                templatesByHandler.Add(componentType, templates);
+            }
         }
         return Create(templatesByHandler, serviceProvider);
     }
 
-    private static string[] GetTemplates(Type componentType)
+    private static IReadOnlyList<string> GetTemplates(Type componentType, bool includeStaticRoutes)
     {
         var routeAttributes = componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
-        var templates = new string[routeAttributes.Length];
-        for (var i = 0; i < routeAttributes.Length; i++)
+        var templates = new List<string>(routeAttributes.Length);
+        foreach (RouteAttribute routeAttribute in routeAttributes)
         {
-            var attribute = (RouteAttribute)routeAttributes[i];
-            templates[i] = attribute.Template;
+            if (includeStaticRoutes || !routeAttribute.Static)
+            {
+                templates.Add(routeAttribute.Template);
+            }
         }
 
         return templates;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "Application code does not get trimmed, and the framework does not define routable components.")]
-    internal static RouteTable Create(Dictionary<Type, string[]> templatesByHandler, IServiceProvider serviceProvider)
+    internal static RouteTable Create(Dictionary<Type, IReadOnlyList<string>> templatesByHandler, IServiceProvider serviceProvider)
     {
         var routeOptions = Options.Create(new RouteOptions());
         if (!OperatingSystem.IsBrowser() || RegexConstraintSupport.IsEnabled)
@@ -141,10 +146,10 @@ internal class RouteTableFactory
         return new RouteTable(builder.Build());
     }
 
-    private static TemplateGroupInfo ComputeTemplateGroupInfo(string[] templates)
+    private static TemplateGroupInfo ComputeTemplateGroupInfo(IReadOnlyList<string> templates)
     {
         var result = new TemplateGroupInfo(templates);
-        for (var i = 0; i < templates.Length; i++)
+        for (var i = 0; i < templates.Count; i++)
         {
             var parsedTemplate = RoutePatternParser.Parse(templates[i]);
             var parameterNames = GetParameterNames(parsedTemplate);
@@ -159,15 +164,15 @@ internal class RouteTableFactory
         return result;
     }
 
-    private struct TemplateGroupInfo(string[] templates)
+    private struct TemplateGroupInfo(IReadOnlyCollection<string> templates)
     {
         public HashSet<string> AllRouteParameterNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-        public (RoutePattern, HashSet<string>)[] ParsedTemplates { get; set; } = new (RoutePattern, HashSet<string>)[templates.Length];
+        public (RoutePattern, HashSet<string>)[] ParsedTemplates { get; set; } = new (RoutePattern, HashSet<string>)[templates.Count];
     }
 
-    internal static InboundRouteEntry CreateEntry([DynamicallyAccessedMembers(Component)] Type pageType, string template)
+    internal static InboundRouteEntry CreateEntry([DynamicallyAccessedMembers(Component)] Type pageType, string template, bool includeStaticRoutes)
     {
-        var templates = GetTemplates(pageType);
+        var templates = GetTemplates(pageType, includeStaticRoutes);
         var result = ComputeTemplateGroupInfo(templates);
 
         RoutePattern? parsedTemplate = null;

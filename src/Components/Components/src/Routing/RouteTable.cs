@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 internal sealed class RouteTable(TreeRouter treeRouter)
 {
     private readonly TreeRouter _router = treeRouter;
-    private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> _routeEntryCache = new();
+    private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> _parameterProcessingRouteEntryCache = new();
 
     public TreeRouter? TreeRouter => _router;
 
@@ -23,9 +23,11 @@ internal sealed class RouteTable(TreeRouter treeRouter)
     {
         if (endpointRouteData.Template != null)
         {
-            var entry = _routeEntryCache.GetOrAdd(
+            // When building this cache, we include static routes because even though the interactive router doesn't use them for
+            // matching, we still need to process the parameters for them after they are matched during endpoint routing.
+            var entry = _parameterProcessingRouteEntryCache.GetOrAdd(
                 (endpointRouteData.PageType, endpointRouteData.Template),
-                ((Type page, string template) key) => RouteTableFactory.CreateEntry(key.page, key.template));
+                ((Type page, string template) key) => RouteTableFactory.CreateEntry(key.page, key.template, includeStaticRoutes: true));
 
             var routeValueDictionary = new RouteValueDictionary(endpointRouteData.RouteValues);
             foreach (var kvp in endpointRouteData.RouteValues)
