@@ -21,7 +21,7 @@ public sealed class OpenApiOperationTransformerContext
     public required ApiDescription Description { get; init; }
 
     /// <summary>
-    /// Gets the application services associated with current document.
+    /// Gets the application services associated with the current document the target operation is in.
     /// </summary>
     public required IServiceProvider ApplicationServices { get; init; }
 }
