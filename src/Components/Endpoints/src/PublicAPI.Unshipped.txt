@@ -1,3 +1,3 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.ComponentTypeMetadata(System.Type! componentType, bool isStaticPage) -> void
-Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.IsStaticPage.get -> bool
+Microsoft.AspNetCore.Components.Endpoints.ComponentTypeMetadata.IsStaticRoute.get -> bool

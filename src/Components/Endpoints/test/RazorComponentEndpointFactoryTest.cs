@@ -11,8 +11,10 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class RazorComponentEndpointFactoryTest
 {
-    [Fact]
-    public void AddEndpoints_CreatesEndpointWithExpectedMetadata()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddEndpoints_CreatesEndpointWithExpectedMetadata(bool staticRoute)
     {
         var endpoints = new List<Endpoint>();
         var factory = new RazorComponentEndpointFactory();
@@ -23,7 +25,7 @@ public class RazorComponentEndpointFactoryTest
         factory.AddEndpoints(endpoints, typeof(App), new PageComponentInfo(
             "App",
             typeof(App),
-            "/",
+            new ("/") { Static  = staticRoute },
             new object[] { new AuthorizeAttribute() }),
             conventions,
             finallyConventions,
@@ -35,7 +37,7 @@ public class RazorComponentEndpointFactoryTest
         Assert.Equal(0, routeEndpoint.Order);
         Assert.Equal("/", routeEndpoint.RoutePattern.RawText);
         Assert.Contains(endpoint.Metadata, m => m is RootComponentMetadata);
-        Assert.Contains(endpoint.Metadata, m => m is ComponentTypeMetadata);
+        Assert.Contains(endpoint.Metadata, m => m is ComponentTypeMetadata c && c.Type == typeof(App) && c.IsStaticRoute == staticRoute);
         Assert.Contains(endpoint.Metadata, m => m is SuppressLinkGenerationMetadata);
         Assert.Contains(endpoint.Metadata, m => m is AuthorizeAttribute);
         Assert.Contains(endpoint.Metadata, m => m is ConfiguredRenderModesMetadata c
@@ -65,7 +67,7 @@ public class RazorComponentEndpointFactoryTest
             new PageComponentInfo(
                 "App",
                 typeof(App),
-                "/",
+                new ("/"),
                 Array.Empty<object>()),
             conventions,
             finallyConventions,
@@ -93,7 +95,7 @@ public class RazorComponentEndpointFactoryTest
             new PageComponentInfo(
                 "App",
                 typeof(App),
-                "/",
+                new ("/"),
                 Array.Empty<object>()),
             conventions,
             finallyConventions,
@@ -121,7 +123,7 @@ public class RazorComponentEndpointFactoryTest
             new PageComponentInfo(
                 "App",
                 typeof(App),
-                "/",
+                new ("/"),
                 Array.Empty<object>()),
             conventions,
             finallyConventions,
@@ -153,7 +155,7 @@ public class RazorComponentEndpointFactoryTest
             new PageComponentInfo(
                 "App",
                 typeof(App),
-                "/",
+                new ("/"),
                 Array.Empty<object>()),
             conventions,
             finallyConventions,

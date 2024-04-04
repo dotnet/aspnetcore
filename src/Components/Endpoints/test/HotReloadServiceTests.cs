@@ -53,7 +53,7 @@ public class HotReloadServiceTests
             {
                 AssemblyName = "TestAssembly2",
                 PageType = typeof(StaticComponent),
-                RouteTemplates = new List<string> { "/app/test" }
+                RouteTemplates = [new ("/app/test")]
             }
         });
         HotReloadService.UpdateApplication(null);

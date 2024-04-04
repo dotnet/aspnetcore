@@ -50,7 +50,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         var rootComponent = endpoint.Metadata.GetRequiredMetadata<RootComponentMetadata>().Type;
         var pageComponent = componentTypeMetadata.Type;
 
-        if (componentTypeMetadata.IsStaticPage)
+        if (componentTypeMetadata.IsStaticRoute)
         {
             _renderer.SuppressRootComponentRenderModes();
         }

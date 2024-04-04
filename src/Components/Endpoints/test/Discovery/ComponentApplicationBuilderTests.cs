@@ -24,10 +24,11 @@ public class ComponentApplicationBuilderTests
             p => Assert.Equal(typeof(App1Test2), p.Type),
             p => Assert.Equal(typeof(App1Test3), p.Type));
 
-        Assert.Collection(app.Pages.Select(p => p.Route),
-            r => Assert.Equal("/App1/Test1", r),
-            r => Assert.Equal("/App1/Test2", r),
-            r => Assert.Equal("/App1/Test3", r));
+        Assert.Equal(app.Pages.Select(p => p.Route.Template),
+            ["/App1/Test1", "/App1/Test2", "/App1/Test3"]);
+
+        Assert.Equal(app.Pages.Select(p => p.Route.Static),
+            [false, true, false]);
 
         Assert.Collection(app.Components,
             c => Assert.Equal(typeof(App1Test1), c.ComponentType),
@@ -295,19 +296,19 @@ public class ComponentApplicationBuilderTests
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(App1Test1),
-                RouteTemplates = new List<string> { "/App1/Test1" }
+                RouteTemplates = [new ("/App1/Test1")]
             },
             new PageComponentBuilder
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(App1Test2),
-                RouteTemplates = new List<string> { "/App1/Test2" }
+                RouteTemplates = [new ("/App1/Test2") { Static = true }]
             },
             new PageComponentBuilder
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(App1Test3),
-                RouteTemplates = new List<string> { "/App1/Test3" }
+                RouteTemplates = [new ("/App1/Test3")]
             }
         };
     }
@@ -347,19 +348,19 @@ public class ComponentApplicationBuilderTests
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(App2Test1),
-                RouteTemplates = new List<string> { "/App2/Test1" }
+                RouteTemplates = [new ("/App2/Test1")]
             },
             new PageComponentBuilder
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(App2Test2),
-                RouteTemplates = new List<string> { "/App2/Test2" }
+                RouteTemplates = [new ("/App2/Test2")]
             },
             new PageComponentBuilder
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(App2Test3),
-                RouteTemplates = new List<string> { "/App2/Test3" }
+                RouteTemplates = [new ("/App2/Test3")]
             }
         };
     }
@@ -399,19 +400,19 @@ public class ComponentApplicationBuilderTests
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(SharedTest1),
-                RouteTemplates = new List<string> { "/Shared/Test1" }
+                RouteTemplates = [new ("/Shared/Test1")]
             },
             new PageComponentBuilder
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(SharedTest2),
-                RouteTemplates = new List<string> { "/Shared/Test2" }
+                RouteTemplates = [new ("/Shared/Test2")]
             },
             new PageComponentBuilder
             {
                 AssemblyName = assemblyName,
                 PageType = typeof(SharedTest3),
-                RouteTemplates = new List<string> { "/Shared/Test3" }
+                RouteTemplates = [new ("/Shared/Test3")]
             },
         };
     }

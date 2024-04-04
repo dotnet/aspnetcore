@@ -28,7 +28,7 @@ public sealed class ComponentTypeMetadata
     public ComponentTypeMetadata([DynamicallyAccessedMembers(Component)] Type componentType, bool isStaticPage)
         : this(componentType)
     {
-        IsStaticPage = isStaticPage;
+        IsStaticRoute = isStaticPage;
     }
 
     /// <summary>
@@ -40,5 +40,5 @@ public sealed class ComponentTypeMetadata
     /// <summary>
     /// Gets a flag indicating whether the page's route is declared as static.
     /// </summary>
-    public bool IsStaticPage { get; }
+    public bool IsStaticRoute { get; }
 }
