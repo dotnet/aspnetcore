@@ -1,13 +1,10 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <base href="/subdir/" />
-
-    <HeadOutlet />
+    <HeadOutlet @rendermode="@RenderModeForPage" />
 </head>
-
 <body>
     <Components.WasmMinimal.Routes @rendermode="@RenderModeForPage" />
     <script src="_framework/blazor.web.js" autostart="false"></script>
@@ -19,16 +16,15 @@
         });
     </script>
 </body>
-
 </html>
-
 
 @code {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    // Statically render pages in the "/Account" subdirectory like we do in the Blazor Web template with Individaul auth.
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/static")
+    // Statically render a specific page to show we can override the rendermode based on URL
+    // Elsewhere, use global interactivity.
+    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/globally-interactive/static-via-url")
         ? null
-        : RenderMode.InteractiveAuto;
+        : RenderMode.InteractiveWebAssembly;
 }
