@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
 public class TransformersBenchmark : OpenApiDocumentServiceTestBase
 {
     [Params(10, 100, 1000)]
-    public int InvocationCount { get; set; }
+    public int TransformerCount { get; set; }
 
     private readonly IEndpointRouteBuilder _builder = CreateBuilder();
     private readonly OpenApiOptions _options = new OpenApiOptions();
@@ -31,7 +31,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     public void OperationTransformerAsDelegate_Setup()
     {
         _builder.MapGet("/", () => { });
-        for (var i = 0; i <= 1000; i++)
+        for (var i = 0; i <= TransformerCount; i++)
         {
             _options.UseOperationTransformer((operation, context, token) =>
             {
@@ -46,7 +46,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     public void ActivatedDocumentTransformer_Setup()
     {
         _builder.MapGet("/", () => { });
-        for (var i = 0; i <= 1000; i++)
+        for (var i = 0; i <= TransformerCount; i++)
         {
             _options.UseTransformer<ActivatedTransformer>();
         }
@@ -57,7 +57,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     public void DocumentTransformerAsDelegate_Delegate()
     {
         _builder.MapGet("/", () => { });
-        for (var i = 0; i <= 1000; i++)
+        for (var i = 0; i <= TransformerCount; i++)
         {
             _options.UseTransformer((document, context, token) =>
             {
@@ -71,28 +71,19 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     [Benchmark]
     public async Task OperationTransformerAsDelegate()
     {
-        for (var i = 0; i <= InvocationCount; i++)
-        {
-            await _documentService.GetOpenApiDocumentAsync();
-        }
+        await _documentService.GetOpenApiDocumentAsync();
     }
 
     [Benchmark]
     public async Task ActivatedDocumentTransformer()
     {
-        for (var i = 0; i <= InvocationCount; i++)
-        {
-            await _documentService.GetOpenApiDocumentAsync();
-        }
+        await _documentService.GetOpenApiDocumentAsync();
     }
 
     [Benchmark]
     public async Task DocumentTransformerAsDelegate()
     {
-        for (var i = 0; i <= InvocationCount; i++)
-        {
-            await _documentService.GetOpenApiDocumentAsync();
-        }
+        await _documentService.GetOpenApiDocumentAsync();
     }
 
     private class ActivatedTransformer : IOpenApiDocumentTransformer
