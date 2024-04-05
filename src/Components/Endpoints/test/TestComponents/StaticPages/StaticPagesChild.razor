@@ -1,7 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
-[Child:
-<StaticPagesGrandchild Name="@Name" @rendermode="@RenderMode.InteractiveServer" />
-]
+[Child: <StaticPagesGrandchild Name="@Name" @rendermode="@RenderMode.InteractiveServer" />]
 @code {
     [Parameter] public string Name { get; set; }
 }
