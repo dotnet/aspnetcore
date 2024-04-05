@@ -38,7 +38,7 @@ internal sealed class DelegateOpenApiDocumentTransformer : IOpenApiDocumentTrans
                 {
                     if (operation.Extensions.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionIdExtension) &&
                         descriptionIdExtension is OpenApiString { Value: var descriptionId } &&
-                        documentService.OperationTransformerContextCache.TryGetValue(descriptionId, out var operationContext))
+                        documentService.TryGetCachedOperationTransformerContext(descriptionId, out var operationContext))
                     {
                         await _operationTransformer(operation, operationContext, cancellationToken);
                     }
@@ -50,7 +50,7 @@ internal sealed class DelegateOpenApiDocumentTransformer : IOpenApiDocumentTrans
                         // context resulted in a cache miss. As an alternative here, we could just to implement
                         // the "slow-path" and look up the ApiDescription associated with the OpenApiOperation
                         // using the OperationType and given path, but we'll avoid this for now.
-                        throw new InvalidOperationException("Cached operation transformer context not found.");
+                        throw new InvalidOperationException("Cached operation transformer context not found. Please ensure that the operation contains the `x-aspnetcore-id` extension attribute.");
                     }
                 }
             }

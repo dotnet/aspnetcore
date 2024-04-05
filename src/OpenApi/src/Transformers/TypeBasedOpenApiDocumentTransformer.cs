@@ -7,13 +7,14 @@ using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal sealed class ActivatedOpenApiDocumentTransformer(Type transformerType) : IOpenApiDocumentTransformer
+internal sealed class TypeBasedOpenApiDocumentTransformer(Type transformerType) : IOpenApiDocumentTransformer
 {
     internal IOpenApiDocumentTransformer? Transformer { get; set; }
 
     internal void Initialize(IServiceProvider serviceProvider)
     {
-        Transformer ??= ActivatorUtilities.CreateInstance(serviceProvider, transformerType) as IOpenApiDocumentTransformer;
+        Debug.Assert(typeof(IOpenApiDocumentTransformer).IsAssignableFrom(transformerType), "Type should implement IOpenApiDocumentTransformer.");
+        Transformer ??= (IOpenApiDocumentTransformer)ActivatorUtilities.CreateInstance(serviceProvider, transformerType);
     }
 
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)

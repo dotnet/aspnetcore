@@ -71,7 +71,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     [Benchmark]
     public async Task OperationTransformerAsDelegate()
     {
-        for (var i = 0; i < InvocationCount; i++)
+        for (var i = 0; i <= InvocationCount; i++)
         {
             await _documentService.GetOpenApiDocumentAsync();
         }
@@ -80,7 +80,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     [Benchmark]
     public async Task ActivatedDocumentTransformer()
     {
-        for (var i = 0; i < InvocationCount; i++)
+        for (var i = 0; i <= InvocationCount; i++)
         {
             await _documentService.GetOpenApiDocumentAsync();
         }
@@ -89,7 +89,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     [Benchmark]
     public async Task DocumentTransformerAsDelegate()
     {
-        for (var i = 0; i < InvocationCount; i++)
+        for (var i = 0; i <= InvocationCount; i++)
         {
             await _documentService.GetOpenApiDocumentAsync();
         }

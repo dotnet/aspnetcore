@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -27,9 +28,20 @@ internal sealed class OpenApiDocumentService(
     /// Cache of <see cref="OpenApiOperationTransformerContext"/> instances keyed by the
     /// `ApiDescription.ActionDescriptor.Id` of the associated operation. ActionDescriptor IDs
     /// are unique within the lifetime of an application and serve as helpful associators between
-    /// operations, API description, and their respective transformer contexts.
+    /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
-    internal ConcurrentDictionary<string, OpenApiOperationTransformerContext> OperationTransformerContextCache = new();
+    private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
+
+    internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
+    {
+        context = null;
+        if (_operationTransformerContextCache.TryGetValue(descriptionId, out var cachedContext))
+        {
+            context = cachedContext;
+            return true;
+        }
+        return false;
+    }
 
     public async Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default)
     {
@@ -42,11 +54,11 @@ internal sealed class OpenApiDocumentService(
             Paths = GetOpenApiPaths(capturedTags),
             Tags = [.. capturedTags]
         };
-        await ApplyTransformers(document, cancellationToken);
+        await ApplyTransformersAsync(document, cancellationToken);
         return document;
     }
 
-    private async Task ApplyTransformers(OpenApiDocument document, CancellationToken cancellationToken = default)
+    private async Task ApplyTransformersAsync(OpenApiDocument document, CancellationToken cancellationToken)
     {
         var documentTransformerContext = new OpenApiDocumentTransformerContext
         {
@@ -60,7 +72,7 @@ internal sealed class OpenApiDocumentService(
             // Delayed initialization for DI-activated transformers
             // until the first time they are used when we have access
             // to the target service provider.
-            if (transformer is ActivatedOpenApiDocumentTransformer activatedTransformer)
+            if (transformer is TypeBasedOpenApiDocumentTransformer activatedTransformer)
             {
                 activatedTransformer.Initialize(serviceProvider);
                 await activatedTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
@@ -113,7 +125,7 @@ internal sealed class OpenApiDocumentService(
         {
             var operation = GetOperation(description, capturedTags);
             operation.Extensions.Add(OpenApiConstants.DescriptionId, new OpenApiString(description.ActionDescriptor.Id));
-            OperationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, new OpenApiOperationTransformerContext
+            _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, new OpenApiOperationTransformerContext
             {
                 DocumentName = documentName,
                 Description = description,

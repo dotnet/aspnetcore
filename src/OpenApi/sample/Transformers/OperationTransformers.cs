@@ -6,6 +6,8 @@ using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Extensions;
 
+namespace Sample.Transformers;
+
 public static class OperationTransformers
 {
     public static OpenApiOptions AddHeader(this OpenApiOptions options, string headerName, string defaultValue)

@@ -21,8 +21,8 @@ public class OpenApiOptionsTests
         var result = options.UseTransformer(transformer);
 
         // Assert
-        Assert.Single(options.DocumentTransformers);
-        Assert.IsType<DelegateOpenApiDocumentTransformer>(options.DocumentTransformers[0]);
+        var insertedTransformer = Assert.Single(options.DocumentTransformers);
+        Assert.IsType<DelegateOpenApiDocumentTransformer>(insertedTransformer);
         Assert.IsType<OpenApiOptions>(result);
     }
 
@@ -37,8 +37,8 @@ public class OpenApiOptionsTests
         var result = options.UseTransformer(transformer);
 
         // Assert
-        Assert.Single(options.DocumentTransformers);
-        Assert.Same(transformer, options.DocumentTransformers[0]);
+        var insertedTransformer = Assert.Single(options.DocumentTransformers);
+        Assert.Same(transformer, insertedTransformer);
         Assert.IsType<OpenApiOptions>(result);
     }
 
@@ -52,8 +52,8 @@ public class OpenApiOptionsTests
         var result = options.UseTransformer<TestOpenApiDocumentTransformer>();
 
         // Assert
-        Assert.Single(options.DocumentTransformers);
-        Assert.IsType<ActivatedOpenApiDocumentTransformer>(options.DocumentTransformers[0]);
+        var insertedTransformer = Assert.Single(options.DocumentTransformers);
+        Assert.IsType<TypeBasedOpenApiDocumentTransformer>(insertedTransformer);
         Assert.IsType<OpenApiOptions>(result);
     }
 
@@ -72,8 +72,8 @@ public class OpenApiOptionsTests
         var result = options.UseOperationTransformer(transformer);
 
         // Assert
-        Assert.Single(options.DocumentTransformers);
-        Assert.IsType<DelegateOpenApiDocumentTransformer>(options.DocumentTransformers[0]);
+        var insertedTransformer = Assert.Single(options.DocumentTransformers);
+        Assert.IsType<DelegateOpenApiDocumentTransformer>(insertedTransformer);
         Assert.IsType<OpenApiOptions>(result);
     }
 

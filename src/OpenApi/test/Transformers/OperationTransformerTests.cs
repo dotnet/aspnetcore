@@ -143,6 +143,6 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         });
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => VerifyOpenApiDocument(builder, options, _ => { }));
-        Assert.Equal("Cached operation transformer context not found.", exception.Message);
+        Assert.Equal("Cached operation transformer context not found. Please ensure that the operation contains the `x-aspnetcore-id` extension attribute.", exception.Message);
     }
 }
