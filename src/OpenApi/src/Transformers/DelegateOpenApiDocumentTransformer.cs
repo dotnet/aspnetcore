@@ -9,6 +9,20 @@ namespace Microsoft.AspNetCore.OpenApi;
 
 internal sealed class DelegateOpenApiDocumentTransformer : IOpenApiDocumentTransformer
 {
+    // Since there's a finite set of operation types that can be included in a given
+    // OpenApiPaths, we can pre-allocate an array of these types and use a direct
+    // lookup on the OpenApiPaths dictionary to avoid allocating an enumerator
+    // over the KeyValuePairs in OpenApiPaths.
+    private static readonly OperationType[] _operationTypes = [
+        OperationType.Get,
+        OperationType.Post,
+        OperationType.Put,
+        OperationType.Delete,
+        OperationType.Options,
+        OperationType.Head,
+        OperationType.Patch,
+        OperationType.Trace
+    ];
     private readonly Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task>? _documentTransformer;
     private readonly Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task>? _operationTransformer;
 
@@ -34,8 +48,14 @@ internal sealed class DelegateOpenApiDocumentTransformer : IOpenApiDocumentTrans
             var documentService = context.ApplicationServices.GetRequiredKeyedService<OpenApiDocumentService>(context.DocumentName);
             foreach (var pathItem in document.Paths.Values)
             {
-                foreach (var operation in pathItem.Operations.Values)
+                for (var i = 0; i < _operationTypes.Length; i++)
                 {
+                    var operationType = _operationTypes[i];
+                    if (!pathItem.Operations.TryGetValue(operationType, out var operation))
+                    {
+                        continue;
+                    }
+
                     if (operation.Extensions.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionIdExtension) &&
                         descriptionIdExtension is OpenApiString { Value: var descriptionId } &&
                         documentService.TryGetCachedOperationTransformerContext(descriptionId, out var operationContext))

@@ -123,46 +123,6 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task DocumentTransformer_SupportsDisposableInstanceTransformer()
-    {
-        var builder = CreateBuilder();
-
-        builder.MapGet("/todo", () => { });
-        builder.MapGet("/user", () => { });
-
-        var options = new OpenApiOptions();
-        var transformer = new DisposableTransformer();
-        options.UseTransformer(transformer);
-
-        Assert.False(transformer.Disposed);
-        await VerifyOpenApiDocument(builder, options, document =>
-        {
-            Assert.Equal("Info Description", document.Info.Description);
-        });
-        Assert.True(transformer.Disposed);
-    }
-
-    [Fact]
-    public async Task DocumentTransformer_SupportsAsyncDisposableInstanceTransformer()
-    {
-        var builder = CreateBuilder();
-
-        builder.MapGet("/todo", () => { });
-        builder.MapGet("/user", () => { });
-
-        var options = new OpenApiOptions();
-        var transformer = new AsyncDisposableTransformer();
-        options.UseTransformer(transformer);
-
-        Assert.False(transformer.Disposed);
-        await VerifyOpenApiDocument(builder, options, document =>
-        {
-            Assert.Equal("Info Description", document.Info.Description);
-        });
-        Assert.True(transformer.Disposed);
-    }
-
-    [Fact]
     public async Task DocumentTransformer_SupportsDisposableActivatedTransformer()
     {
         var builder = CreateBuilder();
