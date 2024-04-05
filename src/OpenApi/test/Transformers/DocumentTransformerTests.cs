@@ -122,8 +122,123 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task DocumentTransformer_SupportsDisposableInstanceTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+        builder.MapGet("/user", () => { });
+
+        var options = new OpenApiOptions();
+        var transformer = new DisposableTransformer();
+        options.UseTransformer(transformer);
+
+        Assert.False(transformer.Disposed);
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal("Info Description", document.Info.Description);
+        });
+        Assert.True(transformer.Disposed);
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_SupportsAsyncDisposableInstanceTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+        builder.MapGet("/user", () => { });
+
+        var options = new OpenApiOptions();
+        var transformer = new AsyncDisposableTransformer();
+        options.UseTransformer(transformer);
+
+        Assert.False(transformer.Disposed);
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal("Info Description", document.Info.Description);
+        });
+        Assert.True(transformer.Disposed);
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_SupportsDisposableActivatedTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+        builder.MapGet("/user", () => { });
+
+        var options = new OpenApiOptions();
+        options.UseTransformer<DisposableTransformer>();
+
+        DisposableTransformer.DisposeCount = 0;
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal("Info Description", document.Info.Description);
+        });
+        Assert.Equal(1, DisposableTransformer.DisposeCount);
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_SupportsAsyncDisposableActivatedTransformer()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => { });
+        builder.MapGet("/user", () => { });
+
+        var options = new OpenApiOptions();
+        options.UseTransformer<AsyncDisposableTransformer>();
+
+        AsyncDisposableTransformer.DisposeCount = 0;
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal("Info Description", document.Info.Description);
+        });
+        Assert.Equal(1, AsyncDisposableTransformer.DisposeCount);
+    }
+
     private class ActivatedTransformer : IOpenApiDocumentTransformer
     {
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            document.Info.Description = "Info Description";
+            return Task.CompletedTask;
+        }
+    }
+
+    private class DisposableTransformer : IOpenApiDocumentTransformer, IDisposable
+    {
+        internal bool Disposed = false;
+        internal static int DisposeCount = 0;
+
+        public void Dispose()
+        {
+            Disposed = true;
+            DisposeCount += 1;
+        }
+
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            document.Info.Description = "Info Description";
+            return Task.CompletedTask;
+        }
+    }
+
+    private class AsyncDisposableTransformer : IOpenApiDocumentTransformer, IAsyncDisposable
+    {
+        internal bool Disposed = false;
+        internal static int DisposeCount = 0;
+
+        public ValueTask DisposeAsync()
+        {
+            Disposed = true;
+            DisposeCount += 1;
+            return ValueTask.CompletedTask;
+        }
+
         public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         {
             document.Info.Description = "Info Description";

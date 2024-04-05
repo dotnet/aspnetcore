@@ -70,7 +70,25 @@ internal sealed class OpenApiDocumentService(
         for (var i = 0; i < _options.DocumentTransformers.Count; i++)
         {
             var transformer = _options.DocumentTransformers[i];
-            await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+            try
+            {
+                await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+            }
+            finally
+            {
+                if (transformer is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+                if (transformer is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync();
+                }
+                if (transformer is TypeBasedOpenApiDocumentTransformer typedTransformer)
+                {
+                    await typedTransformer.DisposeAsync();
+                }
+            }
         }
     }
 
