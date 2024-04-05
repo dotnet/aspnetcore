@@ -1107,7 +1107,7 @@ public class RouteTableFactoryTests
             {
                 var templatesByHandler = _routeTemplates
                     .GroupBy(rt => rt.Handler)
-                    .ToDictionary(group => group.Key, group => group.Select(g => g.Template).ToArray());
+                    .ToDictionary(group => group.Key, group => (IReadOnlyList<string>)group.Select(g => g.Template).ToArray());
                 return RouteTableFactory.Create(templatesByHandler, _serviceProvider);
             }
             catch (InvalidOperationException ex) when (ex.InnerException is InvalidOperationException)
