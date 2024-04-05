@@ -173,6 +173,8 @@ public class UrlResolutionTagHelperTest
                    { "/home/index.html ~/second/wontresolve.html" },
                    { "  ~\\home\\index.html" },
                    { "~\\/home/index.html" },
+                   { "  ~" },
+                   { "   " },
                 };
         }
     }

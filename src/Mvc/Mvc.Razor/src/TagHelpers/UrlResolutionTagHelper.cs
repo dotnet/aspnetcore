@@ -271,7 +271,7 @@ public class UrlResolutionTagHelper : TagHelper
     private static bool TryCreateTrimmedString(string input, [NotNullWhen(true)] out string? trimmed)
     {
         trimmed = null;
-        if (input == null || input.Length < 2)
+        if (input == null)
         {
             return false;
         }
@@ -283,16 +283,19 @@ public class UrlResolutionTagHelper : TagHelper
             return false;
         }
 
+        // Url without leading whitespace.
+        url = url.Slice(start);
+
         // Before doing more work, ensure that the URL we're looking at is app-relative.
-        if (!url.Slice(start, 2).SequenceEqual("~/"))
+        if (url.Length < 2 || !url[..2].SequenceEqual("~/"))
         {
             return false;
         }
 
-        var end = url.Slice(start).LastIndexOfAnyExcept(ValidAttributeWhitespaceChars);
+        var endFromStart = url.LastIndexOfAnyExcept(ValidAttributeWhitespaceChars);
 
         // Substring returns same string if start == 0 && len == Length
-        trimmed = input.Substring(start, end + 1);
+        trimmed = input.Substring(start, endFromStart + 1);
         return true;
     }
 
