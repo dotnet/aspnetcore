@@ -17,12 +17,18 @@ public class GlobalInteractivityTest(
     [Fact]
     public void CanFindStaticallyRenderedPageAfterClickingBrowserBackButtonOnDynamicallyRenderedPage()
     {
-        Navigate("/subdir/static");
+        // Start on a static page
+        Navigate("/subdir/globally-interactive/static-via-url");
+        Browser.Equal("Global interactivity page: Static via URL", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
 
-        Browser.Click(By.CssSelector("a[href=dynamic]"));
+        // Navigate to an interactive page and observe it really is interactive
+        Browser.Click(By.LinkText("Globally-interactive by default"));
+        Browser.Equal("Global interactivity page: Default", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+
+        // Show that, after "back", we revert to the previous page
         Browser.Navigate().Back();
-
-        var heading = Browser.Exists(By.TagName("h1"));
-        Browser.Equal("Statically Rendered", () => heading.Text);
+        Browser.Equal("Global interactivity page: Static via URL", () => Browser.Exists(By.TagName("h1")).Text);
     }
 }
