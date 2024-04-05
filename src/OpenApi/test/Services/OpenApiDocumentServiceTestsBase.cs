@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Moq;
@@ -42,9 +41,8 @@ public abstract class OpenApiDocumentServiceTestBase
 
         var apiDescriptionGroupCollectionProvider = CreateApiDescriptionGroupCollectionProvider(context.Results);
 
-        var serviceProvider = new TestServiceProvider();
-        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, serviceProvider);
-        serviceProvider.TestDocumentService = documentService;
+        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider);
+        ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
 
         return documentService;
     }
@@ -64,8 +62,12 @@ public abstract class OpenApiDocumentServiceTestBase
         new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider()),
         new ServiceProviderIsService());
 
-    internal static TestEndpointRouteBuilder CreateBuilder() =>
-        new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
+    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null)
+    {
+        var serviceProvider = new TestServiceProvider();
+        serviceProvider.SetInternalServiceProvider(serviceCollection ?? new ServiceCollection());
+        return new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+    }
 
     internal class TestEndpointRouteBuilder : IEndpointRouteBuilder
     {
@@ -87,7 +89,13 @@ public abstract class OpenApiDocumentServiceTestBase
     private class TestServiceProvider : IServiceProvider, IKeyedServiceProvider
     {
         public static TestServiceProvider Instance { get; } = new TestServiceProvider();
+        private IKeyedServiceProvider _serviceProvider;
         internal OpenApiDocumentService TestDocumentService { get; set; }
+
+        public void SetInternalServiceProvider(IServiceCollection serviceCollection)
+        {
+            _serviceProvider = serviceCollection.BuildServiceProvider();
+        }
 
         public object GetKeyedService(Type serviceType, object serviceKey)
         {
@@ -96,7 +104,7 @@ public abstract class OpenApiDocumentServiceTestBase
                 return TestDocumentService;
             }
 
-            return null;
+            return _serviceProvider.GetKeyedService(serviceType, serviceKey);
         }
 
         public object GetRequiredKeyedService(Type serviceType, object serviceKey)
@@ -106,7 +114,7 @@ public abstract class OpenApiDocumentServiceTestBase
                 return TestDocumentService;
             }
 
-            return null;
+            return _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey);
         }
 
         public object GetService(Type serviceType)
@@ -116,7 +124,7 @@ public abstract class OpenApiDocumentServiceTestBase
                 return Options.Create(new RouteHandlerOptions());
             }
 
-            return null;
+            return _serviceProvider.GetService(serviceType);
         }
     }
 }

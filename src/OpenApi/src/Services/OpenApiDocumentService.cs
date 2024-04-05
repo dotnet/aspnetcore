@@ -66,21 +66,11 @@ internal sealed class OpenApiDocumentService(
             ApplicationServices = serviceProvider,
             DescriptionGroups = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items,
         };
+        // Use index-based for loop to avoid allocating an enumerator with a foreach.
         for (var i = 0; i < _options.DocumentTransformers.Count; i++)
         {
             var transformer = _options.DocumentTransformers[i];
-            // Delayed initialization for DI-activated transformers
-            // until the first time they are used when we have access
-            // to the target service provider.
-            if (transformer is TypeBasedOpenApiDocumentTransformer activatedTransformer)
-            {
-                activatedTransformer.Initialize(serviceProvider);
-                await activatedTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
-            }
-            else
-            {
-                await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
-            }
+            await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
         }
     }
 

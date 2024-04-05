@@ -9,17 +9,11 @@ namespace Microsoft.AspNetCore.OpenApi;
 
 internal sealed class TypeBasedOpenApiDocumentTransformer(Type transformerType) : IOpenApiDocumentTransformer
 {
-    internal IOpenApiDocumentTransformer? Transformer { get; set; }
-
-    internal void Initialize(IServiceProvider serviceProvider)
-    {
-        Debug.Assert(typeof(IOpenApiDocumentTransformer).IsAssignableFrom(transformerType), "Type should implement IOpenApiDocumentTransformer.");
-        Transformer ??= (IOpenApiDocumentTransformer)ActivatorUtilities.CreateInstance(serviceProvider, transformerType);
-    }
-
+    private readonly ObjectFactory _transformerFactory = ActivatorUtilities.CreateFactory(transformerType, []);
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
-        Debug.Assert(Transformer != null, "Transformer should have been initialized.");
-        return Transformer.TransformAsync(document, context, cancellationToken);
+        var transformer = _transformerFactory.Invoke(context.ApplicationServices, []) as IOpenApiDocumentTransformer;
+        Debug.Assert(transformer != null, $"The type {transformerType} does not implement {nameof(IOpenApiDocumentTransformer)}.");
+        return transformer.TransformAsync(document, context, cancellationToken);
     }
 }
