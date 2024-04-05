@@ -287,15 +287,15 @@ public class UrlResolutionTagHelper : TagHelper
         url = url.Slice(start);
 
         // Before doing more work, ensure that the URL we're looking at is app-relative.
-        if (url.Length < 2 || !url[..2].SequenceEqual("~/"))
+        if (!url.StartsWith("~/"))
         {
             return false;
         }
 
-        var endFromStart = url.LastIndexOfAnyExcept(ValidAttributeWhitespaceChars);
+        var remainingLength = url.LastIndexOfAnyExcept(ValidAttributeWhitespaceChars) + 1;
 
         // Substring returns same string if start == 0 && len == Length
-        trimmed = input.Substring(start, endFromStart + 1);
+        trimmed = input.Substring(start, remainingLength);
         return true;
     }
 
