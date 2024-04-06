@@ -24,7 +24,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// <returns>A reference to this instance after the operation has completed.</returns>
     /// <remarks>
     /// APIs that rely on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, such as
-    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are subject to potential spoofing by clients.
+    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to potential spoofing by clients.
     ///
     /// To prevent host and port spoofing, use one of the following approaches:
     ///
