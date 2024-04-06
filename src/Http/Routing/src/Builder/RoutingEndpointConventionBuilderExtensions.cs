@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -28,8 +29,10 @@ public static class RoutingEndpointConventionBuilderExtensions
     ///
     /// To prevent host and port spoofing, use one of the following approaches:
     ///
-    /// - Use <see cref="HttpContext.Connection"/> (<see cref="ConnectionInfo.LocalPort"/>) where the ports are checked.
-    /// - Employ <see href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/host-filtering">Host filtering</see>.
+    /// <list type="bullet">
+    ///   <item>Use <see cref="HttpContext.Connection"/> (<see cref="ConnectionInfo.LocalPort"/>) where the ports are checked.</item>
+    ///   <item>Employ <see href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/host-filtering">Host filtering</see>.</item>
+    /// </list>
     /// </remarks>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
