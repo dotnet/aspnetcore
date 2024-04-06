@@ -73,6 +73,5 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
         renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
 }
 
-[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
-[JsonSerializable(typeof(Dictionary<string, byte[]>))]
+[JsonSerializable(typeof(Dictionary<string, byte[]>), GenerationMode = JsonSourceGenerationMode.Serialization)]
 internal sealed partial class PrerenderComponentApplicationStoreSerializerContext : JsonSerializerContext;

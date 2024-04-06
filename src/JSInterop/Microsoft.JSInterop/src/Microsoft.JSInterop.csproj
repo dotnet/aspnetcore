@@ -18,6 +18,7 @@
     <Compile Include="$(SharedSourceRoot)JSInterop\JSCallResultTypeHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)\src\Components\Shared\src\ArrayBuilder.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)\src\Components\Shared\src\JsonSerializerOptionsCache.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

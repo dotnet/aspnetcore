@@ -31,7 +31,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
 
         state.TryTakeFromJson(
             PersistenceKey,
-            DefaultAntiforgeryStateProviderSerializerContext.Default.AntiforgeryRequestToken,
+            DefaultAntiforgeryStateProviderSerializerContext.Default,
             out _currentToken);
     }
 

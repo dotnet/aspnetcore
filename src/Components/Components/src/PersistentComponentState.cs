@@ -17,6 +17,7 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
+    private readonly JsonSerializerOptionsCache _jsonSerializerOptionsCache = new(JsonSerializerOptionsProvider.Options);
 
     internal PersistentComponentState(
         IDictionary<string , byte[]> currentState,
@@ -120,17 +121,19 @@ public class PersistentComponentState
     /// instance of type <typeparamref name="TValue"/>.
     /// </summary>
     /// <param name="key">The key used to persist the instance.</param>
-    /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo{TValue}"/> to use when deserializing from JSON.</param>
+    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use when deserializing from JSON.</param>
     /// <param name="instance">The persisted instance.</param>
     /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-    public bool TryTakeFromJson<TValue>(string key, JsonTypeInfo<TValue> jsonTypeInfo, [MaybeNullWhen(false)] out TValue? instance)
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public bool TryTakeFromJson<TValue>(string key, IJsonTypeInfoResolver resolver, [MaybeNullWhen(false)] out TValue? instance)
     {
         ArgumentNullException.ThrowIfNull(key);
 
         if (TryTake(key, out var data))
         {
             var reader = new Utf8JsonReader(data);
-            instance = JsonSerializer.Deserialize(ref reader, jsonTypeInfo)!;
+            var options = _jsonSerializerOptionsCache.GetOrAdd(resolver);
+            instance = JsonSerializer.Deserialize<TValue>(ref reader, options)!;
             return true;
         }
         else
