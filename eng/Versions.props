@@ -290,7 +290,7 @@
     <!-- 3rd party dependencies -->
     <AzureIdentityVersion>1.10.3</AzureIdentityVersion>
     <AngleSharpVersion>0.9.9</AngleSharpVersion>
-    <BenchmarkDotNetVersion>0.13.12</BenchmarkDotNetVersion>
+    <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
     <CastleCoreVersion>4.2.1</CastleCoreVersion>
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>

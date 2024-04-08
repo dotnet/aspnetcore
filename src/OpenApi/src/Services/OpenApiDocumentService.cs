@@ -33,15 +33,7 @@ internal sealed class OpenApiDocumentService(
     private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
-    {
-        context = null;
-        if (_operationTransformerContextCache.TryGetValue(descriptionId, out var cachedContext))
-        {
-            context = cachedContext;
-            return true;
-        }
-        return false;
-    }
+        => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
 
     public async Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default)
     {

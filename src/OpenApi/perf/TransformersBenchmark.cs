@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection.Metadata;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.OpenApi.Models;
@@ -16,8 +14,6 @@ namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
 /// measure the impact of (a) context-object creation and caching and (b)
 /// enumerator usage when processing operations in a given document.
 /// </summary>
-[MemoryDiagnoser]
-[EventPipeProfiler(EventPipeProfile.GcVerbose)]
 public class TransformersBenchmark : OpenApiDocumentServiceTestBase
 {
     [Params(10, 100, 1000)]
