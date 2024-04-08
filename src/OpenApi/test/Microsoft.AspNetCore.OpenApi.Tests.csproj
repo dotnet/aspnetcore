@@ -18,4 +18,8 @@
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Microbenchmarks" />
+  </ItemGroup>
+
 </Project>

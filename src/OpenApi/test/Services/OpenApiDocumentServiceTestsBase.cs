@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Moq;
@@ -13,6 +14,16 @@ using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 public abstract class OpenApiDocumentServiceTestBase
 {
     public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument)
+        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument);
+
+    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument)
+    {
+        var documentService = CreateDocumentService(builder, openApiOptions);
+        var document = await documentService.GetOpenApiDocumentAsync();
+        verifyOpenApiDocument(document);
+    }
+
+    internal static OpenApiDocumentService CreateDocumentService(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions)
     {
         var context = new ApiDescriptionProviderContext([]);
 
@@ -22,7 +33,7 @@ public abstract class OpenApiDocumentServiceTestBase
             ApplicationName = nameof(OpenApiDocumentServiceTests)
         };
         var options = new Mock<IOptionsMonitor<OpenApiOptions>>();
-        options.Setup(o => o.Get(It.IsAny<string>())).Returns(new OpenApiOptions());
+        options.Setup(o => o.Get(It.IsAny<string>())).Returns(openApiOptions);
 
         var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
         provider.OnProvidersExecuting(context);
@@ -30,9 +41,10 @@ public abstract class OpenApiDocumentServiceTestBase
 
         var apiDescriptionGroupCollectionProvider = CreateApiDescriptionGroupCollectionProvider(context.Results);
 
-        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object);
-        var document = await documentService.GetOpenApiDocumentAsync();
-        verifyOpenApiDocument(document);
+        var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider);
+        ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
+
+        return documentService;
     }
 
     public static IApiDescriptionGroupCollectionProvider CreateApiDescriptionGroupCollectionProvider(IList<ApiDescription> apiDescriptions = null)
@@ -50,8 +62,12 @@ public abstract class OpenApiDocumentServiceTestBase
         new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), new TestServiceProvider()),
         new ServiceProviderIsService());
 
-    internal static TestEndpointRouteBuilder CreateBuilder() =>
-        new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
+    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null)
+    {
+        var serviceProvider = new TestServiceProvider();
+        serviceProvider.SetInternalServiceProvider(serviceCollection ?? new ServiceCollection());
+        return new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+    }
 
     internal class TestEndpointRouteBuilder : IEndpointRouteBuilder
     {
@@ -70,9 +86,36 @@ public abstract class OpenApiDocumentServiceTestBase
         public IServiceProvider ServiceProvider => ApplicationBuilder.ApplicationServices;
     }
 
-    private class TestServiceProvider : IServiceProvider
+    private class TestServiceProvider : IServiceProvider, IKeyedServiceProvider
     {
         public static TestServiceProvider Instance { get; } = new TestServiceProvider();
+        private IKeyedServiceProvider _serviceProvider;
+        internal OpenApiDocumentService TestDocumentService { get; set; }
+
+        public void SetInternalServiceProvider(IServiceCollection serviceCollection)
+        {
+            _serviceProvider = serviceCollection.BuildServiceProvider();
+        }
+
+        public object GetKeyedService(Type serviceType, object serviceKey)
+        {
+            if (serviceType == typeof(OpenApiDocumentService))
+            {
+                return TestDocumentService;
+            }
+
+            return _serviceProvider.GetKeyedService(serviceType, serviceKey);
+        }
+
+        public object GetRequiredKeyedService(Type serviceType, object serviceKey)
+        {
+            if (serviceType == typeof(OpenApiDocumentService))
+            {
+                return TestDocumentService;
+            }
+
+            return _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey);
+        }
 
         public object GetService(Type serviceType)
         {
@@ -81,7 +124,7 @@ public abstract class OpenApiDocumentServiceTestBase
                 return Options.Create(new RouteHandlerOptions());
             }
 
-            return null;
+            return _serviceProvider.GetService(serviceType);
         }
     }
 }

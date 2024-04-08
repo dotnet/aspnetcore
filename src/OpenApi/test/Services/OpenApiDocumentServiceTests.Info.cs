@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,7 +22,8 @@ public partial class OpenApiDocumentServiceTests
             "v1",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object);
+            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            new Mock<IServiceProvider>().Object);
 
         // Act
         var info = docService.GetOpenApiInfo();
@@ -42,7 +44,8 @@ public partial class OpenApiDocumentServiceTests
             "v2",
             new Mock<IApiDescriptionGroupCollectionProvider>().Object,
             hostEnvironment,
-            new Mock<IOptionsMonitor<OpenApiOptions>>().Object);
+            new Mock<IOptionsMonitor<OpenApiOptions>>().Object,
+            new Mock<IServiceProvider>().Object);
 
         // Act
         var info = docService.GetOpenApiInfo();
