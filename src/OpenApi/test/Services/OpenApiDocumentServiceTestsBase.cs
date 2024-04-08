@@ -91,6 +91,7 @@ public abstract class OpenApiDocumentServiceTestBase
         public static TestServiceProvider Instance { get; } = new TestServiceProvider();
         private IKeyedServiceProvider _serviceProvider;
         internal OpenApiDocumentService TestDocumentService { get; set; }
+        internal OpenApiComponentService TestComponentService { get; set; } = new OpenApiComponentService();
 
         public void SetInternalServiceProvider(IServiceCollection serviceCollection)
         {
@@ -103,6 +104,10 @@ public abstract class OpenApiDocumentServiceTestBase
             {
                 return TestDocumentService;
             }
+            if (serviceType == typeof(OpenApiComponentService))
+            {
+                return TestComponentService;
+            }
 
             return _serviceProvider.GetKeyedService(serviceType, serviceKey);
         }
@@ -112,6 +117,10 @@ public abstract class OpenApiDocumentServiceTestBase
             if (serviceType == typeof(OpenApiDocumentService))
             {
                 return TestDocumentService;
+            }
+            if (serviceType == typeof(OpenApiComponentService))
+            {
+                return TestComponentService;
             }
 
             return _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey);

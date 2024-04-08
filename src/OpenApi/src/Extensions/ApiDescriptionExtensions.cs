@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -81,4 +83,34 @@ internal static class ApiDescriptionExtensions
         apiParameterDescription.Source == BindingSource.Body ||
         apiParameterDescription.Source == BindingSource.FormFile ||
         apiParameterDescription.Source == BindingSource.Form;
+
+    /// <summary>
+    /// Retrieves the form parameters from the ApiDescription, if they exist.
+    /// </summary>
+    /// <param name="apiDescription">The ApiDescription to resolve form parameters from.</param>
+    /// <param name="formParameters">A list of <see cref="ApiParameterDescription"/> associated with the form parameters.</param>
+    /// <returns><see langword="true"/> if form parameters were found, <see langword="false"/> otherwise.</returns>
+    public static bool TryGetFormParameters(this ApiDescription apiDescription, out IEnumerable<ApiParameterDescription> formParameters)
+    {
+        formParameters = apiDescription.ParameterDescriptions.Where(parameter => parameter.Source == BindingSource.Form || parameter.Source == BindingSource.FormFile);
+        return formParameters.Any();
+    }
+
+    /// <summary>
+    /// Retrieves the body parameter from the ApiDescription, if it exists.
+    /// </summary>
+    /// <param name="apiDescription">The ApiDescription to resolve the body parameter from.</param>
+    /// <param name="bodyParameter">The <see cref="ApiParameterDescription"/> associated with the body parameter.</param>
+    /// <returns><see langword="true"/> if a single body parameter was found, <see langword="false"/> otherwise.</returns>
+    public static bool TryGetBodyParameter(this ApiDescription apiDescription, [NotNullWhen(true)] out ApiParameterDescription? bodyParameter)
+    {
+        bodyParameter = null;
+        var bodyParameters = apiDescription.ParameterDescriptions.Where(parameter => parameter.Source == BindingSource.Body);
+        if (bodyParameters.Count() == 1)
+        {
+            bodyParameter = bodyParameters.Single();
+            return true;
+        }
+        return false;
+    }
 }
