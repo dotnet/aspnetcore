@@ -389,9 +389,12 @@ internal sealed class Http2FrameWriter
             }
 
             _completed = true;
-            AbortConnectionFlowControl();
             _outputWriter.Abort();
         }
+
+        // Ok to call after aborting the Pipe because we've already set _completed to true which means any writes from the abort call
+        // won't call into the Pipe.
+        AbortConnectionFlowControl();
     }
 
     public Task ShutdownAsync()
@@ -934,6 +937,9 @@ internal sealed class Http2FrameWriter
         }
     }
 
+    /// <summary>
+    /// Do not call this method under the _writeLock
+    /// </summary>
     private void AbortConnectionFlowControl()
     {
         lock (_windowUpdateLock)
