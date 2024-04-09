@@ -37,8 +37,8 @@ public class ContentDispositionHeaderValue
 
     // attr-char definition from RFC5987
     // Same as token except ( "*" / "'" / "%" )
-    private static readonly SearchValues<char> AttrChar =
-        SearchValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
+    private static readonly SearchValues<byte> Rfc5987AttrChar =
+        SearchValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~"u8);
 
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
@@ -625,47 +625,66 @@ public class ContentDispositionHeaderValue
             ? stackalloc byte[MaxStackAllocSizeBytes]
             : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
 
+        char[]? charBufferFromPool = null;
+        Span<char> tempCharBuffer = maxInputBytes <= MaxStackAllocSizeBytes
+            ? stackalloc char[MaxStackAllocSizeBytes]
+            : charBufferFromPool = ArrayPool<char>.Shared.Rent(maxInputBytes);
+
         var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
         inputBytes = inputBytes[..bytesWritten];
 
-        int totalBytesConsumed = 0;
-        while (totalBytesConsumed < inputBytes.Length)
+        while (inputBytes.Length > 0)
         {
-            if (Ascii.IsValid(inputBytes[totalBytesConsumed]))
+            var length = inputBytes.IndexOfAnyExcept(Rfc5987AttrChar);
+            if (length < 0)
             {
-                // This is an ASCII char. Let's handle it ourselves.
+                length = inputBytes.Length;
+            }
+            int asciiCharCount = Encoding.ASCII.GetChars(inputBytes.Slice(0, length), tempCharBuffer);
+            builder.Append(tempCharBuffer[..asciiCharCount]);
 
-                char c = (char)inputBytes[totalBytesConsumed];
-                if (!AttrChar.Contains(c))
+            inputBytes = inputBytes.Slice(length);
+            if (inputBytes.IsEmpty)
+            {
+                break;
+            }
+
+            length = inputBytes.IndexOfAny(Rfc5987AttrChar);
+            if (length < 0)
+            {
+                length = inputBytes.Length;
+            }
+
+            var toHexEscape = inputBytes.Slice(0, length);
+            while (toHexEscape.Length > 0)
+            {
+                if (Ascii.IsValid(toHexEscape[0]))
                 {
-                    HexEscape(builder, c);
+                    HexEscape(builder, toHexEscape[0]);
+                    toHexEscape = toHexEscape.Slice(1);
                 }
                 else
                 {
-                    builder.Append(c);
+                    Rune.DecodeFromUtf8(toHexEscape, out Rune r, out int bytesConsumedForRune);
+                    Contract.Assert(!r.IsAscii, "We shouldn't have gotten here if the Rune is ASCII.");
+                    for (int i = 0; i < bytesConsumedForRune; i++)
+                    {
+                        HexEscape(builder, toHexEscape[i]);
+                    }
+                    toHexEscape = toHexEscape.Slice(bytesConsumedForRune);
                 }
-
-                totalBytesConsumed++;
             }
-            else
-            {
-                // Non-ASCII, let's rely on Rune to decode it.
 
-                Rune.DecodeFromUtf8(inputBytes.Slice(totalBytesConsumed), out Rune r, out int bytesConsumedForRune);
-                Contract.Assert(!r.IsAscii, "We shouldn't have gotten here if the Rune is ASCII.");
-
-                for (int i = 0; i < bytesConsumedForRune; i++)
-                {
-                    HexEscape(builder, (char)inputBytes[totalBytesConsumed + i]);
-                }
-
-                totalBytesConsumed += bytesConsumedForRune;
-            }
+            inputBytes = inputBytes.Slice(length);
         }
 
         if (bufferFromPool is not null)
         {
             ArrayPool<byte>.Shared.Return(bufferFromPool);
+        }
+        if (charBufferFromPool is not null)
+        {
+            ArrayPool<char>.Shared.Return(charBufferFromPool);
         }
 
         return builder.ToString();
@@ -675,11 +694,11 @@ public class ContentDispositionHeaderValue
                                    '0', '1', '2', '3', '4', '5', '6', '7',
                                    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-    private static void HexEscape(StringBuilder builder, char c)
+    private static void HexEscape(StringBuilder builder, byte b)
     {
         builder.Append('%');
-        builder.Append(HexUpperChars[(c & 0xf0) >> 4]);
-        builder.Append(HexUpperChars[c & 0xf]);
+        builder.Append(HexUpperChars[(b & 0xf0) >> 4]);
+        builder.Append(HexUpperChars[b & 0xf]);
     }
 
     // Attempt to decode using RFC 5987 encoding.
