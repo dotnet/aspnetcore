@@ -27,12 +27,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// APIs that rely on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, such as
     /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to potential spoofing by clients.
     ///
-    /// To prevent host and port spoofing, use one of the following approaches:
-    ///
-    /// <list type="bullet">
-    ///   <item>Use <see cref="HttpContext.Connection"/> (<see cref="ConnectionInfo.LocalPort"/>) where the ports are checked.</item>
-    ///   <item>Employ <see href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/host-filtering">Host filtering</see>.</item>
-    /// </list>
+    /// To prevent host and port spoofing, use <see href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.connections.features.itlshandshakefeature.hostname">ITlsHandshakeFeature.HostName</see> to verify the server name used during the TLS handshake, and <see cref="HttpContext.Connection"/> (<see cref="ConnectionInfo.LocalPort"/>) to verify the local port the connection was accepted on.
     /// </remarks>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
