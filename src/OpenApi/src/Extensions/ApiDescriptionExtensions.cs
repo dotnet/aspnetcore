@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.OpenApi.Models;
 
@@ -70,4 +71,14 @@ internal static class ApiDescriptionExtensions
         }
         return strippedRoute.ToString();
     }
+
+    /// <summary>
+    /// Determines if the given <see cref="ApiParameterDescription" /> is a request body parameter.
+    /// </summary>
+    /// <param name="apiParameterDescription">The <see cref="ApiParameterDescription"/> to check. </param>
+    /// <returns>Returns <langword ref="true"/> if the given parameter comes from the request body, <langword ref="false"/> otherwise.</returns>
+    public static bool IsRequestBodyParameter(this ApiParameterDescription apiParameterDescription) =>
+        apiParameterDescription.Source == BindingSource.Body ||
+        apiParameterDescription.Source == BindingSource.FormFile ||
+        apiParameterDescription.Source == BindingSource.Form;
 }
