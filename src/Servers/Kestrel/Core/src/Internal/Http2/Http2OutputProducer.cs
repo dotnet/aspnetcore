@@ -590,6 +590,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal void OnRequestProcessingEnded()
     {
+        var shouldCompleteStream = false;
         lock (_dataWriterLock)
         {
             if (_requestProcessingComplete)
@@ -600,15 +601,22 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _requestProcessingComplete = true;
 
-            if (_completedResponse)
-            {
-                Stream.CompleteStream(errored: false);
-            }
+            shouldCompleteStream = _completedResponse;
         }
+
+        // Complete outside of lock, anything this method does that needs a lock will acquire a lock itself.
+        if (shouldCompleteStream)
+        {
+            Stream.CompleteStream(errored: false);
+        }
+
     }
 
     internal ValueTask<FlushResult> CompleteResponseAsync()
     {
+        var shouldCompleteStream = false;
+        ValueTask<FlushResult> task = default;
+
         lock (_dataWriterLock)
         {
             if (_completedResponse)
@@ -619,8 +627,6 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _completedResponse = true;
 
-            ValueTask<FlushResult> task = default;
-
             if (_resetErrorCode is { } error)
             {
                 // If we have an error code to write, write it now that we're done with the response.
@@ -628,13 +634,16 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
                 task = _frameWriter.WriteRstStreamAsync(StreamId, error);
             }
 
-            if (_requestProcessingComplete)
-            {
-                Stream.CompleteStream(errored: false);
-            }
-
-            return task;
+            shouldCompleteStream = _requestProcessingComplete;
         }
+
+        // Complete outside of lock, anything this method does that needs a lock will acquire a lock itself.
+        if (shouldCompleteStream)
+        {
+            Stream.CompleteStream(errored: false);
+        }
+
+        return task;
     }
 
     internal Memory<byte> GetFakeMemory(int minSize)
