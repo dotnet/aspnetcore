@@ -370,17 +370,31 @@ internal sealed class Http2FrameWriter
         }
     }
 
+    /// <summary>
+    /// Call while in the <c>_writeLock</c>.
+    /// </summary>
+    /// <returns><c>true</c> if already completed.</returns>
+    private bool CompleteUnsynchronized()
+    {
+        if (_completed)
+        {
+            return true;
+        }
+
+        _completed = true;
+        _outputWriter.Abort();
+
+        return false;
+    }
+
     public void Complete()
     {
         lock (_writeLock)
         {
-            if (_completed)
+            if (CompleteUnsynchronized())
             {
                 return;
             }
-
-            _completed = true;
-            _outputWriter.Abort();
         }
 
         // Ok to call after aborting the Pipe because we've already set _completed to true which means any writes from the abort call
@@ -407,7 +421,10 @@ internal sealed class Http2FrameWriter
             _aborted = true;
             _connectionContext.Abort(error);
 
-            Complete();
+            if (CompleteUnsynchronized())
+            {
+                return;
+            }
         }
     }
 
