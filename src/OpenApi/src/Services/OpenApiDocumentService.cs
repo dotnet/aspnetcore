@@ -35,6 +35,7 @@ internal sealed class OpenApiDocumentService(
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
     private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
+    private static readonly ApiResponseType _defaultApiResponseType = new ApiResponseType { StatusCode = StatusCodes.Status200OK };
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
@@ -169,7 +170,7 @@ internal sealed class OpenApiDocumentService(
         {
             return new OpenApiResponses
             {
-                ["200"] = GetResponse(description, StatusCodes.Status200OK, new ApiResponseType { StatusCode = StatusCodes.Status200OK })
+                ["200"] = GetResponse(description, StatusCodes.Status200OK, _defaultApiResponseType)
             };
         }
 
@@ -191,14 +192,13 @@ internal sealed class OpenApiDocumentService(
     private static OpenApiResponse GetResponse(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType)
     {
         var description = ReasonPhrases.GetReasonPhrase(statusCode);
-        HashSet<string> responseContentTypes = [];
         var response = new OpenApiResponse
         {
             Description = description,
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
-        // ApiResponseFormats aggregates information about the support response content types
+        // ApiResponseFormats aggregates information about the supported response content types
         // from different types of Produces metadata. This is handled by ApiExplorer so looking
         // up values in ApiResponseFormats should provide us a complete set of the information
         // encoded in Produces metadata added via attributes or extension methods.

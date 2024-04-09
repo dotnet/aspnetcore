@@ -138,6 +138,32 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_SupportsDifferentResponseTypesWitDifferentContentTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TodoWithDueDate), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/xml"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal("OK", response.Value.Description);
+            Assert.Collection(response.Value.Content.OrderBy(c => c.Key),
+                content =>
+                {
+                    Assert.Equal("application/xml", content.Key);
+                });
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_ProducesDefaultResponse()
     {
         // Arrange
