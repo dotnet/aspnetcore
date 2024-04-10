@@ -3,7 +3,7 @@ parameters:
 
 steps:
 - ${{ if eq(parameters.disableComponentGovernance, 'true') }}:
-  - script: "echo ##vso[task.setvariable variable=skipComponentGovernanceDetection]true"
+  - script: echo "##vso[task.setvariable variable=skipComponentGovernanceDetection]true"
     displayName: Set skipComponentGovernanceDetection variable
 - ${{ if ne(parameters.disableComponentGovernance, 'true') }}:
   - task: ComponentGovernanceComponentDetection@0
