@@ -625,8 +625,9 @@ public class ContentDispositionHeaderValue
             ? stackalloc byte[MaxStackAllocSizeBytes]
             : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
 
+        var maxInputAsciiCount = Encoding.ASCII.GetMaxCharCount(input.Length);
         char[]? charBufferFromPool = null;
-        Span<char> tempCharBuffer = maxInputBytes <= MaxStackAllocSizeBytes
+        Span<char> tempCharBuffer = maxInputAsciiCount <= MaxStackAllocSizeBytes
             ? stackalloc char[MaxStackAllocSizeBytes]
             : charBufferFromPool = ArrayPool<char>.Shared.Rent(maxInputBytes);
 
@@ -644,7 +645,7 @@ public class ContentDispositionHeaderValue
             builder.Append(tempCharBuffer[..asciiCharCount]);
 
             inputBytes = inputBytes.Slice(length);
-            if (inputBytes.IsEmpty)
+            if (inputBytes.Length == 0)
             {
                 break;
             }
@@ -658,21 +659,8 @@ public class ContentDispositionHeaderValue
             var toHexEscape = inputBytes.Slice(0, length);
             while (toHexEscape.Length > 0)
             {
-                if (Ascii.IsValid(toHexEscape[0]))
-                {
-                    HexEscape(builder, toHexEscape[0]);
-                    toHexEscape = toHexEscape.Slice(1);
-                }
-                else
-                {
-                    Rune.DecodeFromUtf8(toHexEscape, out Rune r, out int bytesConsumedForRune);
-                    Contract.Assert(!r.IsAscii, "We shouldn't have gotten here if the Rune is ASCII.");
-                    for (int i = 0; i < bytesConsumedForRune; i++)
-                    {
-                        HexEscape(builder, toHexEscape[i]);
-                    }
-                    toHexEscape = toHexEscape.Slice(bytesConsumedForRune);
-                }
+                HexEscape(builder, toHexEscape[0]);
+                toHexEscape = toHexEscape.Slice(1);
             }
 
             inputBytes = inputBytes.Slice(length);
