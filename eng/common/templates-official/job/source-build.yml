@@ -50,7 +50,7 @@ jobs:
         demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: NetCore1ESPool-Svc-Internal
-        image: 1es-mariner-2-pt
+        image: 1es-mariner-2
         os: linux
   ${{ if ne(parameters.platform.pool, '') }}:
     pool: ${{ parameters.platform.pool }}
