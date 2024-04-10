@@ -9,5 +9,5 @@ internal static class OpenApiConstants
     internal const string DefaultOpenApiVersion = "1.0.0";
     internal const string DefaultOpenApiRoute = "/openapi/{documentName}.json";
     internal const string DescriptionId = "x-aspnetcore-id";
-    internal const string DefaultResponseStatusCode = "default";
+    internal const string DefaultOpenApiResponseKey = "default";
 }

@@ -224,8 +224,33 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         {
             var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
             var response = Assert.Single(operation.Responses);
-            Assert.Equal(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultResponseStatusCode, response.Key);
+            Assert.Equal(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultOpenApiResponseKey, response.Key);
             Assert.Empty(response.Value.Description);
+            // Todo: Validate generated schema.
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_SupportsGeneratingDefaultResponseWithSuccessResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", [ProducesDefaultResponseType(typeof(Error))] () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var defaultResponse = operation.Responses[Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultOpenApiResponseKey];
+            Assert.NotNull(defaultResponse);
+            Assert.Empty(defaultResponse.Description);
+            var okResponse = operation.Responses["200"];
+            Assert.NotNull(okResponse);
+            Assert.Equal("OK", okResponse.Description);
+            Assert.Equal("application/json", Assert.Single(okResponse.Content).Key);
             // Todo: Validate generated schema.
         });
     }

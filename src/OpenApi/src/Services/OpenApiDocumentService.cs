@@ -181,10 +181,10 @@ internal sealed class OpenApiDocumentService(
             // the response for all HTTP status codes that are not explicitly defined
             // for a given operation. This is typically used to describe catch-all scenarios
             // like error responses.
-            var statusCode = responseType.IsDefaultResponse
-                ? OpenApiConstants.DefaultResponseStatusCode
+            var responseKey = responseType.IsDefaultResponse
+                ? OpenApiConstants.DefaultOpenApiResponseKey
                 : responseType.StatusCode.ToString(CultureInfo.InvariantCulture);
-            responses.Add(statusCode, GetResponse(description, responseType.StatusCode, responseType));
+            responses.Add(responseKey, GetResponse(description, responseType.StatusCode, responseType));
         }
         return responses;
     }
