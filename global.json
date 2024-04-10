@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "7.0.117"
+    "version": "7.0.118"
   },
   "tools": {
-    "dotnet": "7.0.117",
+    "dotnet": "7.0.118",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
@@ -27,7 +27,7 @@
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.22.19",
-    "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.24171.6",
-    "Microsoft.DotNet.Helix.Sdk": "7.0.0-beta.24171.6"
+    "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.24209.2",
+    "Microsoft.DotNet.Helix.Sdk": "7.0.0-beta.24209.2"
   }
 }
