@@ -29,6 +29,7 @@ public class ContentDispositionHeaderValue
     private const string ReadDateString = "read-date";
     private const string SizeString = "size";
     private const int MaxStackAllocSizeBytes = 256;
+    private const int MaxStackAllocSizeChars = MaxStackAllocSizeBytes / 2;
     private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
     private static readonly char[] EscapeChars = new char[] { '\\', '"' };
@@ -627,9 +628,9 @@ public class ContentDispositionHeaderValue
 
         var maxInputAsciiCount = Encoding.ASCII.GetMaxCharCount(input.Length);
         char[]? charBufferFromPool = null;
-        Span<char> tempCharBuffer = maxInputAsciiCount <= MaxStackAllocSizeBytes
-            ? stackalloc char[MaxStackAllocSizeBytes]
-            : charBufferFromPool = ArrayPool<char>.Shared.Rent(maxInputBytes);
+        Span<char> tempCharBuffer = maxInputAsciiCount <= MaxStackAllocSizeChars
+            ? stackalloc char[MaxStackAllocSizeChars]
+            : charBufferFromPool = ArrayPool<char>.Shared.Rent(maxInputAsciiCount);
 
         var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
         inputBytes = inputBytes[..bytesWritten];
