@@ -189,12 +189,17 @@ body .location {
 }
 .page td {
     padding: 3px 10px;
+    font-size: 1em;
 }
 .page tr {
     border-bottom: 1px solid var(--color-border);
 }
 .page tr > :not(:last-child) {
     border-right: 1px solid var(--color-border);
+}
+
+.page tr > :last-child {
+    word-break: break-all;
 }
 
 /* Raw exception details */
