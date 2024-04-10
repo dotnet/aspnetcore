@@ -371,7 +371,7 @@ internal sealed class Http2FrameWriter
     }
 
     /// <summary>
-    /// Call while in the <c>_writeLock</c>.
+    /// Call while in the <see cref="_writeLock"/>.
     /// </summary>
     /// <returns><c>true</c> if already completed.</returns>
     private bool CompleteUnsynchronized()
@@ -397,8 +397,8 @@ internal sealed class Http2FrameWriter
             }
         }
 
-        // Ok to call after aborting the Pipe because we've already set _completed to true which means any writes from the abort call
-        // won't call into the Pipe.
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
         AbortConnectionFlowControl();
     }
 
@@ -426,6 +426,10 @@ internal sealed class Http2FrameWriter
                 return;
             }
         }
+
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
+        AbortConnectionFlowControl();
     }
 
     private ValueTask<FlushResult> FlushEndOfStreamHeadersAsync(Http2Stream stream)
@@ -946,7 +950,9 @@ internal sealed class Http2FrameWriter
     }
 
     /// <summary>
-    /// Do not call this method under the _writeLock
+    /// Do not call this method under the _writeLock.
+    /// This method can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+    /// which is not the desired lock order
     /// </summary>
     private void AbortConnectionFlowControl()
     {
