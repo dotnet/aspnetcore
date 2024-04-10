@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -138,6 +139,7 @@ internal sealed class OpenApiDocumentService(
             Summary = GetSummary(description),
             Description = GetDescription(description),
             Responses = GetResponses(description),
+            Parameters = GetParameters(description),
             Tags = tags,
         };
         return operation;
@@ -221,5 +223,37 @@ internal sealed class OpenApiDocumentService(
         }
 
         return response;
+    }
+
+    private static List<OpenApiParameter>? GetParameters(ApiDescription description)
+    {
+        List<OpenApiParameter>? parameters = null;
+        foreach (var parameter in description.ParameterDescriptions)
+        {
+            // Parameters that should be in the request body should not be
+            // populated in the parameters list.
+            if (parameter.IsRequestBodyParameter())
+            {
+                continue;
+            }
+
+            var openApiParameter = new OpenApiParameter
+            {
+                Name = parameter.Name,
+                In = parameter.Source.Id switch
+                {
+                    "Query" => ParameterLocation.Query,
+                    "Header" => ParameterLocation.Header,
+                    "Path" => ParameterLocation.Path,
+                    _ => throw new InvalidOperationException($"Unsupported parameter source: {parameter.Source.Id}")
+                },
+                // Per the OpenAPI specification, parameters that are sourced from the path
+                // are always required, regardless of the requiredness status of the parameter.
+                Required = parameter.Source == BindingSource.Path || parameter.IsRequired,
+            };
+            parameters ??= [];
+            parameters.Add(openApiParameter);
+        }
+        return parameters;
     }
 }
