@@ -64,6 +64,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public bool Virtualize { get; set; }
 
     /// <summary>
+    /// This is applicable only when using <see cref="Virtualize"/>. It defines the amount of overscan rows
+    /// to load and is automatically passed to the Vitualize component during initilization.
+    /// </summary>
+    [Parameter] public int OverscanCount { get; set; }
+
+    /// <summary>
     /// This is applicable only when using <see cref="Virtualize"/>. It defines an expected height in pixels for
     /// each row, allowing the virtualization mechanism to fetch the correct number of items to match the display
     /// size and to ensure accurate scrolling.
