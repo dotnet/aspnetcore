@@ -222,6 +222,14 @@ public class ContentDispositionHeaderValueTest
     }
 
     [Fact]
+    public void LongValidAscii_FullyProcessedWithout()
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("inline");
+        contentDisposition.FileNameStar = new string('a', 400); // 400 is larger to the max stackallow size
+        Assert.Equal($"UTF-8\'\'{new string('a', 400)}", contentDisposition.Parameters.First().Value);
+    }
+
+    [Fact]
     public void FileNameStar_WhenNeedsEncoding_UsesHex()
     {
         var contentDisposition = new ContentDispositionHeaderValue("inline");
