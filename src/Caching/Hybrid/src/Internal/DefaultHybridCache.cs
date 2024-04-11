@@ -5,10 +5,26 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
+
+/// <summary>
+/// The inbuilt ASP.NET implementation of <see cref="HybridCache"/>
+/// </summary>
 internal sealed class DefaultHybridCache : HybridCache
 {
+    private readonly IDistributedCache backendCache;
+    private readonly IServiceProvider services;
+    private readonly HybridCacheOptions options;
+    public DefaultHybridCache(IOptions<HybridCacheOptions> options, IDistributedCache backendCache, IServiceProvider services)
+    {
+        this.backendCache = backendCache ?? throw new ArgumentNullException(nameof(backendCache));
+        this.services = services ?? throw new ArgumentNullException(nameof(services));
+        this.options = options.Value;
+    }
+
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default)
         => underlyingDataCallback(state, token); // pass-thru without caching for initial API pass
 
