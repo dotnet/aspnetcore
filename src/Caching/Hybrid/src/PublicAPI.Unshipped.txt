@@ -20,7 +20,7 @@ Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableDistributedCach
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableLocalCache = Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableLocalCacheRead | Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableLocalCacheWrite -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableLocalCacheRead = 1 -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableLocalCacheWrite = 2 -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags
-Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableUndelyingData = 16 -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags
+Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.DisableUnderlyingData = 16 -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags.None = 0 -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryFlags
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions.Expiration.get -> System.TimeSpan?

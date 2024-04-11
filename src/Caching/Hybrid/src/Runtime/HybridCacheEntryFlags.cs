@@ -42,7 +42,7 @@ public enum HybridCacheEntryFlags
     /// <summary>
     /// Only fetch the value from cache - do not attempt to access the underlying data store
     /// </summary>
-    DisableUndelyingData = 1 << 4,
+    DisableUnderlyingData = 1 << 4,
     /// <summary>
     /// Do not compress this payload
     /// </summary>
