@@ -103,7 +103,7 @@ stages:
         # If it's not devdiv, it's dnceng
         ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
           name: NetCore1ESPool-Svc-Internal
-          image: 1es-windows-2022-pt
+          image: 1es-windows-2022
           os: windows
 
       steps:
@@ -137,12 +137,13 @@ stages:
         # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
           demands: Cmd
           os: windows
         # If it's not devdiv, it's dnceng
         ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
           name: NetCore1ESPool-Svc-Internal
-          image: 1es-windows-2022-pt
+          image: 1es-windows-2022
           os: windows
       steps:
         - template: setup-maestro-vars.yml
@@ -205,7 +206,7 @@ stages:
         # If it's not devdiv, it's dnceng
         ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
           name: NetCore1ESPool-Svc-Internal
-          image: 1es-windows-2022-pt
+          image: 1es-windows-2022
           os: windows
       steps:
         - template: setup-maestro-vars.yml
@@ -251,12 +252,13 @@ stages:
       # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
         ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
           name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
           demands: Cmd
           os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: NetCore1ESPool-Svc-Internal
-          image: 1es-windows-2022-pt
+          image: 1es-windows-2022
           os: windows
     steps:
       - template: setup-maestro-vars.yml

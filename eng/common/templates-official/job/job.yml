@@ -116,7 +116,7 @@ jobs:
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - ${{ if eq(parameters.enableMicrobuild, 'true') }}:
-      - task: MicroBuildSigningPlugin@3
+      - task: MicroBuildSigningPlugin@4
         displayName: Install MicroBuild plugin
         inputs:
           signType: $(_SignType)
@@ -124,6 +124,7 @@ jobs:
           feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
         env:
           TeamName: $(_TeamName)
+          MicroBuildOutputFolderOverride: '$(Agent.TempDirectory)'
         continueOnError: ${{ parameters.continueOnError }}
         condition: and(succeeded(), in(variables['_SignType'], 'real', 'test'), eq(variables['Agent.Os'], 'Windows_NT'))
 

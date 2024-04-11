@@ -80,14 +80,16 @@ jobs:
       inputs:
         targetType: inline
         script: |
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(BARBuildId)
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value "$(DefaultChannels)"
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsStableBuild)
+          New-Item -Path "$(Build.StagingDirectory)/ReleaseConfigs" -ItemType Directory -Force
+          $filePath = "$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt"
+          Add-Content -Path $filePath -Value $(BARBuildId)
+          Add-Content -Path $filePath -Value "$(DefaultChannels)"
+          Add-Content -Path $filePath -Value $(IsStableBuild)
 
     - task: 1ES.PublishBuildArtifacts@1
       displayName: Publish ReleaseConfigs Artifact
       inputs:
-        PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs.txt'
+        PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs'
         PublishLocation: Container
         ArtifactName: ReleaseConfigs
 
