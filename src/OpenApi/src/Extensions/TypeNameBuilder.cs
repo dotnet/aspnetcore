@@ -92,22 +92,12 @@ internal sealed class TypeNameBuilder
 
         if (rank == 1)
         {
-            Append("[*]");
-        }
-        else if (rank > 64)
-        {
-            // Only taken in an error path, runtime will not load arrays of more than 32 dimensions
-            _str.Append('[').Append(rank).Append(']');
+            Append("Array");
         }
         else
         {
-            Append('[');
-            for (int i = 1; i < rank; i++)
-            {
-                Append(',');
-            }
-
-            Append(']');
+            // Only taken in an error path, runtime will not load arrays of more than 32 dimensions
+            _str.Append("ArrayOf").Append(rank);
         }
     }
 
