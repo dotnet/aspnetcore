@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -80,7 +79,6 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
         // Note this is already checked in CheckRequestAcceptsCompression which _should_ prevent any of these other methods from being called.
         if (StringValues.IsNullOrEmpty(accept))
         {
-            Debug.Assert(false, "Duplicate check failed.");
             _logger.NoAcceptEncoding();
             return null;
         }
@@ -218,12 +216,6 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
     /// <inheritdoc />
     public bool CheckRequestAcceptsCompression(HttpContext context)
     {
-        if (string.IsNullOrEmpty(context.Request.Headers.AcceptEncoding))
-        {
-            _logger.NoAcceptEncoding();
-            return false;
-        }
-
         _logger.RequestAcceptsCompression(); // Trace, there will be more logs
         return true;
     }
