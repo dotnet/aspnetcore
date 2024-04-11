@@ -324,14 +324,14 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9b57a265c7efd3732b035bade005561a04767128</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24204.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24208.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>67956470ccbe5a51255b5b014811076ae99ae79f</Sha>
+      <Sha>282e0064c30d5cef9b1c1cabb12ef6b55775c54d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24204.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24208.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>67956470ccbe5a51255b5b014811076ae99ae79f</Sha>
+      <Sha>282e0064c30d5cef9b1c1cabb12ef6b55775c54d</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24162.2">
@@ -367,9 +367,9 @@
       <Sha>9b57a265c7efd3732b035bade005561a04767128</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24201.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24203.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>bcd44732882bc2b81b30146c778eb6ccb7fea793</Sha>
+      <Sha>1e2e91d2544726b2cf68109f946178ef6bef3ad9</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
   </ProductDependencies>
@@ -430,9 +430,9 @@
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.24171.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.1.0-beta.24177.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>01de94d9718fd48c511cae276437edcd41b41fa4</Sha>
+      <Sha>7ae564f9397e5d1b6035f6cf9ebe4f6b0b94882a</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
