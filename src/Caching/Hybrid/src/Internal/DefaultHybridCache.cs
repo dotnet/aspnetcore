@@ -28,7 +28,7 @@ internal sealed class DefaultHybridCache : HybridCache
     }
     internal HybridCacheOptions Options => options;
 
-    public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default)
+    public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
         => underlyingDataCallback(state, token); // pass-thru without caching for initial API pass
 
     public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)
@@ -37,7 +37,7 @@ internal sealed class DefaultHybridCache : HybridCache
     public override ValueTask RemoveTagAsync(string tag, CancellationToken token = default)
         => default; // no cache, nothing to remove
 
-    public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default)
+    public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
         => default; // no cache, nothing to set
 
     internal IHybridCacheSerializer<T> GetSerializer<T>()

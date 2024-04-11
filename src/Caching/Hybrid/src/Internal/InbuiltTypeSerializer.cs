@@ -11,8 +11,7 @@ using System.Text;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IHybridCacheSerializer<byte[]>
 {
-    private static InbuiltTypeSerializer? _instance;
-    public static InbuiltTypeSerializer Instance => _instance ??= new();
+    public static InbuiltTypeSerializer Instance { get; } = new();
     string IHybridCacheSerializer<string>.Deserialize(ReadOnlySequence<byte> source)
     {
 #if NET5_0_OR_GREATER

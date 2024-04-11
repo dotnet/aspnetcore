@@ -27,7 +27,7 @@ public abstract class HybridCache
     /// <returns>The data, either from cache or the underlying data service</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Delegate differences make this unambiguous")]
     public abstract ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
-        HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default);
+        HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default);
 
     /// <summary>
     /// Get data from the cache, or the underlying data service if not available.
@@ -41,7 +41,7 @@ public abstract class HybridCache
     /// <returns>The data, either from cache or the underlying data service</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Delegate differences make this unambiguous")]
     public ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> underlyingDataCallback,
-        HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default)
+        HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
         => GetOrCreateAsync(key, underlyingDataCallback, WrappedCallbackCache<T>.Instance, options, tags, token);
 
     private static class WrappedCallbackCache<T> // per-T memoized helper that allows GetOrCreateAsync<T> and GetOrCreateAsync<TState, T> to share an implementation
@@ -59,7 +59,7 @@ public abstract class HybridCache
     /// <param name="options">Additional options for this cache entry</param>
     /// <param name="tags">The tags to associate with this cache item</param>
     /// <param name="token">Cancellation for this operation</param>
-    public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default);
+    public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default);
 
     /// <summary>
     /// Removes cache data with the specified key

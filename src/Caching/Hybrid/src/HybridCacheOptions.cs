@@ -28,7 +28,8 @@ public class HybridCacheOptions
     public bool DisableCompression { get; set; }
 
     /// <summary>
-    /// The maximum size of cache items; attempts to store values over this size will be logged.
+    /// The maximum size of cache items; attempts to store values over this size will be logged
+    /// and the value will not be stored in cache.
     /// </summary>
     public long MaximumPayloadBytes { get; set; } = 1 << 20; // 1MiB
 
