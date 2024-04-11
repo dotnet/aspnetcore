@@ -605,6 +605,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
 
         // Complete outside of lock, anything this method does that needs a lock will acquire a lock itself.
+        // Additionally, this method should only be called once per Reset so calling outside of the lock is fine from the perspective
+        // of multiple threads calling OnRequestProcessingEnded.
         if (shouldCompleteStream)
         {
             Stream.CompleteStream(errored: false);
@@ -638,6 +640,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
 
         // Complete outside of lock, anything this method does that needs a lock will acquire a lock itself.
+        // CompleteResponseAsync also should never be called in parallel so calling this outside of the lock doesn't
+        // cause any weirdness with parallel threads calling this method and no longer waiting on the stream completion call.
         if (shouldCompleteStream)
         {
             Stream.CompleteStream(errored: false);

@@ -511,7 +511,7 @@ internal sealed class Http2FrameWriter
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             var buffer = _headerEncodingBuffer.AsSpan();
             var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-            FinishWritingHeaders(streamId, payloadLength, done);
+            FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
         // Since we allow custom header encoders we don't know what type of exceptions to expect.
@@ -552,7 +552,7 @@ internal sealed class Http2FrameWriter
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                 var buffer = _headerEncodingBuffer.AsSpan();
                 var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-                FinishWritingHeaders(streamId, payloadLength, done);
+                FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
             }
             // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
             // Since we allow custom header encoders we don't know what type of exceptions to expect.
@@ -566,7 +566,7 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    private void FinishWritingHeaders(int streamId, int payloadLength, bool done)
+    private void FinishWritingHeadersUnsynchronized(int streamId, int payloadLength, bool done)
     {
         var buffer = _headerEncodingBuffer.AsSpan();
         _outgoingFrame.PayloadLength = payloadLength;
