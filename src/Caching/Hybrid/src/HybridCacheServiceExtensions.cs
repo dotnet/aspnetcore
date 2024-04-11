@@ -47,11 +47,7 @@ public static class HybridCacheServiceExtensions
         _ = services ?? throw new ArgumentNullException(nameof(services));
 #endif
 
-#if NET8_0_OR_GREATER
         services.TryAddSingleton(TimeProvider.System);
-#else
-        services.TryAddSingleton<ISystemClock, SystemClock>();
-#endif
         services.AddOptions();
         services.AddMemoryCache();
         services.AddDistributedMemoryCache(); // we need a backend; use in-proc by default

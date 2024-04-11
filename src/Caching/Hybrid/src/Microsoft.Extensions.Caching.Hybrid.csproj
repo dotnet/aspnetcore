@@ -21,5 +21,6 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0'" >
     <Reference Include="System.Text.Json" />
+    <Reference Include="Microsoft.Bcl.TimeProvider" />
   </ItemGroup>
 </Project>
