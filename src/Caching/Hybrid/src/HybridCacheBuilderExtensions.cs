@@ -12,12 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Caching.Hybrid;
 
 /// <summary>
-/// Configuration extension methods for <see cref="IHybridCacheBuilder"/> / <see cref="HybridCache"/>
+/// Configuration extension methods for <see cref="IHybridCacheBuilder"/> / <see cref="HybridCache"/>.
 /// </summary>
 public static class HybridCacheBuilderExtensions
 {
     /// <summary>
-    /// Serialize values of type <typeparamref name="T"/> with the specified serializer from <paramref name="serializer"/>
+    /// Serialize values of type <typeparamref name="T"/> with the specified serializer from <paramref name="serializer"/>.
     /// </summary>
     public static IHybridCacheBuilder WithSerializer<T>(this IHybridCacheBuilder builder, IHybridCacheSerializer<T> serializer)
     {
@@ -26,7 +26,7 @@ public static class HybridCacheBuilderExtensions
     }
 
     /// <summary>
-    /// Serialize values of type <typeparamref name="T"/> with the serializer of type <typeparamref name="TImplementation"/>
+    /// Serialize values of type <typeparamref name="T"/> with the serializer of type <typeparamref name="TImplementation"/>.
     /// </summary>
     public static IHybridCacheBuilder WithSerializer<T,
 #if NET5_0_OR_GREATER
@@ -40,7 +40,7 @@ public static class HybridCacheBuilderExtensions
     }
 
     /// <summary>
-    /// Add <paramref name="factory"/> as an additional serializer factory, which can provide serializers for multiple types
+    /// Add <paramref name="factory"/> as an additional serializer factory, which can provide serializers for multiple types.
     /// </summary>
     public static IHybridCacheBuilder WithSerializerFactory(this IHybridCacheBuilder builder, IHybridCacheSerializerFactory factory)
     {
@@ -49,7 +49,7 @@ public static class HybridCacheBuilderExtensions
     }
 
     /// <summary>
-    /// Add a factory of type <typeparamref name="TImplementation"/> as an additional serializer factory, which can provide serializers for multiple types
+    /// Add a factory of type <typeparamref name="TImplementation"/> as an additional serializer factory, which can provide serializers for multiple types.
     /// </summary>
     public static IHybridCacheBuilder WithSerializerFactory<
 #if NET5_0_OR_GREATER

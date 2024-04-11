@@ -15,14 +15,14 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.Extensions.Caching.Hybrid;
 
 /// <summary>
-/// Configuration extension methods for <see cref="HybridCache"/>
+/// Configuration extension methods for <see cref="HybridCache"/>.
 /// </summary>
 public static class HybridCacheServiceExtensions
 {
     /// <summary>
-    /// Adds support for multi-tier caching services
+    /// Adds support for multi-tier caching services.
     /// </summary>
-    /// <returns>A builder instance that allows further configuration of the <see cref="HybridCache"/> system</returns>
+    /// <returns>A builder instance that allows further configuration of the <see cref="HybridCache"/> system.</returns>
     public static IHybridCacheBuilder AddHybridCache(this IServiceCollection services, Action<HybridCacheOptions> setupAction)
     {
 #if NET7_0_OR_GREATER
@@ -36,9 +36,9 @@ public static class HybridCacheServiceExtensions
     }
 
     /// <summary>
-    /// Adds support for multi-tier caching services
+    /// Adds support for multi-tier caching services.
     /// </summary>
-    /// <returns>A builder instance that allows further configuration of the <see cref="HybridCache"/> system</returns>
+    /// <returns>A builder instance that allows further configuration of the <see cref="HybridCache"/> system.</returns>
     public static IHybridCacheBuilder AddHybridCache(this IServiceCollection services)
     {
 #if NET7_0_OR_GREATER

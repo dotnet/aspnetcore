@@ -14,19 +14,19 @@ namespace Microsoft.Extensions.Caching.Hybrid;
 public sealed class HybridCacheEntryOptions
 {
     /// <summary>
-    /// Overall cache duration of this entry, passed to the backend distributed cache
+    /// Overall cache duration of this entry, passed to the backend distributed cache.
     /// </summary>
     public TimeSpan? Expiration { get; init; } // overall cache duration
 
     /// <summary>
     /// Cache duration in local cache; when retrieving a cached value
     /// from an external cache store, this value will be used to calculate the local
-    /// cache expiration, not exceeding the remaining overall cache lifetime
+    /// cache expiration, not exceeding the remaining overall cache lifetime.
     /// </summary>
     public TimeSpan? LocalCacheExpiration { get; init; } // TTL in L1
 
     /// <summary>
-    /// Additional flags that apply to this usage
+    /// Additional flags that apply to this usage.
     /// </summary>
     public HybridCacheEntryFlags? Flags { get; init; }
 }

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 /// <summary>
-/// The inbuilt ASP.NET implementation of <see cref="HybridCache"/>
+/// The inbuilt ASP.NET implementation of <see cref="HybridCache"/>.
 /// </summary>
 internal sealed class DefaultHybridCache : HybridCache
 {

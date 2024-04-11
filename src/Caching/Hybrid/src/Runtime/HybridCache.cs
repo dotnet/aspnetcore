@@ -16,15 +16,15 @@ public abstract class HybridCache
     /// <summary>
     /// Get data from the cache, or the underlying data service if not available.
     /// </summary>
-    /// <typeparam name="T">The type of the data being considered</typeparam>
-    /// <typeparam name="TState">The type of additional state required by <paramref name="underlyingDataCallback"/></typeparam>
-    /// <param name="key">The unique key for this cache entry</param>
-    /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache</param>
-    /// <param name="state">Additional state required for <paramref name="underlyingDataCallback"/></param>
-    /// <param name="options">Additional options for this cache entry</param>
-    /// <param name="tags">The tags to associate with this cache item</param>
-    /// <param name="token">Cancellation for this operation</param>
-    /// <returns>The data, either from cache or the underlying data service</returns>
+    /// <typeparam name="T">The type of the data being considered.</typeparam>
+    /// <typeparam name="TState">The type of additional state required by <paramref name="underlyingDataCallback"/>.</typeparam>
+    /// <param name="key">The unique key for this cache entry.</param>
+    /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache.</param>
+    /// <param name="state">Additional state required for <paramref name="underlyingDataCallback"/>.</param>
+    /// <param name="options">Additional options for this cache entry.</param>
+    /// <param name="tags">The tags to associate with this cache item.</param>
+    /// <param name="token">Cancellation for this operation.</param>
+    /// <returns>The data, either from cache or the underlying data service.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Delegate differences make this unambiguous")]
     public abstract ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
         HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default);
@@ -32,13 +32,13 @@ public abstract class HybridCache
     /// <summary>
     /// Get data from the cache, or the underlying data service if not available.
     /// </summary>
-    /// <typeparam name="T">The type of the data being considered</typeparam>
-    /// <param name="key">The unique key for this cache entry</param>
-    /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache</param>
-    /// <param name="options">Additional options for this cache entry</param>
-    /// <param name="tags">The tags to associate with this cache item</param>
-    /// <param name="token">Cancellation for this operation</param>
-    /// <returns>The data, either from cache or the underlying data service</returns>
+    /// <typeparam name="T">The type of the data being considered.</typeparam>
+    /// <param name="key">The unique key for this cache entry.</param>
+    /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache.</param>
+    /// <param name="options">Additional options for this cache entry.</param>
+    /// <param name="tags">The tags to associate with this cache item.</param>
+    /// <param name="token">Cancellation for this operation.</param>
+    /// <returns>The data, either from cache or the underlying data service.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Delegate differences make this unambiguous")]
     public ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> underlyingDataCallback,
         HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
@@ -53,21 +53,21 @@ public abstract class HybridCache
     /// <summary>
     /// Manually insert or overwrite a cache entry.
     /// </summary>
-    /// <typeparam name="T">The type of the data being considered</typeparam>
-    /// <param name="key">The unique key for this cache entry</param>
-    /// <param name="value">The value to assign for this cache item</param>
-    /// <param name="options">Additional options for this cache entry</param>
-    /// <param name="tags">The tags to associate with this cache item</param>
-    /// <param name="token">Cancellation for this operation</param>
+    /// <typeparam name="T">The type of the data being considered.</typeparam>
+    /// <param name="key">The unique key for this cache entry.</param>
+    /// <param name="value">The value to assign for this cache item.</param>
+    /// <param name="options">Additional options for this cache entry.</param>
+    /// <param name="tags">The tags to associate with this cache item.</param>
+    /// <param name="token">Cancellation for this operation.</param>
     public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default);
 
     /// <summary>
-    /// Removes cache data with the specified key
+    /// Removes cache data with the specified key.
     /// </summary>
     public abstract ValueTask RemoveKeyAsync(string key, CancellationToken token = default);
 
     /// <summary>
-    /// Removes cache data with the specified keys
+    /// Removes cache data with the specified keys.
     /// </summary>
     public virtual ValueTask RemoveKeysAsync(IEnumerable<string> keys, CancellationToken token = default)
     {
@@ -90,7 +90,7 @@ public abstract class HybridCache
     }
 
     /// <summary>
-    /// Removes cache data associated with the specified tags
+    /// Removes cache data associated with the specified tags.
     /// </summary>
     public virtual ValueTask RemoveTagsAsync(IEnumerable<string> tags, CancellationToken token = default)
     {
@@ -113,7 +113,7 @@ public abstract class HybridCache
     }
 
     /// <summary>
-    /// Removes cache data associated with the specified tag
+    /// Removes cache data associated with the specified tag.
     /// </summary>
     public abstract ValueTask RemoveTagAsync(string tag, CancellationToken token = default);
 }

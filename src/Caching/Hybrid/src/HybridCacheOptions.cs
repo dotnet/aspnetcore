@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.Caching.Hybrid;
 
 /// <summary>
-/// Options for configuring the default <see cref="HybridCache"/> implementation
+/// Options for configuring the default <see cref="HybridCache"/> implementation.
 /// </summary>
 public class HybridCacheOptions
 {
@@ -23,7 +23,7 @@ public class HybridCacheOptions
     public HybridCacheEntryOptions? DefaultEntryOptions { get; set; }
 
     /// <summary>
-    /// Disallow compression for this <see cref="HybridCache"/> instance
+    /// Disallow compression for this <see cref="HybridCache"/> instance.
     /// </summary>
     public bool DisableCompression { get; set; }
 
@@ -31,11 +31,13 @@ public class HybridCacheOptions
     /// The maximum size of cache items; attempts to store values over this size will be logged
     /// and the value will not be stored in cache.
     /// </summary>
+    /// <remarks>The default value is 1 MiB.</remarks>
     public long MaximumPayloadBytes { get; set; } = 1 << 20; // 1MiB
 
     /// <summary>
     /// The maximum permitted length (in characters) of keys; attempts to use keys over this size will be logged.
     /// </summary>
+    /// <remark>The default value is 1024 characters.</remark>
     public int MaximumKeyLength { get; set; } = 1024; // characters
 
     /// <summary>
