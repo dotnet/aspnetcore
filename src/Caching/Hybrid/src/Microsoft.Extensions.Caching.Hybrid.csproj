@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;hybrid</PackageTags>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsAspNetCoreApp>false</IsAspNetCoreApp>
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <IsShipping>true</IsShipping>

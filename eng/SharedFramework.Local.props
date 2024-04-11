@@ -8,7 +8,6 @@
 <Project>
   <ItemGroup>
     <!-- These assemblies are available as both a NuGet package and in the shared framework -->
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Caching.Hybrid" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.Internal" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
