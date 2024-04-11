@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "6.0.128"
+    "version": "6.0.129"
   },
   "tools": {
-    "dotnet": "6.0.128",
+    "dotnet": "6.0.129",
     "runtimes": {
       "dotnet/x64": [
         "2.1.30",
