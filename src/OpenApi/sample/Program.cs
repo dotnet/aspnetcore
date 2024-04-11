@@ -20,6 +20,7 @@ builder.Services.AddOpenApi("v2", options => {
         return Task.CompletedTask;
     });
 });
+builder.Services.AddOpenApi("responses");
 
 var app = builder.Build();
 
@@ -31,9 +32,10 @@ if (app.Environment.IsDevelopment())
 
 var v1 = app.MapGroup("v1")
     .WithGroupName("v1");
-
 var v2 = app.MapGroup("v2")
     .WithGroupName("v2");
+var responses = app.MapGroup("responses")
+    .WithGroupName("responses");
 
 v1.MapPost("/todos", (Todo todo) => Results.Created($"/todos/{todo.Id}", todo))
     .WithSummary("Creates a new todo item.");
@@ -45,7 +47,10 @@ v2.MapGet("/users", () => new [] { "alice", "bob" })
 
 v2.MapPost("/users", () => Results.Created("/users/1", new { Id = 1, Name = "Test user" }));
 
-app.Run();
+responses.MapGet("/200-add-xml", () => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
+    .Produces<Todo>(additionalContentTypes: "text/xml");
 
-public record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
-public record TodoWithDueDate(int Id, string Title, bool Completed, DateTime CreatedAt, DateTime DueDate) : Todo(Id, Title, Completed, CreatedAt);
+responses.MapGet("/200-only-xml", () => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
+    .Produces<Todo>(contentType: "text/xml");
+
+app.Run();

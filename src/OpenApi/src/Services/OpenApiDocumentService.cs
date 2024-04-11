@@ -4,10 +4,14 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -32,6 +36,7 @@ internal sealed class OpenApiDocumentService(
     /// operations, API descriptions, and their respective transformer contexts.
     /// </summary>
     private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
+    private static readonly ApiResponseType _defaultApiResponseType = new ApiResponseType { StatusCode = StatusCodes.Status200OK };
 
     internal bool TryGetCachedOperationTransformerContext(string descriptionId, [NotNullWhen(true)] out OpenApiOperationTransformerContext? context)
         => _operationTransformerContextCache.TryGetValue(descriptionId, out context);
@@ -133,6 +138,7 @@ internal sealed class OpenApiDocumentService(
         {
             Summary = GetSummary(description),
             Description = GetDescription(description),
+            Responses = GetResponses(description),
             Parameters = GetParameters(description),
             Tags = tags,
         };
@@ -155,6 +161,68 @@ internal sealed class OpenApiDocumentService(
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
         return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
+    }
+
+    private static OpenApiResponses GetResponses(ApiDescription description)
+    {
+        // OpenAPI requires that each operation have a response, usually a successful one.
+        // if there are no response types defined, we assume a successful 200 OK response
+        // with no content by default.
+        if (description.SupportedResponseTypes.Count == 0)
+        {
+            return new OpenApiResponses
+            {
+                ["200"] = GetResponse(description, StatusCodes.Status200OK, _defaultApiResponseType)
+            };
+        }
+
+        var responses = new OpenApiResponses();
+        foreach (var responseType in description.SupportedResponseTypes)
+        {
+            // The "default" response type is a special case in OpenAPI used to describe
+            // the response for all HTTP status codes that are not explicitly defined
+            // for a given operation. This is typically used to describe catch-all scenarios
+            // like error responses.
+            var responseKey = responseType.IsDefaultResponse
+                ? OpenApiConstants.DefaultOpenApiResponseKey
+                : responseType.StatusCode.ToString(CultureInfo.InvariantCulture);
+            responses.Add(responseKey, GetResponse(description, responseType.StatusCode, responseType));
+        }
+        return responses;
+    }
+
+    private static OpenApiResponse GetResponse(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType)
+    {
+        var description = ReasonPhrases.GetReasonPhrase(statusCode);
+        var response = new OpenApiResponse
+        {
+            Description = description,
+            Content = new Dictionary<string, OpenApiMediaType>()
+        };
+
+        // ApiResponseFormats aggregates information about the supported response content types
+        // from different types of Produces metadata. This is handled by ApiExplorer so looking
+        // up values in ApiResponseFormats should provide us a complete set of the information
+        // encoded in Produces metadata added via attributes or extension methods.
+        var apiResponseFormatContentTypes = apiResponseType.ApiResponseFormats
+            .Select(responseFormat => responseFormat.MediaType);
+        foreach (var contentType in apiResponseFormatContentTypes)
+        {
+            response.Content[contentType] = new OpenApiMediaType();
+        }
+
+        // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
+        // looks for when generating ApiResponseFormats above so we need to pull the content
+        // types defined there separately.
+        var explicitContentTypes = apiDescription.ActionDescriptor.EndpointMetadata
+            .OfType<ProducesAttribute>()
+            .SelectMany(attr => attr.ContentTypes);
+        foreach (var contentType in explicitContentTypes)
+        {
+            response.Content[contentType] = new OpenApiMediaType();
+        }
+
+        return response;
     }
 
     private static List<OpenApiParameter>? GetParameters(ApiDescription description)
