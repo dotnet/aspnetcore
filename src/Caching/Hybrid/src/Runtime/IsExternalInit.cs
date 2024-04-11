@@ -7,5 +7,5 @@ namespace System.Runtime.CompilerServices;
 
 #if !NET5_0_OR_GREATER
 [EditorBrowsable(EditorBrowsableState.Never)]
-internal static  class IsExternalInit { } // for "init" support on down-level TFMs
+internal static class IsExternalInit { } // for "init" support on down-level TFMs
 #endif
