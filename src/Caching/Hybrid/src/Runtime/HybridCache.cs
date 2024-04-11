@@ -76,11 +76,11 @@ public abstract class HybridCache
             // for consistency with GetOrCreate/Set: interpret null as "none"
             null or ICollection<string> { Count: 0 } => default,
             ICollection<string> { Count: 1 } => RemoveTagAsync(keys.Single(), token),
-            _ => Walk(this, keys, token),
+            _ => ForEach(this, keys, token),
         };
 
         // default implementation is to call RemoveKeyAsync for each key in turn
-        static async ValueTask Walk(HybridCache @this, IEnumerable<string> keys, CancellationToken token)
+        static async ValueTask ForEach(HybridCache @this, IEnumerable<string> keys, CancellationToken token)
         {
             foreach (var key in keys)
             {
@@ -99,11 +99,11 @@ public abstract class HybridCache
             // for consistency with GetOrCreate/Set: interpret null as "none"
             null or ICollection<string> { Count: 0 } => default,
             ICollection<string> { Count: 1 } => RemoveTagAsync(tags.Single(), token),
-            _ => Walk(this, tags, token),
+            _ => ForEach(this, tags, token),
         };
 
         // default implementation is to call RemoveTagAsync for each key in turn
-        static async ValueTask Walk(HybridCache @this, IEnumerable<string> keys, CancellationToken token)
+        static async ValueTask ForEach(HybridCache @this, IEnumerable<string> keys, CancellationToken token)
         {
             foreach (var key in keys)
             {
