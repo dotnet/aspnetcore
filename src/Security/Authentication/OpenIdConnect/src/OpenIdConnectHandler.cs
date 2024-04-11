@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -485,6 +486,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
         }
 
+        var parRequired = ConfigFlagEnabled("require_pushed_authoriation_requests");
+
+        if (Options.UsePushedAuthorization || parRequired)
+        {
+            await PushAuthorizationRequest(message, properties);
+        }
+
         if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
         {
             var redirectUri = message.CreateAuthenticationRequestUrl();
@@ -514,6 +522,113 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
+    }
+
+    private bool GetConfigString(string name, [NotNullWhen(true)] out string? value)
+    {
+        if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
+        {
+            if (configValue is string v)
+            {
+                value = v;
+                return true;
+            }
+        }
+        value = null;
+        return false;
+    }
+
+    private bool ConfigFlagEnabled(string name)
+    {
+        if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
+        {
+            if (configValue is bool v)
+            {
+                return v;
+            }
+        }
+        return false;
+    }
+
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
+    {
+        if (GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint))
+        {
+            // Build context and run event
+            var parRequest = new HttpRequestMessage(HttpMethod.Post, parEndpoint)
+            {
+                Content = new FormUrlEncodedContent(authorizeRequest.Parameters),
+            };
+            var context = new PushedAuthorizationContext(Context, Scheme, Options, authorizeRequest, parRequest, properties);
+            await Events.PushAuthorization(context);
+
+            // If the event handled auth, we skip out default auth behavior
+            if (context.HandledClientAuthentication)
+            {
+                Logger.PushAuthorizationHandledClientAuthentication();
+            }
+            else
+            {
+                SetClientAuthenticationHeader(parRequest);
+            }
+
+            // If the event handled the push, there's nothing left to do and we bail out
+            if (context.HandledPush)
+            {
+                Logger.PushAuthorizationHandledPush();
+                return;
+            }
+
+            var parResponseMessage = await Backchannel.SendAsync(parRequest, Context.RequestAborted);
+
+            var requestUri = await GetRequestUri(parResponseMessage);
+            authorizeRequest.Parameters.Clear();
+            authorizeRequest.Parameters.Add("client_id", Options.ClientId);
+            authorizeRequest.Parameters.Add("request_uri", requestUri);
+        }
+        else
+        {
+            throw new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
+        }
+    }
+
+    private async Task<string> GetRequestUri(HttpResponseMessage parResponseMessage)
+    {
+        // Check content type
+        var contentType = parResponseMessage.Content.Headers.ContentType;
+        if (!(contentType?.MediaType?.Equals("application/json", StringComparison.OrdinalIgnoreCase) ?? false))
+        {
+            throw new InvalidOperationException("Invalid response from pushed authorization: content type is not application/json.");
+        }
+
+        // Parse response
+        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync();
+        var message = new OpenIdConnectMessage(parResponseString);
+
+        var requestUri = message.GetParameter("request_uri");
+        if(requestUri == null)
+        {
+            throw CreateOpenIdConnectProtocolException(message, parResponseMessage);
+        }
+        return requestUri;
+    }
+
+    private void SetClientAuthenticationHeader(HttpRequestMessage parRequest)
+    {
+        if (string.IsNullOrEmpty(Options.ClientId))
+        {
+            throw new InvalidOperationException("Missing client id");
+        }
+        if (string.IsNullOrEmpty(Options.ClientSecret))
+        {
+            throw new InvalidOperationException("Missing client secret");
+        }
+        var escapedClientId = Uri.EscapeDataString(Options.ClientId);
+        var escapedClientSecret = Uri.EscapeDataString(Options.ClientSecret);
+        var credential = $"{escapedClientId}:{escapedClientSecret}";
+        var encodedCredential = Convert.ToBase64String(Encoding.UTF8.GetBytes(credential));
+
+        parRequest.Headers.Authorization = new AuthenticationHeaderValue("basic", encodedCredential);
     }
 
     /// <summary>
