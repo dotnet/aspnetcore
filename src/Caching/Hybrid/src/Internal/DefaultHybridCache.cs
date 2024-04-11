@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
@@ -37,4 +39,22 @@ internal sealed class DefaultHybridCache : HybridCache
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default)
         => default; // no cache, nothing to set
+
+    internal IHybridCacheSerializer<T> GetSerializer<T>()
+    {
+        // unused API, primarily intended to show configuration is working;
+        // the real version would memoize the result
+        var service = services.GetServices<IHybridCacheSerializer<T>>().LastOrDefault();
+        if (service is null)
+        {
+            foreach (var factory in services.GetServices<IHybridCacheSerializerFactory>())
+            {
+                if (factory.TryCreateSerializer<T>(out var current))
+                {
+                    service = current;
+                }
+            }
+        }
+        return service ?? throw new InvalidOperationException("No serializer configured for type: " + typeof(T).Name);
+    }
 }
