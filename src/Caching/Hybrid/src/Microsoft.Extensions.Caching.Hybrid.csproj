@@ -8,7 +8,6 @@
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <IsAspNetCoreApp>false</IsAspNetCoreApp>
     <IsPackable>true</IsPackable>
-    <IsTrimmable>true</IsTrimmable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 
