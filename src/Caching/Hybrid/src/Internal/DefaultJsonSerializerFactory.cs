@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
+
 internal sealed class DefaultJsonSerializerFactory : IHybridCacheSerializerFactory
 {
     public bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer)

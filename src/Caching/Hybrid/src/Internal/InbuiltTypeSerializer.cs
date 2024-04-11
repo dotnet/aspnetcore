@@ -9,9 +9,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
+
 internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IHybridCacheSerializer<byte[]>
 {
     public static InbuiltTypeSerializer Instance { get; } = new();
+
     string IHybridCacheSerializer<string>.Deserialize(ReadOnlySequence<byte> source)
     {
 #if NET5_0_OR_GREATER
