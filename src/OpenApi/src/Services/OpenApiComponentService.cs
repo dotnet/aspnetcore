@@ -30,7 +30,8 @@ internal sealed class OpenApiComponentService
         return _schemas.GetOrAdd(type, _ => CreateSchema());
     }
 
-    internal static OpenApiSchema CreateSchema()
+    // TODO: Implement this method to create a schema for a given type.
+    private static OpenApiSchema CreateSchema()
     {
         return new OpenApiSchema { Type = "string" };
     }
