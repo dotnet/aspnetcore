@@ -7,7 +7,6 @@
 -->
 <Project>
   <ItemGroup>
-    <TrimmableProject Include="Microsoft.Extensions.Caching.Hybrid" />
     <TrimmableProject Include="Microsoft.AspNetCore" />
     <TrimmableProject Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <TrimmableProject Include="Microsoft.AspNetCore.Cryptography.Internal" />
