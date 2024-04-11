@@ -8,6 +8,13 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="BasicConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

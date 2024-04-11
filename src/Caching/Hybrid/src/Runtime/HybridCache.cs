@@ -69,16 +69,13 @@ public abstract class HybridCache
     /// <summary>
     /// Removes cache data with the specified keys
     /// </summary>
-    public virtual ValueTask RemoveKeysAsync(ICollection<string> keys, CancellationToken token = default)
+    public virtual ValueTask RemoveKeysAsync(IEnumerable<string> keys, CancellationToken token = default)
     {
-        if (keys is null)
+        return keys switch
         {
-            return default; // for consistency with GetOrCreate/Set: interpret as "none"
-        }
-        return keys.Count switch
-        {
-            0 => default, // nothing to do
-            1 => RemoveKeyAsync(keys.Single(), token),
+            // for consistency with GetOrCreate/Set: interpret null as "none"
+            null or ICollection<string> { Count: 0 } => default,
+            ICollection<string> { Count: 1 } => RemoveTagAsync(keys.Single(), token),
             _ => Walk(this, keys, token),
         };
 
@@ -95,16 +92,13 @@ public abstract class HybridCache
     /// <summary>
     /// Removes cache data associated with the specified tags
     /// </summary>
-    public virtual ValueTask RemoveTagsAsync(ICollection<string> tags, CancellationToken token = default)
+    public virtual ValueTask RemoveTagsAsync(IEnumerable<string> tags, CancellationToken token = default)
     {
-        if (tags is null)
+        return tags switch
         {
-            return default; // for consistency with GetOrCreate/Set: interpret as "none"
-        }
-        return tags.Count switch
-        {
-            0 => default, // nothing to do
-            1 => RemoveTagAsync(tags.Single(), token),
+            // for consistency with GetOrCreate/Set: interpret null as "none"
+            null or ICollection<string> { Count: 0 } => default,
+            ICollection<string> { Count: 1 } => RemoveTagAsync(tags.Single(), token),
             _ => Walk(this, tags, token),
         };
 

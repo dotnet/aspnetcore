@@ -31,8 +31,8 @@ Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions.HybridCacheEntryOpti
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions.LocalCacheExpiration.get -> System.TimeSpan?
 Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions.LocalCacheExpiration.init -> void
 Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions
-Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DefaultOptions.get -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions?
-Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DefaultOptions.set -> void
+Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DefaultEntryOptions.get -> Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions?
+Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DefaultEntryOptions.set -> void
 Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DisableCompression.get -> bool
 Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.DisableCompression.set -> void
 Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions.HybridCacheOptions() -> void
@@ -56,5 +56,5 @@ static Microsoft.Extensions.Caching.Hybrid.HybridCacheBuilderExtensions.WithSeri
 static Microsoft.Extensions.Caching.Hybrid.HybridCacheBuilderExtensions.WithSerializerFactory<TImplementation>(this Microsoft.Extensions.Caching.Hybrid.IHybridCacheBuilder! builder) -> Microsoft.Extensions.Caching.Hybrid.IHybridCacheBuilder!
 static Microsoft.Extensions.Caching.Hybrid.HybridCacheServiceExtensions.AddHybridCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.Caching.Hybrid.IHybridCacheBuilder!
 static Microsoft.Extensions.Caching.Hybrid.HybridCacheServiceExtensions.AddHybridCache(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Caching.Hybrid.HybridCacheOptions!>! setupAction) -> Microsoft.Extensions.Caching.Hybrid.IHybridCacheBuilder!
-virtual Microsoft.Extensions.Caching.Hybrid.HybridCache.RemoveKeysAsync(System.Collections.Generic.ICollection<string!>! keys, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
-virtual Microsoft.Extensions.Caching.Hybrid.HybridCache.RemoveTagsAsync(System.Collections.Generic.ICollection<string!>! tags, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.Extensions.Caching.Hybrid.HybridCache.RemoveKeysAsync(System.Collections.Generic.IEnumerable<string!>! keys, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask
+virtual Microsoft.Extensions.Caching.Hybrid.HybridCache.RemoveTagsAsync(System.Collections.Generic.IEnumerable<string!>! tags, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask

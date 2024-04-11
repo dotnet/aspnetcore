@@ -24,6 +24,7 @@ internal sealed class DefaultHybridCache : HybridCache
         this.services = services ?? throw new ArgumentNullException(nameof(services));
         this.options = options.Value;
     }
+    internal HybridCacheOptions Options => options;
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, ICollection<string>? tags = null, CancellationToken token = default)
         => underlyingDataCallback(state, token); // pass-thru without caching for initial API pass

@@ -20,7 +20,7 @@ public class HybridCacheOptions
     /// options being used in preference to the global options). If no value is specified for a given
     /// option (globally or per-call), the implementation may choose a reasonable default.
     /// </summary>
-    public HybridCacheEntryOptions? DefaultOptions { get; set; }
+    public HybridCacheEntryOptions? DefaultEntryOptions { get; set; }
 
     /// <summary>
     /// Disallow compression for this <see cref="HybridCache"/> instance
