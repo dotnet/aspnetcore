@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiComponentService
 {
-    private readonly ConcurrentDictionary<string, OpenApiSchema> _schemas = new()
+    private readonly ConcurrentDictionary<Type, OpenApiSchema> _schemas = new()
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
-        [typeof(IFormFile).GetSchemaReferenceId()] = new OpenApiSchema { Type = "string", Format = "binary" },
-        [typeof(IFormFileCollection).GetSchemaReferenceId()] = new OpenApiSchema
+        [typeof(IFormFile)] = new OpenApiSchema { Type = "string", Format = "binary" },
+        [typeof(IFormFileCollection)] = new OpenApiSchema
         {
             Type = "array",
             Items = new OpenApiSchema { Type = "string", Format = "binary" }
@@ -27,8 +27,7 @@ internal sealed class OpenApiComponentService
 
     internal OpenApiSchema GetOrCreateSchema(Type type)
     {
-        var schemaId = type.GetSchemaReferenceId();
-        return _schemas.GetOrAdd(schemaId, _ => CreateSchema());
+        return _schemas.GetOrAdd(type, _ => CreateSchema());
     }
 
     internal static OpenApiSchema CreateSchema()
