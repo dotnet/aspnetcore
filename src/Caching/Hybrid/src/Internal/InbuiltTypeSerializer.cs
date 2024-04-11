@@ -42,6 +42,7 @@ internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IH
         var actual = Encoding.UTF8.GetBytes(value, 0, value.Length, oversized, 0);
         Debug.Assert(actual == length);
         target.Write(new(oversized, 0, length));
+        ArrayPool<byte>.Shared.Return(oversized);
 #endif
     }
 
