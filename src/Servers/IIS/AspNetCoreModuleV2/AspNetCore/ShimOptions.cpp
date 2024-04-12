@@ -13,6 +13,7 @@
 #define CS_ASPNETCORE_CLEAN_SHADOW_DIRECTORY_CONTENT     L"cleanShadowCopyDirectory"
 #define CS_ASPNETCORE_DISALLOW_ROTATE_CONFIG             L"disallowRotationOnConfigChange"
 #define CS_ASPNETCORE_SHUTDOWN_DELAY                     L"shutdownDelay"
+#define CS_ASPNEtCORE_SHUTDOWN_DELAY_ENV                 L"ANCM_shutdownDelay"
 
 ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
         m_hostingModel(HOSTING_UNKNOWN),
@@ -55,17 +56,6 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     auto disallowRotationOnConfigChange = find_element(handlerSettings, CS_ASPNETCORE_DISALLOW_ROTATE_CONFIG).value_or(std::wstring());
     m_fDisallowRotationOnConfigChange = equals_ignore_case(L"true", disallowRotationOnConfigChange);
 
-    auto shutdownDelay = find_element(handlerSettings, CS_ASPNETCORE_SHUTDOWN_DELAY).value_or(std::wstring());
-    if (shutdownDelay.empty())
-    {
-        m_fShutdownDelay = std::chrono::seconds(1);
-    }
-    else
-    {
-        auto str = to_multi_byte_string(shutdownDelay, CP_UTF8);
-        m_fShutdownDelay = std::chrono::milliseconds(std::atoi(str.c_str()));
-    }
-                
     m_strProcessPath = section->GetRequiredString(CS_ASPNETCORE_PROCESS_EXE_PATH);
     m_strArguments = section->GetString(CS_ASPNETCORE_PROCESS_ARGUMENTS).value_or(CS_ASPNETCORE_PROCESS_ARGUMENTS_DEFAULT);
     m_fStdoutLogEnabled = section->GetRequiredBool(CS_ASPNETCORE_STDOUT_LOG_ENABLED);
@@ -94,4 +84,33 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     auto dotnetEnvironmentEnabled = equals_ignore_case(L"Development", dotnetEnvironment);
 
     m_fShowDetailedErrors = detailedErrorsEnabled || aspnetCoreEnvironmentEnabled || dotnetEnvironmentEnabled;
+
+    // Specifies how long to delay (in milliseconds) after IIS tells us to stop before starting the application shutdown.
+    // See StartShutdown in globalmodule to see how it's used.
+    auto shutdownDelay = find_element(handlerSettings, CS_ASPNETCORE_SHUTDOWN_DELAY).value_or(std::wstring());
+    if (shutdownDelay.empty())
+    {
+        // Fallback to environment variable if process specific config wasn't set
+        shutdownDelay = Environment::GetEnvironmentVariableValue(CS_ASPNEtCORE_SHUTDOWN_DELAY_ENV)
+            .value_or(environmentVariables[CS_ASPNEtCORE_SHUTDOWN_DELAY_ENV]);
+        if (shutdownDelay.empty())
+        {
+            // Default if neither process specific config or environment variable aren't set
+            m_fShutdownDelay = std::chrono::seconds(1);
+        }
+        else
+        {
+            SetShutdownDelay(shutdownDelay);
+        }
+    }
+    else
+    {
+        SetShutdownDelay(shutdownDelay);
+    }
+}
+
+void ShimOptions::SetShutdownDelay(std::wstring& shutdownDelay)
+{
+    auto str = to_multi_byte_string(shutdownDelay, CP_UTF8);
+    m_fShutdownDelay = std::chrono::milliseconds(std::atoi(str.c_str()));
 }

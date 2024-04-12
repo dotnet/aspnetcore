@@ -68,8 +68,8 @@ private:
         else
         {
             // Run shutdown on a background thread. It seems like IIS keeps giving us requests if OnGlobalStopListening is still running
-            // which will result in 503s since we're shutting down.
-            // But if we return ASAP from OnGlobalStopListening (by not shutting down inline),
+            // which will result in 503s from applicationmanager since we're shutting down and don't want to process new requests.
+            // But if we return ASAP from OnGlobalStopListening, by not shutting down inline and with a small delay to reduce races,
             // IIS will actually stop giving us new requests and queue them instead for processing by the new app process.
             m_shutdown = std::thread([this]()
                 {
@@ -77,6 +77,8 @@ private:
                     LOG_INFOF(L"Shutdown starting in %d ms.", delay.count());
                     // Delay so that any incoming requests while we're returning from OnGlobalStopListening are allowed to be processed
                     std::this_thread::sleep_for(delay);
+
+                    LOG_INFO(L"Shutdown starting.");
                     m_pApplicationManager->ShutDown();
                     m_pApplicationManager = nullptr;
                 });
