@@ -33,7 +33,7 @@ jobs:
         demands: ImageOverride -equals windows.vs2019.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
-        image: 1es-windows-2022-pt
+        image: windows.vs2022.amd64
         os: windows
 
   steps:
