@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -23,7 +25,29 @@ public sealed class ProtectedSessionStorage : ProtectedBrowserStorage
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
     public ProtectedSessionStorage(IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
-        : base("sessionStorage", jsRuntime, dataProtectionProvider)
+        : this(jsRuntime, dataProtectionProvider, jsonSerializerOptions: null)
+    {
+    }
+
+    /// <summary>
+    /// Constructs an instance of <see cref="ProtectedSessionStorage"/>.
+    /// </summary>
+    /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
+    /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
+    /// <param name="jsonOptions">The <see cref="JsonOptions"/>.</param>
+    public ProtectedSessionStorage(
+        IJSRuntime jsRuntime,
+        IDataProtectionProvider dataProtectionProvider,
+        IOptions<JsonOptions> jsonOptions)
+        : this(jsRuntime, dataProtectionProvider, jsonOptions.Value.SerializerOptions)
+    {
+    }
+
+    private ProtectedSessionStorage(
+        IJSRuntime jsRuntime,
+        IDataProtectionProvider dataProtectionProvider,
+        JsonSerializerOptions? jsonSerializerOptions)
+        : base("sessionStorage", jsRuntime, dataProtectionProvider, jsonSerializerOptions)
     {
     }
 }

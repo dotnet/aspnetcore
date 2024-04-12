@@ -11,6 +11,8 @@
 
     <!-- Project supports more than one language -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
@@ -50,10 +52,7 @@
     <ItemGroup>
       <ResolvedFileToPublish RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\subdir', 'subdir').Replace('subdir/subdir', 'subdir'))" />
 
-      <ResolvedFileToPublish
-        Include="@(ResolvedFileToPublish)"
-        RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))"
-        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
+      <ResolvedFileToPublish Include="@(ResolvedFileToPublish)" RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))" Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
     </ItemGroup>
   </Target>
 

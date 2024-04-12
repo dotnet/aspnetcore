@@ -726,7 +726,7 @@ public class CircuitHostTest
         }
 
         private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
-            => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), null);
+            => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new JsonOptions()), null);
     }
 
     private class DispatcherComponent : ComponentBase, IDisposable

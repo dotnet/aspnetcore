@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Net.Http;
+using System.Runtime.InteropServices.JavaScript;
 using System.Web;
 using BasicTestApp.AuthTest;
 using BasicTestApp.PropertyInjection;
@@ -16,7 +17,7 @@ using Microsoft.JSInterop;
 
 namespace BasicTestApp;
 
-public class Program
+public partial class Program
 {
     public static async Task Main(string[] args)
     {
@@ -82,10 +83,10 @@ public class Program
         CultureInfo.DefaultThreadCurrentUICulture = culture;
     }
 
-    // Supports E2E tests in StartupErrorNotificationTest
+    //Supports E2E tests in StartupErrorNotificationTest
     private static async Task SimulateErrorsIfNeededForTest()
     {
-        var currentUrl = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>("getCurrentUrl");
+        var currentUrl = JSFunctions.GetCurrentUrl();
         if (currentUrl.Contains("error=sync"))
         {
             throw new InvalidTimeZoneException("This is a synchronous startup exception");
@@ -97,5 +98,11 @@ public class Program
         {
             throw new InvalidTimeZoneException("This is an asynchronous startup exception");
         }
+    }
+
+    private static partial class JSFunctions
+    {
+        [JSImport("globalThis.getCurrentUrl")]
+        public static partial string GetCurrentUrl();
     }
 }

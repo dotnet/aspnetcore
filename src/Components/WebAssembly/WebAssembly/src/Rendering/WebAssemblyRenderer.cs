@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -25,8 +26,12 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly Dispatcher _dispatcher;
     private readonly IInternalJSImportMethods _jsMethods;
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
-        : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
+    public WebAssemblyRenderer(
+        IServiceProvider serviceProvider,
+        ILoggerFactory loggerFactory,
+        IOptions<JsonOptions> jsonOptions,
+        JSComponentInterop jsComponentInterop)
+        : base(serviceProvider, loggerFactory, jsonOptions.Value.SerializerOptions, jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();

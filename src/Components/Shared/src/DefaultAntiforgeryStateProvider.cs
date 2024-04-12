@@ -29,9 +29,10 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
             return Task.CompletedTask;
         }, RenderMode.InteractiveAuto);
 
+        // The argument type should be kept in sync with
+        // DefaultAntiforgeryStateProviderJsonSerializerContext
         state.TryTakeFromJson(
             PersistenceKey,
-            DefaultAntiforgeryStateProviderSerializerContext.Default,
             out _currentToken);
     }
 
@@ -43,4 +44,4 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
 }
 
 [JsonSerializable(typeof(AntiforgeryRequestToken))]
-internal sealed partial class DefaultAntiforgeryStateProviderSerializerContext : JsonSerializerContext;
+internal sealed partial class DefaultAntiforgeryStateProviderJsonSerializerContext : JsonSerializerContext;

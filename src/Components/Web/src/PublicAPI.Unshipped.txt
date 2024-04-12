@@ -1,3 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Web.Infrastructure.JsonOptionsServiceCollectionExtensions
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.set -> void
+static Microsoft.AspNetCore.Components.Web.Infrastructure.JsonOptionsServiceCollectionExtensions.ConfigureComponentsWebJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

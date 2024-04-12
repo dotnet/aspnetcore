@@ -4,10 +4,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -22,7 +20,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
     private readonly ConcurrentDictionary<long, IJSInteropTask> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
-    private readonly JsonSerializerOptionsCache _jsonSerializerOptionsCache;
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
@@ -31,22 +28,20 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// </summary>
     protected JSRuntime()
     {
-        JsonSerializerOptions = new JsonSerializerOptions
+        JsonSerializerOptions = new()
         {
             MaxDepth = 32,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
             Converters =
-                {
-                    new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter(this),
-                    new JSStreamReferenceJsonConverter(this),
-                    new DotNetStreamReferenceJsonConverter(this),
-                    new ByteArrayJsonConverter(this),
-                },
+            {
+                new DotNetObjectReferenceJsonConverterFactory(this),
+                new JSObjectReferenceJsonConverter(this),
+                new JSStreamReferenceJsonConverter(this),
+                new DotNetStreamReferenceJsonConverter(this),
+                new ByteArrayJsonConverter(this),
+            },
         };
-
-        _jsonSerializerOptionsCache = new(JsonSerializerOptions);
     }
 
     /// <summary>
@@ -64,37 +59,25 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         => InvokeAsync<TValue>(0, identifier, args);
 
     /// <inheritdoc/>
-    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, IJsonTypeInfoResolver resolver, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, resolver, args);
-
-    /// <inheritdoc/>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
-    /// <inheritdoc/>
-    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, IJsonTypeInfoResolver resolver, CancellationToken cancellationToken, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, resolver, cancellationToken, args);
-
-    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, IJsonTypeInfoResolver? resolver, object?[]? args)
+    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
     {
         if (DefaultAsyncTimeout.HasValue)
         {
             using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
             // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, resolver, cts.Token, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, args);
         }
 
-        return await InvokeAsync<TValue>(targetInstanceId, identifier, resolver, CancellationToken.None, args);
+        return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
     }
-
-    internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
-        => InvokeAsync<TValue>(targetInstanceId, identifier, resolver: null, args);
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
         long targetInstanceId,
         string identifier,
-        IJsonTypeInfoResolver? resolver,
         CancellationToken cancellationToken,
         object?[]? args)
     {
@@ -114,19 +97,12 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         try
         {
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
-            var jsonSerializerOptions = _jsonSerializerOptionsCache.GetOrAdd(resolver, static resolver =>
-                JsonTypeInfoResolver.Combine(
-                    resolver,
-                    JSRuntimeSerializerContext.Default,
-                    FallbackTypeInfoResolver.Instance));
 
             var argsJson = args switch
             {
                 null or { Length: 0 } => null,
-                _ => JsonSerializer.Serialize(args, jsonSerializerOptions),
+                _ => SerializeArgs(args),
             };
-
-            interopTask.DeserializeOptions = jsonSerializerOptions;
 
             BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
 
@@ -138,14 +114,39 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             interopTask.Dispose();
             throw;
         }
-    }
 
-    internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
-        long targetInstanceId,
-        string identifier,
-        CancellationToken cancellationToken,
-        object?[]? args)
-        => InvokeAsync<TValue>(targetInstanceId, identifier, resolver: null, cancellationToken, args);
+        string SerializeArgs(object?[] args)
+        {
+            Debug.Assert(args.Length > 0);
+
+            var builder = new StringBuilder();
+            builder.Append('[');
+
+            WriteArg(args[0]);
+
+            for (var i = 1; i < args.Length; i++)
+            {
+                builder.Append(',');
+                WriteArg(args[i]);
+            }
+
+            builder.Append(']');
+            return builder.ToString();
+
+            void WriteArg(object? arg)
+            {
+                if (arg is null)
+                {
+                    builder.Append("null");
+                }
+                else
+                {
+                    var argJson = JsonSerializer.Serialize(arg, arg.GetType(), JsonSerializerOptions);
+                    builder.Append(argJson);
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Begins an asynchronous function invocation.
@@ -248,7 +249,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 }
                 else
                 {
-                    result = JsonSerializer.Deserialize(ref jsonReader, resultType, interopTask.DeserializeOptions);
+                    result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
                 }
 
                 ByteArraysToBeRevived.Clear();
@@ -347,30 +348,3 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// </summary>
     public void Dispose() => ByteArraysToBeRevived.Dispose();
 }
-
-[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync")]
-internal sealed class FallbackTypeInfoResolver : IJsonTypeInfoResolver
-{
-    private static readonly DefaultJsonTypeInfoResolver _defaultJsonTypeInfoResolver = new();
-
-    public static readonly FallbackTypeInfoResolver Instance = new();
-
-    public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
-    {
-        if (options.Converters.Any(c => c.CanConvert(type)))
-        {
-            // TODO: We should allow types with custom converters to be serialized without
-            // having to generate metadata for them.
-            // Question: Why do we even need a JsonTypeInfo if the type is going to be serialized
-            // with a custom converter anyway? We shouldn't need to perform any reflection here.
-            // Is it possible to generate a "minimal" JsonTypeInfo that just points to the correct
-            // converter?
-            return _defaultJsonTypeInfoResolver.GetTypeInfo(type, options);
-        }
-
-        return null;
-    }
-}
-
-[JsonSerializable(typeof(object[]))] // JS interop argument lists are always object arrays
-internal sealed partial class JSRuntimeSerializerContext : JsonSerializerContext;

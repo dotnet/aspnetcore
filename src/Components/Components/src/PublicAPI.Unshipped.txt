@@ -1,2 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver! resolver, out TValue? instance) -> bool
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Components.JsonOptions!>! jsonOptions, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger) -> void
+Microsoft.AspNetCore.Components.JsonOptions
+Microsoft.AspNetCore.Components.JsonOptions.JsonOptions() -> void
+Microsoft.AspNetCore.Components.JsonOptions.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
+Microsoft.Extensions.DependencyInjection.JsonServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.JsonServiceCollectionExtensions.ConfigureComponentsJsonOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.JsonOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

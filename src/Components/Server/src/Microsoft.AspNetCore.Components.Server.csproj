@@ -59,11 +59,15 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationBatch.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultJsonSerializerOptions.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryJsonOptionsServiceCollectionExtensions.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
 
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerialization\JsonConverterFactoryTypeInfoResolver.cs" LinkBase="JsonSerialization" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerialization\JSRuntimeSerializerContext.cs" LinkBase="JsonSerialization" />
+
     <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
-    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="..\..\Shared\src\WebEventData\*.cs" LinkBase="WebEventData" />
 
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />

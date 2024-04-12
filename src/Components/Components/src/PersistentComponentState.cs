@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -15,14 +14,15 @@ public class PersistentComponentState
 {
     private IDictionary<string, byte[]>? _existingState;
     private readonly IDictionary<string, byte[]> _currentState;
-
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
-    private readonly JsonSerializerOptionsCache _jsonSerializerOptionsCache = new(JsonSerializerOptionsProvider.Options);
 
     internal PersistentComponentState(
-        IDictionary<string , byte[]> currentState,
+        JsonSerializerOptions jsonSerializerOptions,
+        IDictionary<string, byte[]> currentState,
         List<PersistComponentStateRegistration> pauseCallbacks)
     {
+        _jsonSerializerOptions = jsonSerializerOptions;
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
     }
@@ -86,7 +86,7 @@ public class PersistentComponentState
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
 
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
+        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, _jsonSerializerOptions));
     }
 
     /// <summary>
@@ -106,34 +106,7 @@ public class PersistentComponentState
         if (TryTake(key, out var data))
         {
             var reader = new Utf8JsonReader(data);
-            instance = JsonSerializer.Deserialize<TValue>(ref reader, JsonSerializerOptionsProvider.Options)!;
-            return true;
-        }
-        else
-        {
-            instance = default;
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
-    /// instance of type <typeparamref name="TValue"/>.
-    /// </summary>
-    /// <param name="key">The key used to persist the instance.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use when deserializing from JSON.</param>
-    /// <param name="instance">The persisted instance.</param>
-    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public bool TryTakeFromJson<TValue>(string key, IJsonTypeInfoResolver resolver, [MaybeNullWhen(false)] out TValue? instance)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-
-        if (TryTake(key, out var data))
-        {
-            var reader = new Utf8JsonReader(data);
-            var options = _jsonSerializerOptionsCache.GetOrAdd(resolver);
-            instance = JsonSerializer.Deserialize<TValue>(ref reader, options)!;
+            instance = JsonSerializer.Deserialize<TValue>(ref reader, _jsonSerializerOptions)!;
             return true;
         }
         else

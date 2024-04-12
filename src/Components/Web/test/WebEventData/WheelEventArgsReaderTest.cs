@@ -50,7 +50,7 @@ public class WheelEventArgsReaderTest
 
     private static JsonElement GetJsonElement<T>(T args)
     {
-        var json = JsonSerializer.SerializeToUtf8Bytes(args, JsonSerializerOptionsProvider.Options);
+        var json = JsonSerializer.SerializeToUtf8Bytes(args, DefaultJsonSerializerOptions.Instance);
         var jsonReader = new Utf8JsonReader(json);
         var jsonElement = JsonElement.ParseValue(ref jsonReader);
         return jsonElement;
