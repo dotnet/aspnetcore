@@ -261,7 +261,6 @@ public class ShutdownTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [Repeat(10)] // temp for CI testing
     public async Task RequestsWhileRestartingAppFromConfigChangeAreProcessed()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -299,7 +298,6 @@ public class ShutdownTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [Repeat(10)] // temp for CI testing
     public async Task RequestsWhileRecyclingAppAreProcessed()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);

@@ -111,4 +111,6 @@ private:
     bool                           m_fDisallowRotationOnConfigChange;
     std::wstring                   m_strShadowCopyingDirectory;
     std::chrono::milliseconds      m_fShutdownDelay;
+
+    void SetShutdownDelay(std::wstring& shutdownDelay);
 };

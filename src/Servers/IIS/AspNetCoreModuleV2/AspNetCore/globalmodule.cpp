@@ -40,12 +40,15 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     IN IHttpApplicationStopProvider* pProvider
 )
 {
+    UNREFERENCED_PARAMETER(pProvider);
+
+    // If we're already cleaned up just return.
+    // If user has opted out of the new shutdown behavior ignore this call as we never registered for it before
     if (!m_pApplicationManager || m_pApplicationManager->GetShutdownDelay() == std::chrono::milliseconds::zero())
     {
         return GL_NOTIFICATION_CONTINUE;
     }
 
-    UNREFERENCED_PARAMETER(pProvider);
     LOG_INFO(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop");
 
     if (!g_fInShutdown && !m_shutdown.joinable())
