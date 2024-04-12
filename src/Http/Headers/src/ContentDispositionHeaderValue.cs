@@ -623,12 +623,12 @@ public class ContentDispositionHeaderValue
         var maxInputBytes = Encoding.UTF8.GetMaxByteCount(input.Length);
         byte[]? bufferFromPool = null;
         Span<byte> inputBytes = maxInputBytes <= MaxStackAllocSizeBytes
-            ? stackalloc byte[maxInputBytes]
+            ? stackalloc byte[MaxStackAllocSizeBytes]
             : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
 
         char[]? charBufferFromPool = null;
         Span<char> tempCharBuffer = input.Length <= MaxStackAllocSizeChars
-            ? stackalloc char[input.Length]
+            ? stackalloc char[MaxStackAllocSizeChars]
             : charBufferFromPool = ArrayPool<char>.Shared.Rent(input.Length);
 
         var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
