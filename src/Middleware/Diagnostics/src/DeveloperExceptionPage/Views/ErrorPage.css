@@ -189,7 +189,6 @@ body .location {
 }
 .page td {
     padding: 3px 10px;
-    font-size: 1em;
 }
 .page tr {
     border-bottom: 1px solid var(--color-border);
@@ -198,8 +197,12 @@ body .location {
     border-right: 1px solid var(--color-border);
 }
 
+.page tr > :first-child {
+    min-width: 150px;
+}
+
 .page tr > :last-child {
-    word-break: break-all;
+    word-break: break-word;
 }
 
 /* Raw exception details */
