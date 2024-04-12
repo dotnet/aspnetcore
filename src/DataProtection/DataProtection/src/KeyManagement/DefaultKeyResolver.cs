@@ -103,6 +103,9 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
                 _logger.RetryingMethodOfKeyAfterFailure(key.KeyId, nameof(IKey.CreateEncryptor), ex);
             }
 
+            // Reset the descriptor to allow for a retry
+            (key as Key)?.ResetDescriptor();
+
             // Don't retry immediately
             Thread.Sleep(_decryptRetryDelay);
         }
