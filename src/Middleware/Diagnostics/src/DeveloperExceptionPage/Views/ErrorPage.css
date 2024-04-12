@@ -189,6 +189,7 @@ body .location {
 }
 .page td {
     padding: 3px 10px;
+    font-size: 1.1em;
 }
 .page tr {
     border-bottom: 1px solid var(--color-border);
