@@ -683,9 +683,7 @@ public class ContentDispositionHeaderValue
 
     private static void HexEscape(StringBuilder builder, byte b)
     {
-        builder.Append('%');
-        builder.Append(HexUpperChars[(b & 0xf0) >> 4]);
-        builder.Append(HexUpperChars[b & 0xf]);
+        builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(b & 0xf0) >> 4]}{HexUpperChars[b & 0xf]}");
     }
 
     // Attempt to decode using RFC 5987 encoding.
