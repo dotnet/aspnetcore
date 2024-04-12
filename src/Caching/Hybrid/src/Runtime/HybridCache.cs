@@ -69,6 +69,7 @@ public abstract class HybridCache
     /// <summary>
     /// Removes cache data with the specified keys.
     /// </summary>
+    /// <remarks>Implementors should treat <c>null</c> as empty</remarks>
     public virtual ValueTask RemoveKeysAsync(IEnumerable<string> keys, CancellationToken token = default)
     {
         return keys switch
@@ -92,6 +93,7 @@ public abstract class HybridCache
     /// <summary>
     /// Removes cache data associated with the specified tags.
     /// </summary>
+    /// <remarks>Implementors should treat <c>null</c> as empty</remarks>
     public virtual ValueTask RemoveTagsAsync(IEnumerable<string> tags, CancellationToken token = default)
     {
         return tags switch
