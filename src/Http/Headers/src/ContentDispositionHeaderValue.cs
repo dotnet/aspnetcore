@@ -657,10 +657,9 @@ public class ContentDispositionHeaderValue
             }
 
             var toHexEscape = inputBytes.Slice(0, length);
-            while (toHexEscape.Length > 0)
+            for (int i = 0; i < toHexEscape.Length; i++)
             {
-                HexEscape(builder, toHexEscape[0]);
-                toHexEscape = toHexEscape.Slice(1);
+                HexEscape(builder, toHexEscape[i]);
             }
 
             inputBytes = inputBytes.Slice(length);
