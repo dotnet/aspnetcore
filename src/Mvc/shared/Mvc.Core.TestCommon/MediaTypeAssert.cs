@@ -32,14 +32,18 @@ public class MediaTypeAssert
         }
         else if (!left.HasValue || !right.HasValue)
         {
-            throw new EqualException(left.ToString(), right.ToString());
+            throw EqualException.ForMismatchedValues(
+                    expected: left.ToString(),
+                    actual: right.ToString());
         }
 
         if (!MediaTypeHeaderValue.TryParse(left.Value, out var leftMediaType) ||
             !MediaTypeHeaderValue.TryParse(right.Value, out var rightMediaType) ||
             !leftMediaType.Equals(rightMediaType))
         {
-            throw new EqualException(left.ToString(), right.ToString());
+            throw EqualException.ForMismatchedValues(
+                    expected: left.ToString(),
+                    actual: right.ToString());
         }
     }
 }
