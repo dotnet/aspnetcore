@@ -35,7 +35,7 @@ internal sealed class MetricsLoggerProvider : ILoggerProvider
         var counter = _meter.CreateCounter<long>(
             "aspnetcore.data_protection.log_messages",
             unit: "{message}",
-            description: "Number of messages that have been logged.");
+            description: "Number of log records that have been logged.");
 
         _logger = new MetricsLogger(counter);
     }
