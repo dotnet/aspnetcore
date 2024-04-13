@@ -326,13 +326,16 @@ public class DefaultKeyResolverTests
         Assert.Equal(0, descriptorFactoryCalls); // Not retried
     }
 
-    [Fact]
-    public void CreateEncryptor_FirstAttemptIsNotARetry()
+    [Theory]
+    [InlineData(0)] // Retries disabled (as by appcontext switch)
+    [InlineData(1)]
+    [InlineData(10)]
+    public void CreateEncryptor_FirstAttemptIsNotARetry(int maxRetries)
     {
         // Arrange
         var options = Options.Create(new KeyManagementOptions()
         {
-            MaximumDefaultKeyResolverRetries = 3,
+            MaximumDefaultKeyResolverRetries = maxRetries,
             DefaultKeyResolverRetryDelay = TimeSpan.Zero,
         });
 
@@ -400,7 +403,7 @@ public class DefaultKeyResolverTests
         Assert.True(resolution.ShouldGenerateNewKey);
 
         Assert.Equal(1, descriptorFactoryCalls1); // 1 try
-        Assert.Equal(4, descriptorFactoryCalls2); // 1 try plus max (3) retries
+        Assert.Equal(1 + maxRetries, descriptorFactoryCalls2); // 1 try plus max retries
     }
 
     [Fact]

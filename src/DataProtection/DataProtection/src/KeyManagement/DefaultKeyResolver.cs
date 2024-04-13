@@ -82,21 +82,24 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
             }
             catch (Exception ex)
             {
-                if (exceptions is null)
+                if (retriesRemaining > 0)
                 {
-                    // The first failure doesn't count as a retry
-                    exceptions = new();
-                }
-                else
-                {
-                    retriesRemaining--;
+                    if (exceptions is null)
+                    {
+                        // The first failure doesn't count as a retry
+                        exceptions = new();
+                    }
+                    else
+                    {
+                        retriesRemaining--;
+                    }
+
+                    exceptions.Add(ex);
                 }
 
-                exceptions.Add(ex);
-
-                if (retriesRemaining == 0)
+                if (retriesRemaining <= 0) // Guard against infinite loops from programmer errors
                 {
-                    _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptor), new AggregateException(exceptions));
+                    _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptor), exceptions is null ? ex : new AggregateException(exceptions));
                     return false;
                 }
 
