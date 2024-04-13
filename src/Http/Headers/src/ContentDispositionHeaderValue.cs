@@ -618,7 +618,6 @@ public class ContentDispositionHeaderValue
     private static string Encode5987(StringSegment input)
     {
         var builder = new StringBuilder("UTF-8\'\'");
-        Span<byte> utf8CharBuffer = stackalloc byte[4];
         var remaining = input.AsSpan();
         while (remaining.Length > 0)
         {
@@ -644,14 +643,9 @@ public class ContentDispositionHeaderValue
             for (int i = 0; i < length;)
             {
                 Rune.DecodeFromUtf16(remaining.Slice(i), out Rune rune, out var runeLength);
-                int utf8Length = rune.EncodeToUtf8(utf8CharBuffer);
-                for (int j = 0; j < utf8Length; j++)
-        {
-                    var utf8Part = utf8CharBuffer[j];
-                    builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(utf8Part & 0xf0) >> 4]}{HexUpperChars[utf8Part & 0xf]}");
-        }
+                EncodeToUtf8Hex(rune, builder);
                 i += runeLength;
-        }
+            }
 
             remaining = remaining.Slice(length);
         }
@@ -663,9 +657,45 @@ public class ContentDispositionHeaderValue
                                    '0', '1', '2', '3', '4', '5', '6', '7',
                                    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-    private static void HexEscape(StringBuilder builder, byte b)
+    private static void EncodeToUtf8Hex(Rune rune, StringBuilder builder)
     {
-        builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(b & 0xf0) >> 4]}{HexUpperChars[b & 0xf]}");
+        // Inspired by https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Text/Rune.cs TryEncodeToUtf8
+        var value = (uint)rune.Value;
+        if (rune.IsAscii)
+        {
+            var byteValue = (byte)value;
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+        }
+        else if (rune.Value <= 0x7FFu)
+        {
+            // Scalar 00000yyy yyxxxxxx -> bytes [ 110yyyyy 10xxxxxx ]
+            var byteValue = (byte)((value + (0b110u << 11)) >> 6);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            byteValue = (byte)((value & 0x3Fu) + 0x80u);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+        }
+        else if (rune.Value <= 0xFFFFu)
+        {
+            // Scalar zzzzyyyy yyxxxxxx -> bytes [ 1110zzzz 10yyyyyy 10xxxxxx ]
+            var byteValue = (byte)((value + (0b1110 << 16)) >> 12);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            byteValue = (byte)(((value & (0x3Fu << 6)) >> 6) + 0x80u);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            byteValue = (byte)((value & 0x3Fu) + 0x80u);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+        }
+        else
+        {
+            // Scalar 000uuuuu zzzzyyyy yyxxxxxx -> bytes [ 11110uuu 10uuzzzz 10yyyyyy 10xxxxxx ]
+            var byteValue = (byte)((value + (0b11110 << 21)) >> 18);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            byteValue = (byte)(((value & (0x3Fu << 12)) >> 12) + 0x80u);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            byteValue = (byte)(((value & (0x3Fu << 6)) >> 6) + 0x80u);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+            byteValue = (byte)((value & 0x3Fu) + 0x80u);
+            builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(byteValue & 0xf0) >> 4]}{HexUpperChars[byteValue & 0xf]}");
+        }
     }
 
     // Attempt to decode using RFC 5987 encoding.
