@@ -29,7 +29,6 @@ public class ContentDispositionHeaderValue
     private const string ReadDateString = "read-date";
     private const string SizeString = "size";
     private const int MaxStackAllocSizeBytes = 256;
-    private const int MaxStackAllocSizeChars = MaxStackAllocSizeBytes / 2;
     private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
     private static readonly char[] EscapeChars = new char[] { '\\', '"' };
@@ -38,8 +37,8 @@ public class ContentDispositionHeaderValue
 
     // attr-char definition from RFC5987
     // Same as token except ( "*" / "'" / "%" )
-    private static readonly SearchValues<byte> Rfc5987AttrChar =
-        SearchValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~"u8);
+    private static readonly SearchValues<char> Rfc5987AttrChar =
+        SearchValues.Create("!#$&+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~");
 
     private static readonly HttpHeaderParser<ContentDispositionHeaderValue> Parser
         = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
@@ -619,58 +618,42 @@ public class ContentDispositionHeaderValue
     private static string Encode5987(StringSegment input)
     {
         var builder = new StringBuilder("UTF-8\'\'");
-
-        var maxInputBytes = Encoding.UTF8.GetMaxByteCount(input.Length);
-        byte[]? bufferFromPool = null;
-        Span<byte> inputBytes = maxInputBytes <= MaxStackAllocSizeBytes
-            ? stackalloc byte[MaxStackAllocSizeBytes]
-            : bufferFromPool = ArrayPool<byte>.Shared.Rent(maxInputBytes);
-
-        char[]? charBufferFromPool = null;
-        Span<char> tempCharBuffer = input.Length <= MaxStackAllocSizeChars
-            ? stackalloc char[MaxStackAllocSizeChars]
-            : charBufferFromPool = ArrayPool<char>.Shared.Rent(input.Length);
-
-        var bytesWritten = Encoding.UTF8.GetBytes(input, inputBytes);
-        inputBytes = inputBytes[..bytesWritten];
-
-        while (inputBytes.Length > 0)
+        Span<byte> utf8CharBuffer = stackalloc byte[4];
+        var remaining = input.AsSpan();
+        while (remaining.Length > 0)
         {
-            var length = inputBytes.IndexOfAnyExcept(Rfc5987AttrChar);
+            var length = remaining.IndexOfAnyExcept(Rfc5987AttrChar);
             if (length < 0)
             {
-                length = inputBytes.Length;
+                length = remaining.Length;
             }
-            int asciiCharCount = Encoding.ASCII.GetChars(inputBytes.Slice(0, length), tempCharBuffer);
-            builder.Append(tempCharBuffer[..asciiCharCount]);
+            builder.Append(remaining[..length]);
 
-            inputBytes = inputBytes.Slice(length);
-            if (inputBytes.Length == 0)
+            remaining = remaining.Slice(length);
+            if (remaining.Length == 0)
             {
                 break;
             }
 
-            length = inputBytes.IndexOfAny(Rfc5987AttrChar);
+            length = remaining.IndexOfAny(Rfc5987AttrChar);
             if (length < 0)
             {
-                length = inputBytes.Length;
+                length = remaining.Length;
             }
 
-            for (int i = 0; i < length; i++)
+            for (int i = 0; i < length;)
             {
-                HexEscape(builder, inputBytes[i]);
-            }
-
-            inputBytes = inputBytes.Slice(length);
+                Rune.DecodeFromUtf16(remaining.Slice(i), out Rune rune, out var runeLength);
+                int utf8Length = rune.EncodeToUtf8(utf8CharBuffer);
+                for (int j = 0; j < utf8Length; j++)
+        {
+                    var utf8Part = utf8CharBuffer[j];
+                    builder.Append(CultureInfo.InvariantCulture, $"%{HexUpperChars[(utf8Part & 0xf0) >> 4]}{HexUpperChars[utf8Part & 0xf]}");
+        }
+                i += runeLength;
         }
 
-        if (bufferFromPool is not null)
-        {
-            ArrayPool<byte>.Shared.Return(bufferFromPool);
-        }
-        if (charBufferFromPool is not null)
-        {
-            ArrayPool<char>.Shared.Return(charBufferFromPool);
+            remaining = remaining.Slice(length);
         }
 
         return builder.ToString();
