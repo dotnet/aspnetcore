@@ -18,6 +18,9 @@ partial class DefaultHybridCache
 
         public StampedeKey Key { get; }
 
+        /// <summary>
+        /// Create a stamped token optionally with shared cancellation support
+        /// </summary>
         protected StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
         {
             this.cache = cache;
@@ -26,8 +29,23 @@ partial class DefaultHybridCache
             {
                 // if the first (or any) caller can't be cancelled; we'll never get to zero; no point tracking
                 // (in reality, all callers usually use the same path, so cancellation is usually "all" or "none")
-                this.sharedCancellation = new();
+                sharedCancellation = new();
+                SharedToken = sharedCancellation.Token;
             }
+            else
+            {
+                SharedToken = CancellationToken.None;
+            }
+        }
+
+        /// <summary>
+        /// Create a stamped token using a fixed cancellation token
+        /// </summary>
+        protected StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
+        {
+            this.cache = cache;
+            Key = key;
+            SharedToken = token;
         }
 
 #if !NETCOREAPP3_0_OR_GREATER
@@ -48,7 +66,7 @@ partial class DefaultHybridCache
 
         protected abstract void SetCanceled();
 
-        public CancellationToken SharedToken => sharedCancellation?.Token ?? default;
+        public readonly CancellationToken SharedToken;
 
         public int DebugCallerCount => Volatile.Read(ref activeCallers);
 

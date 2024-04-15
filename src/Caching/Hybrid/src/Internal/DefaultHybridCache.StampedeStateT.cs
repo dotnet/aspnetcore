@@ -13,13 +13,20 @@ partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        private readonly TaskCompletionSource<CacheItem<T>> result = new();
+        private readonly TaskCompletionSource<CacheItem<T>>? result;
         private TState? state;
         private Func<TState, CancellationToken, ValueTask<T>>? underlying;
+
         private HybridCacheEntryOptions? options;
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
-            : base(cache, key, canBeCanceled) { }
+            : base(cache, key, canBeCanceled)
+        {
+             result = new();
+        }
+
+        public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
+            : base(cache, key, token) { } // no TCS in this case - this is for SetValue only
 
         public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
@@ -38,7 +45,7 @@ partial class DefaultHybridCache
 #endif
         }
 
-        public ValueTask<T> ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
+        public Task ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
             Debug.Assert(this.underlying is null);
             Debug.Assert(underlying is not null);
@@ -48,8 +55,7 @@ partial class DefaultHybridCache
             this.underlying = underlying;
             this.options = options;
 
-            Execute();
-            return UnwrapAsync(Task);
+            return BackgroundFetchAsync();
         }
 
         public override void Execute() => _ = BackgroundFetchAsync();
@@ -110,30 +116,48 @@ partial class DefaultHybridCache
             }
         }
 
-        public Task<CacheItem<T>> Task => result.Task;
+        public Task<CacheItem<T>> Task
+        {
+            get
+            {
+                Debug.Assert(result is not null);
+                return result is null ? Invalid() : result.Task;
+
+                static Task<CacheItem<T>> Invalid() => System.Threading.Tasks.Task.FromException<CacheItem<T>>(new InvalidOperationException("Task should not be accessed for non-shared instances"));
+            }
+        }
 
         private void SetException(Exception ex)
         {
-            Cache.RemoveStampede(Key);
-            result.TrySetException(ex);
+            if (result is not null)
+            {
+                Cache.RemoveStampede(Key);
+                result.TrySetException(ex);
+            }
         }
 
         private void SetResult(CacheItem<T> value)
         {
             if ((Key.Flags & HybridCacheEntryFlags.DisableLocalCacheWrite) == 0)
             {
-                Cache.SetL1(Key.Key, value, options);
+                Cache.SetL1(Key.Key, value, options); // we can do this without a TCS, for SetValue
             }
 
-            Cache.RemoveStampede(Key);
-            result.TrySetResult(value);
+            if (result is not null)
+            {
+                Cache.RemoveStampede(Key);
+                result?.TrySetResult(value);
+            }
         }
 
         private void SetDefaultResult()
         {
             // note we don't store this dummy result in L1 or L2
-            Cache.RemoveStampede(Key);
-            result.TrySetResult(ImmutableCacheItem<T>.Default);
+            if (result is not null)
+            {
+                Cache.RemoveStampede(Key);
+                result.TrySetResult(ImmutableCacheItem<T>.Default);
+            }
         }
 
         private void SetResult(ArraySegment<byte> value)
@@ -160,7 +184,7 @@ partial class DefaultHybridCache
             return cacheItem;
         }
 
-        protected override void SetCanceled() => result.TrySetCanceled(SharedToken);
+        protected override void SetCanceled() => result?.TrySetCanceled(SharedToken);
 
         public ValueTask<T> JoinAsync(CancellationToken token)
         {

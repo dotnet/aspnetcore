@@ -103,7 +103,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
             else
             {
                 // we're going to run to completion; no need to get complicated
-                return stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options);
+                _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
+                return UnwrapAsync(stampede.Task);
             }
         }
 
@@ -136,5 +137,11 @@ internal sealed partial class DefaultHybridCache : HybridCache
         => default; // tags not yet implemented
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
-        => default; // no cache, nothing to set
+    {
+        // since we're forcing a write: disable L1+L2 read; we'll use a direct pass-thru of the value as the callback, to reuse all the code;
+        // note also that stampede token is not shared with anyone else
+        var flags = (options?.Flags ?? defaultFlags) | (HybridCacheEntryFlags.DisableLocalCacheRead | HybridCacheEntryFlags.DisableDistributedCacheRead);
+        var state = new StampedeState<T, T>(this, new StampedeKey(key, flags), token);
+        return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
+    }
 }
