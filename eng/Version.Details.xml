@@ -368,9 +368,9 @@
       <Sha>9b57a265c7efd3732b035bade005561a04767128</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24203.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24211.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>1e2e91d2544726b2cf68109f946178ef6bef3ad9</Sha>
+      <Sha>83566118e44922c30d146654d42c7c3745cc119d</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
   </ProductDependencies>
@@ -380,43 +380,43 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9b57a265c7efd3732b035bade005561a04767128</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="9.0.0-preview.4.24206.1">
+    <Dependency Name="System.Drawing.Common" Version="9.0.0-preview.4.24212.2">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>d9e9d930ab30e628687b4a73ba8c970360c401ec</Sha>
+      <Sha>84fb2fd451c2223de7326b57ae067ee88bfd07aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24207.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24212.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9e3b333509ec2990dd20fbf01f50fd42d7f23d56</Sha>
+      <Sha>87b015b938e5400d6e57afd7650348c17a764b73</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24207.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24212.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9e3b333509ec2990dd20fbf01f50fd42d7f23d56</Sha>
+      <Sha>87b015b938e5400d6e57afd7650348c17a764b73</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24207.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24212.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9e3b333509ec2990dd20fbf01f50fd42d7f23d56</Sha>
+      <Sha>87b015b938e5400d6e57afd7650348c17a764b73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.24207.1">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.24212.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9e3b333509ec2990dd20fbf01f50fd42d7f23d56</Sha>
+      <Sha>87b015b938e5400d6e57afd7650348c17a764b73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24207.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24212.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9e3b333509ec2990dd20fbf01f50fd42d7f23d56</Sha>
+      <Sha>87b015b938e5400d6e57afd7650348c17a764b73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24207.1">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24212.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9e3b333509ec2990dd20fbf01f50fd42d7f23d56</Sha>
+      <Sha>87b015b938e5400d6e57afd7650348c17a764b73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.3.24206.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.4.24214.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>010d3820e37b57dac2da5f7a66bd1c1f290b0a38</Sha>
+      <Sha>edfa4415076a32239fa60a1f885c675fee3c36e3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-preview.3.24206.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.0.0-preview.4.24214.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>010d3820e37b57dac2da5f7a66bd1c1f290b0a38</Sha>
+      <Sha>edfa4415076a32239fa60a1f885c675fee3c36e3</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
