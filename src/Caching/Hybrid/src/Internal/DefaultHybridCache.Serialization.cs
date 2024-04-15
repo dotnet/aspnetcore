@@ -48,7 +48,11 @@ partial class DefaultHybridCache
 
     private static class ImmutableTypeCache<T> // lazy memoize; T doesn't change per cache instance
     {
-        public static readonly bool IsImmutable = DefaultHybridCache.IsImmutable(typeof(T));
+        public static readonly bool IsImmutable =
+#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            !RuntimeHelpers.IsReferenceOrContainsReferences<T>() || // a pure struct will be a full copy every time
+#endif
+            DefaultHybridCache.IsImmutable(typeof(T));
     }
 
     internal static bool IsImmutable(Type type)

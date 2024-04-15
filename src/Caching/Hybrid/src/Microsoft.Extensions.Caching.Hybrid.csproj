@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;hybrid</PackageTags>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
@@ -23,7 +23,7 @@
     <InternalsVisibleTo Include="Microsoft.Extensions.Caching.Hybrid.Tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
     <Reference Include="System.Text.Json" />
     <Reference Include="Microsoft.Bcl.TimeProvider" />
   </ItemGroup>

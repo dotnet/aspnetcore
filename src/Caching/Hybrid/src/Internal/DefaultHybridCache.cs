@@ -113,7 +113,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     static ValueTask<T> UnwrapAsync<T>(Task<CacheItem<T>> task)
     {
-#if NETCOREAPP2_0_OR_GREATER
+#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
         if (task.IsCompletedSuccessfully)
 #else
         if (task.Status == TaskStatus.RanToCompletion)
