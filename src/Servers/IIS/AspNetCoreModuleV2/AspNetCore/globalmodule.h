@@ -59,7 +59,7 @@ private:
 
         // If delay is zero we can go back to the old behavior of calling shutdown inline
         // this is primarily so that we have a way for users to revert the new behavior if there are issues with it
-        if (m_pApplicationManager->GetShutdownDelay() == std::chrono::milliseconds::zero())
+        if (m_pApplicationManager->UseLegacyShutdown())
         {
             LOG_INFO(L"Shutdown starting.");
             m_pApplicationManager->ShutDown();

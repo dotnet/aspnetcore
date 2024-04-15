@@ -44,7 +44,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
 
     // If we're already cleaned up just return.
     // If user has opted out of the new shutdown behavior ignore this call as we never registered for it before
-    if (!m_pApplicationManager || m_pApplicationManager->GetShutdownDelay() == std::chrono::milliseconds::zero())
+    if (!m_pApplicationManager || m_pApplicationManager->UseLegacyShutdown())
     {
         return GL_NOTIFICATION_CONTINUE;
     }

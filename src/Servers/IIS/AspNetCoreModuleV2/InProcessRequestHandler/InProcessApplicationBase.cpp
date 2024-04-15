@@ -40,7 +40,7 @@ InProcessApplicationBase::StopInternal(bool fServerInitiated)
         return;
     }
 
-    // Stop was initiated by server no need to do anything, server would stop on it's own
+    // Stop was initiated by server no need to do anything, server would stop on its own
     if (fServerInitiated)
     {
         return;

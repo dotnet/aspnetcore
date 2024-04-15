@@ -149,7 +149,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             {
                 try
                 {
-                    if (GetShutdownDelay() == std::chrono::milliseconds::zero())
+                    if (UseLegacyShutdown())
                     {
                         application->ShutDownApplication(/* fServerInitiated */ false);
                     }
@@ -180,7 +180,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             }
         }
 
-        if (GetShutdownDelay() == std::chrono::milliseconds::zero())
+        if (UseLegacyShutdown())
         {
             // Remove apps after calling shutdown on each of them
             // This is exclusive to in-process, as the shutdown of an in-process app recycles

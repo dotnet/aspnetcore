@@ -52,6 +52,11 @@ public:
         return m_handlerResolver.GetShutdownDelay();
     }
 
+    bool UseLegacyShutdown() const
+    {
+        return m_handlerResolver.GetShutdownDelay() == std::chrono::milliseconds::zero();
+    }
+
 private:
 
     std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;

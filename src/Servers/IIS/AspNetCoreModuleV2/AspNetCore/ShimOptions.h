@@ -90,7 +90,7 @@ public:
     }
 
     std::chrono::milliseconds
-        QueryShutdownDelay() const noexcept
+    QueryShutdownDelay() const noexcept
     {
         return m_fShutdownDelay;
     }
@@ -112,5 +112,5 @@ private:
     std::wstring                   m_strShadowCopyingDirectory;
     std::chrono::milliseconds      m_fShutdownDelay;
 
-    void SetShutdownDelay(std::wstring& shutdownDelay);
+    void SetShutdownDelay(const std::wstring& shutdownDelay);
 };
