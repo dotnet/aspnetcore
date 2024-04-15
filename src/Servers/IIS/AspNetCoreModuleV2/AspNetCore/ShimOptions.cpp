@@ -13,7 +13,7 @@
 #define CS_ASPNETCORE_CLEAN_SHADOW_DIRECTORY_CONTENT     L"cleanShadowCopyDirectory"
 #define CS_ASPNETCORE_DISALLOW_ROTATE_CONFIG             L"disallowRotationOnConfigChange"
 #define CS_ASPNETCORE_SHUTDOWN_DELAY                     L"shutdownDelay"
-#define CS_ASPNEtCORE_SHUTDOWN_DELAY_ENV                 L"ANCM_shutdownDelay"
+#define CS_ASPNETCORE_SHUTDOWN_DELAY_ENV                 L"ANCM_shutdownDelay"
 
 ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
         m_hostingModel(HOSTING_UNKNOWN),
@@ -91,8 +91,8 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     if (shutdownDelay.empty())
     {
         // Fallback to environment variable if process specific config wasn't set
-        shutdownDelay = Environment::GetEnvironmentVariableValue(CS_ASPNEtCORE_SHUTDOWN_DELAY_ENV)
-            .value_or(environmentVariables[CS_ASPNEtCORE_SHUTDOWN_DELAY_ENV]);
+        shutdownDelay = Environment::GetEnvironmentVariableValue(CS_ASPNETCORE_SHUTDOWN_DELAY_ENV)
+            .value_or(environmentVariables[CS_ASPNETCORE_SHUTDOWN_DELAY_ENV]);
         if (shutdownDelay.empty())
         {
             // Default if neither process specific config or environment variable aren't set
@@ -109,8 +109,13 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     }
 }
 
-void ShimOptions::SetShutdownDelay(std::wstring& shutdownDelay)
+void ShimOptions::SetShutdownDelay(const std::wstring& shutdownDelay)
 {
-    auto str = to_multi_byte_string(shutdownDelay, CP_UTF8);
-    m_fShutdownDelay = std::chrono::milliseconds(std::atoi(str.c_str()));
+    auto millsecondsValue = std::stoi(shutdownDelay);
+    if (millsecondsValue < 0)
+    {
+        throw ConfigurationLoadException(format(
+            L"'shutdownDelay' in web.config or '%s' environment variable is less than 0.", CS_ASPNETCORE_SHUTDOWN_DELAY_ENV));
+    }
+    m_fShutdownDelay = std::chrono::milliseconds(millsecondsValue);
 }
