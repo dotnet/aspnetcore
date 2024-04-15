@@ -261,8 +261,8 @@ stages:
           os: windows
         # If it's not devdiv, it's dnceng
         ${{ else }}:
-          name: $(DncEngInternalBuildPool)
-          image: 1es-windows-2022-pt
+          name: NetCore1ESPool-Publishing-Internal
+          image: windows.vs2019.amd64
           os: windows
       steps:
         - template: setup-maestro-vars.yml

@@ -24,52 +24,23 @@ public partial class RedisCache : IDistributedCache, IDisposable
 {
     // Note that the "force reconnect" pattern as described https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
     // can be enabled via the "Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect" app-context switch
-    //
-    // -- Explanation of why two kinds of SetScript are used --
-    // * Redis 2.0 had HSET key field value for setting individual hash fields,
-    // and HMSET key field value [field value ...] for setting multiple hash fields (against the same key).
-    // * Redis 4.0 added HSET key field value [field value ...] and deprecated HMSET.
-    //
-    // On Redis versions that don't have the newer HSET variant, we use SetScriptPreExtendedSetCommand
-    // which uses the (now deprecated) HMSET.
-
-    // KEYS[1] = = key
-    // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
-    // ARGV[2] = sliding-expiration - ticks as long (-1 for none)
-    // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
-    // ARGV[4] = data - byte[]
-    // this order should not change LUA script depends on it
-    private const string SetScript = (@"
-                redis.call('HSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
-                if ARGV[3] ~= '-1' then
-                  redis.call('EXPIRE', KEYS[1], ARGV[3])
-                end
-                return 1");
-    private const string SetScriptPreExtendedSetCommand = (@"
-                redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
-                if ARGV[3] ~= '-1' then
-                  redis.call('EXPIRE', KEYS[1], ARGV[3])
-                end
-                return 1");
 
     private const string AbsoluteExpirationKey = "absexp";
     private const string SlidingExpirationKey = "sldexp";
     private const string DataKey = "data";
 
     // combined keys - same hash keys fetched constantly; avoid allocating an array each time
-    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpirationData = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey, DataKey };
-    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpiration = new RedisValue[] { AbsoluteExpirationKey, SlidingExpirationKey };
+    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpirationData = [AbsoluteExpirationKey, SlidingExpirationKey, DataKey];
+    private static readonly RedisValue[] _hashMembersAbsoluteExpirationSlidingExpiration = [AbsoluteExpirationKey, SlidingExpirationKey];
 
     private static RedisValue[] GetHashFields(bool getData) => getData
         ? _hashMembersAbsoluteExpirationSlidingExpirationData
         : _hashMembersAbsoluteExpirationSlidingExpiration;
 
     private const long NotPresent = -1;
-    private static readonly Version ServerVersionWithExtendedSetCommand = new Version(4, 0, 0);
 
     private volatile IDatabase? _cache;
     private bool _disposed;
-    private string _setScript = SetScript;
 
     private readonly RedisCacheOptions _options;
     private readonly RedisKey _instancePrefix;
@@ -169,14 +140,24 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         try
         {
-            cache.ScriptEvaluate(_setScript, new RedisKey[] { _instancePrefix.Append(key) },
-                new RedisValue[]
-                {
-                        absoluteExpiration?.Ticks ?? NotPresent,
-                        options.SlidingExpiration?.Ticks ?? NotPresent,
-                        GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
-                        value
-                });
+            var prefixedKey = _instancePrefix.Append(key);
+            var ttl = GetExpirationInSeconds(creationTime, absoluteExpiration, options);
+            var fields = GetHashFields(value, absoluteExpiration, options.SlidingExpiration);
+
+            if (ttl is null)
+            {
+                cache.HashSet(prefixedKey, fields);
+            }
+            else
+            {
+                // use the batch API to pipeline the two commands and wait synchronously;
+                // SE.Redis reuses the async API shape for this scenario
+                var batch = cache.CreateBatch();
+                var setFields = batch.HashSetAsync(prefixedKey, fields);
+                var setTtl = batch.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault()));
+                batch.Execute(); // synchronous wait-for-all; the two tasks should be either complete or *literally about to* (race conditions)
+                cache.WaitAll(setFields, setTtl); // note this applies usual SE.Redis timeouts etc
+            }
         }
         catch (Exception ex)
         {
@@ -203,14 +184,21 @@ public partial class RedisCache : IDistributedCache, IDisposable
 
         try
         {
-            await cache.ScriptEvaluateAsync(_setScript, new RedisKey[] { _instancePrefix.Append(key) },
-                new RedisValue[]
-                {
-                absoluteExpiration?.Ticks ?? NotPresent,
-                options.SlidingExpiration?.Ticks ?? NotPresent,
-                GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
-                value
-                }).ConfigureAwait(false);
+            var prefixedKey = _instancePrefix.Append(key);
+            var ttl = GetExpirationInSeconds(creationTime, absoluteExpiration, options);
+            var fields = GetHashFields(value, absoluteExpiration, options.SlidingExpiration);
+
+            if (ttl is null)
+            {
+                await cache.HashSetAsync(prefixedKey, fields).ConfigureAwait(false);
+            }
+            else
+            {
+                await Task.WhenAll(
+                    cache.HashSetAsync(prefixedKey, fields),
+                    cache.KeyExpireAsync(prefixedKey, TimeSpan.FromSeconds(ttl.GetValueOrDefault()))
+                    ).ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {
@@ -218,6 +206,13 @@ public partial class RedisCache : IDistributedCache, IDisposable
             throw;
         }
     }
+
+    private static HashEntry[] GetHashFields(RedisValue value, DateTimeOffset? absoluteExpiration, TimeSpan? slidingExpiration)
+        => [
+            new HashEntry(AbsoluteExpirationKey, absoluteExpiration?.Ticks ?? NotPresent),
+            new HashEntry(SlidingExpirationKey, slidingExpiration?.Ticks ?? NotPresent),
+            new HashEntry(DataKey, value)
+        ];
 
     /// <inheritdoc />
     public void Refresh(string key)
@@ -323,34 +318,8 @@ public partial class RedisCache : IDistributedCache, IDisposable
     private void PrepareConnection(IConnectionMultiplexer connection)
     {
         WriteTimeTicks(ref _lastConnectTicks, DateTimeOffset.UtcNow);
-        ValidateServerFeatures(connection);
         TryRegisterProfiler(connection);
         TryAddSuffix(connection);
-    }
-
-    private void ValidateServerFeatures(IConnectionMultiplexer connection)
-    {
-        _ = connection ?? throw new InvalidOperationException($"{nameof(connection)} cannot be null.");
-
-        try
-        {
-            foreach (var endPoint in connection.GetEndPoints())
-            {
-                if (connection.GetServer(endPoint).Version < ServerVersionWithExtendedSetCommand)
-                {
-                    _setScript = SetScriptPreExtendedSetCommand;
-                    return;
-                }
-            }
-        }
-        catch (NotSupportedException ex)
-        {
-            Log.CouldNotDetermineServerVersion(_logger, ex);
-
-            // The GetServer call may not be supported with some configurations, in which
-            // case let's also fall back to using the older command.
-            _setScript = SetScriptPreExtendedSetCommand;
-        }
     }
 
     private void TryRegisterProfiler(IConnectionMultiplexer connection)
@@ -372,7 +341,7 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
         catch (Exception ex)
         {
-            Log.UnableToAddLibraryNameSuffix(_logger, ex);;
+            Log.UnableToAddLibraryNameSuffix(_logger, ex); ;
         }
     }
 
@@ -557,6 +526,9 @@ public partial class RedisCache : IDistributedCache, IDisposable
         }
     }
 
+    // it is not an oversight that this returns seconds rather than TimeSpan (which SE.Redis can accept directly); by
+    // leaving this as an integer, we use TTL rather than PTTL, which has better compatibility between servers
+    // (it also takes a handful fewer bytes, but that isn't a motivating factor)
     private static long? GetExpirationInSeconds(DateTimeOffset creationTime, DateTimeOffset? absoluteExpiration, DistributedCacheEntryOptions options)
     {
         if (absoluteExpiration.HasValue && options.SlidingExpiration.HasValue)

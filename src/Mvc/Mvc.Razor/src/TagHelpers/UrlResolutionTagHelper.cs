@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -49,8 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 public class UrlResolutionTagHelper : TagHelper
 {
     // Valid whitespace characters defined by the HTML5 spec.
-    private static readonly char[] ValidAttributeWhitespaceChars =
-        new[] { '\t', '\n', '\u000C', '\r', ' ' };
+    private static readonly SearchValues<char> ValidAttributeWhitespaceChars = SearchValues.Create("\t\n\u000C\r ");
+
     private static readonly Dictionary<string, string[]> ElementAttributeLookups =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -215,13 +216,10 @@ public class UrlResolutionTagHelper : TagHelper
     protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, out string? resolvedUrl)
     {
         resolvedUrl = null;
-        var start = FindRelativeStart(url);
-        if (start == -1)
+        if (!TryCreateTrimmedString(url, out var trimmedUrl))
         {
             return false;
         }
-
-        var trimmedUrl = CreateTrimmedString(url, start);
 
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         resolvedUrl = urlHelper.Content(trimmedUrl);
@@ -241,13 +239,10 @@ public class UrlResolutionTagHelper : TagHelper
     protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
     {
         resolvedUrl = null;
-        var start = FindRelativeStart(url);
-        if (start == -1)
+        if (!TryCreateTrimmedString(url, out var trimmedUrl))
         {
             return false;
         }
-
-        var trimmedUrl = CreateTrimmedString(url, start);
 
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         var appRelativeUrl = urlHelper.Content(trimmedUrl);
@@ -273,58 +268,35 @@ public class UrlResolutionTagHelper : TagHelper
         return true;
     }
 
-    private static int FindRelativeStart(string url)
+    private static bool TryCreateTrimmedString(string input, [NotNullWhen(true)] out string? trimmed)
     {
-        if (url == null || url.Length < 2)
+        trimmed = null;
+        if (input == null)
         {
-            return -1;
+            return false;
         }
 
-        var maxTestLength = url.Length - 2;
-
-        var start = 0;
-        for (; start < url.Length; start++)
+        var url = input.AsSpan();
+        var start = url.IndexOfAnyExcept(ValidAttributeWhitespaceChars);
+        if (start < 0)
         {
-            if (start > maxTestLength)
-            {
-                return -1;
-            }
-
-            if (!IsCharWhitespace(url[start]))
-            {
-                break;
-            }
+            return false;
         }
+
+        // Url without leading whitespace.
+        url = url.Slice(start);
 
         // Before doing more work, ensure that the URL we're looking at is app-relative.
-        if (url[start] != '~' || url[start + 1] != '/')
+        if (!url.StartsWith("~/"))
         {
-            return -1;
+            return false;
         }
 
-        return start;
-    }
-
-    private static string CreateTrimmedString(string input, int start)
-    {
-        var end = input.Length - 1;
-        for (; end >= start; end--)
-        {
-            if (!IsCharWhitespace(input[end]))
-            {
-                break;
-            }
-        }
-
-        var len = end - start + 1;
+        var remainingLength = url.LastIndexOfAnyExcept(ValidAttributeWhitespaceChars) + 1;
 
         // Substring returns same string if start == 0 && len == Length
-        return input.Substring(start, len);
-    }
-
-    private static bool IsCharWhitespace(char ch)
-    {
-        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
+        trimmed = input.Substring(start, remainingLength);
+        return true;
     }
 
     private sealed class EncodeFirstSegmentContent : IHtmlContent

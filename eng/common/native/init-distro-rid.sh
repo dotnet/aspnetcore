@@ -20,7 +20,7 @@ getNonPortableDistroRid()
         # shellcheck disable=SC1091
         if [ -e "${rootfsDir}/etc/os-release" ]; then
             . "${rootfsDir}/etc/os-release"
-            if [ "${ID}" = "rhel" ] || [ "${ID}" = "rocky" ] || [ "${ID}" = "alpine" ]; then
+            if [ "${ID}" = "rhel" ] || [ "${ID}" = "rocky" ] || [ "${ID}" = "alpine" ] || [ "${ID}" = "ol" ]; then
                 VERSION_ID="${VERSION_ID%.*}" # Remove the last version digit for these distros
             fi
 
