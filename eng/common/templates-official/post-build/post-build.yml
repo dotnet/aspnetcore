@@ -110,7 +110,7 @@ stages:
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: $(DncEngInternalBuildPool)
-          image: 1es-windows-2022
+          image: 1es-windows-2022-pt
           os: windows
 
       steps:
@@ -150,7 +150,7 @@ stages:
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: $(DncEngInternalBuildPool)
-          image: 1es-windows-2022
+          image: 1es-windows-2022-pt
           os: windows
       steps:
         - template: setup-maestro-vars.yml
@@ -208,7 +208,7 @@ stages:
         # If it's not devdiv, it's dnceng
         ${{ else }}:
           name: $(DncEngInternalBuildPool)
-          image: 1es-windows-2022
+          image: 1es-windows-2022-pt
           os: windows
       steps:
         - template: setup-maestro-vars.yml
