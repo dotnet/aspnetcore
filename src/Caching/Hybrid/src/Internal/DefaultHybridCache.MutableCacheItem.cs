@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 partial class DefaultHybridCache
 {
-    private sealed class MutableCacheItem<T> : CacheItem<T>
+    private sealed class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
         public MutableCacheItem(byte[] bytes, int length, IHybridCacheSerializer<T> serializer)
         {

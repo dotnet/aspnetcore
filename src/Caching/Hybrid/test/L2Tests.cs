@@ -43,7 +43,7 @@ public class L2Tests(ITestOutputHelper Log)
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task AssertL2Operations(bool buffers)
+    public async Task AssertL2Operations_Immutable(bool buffers)
     {
         using var provider = GetDefaultCache(buffers, out var cache);
         var backend = Assert.IsAssignableFrom<LoggingCache>(cache.BackendCache);
@@ -76,6 +76,50 @@ public class L2Tests(ITestOutputHelper Log)
         Log.WriteLine("Fetching new...");
         var t = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString(true)));
         Assert.NotEqual(s, t);
+        Assert.Equal(10, backend.OpCount); // GET, SET
+    }
+
+    public sealed class Foo
+    {
+        public string Value { get; set; }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AssertL2Operations_Mutable(bool buffers)
+    {
+        using var provider = GetDefaultCache(buffers, out var cache);
+        var backend = Assert.IsAssignableFrom<LoggingCache>(cache.BackendCache);
+        Log.WriteLine("Inventing key...");
+        var s = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString(true) }));
+        Assert.Equal(2, backend.OpCount); // GET, SET
+
+        Log.WriteLine("Reading with L1...");
+        for (int i = 0; i < 5; i++)
+        {
+            var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString() }));
+            Assert.Equal(s.Value, x.Value);
+            Assert.NotSame(s, x);
+        }
+        Assert.Equal(2, backend.OpCount); // shouldn't be hit
+
+        Log.WriteLine("Reading without L1...");
+        for (int i = 0; i < 5; i++)
+        {
+            var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString() }), NoL1);
+            Assert.Equal(s.Value, x.Value);
+            Assert.NotSame(s, x);
+        }
+        Assert.Equal(7, backend.OpCount); // should be read every time
+
+        Log.WriteLine("Removing key...");
+        await cache.RemoveKeyAsync(Me());
+        Assert.Equal(8, backend.OpCount); // DEL
+
+        Log.WriteLine("Fetching new...");
+        var t = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString(true) }));
+        Assert.NotEqual(s.Value, t.Value);
         Assert.Equal(10, backend.OpCount); // GET, SET
     }
 
