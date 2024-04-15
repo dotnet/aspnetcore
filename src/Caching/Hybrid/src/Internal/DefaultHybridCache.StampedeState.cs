@@ -1,58 +1,84 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 partial class DefaultHybridCache
 {
     internal abstract class StampedeState
+#if NETCOREAPP3_0_OR_GREATER
+        : IThreadPoolWorkItem
+#endif
     {
-        protected StampedeState(in StampedeKey key) => Key = key;
+        private readonly ConcurrentDictionary<StampedeKey, StampedeState> currentOperations;
 
         public StampedeKey Key { get; }
+
+        protected StampedeState(ConcurrentDictionary<StampedeKey, StampedeState> currentOperations, in StampedeKey key, bool canBeCanceled)
+        {
+            this.currentOperations = currentOperations;
+            Key = key;
+            if (canBeCanceled)
+            {
+                // if the first (or any) caller can't be cancelled; we'll never get to zero; no point tracking
+                // (in reality, all callers usually use the same path, so cancellation is usually "all" or "none")
+                this.sharedCancellation = new();
+            }
+        }
+
+#if !NETCOREAPP3_0_OR_GREATER
+        protected static readonly WaitCallback SharedWaitCallback = static obj => Unsafe.As<StampedeState>(obj).Execute();
+#endif
+
+        public abstract void Execute();
+
+        protected void RemoveCurrentOperation() => currentOperations.TryRemove(Key, out _);
 
         public override string ToString() => Key.ToString();
 
         // because multiple callers can enlist, we need to track when the *last* caller cancels
         // (and keep going until then); that means we need to run with custom cancellation
-        private readonly CancellationTokenSource sharedCancellation = new();
+        private readonly CancellationTokenSource? sharedCancellation;
 
         protected abstract void SetCanceled();
 
-        public CancellationToken SharedToken => sharedCancellation.Token;
-
-        protected object SyncLock => this; // not exposed externally; we'll use the instance as the lock
+        public CancellationToken SharedToken => sharedCancellation?.Token ?? default;
 
         public int DebugCallerCount => Volatile.Read(ref activeCallers);
 
         private int activeCallers = 1;
         public void RemoveCaller()
         {
-            lock (SyncLock)
+            // note that TryAddCaller has protections to avoid getting back from zero
+            if (Interlocked.Decrement(ref activeCallers) == 0)
             {
-                if (--activeCallers == 0)
-                {
-                    // nobody is left, we're done
-                    sharedCancellation.Cancel();
-                    SetCanceled();
-                }
+                // we're the last to leave; turn off the lights
+                sharedCancellation?.Cancel();
+                SetCanceled();
             }
         }
 
-        public bool TryAddCaller()
+        public bool TryAddCaller() // essentially just interlocked-increment, but with a leading zero check and overflow detection
         {
-            lock (SyncLock)
+            int oldValue = Volatile.Read(ref activeCallers);
+            do
             {
-                if (activeCallers <= 0)
+                if (oldValue == 0)
                 {
                     return false; // already burned
                 }
-                activeCallers++;
-            }
-            return true;
+
+                var updated = Interlocked.CompareExchange(ref activeCallers, checked(oldValue + 1), oldValue);
+                if (updated == oldValue)
+                {
+                    return true; // we exchanged
+                }
+                oldValue = updated; // we failed, but we have an updated state
+            } while (true);
         }
     }
 }

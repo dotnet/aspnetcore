@@ -56,29 +56,29 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
     {
-        token.ThrowIfCancellationRequested();
-
-        if (GetOrCreateStampede<T>(key, HybridCacheEntryFlags.None, out var stampede))
+        bool canBeCanceled = token.CanBeCanceled;
+        if (canBeCanceled)
         {
-            // new query; we're responsible for making it happen
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var result = await underlyingDataCallback(state, stampede.SharedToken).ConfigureAwait(false);
-                    currentOperations.TryRemove(stampede.Key, out _);
-                    stampede.SetResult(result);
-                }
-                catch (Exception ex)
-                {
-                    stampede.SetException(ex);
-                }
-            }, stampede.SharedToken);
-
-            return JoinAsync(stampede, token);
+            token.ThrowIfCancellationRequested();
         }
 
-        return JoinAsync(stampede, token);
+        if (GetOrCreateStampede<TState, T>(key, HybridCacheEntryFlags.None, out var stampede, canBeCanceled))
+        {
+            // new query; we're responsible for making it happen
+            if (canBeCanceled)
+            {
+                // *we* might cancel, but someone else might be depending on the result; start the
+                // work independently, then we'll with join the outcome
+                stampede.QueueUserWorkItem(in state, underlyingDataCallback);
+            }
+            else
+            {
+                // we're going to run to completion; no need to get complicated
+                return new(stampede.ExecuteDirectAsync(in state, underlyingDataCallback));
+            }
+        }
+
+        return stampede.JoinAsync(token);
     }
 
     public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)

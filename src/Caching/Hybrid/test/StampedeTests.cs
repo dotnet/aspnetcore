@@ -24,12 +24,16 @@ public class StampedeTests
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(10)]
-    public async Task MultipleCallsShareExecution_NoCancellation(int callerCount)
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    [InlineData(10, false)]
+    [InlineData(10, true)]
+    public async Task MultipleCallsShareExecution_NoCancellation(int callerCount, bool canBeCanceled)
     {
         using var scope = GetDefaultCache(out var cache);
         using var semaphore = new SemaphoreSlim(0);
+
+        var token = canBeCanceled ? new CancellationTokenSource().Token : CancellationToken.None;
 
         int executeCount = 0, cancelCount = 0;
         Task<Guid>[] results = new Task<Guid>[callerCount];
@@ -45,7 +49,7 @@ public class StampedeTests
                 Interlocked.Increment(ref executeCount);
                 ct.ThrowIfCancellationRequested(); // assert not cancelled
                 return Guid.NewGuid();
-            }).AsTask();
+            }, token: token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
@@ -79,7 +83,7 @@ public class StampedeTests
                 Interlocked.Increment(ref executeCount);
                 ct.ThrowIfCancellationRequested(); // assert not cancelled
                 return Guid.NewGuid();
-            }).AsTask();
+            }, token: token).AsTask();
         }
 
         Assert.Equal(callerCount, cache.DebugGetCallerCount(Me()));
