@@ -83,12 +83,14 @@ internal sealed class WebAssemblyComponentParameterDeserializer
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
     public static ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
     {
+        // Keep in sync with WebAssemblyComponentParameterDeserializerSerializerContext
         return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, _jsonSerializerOptions)!;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     public static IList<object> GetParameterValues(string parameterValues)
     {
+        // Keep in sync with WebAssemblyComponentParameterDeserializerSerializerContext
         return JsonSerializer.Deserialize<IList<object>>(parameterValues, _jsonSerializerOptions)!;
     }
 }

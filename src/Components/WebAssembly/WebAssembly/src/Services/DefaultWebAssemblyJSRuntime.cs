@@ -130,6 +130,8 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
     internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
     {
+        // The type we're serializing should be kept in sync with
+        // DefaultWebAssemblyJSRuntimeSerializerContext
         var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
             operationsJson,
             Instance._rootComponentSerializerOptions ??

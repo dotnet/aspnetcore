@@ -5,5 +5,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components;
 
-[JsonSerializable(typeof(object[]), GenerationMode = JsonSourceGenerationMode.Serialization)] // JS interop argument lists are always object arrays
+// JS interop argument lists are always object arrays
+[JsonSerializable(typeof(object[]), GenerationMode = JsonSourceGenerationMode.Serialization)]
 internal sealed partial class JSRuntimeSerializerContext : JsonSerializerContext;

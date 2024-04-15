@@ -310,12 +310,13 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IInternalJSImportMethods>(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
-        Services.AddSingleton<ComponentStatePersistenceManager>(static sp =>
-        {
-            var jsonOptions = sp.GetRequiredService<IOptions<JsonOptions>>();
-            var logger = sp.GetRequiredService<ILogger<ComponentStatePersistenceManager>>();
-            return new(jsonOptions, logger);
-        });
+        Services.AddSingleton<ComponentStatePersistenceManager>();
+        //Services.AddSingleton<ComponentStatePersistenceManager>(static sp =>
+        //{
+        //    var jsonOptions = sp.GetRequiredService<IOptions<JsonOptions>>();
+        //    var logger = sp.GetRequiredService<ILogger<ComponentStatePersistenceManager>>();
+        //    return new(jsonOptions, logger);
+        //});
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();

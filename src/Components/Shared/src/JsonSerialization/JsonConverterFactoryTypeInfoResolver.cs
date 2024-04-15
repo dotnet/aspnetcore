@@ -9,6 +9,9 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Components;
 
+// For custom converters that don't rely on serializing an object graph,
+// we can resolve the incoming type's JsonTypeInfo directly from the converter.
+// This skips extra work to collect metadata for the type that won't be used.
 internal sealed class JsonConverterFactoryTypeInfoResolver : IJsonTypeInfoResolver
 {
     private static readonly MethodInfo _createValueInfoMethod = ((Delegate)JsonMetadataServices.CreateValueInfo<object>).Method.GetGenericMethodDefinition();
