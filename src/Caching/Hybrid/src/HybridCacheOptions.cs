@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Hybrid;
 
 /// <summary>
 /// Options for configuring the default <see cref="HybridCache"/> implementation.
 /// </summary>
-public class HybridCacheOptions
+public class HybridCacheOptions : IOptions<HybridCacheOptions>
 {
     /// <summary>
     /// Default global options to be applied to <see cref="HybridCache"/> operations; if options are
@@ -45,4 +46,6 @@ public class HybridCacheOptions
     /// tags do not contain data that should not be visible in metrics systems.
     /// </summary>
     public bool ReportTagMetrics { get; set; }
+
+    HybridCacheOptions IOptions<HybridCacheOptions>.Value => this;
 }

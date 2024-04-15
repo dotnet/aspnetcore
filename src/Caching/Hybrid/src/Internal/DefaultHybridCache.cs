@@ -69,6 +69,9 @@ internal sealed partial class DefaultHybridCache : HybridCache
         defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = defaultExpiration };
     }
 
+    internal IDistributedCache BackendCache => backendCache;
+    internal IMemoryCache LocalCache => localCache;
+
     internal HybridCacheOptions Options => options;
 
     private bool BackendBuffers => (features & BackendFeatures.Buffers) != 0;
@@ -124,10 +127,13 @@ internal sealed partial class DefaultHybridCache : HybridCache
     }
 
     public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)
-        => new(backendCache.RemoveAsync(key, token));
+    {
+        localCache.Remove(key);
+        return new(backendCache.RemoveAsync(key, token));
+    }
 
     public override ValueTask RemoveTagAsync(string tag, CancellationToken token = default)
-        => default; // no cache, nothing to remove
+        => default; // tags not yet implemented
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
         => default; // no cache, nothing to set

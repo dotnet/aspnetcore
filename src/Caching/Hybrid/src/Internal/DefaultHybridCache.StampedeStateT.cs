@@ -84,13 +84,14 @@ partial class DefaultHybridCache
                         var bytes = cacheItem.TryGetBytes(out int length);
                         if (bytes is not null)
                         {
-                            // we've already serialized it for the shared cache item
+                            // mutable; we've already serialized it for the shared cache item
                             await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
                         }
                         else
                         {
-                            // we'll need to do the serialize ourselves
+                            // immutable: we'll need to do the serialize ourselves
                             using var writer = new RecyclableArrayBufferWriter<byte>(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+                            Cache.GetSerializer<T>().Serialize(cacheItem.GetValue(), writer); // note GetValue() is fixed value here
                             bytes = writer.GetBuffer(out length);
                             await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
                         }
