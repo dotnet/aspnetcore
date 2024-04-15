@@ -81,7 +81,7 @@ public class L2Tests(ITestOutputHelper Log)
 
     public sealed class Foo
     {
-        public string Value { get; set; }
+        public string Value { get; set; } = "";
     }
 
     [Theory]
@@ -123,8 +123,10 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(10, backend.OpCount); // GET, SET
     }
 
-    class BufferLoggingCache(ITestOutputHelper Log, IDistributedCache Tail) : LoggingCache(Log, Tail), IBufferDistributedCache
+    class BufferLoggingCache : LoggingCache, IBufferDistributedCache
     {
+        public BufferLoggingCache(ITestOutputHelper log, IDistributedCache tail) : base(log, tail) { }
+
         void IBufferDistributedCache.Set(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options)
         {
             Interlocked.Increment(ref opcount);
@@ -166,8 +168,11 @@ public class L2Tests(ITestOutputHelper Log)
         }
     }
 
-    class LoggingCache(ITestOutputHelper Log, IDistributedCache Tail) : IDistributedCache
+    class LoggingCache(ITestOutputHelper log, IDistributedCache tail) : IDistributedCache
     {
+        protected ITestOutputHelper Log => log;
+        protected IDistributedCache Tail => tail;
+
         protected int opcount;
         public int OpCount => Volatile.Read(ref opcount);
 
