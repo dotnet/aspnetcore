@@ -29,7 +29,7 @@ public class HotReloadTest : ServerTestBase<BasicTestAppServerSiteFixture<HotRel
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase;
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<RenderOnHotReload>();
     }
 
