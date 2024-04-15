@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Extensions.Caching.Hybrid;
 
@@ -29,4 +30,9 @@ public sealed class HybridCacheEntryOptions
     /// Additional flags that apply to this usage.
     /// </summary>
     public HybridCacheEntryFlags? Flags { get; init; }
+
+    // memoize when possible
+    private DistributedCacheEntryOptions? dc;
+    internal DistributedCacheEntryOptions? ToDistributedCacheEntryOptions()
+        => Expiration is null ? null : (dc ??= new() { AbsoluteExpirationRelativeToNow = Expiration });
 }

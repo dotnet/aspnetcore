@@ -13,6 +13,8 @@ partial class DefaultHybridCache
 {
     private readonly ConcurrentDictionary<Type, object> serializers = new(); // per instance cache of typed serializers
 
+    internal int MaximumPayloadBytes { get; }
+
     internal IHybridCacheSerializer<T> GetSerializer<T>()
     {
         return serializers.TryGetValue(typeof(T), out var serializer)

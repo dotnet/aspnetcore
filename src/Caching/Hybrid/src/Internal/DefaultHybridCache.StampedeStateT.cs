@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,13 +12,15 @@ partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        private readonly TaskCompletionSource<T> result = new();
+        private readonly TaskCompletionSource<CacheItem<T>> result = new();
         private TState? state;
         private Func<TState, CancellationToken, ValueTask<T>>? underlying;
+        private HybridCacheEntryOptions? options;
 
-        public StampedeState(ConcurrentDictionary<StampedeKey, StampedeState> currentOperations, in StampedeKey key, bool canBeCanceled) : base(currentOperations, key, canBeCanceled) { }
+        public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
+            : base(cache, key, canBeCanceled) { }
 
-        public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying)
+        public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
             Debug.Assert(this.underlying is null);
             Debug.Assert(underlying is not null);
@@ -27,6 +28,7 @@ partial class DefaultHybridCache
             // initialize the callback state
             this.state = state;
             this.underlying = underlying;
+            this.options = options;
 
 #if NETCOREAPP3_0_OR_GREATER
             ThreadPool.UnsafeQueueUserWorkItem(this, false);
@@ -35,7 +37,7 @@ partial class DefaultHybridCache
 #endif
         }
 
-        public Task<T> ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying)
+        public ValueTask<T> ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
             Debug.Assert(this.underlying is null);
             Debug.Assert(underlying is not null);
@@ -43,50 +45,94 @@ partial class DefaultHybridCache
             // initialize the callback state
             this.state = state;
             this.underlying = underlying;
+            this.options = options;
 
             Execute();
-            return Task;
+            return UnwrapAsync(Task);
         }
 
-        public override void Execute()
+        public override void Execute() => _ = BackgroundFetchAsync();
+
+        private async Task BackgroundFetchAsync()
         {
             try
             {
-                var pending = underlying!(state!, SharedToken);
-                if (pending.IsCompleted)
+                // read from L2 if appropriate
+                if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
                 {
-                    var underlyingResult = pending.GetAwaiter().GetResult();
-                    RemoveCurrentOperation();
-                    result.TrySetResult(underlyingResult);
+                    var result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+
+                    // need to distinguish "valid but empty" from "nothing came back" (thanks protobuf!)
+                    if (result.Array is not null)
+                    {
+                        SetResult(result);
+                        return;
+                    }
                 }
-                else
+
+                // nothing from L2; invoke the underlying data store
+                var cacheItem = SetResult(await underlying!(state!, SharedToken).ConfigureAwait(false));
+
+                // note that at this point we've already released most or all of the waiting callers; everything
+                // else here is background
+
+                // write to L2 if appropriate
+                if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                 {
-                    _ = Awaited(this, pending);
+                    var bytes = cacheItem.TryGetBytes(out int length);
+                    if (bytes is not null)
+                    {
+                        // we've already serialized it for the shared cache item
+                        await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        // we'll need to do the serialize ourselves
+                        using var writer = new RecyclableArrayBufferWriter<byte>(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+                        bytes = writer.GetBuffer(out length);
+                        await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                RemoveCurrentOperation();
-                result.TrySetException(ex);
-            }
-
-            static async Task Awaited(StampedeState<TState, T> @this, ValueTask<T> pending)
-            {
-                try
-                {
-                    var underlyingResult = await pending.ConfigureAwait(false);
-                    @this.RemoveCurrentOperation();
-                    @this.result.TrySetResult(underlyingResult);
-                }
-                catch (Exception ex)
-                {
-                    @this.RemoveCurrentOperation();
-                    @this.result.TrySetException(ex);
-                }
+                SetException(ex);
             }
         }
 
-        public Task<T> Task => result.Task;
+        public Task<CacheItem<T>> Task => result.Task;
+
+        private void SetException(Exception ex)
+        {
+            Cache.RemoveStampede(Key);
+            result.TrySetException(ex);
+        }
+
+        private void SetResult(ArraySegment<byte> value)
+        {
+            // set a result from L2 cache
+            Debug.Assert(value.Array is not null && value.Offset == 0);
+
+            var serializer = Cache.GetSerializer<T>();
+            CacheItem<T> cacheItem = ImmutableTypeCache<T>.IsImmutable
+                ? new ImmutableCacheItem<T>(serializer.Deserialize(new(value.Array!, value.Offset, value.Count))) // deserialize
+                : new MutableCacheItem<T>(value.Array!, value.Count, Cache.GetSerializer<T>()); // store the same bytes
+
+            Cache.RemoveStampede(Key);
+            result.TrySetResult(cacheItem);
+        }
+
+        private CacheItem<T> SetResult(T value)
+        {
+            // set a result from a value we calculated directly
+            CacheItem<T> cacheItem = ImmutableTypeCache<T>.IsImmutable
+                ? new ImmutableCacheItem<T>(value) // no serialize needed
+                : new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
+
+            Cache.RemoveStampede(Key);
+            result.TrySetResult(cacheItem);
+            return cacheItem;
+        }
 
         protected override void SetCanceled() => result.TrySetCanceled(SharedToken);
 
@@ -94,7 +140,7 @@ partial class DefaultHybridCache
         {
             // if the underlying has already completed, and/or our local token can't cancel: we
             // can simply wrap the shared task; otherwise, we need our own cancellation state
-            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellation(this, token) : new(Task);
+            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellation(this, token) : UnwrapAsync(Task);
 
             static async ValueTask<T> WithCancellation(StampedeState<TState, T> stampede, CancellationToken token)
             {
@@ -115,7 +161,7 @@ partial class DefaultHybridCache
                     Debug.Assert(ReferenceEquals(first, stampede.Task));
 
                     // this has already completed, but we'll get the stack nicely
-                    return await stampede.Task.ConfigureAwait(false);
+                    return (await stampede.Task.ConfigureAwait(false)).GetValue();
                 }
                 finally
                 {

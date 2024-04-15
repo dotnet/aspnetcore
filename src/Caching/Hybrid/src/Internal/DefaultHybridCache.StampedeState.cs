@@ -14,13 +14,13 @@ partial class DefaultHybridCache
         : IThreadPoolWorkItem
 #endif
     {
-        private readonly ConcurrentDictionary<StampedeKey, StampedeState> currentOperations;
+        private readonly DefaultHybridCache cache;
 
         public StampedeKey Key { get; }
 
-        protected StampedeState(ConcurrentDictionary<StampedeKey, StampedeState> currentOperations, in StampedeKey key, bool canBeCanceled)
+        protected StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
         {
-            this.currentOperations = currentOperations;
+            this.cache = cache;
             Key = key;
             if (canBeCanceled)
             {
@@ -34,9 +34,11 @@ partial class DefaultHybridCache
         protected static readonly WaitCallback SharedWaitCallback = static obj => Unsafe.As<StampedeState>(obj).Execute();
 #endif
 
+        protected DefaultHybridCache Cache => cache;
+
         public abstract void Execute();
 
-        protected void RemoveCurrentOperation() => currentOperations.TryRemove(Key, out _);
+        protected int MaximumPayloadBytes => cache.MaximumPayloadBytes;
 
         public override string ToString() => Key.ToString();
 
@@ -81,4 +83,6 @@ partial class DefaultHybridCache
             } while (true);
         }
     }
+
+    private void RemoveStampede(StampedeKey key) => currentOperations.TryRemove(key, out _);
 }

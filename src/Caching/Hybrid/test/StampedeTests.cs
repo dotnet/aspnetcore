@@ -8,8 +8,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 public class StampedeTests
@@ -17,10 +19,36 @@ public class StampedeTests
     static IDisposable GetDefaultCache(out DefaultHybridCache cache)
     {
         var services = new ServiceCollection();
-        services.AddHybridCache();
+        services.AddSingleton<IDistributedCache, InvalidDistributedCache>();
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new()
+            {
+                Flags = HybridCacheEntryFlags.DisableDistributedCache
+            };
+        });
         var provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return provider;
+    }
+
+    public class InvalidDistributedCache : IDistributedCache
+    {
+        byte[]? IDistributedCache.Get(string key) => throw new NotSupportedException("Intentionally not provided");
+
+        Task<byte[]?> IDistributedCache.GetAsync(string key, CancellationToken token) => throw new NotSupportedException("Intentionally not provided");
+
+        void IDistributedCache.Refresh(string key) => throw new NotSupportedException("Intentionally not provided");
+
+        Task IDistributedCache.RefreshAsync(string key, CancellationToken token) => throw new NotSupportedException("Intentionally not provided");
+
+        void IDistributedCache.Remove(string key) => throw new NotSupportedException("Intentionally not provided");
+
+        Task IDistributedCache.RemoveAsync(string key, CancellationToken token) => throw new NotSupportedException("Intentionally not provided");
+
+        void IDistributedCache.Set(string key, byte[] value, DistributedCacheEntryOptions options) => throw new NotSupportedException("Intentionally not provided");
+
+        Task IDistributedCache.SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token) => throw new NotSupportedException("Intentionally not provided");
     }
 
     [Theory]

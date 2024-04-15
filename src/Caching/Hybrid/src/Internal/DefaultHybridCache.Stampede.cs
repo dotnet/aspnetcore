@@ -11,9 +11,9 @@ partial class DefaultHybridCache
 {
     private readonly ConcurrentDictionary<StampedeKey, StampedeState> currentOperations = new();
 
-    internal int DebugGetCallerCount(string key, HybridCacheEntryFlags flags = HybridCacheEntryFlags.None)
+    internal int DebugGetCallerCount(string key, HybridCacheEntryFlags? flags = null)
     {
-        var stampedeKey = new StampedeKey(key, flags);
+        var stampedeKey = new StampedeKey(key, flags ?? defaultFlags);
         return currentOperations.TryGetValue(stampedeKey, out var state) ? state.DebugCallerCount : 0;
     }
 
@@ -38,7 +38,7 @@ partial class DefaultHybridCache
         }
 
         // create a new session
-        stampedeState = new StampedeState<TState, T>(currentOperations, stampedeKey, canBeCanceled);
+        stampedeState = new StampedeState<TState, T>(this, stampedeKey, canBeCanceled);
         currentOperations[stampedeKey] = stampedeState;
         return true;
 

@@ -24,6 +24,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly HybridCacheOptions options;
     private readonly BackendFeatures features;
 
+    private readonly HybridCacheEntryFlags defaultFlags;
+    private readonly TimeSpan defaultExpiration;
+    private readonly TimeSpan defaultLocalCacheExpiration;
+
+    private readonly DistributedCacheEntryOptions defaultDistributedCacheExpiration;
+
     [Flags]
     private enum BackendFeatures
     {
@@ -49,7 +55,17 @@ internal sealed partial class DefaultHybridCache : HybridCache
         var factories = services.GetServices<IHybridCacheSerializerFactory>().ToArray();
         Array.Reverse(factories);
         this.serializerFactories = factories;
+
+        MaximumPayloadBytes = checked((int)this.options.MaximumPayloadBytes); // for now hard-limit to 2GiB
+
+        var defaultEntryOptions = this.options.DefaultEntryOptions;
+        defaultFlags = defaultEntryOptions?.Flags ?? HybridCacheEntryFlags.None;
+        defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
+        defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
+
+        defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = defaultExpiration };
     }
+
     internal HybridCacheOptions Options => options;
 
     private bool BackendBuffers => (features & BackendFeatures.Buffers) != 0;
@@ -62,23 +78,40 @@ internal sealed partial class DefaultHybridCache : HybridCache
             token.ThrowIfCancellationRequested();
         }
 
-        if (GetOrCreateStampede<TState, T>(key, HybridCacheEntryFlags.None, out var stampede, canBeCanceled))
+        var flags = options?.Flags ?? defaultFlags;
+        if (GetOrCreateStampede<TState, T>(key, flags, out var stampede, canBeCanceled))
         {
             // new query; we're responsible for making it happen
             if (canBeCanceled)
             {
                 // *we* might cancel, but someone else might be depending on the result; start the
                 // work independently, then we'll with join the outcome
-                stampede.QueueUserWorkItem(in state, underlyingDataCallback);
+                stampede.QueueUserWorkItem(in state, underlyingDataCallback, options);
             }
             else
             {
                 // we're going to run to completion; no need to get complicated
-                return new(stampede.ExecuteDirectAsync(in state, underlyingDataCallback));
+                return stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options);
             }
         }
 
         return stampede.JoinAsync(token);
+    }
+
+    static ValueTask<T> UnwrapAsync<T>(Task<CacheItem<T>> task)
+    {
+#if NETCOREAPP2_0_OR_GREATER
+        if (task.IsCompletedSuccessfully)
+#else
+        if (task.Status == TaskStatus.RanToCompletion)
+#endif
+        {
+            return new(task.Result.GetValue());
+        }
+        return Awaited(task);
+
+        static async ValueTask<T> Awaited(Task<CacheItem<T>> task)
+            => (await task.ConfigureAwait(false)).GetValue();
     }
 
     public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)

@@ -20,6 +20,9 @@ partial class DefaultHybridCache
             this.hashCode = key.GetHashCode() ^ (int)flags;
         }
 
+        public string Key => key;
+        public HybridCacheEntryFlags Flags => flags;
+
         public bool Equals(StampedeKey other) => this.flags == other.flags & this.key == other.key;
 
         public override bool Equals([NotNullWhen(true)] object? obj)
