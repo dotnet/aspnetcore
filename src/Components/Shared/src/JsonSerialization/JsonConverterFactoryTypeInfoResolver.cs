@@ -15,7 +15,7 @@ internal sealed class JsonConverterFactoryTypeInfoResolver : IJsonTypeInfoResolv
 
     public static readonly JsonConverterFactoryTypeInfoResolver Instance = new();
 
-    [SuppressMessage("Trimming", "IL2060", Justification = "We expect the incoming type to have already been correctly preserved")]
+    [UnconditionalSuppressMessage("Trimming", "IL2060", Justification = "We expect the incoming type to have already been correctly preserved")]
     public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
     {
         foreach (var converter in options.Converters)
