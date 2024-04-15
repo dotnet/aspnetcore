@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.Extensions.Caching.Hybrid.Internal.DefaultHybridCache;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -62,7 +63,6 @@ partial class DefaultHybridCache
                 {
                     var result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
 
-                    // need to distinguish "valid but empty" from "nothing came back" (thanks protobuf!)
                     if (result.Array is not null)
                     {
                         SetResult(result);
@@ -71,27 +71,36 @@ partial class DefaultHybridCache
                 }
 
                 // nothing from L2; invoke the underlying data store
-                var cacheItem = SetResult(await underlying!(state!, SharedToken).ConfigureAwait(false));
-
-                // note that at this point we've already released most or all of the waiting callers; everything
-                // else here is background
-
-                // write to L2 if appropriate
-                if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
+                if ((Key.Flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
                 {
-                    var bytes = cacheItem.TryGetBytes(out int length);
-                    if (bytes is not null)
+                    var cacheItem = SetResult(await underlying!(state!, SharedToken).ConfigureAwait(false));
+
+                    // note that at this point we've already released most or all of the waiting callers; everything
+                    // else here is background
+
+                    // write to L2 if appropriate
+                    if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                     {
-                        // we've already serialized it for the shared cache item
-                        await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                        var bytes = cacheItem.TryGetBytes(out int length);
+                        if (bytes is not null)
+                        {
+                            // we've already serialized it for the shared cache item
+                            await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            // we'll need to do the serialize ourselves
+                            using var writer = new RecyclableArrayBufferWriter<byte>(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+                            bytes = writer.GetBuffer(out length);
+                            await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                        }
                     }
-                    else
-                    {
-                        // we'll need to do the serialize ourselves
-                        using var writer = new RecyclableArrayBufferWriter<byte>(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
-                        bytes = writer.GetBuffer(out length);
-                        await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
-                    }
+                }
+                else
+                {
+                    // can't read from data store; implies we shouldn't write
+                    // back to anywhere else, either
+                    SetDefaultResult();
                 }
             }
             catch (Exception ex)
@@ -108,6 +117,24 @@ partial class DefaultHybridCache
             result.TrySetException(ex);
         }
 
+        private void SetResult(CacheItem<T> value)
+        {
+            if ((Key.Flags & HybridCacheEntryFlags.DisableLocalCacheWrite) == 0)
+            {
+                Cache.SetL1(Key.Key, value, options);
+            }
+
+            Cache.RemoveStampede(Key);
+            result.TrySetResult(value);
+        }
+
+        private void SetDefaultResult()
+        {
+            // note we don't store this dummy result in L1 or L2
+            Cache.RemoveStampede(Key);
+            result.TrySetResult(ImmutableCacheItem<T>.Default);
+        }
+
         private void SetResult(ArraySegment<byte> value)
         {
             // set a result from L2 cache
@@ -118,8 +145,7 @@ partial class DefaultHybridCache
                 ? new ImmutableCacheItem<T>(serializer.Deserialize(new(value.Array!, value.Offset, value.Count))) // deserialize
                 : new MutableCacheItem<T>(value.Array!, value.Count, Cache.GetSerializer<T>()); // store the same bytes
 
-            Cache.RemoveStampede(Key);
-            result.TrySetResult(cacheItem);
+            SetResult(cacheItem);
         }
 
         private CacheItem<T> SetResult(T value)
@@ -129,8 +155,7 @@ partial class DefaultHybridCache
                 ? new ImmutableCacheItem<T>(value) // no serialize needed
                 : new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
 
-            Cache.RemoveStampede(Key);
-            result.TrySetResult(cacheItem);
+            SetResult(cacheItem);
             return cacheItem;
         }
 

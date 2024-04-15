@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +20,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 internal sealed partial class DefaultHybridCache : HybridCache
 {
     private readonly IDistributedCache backendCache;
+    private readonly IMemoryCache localCache;
     private readonly IServiceProvider services;
     private readonly IHybridCacheSerializerFactory[] serializerFactories;
     private readonly HybridCacheOptions options;
@@ -37,9 +39,10 @@ internal sealed partial class DefaultHybridCache : HybridCache
         Buffers = 1 << 0,
     }
 
-    public DefaultHybridCache(IOptions<HybridCacheOptions> options, IDistributedCache backendCache, IServiceProvider services)
+    public DefaultHybridCache(IOptions<HybridCacheOptions> options, IDistributedCache backendCache, IMemoryCache localCache, IServiceProvider services)
     {
         this.backendCache = backendCache ?? throw new ArgumentNullException(nameof(backendCache));
+        this.localCache = localCache ?? throw new ArgumentNullException(nameof(localCache));
         this.services = services ?? throw new ArgumentNullException(nameof(services));
         this.options = options.Value;
 
@@ -79,6 +82,12 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         var flags = options?.Flags ?? defaultFlags;
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
+        {
+            // short-circuit
+            return new(typed.GetValue());
+        }
+
         if (GetOrCreateStampede<TState, T>(key, flags, out var stampede, canBeCanceled))
         {
             // new query; we're responsible for making it happen

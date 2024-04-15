@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -64,4 +65,7 @@ partial class DefaultHybridCache
         }
         return result ?? defaultDistributedCacheExpiration;
     }
+
+    internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
+        => localCache.Set(key, value, options?.LocalCacheExpiration ?? defaultLocalCacheExpiration);
 }

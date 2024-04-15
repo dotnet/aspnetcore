@@ -7,6 +7,9 @@ partial class DefaultHybridCache
 {
     private sealed class ImmutableCacheItem<T>(T value) : CacheItem<T>
     {
+        private static ImmutableCacheItem<T>? sharedDefault;
+        public static ImmutableCacheItem<T> Default => sharedDefault ??= new(default!); // this is only used when the underlying store is disabled
+
         public override T GetValue() => value;
 
         public override byte[]? TryGetBytes(out int length)
