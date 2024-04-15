@@ -411,7 +411,7 @@ public class CustomFromRouteAttribute : Attribute, IFromRouteMetadata
     }
 
     [Fact]
-    public async Task MapGet_AsParameter_NoResults()
+    public async Task MapGet_AsParameter_NoDiagnostics()
     {
         // Arrange
         var source = TestSource.Read(@"
@@ -490,6 +490,34 @@ public class PageData
             });
     }
 
+    [Theory]
+    [InlineData("{*path}")]
+    [InlineData("{**path}")]
+    public async Task MapGet_CatchAll_NoDiagnostics(string route)
+    {
+        // Arrange
+        var source = TestSource.Read($$"""
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+
+class Program
+{
+    static void Main()
+    {
+        EndpointRouteBuilderExtensions.MapGet(null, "{{route}}", () => "");
+    }
+}
+""");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
     [Fact]
     public async Task ControllerAction_MatchedRouteParameter_NoDiagnostics()
     {
@@ -516,6 +544,42 @@ public class TestController
     }
 }
 ");
+
+        // Act
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        // Assert
+        Assert.Empty(diagnostics);
+    }
+
+    [Theory]
+    [InlineData("{*path}")]
+    [InlineData("{**path}")]
+    public async Task ControllerAction_CatchAll_NoDiagnostics(string route)
+    {
+        // Arrange
+        var source = TestSource.Read($$"""
+using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+
+class Program
+{
+    static void Main()
+    {
+    }
+}
+
+public class TestController
+{
+    [HttpGet("{{route}}")]
+    public object TestAction()
+    {
+        return null;
+    }
+}
+""");
 
         // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);

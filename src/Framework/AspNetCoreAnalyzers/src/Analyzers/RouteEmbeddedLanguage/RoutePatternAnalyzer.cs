@@ -68,7 +68,8 @@ public class RoutePatternAnalyzer : DiagnosticAnalyzer
 
         if (routeUsage.UsageContext.MethodSymbol != null)
         {
-            var routeParameterNames = new HashSet<string>(routeUsage.RoutePattern.RouteParameters.Select(p => p.Name), StringComparer.OrdinalIgnoreCase);
+            var routeParameterNames = new HashSet<string>(
+                routeUsage.RoutePattern.RouteParameters.Where(p => !p.IsCatchAll).Select(p => p.Name), StringComparer.OrdinalIgnoreCase);
 
             foreach (var parameter in routeUsage.UsageContext.ResolvedParameters)
             {
