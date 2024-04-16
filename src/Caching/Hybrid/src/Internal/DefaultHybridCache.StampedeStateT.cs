@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Extensions.Caching.Hybrid.Internal.DefaultHybridCache;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -22,7 +21,7 @@ partial class DefaultHybridCache
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
             : base(cache, key, canBeCanceled)
         {
-             result = new();
+            result = new();
         }
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
@@ -186,11 +185,33 @@ partial class DefaultHybridCache
 
         protected override void SetCanceled() => result?.TrySetCanceled(SharedToken);
 
+        private Task<T>? _sharedUnwrap;
+
+        internal ValueTask<T> UnwrapAsync()
+        {
+            var task = Task;
+#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            if (task.IsCompletedSuccessfully)
+#else
+            if (task.Status == TaskStatus.RanToCompletion)
+#endif
+            {
+                return new(task.Result.GetValue());
+            }
+
+            // if the type is immutable, callers can share the final step too
+            Task<T> result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= Awaited(Task)) : Awaited(Task);
+            return new(result);
+
+            static async Task<T> Awaited(Task<CacheItem<T>> task)
+                => (await task.ConfigureAwait(false)).GetValue();
+        }
+
         public ValueTask<T> JoinAsync(CancellationToken token)
         {
             // if the underlying has already completed, and/or our local token can't cancel: we
             // can simply wrap the shared task; otherwise, we need our own cancellation state
-            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellation(this, token) : UnwrapAsync(Task);
+            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellation(this, token) : UnwrapAsync();
 
             static async ValueTask<T> WithCancellation(StampedeState<TState, T> stampede, CancellationToken token)
             {

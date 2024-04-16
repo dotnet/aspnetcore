@@ -5,7 +5,10 @@ using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
@@ -46,27 +49,60 @@ partial class DefaultHybridCache
         }
     }
 
-    private static class ImmutableTypeCache<T> // lazy memoize; T doesn't change per cache instance
+    internal static class ImmutableTypeCache<T> // lazy memoize; T doesn't change per cache instance
     {
-        public static readonly bool IsImmutable =
-#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            !RuntimeHelpers.IsReferenceOrContainsReferences<T>() || // a pure struct will be a full copy every time
-#endif
-            DefaultHybridCache.IsImmutable(typeof(T));
+        // note for blittable types: a pure struct will be a full copy every time - nothing shared to mutate
+        public static readonly bool IsImmutable = (typeof(T).IsValueType && IsBlittable<T>()) || IsImmutable(typeof(T));
     }
 
-    internal static bool IsImmutable(Type type)
+    private static bool IsBlittable<T>() // minimize the generic portion
     {
-        if (type is null || type == typeof(string) || type.IsPrimitive)
+#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+        return !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+#else
+        try // down-level: only blittable types can be pinned
         {
-            return true; // trivial cases
+            // get a typed, zeroed, non-null boxed instance of the appropriate type
+            // (can't use (object)default(T), as that would box to null for nullable types)
+            var obj = FormatterServices.GetUninitializedObject(Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T));
+            GCHandle.Alloc(obj, GCHandleType.Pinned).Free();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+#endif
+    }
+
+    private static bool IsImmutable(Type type)
+    {
+        // check for known types
+        if (type == typeof(string))
+        {
+            return true;
         }
 
-        if (Nullable.GetUnderlyingType(type) is { } nullable)
+        if (type.IsValueType)
         {
-            type = nullable; // from Foo? to Foo
+            // switch from Foo? to Foo if necessary
+            if (Nullable.GetUnderlyingType(type) is { } nullable)
+            {
+                type = nullable;
+            }
         }
 
-        return Attribute.IsDefined(type, typeof(ImmutableObjectAttribute));
+        if (type.IsValueType || (type.IsClass & type.IsSealed))
+        {
+            // check for [ImmutableObject(true)]; note we're looking at this as a statement about
+            // the overall nullability; for example, a type could contain a private int[] field,
+            // where the field is mutable and the list is mutable; but if the type is annotated:
+            // we're trusting that the API and use-case is such that the type is immutable
+            return type.GetCustomAttribute<ImmutableObjectAttribute>() is { Immutable: true };
+        }
+        // don't trust interfaces and non-sealed types; we might have any concrete
+        // type that has different behaviour
+        return false;
+
     }
 }

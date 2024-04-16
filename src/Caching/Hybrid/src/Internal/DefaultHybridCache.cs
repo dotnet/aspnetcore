@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -104,27 +103,11 @@ internal sealed partial class DefaultHybridCache : HybridCache
             {
                 // we're going to run to completion; no need to get complicated
                 _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
-                return UnwrapAsync(stampede.Task);
+                return stampede.UnwrapAsync();
             }
         }
 
         return stampede.JoinAsync(token);
-    }
-
-    static ValueTask<T> UnwrapAsync<T>(Task<CacheItem<T>> task)
-    {
-#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-        if (task.IsCompletedSuccessfully)
-#else
-        if (task.Status == TaskStatus.RanToCompletion)
-#endif
-        {
-            return new(task.Result.GetValue());
-        }
-        return Awaited(task);
-
-        static async ValueTask<T> Awaited(Task<CacheItem<T>> task)
-            => (await task.ConfigureAwait(false)).GetValue();
     }
 
     public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)

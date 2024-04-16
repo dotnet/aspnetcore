@@ -286,5 +286,93 @@ public class StampedeTests
         await results[remaining];
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ImmutableTypesShareFinalTask(bool withCancelation)
+    {
+        CancellationToken token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
+
+        using var scope = GetDefaultCache(out var cache);
+        using var semaphore = new SemaphoreSlim(0);
+
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return Guid.NewGuid(); }, token: token);
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return Guid.NewGuid(); }, token: token);
+
+        if (withCancelation)
+        {
+            Assert.NotSame(first.AsTask(), second.AsTask()); // fetches the underlying incomplete task
+        }
+        else
+        {
+            Assert.Same(first.AsTask(), second.AsTask());
+        }
+        semaphore.Release();
+        Assert.Equal(await first, await second);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ImmutableCustomTypesShareFinalTask(bool withCancelation)
+    {
+        CancellationToken token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
+
+        using var scope = GetDefaultCache(out var cache);
+        using var semaphore = new SemaphoreSlim(0);
+
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token);
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token);
+
+        if (withCancelation)
+        {
+            Assert.NotSame(first.AsTask(), second.AsTask()); // fetches the underlying incomplete task
+        }
+        else
+        {
+            Assert.Same(first.AsTask(), second.AsTask());
+        }
+        semaphore.Release();
+
+        var x = await first;
+        var y = await second;
+        Assert.Equal(x.Value, y.Value);
+        Assert.Same(x, y); // same instance regardless of whether the tasks were shared
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MutableTypesNeverShareFinalTask(bool withCancelation)
+    {
+        CancellationToken token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
+
+        using var scope = GetDefaultCache(out var cache);
+        using var semaphore = new SemaphoreSlim(0);
+
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token);
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token);
+
+        Assert.NotSame(first.AsTask(), second.AsTask()); // fetches the underlying incomplete task
+        semaphore.Release();
+
+        var x = await first;
+        var y = await second;
+        Assert.Equal(x.Value, y.Value);
+        Assert.NotSame(x, y);
+    }
+
+    class Mutable(Guid value)
+    {
+        public Guid Value => value;
+    }
+
+    [ImmutableObject(true)]
+    public sealed class Immutable(Guid value)
+    {
+        public Guid Value => value;
+    }
+
+
     private static string Me([CallerMemberName] string caller = "") => caller;
 }
