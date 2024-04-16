@@ -28,7 +28,7 @@ public static class RazorComponentsEndpointHttpContextExtensions
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>True if the current endpoint is a Razor component that does not declare <see cref="AllowInteractiveRoutingAttribute"/> with value <see langword="false"/>.</returns>
-    public static bool AllowInteractiveRouting(this HttpContext? context)
+    public static bool AllowsInteractiveRouting(this HttpContext? context)
     {
         return GetPageComponentType(context) is { } type
             && type.GetCustomAttribute<AllowInteractiveRoutingAttribute>() is not { Allow: false };

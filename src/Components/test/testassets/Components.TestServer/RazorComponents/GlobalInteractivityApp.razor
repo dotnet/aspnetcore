@@ -25,7 +25,7 @@
     // Show we can use arbitrary logic to determine the rendermode. Here it's global by default,
     // but that can be suppressed via URL or attribute.
     private IComponentRenderMode? PageRenderMode
-        => HttpContext.AllowInteractiveRouting() && ! HttpContext.Request.Path.StartsWithSegments("/globally-interactive/static-via-url")
+        => HttpContext.AllowsInteractiveRouting() && ! HttpContext.Request.Path.StartsWithSegments("/globally-interactive/static-via-url")
         ? RenderMode.InteractiveWebAssembly
         : null;
 }
