@@ -6,6 +6,8 @@
 #include "applicationmanager.h"
 #include <thread>
 
+extern BOOL         g_fInShutdown;
+
 class ASPNET_CORE_GLOBAL_MODULE : NonCopyable, public CGlobalModule
 {
 
