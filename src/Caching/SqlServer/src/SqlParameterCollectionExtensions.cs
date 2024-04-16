@@ -22,20 +22,35 @@ internal static class SqlParameterCollectionExtensions
         return parameters.AddWithValue(Columns.Names.CacheItemId, SqlDbType.NVarChar, CacheItemIdColumnWidth, value);
     }
 
-    public static SqlParameterCollection AddCacheItemValue(this SqlParameterCollection parameters, byte[]? value)
+    public static SqlParameterCollection AddCacheItemValue(this SqlParameterCollection parameters, ArraySegment<byte> value)
     {
-        if (value != null && value.Length < DefaultValueColumnWidth)
+        if (value.Array is null) // null array (not really anticipating this, but...)
         {
-            return parameters.AddWithValue(
-                Columns.Names.CacheItemValue,
-                SqlDbType.VarBinary,
-                DefaultValueColumnWidth,
-                value);
+            return parameters.AddWithValue(Columns.Names.CacheItemValue, SqlDbType.VarBinary, Array.Empty<byte>());
         }
-        else
+        else if (value.Offset == 0 & value.Count == value.Array.Length) // right-sized array
         {
-            // do not mention the size
-            return parameters.AddWithValue(Columns.Names.CacheItemValue, SqlDbType.VarBinary, value);
+            if (value.Count < DefaultValueColumnWidth)
+            {
+                return parameters.AddWithValue(
+                    Columns.Names.CacheItemValue,
+                    SqlDbType.VarBinary,
+                    DefaultValueColumnWidth, // send as varbinary(constantSize)
+                    value.Array);
+            }
+            else
+            {
+                // do not mention the size
+                return parameters.AddWithValue(Columns.Names.CacheItemValue, SqlDbType.VarBinary, value);
+            }
+        }
+        else // array fragment; set the Size and Offset accordingly
+        {
+            var p = new SqlParameter(Columns.Names.CacheItemValue, SqlDbType.VarBinary, value.Count);
+            p.Value = value.Array;
+            p.Offset = value.Offset;
+            parameters.Add(p);
+            return parameters;
         }
     }
 
