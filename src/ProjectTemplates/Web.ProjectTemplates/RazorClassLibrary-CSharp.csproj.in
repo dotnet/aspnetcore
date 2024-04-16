@@ -8,16 +8,22 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.RazorClassLibrary1</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">
+  <!--#if (SupportPagesAndViews) -->
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SupportPagesAndViews)' == 'False'">
+  <!--#endif -->
+  <!--#if (!SupportPagesAndViews) -->
+  <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SupportPagesAndViews)' != 'True'">
+  <!--#endif -->
+  <!--#if (!SupportPagesAndViews) -->
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${MicrosoftAspNetCoreComponentsWebVersion}" />
   </ItemGroup>
 
+  <!--#endif -->
 </Project>

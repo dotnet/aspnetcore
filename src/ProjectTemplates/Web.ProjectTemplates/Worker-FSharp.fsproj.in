@@ -7,7 +7,6 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.Application1</RootNamespace>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Compile Include="Worker.fs" />
     <Compile Include="Program.fs" />
@@ -16,4 +15,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="${MicrosoftExtensionsHostingVersion}" />
   </ItemGroup>
+
 </Project>
