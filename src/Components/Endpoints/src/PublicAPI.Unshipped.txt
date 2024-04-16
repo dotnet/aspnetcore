@@ -1,3 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions
-static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.GetPageComponentType(this Microsoft.AspNetCore.Http.HttpContext! context) -> System.Type?
+static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.AllowInteractiveRouting(this Microsoft.AspNetCore.Http.HttpContext? context) -> bool
+static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.GetPageComponentType(this Microsoft.AspNetCore.Http.HttpContext? context) -> System.Type?
