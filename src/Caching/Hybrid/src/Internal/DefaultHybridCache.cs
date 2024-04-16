@@ -46,6 +46,11 @@ internal sealed partial class DefaultHybridCache : HybridCache
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private CacheFeatures GetFeatures(CacheFeatures mask) => features & mask;
 
+    internal CacheFeatures GetFeatures() => features;
+
+    // used to restrict features in test suite
+    internal void DebugRemoveFeatures(CacheFeatures features) => Unsafe.AsRef(in this.features) &= ~features;
+
     public DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services)
     {
         this.services = services ?? throw new ArgumentNullException(nameof(services));
