@@ -3,10 +3,14 @@
 
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 #pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
@@ -134,6 +138,73 @@ public class ServiceConstructionTests
 
         Assert.IsType<CustomerSerializer>(cache.GetSerializer<Customer>());
         Assert.IsType<DefaultJsonSerializerFactory.DefaultJsonSerializer<Order>>(cache.GetSerializer<Order>());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void DefaultMemoryDistributedCacheIsIgnored(bool manual)
+    {
+        var services = new ServiceCollection();
+        if (manual)
+        {
+            services.AddSingleton<IDistributedCache, MemoryDistributedCache>();
+        }
+        else
+        {
+            services.AddDistributedMemoryCache();
+        }
+        services.AddHybridCache();
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+
+        Assert.Null(cache.BackendCache);
+    }
+
+    [Fact]
+    public void SubclassMemoryDistributedCacheIsNotIgnored()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IDistributedCache, CustomMemoryDistributedCache>();
+        services.AddHybridCache();
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+
+        Assert.NotNull(cache.BackendCache);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SubclassMemoryCacheIsNotIgnored(bool manual)
+    {
+        var services = new ServiceCollection();
+        if (manual)
+        {
+            services.AddSingleton<IDistributedCache, MemoryDistributedCache>();
+        }
+        else
+        {
+            services.AddDistributedMemoryCache();
+        }
+        services.AddSingleton<IMemoryCache, CustomMemoryCache>();
+        services.AddHybridCache();
+        using var provider = services.BuildServiceProvider();
+        var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+
+        Assert.NotNull(cache.BackendCache);
+    }
+
+    class CustomMemoryCache : MemoryCache
+    {
+        public CustomMemoryCache(IOptions<MemoryCacheOptions> options) : base(options) { }
+        public CustomMemoryCache(IOptions<MemoryCacheOptions> options, ILoggerFactory loggerFactory) : base(options, loggerFactory) { }
+    }
+
+    class CustomMemoryDistributedCache : MemoryDistributedCache
+    {
+        public CustomMemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> options) : base(options) { }
+        public CustomMemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> options, ILoggerFactory loggerFactory) : base(options, loggerFactory) { }
     }
 
     class Customer { }

@@ -373,6 +373,5 @@ public class StampedeTests
         public Guid Value => value;
     }
 
-
     private static string Me([CallerMemberName] string caller = "") => caller;
 }

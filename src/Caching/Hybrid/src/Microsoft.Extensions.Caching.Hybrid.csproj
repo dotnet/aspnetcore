@@ -26,8 +26,10 @@
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Caching.Hybrid.Tests" />
+
+    <!-- this provides the default L1 implementation; L2 is optional -->
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
