@@ -169,6 +169,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             Secure = options.Secure,
             HttpOnly = options.HttpOnly,
             SameSite = options.SameSite
+            IsEssential = options.IsEssential
         });
     }
 
