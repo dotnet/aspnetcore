@@ -160,9 +160,15 @@ internal sealed partial class ResponseCookies : IResponseCookies
             Headers.SetCookie = new StringValues(newValues.ToArray());
         }
 
-        Append(key, string.Empty, new CookieOptions(options)
+        Append(key, string.Empty, new CookieOptions
         {
+            Path = options.Path,
+            Domain = options.Domain,
             Expires = DateTimeOffset.UnixEpoch,
+            MaxAge = null, // Explicitly set MaxAge to zero to ensure deletion when prioritized over Expires.
+            Secure = options.Secure,
+            HttpOnly = options.HttpOnly,
+            SameSite = options.SameSite
         });
     }
 
