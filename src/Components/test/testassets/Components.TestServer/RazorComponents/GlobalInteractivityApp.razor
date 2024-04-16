@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8" />
     <base href="/subdir/" />
-    <HeadOutlet @rendermode="@RenderModeForPage" />
+    <HeadOutlet @rendermode="@PageRenderMode" />
 </head>
 <body>
-    <Components.WasmMinimal.Routes @rendermode="@RenderModeForPage" />
+    <Components.WasmMinimal.Routes @rendermode="@PageRenderMode" />
     <script src="_framework/blazor.web.js" autostart="false"></script>
     <script>
         Blazor.start({
@@ -22,9 +22,10 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    // Statically render a specific page to show we can override the rendermode based on URL
-    // Elsewhere, use global interactivity.
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/globally-interactive/static-via-url")
-        ? null
-        : RenderMode.InteractiveWebAssembly;
+    // Show we can use arbitrary logic to determine the rendermode. Here it's global by default,
+    // but that can be suppressed via URL or attribute.
+    private IComponentRenderMode? PageRenderMode
+        => HttpContext.AllowInteractiveRouting() && ! HttpContext.Request.Path.StartsWithSegments("/globally-interactive/static-via-url")
+        ? RenderMode.InteractiveWebAssembly
+        : null;
 }

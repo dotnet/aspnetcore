@@ -36,8 +36,8 @@ public class GlobalInteractivityTest(
     public void CanNavigateFromStaticToInteractiveAndBack()
     {
         // Start on a static page
-        Navigate("/subdir/globally-interactive/static-via-route");
-        Browser.Equal("Global interactivity page: Static via route", () => Browser.Exists(By.TagName("h1")).Text);
+        Navigate("/subdir/globally-interactive/static-via-attribute");
+        Browser.Equal("Global interactivity page: Static via attribute", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Navigate to an interactive page and observe it really is interactive
@@ -47,7 +47,7 @@ public class GlobalInteractivityTest(
 
         // Show that, after "back", we revert to static rendering on the previous page
         Browser.Navigate().Back();
-        Browser.Equal("Global interactivity page: Static via route", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Global interactivity page: Static via attribute", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
     }
 
@@ -60,8 +60,8 @@ public class GlobalInteractivityTest(
         Browser.Equal("interactive webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Navigate to a static page
-        Browser.Click(By.LinkText("Static via route"));
-        Browser.Equal("Global interactivity page: Static via route", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Click(By.LinkText("Static via attribute"));
+        Browser.Equal("Global interactivity page: Static via attribute", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Show that, after "back", we revert to interactive rendering on the previous page
@@ -74,10 +74,10 @@ public class GlobalInteractivityTest(
     public void CanNavigateBetweenStaticPagesViaEnhancedNav()
     {
         // Start on a static page
-        Navigate("/subdir/globally-interactive/static-via-route");
+        Navigate("/subdir/globally-interactive/static-via-attribute");
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
         var h1 = Browser.Exists(By.TagName("h1"));
-        Assert.Equal("Global interactivity page: Static via route", h1.Text);
+        Assert.Equal("Global interactivity page: Static via attribute", h1.Text);
 
         // Navigate to another static page
         // We check it's the same h1 element, because this is enhanced nav
@@ -87,7 +87,7 @@ public class GlobalInteractivityTest(
 
         // Back also works
         Browser.Navigate().Back();
-        Browser.Equal("Global interactivity page: Static via route", () => h1.Text);
+        Browser.Equal("Global interactivity page: Static via attribute", () => h1.Text);
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
     }
 }
