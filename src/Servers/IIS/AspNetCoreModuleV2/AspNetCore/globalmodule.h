@@ -51,8 +51,8 @@ private:
 
     void StartShutdown()
     {
-        // Shutdown has already been started
-        if (m_shutdown.joinable())
+        // Shutdown has already been started/finished
+        if (m_shutdown.joinable() || g_fInShutdown)
         {
             return;
         }
