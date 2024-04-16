@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -32,14 +33,14 @@ public static class JSRuntimeExtensions
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, IJsonTypeInfoResolver resolver, params object?[]? args)
+    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, JsonSerializerOptions options, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
-        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, resolver, args);
+        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, options, args);
     }
 
     /// <summary>
@@ -65,18 +66,18 @@ public static class JSRuntimeExtensions
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization.</param>
     /// <param name="cancellationToken">
     /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, IJsonTypeInfoResolver resolver, CancellationToken cancellationToken, params object?[]? args)
+    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, JsonSerializerOptions options, CancellationToken cancellationToken, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
-        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, resolver, cancellationToken, args);
+        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, options, cancellationToken, args);
     }
 
     /// <summary>
@@ -102,18 +103,18 @@ public static class JSRuntimeExtensions
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization.</param>
+    /// <param name="options">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, IJsonTypeInfoResolver resolver, TimeSpan timeout, params object?[]? args)
+    public static async ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, JsonSerializerOptions options, TimeSpan timeout, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, resolver, cancellationToken, args);
+        await jsRuntime.InvokeAsync<IJSVoidResult>(identifier, options, cancellationToken, args);
     }
 
     /// <summary>
@@ -145,14 +146,14 @@ public static class JSRuntimeExtensions
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization and deserialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization and deserialization.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, IJsonTypeInfoResolver resolver, params object?[]? args)
+    public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, JsonSerializerOptions options, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
-        return jsRuntime.InvokeAsync<TValue>(identifier, resolver, args);
+        return jsRuntime.InvokeAsync<TValue>(identifier, options, args);
     }
 
     /// <summary>
@@ -180,18 +181,18 @@ public static class JSRuntimeExtensions
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization and deserialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization and deserialization.</param>
     /// <param name="cancellationToken">
     /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, IJsonTypeInfoResolver resolver, CancellationToken cancellationToken, params object?[]? args)
+    public static ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, JsonSerializerOptions options, CancellationToken cancellationToken, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
-        return jsRuntime.InvokeAsync<TValue>(identifier, resolver, cancellationToken, args);
+        return jsRuntime.InvokeAsync<TValue>(identifier, options, cancellationToken, args);
     }
 
     /// <summary>
@@ -217,17 +218,17 @@ public static class JSRuntimeExtensions
     /// </summary>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization and deserialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization and deserialization.</param>
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-    public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, IJsonTypeInfoResolver resolver, TimeSpan timeout, params object?[]? args)
+    public static async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, JsonSerializerOptions options, TimeSpan timeout, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsRuntime);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        return await jsRuntime.InvokeAsync<TValue>(identifier, resolver, cancellationToken, args);
+        return await jsRuntime.InvokeAsync<TValue>(identifier, options, cancellationToken, args);
     }
 }

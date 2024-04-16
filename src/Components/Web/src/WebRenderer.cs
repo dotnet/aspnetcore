@@ -41,10 +41,15 @@ public abstract class WebRenderer : Renderer
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
+
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
+        var jsRuntimeJsonSerializerOptions = jsRuntime.CloneJsonSerializerOptions();
+        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Insert(0, JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
+        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Insert(0, WebRendererSerializerContext.Default);
+
         jsRuntime.InvokeVoidAsync(
             "Blazor._internal.attachWebRendererInterop",
-            WebRendererSerializerContext.Default,
+            jsRuntimeJsonSerializerOptions,
             _rendererId,
             _interopMethodsReference,
             jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
@@ -148,6 +153,8 @@ public abstract class WebRenderer : Renderer
     }
 }
 
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
+[JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]

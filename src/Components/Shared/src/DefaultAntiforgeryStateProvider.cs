@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -25,14 +26,19 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         // don't have access to the request.
         _subscription = state.RegisterOnPersisting(() =>
         {
-            state.PersistAsJson(PersistenceKey, GetAntiforgeryToken());
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(
+                GetAntiforgeryToken(),
+                DefaultAntiforgeryStateProviderSerializerContext.Default.AntiforgeryRequestToken);
+            state.PersistAsJson(PersistenceKey, bytes);
             return Task.CompletedTask;
         }, RenderMode.InteractiveAuto);
 
-        state.TryTakeFromJson(
-            PersistenceKey,
-            DefaultAntiforgeryStateProviderSerializerContext.Default,
-            out _currentToken);
+        if (state.TryTakeFromJson<byte[]>(PersistenceKey, out var bytes))
+        {
+            _currentToken = JsonSerializer.Deserialize(
+                bytes,
+                DefaultAntiforgeryStateProviderSerializerContext.Default.AntiforgeryRequestToken);
+        }
     }
 
     /// <inheritdoc />

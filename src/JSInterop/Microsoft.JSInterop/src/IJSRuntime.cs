@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization.Metadata;
+using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop;
@@ -34,11 +34,11 @@ public interface IJSRuntime
     /// </summary>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization and deserialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization and deserialization.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, IJsonTypeInfoResolver resolver, object?[]? args)
-        => throw new InvalidOperationException($"Supplying a custom {nameof(IJsonTypeInfoResolver)} is not supported by the current JS runtime");
+    ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerOptions options, object?[]? args)
+        => throw new InvalidOperationException($"Supplying a custom {nameof(JsonSerializerOptions)} is not supported by the current JS runtime");
 
     /// <summary>
     /// Invokes the specified JavaScript function asynchronously.
@@ -58,13 +58,20 @@ public interface IJSRuntime
     /// </summary>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use for JSON serialization and deserialization.</param>
+    /// <param name="options">The <see cref="JsonSerializerOptions"/> to use for JSON serialization and deserialization.</param>
     /// <param name="cancellationToken">
     /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, IJsonTypeInfoResolver resolver, CancellationToken cancellationToken, object?[]? args)
-        => throw new InvalidOperationException($"Supplying a custom {nameof(IJsonTypeInfoResolver)} is not supported by the current JS runtime");
+    ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerOptions options, CancellationToken cancellationToken, object?[]? args)
+        => throw new InvalidOperationException($"Supplying a custom {nameof(JsonSerializerOptions)} is not supported by the current JS runtime");
+
+    /// <summary>
+    /// Returns a copy of the current <see cref="JsonSerializerOptions"/> used for JSON serialization and deserialization.
+    /// </summary>
+    /// <returns>A copy of the <see cref="JsonSerializerOptions"/>.</returns>
+    JsonSerializerOptions CloneJsonSerializerOptions()
+        => throw new InvalidOperationException($"The current JS runtime does not support cloning {nameof(JsonSerializerOptions)}");
 }

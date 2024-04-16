@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
@@ -17,7 +16,6 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
-    private readonly JsonSerializerOptionsCache _jsonSerializerOptionsCache = new(JsonSerializerOptionsProvider.Options);
 
     internal PersistentComponentState(
         IDictionary<string , byte[]> currentState,
@@ -107,33 +105,6 @@ public class PersistentComponentState
         {
             var reader = new Utf8JsonReader(data);
             instance = JsonSerializer.Deserialize<TValue>(ref reader, JsonSerializerOptionsProvider.Options)!;
-            return true;
-        }
-        else
-        {
-            instance = default;
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
-    /// instance of type <typeparamref name="TValue"/>.
-    /// </summary>
-    /// <param name="key">The key used to persist the instance.</param>
-    /// <param name="resolver">The <see cref="IJsonTypeInfoResolver"/> to use when deserializing from JSON.</param>
-    /// <param name="instance">The persisted instance.</param>
-    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public bool TryTakeFromJson<TValue>(string key, IJsonTypeInfoResolver resolver, [MaybeNullWhen(false)] out TValue? instance)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-
-        if (TryTake(key, out var data))
-        {
-            var reader = new Utf8JsonReader(data);
-            var options = _jsonSerializerOptionsCache.GetOrAdd(resolver);
-            instance = JsonSerializer.Deserialize<TValue>(ref reader, options)!;
             return true;
         }
         else

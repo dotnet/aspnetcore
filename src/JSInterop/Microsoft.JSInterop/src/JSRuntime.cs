@@ -22,7 +22,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
     private readonly ConcurrentDictionary<long, IJSInteropTask> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
-    private readonly JsonSerializerOptionsCache _jsonSerializerOptionsCache;
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
@@ -45,8 +44,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new ByteArrayJsonConverter(this),
                 },
         };
-
-        _jsonSerializerOptionsCache = new(JsonSerializerOptions);
     }
 
     /// <summary>
@@ -60,41 +57,44 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     protected TimeSpan? DefaultAsyncTimeout { get; set; }
 
     /// <inheritdoc/>
+    public JsonSerializerOptions CloneJsonSerializerOptions() => new(JsonSerializerOptions);
+
+    /// <inheritdoc/>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, args);
 
     /// <inheritdoc/>
-    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, IJsonTypeInfoResolver resolver, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, resolver, args);
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerOptions options, object?[]? args)
+        => InvokeAsync<TValue>(0, identifier, options, args);
 
     /// <inheritdoc/>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
     /// <inheritdoc/>
-    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, IJsonTypeInfoResolver resolver, CancellationToken cancellationToken, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, resolver, cancellationToken, args);
+    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerOptions options, CancellationToken cancellationToken, object?[]? args)
+        => InvokeAsync<TValue>(0, identifier, options, cancellationToken, args);
 
-    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, IJsonTypeInfoResolver? resolver, object?[]? args)
+    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, JsonSerializerOptions? options, object?[]? args)
     {
         if (DefaultAsyncTimeout.HasValue)
         {
             using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
             // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, resolver, cts.Token, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, options, cts.Token, args);
         }
 
-        return await InvokeAsync<TValue>(targetInstanceId, identifier, resolver, CancellationToken.None, args);
+        return await InvokeAsync<TValue>(targetInstanceId, identifier, options, CancellationToken.None, args);
     }
 
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
-        => InvokeAsync<TValue>(targetInstanceId, identifier, resolver: null, args);
+        => InvokeAsync<TValue>(targetInstanceId, identifier, options: null, args);
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
         long targetInstanceId,
         string identifier,
-        IJsonTypeInfoResolver? resolver,
+        JsonSerializerOptions? jsonSerializerOptions,
         CancellationToken cancellationToken,
         object?[]? args)
     {
@@ -114,11 +114,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         try
         {
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
-            var jsonSerializerOptions = _jsonSerializerOptionsCache.GetOrAdd(resolver, static resolver =>
-                JsonTypeInfoResolver.Combine(
-                    resolver,
-                    JSRuntimeSerializerContext.Default,
-                    FallbackTypeInfoResolver.Instance));
+            jsonSerializerOptions ??= JsonSerializerOptions;
 
             var argsJson = args switch
             {
@@ -145,7 +141,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         string identifier,
         CancellationToken cancellationToken,
         object?[]? args)
-        => InvokeAsync<TValue>(targetInstanceId, identifier, resolver: null, cancellationToken, args);
+        => InvokeAsync<TValue>(targetInstanceId, identifier, jsonSerializerOptions: null, cancellationToken, args);
 
     /// <summary>
     /// Begins an asynchronous function invocation.

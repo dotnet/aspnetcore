@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver! resolver, out TValue? instance) -> bool
