@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Sample.Transformers;
 
@@ -21,6 +22,7 @@ builder.Services.AddOpenApi("v2", options => {
     });
 });
 builder.Services.AddOpenApi("responses");
+builder.Services.AddOpenApi("forms");
 
 var app = builder.Build();
 
@@ -29,6 +31,18 @@ if (app.Environment.IsDevelopment())
 {
     app.MapSwaggerUi();
 }
+
+var forms = app.MapGroup("forms")
+    .WithGroupName("forms");
+
+if (app.Environment.IsDevelopment())
+{
+    forms.DisableAntiforgery();
+}
+
+forms.MapPost("/form-file", (IFormFile resume) => Results.Ok(resume.FileName));
+forms.MapPost("/form-files", (IFormFileCollection files) => Results.Ok(files.Count));
+forms.MapPost("/form-todo", ([FromForm] Todo todo) => Results.Ok(todo));
 
 var v1 = app.MapGroup("v1")
     .WithGroupName("v1");
