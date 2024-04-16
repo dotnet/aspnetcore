@@ -721,7 +721,7 @@ public class RemoteRendererTest
         }
 
         private static RemoteJSRuntime CreateJSRuntime(CircuitOptions options)
-            => new(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), Options.Create(new JsonOptions()), null);
+            => new RemoteJSRuntime(Options.Create(options), Options.Create(new HubOptions<ComponentHub>()), null);
     }
 
     private class TestComponent : IComponent, IHandleAfterRender

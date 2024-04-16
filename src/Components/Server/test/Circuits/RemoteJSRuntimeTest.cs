@@ -101,22 +101,13 @@ public class RemoteJSRuntimeTest
     {
         var componentHubOptions = Options.Create(new HubOptions<ComponentHub>());
         componentHubOptions.Value.MaximumReceiveMessageSize = componentHubMaximumIncomingBytes;
-        var jsRuntime = new TestRemoteJSRuntime(
-            Options.Create(new CircuitOptions()),
-            componentHubOptions,
-            Options.Create(new JsonOptions()),
-            Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), componentHubOptions, Mock.Of<ILogger<RemoteJSRuntime>>());
         return jsRuntime;
     }
 
     class TestRemoteJSRuntime : RemoteJSRuntime, IJSRuntime
     {
-        public TestRemoteJSRuntime(
-            IOptions<CircuitOptions> circuitOptions,
-            IOptions<HubOptions<ComponentHub>> hubOptions,
-            IOptions<JsonOptions> jsonOptions,
-            ILogger<RemoteJSRuntime> logger)
-            : base(circuitOptions, hubOptions, jsonOptions, logger)
+        public TestRemoteJSRuntime(IOptions<CircuitOptions> circuitOptions, IOptions<HubOptions<ComponentHub>> hubOptions, ILogger<RemoteJSRuntime> logger) : base(circuitOptions, hubOptions, logger)
         {
         }
 

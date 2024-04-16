@@ -40,7 +40,6 @@ internal partial class RemoteJSRuntime : JSRuntime
     public RemoteJSRuntime(
         IOptions<CircuitOptions> circuitOptions,
         IOptions<HubOptions<ComponentHub>> componentHubOptions,
-        IOptions<JsonOptions> jsonOptions,
         ILogger<RemoteJSRuntime> logger)
     {
         _options = circuitOptions.Value;
@@ -49,13 +48,6 @@ internal partial class RemoteJSRuntime : JSRuntime
         DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
-
-        JsonSerializerOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver.Instance);
-
-        if (jsonOptions.Value.SerializerOptions is { TypeInfoResolver: { } typeInfoResolver })
-        {
-            JsonSerializerOptions.TypeInfoResolverChain.Add(typeInfoResolver);
-        }
     }
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;

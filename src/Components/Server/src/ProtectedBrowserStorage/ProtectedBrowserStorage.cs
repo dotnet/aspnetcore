@@ -16,7 +16,6 @@ public abstract class ProtectedBrowserStorage
     private readonly string _storeName;
     private readonly IJSRuntime _jsRuntime;
     private readonly IDataProtectionProvider _dataProtectionProvider;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
     private readonly ConcurrentDictionary<string, IDataProtector> _cachedDataProtectorsByPurpose
         = new ConcurrentDictionary<string, IDataProtector>(StringComparer.Ordinal);
 
@@ -26,12 +25,7 @@ public abstract class ProtectedBrowserStorage
     /// <param name="storeName">The name of the store in which the data should be stored.</param>
     /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
     /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
-    /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/>.</param>
-    private protected ProtectedBrowserStorage(
-        string storeName,
-        IJSRuntime jsRuntime,
-        IDataProtectionProvider dataProtectionProvider,
-        JsonSerializerOptions? jsonSerializerOptions)
+    private protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
     {
         // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
         if (OperatingSystem.IsBrowser())
@@ -44,7 +38,6 @@ public abstract class ProtectedBrowserStorage
         _storeName = storeName;
         _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _dataProtectionProvider = dataProtectionProvider ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
-        _jsonSerializerOptions = jsonSerializerOptions ?? DefaultJsonSerializerOptions.Instance;
     }
 
     /// <summary>
@@ -129,7 +122,7 @@ public abstract class ProtectedBrowserStorage
 
     private string Protect(string purpose, object value)
     {
-        var json = JsonSerializer.Serialize(value, options: _jsonSerializerOptions);
+        var json = JsonSerializer.Serialize(value, options: JsonSerializerOptionsProvider.Options);
         var protector = GetOrCreateCachedProtector(purpose);
 
         return protector.Protect(json);
@@ -140,7 +133,7 @@ public abstract class ProtectedBrowserStorage
         var protector = GetOrCreateCachedProtector(purpose);
         var json = protector.Unprotect(protectedJson);
 
-        return JsonSerializer.Deserialize<TValue>(json, options: _jsonSerializerOptions)!;
+        return JsonSerializer.Deserialize<TValue>(json, options: JsonSerializerOptionsProvider.Options)!;
     }
 
     private ValueTask SetProtectedJsonAsync(string key, string protectedJson)

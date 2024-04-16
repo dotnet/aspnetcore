@@ -370,7 +370,7 @@ public class ProtectedBrowserStorageTest
     class TestProtectedBrowserStorage : ProtectedBrowserStorage
     {
         public TestProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
-            : base(storeName, jsRuntime, dataProtectionProvider, jsonSerializerOptions: null)
+            : base(storeName, jsRuntime, dataProtectionProvider)
         {
         }
     }

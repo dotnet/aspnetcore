@@ -8,7 +8,6 @@ using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
@@ -18,11 +17,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
+    private static readonly JsonSerializerOptions _rootComponentSerializerOptions = new(WebAssemblyComponentSerializationSettings.JsonSerializationOptions)
+    {
+        TypeInfoResolver = DefaultWebAssemblyJSRuntimeSerializerContext.Default,
+    };
+
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     private readonly RootComponentTypeCache _rootComponentCache = new();
-
-    private JsonSerializerOptions? _rootComponentSerializerOptions;
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
@@ -37,24 +39,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
-        JsonSerializerOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver.Instance);
     }
 
-    public void SetJsonOptions(IOptions<JsonOptions> jsonOptions)
-    {
-        if (JsonSerializerOptions.IsReadOnly)
-        {
-            throw new InvalidOperationException(
-                "JSON options must be provided to the JS runtime before the it gets used.");
-        }
-
-        _rootComponentSerializerOptions = jsonOptions.Value.SerializerOptions;
-
-        if (jsonOptions.Value.SerializerOptions is { TypeInfoResolver: { } typeInfoResolver })
-        {
-            JsonSerializerOptions.TypeInfoResolverChain.Add(typeInfoResolver);
-        }
-    }
+    public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
     [JSExport]
     [SupportedOSPlatform("browser")]
@@ -130,12 +117,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
     internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
     {
-        // The type we're serializing should be kept in sync with
-        // DefaultWebAssemblyJSRuntimeSerializerContext
         var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
             operationsJson,
-            Instance._rootComponentSerializerOptions ??
-            DefaultWebAssemblyJSRuntimeSerializerContext.Default.Options)!;
+            _rootComponentSerializerOptions)!;
 
         for (var i = 0; i < deserialized.Operations.Length; i++)
         {
@@ -159,7 +143,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         return deserialized;
     }
 
-    private static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
+    static WebRootComponentParameters DeserializeComponentParameters(ComponentMarker marker)
     {
         var definitions = WebAssemblyComponentParameterDeserializer.GetParameterDefinitions(marker.ParameterDefinitions!);
         var values = WebAssemblyComponentParameterDeserializer.GetParameterValues(marker.ParameterValues!);
@@ -187,9 +171,5 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     }
 }
 
-[JsonSourceGenerationOptions(
-    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    PropertyNameCaseInsensitive = true,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(RootComponentOperationBatch))]
 internal sealed partial class DefaultWebAssemblyJSRuntimeSerializerContext : JsonSerializerContext;

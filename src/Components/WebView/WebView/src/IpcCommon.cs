@@ -31,7 +31,7 @@ internal sealed class IpcCommon
         // Note we do NOT need the JSRuntime specific JsonSerializerOptions as the args needing special handling
         // (JS/DotNetObjectReference & Byte Arrays) have already been serialized earlier in the JSRuntime.
         // We run the serialization here to add the `messageType`.
-        return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(messageTypeAndArgs, DefaultJsonSerializerOptions.Instance)}";
+        return $"{_ipcMessagePrefix}{JsonSerializer.Serialize(messageTypeAndArgs, JsonSerializerOptionsProvider.Options)}";
     }
 
     private static bool TryDeserialize<T>(string message, out T messageType, out ArraySegment<JsonElement> args)
@@ -41,7 +41,7 @@ internal sealed class IpcCommon
         if (message != null && message.StartsWith(_ipcMessagePrefix, StringComparison.Ordinal))
         {
             var messageAfterPrefix = message.AsSpan(_ipcMessagePrefix.Length);
-            var parsed = (JsonElement[])JsonSerializer.Deserialize(messageAfterPrefix, typeof(JsonElement[]), DefaultJsonSerializerOptions.Instance);
+            var parsed = (JsonElement[])JsonSerializer.Deserialize(messageAfterPrefix, typeof(JsonElement[]), JsonSerializerOptionsProvider.Options);
             messageType = (T)Enum.Parse(typeof(T), parsed[0].GetString());
             args = new ArraySegment<JsonElement>(parsed, 1, parsed.Length - 1);
             return true;

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text.Json;
 
 namespace Microsoft.JSInterop;
 
@@ -10,6 +11,8 @@ internal sealed class JSInteropTask<TResult> : IJSInteropTask
     private readonly TaskCompletionSource<TResult> _tcs;
     private readonly CancellationTokenRegistration _cancellationTokenRegistration;
     private readonly Action? _onCanceled;
+
+    public JsonSerializerOptions? DeserializeOptions { get; set; }
 
     public Task<TResult> Task => _tcs.Task;
 

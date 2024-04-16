@@ -4,12 +4,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -17,7 +17,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -28,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// </summary>
 public sealed class WebAssemblyHostBuilder
 {
+    private readonly JsonSerializerOptions _jsonOptions;
     private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
     private RootComponentTypeCache? _rootComponentCache;
@@ -49,7 +49,9 @@ public sealed class WebAssemblyHostBuilder
     {
         // We don't use the args for anything right now, but we want to accept them
         // here so that it shows up this way in the project templates.
-        var builder = new WebAssemblyHostBuilder(InternalJSImportMethods.Instance);
+        var builder = new WebAssemblyHostBuilder(
+            InternalJSImportMethods.Instance,
+            DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions());
 
         WebAssemblyCultureProvider.Initialize();
 
@@ -63,11 +65,14 @@ public sealed class WebAssemblyHostBuilder
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
     /// </summary>
-    internal WebAssemblyHostBuilder(IInternalJSImportMethods jsMethods)
+    internal WebAssemblyHostBuilder(
+        IInternalJSImportMethods jsMethods,
+        JsonSerializerOptions jsonOptions)
     {
         // Private right now because we don't have much reason to expose it. This can be exposed
         // in the future if we want to give people a choice between CreateDefault and something
         // less opinionated.
+        _jsonOptions = jsonOptions;
         _jsMethods = jsMethods;
         Configuration = new WebAssemblyHostConfiguration();
         RootComponents = new RootComponentMappingCollection();
@@ -293,11 +298,6 @@ public sealed class WebAssemblyHostBuilder
         var services = _createServiceProvider();
         var scope = services.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope();
 
-        // Provide JsonOptions to the JS runtime as quickly as possible to ensure that
-        // JSON options are configured before any JS interop calls occur.
-        var jsonOptions = scope.ServiceProvider.GetRequiredService<IOptions<JsonOptions>>();
-        DefaultWebAssemblyJSRuntime.Instance.SetJsonOptions(jsonOptions);
-
         return new WebAssemblyHost(this, services, scope, _persistedState);
     }
 
@@ -311,12 +311,6 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
         Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
-        //Services.AddSingleton<ComponentStatePersistenceManager>(static sp =>
-        //{
-        //    var jsonOptions = sp.GetRequiredService<IOptions<JsonOptions>>();
-        //    var logger = sp.GetRequiredService<ILogger<ComponentStatePersistenceManager>>();
-        //    return new(jsonOptions, logger);
-        //});
         Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
@@ -325,13 +319,5 @@ public sealed class WebAssemblyHostBuilder
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
         Services.AddSupplyValueFromQueryProvider();
-
-        // Configure JSON serializer options
-        Services.ConfigureComponentsJsonOptions(jsonOptions =>
-        {
-            jsonOptions.SerializerOptions.TypeInfoResolverChain.Insert(0, DefaultWebAssemblyJSRuntimeSerializerContext.Default);
-        });
-        Services.ConfigureComponentsWebJsonOptions();
-        Services.ConfigureDefaultAntiforgeryJsonOptions();
     }
 }

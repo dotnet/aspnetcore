@@ -1,6 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedLocalStorage.ProtectedLocalStorage(Microsoft.JSInterop.IJSRuntime! jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Components.JsonOptions!>! jsonOptions) -> void
-Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedSessionStorage.ProtectedSessionStorage(Microsoft.JSInterop.IJSRuntime! jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Components.JsonOptions!>! jsonOptions) -> void
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!, System.Threading.Tasks.Task!>?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.set -> void

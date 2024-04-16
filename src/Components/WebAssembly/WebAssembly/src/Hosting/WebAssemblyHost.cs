@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -148,9 +147,8 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         using (cancellationToken.Register(() => tcs.TrySetResult()))
         {
             var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
-            var jsonOptions = Services.GetRequiredService<IOptions<JsonOptions>>();
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
-            _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsonOptions, jsComponentInterop);
+            _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 

@@ -27,6 +27,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperation.cs" />
@@ -36,15 +37,12 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentManager.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerialization\JsonConverterFactoryTypeInfoResolver.cs" LinkBase="JsonSerialization" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerialization\JSRuntimeSerializerContext.cs" LinkBase="JsonSerialization" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" Link="Prerendering/ComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="Prerendering/WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
     <Compile Include="$(SharedSourceRoot)Components\PrerenderComponentApplicationStore.cs" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryJsonOptionsServiceCollectionExtensions.cs" LinkBase="DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>
