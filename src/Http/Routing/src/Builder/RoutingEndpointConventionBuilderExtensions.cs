@@ -24,10 +24,19 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
     /// <remarks>
-    /// APIs that rely on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, such as
-    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to potential spoofing by clients.
+    /// APIs that depend on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, including
+    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to client spoofing.
     ///
-    /// To prevent host and port spoofing, use <see href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.connections.features.itlshandshakefeature.hostname">ITlsHandshakeFeature.HostName</see> to verify the server name used during the TLS handshake, and <see cref="HttpContext.Connection"/> (<see cref="ConnectionInfo.LocalPort"/>) to verify the local port the connection was accepted on.
+   /// To safeguard against host and port spoofing:
+    /// <list type="bullet">
+    /// <item><description>
+    /// Verify the server name used during the TLS handshake using <see href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.connections.features.itlshandshakefeature.hostname">ITlsHandshakeFeature.HostName</see>.
+    /// </description></item>
+    /// <item><description>
+    /// Verify the local port where the connection was accepted using <see cref="HttpContext.Connection"/> (specifically <see cref="ConnectionInfo.LocalPort"/>).
+    /// </description></item>
+    /// </list>
+    /// </remarks>
     /// </remarks>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
