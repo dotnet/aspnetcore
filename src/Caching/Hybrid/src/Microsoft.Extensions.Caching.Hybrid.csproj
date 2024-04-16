@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
+    <!--
+      relevant TFM feature summary (all "nice to have", with reasonable workarounds):
+        nca 2.0 / ns 2.1: RuntimeHelpers.IsReferenceOrContainsReferences; Task.IsCompletedSuccessfully
+        nca 3.0 : IThreadPoolWorkItem
+        net 5.0 : [DynamicallyAccessedMembers], EncodingExtensions.GetString/GetBytes, IsExternalInit
+        net 7.0 : ArgumentNullException.ThrowIfNull
+    -->
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;hybrid</PackageTags>
