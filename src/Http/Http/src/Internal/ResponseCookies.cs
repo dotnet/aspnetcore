@@ -168,7 +168,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
             MaxAge = null, // Explicitly set MaxAge to zero to ensure deletion when prioritized over Expires.
             Secure = options.Secure,
             HttpOnly = options.HttpOnly,
-            SameSite = options.SameSite
+            SameSite = options.SameSite,
             IsEssential = options.IsEssential
         });
     }
