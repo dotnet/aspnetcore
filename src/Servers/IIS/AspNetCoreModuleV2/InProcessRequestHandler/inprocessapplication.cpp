@@ -73,7 +73,7 @@ IN_PROCESS_APPLICATION::StopClr()
     // Signal shutdown
     if (m_pShutdownEvent != nullptr)
     {
-        LOG_IF_FAILED(SetEvent(m_pShutdownEvent));
+        LOG_LAST_ERROR_IF(!SetEvent(m_pShutdownEvent));
     }
 
     // Need to wait for either the app to be initialized, the worker thread to exit, or the shutdown timeout.

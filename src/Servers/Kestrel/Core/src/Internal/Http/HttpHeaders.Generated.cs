@@ -8670,6 +8670,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return true;
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int GetNext(long bits, bool hasContentLength)
+            {
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? 49
+                        : -1;
+            }
         }
     }
 
@@ -15495,6 +15505,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _next = _collection._contentLength.HasValue ? 38 : -1;
                     return true;
                 }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int GetNext(long bits, bool hasContentLength)
+            {
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? 38
+                        : -1;
             }
         }
     }
