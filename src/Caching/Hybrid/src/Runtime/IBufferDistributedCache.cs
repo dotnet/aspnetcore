@@ -16,35 +16,37 @@ public interface IBufferDistributedCache : IDistributedCache
     /// Attempt to retrieve an existing cache item.
     /// </summary>
     /// <param name="key">The unique key for the cache item.</param>
-    /// <param name="destination">Target to write the cache contents on success.</param>
-    /// <returns><c>True</c> if the cache item is found, <c>False</c> otherwise.</returns>
-    /// <remarks>This is functionally similar to <see cref="IDistributedCache.Get(string)"/>, but avoiding the array allocation.</remarks>
+    /// <param name="destination">The target to write the cache contents on success.</param>
+    /// <returns><c>true</c> if the cache item is found, <c>false</c> otherwise.</returns>
+    /// <remarks>This is functionally similar to <see cref="IDistributedCache.Get(string)"/>, but avoids the array allocation.</remarks>
     bool TryGet(string key, IBufferWriter<byte> destination);
+
     /// <summary>
-    /// Attempt to asynchronously retrieve an existing cache item.
+    /// Asynchronously attempt to retrieve an existing cache entry.
     /// </summary>
-    /// <param name="key">The unique key for the cache item.</param>
-    /// <param name="destination">Target to write the cache contents on success.</param>
-    /// <param name="token">Cancellation for this operation.</param>
-    /// <returns><c>True</c> if the cache item is found, <c>False</c> otherwise.</returns>
-    /// <remarks>This is functionally similar to <see cref="IDistributedCache.GetAsync(string, CancellationToken)"/>, but avoiding the array allocation.</remarks>
+    /// <param name="key">The unique key for the cache entry.</param>
+    /// <param name="destination">The target to write the cache contents on success.</param>
+    /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns><c>true</c> if the cache entry is found, <c>false</c> otherwise.</returns>
+    /// <remarks>This is functionally similar to <see cref="IDistributedCache.GetAsync(string, CancellationToken)"/>, but avoids the array allocation.</remarks>
     ValueTask<bool> TryGetAsync(string key, IBufferWriter<byte> destination, CancellationToken token = default);
 
     /// <summary>
-    /// Insert or overwrite a cache item.
+    /// Sets or overwrites a cache item.
     /// </summary>
-    /// <param name="key">The unique key for the cache item.</param>
-    /// <param name="value">The value for this cache item.</param>
-    /// <param name="options">The cache options for the value.</param>
-    /// <remarks>This is functionally similar to <see cref="IDistributedCache.Set(string, byte[], DistributedCacheEntryOptions)"/>, but avoiding the array allocation.</remarks>
+    /// <param name="key">The key of the entry to create.</param>
+    /// <param name="value">The value for this cache entry.</param>
+    /// <param name="options">The cache options for the entry.</param>
+    /// <remarks>This is functionally similar to <see cref="IDistributedCache.Set(string, byte[], DistributedCacheEntryOptions)"/>, but avoids the array allocation.</remarks>
     void Set(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options);
+
     /// <summary>
-    /// Asynchronously insert or overwrite a cache item.
+    /// Asynchronously sets or overwrites a cache entry.
     /// </summary>
-    /// <param name="key">The unique key for the cache item.</param>
-    /// <param name="value">The value for this cache item.</param>
+    /// <param name="key">The key of the entry to create.</param>
+    /// <param name="value">The value for this cache entry.</param>
     /// <param name="options">The cache options for the value.</param>
-    /// <param name="token">Cancellation for this operation.</param>
-    /// <remarks>This is functionally similar to <see cref="IDistributedCache.SetAsync(string, byte[], DistributedCacheEntryOptions, CancellationToken)"/>, but avoiding the array allocation.</remarks>
+    /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <remarks>This is functionally similar to <see cref="IDistributedCache.SetAsync(string, byte[], DistributedCacheEntryOptions, CancellationToken)"/>, but avoids the array allocation.</remarks>
     ValueTask SetAsync(string key, ReadOnlySequence<byte> value, DistributedCacheEntryOptions options, CancellationToken token = default);
 }

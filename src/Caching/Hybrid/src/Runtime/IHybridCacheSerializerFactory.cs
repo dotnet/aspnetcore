@@ -15,6 +15,6 @@ public interface IHybridCacheSerializerFactory
     /// </summary>
     /// <typeparam name="T">The type being serialized/deserialized.</typeparam>
     /// <param name="serializer">The serializer.</param>
-    /// <returns><c>True</c> if the factory supports this type, <c>False</c> otherwise.</returns>
+    /// <returns><c>true</c> if the factory supports this type, <c>false</c> otherwise.</returns>
     bool TryCreateSerializer<T>([NotNullWhen(true)] out IHybridCacheSerializer<T>? serializer);
 }

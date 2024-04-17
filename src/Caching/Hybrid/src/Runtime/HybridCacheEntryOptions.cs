@@ -7,8 +7,8 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Microsoft.Extensions.Caching.Hybrid;
 
 /// <summary>
-/// Additional options (expiration, etc) that apply to a <see cref="HybridCache"/> operation. When options
-/// can be specified at miltiple levels (for example globally and per-call), the values are composed; the
+/// Additional options (expiration, etc.) that apply to a <see cref="HybridCache"/> operation. When options
+/// can be specified at multiple levels (for example, globally and per-call), the values are composed; the
 /// most granular non-null value is used, with null values being inherited. If no value is specified at
 /// any level, the implementation may choose a reasonable default.
 /// </summary>
