@@ -115,7 +115,7 @@ public abstract class HybridCache
     }
 
     /// <summary>
-    /// Removes cache data associated with the specified tag.
+    /// Asynchronously removes the value associated with the specified tag.
     /// </summary>
     public abstract ValueTask RemoveTagAsync(string tag, CancellationToken token = default);
 }
