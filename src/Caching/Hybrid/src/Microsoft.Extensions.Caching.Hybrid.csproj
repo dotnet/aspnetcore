@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>cache;distributedcache;hybrid</PackageTags>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <IsAspNetCoreApp>false</IsAspNetCoreApp>
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.Caching.Hybrid.Tests" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0'">
+    <Reference Include="System.Text.Json" />
+    <Reference Include="Microsoft.Bcl.TimeProvider" />
+  </ItemGroup>
+</Project>

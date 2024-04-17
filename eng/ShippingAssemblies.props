@@ -104,6 +104,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Features" />
+    <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.Hybrid" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.SqlServer" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.JsonPatch" />
