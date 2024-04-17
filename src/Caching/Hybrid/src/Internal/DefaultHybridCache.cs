@@ -17,18 +17,18 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 /// </summary>
 internal sealed class DefaultHybridCache : HybridCache
 {
-    private readonly IDistributedCache backendCache;
-    private readonly IServiceProvider services;
-    private readonly HybridCacheOptions options;
+    private readonly IDistributedCache _backendCache;
+    private readonly IServiceProvider _services;
+    private readonly HybridCacheOptions _options;
 
     public DefaultHybridCache(IOptions<HybridCacheOptions> options, IDistributedCache backendCache, IServiceProvider services)
     {
-        this.backendCache = backendCache ?? throw new ArgumentNullException(nameof(backendCache));
-        this.services = services ?? throw new ArgumentNullException(nameof(services));
-        this.options = options.Value;
+        _backendCache = backendCache ?? throw new ArgumentNullException(nameof(backendCache));
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+        _options = options.Value;
     }
 
-    internal HybridCacheOptions Options => options;
+    internal HybridCacheOptions Options => _options;
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
         => underlyingDataCallback(state, token); // pass-thru without caching for initial API pass
@@ -46,10 +46,10 @@ internal sealed class DefaultHybridCache : HybridCache
     {
         // unused API, primarily intended to show configuration is working;
         // the real version would memoize the result
-        var service = services.GetServices<IHybridCacheSerializer<T>>().LastOrDefault();
+        var service = _services.GetService<IHybridCacheSerializer<T>>();
         if (service is null)
         {
-            foreach (var factory in services.GetServices<IHybridCacheSerializerFactory>())
+            foreach (var factory in _services.GetServices<IHybridCacheSerializerFactory>())
             {
                 if (factory.TryCreateSerializer<T>(out var current))
                 {

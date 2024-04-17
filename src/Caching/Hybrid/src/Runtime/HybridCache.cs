@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,10 +20,10 @@ public abstract class HybridCache
     /// Asynchronously gets the value associated with the key if it exists, or generates a new entry using the provided key and a value from the given factory if the key is not found.
     /// </summary>
     /// <typeparam name="T">The type of the data being considered.</typeparam>
-    /// <typeparam name="TState">The type of additional state required by <paramref name="underlyingDataCallback"/>.</typeparam>
+    /// <typeparam name="TState">The type of additional state required by <paramref name="factory"/>.</typeparam>
     /// <param name="key">The key of the entry to look for or create.</param>
-    /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache.</param>
-    /// <param name="state">Additional state required for <paramref name="underlyingDataCallback"/>.</param>
+    /// <param name="factory">Provides the underlying data service is the data is not available in the cache.</param>
+    /// <param name="state">Additional state required for <paramref name="factory"/>.</param>
     /// <param name="options">Additional options for this cache entry.</param>
     /// <param name="tags">The tags to associate with this cache item.</param>
     /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -34,15 +37,15 @@ public abstract class HybridCache
     /// </summary>
     /// <typeparam name="T">The type of the data being considered.</typeparam>
     /// <param name="key">The key of the entry to look for or create.</param>
-    /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache.</param>
+    /// <param name="factory">Provides the underlying data service is the data is not available in the cache.</param>
     /// <param name="options">Additional options for this cache entry.</param>
     /// <param name="tags">The tags to associate with this cache item.</param>
     /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The data, either from cache or the underlying data service.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Delegate differences make this unambiguous")]
-    public ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> underlyingDataCallback,
+    public ValueTask<T> GetOrCreateAsync<T>(string key, Func<CancellationToken, ValueTask<T>> factory,
         HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
-        => GetOrCreateAsync(key, underlyingDataCallback, WrappedCallbackCache<T>.Instance, options, tags, token);
+        => GetOrCreateAsync(key, factory, WrappedCallbackCache<T>.Instance, options, tags, token);
 
     private static class WrappedCallbackCache<T> // per-T memoized helper that allows GetOrCreateAsync<T> and GetOrCreateAsync<TState, T> to share an implementation
     {
