@@ -43,7 +43,7 @@ public abstract class WebRenderer : Renderer
         jsComponentInterop.AttachToRenderer(this);
 
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        var jsRuntimeJsonSerializerOptions = jsRuntime.CloneJsonSerializerOptions();
+        var jsRuntimeJsonSerializerOptions = new JsonSerializerOptions(jsRuntime.JsonSerializerOptions);
         jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Insert(0, JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
         jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Insert(0, WebRendererSerializerContext.Default);
 
@@ -153,7 +153,6 @@ public abstract class WebRenderer : Renderer
     }
 }
 
-[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Serialization)]
 [JsonSerializable(typeof(object[]))]
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]

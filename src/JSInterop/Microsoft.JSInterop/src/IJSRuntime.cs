@@ -69,9 +69,7 @@ public interface IJSRuntime
         => throw new InvalidOperationException($"Supplying a custom {nameof(JsonSerializerOptions)} is not supported by the current JS runtime");
 
     /// <summary>
-    /// Returns a copy of the current <see cref="JsonSerializerOptions"/> used for JSON serialization and deserialization.
+    /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
     /// </summary>
-    /// <returns>A copy of the <see cref="JsonSerializerOptions"/>.</returns>
-    JsonSerializerOptions CloneJsonSerializerOptions()
-        => throw new InvalidOperationException($"The current JS runtime does not support cloning {nameof(JsonSerializerOptions)}");
+    JsonSerializerOptions JsonSerializerOptions => throw new InvalidOperationException($"The current JS runtime does not support accessing {nameof(JsonSerializerOptions)}");
 }

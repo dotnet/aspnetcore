@@ -21,7 +21,7 @@ internal sealed class WebViewRenderer : WebRenderer
         ILoggerFactory loggerFactory,
         WebViewJSRuntime jsRuntime,
         JSComponentInterop jsComponentInterop) :
-        base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
+        base(serviceProvider, loggerFactory, jsRuntime.JsonSerializerOptions, jsComponentInterop)
     {
         _dispatcher = dispatcher;
         _ipcSender = ipcSender;

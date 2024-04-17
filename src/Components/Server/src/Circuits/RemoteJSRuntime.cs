@@ -48,9 +48,8 @@ internal partial class RemoteJSRuntime : JSRuntime
         DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
+        JsonSerializerOptions.MakeReadOnly();
     }
-
-    public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
     internal void Initialize(CircuitClientProxy clientProxy)
     {

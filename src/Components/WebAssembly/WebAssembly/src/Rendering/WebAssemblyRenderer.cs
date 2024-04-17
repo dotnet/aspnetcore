@@ -26,7 +26,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly IInternalJSImportMethods _jsMethods;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
-        : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
+        : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.JsonSerializerOptions, jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();

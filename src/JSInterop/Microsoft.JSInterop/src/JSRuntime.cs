@@ -43,18 +43,13 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         };
     }
 
-    /// <summary>
-    /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
-    /// </summary>
-    protected internal JsonSerializerOptions JsonSerializerOptions { get; }
+    /// <inheritdoc/>
+    public JsonSerializerOptions JsonSerializerOptions { get; }
 
     /// <summary>
     /// Gets or sets the default timeout for asynchronous JavaScript calls.
     /// </summary>
     protected TimeSpan? DefaultAsyncTimeout { get; set; }
-
-    /// <inheritdoc/>
-    public JsonSerializerOptions CloneJsonSerializerOptions() => new(JsonSerializerOptions);
 
     /// <inheritdoc/>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)

@@ -39,9 +39,8 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
+        JsonSerializerOptions.MakeReadOnly();
     }
-
-    public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
     [JSExport]
     [SupportedOSPlatform("browser")]
