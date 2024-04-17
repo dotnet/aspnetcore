@@ -94,7 +94,7 @@ public abstract class HybridCache
     }
 
     /// <summary>
-    /// Asynchronously removes the value associated with the specified tags.
+    /// Asynchronously removes all values associated with the specified tags.
     /// </summary>
     /// <remarks>Implementors should treat <c>null</c> as empty</remarks>
     public virtual ValueTask RemoveTagsAsync(IEnumerable<string> tags, CancellationToken token = default)
@@ -118,7 +118,7 @@ public abstract class HybridCache
     }
 
     /// <summary>
-    /// Asynchronously removes the value associated with the specified tag.
+    /// Asynchronously removes all values associated with the specified tag.
     /// </summary>
     public abstract ValueTask RemoveTagAsync(string tag, CancellationToken token = default);
 }
