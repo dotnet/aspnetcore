@@ -20,6 +20,7 @@ public interface IBufferDistributedCache : IDistributedCache
     /// <returns><c>True</c> if the cache item is found, <c>False</c> otherwise.</returns>
     /// <remarks>This is functionally similar to <see cref="IDistributedCache.Get(string)"/>, but avoiding the array allocation.</remarks>
     bool TryGet(string key, IBufferWriter<byte> destination);
+
     /// <summary>
     /// Attempt to asynchronously retrieve an existing cache item.
     /// </summary>
