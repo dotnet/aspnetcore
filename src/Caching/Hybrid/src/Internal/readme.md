@@ -5,7 +5,10 @@
 The `DefaultHybridCache` implementation keeps a collection of `StampedeState` entries
 that represent the current in-flight operations (keyed by `StampedeKey`); if a duplicate
 operation occurs during the execution, the second operation will be joined with that
-same flow, rather than executing independently.
+same flow, rather than executing independently. When attempting to merge with an
+existing flow, interlocked counting is used: we can only join if we can successfully
+increment the value from a non-zero value (zero meaning all existing consumers have
+canceled, and the shared token is therefore canceled)
 
 The `StampedeState<>` performs back-end fetch operations, resulting not in a `T` (of the final
 value), but instead a `CacheItem<T>`; this is the object that gets put into L1 cache,

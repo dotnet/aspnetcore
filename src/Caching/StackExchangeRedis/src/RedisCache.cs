@@ -404,7 +404,10 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            Refresh(cache, key, absExpr, sldExpr);
+            if (sldExpr.HasValue)
+            {
+                Refresh(cache, key, absExpr, sldExpr.GetValueOrDefault());
+            }
         }
 
         if (results.Length >= 3 && !results[2].IsNull)
@@ -440,7 +443,10 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         if (results.Length >= 2)
         {
             MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-            await RefreshAsync(cache, key, absExpr, sldExpr, token).ConfigureAwait(false);
+            if (sldExpr.HasValue)
+            {
+                await RefreshAsync(cache, key, absExpr, sldExpr.GetValueOrDefault(), token).ConfigureAwait(false);
+            }
         }
 
         if (results.Length >= 3 && !results[2].IsNull)
@@ -503,63 +509,57 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         }
     }
 
-    private void Refresh(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
+    private void Refresh(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan sldExpr)
     {
         ArgumentNullThrowHelper.ThrowIfNull(key);
 
         // Note Refresh has no effect if there is just an absolute expiration (or neither).
-        if (sldExpr.HasValue)
+        TimeSpan? expr;
+        if (absExpr.HasValue)
         {
-            TimeSpan? expr;
-            if (absExpr.HasValue)
-            {
-                var relExpr = absExpr.Value - DateTimeOffset.Now;
-                expr = relExpr <= sldExpr.Value ? relExpr : sldExpr;
-            }
-            else
-            {
-                expr = sldExpr;
-            }
-            try
-            {
-                cache.KeyExpire(_instancePrefix.Append(key), expr);
-            }
-            catch (Exception ex)
-            {
-                OnRedisError(ex, cache);
-                throw;
-            }
+            var relExpr = absExpr.Value - DateTimeOffset.Now;
+            expr = relExpr <= sldExpr ? relExpr : sldExpr;
+        }
+        else
+        {
+            expr = sldExpr;
+        }
+        try
+        {
+            cache.KeyExpire(_instancePrefix.Append(key), expr);
+        }
+        catch (Exception ex)
+        {
+            OnRedisError(ex, cache);
+            throw;
         }
     }
 
-    private async Task RefreshAsync(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan? sldExpr, CancellationToken token = default)
+    private async Task RefreshAsync(IDatabase cache, string key, DateTimeOffset? absExpr, TimeSpan sldExpr, CancellationToken token)
     {
         ArgumentNullThrowHelper.ThrowIfNull(key);
 
         token.ThrowIfCancellationRequested();
 
         // Note Refresh has no effect if there is just an absolute expiration (or neither).
-        if (sldExpr.HasValue)
+        TimeSpan? expr;
+        if (absExpr.HasValue)
         {
-            TimeSpan? expr;
-            if (absExpr.HasValue)
-            {
-                var relExpr = absExpr.Value - DateTimeOffset.Now;
-                expr = relExpr <= sldExpr.Value ? relExpr : sldExpr;
-            }
-            else
-            {
-                expr = sldExpr;
-            }
-            try
-            {
-                await cache.KeyExpireAsync(_instancePrefix.Append(key), expr).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                OnRedisError(ex, cache);
-                throw;
-            }
+            var relExpr = absExpr.Value - DateTimeOffset.Now;
+            expr = relExpr <= sldExpr ? relExpr : sldExpr;
+        }
+        else
+        {
+            expr = sldExpr;
+        }
+        try
+        {
+            await cache.KeyExpireAsync(_instancePrefix.Append(key), expr).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            OnRedisError(ex, cache);
+            throw;
         }
     }
 
@@ -722,7 +722,10 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
             if (metadata.Length >= 2)
             {
                 MapMetadata(metadata, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-                Refresh(cache, key, absExpr, sldExpr);
+                if (sldExpr.HasValue)
+                {
+                    Refresh(cache, key, absExpr, sldExpr.GetValueOrDefault());
+                }
             }
 
             // this is where we actually copy the data out
@@ -766,7 +769,10 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
             if (metadata.Length >= 2)
             {
                 MapMetadata(metadata, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
-                await RefreshAsync(cache, key, absExpr, sldExpr, token).ConfigureAwait(false);
+                if (sldExpr.HasValue)
+                {
+                    await RefreshAsync(cache, key, absExpr, sldExpr.GetValueOrDefault(), token).ConfigureAwait(false);
+                }
             }
 
             // this is where we actually copy the data out

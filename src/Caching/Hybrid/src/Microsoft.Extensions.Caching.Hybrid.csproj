@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="..\..\..\Shared\IsExternalInit.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

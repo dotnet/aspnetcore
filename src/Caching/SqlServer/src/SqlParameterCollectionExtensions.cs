@@ -28,7 +28,14 @@ internal static class SqlParameterCollectionExtensions
         {
             return parameters.AddWithValue(Columns.Names.CacheItemValue, SqlDbType.VarBinary, Array.Empty<byte>());
         }
-        else if (value.Offset == 0 & value.Count == value.Array.Length) // right-sized array
+
+        if (value.Count == 0)
+        {
+            // workaround for https://github.com/dotnet/SqlClient/issues/2465
+            value = new([], 0, 0);
+        }
+
+        if (value.Offset == 0 & value.Count == value.Array!.Length) // right-sized array
         {
             if (value.Count < DefaultValueColumnWidth)
             {

@@ -233,6 +233,12 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
 
     private static ArraySegment<byte> Linearize(in ReadOnlySequence<byte> value, out byte[]? lease)
     {
+        if (value.IsEmpty)
+        {
+            lease = null;
+            return new([], 0, 0);
+        }
+
         // SqlClient only supports single-segment chunks via byte[] with offset/count; this will
         // almost never be an issue, but on those rare occasions: use a leased array to harmonize things
         if (value.IsSingleSegment && MemoryMarshal.TryGetArray(value.First, out var segment))
