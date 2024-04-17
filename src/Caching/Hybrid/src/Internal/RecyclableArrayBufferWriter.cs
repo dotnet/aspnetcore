@@ -23,6 +23,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     private int _index;
     private readonly int _maxLength;
 
+    public int CommittedBytes => _index;
     public int FreeCapacity => _buffer.Length - _index;
 
     public RecyclableArrayBufferWriter(int maxLength)
@@ -81,6 +82,14 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         _index = 0;
 
         return tmp;
+    }
+
+    public void ResetInPlace()
+    {
+        // resets the writer *without* resetting the buffer;
+        // the existing memory should be considered "gone"
+        // (to claim the buffer instead, use DetachCommitted)
+        _index = 0;
     }
 
     internal T[] GetBuffer(out int length)
