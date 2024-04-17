@@ -640,7 +640,7 @@ public class ContentDispositionHeaderValue
                 length = remaining.Length;
             }
 
-            for (int i = 0; i < length;)
+            for (var i = 0; i < length;)
             {
                 Rune.DecodeFromUtf16(remaining.Slice(i), out Rune rune, out var runeLength);
                 EncodeToUtf8Hex(rune, builder);
