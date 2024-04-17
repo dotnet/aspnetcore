@@ -4,10 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -236,16 +233,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             if (succeeded)
             {
                 var resultType = interopTask.ResultType;
-
-                object? result;
-                if (resultType == typeof(IJSVoidResult))
-                {
-                    result = null;
-                }
-                else
-                {
-                    result = JsonSerializer.Deserialize(ref jsonReader, resultType, interopTask.DeserializeOptions);
-                }
+                var result = resultType == typeof(IJSVoidResult)
+                    ? null
+                    : JsonSerializer.Deserialize(ref jsonReader, resultType, interopTask.DeserializeOptions);
 
                 ByteArraysToBeRevived.Clear();
                 interopTask.SetResult(result);
@@ -343,30 +333,3 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// </summary>
     public void Dispose() => ByteArraysToBeRevived.Dispose();
 }
-
-[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync")]
-internal sealed class FallbackTypeInfoResolver : IJsonTypeInfoResolver
-{
-    private static readonly DefaultJsonTypeInfoResolver _defaultJsonTypeInfoResolver = new();
-
-    public static readonly FallbackTypeInfoResolver Instance = new();
-
-    public JsonTypeInfo? GetTypeInfo(Type type, JsonSerializerOptions options)
-    {
-        if (options.Converters.Any(c => c.CanConvert(type)))
-        {
-            // TODO: We should allow types with custom converters to be serialized without
-            // having to generate metadata for them.
-            // Question: Why do we even need a JsonTypeInfo if the type is going to be serialized
-            // with a custom converter anyway? We shouldn't need to perform any reflection here.
-            // Is it possible to generate a "minimal" JsonTypeInfo that just points to the correct
-            // converter?
-            return _defaultJsonTypeInfoResolver.GetTypeInfo(type, options);
-        }
-
-        return null;
-    }
-}
-
-[JsonSerializable(typeof(object[]))] // JS interop argument lists are always object arrays
-internal sealed partial class JSRuntimeSerializerContext : JsonSerializerContext;

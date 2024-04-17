@@ -28,7 +28,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         {
             var bytes = JsonSerializer.SerializeToUtf8Bytes(
                 GetAntiforgeryToken(),
-                DefaultAntiforgeryStateProviderSerializerContext.Default.AntiforgeryRequestToken);
+                DefaultAntiforgeryStateProviderJsonSerializerContext.Default.AntiforgeryRequestToken);
             state.PersistAsJson(PersistenceKey, bytes);
             return Task.CompletedTask;
         }, RenderMode.InteractiveAuto);
@@ -37,7 +37,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         {
             _currentToken = JsonSerializer.Deserialize(
                 bytes,
-                DefaultAntiforgeryStateProviderSerializerContext.Default.AntiforgeryRequestToken);
+                DefaultAntiforgeryStateProviderJsonSerializerContext.Default.AntiforgeryRequestToken);
         }
     }
 
@@ -49,4 +49,4 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
 }
 
 [JsonSerializable(typeof(AntiforgeryRequestToken))]
-internal sealed partial class DefaultAntiforgeryStateProviderSerializerContext : JsonSerializerContext;
+internal sealed partial class DefaultAntiforgeryStateProviderJsonSerializerContext : JsonSerializerContext;

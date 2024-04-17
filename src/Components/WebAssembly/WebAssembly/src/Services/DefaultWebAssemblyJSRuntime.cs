@@ -19,7 +19,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
     private static readonly JsonSerializerOptions _rootComponentSerializerOptions = new(WebAssemblyComponentSerializationSettings.JsonSerializationOptions)
     {
-        TypeInfoResolver = DefaultWebAssemblyJSRuntimeSerializerContext.Default,
+        TypeInfoResolver = DefaultWebAssemblyJSRuntimeJsonSerializerContext.Default,
     };
 
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
@@ -172,4 +172,4 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 }
 
 [JsonSerializable(typeof(RootComponentOperationBatch))]
-internal sealed partial class DefaultWebAssemblyJSRuntimeSerializerContext : JsonSerializerContext;
+internal sealed partial class DefaultWebAssemblyJSRuntimeJsonSerializerContext : JsonSerializerContext;
