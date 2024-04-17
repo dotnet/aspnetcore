@@ -19,9 +19,10 @@ partial class DefaultHybridCache
         public MutableCacheItem(T value, IHybridCacheSerializer<T> serializer, int maxLength)
         {
             this.serializer = serializer;
-            using var writer = new RecyclableArrayBufferWriter<byte>(maxLength);
+            var writer = RecyclableArrayBufferWriter<byte>.Create(maxLength);
             serializer.Serialize(value, writer);
             bytes = writer.DetachCommitted(out length);
+            writer.Dispose(); // only recycle on success
         }
 
         private readonly IHybridCacheSerializer<T> serializer;

@@ -35,7 +35,7 @@ partial class DefaultHybridCache
                 }
                 break;
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
-                var writer = new RecyclableArrayBufferWriter<byte>(MaximumPayloadBytes);
+                var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
                 var cache = Unsafe.As<IBufferDistributedCache>(backendCache!); // type-checked already
                 var pendingBuffers = cache.TryGetAsync(key, writer, token);
                 if (!pendingBuffers.IsCompletedSuccessfully)

@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -21,26 +22,40 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
     private T[] _buffer;
     private int _index;
-    private readonly int _maxLength;
+    private int _maxLength;
 
     public int CommittedBytes => _index;
     public int FreeCapacity => _buffer.Length - _index;
 
-    public RecyclableArrayBufferWriter(int maxLength)
+    private static RecyclableArrayBufferWriter<T>? _spare;
+    public static RecyclableArrayBufferWriter<T> Create(int maxLength)
+    {
+        var obj = Interlocked.Exchange(ref _spare, null) ?? new();
+        Debug.Assert(obj._index == 0);
+        obj._maxLength = maxLength;
+        return obj;
+    }
+
+    private RecyclableArrayBufferWriter()
     {
         _buffer = Array.Empty<T>();
         _index = 0;
-        _maxLength = maxLength;
+        _maxLength = int.MaxValue;
     }
 
     public void Dispose()
     {
-        var tmp = _buffer;
+        // attempt to reuse everything via "spare"; if that isn't possible,
+        // recycle the buffers instead
         _index = 0;
-        _buffer = Array.Empty<T>();
-        if (tmp.Length != 0)
+        if (Interlocked.CompareExchange(ref _spare, this, null) != null)
         {
-            ArrayPool<T>.Shared.Return(tmp);
+            var tmp = _buffer;
+            _buffer = Array.Empty<T>();
+            if (tmp.Length != 0)
+            {
+                ArrayPool<T>.Shared.Return(tmp);
+            }
         }
     }
 

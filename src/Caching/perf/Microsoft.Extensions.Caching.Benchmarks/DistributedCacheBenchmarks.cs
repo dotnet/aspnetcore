@@ -129,7 +129,7 @@ public class DistributedCacheBenchmarks : IDisposable
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public int GetSingleRandomBuffer()
     {
-        using var writer = new RecyclableArrayBufferWriter<byte>(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         int total = 0;
         for (int i = 0; i < OperationsPerInvoke; i++)
         {
@@ -139,16 +139,25 @@ public class DistributedCacheBenchmarks : IDisposable
             }
             writer.ResetInPlace();
         }
+        writer.Dispose();
         return total;
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-    public void GetConcurrentRandom()
+    public int GetConcurrentRandom()
     {
-        Parallel.For(0, OperationsPerInvoke, _ =>
+        Func<Task<byte[]?>> callback = () => _backend.GetAsync(RandomKey());
+        for (int i = 0; i < OperationsPerInvoke; i++)
         {
-            _backend.Get(RandomKey());
-        });
+            pendingBlobs[i] = Task.Run(callback);
+        }
+        int total = 0;
+        for (int i = 0; i < OperationsPerInvoke; i++)
+        {
+            total += (pendingBlobs[i].Result)?.Length ?? 0;
+        }
+        return total;
+
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
@@ -165,7 +174,7 @@ public class DistributedCacheBenchmarks : IDisposable
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public async Task<int> GetSingleRandomBufferAsync()
     {
-        using var writer = new RecyclableArrayBufferWriter<byte>(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         int total = 0;
         for (int i = 0; i < OperationsPerInvoke; i++)
         {
@@ -175,15 +184,17 @@ public class DistributedCacheBenchmarks : IDisposable
             }
             writer.ResetInPlace();
         }
+        writer.Dispose();
         return total;
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public async Task<int> GetConcurrentRandomAsync()
     {
+        Func<Task<byte[]?>> callback = () => _backend.GetAsync(RandomKey());
         for (int i = 0; i < OperationsPerInvoke; i++)
         {
-            pendingBlobs[i] = _backend.GetAsync(RandomKey());
+            pendingBlobs[i] = Task.Run(callback);
         }
         int total = 0;
         for (int i = 0; i < OperationsPerInvoke; i++)
@@ -207,7 +218,7 @@ public class DistributedCacheBenchmarks : IDisposable
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public int GetSingleFixedBuffer()
     {
-        using var writer = new RecyclableArrayBufferWriter<byte>(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         int total = 0;
         for (int i = 0; i < OperationsPerInvoke; i++)
         {
@@ -217,16 +228,24 @@ public class DistributedCacheBenchmarks : IDisposable
             }
             writer.ResetInPlace();
         }
+        writer.Dispose();
         return total;
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-    public void GetConcurrentFixed()
+    public int GetConcurrentFixed()
     {
-        Parallel.For(0, OperationsPerInvoke, _ =>
+        Func<Task<byte[]?>> callback = () => _backend.GetAsync(FixedKey());
+        for (int i = 0; i < OperationsPerInvoke; i++)
         {
-            _backend.Get(FixedKey());
-        });
+            pendingBlobs[i] = Task.Run(callback);
+        }
+        int total = 0;
+        for (int i = 0; i < OperationsPerInvoke; i++)
+        {
+            total += (pendingBlobs[i].Result)?.Length ?? 0;
+        }
+        return total;
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
@@ -243,7 +262,7 @@ public class DistributedCacheBenchmarks : IDisposable
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public async Task<int> GetSingleFixedBufferAsync()
     {
-        using var writer = new RecyclableArrayBufferWriter<byte>(int.MaxValue);
+        var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         int total = 0;
         for (int i = 0; i < OperationsPerInvoke; i++)
         {
@@ -253,15 +272,17 @@ public class DistributedCacheBenchmarks : IDisposable
             }
             writer.ResetInPlace();
         }
+        writer.Dispose();
         return total;
     }
 
     [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
     public async Task<int> GetConcurrentFixedAsync()
     {
+        Func<Task<byte[]?>> callback = () => _backend.GetAsync(FixedKey());
         for (int i = 0; i < OperationsPerInvoke; i++)
         {
-            pendingBlobs[i] = _backend.GetAsync(FixedKey());
+            pendingBlobs[i] = Task.Run(callback);
         }
         int total = 0;
         for (int i = 0; i < OperationsPerInvoke; i++)

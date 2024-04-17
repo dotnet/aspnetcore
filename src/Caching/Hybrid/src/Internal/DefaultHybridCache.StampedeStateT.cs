@@ -95,10 +95,11 @@ partial class DefaultHybridCache
                         else
                         {
                             // immutable: we'll need to do the serialize ourselves
-                            using var writer = new RecyclableArrayBufferWriter<byte>(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+                            var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
                             Cache.GetSerializer<T>().Serialize(cacheItem.GetValue(), writer); // note GetValue() is fixed value here
                             bytes = writer.GetBuffer(out length);
                             await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                            writer.Dispose(); // recycle on success
                         }
                     }
                 }

@@ -41,7 +41,7 @@ internal static class SqlParameterCollectionExtensions
             else
             {
                 // do not mention the size
-                return parameters.AddWithValue(Columns.Names.CacheItemValue, SqlDbType.VarBinary, value);
+                return parameters.AddWithValue(Columns.Names.CacheItemValue, SqlDbType.VarBinary, value.Array);
             }
         }
         else // array fragment; set the Size and Offset accordingly

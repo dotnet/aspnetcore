@@ -4,7 +4,7 @@ using Microsoft.Extensions.Caching.Benchmarks;
 
 #if DEBUG
 // validation
-using var obj = new DistributedCacheBenchmarks { PayloadSize = 512, Sliding = true };
+using var obj = new DistributedCacheBenchmarks { PayloadSize = 11512, Sliding = true };
 Console.WriteLine($"Expected: {obj.PayloadSize}*{DistributedCacheBenchmarks.OperationsPerInvoke} = {obj.PayloadSize * DistributedCacheBenchmarks.OperationsPerInvoke}");
 Console.WriteLine();
 
@@ -14,6 +14,8 @@ Console.WriteLine(obj.GetSingleRandom());
 Console.WriteLine(obj.GetSingleFixed());
 Console.WriteLine(obj.GetSingleRandomBuffer());
 Console.WriteLine(obj.GetSingleFixedBuffer());
+Console.WriteLine(obj.GetConcurrentRandom());
+Console.WriteLine(obj.GetConcurrentFixed());
 Console.WriteLine(await obj.GetSingleRandomAsync());
 Console.WriteLine(await obj.GetSingleFixedAsync());
 Console.WriteLine(await obj.GetSingleRandomBufferAsync());
@@ -28,6 +30,8 @@ Console.WriteLine(obj.GetSingleRandom());
 Console.WriteLine(obj.GetSingleFixed());
 Console.WriteLine(obj.GetSingleRandomBuffer());
 Console.WriteLine(obj.GetSingleFixedBuffer());
+Console.WriteLine(obj.GetConcurrentRandom());
+Console.WriteLine(obj.GetConcurrentFixed());
 Console.WriteLine(await obj.GetSingleRandomAsync());
 Console.WriteLine(await obj.GetSingleFixedAsync());
 Console.WriteLine(await obj.GetSingleRandomBufferAsync());
