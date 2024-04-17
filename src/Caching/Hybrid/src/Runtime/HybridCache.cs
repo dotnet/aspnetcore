@@ -62,7 +62,7 @@ public abstract class HybridCache
     public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default);
 
     /// <summary>
-    /// Removes cache data with the specified key.
+    /// Asynchronously removes the value associated with the key if it exists.
     /// </summary>
     public abstract ValueTask RemoveKeyAsync(string key, CancellationToken token = default);
 
