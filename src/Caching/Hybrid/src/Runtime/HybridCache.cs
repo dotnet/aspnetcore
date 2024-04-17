@@ -14,16 +14,16 @@ namespace Microsoft.Extensions.Caching.Hybrid;
 public abstract class HybridCache
 {
     /// <summary>
-    /// Get data from the cache, or the underlying data service if not available.
+    /// Asynchronously gets the value associated with the key if it exists, or generates a new entry using the provided key and a value from the given factory if the key is not found.
     /// </summary>
     /// <typeparam name="T">The type of the data being considered.</typeparam>
     /// <typeparam name="TState">The type of additional state required by <paramref name="underlyingDataCallback"/>.</typeparam>
-    /// <param name="key">The unique key for this cache entry.</param>
+    /// <param name="key">The key of the entry to look for or create.</param>
     /// <param name="underlyingDataCallback">Provides the underlying data service is the data is not available in the cache.</param>
     /// <param name="state">Additional state required for <paramref name="underlyingDataCallback"/>.</param>
     /// <param name="options">Additional options for this cache entry.</param>
     /// <param name="tags">The tags to associate with this cache item.</param>
-    /// <param name="token">Cancellation for this operation.</param>
+    /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The data, either from cache or the underlying data service.</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Delegate differences make this unambiguous")]
     public abstract ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> factory,
