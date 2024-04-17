@@ -3,18 +3,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal sealed class WebAssemblyComponentParameterDeserializer
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new(WebAssemblyComponentSerializationSettings.JsonSerializationOptions)
-    {
-        TypeInfoResolver = WebAssemblyComponentParameterDeserializerSerializerContext.Default,
-    };
-
     private readonly ComponentParametersTypeCache _parametersCache;
 
     public WebAssemblyComponentParameterDeserializer(
@@ -65,7 +60,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                     var parameterValue = JsonSerializer.Deserialize(
                         value.GetRawText(),
                         parameterType,
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                        WebAssemblyJsonSerializerContext.Default);
 
                     parametersDictionary[definition.Name] = parameterValue;
                 }
@@ -83,17 +78,12 @@ internal sealed class WebAssemblyComponentParameterDeserializer
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
     public static ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
     {
-        return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, _jsonSerializerOptions)!;
+        return JsonSerializer.Deserialize(parametersDefinitions, WebAssemblyJsonSerializerContext.Default.ComponentParameterArray)!;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     public static IList<object> GetParameterValues(string parameterValues)
     {
-        return JsonSerializer.Deserialize<IList<object>>(parameterValues, _jsonSerializerOptions)!;
+        return JsonSerializer.Deserialize(parameterValues, WebAssemblyJsonSerializerContext.Default.IListObject)!;
     }
 }
-
-[JsonSerializable(typeof(ComponentParameter[]))]
-[JsonSerializable(typeof(JsonElement))]
-[JsonSerializable(typeof(IList<object>))]
-internal sealed partial class WebAssemblyComponentParameterDeserializerSerializerContext : JsonSerializerContext;

@@ -6,8 +6,8 @@ using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
@@ -17,11 +17,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
-    private static readonly JsonSerializerOptions _rootComponentSerializerOptions = new(WebAssemblyComponentSerializationSettings.JsonSerializationOptions)
-    {
-        TypeInfoResolver = DefaultWebAssemblyJSRuntimeJsonSerializerContext.Default,
-    };
-
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
     private readonly RootComponentTypeCache _rootComponentCache = new();
@@ -35,11 +30,12 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = $"The call to {nameof(JsonSerializerOptions.MakeReadOnly)} only populates the missing resolver when reflection is enabled")]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
-        JsonSerializerOptions.MakeReadOnly();
+        JsonSerializerOptions.MakeReadOnly(populateMissingResolver: JsonSerializer.IsReflectionEnabledByDefault);
     }
 
     [JSExport]
@@ -116,9 +112,9 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "The correct members will be preserved by the above DynamicDependency")]
     internal static RootComponentOperationBatch DeserializeOperations(string operationsJson)
     {
-        var deserialized = JsonSerializer.Deserialize<RootComponentOperationBatch>(
+        var deserialized = JsonSerializer.Deserialize(
             operationsJson,
-            _rootComponentSerializerOptions)!;
+            WebAssemblyJsonSerializerContext.Default.RootComponentOperationBatch)!;
 
         for (var i = 0; i < deserialized.Operations.Length; i++)
         {
@@ -169,6 +165,3 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
     }
 }
-
-[JsonSerializable(typeof(RootComponentOperationBatch))]
-internal sealed partial class DefaultWebAssemblyJSRuntimeJsonSerializerContext : JsonSerializerContext;

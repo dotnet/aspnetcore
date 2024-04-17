@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -27,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// </summary>
 public sealed class WebAssemblyHostBuilder
 {
-    private readonly JsonSerializerOptions _jsonOptions;
     private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
     private RootComponentTypeCache? _rootComponentCache;
@@ -49,9 +47,7 @@ public sealed class WebAssemblyHostBuilder
     {
         // We don't use the args for anything right now, but we want to accept them
         // here so that it shows up this way in the project templates.
-        var builder = new WebAssemblyHostBuilder(
-            InternalJSImportMethods.Instance,
-            DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions());
+        var builder = new WebAssemblyHostBuilder(InternalJSImportMethods.Instance);
 
         WebAssemblyCultureProvider.Initialize();
 
@@ -65,14 +61,11 @@ public sealed class WebAssemblyHostBuilder
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
     /// </summary>
-    internal WebAssemblyHostBuilder(
-        IInternalJSImportMethods jsMethods,
-        JsonSerializerOptions jsonOptions)
+    internal WebAssemblyHostBuilder(IInternalJSImportMethods jsMethods)
     {
         // Private right now because we don't have much reason to expose it. This can be exposed
         // in the future if we want to give people a choice between CreateDefault and something
         // less opinionated.
-        _jsonOptions = jsonOptions;
         _jsMethods = jsMethods;
         Configuration = new WebAssemblyHostConfiguration();
         RootComponents = new RootComponentMappingCollection();

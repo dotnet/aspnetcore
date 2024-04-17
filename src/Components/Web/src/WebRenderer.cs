@@ -44,8 +44,9 @@ public abstract class WebRenderer : Renderer
 
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
         var jsRuntimeJsonSerializerOptions = new JsonSerializerOptions(jsRuntime.JsonSerializerOptions);
-        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Insert(0, JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
-        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Insert(0, WebRendererSerializerContext.Default);
+        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Clear();
+        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
+        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
 
         jsRuntime.InvokeVoidAsync(
             "Blazor._internal.attachWebRendererInterop",

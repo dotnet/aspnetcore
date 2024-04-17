@@ -12,7 +12,6 @@
 Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! options, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! options, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSRuntime.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
-Microsoft.JSInterop.JSRuntime.CloneJsonSerializerOptions() -> System.Text.Json.JsonSerializerOptions!
 Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! options, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.JSRuntime.InvokeAsync<TValue>(string! identifier, System.Text.Json.JsonSerializerOptions! options, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 static Microsoft.JSInterop.JSRuntimeExtensions.InvokeAsync<TValue>(this Microsoft.JSInterop.IJSRuntime! jsRuntime, string! identifier, System.Text.Json.JsonSerializerOptions! options, params object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
