@@ -51,14 +51,14 @@ public abstract class HybridCache
     }
 
     /// <summary>
-    /// Manually insert or overwrite a cache entry.
+    /// Asynchronously sets or overwrites the value associated with the key.
     /// </summary>
     /// <typeparam name="T">The type of the data being considered.</typeparam>
-    /// <param name="key">The unique key for this cache entry.</param>
-    /// <param name="value">The value to assign for this cache item.</param>
+    /// <param name="key">The key of the entry to create.</param>
+    /// <param name="value">The value to assign for this cache entry.</param>
     /// <param name="options">Additional options for this cache entry.</param>
-    /// <param name="tags">The tags to associate with this cache item.</param>
-    /// <param name="token">Cancellation for this operation.</param>
+    /// <param name="tags">The tags to associate with this cache entry.</param>
+    /// <param name="token">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     public abstract ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default);
 
     /// <summary>
