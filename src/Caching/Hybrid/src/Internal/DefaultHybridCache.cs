@@ -20,12 +20,14 @@ internal sealed class DefaultHybridCache : HybridCache
     private readonly IDistributedCache backendCache;
     private readonly IServiceProvider services;
     private readonly HybridCacheOptions options;
+
     public DefaultHybridCache(IOptions<HybridCacheOptions> options, IDistributedCache backendCache, IServiceProvider services)
     {
         this.backendCache = backendCache ?? throw new ArgumentNullException(nameof(backendCache));
         this.services = services ?? throw new ArgumentNullException(nameof(services));
         this.options = options.Value;
     }
+
     internal HybridCacheOptions Options => options;
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
