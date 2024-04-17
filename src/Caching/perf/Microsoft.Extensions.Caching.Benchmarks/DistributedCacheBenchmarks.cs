@@ -275,7 +275,7 @@ public class DistributedCacheBenchmarks : IDisposable
 
     private string RandomKey() => keys[random.Next(keys.Length)];
 
-    [Params(1024, 128, 10*1024)]
+    [Params(1024, 128, 10 * 1024)]
     public int PayloadSize { get; set; } = 1024;
 
     [Params(true, false)]
