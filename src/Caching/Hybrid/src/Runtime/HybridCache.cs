@@ -67,7 +67,7 @@ public abstract class HybridCache
     public abstract ValueTask RemoveKeyAsync(string key, CancellationToken token = default);
 
     /// <summary>
-    /// Removes cache data with the specified keys.
+    /// Asynchronously removes the value associated with the key if it exists.
     /// </summary>
     /// <remarks>Implementors should treat <c>null</c> as empty</remarks>
     public virtual ValueTask RemoveKeysAsync(IEnumerable<string> keys, CancellationToken token = default)
