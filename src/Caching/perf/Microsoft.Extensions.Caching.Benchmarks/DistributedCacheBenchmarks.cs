@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Diagnostics.Tracing.Parsers.Clr;
-using StackExchange.Redis;
-using System.Linq;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.Benchmarks;
 
