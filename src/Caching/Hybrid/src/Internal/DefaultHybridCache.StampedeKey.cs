@@ -10,26 +10,26 @@ partial class DefaultHybridCache
 {
     internal readonly struct StampedeKey : IEquatable<StampedeKey>
     {
-        private readonly string key;
-        private readonly HybridCacheEntryFlags flags;
-        private readonly int hashCode; // we know we'll need it; compute it once only
+        private readonly string _key;
+        private readonly HybridCacheEntryFlags _flags;
+        private readonly int _hashCode; // we know we'll need it; compute it once only
         public StampedeKey(string key, HybridCacheEntryFlags flags)
         {
-            this.key = key;
-            this.flags = flags;
-            this.hashCode = key.GetHashCode() ^ (int)flags;
+            _key = key;
+            _flags = flags;
+            _hashCode = key.GetHashCode() ^ (int)flags;
         }
 
-        public string Key => key;
-        public HybridCacheEntryFlags Flags => flags;
+        public string Key => _key;
+        public HybridCacheEntryFlags Flags => _flags;
 
-        public bool Equals(StampedeKey other) => this.flags == other.flags & this.key == other.key;
+        public bool Equals(StampedeKey other) => _flags == other._flags & _key == other._key;
 
         public override bool Equals([NotNullWhen(true)] object? obj)
             => obj is StampedeKey other && Equals(other);
 
-        public override int GetHashCode() => hashCode;
+        public override int GetHashCode() => _hashCode;
 
-        public override string ToString() => $"{key} ({flags})";
+        public override string ToString() => $"{_key} ({_flags})";
     }
 }

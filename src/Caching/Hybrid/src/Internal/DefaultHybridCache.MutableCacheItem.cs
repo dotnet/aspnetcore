@@ -11,30 +11,30 @@ partial class DefaultHybridCache
     {
         public MutableCacheItem(byte[] bytes, int length, IHybridCacheSerializer<T> serializer)
         {
-            this.serializer = serializer;
-            this.bytes = bytes;
-            this.length = length;
+            _serializer = serializer;
+            _bytes = bytes;
+            _length = length;
         }
 
         public MutableCacheItem(T value, IHybridCacheSerializer<T> serializer, int maxLength)
         {
-            this.serializer = serializer;
+            _serializer = serializer;
             var writer = RecyclableArrayBufferWriter<byte>.Create(maxLength);
             serializer.Serialize(value, writer);
-            bytes = writer.DetachCommitted(out length);
+            _bytes = writer.DetachCommitted(out _length);
             writer.Dispose(); // only recycle on success
         }
 
-        private readonly IHybridCacheSerializer<T> serializer;
-        private readonly byte[] bytes;
-        private readonly int length;
+        private readonly IHybridCacheSerializer<T> _serializer;
+        private readonly byte[] _bytes;
+        private readonly int _length;
 
-        public override T GetValue() => serializer.Deserialize(new ReadOnlySequence<byte>(bytes, 0, length));
+        public override T GetValue() => _serializer.Deserialize(new ReadOnlySequence<byte>(_bytes, 0, _length));
 
         public override byte[]? TryGetBytes(out int length)
         {
-            length = this.length;
-            return bytes;
+            length = _length;
+            return _bytes;
         }
     }
 }

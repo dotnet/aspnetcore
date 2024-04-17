@@ -14,23 +14,23 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 partial class DefaultHybridCache
 {
-    private readonly ConcurrentDictionary<Type, object> serializers = new(); // per instance cache of typed serializers
+    private readonly ConcurrentDictionary<Type, object> _serializers = new(); // per instance cache of typed serializers
 
     internal int MaximumPayloadBytes { get; }
 
     internal IHybridCacheSerializer<T> GetSerializer<T>()
     {
-        return serializers.TryGetValue(typeof(T), out var serializer)
+        return _serializers.TryGetValue(typeof(T), out var serializer)
             ? Unsafe.As<IHybridCacheSerializer<T>>(serializer) : ResolveAndAddSerializer(this);
 
         static IHybridCacheSerializer<T> ResolveAndAddSerializer(DefaultHybridCache @this)
         {
             // it isn't critical that we get only one serializer instance during start-up; what matters
             // is that we don't get a new serializer instance *every time*
-            var serializer = @this.services.GetServices<IHybridCacheSerializer<T>>().LastOrDefault();
+            var serializer = @this._services.GetService<IHybridCacheSerializer<T>>();
             if (serializer is null)
             {
-                foreach (var factory in @this.serializerFactories)
+                foreach (var factory in @this._serializerFactories)
                 {
                     if (factory.TryCreateSerializer<T>(out var current))
                     {
@@ -44,7 +44,7 @@ partial class DefaultHybridCache
                 throw new InvalidOperationException($"No {nameof(IHybridCacheSerializer<T>)} configured for type '{typeof(T).Name}'");
             }
             // store the result so we don't repeat this in future
-            @this.serializers[typeof(T)] = serializer;
+            @this._serializers[typeof(T)] = serializer;
             return serializer;
         }
     }

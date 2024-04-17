@@ -12,16 +12,16 @@ partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        private readonly TaskCompletionSource<CacheItem<T>>? result;
-        private TState? state;
-        private Func<TState, CancellationToken, ValueTask<T>>? underlying;
+        private readonly TaskCompletionSource<CacheItem<T>>? _result;
+        private TState? _state;
+        private Func<TState, CancellationToken, ValueTask<T>>? _underlying;
 
-        private HybridCacheEntryOptions? options;
+        private HybridCacheEntryOptions? _options;
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
             : base(cache, key, canBeCanceled)
         {
-            result = new();
+            _result = new();
         }
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
@@ -29,13 +29,13 @@ partial class DefaultHybridCache
 
         public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(this.underlying is null);
+            Debug.Assert(_underlying is null);
             Debug.Assert(underlying is not null);
 
             // initialize the callback state
-            this.state = state;
-            this.underlying = underlying;
-            this.options = options;
+            _state = state;
+            _underlying = underlying;
+            _options = options;
 
 #if NETCOREAPP3_0_OR_GREATER
             ThreadPool.UnsafeQueueUserWorkItem(this, false);
@@ -46,13 +46,13 @@ partial class DefaultHybridCache
 
         public Task ExecuteDirectAsync(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
-            Debug.Assert(this.underlying is null);
+            Debug.Assert(_underlying is null);
             Debug.Assert(underlying is not null);
 
             // initialize the callback state
-            this.state = state;
-            this.underlying = underlying;
-            this.options = options;
+            _state = state;
+            _underlying = underlying;
+            _options = options;
 
             return BackgroundFetchAsync();
         }
@@ -78,7 +78,7 @@ partial class DefaultHybridCache
                 // nothing from L2; invoke the underlying data store
                 if ((Key.Flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
                 {
-                    var cacheItem = SetResult(await underlying!(state!, SharedToken).ConfigureAwait(false));
+                    var cacheItem = SetResult(await _underlying!(_state!, SharedToken).ConfigureAwait(false));
 
                     // note that at this point we've already released most or all of the waiting callers; everything
                     // else here is background
@@ -90,7 +90,7 @@ partial class DefaultHybridCache
                         if (bytes is not null)
                         {
                             // mutable; we've already serialized it for the shared cache item
-                            await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                            await Cache.SetL2Async(Key.Key, bytes, length, _options, SharedToken).ConfigureAwait(false);
                         }
                         else
                         {
@@ -98,7 +98,7 @@ partial class DefaultHybridCache
                             var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
                             Cache.GetSerializer<T>().Serialize(cacheItem.GetValue(), writer); // note GetValue() is fixed value here
                             bytes = writer.GetBuffer(out length);
-                            await Cache.SetL2Async(Key.Key, bytes, length, options, SharedToken).ConfigureAwait(false);
+                            await Cache.SetL2Async(Key.Key, bytes, length, _options, SharedToken).ConfigureAwait(false);
                             writer.Dispose(); // recycle on success
                         }
                     }
@@ -120,8 +120,8 @@ partial class DefaultHybridCache
         {
             get
             {
-                Debug.Assert(result is not null);
-                return result is null ? Invalid() : result.Task;
+                Debug.Assert(_result is not null);
+                return _result is null ? Invalid() : _result.Task;
 
                 static Task<CacheItem<T>> Invalid() => System.Threading.Tasks.Task.FromException<CacheItem<T>>(new InvalidOperationException("Task should not be accessed for non-shared instances"));
             }
@@ -129,10 +129,10 @@ partial class DefaultHybridCache
 
         private void SetException(Exception ex)
         {
-            if (result is not null)
+            if (_result is not null)
             {
                 Cache.RemoveStampede(Key);
-                result.TrySetException(ex);
+                _result.TrySetException(ex);
             }
         }
 
@@ -140,23 +140,23 @@ partial class DefaultHybridCache
         {
             if ((Key.Flags & HybridCacheEntryFlags.DisableLocalCacheWrite) == 0)
             {
-                Cache.SetL1(Key.Key, value, options); // we can do this without a TCS, for SetValue
+                Cache.SetL1(Key.Key, value, _options); // we can do this without a TCS, for SetValue
             }
 
-            if (result is not null)
+            if (_result is not null)
             {
                 Cache.RemoveStampede(Key);
-                result?.TrySetResult(value);
+                _result?.TrySetResult(value);
             }
         }
 
         private void SetDefaultResult()
         {
             // note we don't store this dummy result in L1 or L2
-            if (result is not null)
+            if (_result is not null)
             {
                 Cache.RemoveStampede(Key);
-                result.TrySetResult(ImmutableCacheItem<T>.Default);
+                _result.TrySetResult(ImmutableCacheItem<T>.Default);
             }
         }
 
@@ -184,7 +184,7 @@ partial class DefaultHybridCache
             return cacheItem;
         }
 
-        protected override void SetCanceled() => result?.TrySetCanceled(SharedToken);
+        protected override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
 
         private Task<T>? _sharedUnwrap;
 

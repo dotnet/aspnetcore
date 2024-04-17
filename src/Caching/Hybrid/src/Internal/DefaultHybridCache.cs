@@ -20,20 +20,20 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 /// </summary>
 internal sealed partial class DefaultHybridCache : HybridCache
 {
-    private readonly IDistributedCache? backendCache;
-    private readonly IMemoryCache localCache;
-    private readonly IServiceProvider services; // we can't resolve per-type serializers until we see each T
-    private readonly IHybridCacheSerializerFactory[] serializerFactories;
-    private readonly HybridCacheOptions options;
-    private readonly ILogger? logger;
-    private readonly CacheFeatures features; // used to avoid constant type-testing
+    private readonly IDistributedCache? _backendCache;
+    private readonly IMemoryCache _localCache;
+    private readonly IServiceProvider _services; // we can't resolve per-type serializers until we see each T
+    private readonly IHybridCacheSerializerFactory[] _serializerFactories;
+    private readonly HybridCacheOptions _options;
+    private readonly ILogger? _logger;
+    private readonly CacheFeatures _features; // used to avoid constant type-testing
 
-    private readonly HybridCacheEntryFlags hardFlags; // *always* present (for example, because no L2)
-    private readonly HybridCacheEntryFlags defaultFlags; // note this already includes hardFlags
-    private readonly TimeSpan defaultExpiration;
-    private readonly TimeSpan defaultLocalCacheExpiration;
+    private readonly HybridCacheEntryFlags _hardFlags; // *always* present (for example, because no L2)
+    private readonly HybridCacheEntryFlags _defaultFlags; // note this already includes hardFlags
+    private readonly TimeSpan _defaultExpiration;
+    private readonly TimeSpan _defaultLocalCacheExpiration;
 
-    private readonly DistributedCacheEntryOptions defaultDistributedCacheExpiration;
+    private readonly DistributedCacheEntryOptions _defaultDistributedCacheExpiration;
 
     [Flags]
     internal enum CacheFeatures
@@ -44,33 +44,33 @@ internal sealed partial class DefaultHybridCache : HybridCache
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private CacheFeatures GetFeatures(CacheFeatures mask) => features & mask;
+    private CacheFeatures GetFeatures(CacheFeatures mask) => _features & mask;
 
-    internal CacheFeatures GetFeatures() => features;
+    internal CacheFeatures GetFeatures() => _features;
 
     // used to restrict features in test suite
-    internal void DebugRemoveFeatures(CacheFeatures features) => Unsafe.AsRef(in this.features) &= ~features;
+    internal void DebugRemoveFeatures(CacheFeatures features) => Unsafe.AsRef(in _features) &= ~features;
 
     public DefaultHybridCache(IOptions<HybridCacheOptions> options, IServiceProvider services)
     {
-        this.services = services ?? throw new ArgumentNullException(nameof(services));
-        this.localCache = services.GetRequiredService<IMemoryCache>();
-        this.options = options.Value;
-        this.logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)); // note optional
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+        _localCache = services.GetRequiredService<IMemoryCache>();
+        _options = options.Value;
+        _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)); // note optional
 
-        this.backendCache = services.GetService<IDistributedCache>(); // note optional
+        _backendCache = services.GetService<IDistributedCache>(); // note optional
 
         // ignore L2 if it is really just the same L1, wrapped
         // (note not just an "is" test; if someone has a custom subclass, who knows what it does?)
-        if (this.backendCache is not null
-            && this.backendCache.GetType() == typeof(MemoryDistributedCache)
-            && this.localCache.GetType() == typeof(MemoryCache))
+        if (_backendCache is not null
+            && _backendCache.GetType() == typeof(MemoryDistributedCache)
+            && _localCache.GetType() == typeof(MemoryCache))
         {
-            this.backendCache = null;
+            _backendCache = null;
         }
 
         // perform type-tests on the backend once only
-        this.features |= backendCache switch
+        _features |= _backendCache switch
         {
             IBufferDistributedCache => CacheFeatures.BackendCache | CacheFeatures.BackendBuffers,
             not null => CacheFeatures.BackendCache,
@@ -82,30 +82,30 @@ internal sealed partial class DefaultHybridCache : HybridCache
         // taking the first match
         var factories = services.GetServices<IHybridCacheSerializerFactory>().ToArray();
         Array.Reverse(factories);
-        this.serializerFactories = factories;
+        _serializerFactories = factories;
 
-        MaximumPayloadBytes = checked((int)this.options.MaximumPayloadBytes); // for now hard-limit to 2GiB
+        MaximumPayloadBytes = checked((int)_options.MaximumPayloadBytes); // for now hard-limit to 2GiB
 
-        var defaultEntryOptions = this.options.DefaultEntryOptions;
+        var defaultEntryOptions = _options.DefaultEntryOptions;
 
-        if (this.backendCache is null)
+        if (_backendCache is null)
         {
-            this.hardFlags |= HybridCacheEntryFlags.DisableDistributedCache;
+            _hardFlags |= HybridCacheEntryFlags.DisableDistributedCache;
         }
-        this.defaultFlags = (defaultEntryOptions?.Flags ?? HybridCacheEntryFlags.None) | this.hardFlags;
-        this.defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
-        this.defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
-        this.defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = defaultExpiration };
+        _defaultFlags = (defaultEntryOptions?.Flags ?? HybridCacheEntryFlags.None) | _hardFlags;
+        _defaultExpiration = defaultEntryOptions?.Expiration ?? TimeSpan.FromMinutes(5);
+        _defaultLocalCacheExpiration = defaultEntryOptions?.LocalCacheExpiration ?? TimeSpan.FromMinutes(1);
+        _defaultDistributedCacheExpiration = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _defaultExpiration };
     }
 
-    internal IDistributedCache? BackendCache => backendCache;
-    internal IMemoryCache LocalCache => localCache;
+    internal IDistributedCache? BackendCache => _backendCache;
+    internal IMemoryCache LocalCache => _localCache;
 
-    internal HybridCacheOptions Options => options;
+    internal HybridCacheOptions Options => _options;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
-        => (options?.Flags | hardFlags) ?? defaultFlags;
+        => (options?.Flags | _hardFlags) ?? _defaultFlags;
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
     {
@@ -116,7 +116,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         var flags = GetEffectiveFlags(options);
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
         {
             // short-circuit
             return new(typed.GetValue());
@@ -144,8 +144,8 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)
     {
-        localCache.Remove(key);
-        return backendCache is null ? default : new(backendCache.RemoveAsync(key, token));
+        _localCache.Remove(key);
+        return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
     }
 
     public override ValueTask RemoveTagAsync(string tag, CancellationToken token = default)

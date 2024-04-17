@@ -15,7 +15,7 @@ partial class DefaultHybridCache
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
-                var pendingLegacy = backendCache!.GetAsync(key, token);
+                var pendingLegacy = _backendCache!.GetAsync(key, token);
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
                 if (!pendingLegacy.IsCompletedSuccessfully)
 #else
@@ -36,7 +36,7 @@ partial class DefaultHybridCache
                 break;
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
                 var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
-                var cache = Unsafe.As<IBufferDistributedCache>(backendCache!); // type-checked already
+                var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
                 var pendingBuffers = cache.TryGetAsync(key, writer, token);
                 if (!pendingBuffers.IsCompletedSuccessfully)
                 {
@@ -87,9 +87,9 @@ partial class DefaultHybridCache
                     Array.Resize(ref value, length);
                 }
                 Debug.Assert(value.Length == length);
-                return new(backendCache!.SetAsync(key, value, GetOptions(options), token));
+                return new(_backendCache!.SetAsync(key, value, GetOptions(options), token));
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // ReadOnlySequence<byte>-based
-                var cache = Unsafe.As<IBufferDistributedCache>(backendCache!); // type-checked already
+                var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
                 return cache.SetAsync(key, new(value, 0, length), GetOptions(options), token);
         }
         return default;
@@ -98,13 +98,13 @@ partial class DefaultHybridCache
     private DistributedCacheEntryOptions GetOptions(HybridCacheEntryOptions? options)
     {
         DistributedCacheEntryOptions? result = null;
-        if (options is not null && options.Expiration.HasValue && options.Expiration.GetValueOrDefault() != defaultExpiration)
+        if (options is not null && options.Expiration.HasValue && options.Expiration.GetValueOrDefault() != _defaultExpiration)
         {
             result = options.ToDistributedCacheEntryOptions();
         }
-        return result ?? defaultDistributedCacheExpiration;
+        return result ?? _defaultDistributedCacheExpiration;
     }
 
     internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
-        => localCache.Set(key, value, options?.LocalCacheExpiration ?? defaultLocalCacheExpiration);
+        => _localCache.Set(key, value, options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration);
 }
