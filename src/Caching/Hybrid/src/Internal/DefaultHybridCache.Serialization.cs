@@ -14,7 +14,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 partial class DefaultHybridCache
 {
-    private readonly ConcurrentDictionary<Type, object> _serializers = new(); // per instance cache of typed serializers
+    // per instance cache of typed serializers; each serializer is a
+    // IHybridCacheSerializer<T> for the corresponding Type, but we can't
+    // know which here - and undesirable to add an artificial non-generic
+    // IHybridCacheSerializer base that serves no other purpose
+    private readonly ConcurrentDictionary<Type, object> _serializers = new();
 
     internal int MaximumPayloadBytes { get; }
 
