@@ -317,7 +317,9 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         {
             dataIndex += read; // increment offset
 
-            var memory = destination.GetMemory(8192); // start from the page size
+            const int DefaultPageSize = 8192;
+
+            var memory = destination.GetMemory(DefaultPageSize); // start from the page size
             if (MemoryMarshal.TryGetArray<byte>(memory, out var segment))
             {
                 // avoid an extra copy by writing directly to the target array when possible
@@ -329,7 +331,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
             }
             else
             {
-                lease ??= ArrayPool<byte>.Shared.Rent(8192);
+                lease ??= ArrayPool<byte>.Shared.Rent(DefaultPageSize);
                 read = (int)source.GetBytes(ordinal, dataIndex, lease, 0, lease.Length);
 
                 if (read > 0)
