@@ -59,14 +59,5 @@
   },
   "resolutions": {
     "ansi-regex": "5.0.1"
-  },
-  "browser": {
-    "./src/DynamicImports.ts": "./src/DynamicImports.browser.ts",
-    "abort-controller": false,
-    "eventsource": false,
-    "fetch-cookie": false,
-    "node-fetch": false,
-    "ws": false,
-    "tough-cookie": false
   }
 }
