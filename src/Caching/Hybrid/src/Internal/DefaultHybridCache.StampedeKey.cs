@@ -17,7 +17,11 @@ partial class DefaultHybridCache
         {
             _key = key;
             _flags = flags;
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+            _hashCode = HashCode.Combine(key, flags);
+#else
             _hashCode = key.GetHashCode() ^ (int)flags;
+#endif
         }
 
         public string Key => _key;
