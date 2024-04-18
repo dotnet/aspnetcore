@@ -7,8 +7,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <Nullable>enable</Nullable>
-    <!-- SYSLIB0020: JsonSerializerOptions.IgnoreNullValues is obsolete -->
-    <NoWarn>$(NoWarn);SYSLIB0020</NoWarn>
     <IsTrimmable>true</IsTrimmable>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
