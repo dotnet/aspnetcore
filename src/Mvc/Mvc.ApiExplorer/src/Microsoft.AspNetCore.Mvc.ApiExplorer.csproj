@@ -20,5 +20,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
   </ItemGroup>
 </Project>
