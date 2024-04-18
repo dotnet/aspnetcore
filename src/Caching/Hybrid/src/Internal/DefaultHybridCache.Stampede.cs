@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
@@ -26,7 +27,7 @@ partial class DefaultHybridCache
             var tmp = found as StampedeState<TState, T>;
             if (tmp is null)
             {
-                ThrowWrongType(key);
+                ThrowWrongType(key, found.Type, typeof(T));
             }
 
             if (tmp.TryAddCaller())
@@ -43,9 +44,13 @@ partial class DefaultHybridCache
         return true;
 
         [DoesNotReturn]
-        static void ThrowWrongType(string key) => throw new InvalidOperationException($"All calls to {nameof(HybridCache)} with the same key should use the same data type")
+        static void ThrowWrongType(string key, Type existingType, Type newType)
         {
-            Data = { { "CacheKey", key } }
-        };
+            Debug.Assert(existingType != newType);
+            throw new InvalidOperationException($"All calls to {nameof(HybridCache)} with the same key should use the same data type; the same key is being used for '{existingType.FullName}' and '{newType.FullName}' data")
+            {
+                Data = { { "CacheKey", key } }
+            };
+        }
     }
 }

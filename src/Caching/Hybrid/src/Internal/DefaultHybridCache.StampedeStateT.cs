@@ -24,6 +24,8 @@ partial class DefaultHybridCache
             _result = new();
         }
 
+        public override Type Type => typeof(T);
+
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
             : base(cache, key, token) { } // no TCS in this case - this is for SetValue only
 
