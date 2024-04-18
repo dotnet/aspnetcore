@@ -125,7 +125,7 @@ partial class DefaultHybridCache
                 return _result is null ? Invalid() : _result.Task;
 
                 static Task<CacheItem<T>> Invalid() => System.Threading.Tasks.Task.FromException<CacheItem<T>>(new InvalidOperationException("Task should not be accessed for non-shared instances"));
-            }
+                static Task<CacheItem<T>> Invalid() => Task.FromException<CacheItem<T>>(new InvalidOperationException("Task should not be accessed for non-shared instances"));
         }
 
         private void SetException(Exception ex)
