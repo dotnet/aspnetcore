@@ -55,8 +55,9 @@ public class HybridCacheBenchmarks : IDisposable
         AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
     };
 
+    // scenario: 100% (or as-near-as) cache hit rate
     [Benchmark(Baseline = true)]
-    public async ValueTask<Customer> HitDistributedCache() // scenario: 100% (or as-near-as) cache hit rate
+    public async ValueTask<Customer> HitDistributedCache() 
     {
         var bytes = await _distributed.GetAsync(KeyDirect);
         if (bytes is null)
@@ -71,9 +72,17 @@ public class HybridCacheBenchmarks : IDisposable
         }
     }
 
+    // scenario: 100% (or as-near-as) cache hit rate
     [Benchmark]
-    public ValueTask<Customer> HitHybridCache() // scenario: 100% (or as-near-as) cache hit rate
-        => _hybrid.GetOrCreateAsync(KeyHybrid, CustomerId, static (id, ct) => Customer.GetAsync(id, ct));
+    public ValueTask<Customer> HitCaptureHybridCache()
+        => _hybrid.GetOrCreateAsync(KeyHybrid,
+                ct => Customer.GetAsync(CustomerId, ct));
+
+    // scenario: 100% (or as-near-as) cache hit rate
+    [Benchmark]
+    public ValueTask<Customer> HitHybridCache()
+        => _hybrid.GetOrCreateAsync(KeyHybrid, CustomerId,
+            static (id, ct) => Customer.GetAsync(id, ct));
 
     [Benchmark]
     public ValueTask<ImmutableCustomer> HitHybridCacheImmutable() // scenario: 100% (or as-near-as) cache hit rate
