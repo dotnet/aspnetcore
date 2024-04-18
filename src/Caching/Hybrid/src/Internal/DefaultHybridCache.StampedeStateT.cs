@@ -147,7 +147,7 @@ partial class DefaultHybridCache
             if (_result is not null)
             {
                 Cache.RemoveStampede(Key);
-                _result?.TrySetResult(value);
+                _result.TrySetResult(value);
             }
         }
 
