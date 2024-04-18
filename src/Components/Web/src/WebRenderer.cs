@@ -42,7 +42,6 @@ public abstract class WebRenderer : Renderer
 
         // Supply a DotNetObjectReference to JS that it can use to call us back for events etc.
         jsComponentInterop.AttachToRenderer(this);
-
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
         AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop);
     }
@@ -104,6 +103,8 @@ public abstract class WebRenderer : Renderer
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
     {
+        const string JSMethodIdentifier = "Blazor._internal.attachWebRendererInterop";
+
         object[] args = [
             _rendererId,
             _interopMethodsReference,
@@ -118,11 +119,11 @@ public abstract class WebRenderer : Renderer
             newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
             newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
             var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
-            inProcessRuntime.InvokeJS("Blazor._internal.attachWebRendererInterop", argsJson, JSCallResultType.JSVoidResult, 0);
+            inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
         }
         else
         {
-            jsRuntime.InvokeVoidAsync("Blazor._internal.attachWebRendererInterop", args).Preserve();
+            jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
         }
     }
 
