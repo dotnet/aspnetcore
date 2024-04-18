@@ -54,7 +54,20 @@ public static class ServerRazorComponentsEndpointConventionBuilderExtensions
                         var original = b.RequestDelegate;
                         b.RequestDelegate = async context =>
                         {
-                            context.Response.Headers.Add("Content-Security-Policy", $"frame-ancestors {options.ContentSecurityFrameAncestorsPolicy}");
+                            if (context.Response.Headers.ContentSecurityPolicy.Count == 0)
+                            {
+                                context.Response.Headers.ContentSecurityPolicy = $"frame-ancestors {options.ContentSecurityFrameAncestorsPolicy}";
+                            }
+                            else
+                            {
+                                var result = new string[context.Response.Headers.ContentSecurityPolicy.Count + 1];
+                                for (var i = 0; i < result.Length - 1; i++)
+                                {
+                                    result[i] = context.Response.Headers.ContentSecurityPolicy[i];
+                                }
+                                result[^1] = $"frame-ancestors {options.ContentSecurityFrameAncestorsPolicy}";
+                                context.Response.Headers.ContentSecurityPolicy = result;
+                            }
                             await original(context);
                         };
                     }
