@@ -9,6 +9,10 @@ partial class DefaultHybridCache
 {
     private sealed class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
+        private readonly IHybridCacheSerializer<T> _serializer;
+        private readonly byte[] _bytes;
+        private readonly int _length;
+
         public MutableCacheItem(byte[] bytes, int length, IHybridCacheSerializer<T> serializer)
         {
             _serializer = serializer;
@@ -24,10 +28,6 @@ partial class DefaultHybridCache
             _bytes = writer.DetachCommitted(out _length);
             writer.Dispose(); // only recycle on success
         }
-
-        private readonly IHybridCacheSerializer<T> _serializer;
-        private readonly byte[] _bytes;
-        private readonly int _length;
 
         public override T GetValue() => _serializer.Deserialize(new ReadOnlySequence<byte>(_bytes, 0, _length));
 

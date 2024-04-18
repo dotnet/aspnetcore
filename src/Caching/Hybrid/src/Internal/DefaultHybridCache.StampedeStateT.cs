@@ -14,9 +14,9 @@ partial class DefaultHybridCache
     {
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
-        private Func<TState, CancellationToken, ValueTask<T>>? _underlying;
-
+        private Func<TState, CancellationToken, ValueTask<T>>? _underlying; // main data factory
         private HybridCacheEntryOptions? _options;
+        private Task<T>? _sharedUnwrap; // allows multiple non-cancellable callers to share a single task (when no defensive copy needed)
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
             : base(cache, key, canBeCanceled)
@@ -186,8 +186,6 @@ partial class DefaultHybridCache
         }
 
         public override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
-
-        private Task<T>? _sharedUnwrap;
 
         internal ValueTask<T> UnwrapAsync()
         {

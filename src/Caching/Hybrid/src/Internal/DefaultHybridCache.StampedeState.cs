@@ -15,6 +15,12 @@ partial class DefaultHybridCache
 #endif
     {
         private readonly DefaultHybridCache _cache;
+        private int _activeCallers = 1;
+
+        // because multiple callers can enlist, we need to track when the *last* caller cancels
+        // (and keep going until then); that means we need to run with custom cancellation
+        private readonly CancellationTokenSource? _sharedCancellation;
+        internal readonly CancellationToken SharedToken; // this might have a value even when _sharedCancellation is null
 
         public StampedeKey Key { get; }
 
@@ -29,8 +35,8 @@ partial class DefaultHybridCache
             {
                 // if the first (or any) caller can't be cancelled; we'll never get to zero; no point tracking
                 // (in reality, all callers usually use the same path, so cancellation is usually "all" or "none")
-                sharedCancellation = new();
-                SharedToken = sharedCancellation.Token;
+                _sharedCancellation = new();
+                SharedToken = _sharedCancellation.Token;
             }
             else
             {
@@ -60,33 +66,26 @@ partial class DefaultHybridCache
 
         public override string ToString() => Key.ToString();
 
-        // because multiple callers can enlist, we need to track when the *last* caller cancels
-        // (and keep going until then); that means we need to run with custom cancellation
-        private readonly CancellationTokenSource? sharedCancellation;
-
         public abstract void SetCanceled();
 
-        public readonly CancellationToken SharedToken;
-
-        public int DebugCallerCount => Volatile.Read(ref activeCallers);
+        public int DebugCallerCount => Volatile.Read(ref _activeCallers);
 
         public abstract Type Type { get; }
 
-        private int activeCallers = 1;
         public void RemoveCaller()
         {
             // note that TryAddCaller has protections to avoid getting back from zero
-            if (Interlocked.Decrement(ref activeCallers) == 0)
+            if (Interlocked.Decrement(ref _activeCallers) == 0)
             {
                 // we're the last to leave; turn off the lights
-                sharedCancellation?.Cancel();
+                _sharedCancellation?.Cancel();
                 SetCanceled();
             }
         }
 
         public bool TryAddCaller() // essentially just interlocked-increment, but with a leading zero check and overflow detection
         {
-            int oldValue = Volatile.Read(ref activeCallers);
+            int oldValue = Volatile.Read(ref _activeCallers);
             do
             {
                 if (oldValue == 0)
@@ -94,7 +93,7 @@ partial class DefaultHybridCache
                     return false; // already burned
                 }
 
-                var updated = Interlocked.CompareExchange(ref activeCallers, checked(oldValue + 1), oldValue);
+                var updated = Interlocked.CompareExchange(ref _activeCallers, checked(oldValue + 1), oldValue);
                 if (updated == oldValue)
                 {
                     return true; // we exchanged

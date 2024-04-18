@@ -9,8 +9,10 @@ partial class DefaultHybridCache
 {
     private sealed class ImmutableCacheItem<T>(T value) : CacheItem<T> // used to hold types that do not require defensive copies
     {
-        private static ImmutableCacheItem<T>? sharedDefault;
-        public static ImmutableCacheItem<T> Default => sharedDefault ??= new(default!); // this is only used when the underlying store is disabled
+        private static ImmutableCacheItem<T>? SharedDefault;
+
+        // this is only used when the underlying store is disabled; we don't need 100% singleton; "good enough is"
+        public static ImmutableCacheItem<T> Default => SharedDefault ??= new(default!);
 
         public override T GetValue() => value;
 

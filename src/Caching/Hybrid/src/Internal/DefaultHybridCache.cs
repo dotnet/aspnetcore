@@ -11,6 +11,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
@@ -25,7 +26,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly IServiceProvider _services; // we can't resolve per-type serializers until we see each T
     private readonly IHybridCacheSerializerFactory[] _serializerFactories;
     private readonly HybridCacheOptions _options;
-    private readonly ILogger? _logger;
+    private readonly ILogger _logger;
     private readonly CacheFeatures _features; // used to avoid constant type-testing
 
     private readonly HybridCacheEntryFlags _hardFlags; // *always* present (for example, because no L2)
@@ -56,7 +57,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _services = services ?? throw new ArgumentNullException(nameof(services));
         _localCache = services.GetRequiredService<IMemoryCache>();
         _options = options.Value;
-        _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)); // note optional
+        _logger = services.GetService<ILoggerFactory>()?.CreateLogger(typeof(HybridCache)) ?? NullLogger.Instance;
 
         _backendCache = services.GetService<IDistributedCache>(); // note optional
 
