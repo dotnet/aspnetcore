@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.Web.Internal;
@@ -100,31 +102,74 @@ public abstract class WebRenderer : Renderer
         base.Dispose(disposing);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
     {
         const string JSMethodIdentifier = "Blazor._internal.attachWebRendererInterop";
 
-        object[] args = [
-            _rendererId,
-            _interopMethodsReference,
-            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer,
-        ];
-
         if (jsRuntime is IInternalWebJSInProcessRuntime inProcessRuntime)
         {
-            var newJsonOptions = new JsonSerializerOptions(jsonOptions);
-            newJsonOptions.TypeInfoResolverChain.Clear();
-            newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
-            newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
-            var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
+            // Fast path for WebAssembly: Rather than using the JSRuntime to serialize
+            // parameters, we utilize the source-generated WebRendererSerializerContext
+            // for a faster JsonTypeInfo resolution.
+
+            // We resolve a JsonTypeInfo for DotNetObjectReference<WebRendererInteropMethods> from
+            // the JS runtime's JsonConverters. This is because adding DotNetObjectReference<T> as
+            // a supported type in the JsonSerializerContext generates unnecessary code to produce
+            // JsonTypeInfo for all the types referenced by both DotNetObjectReference<T> and its
+            // generic type argument.
+            var interopMethodsReferenceJsonTypeInfo = GetJsonTypeInfoFromJsonConverterFactories<DotNetObjectReference<WebRendererInteropMethods>>(
+                jsonOptions.Converters,
+                WebRendererSerializerContext.Default.Options);
+
+            var rendererIdJson = _rendererId.ToString(CultureInfo.InvariantCulture);
+            var interopMethodsReferenceJson = JsonSerializer.Serialize(
+                _interopMethodsReference,
+                interopMethodsReferenceJsonTypeInfo);
+            var jsComponentParametersByIdentifierJson = JsonSerializer.Serialize(
+                jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
+                WebRendererSerializerContext.Default.DictionaryStringJSComponentParameterArray);
+            var jsComponentIdentifiersByInitializerJson = JsonSerializer.Serialize(
+                jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer,
+                WebRendererSerializerContext.Default.DictionaryStringListString);
+
+            var argsJson =
+                $"[{rendererIdJson}, " +
+                $"{interopMethodsReferenceJson}, " +
+                $"{jsComponentParametersByIdentifierJson}, " +
+                $"{jsComponentIdentifiersByInitializerJson}]";
             inProcessRuntime.InvokeJS(JSMethodIdentifier, argsJson, JSCallResultType.JSVoidResult, 0);
         }
         else
         {
-            jsRuntime.InvokeVoidAsync(JSMethodIdentifier, args).Preserve();
+            jsRuntime.InvokeVoidAsync(
+                JSMethodIdentifier,
+                _rendererId,
+                _interopMethodsReference,
+                jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
+                jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
         }
+    }
+
+    private static JsonTypeInfo<T> GetJsonTypeInfoFromJsonConverterFactories<T>(
+        IList<JsonConverter> converters,
+        JsonSerializerOptions optionsToUse)
+    {
+        foreach (var converter in converters)
+        {
+            if (converter is not JsonConverterFactory factory || !factory.CanConvert(typeof(T)))
+            {
+                continue;
+            }
+
+            if (factory.CreateConverter(typeof(T), optionsToUse) is not { } converterToUse)
+            {
+                continue;
+            }
+
+            return JsonMetadataServices.CreateValueInfo<T>(optionsToUse, converterToUse);
+        }
+
+        throw new InvalidOperationException($"Could not create a JsonTypeInfo for type {typeof(T).FullName}");
     }
 
     /// <summary>
@@ -170,8 +215,10 @@ public abstract class WebRenderer : Renderer
     }
 }
 
-[JsonSerializable(typeof(object[]))]
-[JsonSerializable(typeof(int))]
+[JsonSourceGenerationOptions(
+    GenerationMode = JsonSourceGenerationMode.Serialization,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(Dictionary<string, JSComponentConfigurationStore.JSComponentParameter[]>))]
 [JsonSerializable(typeof(Dictionary<string, List<string>>))]
 internal sealed partial class WebRendererSerializerContext : JsonSerializerContext;
