@@ -69,7 +69,6 @@ public abstract partial class AllowedWebSocketCompressionTests(
         var response = await client.GetAsync("/subdir/iframe?add-csp");
         response.EnsureSuccessStatusCode();
 
-        {
         Assert.Equal(
             response.Headers.GetValues("Content-Security-Policy"),
             [
