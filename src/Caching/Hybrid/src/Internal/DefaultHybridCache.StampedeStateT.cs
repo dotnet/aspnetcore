@@ -21,7 +21,7 @@ partial class DefaultHybridCache
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
             : base(cache, key, canBeCanceled)
         {
-            _result = new();
+            _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
         public override Type Type => typeof(T);
@@ -217,7 +217,7 @@ partial class DefaultHybridCache
 
             static async ValueTask<T> WithCancellation(StampedeState<TState, T> stampede, CancellationToken token)
             {
-                var cancelStub = new TaskCompletionSource<bool>();
+                var cancelStub = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using var reg = token.Register(static obj =>
                 {
                     ((TaskCompletionSource<bool>)obj!).TrySetResult(true);
