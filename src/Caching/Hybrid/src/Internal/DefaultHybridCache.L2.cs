@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,18 +23,9 @@ partial class DefaultHybridCache
                 if (pendingLegacy.Status != TaskStatus.RanToCompletion)
 #endif
                 {
-                    return new(AwaitedLegacy(pendingLegacy, MaximumPayloadBytes));
+                    return new(AwaitedLegacy(pendingLegacy, this));
                 }
-                var bytes = pendingLegacy.Result; // already complete
-                if (bytes is not null)
-                {
-                    if (bytes.Length > MaximumPayloadBytes)
-                    {
-                        ThrowQuota();
-                    }
-                    return new(new ArraySegment<byte>(bytes));
-                }
-                break;
+                return new(GetValidPayloadSegment(pendingLegacy.Result)); // already complete
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
                 var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
                 var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
@@ -50,18 +42,10 @@ partial class DefaultHybridCache
         }
         return default;
 
-        static async Task<ArraySegment<byte>> AwaitedLegacy(Task<byte[]?> pending, int maximumPayloadBytes)
+        static async Task<ArraySegment<byte>> AwaitedLegacy(Task<byte[]?> pending, DefaultHybridCache @this)
         {
             var bytes = await pending.ConfigureAwait(false);
-            if (bytes is not null)
-            {
-                if (bytes.Length > maximumPayloadBytes)
-                {
-                    ThrowQuota();
-                }
-                return new(bytes);
-            }
-            return default;
+            return @this.GetValidPayloadSegment(bytes);
         }
 
         static async Task<ArraySegment<byte>> AwaitedBuffers(ValueTask<bool> pending, RecyclableArrayBufferWriter<byte> writer)
@@ -72,8 +56,26 @@ partial class DefaultHybridCache
             writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
             return result;
         }
+    }
 
-        static void ThrowQuota() => throw new InvalidOperationException("Maximum cache length exceeded");
+    private ArraySegment<byte> GetValidPayloadSegment(byte[]? payload)
+    {
+        if (payload is not null)
+        {
+            if (payload.Length > MaximumPayloadBytes)
+            {
+                ThrowPayloadLengthExceeded(payload.Length);
+            }
+            return new(payload);
+        }
+        return default;
+    }
+
+    [DoesNotReturn, MethodImpl(MethodImplOptions.NoInlining)]
+    private void ThrowPayloadLengthExceeded(int size) // splitting the exception bits out to a different method
+    {
+        // TODO: also log to logger (hence instance method)
+        throw new InvalidOperationException($"Maximum cache length ({MaximumPayloadBytes} bytes) exceeded");
     }
 
     internal ValueTask SetL2Async(string key, byte[] value, int length, HybridCacheEntryOptions? options, CancellationToken token)

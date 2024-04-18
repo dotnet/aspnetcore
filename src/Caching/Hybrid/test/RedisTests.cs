@@ -65,6 +65,11 @@ public class RedisTests : DistributedCacheTests, IClassFixture<RedisFixture>
         var provider = services.BuildServiceProvider(); // not "using" - that will tear down our redis; use the fixture for that
 
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
+        if (cache.BackendCache is null)
+        {
+            Log.WriteLine("Backend cache not available; inconclusive");
+            return;
+        }
         Assert.IsAssignableFrom<RedisCache>(cache.BackendCache);
 
         if (!useBuffers) // force byte[] mode
