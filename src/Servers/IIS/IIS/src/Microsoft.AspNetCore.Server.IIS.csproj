@@ -17,7 +17,7 @@
     <NoWarn>$(NoWarn);CA1416;CS9195</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" LinkBase="Shared\" />
@@ -32,7 +32,7 @@
     <Compile Remove="SourceBuildStubs.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <Compile Remove="**\*.cs" />
     <Compile Include="SourceBuildStubs.cs" />
   </ItemGroup>
@@ -58,7 +58,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildFromSource)' != 'true'">
+    <Reference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </Reference>

@@ -834,6 +834,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 throw new Http3StreamErrorException(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders, Http3ErrorCode.ProtocolError);
             }
 
+            if (_context.ClientPeerSettings.EnableWebTransport != _context.ServerPeerSettings.EnableWebTransport)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3WebTransportStatusMismatch(_context.ClientPeerSettings.EnableWebTransport == 1, _context.ServerPeerSettings.EnableWebTransport == 1), Http3ErrorCode.SettingsError);
+            }
+
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
             {
                 throw new Http3StreamErrorException(CoreStrings.FormatHttp3DatagramStatusMismatch(_context.ClientPeerSettings.H3Datagram == 1, _context.ServerPeerSettings.H3Datagram == 1), Http3ErrorCode.SettingsError);

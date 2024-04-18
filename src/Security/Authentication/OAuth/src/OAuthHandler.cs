@@ -166,7 +166,7 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
                 if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
                 {
                     // https://www.w3.org/TR/xmlschema-2/#dateTime
-                    // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
+                    // https://learn.microsoft.com/dotnet/standard/base-types/standard-date-and-time-format-strings
                     var expiresAt = TimeProvider.GetUtcNow() + TimeSpan.FromSeconds(value);
                     authTokens.Add(new AuthenticationToken
                     {

@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public class ThreadingAppTest
-    : ServerTestBase<BlazorWasmTestAppFixture<ThreadingApp.Program>>, IDisposable
+    : ServerTestBase<BlazorWasmTestAppFixture<ThreadingApp.Program>>
 {
     public ThreadingAppTest(
         BrowserFixture browserFixture,
@@ -34,12 +34,14 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54497")]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
@@ -104,6 +106,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void IsStarted()
     {
         // Read from property
@@ -123,12 +126,5 @@ public class ThreadingAppTest
     {
         var app = Browser.Exists(By.TagName("app"));
         Browser.NotEqual("Loading...", () => app.Text);
-    }
-
-    public void Dispose()
-    {
-        // Make the tests run faster by navigating back to the home page when we are done
-        // If we don't, then the next test will reload the whole page before it starts
-        Browser.Exists(By.LinkText("Home")).Click();
     }
 }

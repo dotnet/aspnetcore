@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Contains registration and configuration APIs to add the core framework encoders to a dependency injection container.</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>

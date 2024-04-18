@@ -9,7 +9,7 @@
     <!-- This package contains API for the .NET CLI to generate the aspnet HTTPs dev cert during CLI first-run initialization. -->
 
     <IsShippingPackage>false</IsShippingPackage>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,9 @@
 
   <PropertyGroup>
     <IsShippingPackage>true</IsShippingPackage>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <!-- This explicitly includes this project even though it's a test project, unit test project,
+         etc. which would be excluded by default. -->
+    <ExcludeFromDotNetBuild>false</ExcludeFromDotNetBuild>
     <IsTestProject>true</IsTestProject>
     <IsUnitTestProject>true</IsUnitTestProject>
     <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>

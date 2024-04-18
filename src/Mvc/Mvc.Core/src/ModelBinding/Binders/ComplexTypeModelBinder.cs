@@ -71,7 +71,7 @@ public partial class ComplexTypeModelBinder : IModelBinder
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _propertyBinders = propertyBinders;
-        _logger = loggerFactory.CreateLogger<ComplexTypeModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(ComplexTypeModelBinder));
     }
 
     /// <inheritdoc/>

@@ -10,11 +10,16 @@
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.OpenApi" />
+    <Reference Include="Microsoft.OpenApi.Readers" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Microbenchmarks" />
   </ItemGroup>
 
 </Project>

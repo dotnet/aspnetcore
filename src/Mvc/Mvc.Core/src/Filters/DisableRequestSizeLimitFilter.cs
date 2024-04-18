@@ -19,7 +19,7 @@ internal sealed partial class DisableRequestSizeLimitFilter : IAuthorizationFilt
     /// </summary>
     public DisableRequestSizeLimitFilter(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<DisableRequestSizeLimitFilter>();
+        _logger = loggerFactory.CreateLogger(typeof(DisableRequestSizeLimitFilter));
     }
 
     /// <summary>

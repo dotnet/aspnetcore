@@ -22,7 +22,7 @@ public static class AuthorizationServiceExtensions
     /// <param name="requirement">The requirement to evaluate the policy against.</param>
     /// <returns>
     /// A flag indicating whether requirement evaluation has succeeded or failed.
-    /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, IAuthorizationRequirement requirement)
     {
@@ -41,7 +41,7 @@ public static class AuthorizationServiceExtensions
     /// <param name="policy">The policy to evaluate.</param>
     /// <returns>
     /// A flag indicating whether policy evaluation has succeeded or failed.
-    /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, AuthorizationPolicy policy)
     {
@@ -59,7 +59,7 @@ public static class AuthorizationServiceExtensions
     /// <param name="policy">The policy to evaluate.</param>
     /// <returns>
     /// A flag indicating whether policy evaluation has succeeded or failed.
-    /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, AuthorizationPolicy policy)
     {
@@ -77,7 +77,7 @@ public static class AuthorizationServiceExtensions
     /// <param name="policyName">The name of the policy to evaluate.</param>
     /// <returns>
     /// A flag indicating whether policy evaluation has succeeded or failed.
-    /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
+    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, string policyName)
     {
