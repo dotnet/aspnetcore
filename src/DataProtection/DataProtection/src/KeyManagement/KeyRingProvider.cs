@@ -365,7 +365,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 existingTask = Task.Factory.StartNew(
                     utcNow => CacheableKeyRingProvider.GetCacheableKeyRing((DateTime)utcNow!),
                     utcNow,
-                    CancellationToken.None,
+                    CancellationToken.None, // GetKeyRingFromCompletedTask will need to react if this becomes cancellable
                     TaskCreationOptions.DenyChildAttach,
                     TaskScheduler.Default);
                 Volatile.Write(ref _cacheableKeyRingTask, existingTask);
@@ -433,7 +433,9 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 return newCacheableKeyRing.KeyRing;
             }
 
-            var exception = task.Exception!;
+            Debug.Assert(!task.IsCanceled, "How did a task with no cancellation token get canceled?");
+            Debug.Assert(task.Exception is not null, "Task should have either completed successfully or with an exception");
+            var exception = task.Exception;
 
             var existingCacheableKeyRing = Volatile.Read(ref _cacheableKeyRing);
             if (existingCacheableKeyRing is not null && !CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow))
