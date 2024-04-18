@@ -386,7 +386,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             .ContinueWith(static _ => { }, TaskScheduler.Default)
             .Wait();
 
-        var newKeyRing = GetKeyRingFromCompletedTask(existingTask, utcNow); // Throws if the task failed
+        var newKeyRing = GetKeyRingFromCompletedTask(existingTask, utcNow); // Throws if the task failed (winning thread only)
         if (newKeyRing is null)
         {
             // Another thread won - check whether it cached a new key ring
