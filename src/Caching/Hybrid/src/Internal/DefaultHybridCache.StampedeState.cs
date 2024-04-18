@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -65,7 +64,7 @@ partial class DefaultHybridCache
         // (and keep going until then); that means we need to run with custom cancellation
         private readonly CancellationTokenSource? sharedCancellation;
 
-        protected abstract void SetCanceled();
+        public abstract void SetCanceled();
 
         public readonly CancellationToken SharedToken;
 

@@ -185,7 +185,7 @@ partial class DefaultHybridCache
             return cacheItem;
         }
 
-        protected override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
+        public override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
 
         private Task<T>? _sharedUnwrap;
 

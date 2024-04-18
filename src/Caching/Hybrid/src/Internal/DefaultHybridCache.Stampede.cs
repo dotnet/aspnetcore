@@ -22,26 +22,68 @@ partial class DefaultHybridCache
     public bool GetOrCreateStampede<TState, T>(string key, HybridCacheEntryFlags flags, out StampedeState<TState, T> stampedeState, bool canBeCanceled)
     {
         var stampedeKey = new StampedeKey(key, flags);
-        if (_currentOperations.TryGetValue(stampedeKey, out var found))
-        {
-            var tmp = found as StampedeState<TState, T>;
-            if (tmp is null)
-            {
-                ThrowWrongType(key, found.Type, typeof(T));
-            }
 
-            if (tmp.TryAddCaller())
-            {
-                // we joined an existing session
-                stampedeState = tmp;
-                return false;
-            }
+        // double-checked locking to try to avoid unnecessary sessions in race conditions,
+        // while avoiding the lock completely whenever possible
+        if (TryJoinExistingSession(this, stampedeKey, out var existing))
+        {
+            stampedeState = existing;
+            return false; // someone ELSE is running the work
         }
 
-        // create a new session
+        // most common scenario here, then, is that we're not fighting with anyone else;
+        // go ahead and create a placeholder state object and *try* to add it
         stampedeState = new StampedeState<TState, T>(this, stampedeKey, canBeCanceled);
-        _currentOperations[stampedeKey] = stampedeState;
-        return true;
+        if (_currentOperations.TryAdd(stampedeKey, stampedeState))
+        {
+            // successfully added; indeed, no-one else was fighting: we're done
+            return true; // the CURRENT caller is responsible for making the work happen
+        }
+
+        // hmm; failed to add - there's concurrent activity on the same key; we're now
+        // in very rare race condition territory; go ahead and take a lock while we
+        // collect our thoughts
+        lock (_currentOperations)
+        {
+            // check again while we hold the lock
+            if (TryJoinExistingSession(this, stampedeKey, out existing))
+            {
+                // we found an existing state we can join; do that
+                stampedeState.SetCanceled(); // to be thorough: mark our speculative one as doomed (no-one has seen it, though)
+                stampedeState = existing; // and replace with the one we found
+                return false; // someone ELSE is running the work
+
+                // note that in this case we allocated a StampedeState<TState, T> that got dropped on
+                // the floor; in the grand scheme of things, that's OK; this is a rare outcome
+            }
+
+            // otherwise, either nothing existed - or the thing that already exists can't be joined;
+            // in that case, go ahead and use the state that we invented a moment ago (outside of the lock)
+            _currentOperations[stampedeKey] = stampedeState;
+            return true; // the CURRENT caller is responsible for making the work happen
+        }
+
+        static bool TryJoinExistingSession(DefaultHybridCache @this, in StampedeKey stampedeKey,
+            [NotNullWhen(true)] out StampedeState<TState, T>? stampedeState)
+        {
+            if (@this._currentOperations.TryGetValue(stampedeKey, out var found))
+            {
+                var tmp = found as StampedeState<TState, T>;
+                if (tmp is null)
+                {
+                    ThrowWrongType(stampedeKey.Key, found.Type, typeof(T));
+                }
+
+                if (tmp.TryAddCaller())
+                {
+                    // we joined an existing session
+                    stampedeState = tmp;
+                    return true;
+                }
+            }
+            stampedeState = null;
+            return false;
+        }
 
         [DoesNotReturn]
         static void ThrowWrongType(string key, Type existingType, Type newType)
