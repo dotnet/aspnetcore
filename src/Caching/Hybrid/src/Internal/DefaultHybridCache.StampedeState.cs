@@ -88,12 +88,12 @@ partial class DefaultHybridCache
             int oldValue = Volatile.Read(ref _activeCallers);
             do
             {
-                if (oldValue == 0)
+                if (oldValue is 0 or -1)
                 {
-                    return false; // already burned
+                    return false; // already burned or about to roll around back to zero
                 }
 
-                var updated = Interlocked.CompareExchange(ref _activeCallers, checked(oldValue + 1), oldValue);
+                var updated = Interlocked.CompareExchange(ref _activeCallers, oldValue + 1, oldValue);
                 if (updated == oldValue)
                 {
                     return true; // we exchanged

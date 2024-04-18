@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 partial class DefaultHybridCache
 {
-    internal ValueTask<ArraySegment<byte>> GetFromL2Async(string key, CancellationToken token)
+    internal ValueTask<BufferChunk> GetFromL2Async(string key, CancellationToken token)
     {
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
@@ -37,31 +37,31 @@ partial class DefaultHybridCache
                 {
                     return new(AwaitedBuffers(pendingBuffers, writer));
                 }
-                ArraySegment<byte> result = pendingBuffers.GetAwaiter().GetResult()
-                    ? new(writer.DetachCommitted(out var length), 0, length)
+                BufferChunk result = pendingBuffers.GetAwaiter().GetResult()
+                    ? new(writer.DetachCommitted(out var length), length, returnToPool: true)
                     : default;
                 writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
                 return new(result);
         }
         return default;
 
-        static async Task<ArraySegment<byte>> AwaitedLegacy(Task<byte[]?> pending, DefaultHybridCache @this)
+        static async Task<BufferChunk> AwaitedLegacy(Task<byte[]?> pending, DefaultHybridCache @this)
         {
             var bytes = await pending.ConfigureAwait(false);
             return @this.GetValidPayloadSegment(bytes);
         }
 
-        static async Task<ArraySegment<byte>> AwaitedBuffers(ValueTask<bool> pending, RecyclableArrayBufferWriter<byte> writer)
+        static async Task<BufferChunk> AwaitedBuffers(ValueTask<bool> pending, RecyclableArrayBufferWriter<byte> writer)
         {
-            ArraySegment<byte> result = await pending.ConfigureAwait(false)
-                    ? new(writer.DetachCommitted(out var length), 0, length)
+            BufferChunk result = await pending.ConfigureAwait(false)
+                    ? new(writer.DetachCommitted(out var length), length, returnToPool: true)
                     : default;
             writer.Dispose(); // it is not accidental that this isn't "using"; avoid recycling if not 100% sure what happened
             return result;
         }
     }
 
-    private ArraySegment<byte> GetValidPayloadSegment(byte[]? payload)
+    private BufferChunk GetValidPayloadSegment(byte[]? payload)
     {
         if (payload is not null)
         {
@@ -81,21 +81,22 @@ partial class DefaultHybridCache
         throw new InvalidOperationException($"Maximum cache length ({MaximumPayloadBytes} bytes) exceeded");
     }
 
-    internal ValueTask SetL2Async(string key, byte[] value, int length, HybridCacheEntryOptions? options, CancellationToken token)
+    internal ValueTask SetL2Async(string key, in BufferChunk buffer, HybridCacheEntryOptions? options, CancellationToken token)
     {
-        Debug.Assert(value.Length >= length);
+        Debug.Assert(buffer.Array is not null);
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
-                if (value.Length > length)
+                var arr = buffer.Array;
+                if (arr.Length != buffer.Length)
                 {
-                    Array.Resize(ref value, length);
+                    // we'll need a right-sized snapshot
+                    arr = buffer.ToArray();
                 }
-                Debug.Assert(value.Length == length);
-                return new(_backendCache!.SetAsync(key, value, GetOptions(options), token));
+                return new(_backendCache!.SetAsync(key, arr, GetOptions(options), token));
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // ReadOnlySequence<byte>-based
                 var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
-                return cache.SetAsync(key, new(value, 0, length), GetOptions(options), token);
+                return cache.SetAsync(key, buffer.AsSequence(), GetOptions(options), token);
         }
         return default;
     }
@@ -111,5 +112,14 @@ partial class DefaultHybridCache
     }
 
     internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
-        => _localCache.Set(key, value, options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration);
+    {
+        // based on CacheExtensions.Set<TItem>, but with post-eviction recycling
+        using ICacheEntry cacheEntry = _localCache.CreateEntry(key);
+        cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
+        cacheEntry.Value = value;
+        if (value.NeedsEvictionCallback)
+        {
+            cacheEntry.RegisterPostEvictionCallback(CacheItem.OnEviction);
+        }
+    }
 }

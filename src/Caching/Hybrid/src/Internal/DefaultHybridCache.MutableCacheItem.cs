@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
+using System;
+using System.Diagnostics;
+using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -10,14 +12,25 @@ partial class DefaultHybridCache
     private sealed class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
         private readonly IHybridCacheSerializer<T> _serializer;
-        private readonly byte[] _bytes;
-        private readonly int _length;
+        private readonly BufferChunk _buffer;
+        private int _refCount = 1; // buffer released when this becomes zero
+#if DEBUG
+        private DefaultHybridCache? _cache; // for buffer-tracking - only enabled in DEBUG
+        internal void DebugTrackBuffer(DefaultHybridCache cache)
+        {
+            _cache = cache;
+            if (_buffer.ReturnToPool)
+            {
+                _cache.DebugIncrementOutstandingBuffers();
+            }
+        }
+#endif
 
-        public MutableCacheItem(byte[] bytes, int length, IHybridCacheSerializer<T> serializer)
+        public MutableCacheItem(ref BufferChunk buffer, IHybridCacheSerializer<T> serializer)
         {
             _serializer = serializer;
-            _bytes = bytes;
-            _length = length;
+            _buffer = buffer;
+            buffer = default; // we're taking over the lifetime; the caller no longer has it!
         }
 
         public MutableCacheItem(T value, IHybridCacheSerializer<T> serializer, int maxLength)
@@ -25,17 +38,75 @@ partial class DefaultHybridCache
             _serializer = serializer;
             var writer = RecyclableArrayBufferWriter<byte>.Create(maxLength);
             serializer.Serialize(value, writer);
-            _bytes = writer.DetachCommitted(out _length);
-            writer.Dispose(); // only recycle on success
+
+            _buffer = new(writer.DetachCommitted(out int length), length, returnToPool: true);
+            writer.Dispose(); // no buffers left (we just detached them), but just in case of other logic
         }
 
-        public override T GetValue() => _serializer.Deserialize(new ReadOnlySequence<byte>(_bytes, 0, _length));
+        public override bool NeedsEvictionCallback => true;
 
-        public override bool TryGetBytes(out int length, out byte[] data)
+        public override void Release()
         {
-            length = _length;
-            data = _bytes;
-            return true;
+            var newCount = Interlocked.Decrement(ref _refCount);
+            if (newCount == 0)
+            {
+#if DEBUG // avoid even the property touch if not in debug
+                if (_buffer.ReturnToPool)
+                {
+                    _cache?.DebugDecrementOutstandingBuffers();
+                }
+#endif
+                _buffer.RecycleIfAppropriate();
+            }
+        }
+
+        public bool TryReserve()
+        {
+            int oldValue = Volatile.Read(ref _refCount);
+            do
+            {
+                if (oldValue is 0 or -1)
+                {
+                    return false; // already burned, or about to roll around back to zero
+                }
+
+                var updated = Interlocked.CompareExchange(ref _refCount, oldValue + 1, oldValue);
+                if (updated == oldValue)
+                {
+                    return true; // we exchanged
+                }
+                oldValue = updated; // we failed, but we have an updated state
+            } while (true);
+        }
+
+        public override bool TryGetValue(out T value)
+        {
+            if (!TryReserve()) // only if we haven't already burned
+            {
+                value = default!;
+                return false;
+            }
+
+            try
+            {
+                value = _serializer.Deserialize(_buffer.AsSequence());
+                return true;
+            }
+            finally
+            {
+                Release();
+            }
+        }
+
+        public override bool TryReserveBuffer(out BufferChunk buffer)
+        {
+            if (TryReserve()) // only if we haven't already burned
+            {
+                buffer = _buffer.DoNotReturnToPool(); // not up to them!
+                return true;
+            }
+            buffer = default;
+            return false;
         }
     }
 }

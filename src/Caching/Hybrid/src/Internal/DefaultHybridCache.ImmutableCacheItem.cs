@@ -7,20 +7,26 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 partial class DefaultHybridCache
 {
-    private sealed class ImmutableCacheItem<T>(T value) : CacheItem<T> // used to hold types that do not require defensive copies
+    private sealed class ImmutableCacheItem<T> : CacheItem<T> // used to hold types that do not require defensive copies
     {
+        private readonly T _value;
+        public ImmutableCacheItem(T value) => _value = value;
+
         private static ImmutableCacheItem<T>? SharedDefault;
 
         // this is only used when the underlying store is disabled; we don't need 100% singleton; "good enough is"
         public static ImmutableCacheItem<T> Default => SharedDefault ??= new(default!);
 
-        public override T GetValue() => value;
-
-        public override bool TryGetBytes(out int length, [NotNullWhen(true)] out byte[]? data)
+        public override bool TryGetValue(out T value)
         {
-            length = 0;
-            data = null;
-            return false;
+            value = _value;
+            return true; // always available
+        }
+
+        public override bool TryReserveBuffer(out BufferChunk buffer)
+        {
+            buffer = default;
+            return false; // we don't have one to reserve!
         }
     }
 }

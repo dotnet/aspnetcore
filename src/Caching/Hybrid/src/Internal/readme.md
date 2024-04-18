@@ -20,4 +20,8 @@ is still active); this covers all L2 access and serialization operations, releas
 shared callers for the same operation. Note that L2 storage can occur *after* callers
 have been released.
 
-
+To ensure correct buffer recycling, when dealing with cache entries that need defensive copies
+we use more ref-counting while reading the buffer, combined with an eviction callback which
+decrements that counter. This means that we recycle things when evicted, without impacting
+in-progress deserialize operations. To simplify tracking, `BufferChunk` acts like a `byte[]`+`int`
+(we don't need non-zero offset), but also tracking "should this be returned to the pool?".

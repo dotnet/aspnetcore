@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -72,7 +73,7 @@ partial class DefaultHybridCache
 
                     if (result.Array is not null)
                     {
-                        SetResult(result);
+                        SetResultAndRecycleIfAppropriate(ref result);
                         return;
                     }
                 }
@@ -88,18 +89,19 @@ partial class DefaultHybridCache
                     // write to L2 if appropriate
                     if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                     {
-                        if (cacheItem.TryGetBytes(out int length, out var bytes))
+                        if (cacheItem.TryReserveBuffer(out var buffer))
                         {
                             // mutable; we've already serialized it for the shared cache item
-                            await Cache.SetL2Async(Key.Key, bytes, length, _options, SharedToken).ConfigureAwait(false);
+                            await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                            cacheItem.Release(); // because we reserved
                         }
-                        else
+                        else if (cacheItem.TryGetValue(out var value))
                         {
                             // immutable: we'll need to do the serialize ourselves
                             var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
-                            Cache.GetSerializer<T>().Serialize(cacheItem.GetValue(), writer); // note GetValue() is fixed value here
-                            bytes = writer.GetBuffer(out length);
-                            await Cache.SetL2Async(Key.Key, bytes, length, _options, SharedToken).ConfigureAwait(false);
+                            Cache.GetSerializer<T>().Serialize(value, writer);
+                            buffer = new(writer.GetBuffer(out var length), length, returnToPool: false); // writer still owns the buffer
+                            await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
                             writer.Dispose(); // recycle on success
                         }
                     }
@@ -161,15 +163,28 @@ partial class DefaultHybridCache
             }
         }
 
-        private void SetResult(ArraySegment<byte> value)
+        private void SetResultAndRecycleIfAppropriate(ref BufferChunk value)
         {
             // set a result from L2 cache
-            Debug.Assert(value.Array is not null && value.Offset == 0);
+            Debug.Assert(value.Array is not null, "expected buffer");
 
             var serializer = Cache.GetSerializer<T>();
-            CacheItem<T> cacheItem = ImmutableTypeCache<T>.IsImmutable
-                ? new ImmutableCacheItem<T>(serializer.Deserialize(new(value.Array!, value.Offset, value.Count))) // deserialize
-                : new MutableCacheItem<T>(value.Array!, value.Count, Cache.GetSerializer<T>()); // store the same bytes
+            CacheItem<T> cacheItem;
+            if (ImmutableTypeCache<T>.IsImmutable)
+            {
+                // deserialize; and store object; buffer can be recycled now
+                cacheItem = new ImmutableCacheItem<T>(serializer.Deserialize(new(value.Array!, 0, value.Length)));
+                value.RecycleIfAppropriate();
+            }
+            else
+            {
+                // use the buffer directly as the backing in the cache-item; do *not* recycle now
+                var tmp = new MutableCacheItem<T>(ref value, serializer);
+#if DEBUG
+                tmp.DebugTrackBuffer(Cache);
+#endif
+                cacheItem = tmp;
+            }
 
             SetResult(cacheItem);
         }
@@ -177,10 +192,19 @@ partial class DefaultHybridCache
         private CacheItem<T> SetResult(T value)
         {
             // set a result from a value we calculated directly
-            CacheItem<T> cacheItem = ImmutableTypeCache<T>.IsImmutable
-                ? new ImmutableCacheItem<T>(value) // no serialize needed
-                : new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
-
+            CacheItem<T> cacheItem;
+            if (ImmutableTypeCache<T>.IsImmutable)
+            {
+                cacheItem = new ImmutableCacheItem<T>(value); // no serialize needed
+            }
+            else
+            {
+                var tmp = new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
+#if DEBUG
+                tmp.DebugTrackBuffer(Cache);
+#endif
+                cacheItem = tmp;
+            }
             SetResult(cacheItem);
             return cacheItem;
         }

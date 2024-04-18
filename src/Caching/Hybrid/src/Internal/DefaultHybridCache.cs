@@ -117,10 +117,11 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         var flags = GetEffectiveFlags(options);
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped) && untyped is CacheItem<T> typed)
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped)
+            && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
         {
             // short-circuit
-            return new(typed.GetValue());
+            return new(value);
         }
 
         if (GetOrCreateStampede<TState, T>(key, flags, out var stampede, canBeCanceled))
