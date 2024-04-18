@@ -69,12 +69,24 @@ public abstract partial class AllowedWebSocketCompressionTests(
         var response = await client.GetAsync("/subdir/iframe?add-csp");
         response.EnsureSuccessStatusCode();
 
-        Assert.Equal(
-            response.Headers.GetValues("Content-Security-Policy"),
-            [
-                "script-src 'self' 'unsafe-inline'",
-                $"frame-ancestors {ExpectedPolicy}"
-            ]);
+        if (ExpectedPolicy != null)
+        {
+            Assert.Equal(
+                [
+                    "script-src 'self' 'unsafe-inline'",
+                    $"frame-ancestors {ExpectedPolicy}"
+                ],
+                response.Headers.GetValues("Content-Security-Policy"));
+        }
+        else
+        {
+            Assert.Equal(
+                [
+                    "script-src 'self' 'unsafe-inline'"
+                ],
+                response.Headers.GetValues("Content-Security-Policy"));
+        }
+    }
 }
 
 public abstract partial class BlockedWebSocketCompressionTests(
