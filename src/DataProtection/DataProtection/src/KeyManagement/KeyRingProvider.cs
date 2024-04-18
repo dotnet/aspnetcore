@@ -214,6 +214,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
     private IKeyRing GetCurrentKeyRingCoreOld(DateTime utcNow, bool forceRefresh)
     {
+        // DateTimes are only meaningfully comparable if they share the same Kind - require Utc for consistency
         Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
 
         // Can we return the cached keyring to the caller?
@@ -313,6 +314,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
 
     private IKeyRing GetCurrentKeyRingCoreNew(DateTime utcNow, bool forceRefresh)
     {
+        // DateTimes are only meaningfully comparable if they share the same Kind - require Utc for consistency
         Debug.Assert(utcNow.Kind == DateTimeKind.Utc);
 
         // The 99% and perf-critical case is that there is no task in-flight and the cached
