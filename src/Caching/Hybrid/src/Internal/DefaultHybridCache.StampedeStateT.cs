@@ -88,8 +88,7 @@ partial class DefaultHybridCache
                     // write to L2 if appropriate
                     if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                     {
-                        var bytes = cacheItem.TryGetBytes(out int length);
-                        if (bytes is not null)
+                        if (cacheItem.TryGetBytes(out int length, out var bytes))
                         {
                             // mutable; we've already serialized it for the shared cache item
                             await Cache.SetL2Async(Key.Key, bytes, length, _options, SharedToken).ConfigureAwait(false);

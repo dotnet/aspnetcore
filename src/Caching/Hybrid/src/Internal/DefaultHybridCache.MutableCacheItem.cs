@@ -31,10 +31,11 @@ partial class DefaultHybridCache
 
         public override T GetValue() => _serializer.Deserialize(new ReadOnlySequence<byte>(_bytes, 0, _length));
 
-        public override byte[]? TryGetBytes(out int length)
+        public override bool TryGetBytes(out int length, out byte[] data)
         {
             length = _length;
-            return _bytes;
+            data = _bytes;
+            return true;
         }
     }
 }
