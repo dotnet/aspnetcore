@@ -17,8 +17,9 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 {
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
-    private readonly ConcurrentDictionary<long, IJSInteropTask> _pendingTasks = new();
+    private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
     private readonly ConcurrentDictionary<long, IDotNetObjectReference> _trackedRefsById = new();
+    private readonly ConcurrentDictionary<long, CancellationTokenRegistration> _cancellationRegistrations = new();
 
     internal readonly ArrayBuilder<byte[]> ByteArraysToBeRevived = new();
 
@@ -39,101 +40,113 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                     new JSStreamReferenceJsonConverter(this),
                     new DotNetStreamReferenceJsonConverter(this),
                     new ByteArrayJsonConverter(this),
-                },
+                }
         };
     }
 
-    /// <inheritdoc/>
-    public JsonSerializerOptions JsonSerializerOptions { get; }
+    /// <summary>
+    /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
+    /// </summary>
+    protected internal JsonSerializerOptions JsonSerializerOptions { get; }
 
     /// <summary>
     /// Gets or sets the default timeout for asynchronous JavaScript calls.
     /// </summary>
     protected TimeSpan? DefaultAsyncTimeout { get; set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Invokes the specified JavaScript function asynchronously.
+    /// <para>
+    /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="DefaultAsyncTimeout"/>. To dispatch a call with a different, or no timeout,
+    /// consider using <see cref="InvokeAsync{TValue}(string, CancellationToken, object[])" />.
+    /// </para>
+    /// </summary>
+    /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
+    /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
+    /// <param name="args">JSON-serializable arguments.</param>
+    /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, args);
 
-    /// <inheritdoc/>
-    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerOptions options, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, options, args);
-
-    /// <inheritdoc/>
+    /// <summary>
+    /// Invokes the specified JavaScript function asynchronously.
+    /// </summary>
+    /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
+    /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
+    /// <param name="cancellationToken">
+    /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
+    /// (<see cref="DefaultAsyncTimeout"/>) from being applied.
+    /// </param>
+    /// <param name="args">JSON-serializable arguments.</param>
+    /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
-    /// <inheritdoc/>
-    public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, JsonSerializerOptions options, CancellationToken cancellationToken, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, options, cancellationToken, args);
-
-    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, JsonSerializerOptions? options, object?[]? args)
+    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
     {
         if (DefaultAsyncTimeout.HasValue)
         {
             using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
             // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, options, cts.Token, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, args);
         }
 
-        return await InvokeAsync<TValue>(targetInstanceId, identifier, options, CancellationToken.None, args);
+        return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
     }
-
-    internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
-        => InvokeAsync<TValue>(targetInstanceId, identifier, options: null, args);
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
         long targetInstanceId,
         string identifier,
-        JsonSerializerOptions? jsonSerializerOptions,
         CancellationToken cancellationToken,
         object?[]? args)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return ValueTask.FromCanceled<TValue>(cancellationToken);
-        }
-
         var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-        var interopTask = new JSInteropTask<TValue>(cancellationToken, onCanceled: () =>
+        var tcs = new TaskCompletionSource<TValue>();
+        if (cancellationToken.CanBeCanceled)
         {
-            _pendingTasks.TryRemove(taskId, out _);
-        });
-
-        _pendingTasks[taskId] = interopTask;
+            _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
+            {
+                tcs.TrySetCanceled(cancellationToken);
+                CleanupTasksAndRegistrations(taskId);
+            });
+        }
+        _pendingTasks[taskId] = tcs;
 
         try
         {
-            var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
-            jsonSerializerOptions ??= JsonSerializerOptions;
-
-            var argsJson = args switch
+            if (cancellationToken.IsCancellationRequested)
             {
-                null or { Length: 0 } => null,
-                _ => JsonSerializer.Serialize(args, jsonSerializerOptions),
-            };
+                tcs.TrySetCanceled(cancellationToken);
+                CleanupTasksAndRegistrations(taskId);
 
-            interopTask.DeserializeOptions = jsonSerializerOptions;
+                return new ValueTask<TValue>(tcs.Task);
+            }
+
+            var argsJson = args is not null && args.Length != 0 ?
+                JsonSerializer.Serialize(args, JsonSerializerOptions) :
+                null;
+            var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
             BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
 
-            return new ValueTask<TValue>(interopTask.Task);
+            return new ValueTask<TValue>(tcs.Task);
         }
         catch
         {
-            _pendingTasks.TryRemove(taskId, out _);
-            interopTask.Dispose();
+            CleanupTasksAndRegistrations(taskId);
             throw;
         }
     }
 
-    internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
-        long targetInstanceId,
-        string identifier,
-        CancellationToken cancellationToken,
-        object?[]? args)
-        => InvokeAsync<TValue>(targetInstanceId, identifier, jsonSerializerOptions: null, cancellationToken, args);
+    private void CleanupTasksAndRegistrations(long taskId)
+    {
+        _pendingTasks.TryRemove(taskId, out _);
+        if (_cancellationRegistrations.TryRemove(taskId, out var registration))
+        {
+            registration.Dispose();
+        }
+    }
 
     /// <summary>
     /// Begins an asynchronous function invocation.
@@ -216,29 +229,29 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We enforce trimmer attributes for JSON deserialized types on InvokeAsync.")]
     internal bool EndInvokeJS(long taskId, bool succeeded, ref Utf8JsonReader jsonReader)
     {
-        if (!_pendingTasks.TryRemove(taskId, out var interopTask))
+        if (!_pendingTasks.TryRemove(taskId, out var tcs))
         {
             // We should simply return if we can't find an id for the invocation.
             // This likely means that the method that initiated the call defined a timeout and stopped waiting.
             return false;
         }
 
+        CleanupTasksAndRegistrations(taskId);
+
         try
         {
             if (succeeded)
             {
-                var resultType = interopTask.ResultType;
-                var result = resultType == typeof(IJSVoidResult)
-                    ? null
-                    : JsonSerializer.Deserialize(ref jsonReader, resultType, interopTask.DeserializeOptions);
+                var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
+                var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
                 ByteArraysToBeRevived.Clear();
-                interopTask.SetResult(result);
+                TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
             }
             else
             {
                 var exceptionText = jsonReader.GetString() ?? string.Empty;
-                interopTask.SetException(new JSException(exceptionText));
+                TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(exceptionText));
             }
 
             return true;
@@ -246,12 +259,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         catch (Exception exception)
         {
             var message = $"An exception occurred executing JS interop: {exception.Message}. See InnerException for more details.";
-            interopTask.SetException(new JSException(message, exception));
+            TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(message, exception));
             return false;
-        }
-        finally
-        {
-            interopTask.Dispose();
         }
     }
 

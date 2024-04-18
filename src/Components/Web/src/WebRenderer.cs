@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.Components.Web.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -43,18 +44,7 @@ public abstract class WebRenderer : Renderer
         jsComponentInterop.AttachToRenderer(this);
 
         var jsRuntime = serviceProvider.GetRequiredService<IJSRuntime>();
-        var jsRuntimeJsonSerializerOptions = new JsonSerializerOptions(jsRuntime.JsonSerializerOptions);
-        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Clear();
-        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
-        jsRuntimeJsonSerializerOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
-
-        jsRuntime.InvokeVoidAsync(
-            "Blazor._internal.attachWebRendererInterop",
-            jsRuntimeJsonSerializerOptions,
-            _rendererId,
-            _interopMethodsReference,
-            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
-            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer).Preserve();
+        AttachWebRendererInterop(jsRuntime, jsonOptions, jsComponentInterop);
     }
 
     /// <summary>
@@ -109,6 +99,31 @@ public abstract class WebRenderer : Renderer
         }
 
         base.Dispose(disposing);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
+    private void AttachWebRendererInterop(IJSRuntime jsRuntime, JsonSerializerOptions jsonOptions, JSComponentInterop jsComponentInterop)
+    {
+        object[] args = [
+            _rendererId,
+            _interopMethodsReference,
+            jsComponentInterop.Configuration.JSComponentParametersByIdentifier,
+            jsComponentInterop.Configuration.JSComponentIdentifiersByInitializer,
+        ];
+
+        if (jsRuntime is IInternalWebJSInProcessRuntime inProcessRuntime)
+        {
+            var newJsonOptions = new JsonSerializerOptions(jsonOptions);
+            newJsonOptions.TypeInfoResolverChain.Clear();
+            newJsonOptions.TypeInfoResolverChain.Add(WebRendererSerializerContext.Default);
+            newJsonOptions.TypeInfoResolverChain.Add(JsonConverterFactoryTypeInfoResolver<DotNetObjectReference<WebRendererInteropMethods>>.Instance);
+            var argsJson = JsonSerializer.Serialize(args, newJsonOptions);
+            inProcessRuntime.InvokeJS("Blazor._internal.attachWebRendererInterop", argsJson, JSCallResultType.JSVoidResult, 0);
+        }
+        else
+        {
+            jsRuntime.InvokeVoidAsync("Blazor._internal.attachWebRendererInterop", args).Preserve();
+        }
     }
 
     /// <summary>

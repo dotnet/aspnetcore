@@ -44,7 +44,7 @@ internal partial class RemoteRenderer : WebRenderer
         ILogger logger,
         RemoteJSRuntime jsRuntime,
         CircuitJSComponentInterop jsComponentInterop)
-        : base(serviceProvider, loggerFactory, jsRuntime.JsonSerializerOptions, jsComponentInterop)
+        : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _client = client;
         _options = options;

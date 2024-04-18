@@ -19,13 +19,14 @@ internal sealed class WebViewJSRuntime : JSRuntime
         JsonSerializerOptions.Converters.Add(
             new ElementReferenceJsonConverter(
                 new WebElementReferenceContext(this)));
-        JsonSerializerOptions.MakeReadOnly(populateMissingResolver: JsonSerializer.IsReflectionEnabledByDefault);
     }
 
     public void AttachToWebView(IpcSender ipcSender)
     {
         _ipcSender = ipcSender;
     }
+
+    public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
     protected override void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
     {

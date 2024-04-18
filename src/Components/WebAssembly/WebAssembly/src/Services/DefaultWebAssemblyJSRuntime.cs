@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Web.Internal;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.JSInterop;
@@ -15,7 +16,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
-internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
+internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime, IInternalWebJSInProcessRuntime
 {
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
@@ -30,13 +31,13 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = $"The call to {nameof(JsonSerializerOptions.MakeReadOnly)} only populates the missing resolver when reflection is enabled")]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
-        JsonSerializerOptions.MakeReadOnly(populateMissingResolver: JsonSerializer.IsReflectionEnabledByDefault);
     }
+
+    public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
     [JSExport]
     [SupportedOSPlatform("browser")]
@@ -164,4 +165,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebAssemblyDotNetDataStream", streamId, dotNetStreamReference);
     }
+
+    string IInternalWebJSInProcessRuntime.InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        => InvokeJS(identifier, argsJson, resultType, targetInstanceId);
 }
