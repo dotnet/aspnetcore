@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -26,19 +24,11 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
         // don't have access to the request.
         _subscription = state.RegisterOnPersisting(() =>
         {
-            var bytes = JsonSerializer.SerializeToUtf8Bytes(
-                GetAntiforgeryToken(),
-                DefaultAntiforgeryStateProviderJsonSerializerContext.Default.AntiforgeryRequestToken);
-            state.PersistAsJson(PersistenceKey, bytes);
+            state.PersistAsJson(PersistenceKey, GetAntiforgeryToken());
             return Task.CompletedTask;
         }, RenderMode.InteractiveAuto);
 
-        if (state.TryTakeFromJson<byte[]>(PersistenceKey, out var bytes))
-        {
-            _currentToken = JsonSerializer.Deserialize(
-                bytes,
-                DefaultAntiforgeryStateProviderJsonSerializerContext.Default.AntiforgeryRequestToken);
-        }
+        state.TryTakeFromJson(PersistenceKey, out _currentToken);
     }
 
     /// <inheritdoc />
@@ -47,6 +37,3 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider, IDisp
     /// <inheritdoc />
     public void Dispose() => _subscription.Dispose();
 }
-
-[JsonSerializable(typeof(AntiforgeryRequestToken))]
-internal sealed partial class DefaultAntiforgeryStateProviderJsonSerializerContext : JsonSerializerContext;
