@@ -20,6 +20,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 /// </summary>
 internal sealed class DefaultKeyResolver : IDefaultKeyResolver
 {
+#if NETFRAMEWORK
+    // Sadly, numerical AppContext data support was not added until 4.7 and we target 4.6
+    private const string MaximumTotalDefaultKeyResolverRetriesSwitchKey = "Microsoft.AspNetCore.DataProtection.KeyManagement.DisableDefaultKeyResolverRetries";
+#else
+    private const string MaximumTotalDefaultKeyResolverRetriesDataKey = "Microsoft.AspNetCore.DataProtection.KeyManagement.MaximumTotalDefaultKeyResolverRetries";
+#endif
+
     /// <summary>
     /// The window of time before the key expires when a new key should be created
     /// and persisted to the keyring to ensure uninterrupted service.
@@ -54,9 +61,33 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
     {
         _keyPropagationWindow = KeyManagementOptions.KeyPropagationWindow;
         _maxServerToServerClockSkew = KeyManagementOptions.MaxServerClockSkew;
-        _maxDecryptRetries = keyManagementOptions.Value.MaximumTotalDefaultKeyResolverRetries;
+        _maxDecryptRetries = GetMaxDecryptRetriesFromAppContext() ?? keyManagementOptions.Value.MaximumTotalDefaultKeyResolverRetries;
         _decryptRetryDelay = keyManagementOptions.Value.DefaultKeyResolverRetryDelay;
         _logger = loggerFactory.CreateLogger<DefaultKeyResolver>();
+    }
+
+    private static int? GetMaxDecryptRetriesFromAppContext()
+    {
+#if NETFRAMEWORK
+        // Force to zero if retries are disabled.  Otherwise, use the configured value
+        return AppContext.TryGetSwitch(MaximumTotalDefaultKeyResolverRetriesSwitchKey, out var areRetriesDisabled) && areRetriesDisabled ? 0 : null;
+#else
+        var data = AppContext.GetData(MaximumTotalDefaultKeyResolverRetriesDataKey);
+
+        // Programmatically-configured values are usually ints
+        if (data is int count)
+        {
+            return count;
+        }
+
+        // msbuild-configured values are usually strings
+        if (data is string countStr && int.TryParse(countStr, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
+#endif
     }
 
     private bool CanCreateAuthenticatedEncryptor(IKey key, ref int retriesRemaining)
