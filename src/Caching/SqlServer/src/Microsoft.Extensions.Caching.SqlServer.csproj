@@ -20,6 +20,9 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Data.SqlClient" />
     <Reference Include="Azure.Identity" />
+
+    <!-- temporary until we can move IBufferDistributedCache to Microsoft.Extensions.Caching.Abstractions-->
+    <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
   </ItemGroup>
 
   <ItemGroup>

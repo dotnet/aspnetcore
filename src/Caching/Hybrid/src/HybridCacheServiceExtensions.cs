@@ -50,7 +50,6 @@ public static class HybridCacheServiceExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions();
         services.AddMemoryCache();
-        services.AddDistributedMemoryCache(); // we need a backend; use in-proc by default
         services.TryAddSingleton<IHybridCacheSerializerFactory, DefaultJsonSerializerFactory>();
         services.TryAddSingleton<IHybridCacheSerializer<string>>(InbuiltTypeSerializer.Instance);
         services.TryAddSingleton<IHybridCacheSerializer<byte[]>>(InbuiltTypeSerializer.Instance);

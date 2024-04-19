@@ -9,6 +9,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
   </ItemGroup>
 
   <ItemGroup>
