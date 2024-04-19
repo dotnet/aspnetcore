@@ -472,7 +472,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     #endif
 
                 // Set the Accept header to "*/*"
-                request.Headers.Accept.Clear();
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
