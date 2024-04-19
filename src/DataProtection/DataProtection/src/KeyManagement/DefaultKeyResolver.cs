@@ -87,7 +87,7 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
                     if (exceptions is null)
                     {
                         // The first failure doesn't count as a retry
-                        exceptions = new();
+                        exceptions = [];
                     }
                     else
                     {
