@@ -130,7 +130,7 @@ internal sealed class Key : IKey
             // We could check for _descriptorException here, but there's no reason to optimize that case
             // (i.e. by avoiding taking the lock)
 
-            if (_descriptor is not null) // Can only become less null, so losing a race here doesn't matter
+            if (_descriptor is not null) // Can only go from null to non-null, so losing a race here doesn't matter
             {
                 Debug.Assert(_descriptorException is null); // Mutually exclusive with _descriptor
                 return _descriptor;
