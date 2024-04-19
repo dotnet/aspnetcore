@@ -37,23 +37,6 @@ internal static class JsonObjectSchemaExtensions
         [typeof(DateTimeOffset)] = new() { Type = "string", Format = "date-time" },
         [typeof(Guid)] = new() { Type = "string", Format = "uuid" },
         [typeof(char)] = new() { Type = "string" },
-
-        // Nullable types
-        [typeof(bool?)] = new() { Type = "boolean", Nullable = true },
-        [typeof(byte?)] = new() { Type = "string", Format = "byte", Nullable = true },
-        [typeof(int?)] = new() { Type = "integer", Format = "int32", Nullable = true },
-        [typeof(uint?)] = new() { Type = "integer", Format = "int32", Nullable = true },
-        [typeof(long?)] = new() { Type = "integer", Format = "int64", Nullable = true },
-        [typeof(ulong?)] = new() { Type = "integer", Format = "int64", Nullable = true },
-        [typeof(short?)] = new() { Type = "integer", Format = null, Nullable = true },
-        [typeof(ushort?)] = new() { Type = "integer", Format = null, Nullable = true },
-        [typeof(float?)] = new() { Type = "number", Format = "float", Nullable = true },
-        [typeof(double?)] = new() { Type = "number", Format = "double", Nullable = true },
-        [typeof(decimal?)] = new() { Type = "number", Format = "double", Nullable = true },
-        [typeof(DateTime?)] = new() { Type = "string", Format = "date-time", Nullable = true },
-        [typeof(DateTimeOffset?)] = new() { Type = "string", Format = "date-time", Nullable = true },
-        [typeof(Guid?)] = new() { Type = "string", Format = "uuid", Nullable = true },
-        [typeof(char?)] = new() { Type = "string", Nullable = true },
         [typeof(Uri)] = new() { Type = "string", Format = "uri" },
         [typeof(string)] = new() { Type = "string" },
     };
@@ -63,7 +46,7 @@ internal static class JsonObjectSchemaExtensions
     /// </summary>
     /// <remarks>
     /// OpenApi schema v3 supports the validation vocabulary supported by JSON Schema. Because the underlying
-    /// schema generator does not validation attributes to the validation vocabulary, we apply that mapping here.
+    /// schema generator does not handle validation attributes to the validation vocabulary, we apply that mapping here.
     ///
     /// Note that this method targets <see cref="JsonObject"/> and not <see cref="OpenApiSchema"/> because it is
     /// designed to be invoked via the `OnGenerated` callback provided by the underlying schema generator
@@ -144,8 +127,7 @@ internal static class JsonObjectSchemaExtensions
     {
         if (_simpleTypeToOpenApiSchema.TryGetValue(type, out var openApiSchema))
         {
-            schema["nullable"] = openApiSchema.Nullable || (schema["type"] is JsonArray schemaType
-                && schemaType.GetValues<string>().Contains("null"));
+            schema["nullable"] = openApiSchema.Nullable || (schema["type"] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
             schema["type"] = openApiSchema.Type;
             schema["format"] = openApiSchema.Format;
         }

@@ -47,7 +47,7 @@ internal sealed partial class OpenApiJsonSchema(OpenApiSchema schema)
         /// </remarks>
         public override void Write(Utf8JsonWriter writer, OpenApiJsonSchema value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("OpenApiJsonSchema serialization is not supported.");
         }
     }
 }

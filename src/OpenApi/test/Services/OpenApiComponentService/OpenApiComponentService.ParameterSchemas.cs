@@ -27,6 +27,8 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [(uint id) => {}, "integer", "int32", false],
         [(ulong id) => {}, "integer", "int64", false],
         [(Uri id) => {}, "string", "uri", false],
+        [(TimeOnly id) => {}, "string", "time", false],
+        [(DateOnly id) => {}, "string", "date", false],
         [(int? id) => {}, "integer", "int32", true],
         [(long? id) => {}, "integer", "int64", true],
         [(float? id) => {}, "number", "float", true],
@@ -41,8 +43,6 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [(uint? id) => {}, "integer", "int32", true],
         [(ulong? id) => {}, "integer", "int64", true],
         [(Uri? id) => {}, "string", "uri", true],
-        [(TimeOnly id) => {}, "string", "time", false],
-        [(DateOnly id) => {}, "string", "date", false],
         [(TimeOnly? id) => {}, "string", "time", true],
         [(DateOnly? id) => {}, "string", "date", true]
     ];

@@ -25,13 +25,11 @@ internal sealed partial class OpenApiJsonSchema
 
         if (reader.TokenType == JsonTokenType.StartArray)
         {
-            var typeInfo = options.GetTypeInfo(typeof(T));
-            var valueConverter = (JsonConverter<T>)typeInfo.Converter;
             var values = new List<T>();
             reader.Read();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
-                values.Add(valueConverter.Read(ref reader, typeof(T), options)!);
+                values.Add(JsonSerializer.Deserialize<T>(ref reader, options)!);
                 reader.Read();
             }
 
@@ -66,8 +64,6 @@ internal sealed partial class OpenApiJsonSchema
             throw new JsonException("Expected StartObject or Null");
         }
 
-        var typeInfo = options.GetTypeInfo(typeof(T));
-        var valueConverter = (JsonConverter<T>)typeInfo.Converter;
         var values = new Dictionary<string, T>();
         reader.Read();
         while (reader.TokenType != JsonTokenType.EndObject)
@@ -79,7 +75,7 @@ internal sealed partial class OpenApiJsonSchema
 
             var key = reader.GetString()!;
             reader.Read();
-            values[key] = valueConverter.Read(ref reader, typeof(T), options)!;
+            values[key] = JsonSerializer.Deserialize<T>(ref reader, options)!;
             reader.Read();
         }
 
