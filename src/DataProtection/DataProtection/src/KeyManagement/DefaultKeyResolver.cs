@@ -109,7 +109,7 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
             // Reset the descriptor to allow for a retry
             (key as Key)?.ResetDescriptor();
 
-            // Don't retry immediately
+            // Don't retry immediately - allow a little time for the transient problem to clear
             Thread.Sleep(_decryptRetryDelay);
         }
     }
