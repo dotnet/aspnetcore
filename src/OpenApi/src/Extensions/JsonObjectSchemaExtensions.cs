@@ -140,7 +140,9 @@ internal static class JsonObjectSchemaExtensions
     /// <param name="constraints">The list of <see cref="IRouteConstraint"/>s associated with the route parameter.</param>
     internal static void ApplyRouteConstraints(this JsonObject schema, IEnumerable<IRouteConstraint> constraints)
     {
-        foreach (var constraint in constraints)
+        // Apply constraints in reverse order because when it comes to the routing
+        // layer the first constraint that is violated causes routing to short circuit.
+        foreach (var constraint in constraints.Reverse())
         {
             if (constraint is MinRouteConstraint minRouteConstraint)
             {

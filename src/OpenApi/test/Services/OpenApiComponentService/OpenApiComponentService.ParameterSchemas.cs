@@ -114,6 +114,13 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
     [InlineData("/api/{id:range(4, 8)}", "integer", "int32", 4, 8, null, null, null)]
     [InlineData("/api/{id:alpha}", "string", null, null, null, null, null, "^[A-Za-z]*$")]
     [InlineData("/api/{id:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)}", "string", null, null, null, null, null, "^\\d{3}-\\d{2}-\\d{4}$")]
+    // First route constraint wins
+    [InlineData("/api/{id:min(2):range(4, 8)}", "integer", "int32", 2, 8, null, null, null)]
+    [InlineData("/api/{id::double:float}", "number", "double", null, null, null, null, null)]
+    [InlineData("/api/{id::long:int}", "integer", "int64", null, null, null, null, null)]
+    // Compatible route constraints are combined
+    [InlineData("/api/{id:max(8):min(4)}", "integer", "int32", 4, 8, null, null, null)]
+    [InlineData("/api/{id:maxLength(8):minLength(4)}", "integer", "int32", null, null, 4, 8, null)]
     public async Task GetOpenApiParameters_HandlesRouteParameterWithRouteConstraint(string routeTemplate, string type, string format, int? minimum, int? maximum, int? minLength, int? maxLength, string pattern)
     {
         // Arrange
