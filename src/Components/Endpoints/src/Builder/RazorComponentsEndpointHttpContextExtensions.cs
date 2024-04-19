@@ -17,23 +17,25 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public static class RazorComponentsEndpointHttpContextExtensions
 {
-    private static readonly ConcurrentDictionary<Type, bool> AllowsInteractiveRoutingCache = new();
+    private static readonly ConcurrentDictionary<Type, bool> AcceptsInteractiveRoutingCache = new();
 
     /// <summary>
     /// Determines whether the current endpoint is a Razor component that can be reached through
     /// interactive routing. This is true for all page components except if they declare the
-    /// attribute <see cref="AllowInteractiveRoutingAttribute"/> with value <see langword="false"/>.
+    /// attribute <see cref="ExcludeFromInteractiveRoutingAttribute"/>.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
-    /// <returns>True if the current endpoint is a Razor component that does not declare <see cref="AllowInteractiveRoutingAttribute"/> with value <see langword="false"/>.</returns>
-    public static bool AllowsInteractiveRouting(this HttpContext? context)
+    /// <returns>True if the current endpoint is a Razor component that does not declare <see cref="ExcludeFromInteractiveRoutingAttribute"/>.</returns>
+    public static bool AcceptsInteractiveRouting(this HttpContext context)
     {
-        var pageType = context?.GetEndpoint()?.Metadata.GetMetadata<ComponentTypeMetadata>()?.Type;
+        ArgumentNullException.ThrowIfNull(context);
+
+        var pageType = context.GetEndpoint()?.Metadata.GetMetadata<ComponentTypeMetadata>()?.Type;
 
         return pageType is not null
-            && AllowsInteractiveRoutingCache.GetOrAdd(
+            && AcceptsInteractiveRoutingCache.GetOrAdd(
                 pageType,
-                pageType.GetCustomAttribute<AllowInteractiveRoutingAttribute>() is not { Allow: false });
+                static pageType => !pageType.IsDefined(typeof(ExcludeFromInteractiveRoutingAttribute)));
     }
 
     internal static class MetadataUpdateHandler
@@ -42,6 +44,6 @@ public static class RazorComponentsEndpointHttpContextExtensions
         /// Invoked as part of <see cref="MetadataUpdateHandlerAttribute" /> contract for hot reload.
         /// </summary>
         public static void ClearCache(Type[]? _)
-            => AllowsInteractiveRoutingCache.Clear();
+            => AcceptsInteractiveRoutingCache.Clear();
     }
 }

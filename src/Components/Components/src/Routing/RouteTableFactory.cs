@@ -75,7 +75,7 @@ internal class RouteTableFactory
             {
                 if (typeof(IComponent).IsAssignableFrom(type)
                     && type.IsDefined(typeof(RouteAttribute))
-                    && type.GetCustomAttribute<AllowInteractiveRoutingAttribute>() is not { Allow: false })
+                    && !type.IsDefined(typeof(ExcludeFromInteractiveRoutingAttribute)))
                 {
                     routeableComponents.Add(type);
                 }
