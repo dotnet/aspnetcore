@@ -816,21 +816,24 @@ public class KeyRingProviderTests
         var expectedException = new InvalidOperationException(nameof(MultipleThreadsForceRefresh));
 
         var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
-        if (failsToReadKeyRing)
-        {
-            mockCacheableKeyRingProvider
-                .Setup(o => o.GetCacheableKeyRing(now))
-                .Throws(expectedException);
-        }
-        else
-        {
-            mockCacheableKeyRingProvider
-                .Setup(o => o.GetCacheableKeyRing(now))
-                .Returns(new CacheableKeyRing(
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(now))
+            .Returns<DateTimeOffset>(_ =>
+            {
+                // Simulate doing actual work.  We need this so that other threads have an opportunity
+                // to bypass the critical section.
+                Thread.Sleep(200);
+
+                if (failsToReadKeyRing)
+                {
+                    throw expectedException;
+                }
+
+                return new CacheableKeyRing(
                     expirationToken: CancellationToken.None,
                     expirationTime: now.AddDays(1),
-                    keyRing: expectedKeyRing.Object));
-        }
+                    keyRing: expectedKeyRing.Object);
+            });
 
         var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
 
