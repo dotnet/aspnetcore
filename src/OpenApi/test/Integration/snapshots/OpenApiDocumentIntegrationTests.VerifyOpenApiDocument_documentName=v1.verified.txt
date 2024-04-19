@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/v1/ienumrable": {
+    "/v1/array-of-guids": {
       "get": {
         "tags": [
           "Sample"

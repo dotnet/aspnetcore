@@ -52,7 +52,7 @@ var v2 = app.MapGroup("v2")
 var responses = app.MapGroup("responses")
     .WithGroupName("responses");
 
-v1.MapGet("/ienumrable", (Guid[] guids) => guids);
+v1.MapGet("/array-of-guids", (Guid[] guids) => guids);
 
 v1.MapPost("/todos", (Todo todo) => Results.Created($"/todos/{todo.Id}", todo))
     .WithSummary("Creates a new todo item.");
