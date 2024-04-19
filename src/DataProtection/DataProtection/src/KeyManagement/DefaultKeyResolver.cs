@@ -54,7 +54,7 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
     {
         _keyPropagationWindow = KeyManagementOptions.KeyPropagationWindow;
         _maxServerToServerClockSkew = KeyManagementOptions.MaxServerClockSkew;
-        _maxDecryptRetries = keyManagementOptions.Value.MaximumDefaultKeyResolverRetries;
+        _maxDecryptRetries = keyManagementOptions.Value.MaximumTotalDefaultKeyResolverRetries;
         _decryptRetryDelay = keyManagementOptions.Value.DefaultKeyResolverRetryDelay;
         _logger = loggerFactory.CreateLogger<DefaultKeyResolver>();
     }

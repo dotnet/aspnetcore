@@ -335,7 +335,7 @@ public class DefaultKeyResolverTests
         // Arrange
         var options = Options.Create(new KeyManagementOptions()
         {
-            MaximumDefaultKeyResolverRetries = maxRetries,
+            MaximumTotalDefaultKeyResolverRetries = maxRetries,
             DefaultKeyResolverRetryDelay = TimeSpan.Zero,
         });
 
@@ -412,7 +412,7 @@ public class DefaultKeyResolverTests
         // Arrange
         var options = Options.Create(new KeyManagementOptions()
         {
-            MaximumDefaultKeyResolverRetries = 3,
+            MaximumTotalDefaultKeyResolverRetries = 3,
             DefaultKeyResolverRetryDelay = TimeSpan.Zero,
         });
 

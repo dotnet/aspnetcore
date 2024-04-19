@@ -102,11 +102,11 @@ public class KeyManagementOptions
     /// <remarks>
     /// Settable for testing.
     /// </remarks>
-    internal int MaximumDefaultKeyResolverRetries { get; set; } = 10;
+    internal int MaximumTotalDefaultKeyResolverRetries { get; set; } = 10;
 
     /// <summary>
     /// Wait this long before each default key resolution decryption retry.
-    /// <seealso cref="MaximumDefaultKeyResolverRetries"/>
+    /// <seealso cref="MaximumTotalDefaultKeyResolverRetries"/>
     /// </summary>
     /// <remarks>
     /// Settable for testing.
