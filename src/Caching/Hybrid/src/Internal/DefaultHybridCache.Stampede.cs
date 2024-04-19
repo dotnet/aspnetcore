@@ -68,8 +68,7 @@ partial class DefaultHybridCache
         {
             if (@this._currentOperations.TryGetValue(stampedeKey, out var found))
             {
-                var tmp = found as StampedeState<TState, T>;
-                if (tmp is null)
+                if (found is not StampedeState<TState, T> tmp)
                 {
                     ThrowWrongType(stampedeKey.Key, found.Type, typeof(T));
                 }

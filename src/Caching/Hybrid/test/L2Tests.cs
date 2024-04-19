@@ -20,7 +20,7 @@ public class L2Tests(ITestOutputHelper Log)
     {
         T IOptions<T>.Value => Value;
     }
-    IDisposable GetDefaultCache(bool buffers, out DefaultHybridCache cache)
+    ServiceProvider GetDefaultCache(bool buffers, out DefaultHybridCache cache)
     {
         var services = new ServiceCollection();
         var localCacheOptions = new Options<MemoryDistributedCacheOptions>(new());
@@ -38,7 +38,7 @@ public class L2Tests(ITestOutputHelper Log)
         return Guid.NewGuid().ToString();
     }
 
-    static readonly HybridCacheEntryOptions NoL1 = new HybridCacheEntryOptions { Flags = HybridCacheEntryFlags.DisableLocalCache };
+    static readonly HybridCacheEntryOptions _noL1 = new() { Flags = HybridCacheEntryFlags.DisableLocalCache };
 
     [Theory]
     [InlineData(true)]
@@ -52,7 +52,7 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(2, backend.OpCount); // GET, SET
 
         Log.WriteLine("Reading with L1...");
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString()));
             Assert.Equal(s, x);
@@ -61,9 +61,9 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(2, backend.OpCount); // shouldn't be hit
 
         Log.WriteLine("Reading without L1...");
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString()), NoL1);
+            var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString()), _noL1);
             Assert.Equal(s, x);
             Assert.NotSame(s, x);
         }
@@ -72,7 +72,7 @@ public class L2Tests(ITestOutputHelper Log)
         Log.WriteLine("Setting value directly");
         s = CreateString(true);
         await cache.SetAsync(Me(), s);
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<string>(CreateString()));
             Assert.Equal(s, x);
@@ -107,7 +107,7 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(2, backend.OpCount); // GET, SET
 
         Log.WriteLine("Reading with L1...");
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString() }));
             Assert.Equal(s.Value, x.Value);
@@ -116,9 +116,9 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(2, backend.OpCount); // shouldn't be hit
 
         Log.WriteLine("Reading without L1...");
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
-            var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString() }), NoL1);
+            var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString() }), _noL1);
             Assert.Equal(s.Value, x.Value);
             Assert.NotSame(s, x);
         }
@@ -127,7 +127,7 @@ public class L2Tests(ITestOutputHelper Log)
         Log.WriteLine("Setting value directly");
         s = new Foo { Value = CreateString(true) };
         await cache.SetAsync(Me(), s);
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             var x = await cache.GetOrCreateAsync(Me(), ct => new ValueTask<Foo>(new Foo { Value = CreateString() }));
             Assert.Equal(s.Value, x.Value);
@@ -251,7 +251,7 @@ public class L2Tests(ITestOutputHelper Log)
         {
             Interlocked.Increment(ref opcount);
             Log.WriteLine($"SetAsync (byte[]): {key}");
-            return Tail.SetAsync(key, value, options);
+            return Tail.SetAsync(key, value, options, token);
         }
     }
 

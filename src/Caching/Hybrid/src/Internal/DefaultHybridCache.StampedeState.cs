@@ -85,7 +85,7 @@ partial class DefaultHybridCache
 
         public bool TryAddCaller() // essentially just interlocked-increment, but with a leading zero check and overflow detection
         {
-            int oldValue = Volatile.Read(ref _activeCallers);
+            var oldValue = Volatile.Read(ref _activeCallers);
             do
             {
                 if (oldValue is 0 or -1)

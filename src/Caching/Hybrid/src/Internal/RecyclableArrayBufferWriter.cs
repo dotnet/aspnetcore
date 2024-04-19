@@ -38,7 +38,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
     private RecyclableArrayBufferWriter()
     {
-        _buffer = Array.Empty<T>();
+        _buffer = [];
         _index = 0;
         _maxLength = int.MaxValue;
     }
@@ -51,7 +51,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         if (Interlocked.CompareExchange(ref _spare, this, null) != null)
         {
             var tmp = _buffer;
-            _buffer = Array.Empty<T>();
+            _buffer = [];
             if (tmp.Length != 0)
             {
                 ArrayPool<T>.Shared.Return(tmp);
@@ -113,7 +113,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         return _index == 0 ? [] : _buffer;
     }
 
-    public ReadOnlyMemory<T> GetCommittedMemory() => new ReadOnlyMemory<T>(_buffer, 0, _index); // could also directly expose a ReadOnlySpan<byte> if useful
+    public ReadOnlyMemory<T> GetCommittedMemory() => new(_buffer, 0, _index); // could also directly expose a ReadOnlySpan<byte> if useful
 
     public Memory<T> GetMemory(int sizeHint = 0)
     {
@@ -141,22 +141,22 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
 
         if (sizeHint > FreeCapacity)
         {
-            int currentLength = _buffer.Length;
+            var currentLength = _buffer.Length;
 
             // Attempt to grow by the larger of the sizeHint and double the current size.
-            int growBy = Math.Max(sizeHint, currentLength);
+            var growBy = Math.Max(sizeHint, currentLength);
 
             if (currentLength == 0)
             {
                 growBy = Math.Max(growBy, DefaultInitialBufferSize);
             }
 
-            int newSize = currentLength + growBy;
+            var newSize = currentLength + growBy;
 
             if ((uint)newSize > int.MaxValue)
             {
                 // Attempt to grow to ArrayMaxLength.
-                uint needed = (uint)(currentLength - FreeCapacity + sizeHint);
+                var needed = (uint)(currentLength - FreeCapacity + sizeHint);
                 Debug.Assert(needed > currentLength);
 
                 if (needed > ArrayMaxLength)

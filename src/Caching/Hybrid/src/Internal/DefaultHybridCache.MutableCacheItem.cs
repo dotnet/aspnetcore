@@ -28,11 +28,13 @@ partial class DefaultHybridCache
             var writer = RecyclableArrayBufferWriter<byte>.Create(maxLength);
             serializer.Serialize(value, writer);
 
-            _buffer = new(writer.DetachCommitted(out int length), length, returnToPool: true);
+            _buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true);
             writer.Dispose(); // no buffers left (we just detached them), but just in case of other logic
         }
 
         public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
+
+        public override void OnEviction() => Release();
 
         public override void Release()
         {
@@ -46,7 +48,7 @@ partial class DefaultHybridCache
 
         public bool TryReserve()
         {
-            int oldValue = Volatile.Read(ref _refCount);
+            var oldValue = Volatile.Read(ref _refCount);
             do
             {
                 if (oldValue is 0 or -1)
@@ -92,5 +94,7 @@ partial class DefaultHybridCache
             buffer = default;
             return false;
         }
+
+        public override bool DebugIsImmutable => false;
     }
 }

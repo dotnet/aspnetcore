@@ -10,21 +10,25 @@ partial class DefaultHybridCache
 {
     internal abstract class CacheItem
     {
-        internal static readonly PostEvictionDelegate OnEviction = (key, value, reason, state) =>
+        internal static readonly PostEvictionDelegate _sharedOnEviction = static (key, value, reason, state) =>
         {
             if (value is CacheItem item)
             {
-                // in reality we only set this up for mutable cache items, as a mechanism
-                // to recycle the buffers
-                item.Release();
+                // perform per-item clean-up; this could be buffer recycling (if defensive copies needed),
+                // or could be disposal
+                item.OnEviction();
             }
         };
 
         public virtual void Release() { } // for recycling purposes
 
-        public virtual bool NeedsEvictionCallback => false; // do we need to call Release when evicted?
+        public abstract bool NeedsEvictionCallback { get; } // do we need to call Release when evicted?
+
+        public virtual void OnEviction() { } // only invoked if NeedsEvictionCallback reported true
 
         public abstract bool TryReserveBuffer(out BufferChunk buffer);
+
+        public abstract bool DebugIsImmutable { get; }
     }
 
     internal abstract class CacheItem<T> : CacheItem

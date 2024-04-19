@@ -66,7 +66,7 @@ public abstract class DistributedCacheTests
 
         var expected = new byte[size];
         new Random().NextBytes(expected);
-        cache.Set(key, expected, FiveMinutes);
+        cache.Set(key, expected, _fiveMinutes);
 
         var actual = cache.Get(key);
         Assert.NotNull(actual);
@@ -112,7 +112,7 @@ public abstract class DistributedCacheTests
 
         var expected = new byte[size];
         new Random().NextBytes(expected);
-        await cache.SetAsync(key, expected, FiveMinutes);
+        await cache.SetAsync(key, expected, _fiveMinutes);
 
         var actual = await cache.GetAsync(key);
         Assert.NotNull(actual);
@@ -179,7 +179,7 @@ public abstract class DistributedCacheTests
         var payload = Invent(size, kind);
         ReadOnlyMemory<byte> expected = payload.ToArray(); // simplify for testing
         Assert.Equal(size, expected.Length);
-        cache.Set(key, payload, FiveMinutes);
+        cache.Set(key, payload, _fiveMinutes);
 
         var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         Assert.True(cache.TryGet(key, writer));
@@ -239,7 +239,7 @@ public abstract class DistributedCacheTests
         var payload = Invent(size, kind);
         ReadOnlyMemory<byte> expected = payload.ToArray(); // simplify for testing
         Assert.Equal(size, expected.Length);
-        await cache.SetAsync(key, payload, FiveMinutes);
+        await cache.SetAsync(key, payload, _fiveMinutes);
 
         var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue);
         Assert.True(await cache.TryGetAsync(key, writer));
@@ -363,7 +363,7 @@ public abstract class DistributedCacheTests
             _data = new byte[size + 10];
             rand?.NextBytes(_data);
         }
-        public override Span<byte> GetSpan() => new Span<byte>(_data, 5, _data.Length - 10);
+        public override Span<byte> GetSpan() => new(_data, 5, _data.Length - 10);
         public override MemoryHandle Pin(int elementIndex = 0) => throw new NotSupportedException();
         public override void Unpin() => throw new NotSupportedException();
         protected override void Dispose(bool disposing) { }
@@ -374,7 +374,7 @@ public abstract class DistributedCacheTests
         }
     }
 
-    private readonly static DistributedCacheEntryOptions FiveMinutes
+    private static readonly DistributedCacheEntryOptions _fiveMinutes
         = new() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) };
 
     protected static string Me([CallerMemberName] string caller = "") => caller;

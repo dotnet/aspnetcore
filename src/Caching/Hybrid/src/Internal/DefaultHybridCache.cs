@@ -110,7 +110,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
 
     public override ValueTask<T> GetOrCreateAsync<TState, T>(string key, TState state, Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
     {
-        bool canBeCanceled = token.CanBeCanceled;
+        var canBeCanceled = token.CanBeCanceled;
         if (canBeCanceled)
         {
             token.ThrowIfCancellationRequested();

@@ -57,6 +57,8 @@ partial class DefaultHybridCache
     {
         // note for blittable types: a pure struct will be a full copy every time - nothing shared to mutate
         public static readonly bool IsImmutable = (typeof(T).IsValueType && IsBlittable<T>()) || IsImmutable(typeof(T));
+
+        public static bool IsDisposable => typeof(IDisposable).IsAssignableFrom(typeof(T));
     }
 
     private static bool IsBlittable<T>() // minimize the generic portion

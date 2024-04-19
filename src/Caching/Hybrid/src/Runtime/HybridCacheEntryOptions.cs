@@ -32,7 +32,7 @@ public sealed class HybridCacheEntryOptions
     public HybridCacheEntryFlags? Flags { get; init; }
 
     // memoize when possible
-    private DistributedCacheEntryOptions? dc;
+    private DistributedCacheEntryOptions? _dc;
     internal DistributedCacheEntryOptions? ToDistributedCacheEntryOptions()
-        => Expiration is null ? null : (dc ??= new() { AbsoluteExpirationRelativeToNow = Expiration });
+        => Expiration is null ? null : (_dc ??= new() { AbsoluteExpirationRelativeToNow = Expiration });
 }

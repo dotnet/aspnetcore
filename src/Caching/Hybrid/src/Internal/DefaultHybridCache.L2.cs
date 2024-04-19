@@ -114,12 +114,12 @@ partial class DefaultHybridCache
     internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
     {
         // based on CacheExtensions.Set<TItem>, but with post-eviction recycling
-        using ICacheEntry cacheEntry = _localCache.CreateEntry(key);
+        using var cacheEntry = _localCache.CreateEntry(key);
         cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
         cacheEntry.Value = value;
         if (value.NeedsEvictionCallback)
         {
-            cacheEntry.RegisterPostEvictionCallback(CacheItem.OnEviction);
+            cacheEntry.RegisterPostEvictionCallback(CacheItem._sharedOnEviction);
         }
     }
 }

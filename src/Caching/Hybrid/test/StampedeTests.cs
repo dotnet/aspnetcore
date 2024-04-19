@@ -17,7 +17,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 public class StampedeTests
 {
-    static IDisposable GetDefaultCache(out DefaultHybridCache cache)
+    static ServiceProvider GetDefaultCache(out DefaultHybridCache cache)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IDistributedCache, InvalidCache>();
@@ -34,7 +34,7 @@ public class StampedeTests
         return provider;
     }
 
-    public class InvalidCache : IDistributedCache, IMemoryCache
+    public sealed class InvalidCache : IDistributedCache, IMemoryCache
     {
         void IDisposable.Dispose() { }
         ICacheEntry IMemoryCache.CreateEntry(object key) => throw new NotSupportedException("Intentionally not provided");
@@ -73,13 +73,13 @@ public class StampedeTests
         var token = canBeCanceled ? new CancellationTokenSource().Token : CancellationToken.None;
 
         int executeCount = 0, cancelCount = 0;
-        Task<Guid>[] results = new Task<Guid>[callerCount];
-        for (int i = 0; i < callerCount; i++)
+        var results = new Task<Guid>[callerCount];
+        for (var i = 0; i < callerCount; i++)
         {
             results[i] = cache.GetOrCreateAsync(Me(), async ct =>
             {
                 using var reg = ct.Register(() => Interlocked.Increment(ref cancelCount));
-                if (!await semaphore.WaitAsync(5_000))
+                if (!await semaphore.WaitAsync(5_000, CancellationToken.None))
                 {
                     throw new TimeoutException("Failed to activate");
                 }
@@ -108,12 +108,12 @@ public class StampedeTests
 
         // and do it a second time; we expect different results
         Volatile.Write(ref executeCount, 0);
-        for (int i = 0; i < callerCount; i++)
+        for (var i = 0; i < callerCount; i++)
         {
             results[i] = cache.GetOrCreateAsync(Me(), async ct =>
             {
                 using var reg = ct.Register(() => Interlocked.Increment(ref cancelCount));
-                if (!await semaphore.WaitAsync(5_000))
+                if (!await semaphore.WaitAsync(5_000, CancellationToken.None))
                 {
                     throw new TimeoutException("Failed to activate");
                 }
@@ -155,15 +155,15 @@ public class StampedeTests
         using var semaphore = new SemaphoreSlim(0);
 
         int executeCount = 0, cancelCount = 0;
-        Task<Guid>[] results = new Task<Guid>[callerCount];
-        CancellationTokenSource[] cancels = new CancellationTokenSource[callerCount];
-        for (int i = 0; i < callerCount; i++)
+        var results = new Task<Guid>[callerCount];
+        var cancels = new CancellationTokenSource[callerCount];
+        for (var i = 0; i < callerCount; i++)
         {
             cancels[i] = new CancellationTokenSource();
             results[i] = cache.GetOrCreateAsync(Me(), async ct =>
             {
                 using var reg = ct.Register(() => Interlocked.Increment(ref cancelCount));
-                if (!await semaphore.WaitAsync(5_000))
+                if (!await semaphore.WaitAsync(5_000, CancellationToken.None))
                 {
                     throw new TimeoutException("Failed to activate");
                 }
@@ -189,7 +189,7 @@ public class StampedeTests
             cancel.Cancel();
         }
         await Task.Delay(500); // cancellation happens on a worker; need to allow a moment
-        for (int i = 0; i < callerCount; i++)
+        for (var i = 0; i < callerCount; i++)
         {
             var result = results[i];
             // should have already cancelled, even though underlying task hasn't finished yet
@@ -226,15 +226,15 @@ public class StampedeTests
         using var semaphore = new SemaphoreSlim(0);
 
         int executeCount = 0, cancelCount = 0;
-        Task<Guid>[] results = new Task<Guid>[callerCount];
-        CancellationTokenSource[] cancels = new CancellationTokenSource[callerCount];
-        for (int i = 0; i < callerCount; i++)
+        var results = new Task<Guid>[callerCount];
+        var cancels = new CancellationTokenSource[callerCount];
+        for (var i = 0; i < callerCount; i++)
         {
             cancels[i] = new CancellationTokenSource();
             results[i] = cache.GetOrCreateAsync(Me(), async ct =>
             {
                 using var reg = ct.Register(() => Interlocked.Increment(ref cancelCount));
-                if (!await semaphore.WaitAsync(5_000))
+                if (!await semaphore.WaitAsync(5_000, CancellationToken.None))
                 {
                     throw new TimeoutException("Failed to activate");
                 }
@@ -255,7 +255,7 @@ public class StampedeTests
 
         // everyone is queued up; release the hounds and check
         // that we all got the same result
-        for (int i = 0; i < callerCount; i++)
+        for (var i = 0; i < callerCount; i++)
         {
             if (i != remaining)
             {
@@ -263,7 +263,7 @@ public class StampedeTests
             }
         }
         await Task.Delay(500); // cancellation happens on a worker; need to allow a moment
-        for (int i = 0; i < callerCount; i++)
+        for (var i = 0; i < callerCount; i++)
         {
             if (i != remaining)
             {
@@ -291,21 +291,22 @@ public class StampedeTests
     [InlineData(false)]
     public async Task ImmutableTypesShareFinalTask(bool withCancelation)
     {
-        CancellationToken token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
+        var token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
 
         using var scope = GetDefaultCache(out var cache);
         using var semaphore = new SemaphoreSlim(0);
 
-        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return Guid.NewGuid(); }, token: token);
-        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return Guid.NewGuid(); }, token: token);
+        // note AsTask *in this scenario* fetches the underlying incomplete task
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return Guid.NewGuid(); }, token: token).AsTask();
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return Guid.NewGuid(); }, token: token).AsTask();
 
         if (withCancelation)
         {
-            Assert.NotSame(first.AsTask(), second.AsTask()); // fetches the underlying incomplete task
+            Assert.NotSame(first, second);
         }
         else
         {
-            Assert.Same(first.AsTask(), second.AsTask());
+            Assert.Same(first, second);
         }
         semaphore.Release();
         Assert.Equal(await first, await second);
@@ -316,21 +317,22 @@ public class StampedeTests
     [InlineData(false)]
     public async Task ImmutableCustomTypesShareFinalTask(bool withCancelation)
     {
-        CancellationToken token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
+        var token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
 
         using var scope = GetDefaultCache(out var cache);
         using var semaphore = new SemaphoreSlim(0);
 
-        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token);
-        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token);
+        // AsTask *in this scenario* fetches the underlying incomplete task
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token).AsTask();
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Immutable(Guid.NewGuid()); }, token: token).AsTask();
 
         if (withCancelation)
         {
-            Assert.NotSame(first.AsTask(), second.AsTask()); // fetches the underlying incomplete task
+            Assert.NotSame(first, second);
         }
         else
         {
-            Assert.Same(first.AsTask(), second.AsTask());
+            Assert.Same(first, second);
         }
         semaphore.Release();
 
@@ -345,15 +347,16 @@ public class StampedeTests
     [InlineData(false)]
     public async Task MutableTypesNeverShareFinalTask(bool withCancelation)
     {
-        CancellationToken token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
+        var token = withCancelation ? new CancellationTokenSource().Token : CancellationToken.None;
 
         using var scope = GetDefaultCache(out var cache);
         using var semaphore = new SemaphoreSlim(0);
 
-        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token);
-        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token);
+        // AsTask *in this scenario* fetches the underlying incomplete task
+        var first = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token).AsTask();
+        var second = cache.GetOrCreateAsync(Me(), async ct => { await semaphore.WaitAsync(CancellationToken.None); semaphore.Release(); return new Mutable(Guid.NewGuid()); }, token: token).AsTask();
 
-        Assert.NotSame(first.AsTask(), second.AsTask()); // fetches the underlying incomplete task
+        Assert.NotSame(first, second);
         semaphore.Release();
 
         var x = await first;

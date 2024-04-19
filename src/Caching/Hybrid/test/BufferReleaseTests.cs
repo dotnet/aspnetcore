@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
 public class BufferReleaseTests // note that buffer ref-counting is only enabled for DEBUG builds; can only verify general behaviour without that
 {
-    static IDisposable GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
+    static ServiceProvider GetDefaultCache(out DefaultHybridCache cache, Action<ServiceCollection>? config = null)
     {
         var services = new ServiceCollection();
         config?.Invoke(services);
@@ -48,16 +48,16 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.True(cacheItem.TryReserveBuffer(out _));
         cacheItem.Release(); // for the above reserve
 
-        var second = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying);
+        var second = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.NotNull(second);
         Assert.NotSame(first, second);
 
         await cache.RemoveKeyAsync(key);
-        var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying);
+        var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
 
         // give it a moment for the eviction callback to kick in
-        for (int i = 0; i < 10 && cacheItem.NeedsEvictionCallback; i++)
+        for (var i = 0; i < 10 && cacheItem.NeedsEvictionCallback; i++)
         {
             await Task.Delay(250);
         }
@@ -70,7 +70,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         static ValueTask<Customer> GetAsync() => new(new Customer { Id = 42, Name = "Fred" });
     }
 
-    private static readonly HybridCacheEntryOptions NoUnderlying = new HybridCacheEntryOptions { Flags = HybridCacheEntryFlags.DisableUnderlyingData };
+    private static readonly HybridCacheEntryOptions _noUnderlying = new() { Flags = HybridCacheEntryFlags.DisableUnderlyingData };
 
     class TestCache : MemoryDistributedCache, IBufferDistributedCache
     {
@@ -119,7 +119,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         cache.DebugGetOutstandingBuffers(flush: true);
         Assert.Equal(0, cache.DebugGetOutstandingBuffers());
 #endif
-        var first = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying); // we expect this to come from L2, hence NoUnderlying
+        var first = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying); // we expect this to come from L2, hence NoUnderlying
         Assert.NotNull(first);
 #if DEBUG
         Assert.Equal(0, cache.DebugGetOutstandingBuffers());
@@ -131,17 +131,17 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.True(cacheItem.TryReserveBuffer(out _));
         cacheItem.Release(); // for the above reserve
 
-        var second = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying);
+        var second = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.NotNull(second);
         Assert.NotSame(first, second);
 
         await cache.RemoveKeyAsync(key);
-        var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying);
+        var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
         Assert.Null(await cache.BackendCache.GetAsync(key)); // should be gone from L2 too
 
         // give it a moment for the eviction callback to kick in
-        for (int i = 0; i < 10 && cacheItem.NeedsEvictionCallback; i++)
+        for (var i = 0; i < 10 && cacheItem.NeedsEvictionCallback; i++)
         {
             await Task.Delay(250);
         }
@@ -175,7 +175,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         cache.DebugGetOutstandingBuffers(flush: true);
         Assert.Equal(0, cache.DebugGetOutstandingBuffers());
 #endif
-        var first = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying); // we expect this to come from L2, hence NoUnderlying
+        var first = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying); // we expect this to come from L2, hence NoUnderlying
         Assert.NotNull(first);
 #if DEBUG
         Assert.Equal(1, cache.DebugGetOutstandingBuffers());
@@ -187,17 +187,17 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.True(cacheItem.TryReserveBuffer(out _));
         cacheItem.Release(); // for the above reserve
 
-        var second = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying);
+        var second = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.NotNull(second);
         Assert.NotSame(first, second);
 
         await cache.RemoveKeyAsync(key);
-        var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), NoUnderlying);
+        var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
         Assert.Null(await cache.BackendCache.GetAsync(key)); // should be gone from L2 too
 
         // give it a moment for the eviction callback to kick in
-        for (int i = 0; i < 10 && cacheItem.NeedsEvictionCallback; i++)
+        for (var i = 0; i < 10 && cacheItem.NeedsEvictionCallback; i++)
         {
             await Task.Delay(250);
         }

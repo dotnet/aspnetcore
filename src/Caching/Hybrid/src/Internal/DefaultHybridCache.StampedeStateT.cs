@@ -220,7 +220,7 @@ partial class DefaultHybridCache
             }
 
             // if the type is immutable, callers can share the final step too
-            Task<T> result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= Awaited(Task)) : Awaited(Task);
+            var result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= Awaited(Task)) : Awaited(Task);
             return new(result);
 
             static async Task<T> Awaited(Task<CacheItem<T>> task)

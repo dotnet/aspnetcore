@@ -9,21 +9,21 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class RedisFixture : IDisposable
+public sealed class RedisFixture : IDisposable
 {
-    private IConnectionMultiplexer? muxer;
-    private Task<IConnectionMultiplexer?>? sharedConnect;
-    public Task<IConnectionMultiplexer?> ConnectAsync() => sharedConnect ??= DoConnectAsync();
+    private ConnectionMultiplexer? _muxer;
+    private Task<IConnectionMultiplexer?>? _sharedConnect;
+    public Task<IConnectionMultiplexer?> ConnectAsync() => _sharedConnect ??= DoConnectAsync();
 
-    public void Dispose() => muxer?.Dispose();
+    public void Dispose() => _muxer?.Dispose();
 
     async Task<IConnectionMultiplexer?> DoConnectAsync()
     {
         try
         {
-            muxer = await ConnectionMultiplexer.ConnectAsync("127.0.0.1:6379");
-            await muxer.GetDatabase().PingAsync();
-            return muxer;
+            _muxer = await ConnectionMultiplexer.ConnectAsync("127.0.0.1:6379");
+            await _muxer.GetDatabase().PingAsync();
+            return _muxer;
         }
         catch
         {
@@ -83,10 +83,11 @@ public class RedisTests : DistributedCacheTests, IClassFixture<RedisFixture>
         await redis.GetDatabase().KeyDeleteAsync(key); // start from known state
         Assert.False(await redis.GetDatabase().KeyExistsAsync(key));
 
-        int count = 0;
-        for (int i = 0; i < 10; i++)
+        var count = 0;
+        for (var i = 0; i < 10; i++)
         {
-            await cache.GetOrCreateAsync<Guid>(key, _ => {
+            await cache.GetOrCreateAsync<Guid>(key, _ =>
+            {
                 Interlocked.Increment(ref count);
                 return new(Guid.NewGuid());
             });
