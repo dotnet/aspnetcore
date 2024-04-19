@@ -9,22 +9,11 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 partial class DefaultHybridCache
 {
-    private sealed class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
+    private sealed partial class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
         private readonly IHybridCacheSerializer<T> _serializer;
         private readonly BufferChunk _buffer;
         private int _refCount = 1; // buffer released when this becomes zero
-#if DEBUG
-        private DefaultHybridCache? _cache; // for buffer-tracking - only enabled in DEBUG
-        internal void DebugTrackBuffer(DefaultHybridCache cache)
-        {
-            _cache = cache;
-            if (_buffer.ReturnToPool)
-            {
-                _cache.DebugIncrementOutstandingBuffers();
-            }
-        }
-#endif
 
         public MutableCacheItem(ref BufferChunk buffer, IHybridCacheSerializer<T> serializer)
         {
@@ -43,19 +32,14 @@ partial class DefaultHybridCache
             writer.Dispose(); // no buffers left (we just detached them), but just in case of other logic
         }
 
-        public override bool NeedsEvictionCallback => true;
+        public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
 
         public override void Release()
         {
             var newCount = Interlocked.Decrement(ref _refCount);
             if (newCount == 0)
             {
-#if DEBUG // avoid even the property touch if not in debug
-                if (_buffer.ReturnToPool)
-                {
-                    _cache?.DebugDecrementOutstandingBuffers();
-                }
-#endif
+                DebugDecrementOutstandingBuffers();
                 _buffer.RecycleIfAppropriate();
             }
         }

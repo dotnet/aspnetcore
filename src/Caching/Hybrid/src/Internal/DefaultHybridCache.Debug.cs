@@ -39,4 +39,32 @@ partial class DefaultHybridCache
         Interlocked.Increment(ref _outstandingBufferCount);
     }
 #endif
+
+    partial class MutableCacheItem<T>
+    {
+        partial void DebugDecrementOutstandingBuffers();
+        partial void DebugTrackBufferCore(DefaultHybridCache cache);
+
+        [Conditional("DEBUG")]
+        internal void DebugTrackBuffer(DefaultHybridCache cache) => DebugTrackBufferCore(cache);
+
+#if DEBUG
+        private DefaultHybridCache? _cache; // for buffer-tracking - only enabled in DEBUG
+        partial void DebugDecrementOutstandingBuffers()
+        {
+            if (_buffer.ReturnToPool)
+            {
+                _cache?.DebugDecrementOutstandingBuffers();
+            }
+        }
+        partial void DebugTrackBufferCore(DefaultHybridCache cache)
+        {
+            _cache = cache;
+            if (_buffer.ReturnToPool)
+            {
+                _cache?.DebugIncrementOutstandingBuffers();
+            }
+        }
+#endif
+    }
 }

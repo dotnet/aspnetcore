@@ -180,9 +180,7 @@ partial class DefaultHybridCache
             {
                 // use the buffer directly as the backing in the cache-item; do *not* recycle now
                 var tmp = new MutableCacheItem<T>(ref value, serializer);
-#if DEBUG
-                tmp.DebugTrackBuffer(Cache);
-#endif
+                tmp.DebugTrackBuffer(Cache); // conditional: DEBUG
                 cacheItem = tmp;
             }
 
@@ -200,9 +198,7 @@ partial class DefaultHybridCache
             else
             {
                 var tmp = new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
-#if DEBUG
-                tmp.DebugTrackBuffer(Cache);
-#endif
+                tmp.DebugTrackBuffer(Cache); // conditional: DEBUG
                 cacheItem = tmp;
             }
             SetResult(cacheItem);
