@@ -91,7 +91,7 @@ partial class DefaultHybridCache
                     {
                         if (cacheItem.TryReserveBuffer(out var buffer))
                         {
-                            // mutable; we've already serialized it for the shared cache item
+                            // mutable: we've already serialized it for the shared cache item
                             await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
                             cacheItem.Release(); // because we reserved
                         }

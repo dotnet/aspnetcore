@@ -19,7 +19,7 @@ partial class DefaultHybridCache
     }
 
     // returns true for a new session (in which case: we need to start the work), false for a pre-existing session
-    public bool GetOrCreateStampede<TState, T>(string key, HybridCacheEntryFlags flags, out StampedeState<TState, T> stampedeState, bool canBeCanceled)
+    public bool GetOrCreateStampedeState<TState, T>(string key, HybridCacheEntryFlags flags, out StampedeState<TState, T> stampedeState, bool canBeCanceled)
     {
         var stampedeKey = new StampedeKey(key, flags);
 

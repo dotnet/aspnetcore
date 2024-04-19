@@ -124,7 +124,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
             return new(value);
         }
 
-        if (GetOrCreateStampede<TState, T>(key, flags, out var stampede, canBeCanceled))
+        if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled))
         {
             // new query; we're responsible for making it happen
             if (canBeCanceled)

@@ -211,7 +211,6 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         static ValueTask<Customer> GetAsync() => new(new Customer { Id = 42, Name = "Fred" });
     }
 
-
     public class Customer
     {
         public int Id { get; set; }
