@@ -630,8 +630,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         var httpClient = new HttpClient(httpMessageHandler);
         httpClient.Timeout = HttpClientTimeout;
 
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-
         var userSetUserAgent = false;
 
         // Apply any headers configured on the HttpConnectionOptions
