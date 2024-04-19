@@ -80,29 +80,43 @@ internal static class JsonObjectSchemaExtensions
         {
             if (attribute is Base64StringAttribute)
             {
+                schema["type"] = "string";
                 schema["format"] = "byte";
             }
-            if (attribute is RangeAttribute rangeAttribute)
+            else if (attribute is RangeAttribute rangeAttribute)
             {
                 schema["minimum"] = decimal.Parse(rangeAttribute.Minimum.ToString()!, CultureInfo.InvariantCulture);
                 schema["maximum"] = decimal.Parse(rangeAttribute.Maximum.ToString()!, CultureInfo.InvariantCulture);
             }
-            if (attribute is RegularExpressionAttribute regularExpressionAttribute)
+            else if (attribute is RegularExpressionAttribute regularExpressionAttribute)
             {
                 schema["pattern"] = regularExpressionAttribute.Pattern;
             }
-            if (attribute is MaxLengthAttribute maxLengthAttribute)
+            else if (attribute is MaxLengthAttribute maxLengthAttribute)
             {
-                schema["maxLength"] = maxLengthAttribute.Length;
+                var targetKey = schema["type"]?.GetValue<string>() == "array" ? "maxItems" : "maxLength";
+                schema[targetKey] = maxLengthAttribute.Length;
             }
-            if (attribute is MinLengthAttribute minLengthAttribute)
+            else if (attribute is MinLengthAttribute minLengthAttribute)
             {
-                schema["minLength"] = minLengthAttribute.Length;
+                var targetKey = schema["type"]?.GetValue<string>() == "array" ? "minItems" : "minLength";
+                schema[targetKey] = minLengthAttribute.Length;
             }
-            if (attribute is StringLengthAttribute stringLengthAttribute)
+            else if (attribute is LengthAttribute lengthAttribute)
             {
-                schema["minimum"] = stringLengthAttribute.MinimumLength;
-                schema["maximum"] = stringLengthAttribute.MaximumLength;
+                var targetKeySuffix = schema["type"]?.GetValue<string>() == "array" ? "Items" : "Length";
+                schema[$"min{targetKeySuffix}"] = lengthAttribute.MinimumLength;
+                schema[$"max{targetKeySuffix}"] = lengthAttribute.MaximumLength;
+            }
+            else if (attribute is UrlAttribute)
+            {
+                schema["type"] = "string";
+                schema["format"] = "uri";
+            }
+            else if (attribute is StringLengthAttribute stringLengthAttribute)
+            {
+                schema["minLength"] = stringLengthAttribute.MinimumLength;
+                schema["maxLength"] = stringLengthAttribute.MaximumLength;
             }
         }
     }

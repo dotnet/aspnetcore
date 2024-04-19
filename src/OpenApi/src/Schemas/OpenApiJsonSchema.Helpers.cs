@@ -235,10 +235,20 @@ internal sealed partial class OpenApiJsonSchema
                 var minLength = reader.GetInt32();
                 schema.MinLength = minLength;
                 break;
+            case "minItems":
+                reader.Read();
+                var minItems = reader.GetInt32();
+                schema.MinItems = minItems;
+                break;
             case "maxLength":
                 reader.Read();
                 var maxLength = reader.GetInt32();
                 schema.MaxLength = maxLength;
+                break;
+            case "maxItems":
+                reader.Read();
+                var maxItems = reader.GetInt32();
+                schema.MaxItems = maxItems;
                 break;
             case "minimum":
                 reader.Read();

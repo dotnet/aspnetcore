@@ -304,9 +304,18 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
 
     public static object[][] RouteParametersWithValidationAttributes =>
     [
-        [([MaxLength(5)]string id) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxLength)],
-        [([MinLength(2)]string id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinLength)],
-        [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }]
+        [([MaxLength(5)] string id) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxLength)],
+        [([MinLength(2)] string id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinLength)],
+        [([MaxLength(5)] int[] ids) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxItems)],
+        [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
+        [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
+        [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
+        [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
+        [([Url] string url) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("uri", schema.Format); }],
+        // Check that multiple attributes get applied correctly
+        [([Url][StringLength(10)] string url) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("uri", schema.Format); Assert.Equal(10, schema.MaxLength); }],
+        [([Base64String] string base64string) => {}, (OpenApiSchema schema) => { Assert.Equal("string", schema.Type); Assert.Equal("byte", schema.Format); }],
     ];
 
     [Theory]
