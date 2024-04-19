@@ -76,7 +76,7 @@ public class RouteTableFactoryTests
     }
 
     [Fact]
-    public void RespectsAllowInteractiveRoutingAttribute()
+    public void RespectsExcludeFromInteractiveRoutingAttribute()
     {
         // Arrange & Act
         var routeTableFactory = new RouteTableFactory();
@@ -85,9 +85,8 @@ public class RouteTableFactoryTests
         var routes = GetRoutes(routeTable);
 
         // Assert
-        Assert.Contains(routes, r => r.Handler == typeof(ComponentWithoutAllowInteractiveRouting));
-        Assert.Contains(routes, r => r.Handler == typeof(ComponentWithAllowInteractiveRoutingTrue));
-        Assert.DoesNotContain(routes, r => r.Handler == typeof(ComponentWithAllowInteractiveRoutingFalse));
+        Assert.Contains(routes, r => r.Handler == typeof(ComponentWithoutExcludeFromInteractiveRoutingAttribute));
+        Assert.DoesNotContain(routes, r => r.Handler == typeof(ComponentWithExcludeFromInteractiveRoutingAttribute));
     }
 
     [Fact]
@@ -1137,14 +1136,10 @@ public class RouteTableFactoryTests
     class TestHandler1 { }
     class TestHandler2 { }
 
-    [Route("/ComponentWithoutAllowInteractiveRouting")]
-    public class ComponentWithoutAllowInteractiveRouting : ComponentBase { }
+    [Route("/ComponentWithoutExcludeFromInteractiveRoutingAttribute")]
+    public class ComponentWithoutExcludeFromInteractiveRoutingAttribute : ComponentBase { }
 
-    [Route("/ComponentWithAllowInteractiveRoutingTrue")]
-    [AllowInteractiveRouting(true)]
-    public class ComponentWithAllowInteractiveRoutingTrue : ComponentBase { }
-
-    [Route("/ComponentWithAllowInteractiveRoutingFalse")]
-    [AllowInteractiveRouting(false)]
-    public class ComponentWithAllowInteractiveRoutingFalse : ComponentBase { }
+    [Route("/ComponentWithExcludeFromInteractiveRoutingAttribute")]
+    [ExcludeFromInteractiveRouting]
+    public class ComponentWithExcludeFromInteractiveRoutingAttribute : ComponentBase { }
 }
