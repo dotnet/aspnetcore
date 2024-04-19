@@ -299,7 +299,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
-                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} to the secret store.", keyValue.Key, keyValue.Value),
+                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} to the secret store.", keyValue.Key),
                 _console.GetOutput());
         }
 
