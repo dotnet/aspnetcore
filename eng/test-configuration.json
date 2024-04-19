@@ -11,7 +11,7 @@
     {"testName": {"contains": "POST_ServerAbort_ClientReceivesAbort"}},
     {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
     {"testName": {"contains": "CheckInvalidHostingModelParameter"}},
-    {"testName": {"contains": "MultipleThreadsForceRefresh"}},
+    {"testName": {"contains": "MultipleThreadsForceRefresh"}}, // tries to force a race but might fail to
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
