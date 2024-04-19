@@ -70,6 +70,7 @@ internal sealed class HostingMetrics : IDisposable
                 tags.Add("http.route", route);
             }
 
+            // Add before some built in tags so custom tags are prioritized when dealing with duplicates.
             if (customTags != null)
             {
                 for (var i = 0; i < customTags.Count; i++)
