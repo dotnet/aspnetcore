@@ -18,10 +18,10 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         [() => "test", "text/plain", "string", null],
         [() => 't', "application/json", "string", null],
         [() => byte.MaxValue, "application/json", "string", "byte"],
-        [() => short.MaxValue, "application/json", "integer", null],
-        [() => ushort.MaxValue, "application/json", "integer", null],
-        [() => uint.MaxValue, "application/json", "integer", "int32"],
-        [() => ulong.MaxValue, "application/json", "integer", "int64"],
+        [() => short.MaxValue, "application/json", "integer", "int16"],
+        [() => ushort.MaxValue, "application/json", "integer", "uint16"],
+        [() => uint.MaxValue, "application/json", "integer", "uint32"],
+        [() => ulong.MaxValue, "application/json", "integer", "uint64"],
         [() => new Uri("http://example.com"), "application/json", "string", "uri"]
     ];
 
