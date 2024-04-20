@@ -103,5 +103,5 @@ partial class DefaultHybridCache
         }
     }
 
-    private void RemoveStampede(StampedeKey key) => _currentOperations.TryRemove(key, out _);
+    private void RemoveStampedeState(StampedeKey key) => _currentOperations.TryRemove(key, out _);
 }

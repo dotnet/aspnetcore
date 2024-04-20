@@ -41,7 +41,7 @@ partial class DefaultHybridCache
             var newCount = Interlocked.Decrement(ref _refCount);
             if (newCount == 0)
             {
-                DebugDecrementOutstandingBuffers();
+                DebugOnlyDecrementOutstandingBuffers();
                 _buffer.RecycleIfAppropriate();
             }
         }

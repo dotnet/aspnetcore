@@ -9,7 +9,8 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 // used to convey buffer status; like ArraySegment<byte>, but Offset is always
-// zero, and we use the MSB of the length to track whether or not to recycle this value
+// zero, and we use the most significant bit (MSB, the sign flag) of the length
+// to track whether or not to recycle this value
 internal readonly struct BufferChunk
 {
     private const int MSB = (1 << 31);
@@ -40,6 +41,10 @@ internal readonly struct BufferChunk
         Array = array;
         _lengthAndPoolFlag = array.Length;
         // assume not pooled, if exact-sized
+        // (we don't expect array.Length to be negative; we're really just saying
+        // "we expect the result of assigning array.Length to _lengthAndPoolFlag
+        // to give the expected Length *and* not have the MSB set; we're just
+        // checking that we haven't fat-fingered our MSB logic)
         Debug.Assert(!ReturnToPool, "do not return right-sized arrays");
         Debug.Assert(Length == array.Length, "array length not respected");
     }

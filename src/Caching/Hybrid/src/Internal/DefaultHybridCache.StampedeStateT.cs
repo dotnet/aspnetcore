@@ -134,7 +134,7 @@ partial class DefaultHybridCache
         {
             if (_result is not null)
             {
-                Cache.RemoveStampede(Key);
+                Cache.RemoveStampedeState(Key);
                 _result.TrySetException(ex);
             }
         }
@@ -148,7 +148,7 @@ partial class DefaultHybridCache
 
             if (_result is not null)
             {
-                Cache.RemoveStampede(Key);
+                Cache.RemoveStampedeState(Key);
                 _result.TrySetResult(value);
             }
         }
@@ -158,7 +158,7 @@ partial class DefaultHybridCache
             // note we don't store this dummy result in L1 or L2
             if (_result is not null)
             {
-                Cache.RemoveStampede(Key);
+                Cache.RemoveStampedeState(Key);
                 _result.TrySetResult(ImmutableCacheItem<T>.Default);
             }
         }
@@ -180,7 +180,7 @@ partial class DefaultHybridCache
             {
                 // use the buffer directly as the backing in the cache-item; do *not* recycle now
                 var tmp = new MutableCacheItem<T>(ref value, serializer);
-                tmp.DebugTrackBuffer(Cache); // conditional: DEBUG
+                tmp.DebugOnlyTrackBuffer(Cache);
                 cacheItem = tmp;
             }
 
@@ -198,7 +198,7 @@ partial class DefaultHybridCache
             else
             {
                 var tmp = new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
-                tmp.DebugTrackBuffer(Cache); // conditional: DEBUG
+                tmp.DebugOnlyTrackBuffer(Cache);
                 cacheItem = tmp;
             }
             SetResult(cacheItem);
