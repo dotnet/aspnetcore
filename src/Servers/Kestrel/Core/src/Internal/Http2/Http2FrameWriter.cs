@@ -71,8 +71,8 @@ internal sealed class Http2FrameWriter
     // This is only set to true by tests.
     private readonly bool _scheduleInline;
 
-    private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
-    private byte[] _headerEncodingBuffer;
+    private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
+    private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
     private long _unflushedBytes;
 
     private bool _completed;
@@ -107,7 +107,7 @@ internal sealed class Http2FrameWriter
         _flusher = new TimingPipeFlusher(timeoutControl, serviceContext.Log);
         _flusher.Initialize(_outputWriter);
         _outgoingFrame = new Http2Frame();
-        _headerEncodingBuffer = new byte[_maxFrameSize];
+        _headerEncodingBuffer = new ArrayBufferWriter<byte>(_maxFrameSize);
 
         _scheduleInline = serviceContext.Scheduler == PipeScheduler.Inline;
 
@@ -373,8 +373,9 @@ internal sealed class Http2FrameWriter
         {
             if (_maxFrameSize != maxFrameSize)
             {
-                _maxFrameSize = maxFrameSize;
-                _headerEncodingBuffer = new byte[_maxFrameSize];
+                // Safe cast, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
+                // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
+                _maxFrameSize = (int)maxFrameSize;
             }
         }
     }
@@ -509,8 +510,11 @@ internal sealed class Http2FrameWriter
         {
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
-            var buffer = _headerEncodingBuffer.AsSpan();
+            _headerEncodingBuffer.ResetWrittenCount();
+            var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[0.._maxFrameSize];
             var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+            Debug.Assert(done != HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, beucase this always writes the status.");
+            _headerEncodingBuffer.Advance(payloadLength);
             FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
@@ -548,10 +552,18 @@ internal sealed class Http2FrameWriter
 
             try
             {
-                _headersEnumerator.Initialize(headers);
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
-                var buffer = _headerEncodingBuffer.AsSpan();
-                var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+                HeaderWriteResult done = HeaderWriteResult.MoreHeaders;
+                int payloadLength;
+                do
+                {
+                    _headersEnumerator.Initialize(headers);
+                    _headerEncodingBuffer.ResetWrittenCount();
+                    var bufferSize = done == HeaderWriteResult.BufferTooSmall ? _headerEncodingBuffer.Capacity * 2 : _headerEncodingBuffer.Capacity;
+                    var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize];
+                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
+                } while (done == HeaderWriteResult.BufferTooSmall);
+                _headerEncodingBuffer.Advance(payloadLength);
                 FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
             }
             // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
@@ -566,32 +578,45 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    private void FinishWritingHeadersUnsynchronized(int streamId, int payloadLength, bool done)
+    private void SplitHeaderFramesToOutput(int streamId, HeaderWriteResult done, bool isFramePrepared)
     {
-        var buffer = _headerEncodingBuffer.AsSpan();
-        _outgoingFrame.PayloadLength = payloadLength;
-        if (done)
+        var dataToFrame = _headerEncodingBuffer.WrittenSpan;
+        var shouldPrepareFrame = !isFramePrepared;
+        while (dataToFrame.Length > 0)
         {
-            _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
-        }
-
-        WriteHeaderUnsynchronized();
-        _outputWriter.Write(buffer.Slice(0, payloadLength));
-
-        while (!done)
-        {
-            _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
-
-            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
-            _outgoingFrame.PayloadLength = payloadLength;
-
-            if (done)
+            if (shouldPrepareFrame)
             {
-                _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
+                _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
+            }
+            else
+            {
+                shouldPrepareFrame = true;
+            }
+
+            var currentSize = dataToFrame.Length > _maxFrameSize ? _maxFrameSize : dataToFrame.Length;
+            _outgoingFrame.PayloadLength = currentSize;
+            if (done == HeaderWriteResult.Done && dataToFrame.Length == currentSize)
+            {
+                _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
             }
 
             WriteHeaderUnsynchronized();
-            _outputWriter.Write(buffer.Slice(0, payloadLength));
+            _outputWriter.Write(dataToFrame[..currentSize]);
+            dataToFrame = dataToFrame.Slice(currentSize);
+        }
+    }
+
+    private void FinishWritingHeadersUnsynchronized(int streamId, int payloadLength, HeaderWriteResult done)
+    {
+        SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
+        while (done != HeaderWriteResult.Done)
+        {
+            _headerEncodingBuffer.ResetWrittenCount();
+            var bufferSize = done == HeaderWriteResult.BufferTooSmall ? _headerEncodingBuffer.Capacity * 2 : _headerEncodingBuffer.Capacity;
+            var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize];
+            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
+            _headerEncodingBuffer.Advance(payloadLength);
+            SplitHeaderFramesToOutput(streamId, done, isFramePrepared: false);
         }
     }
 

@@ -36,7 +36,7 @@ internal static class PipeWriterHttp2FrameExtensions
         var done = HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, headers, buffer, out var length);
         frame.PayloadLength = length;
 
-        if (done)
+        if (done == Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HeaderWriteResult.Done)
         {
             frame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
         }
@@ -49,14 +49,14 @@ internal static class PipeWriterHttp2FrameExtensions
         Http2FrameWriter.WriteHeader(frame, writer);
         writer.Write(buffer.Slice(0, length));
 
-        while (!done)
+        while (done != Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HeaderWriteResult.Done)
         {
             frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
             done = HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headers, buffer, out length);
             frame.PayloadLength = length;
 
-            if (done)
+            if (done == Microsoft.AspNetCore.Server.Kestrel.Core.Tests.HeaderWriteResult.Done)
             {
                 frame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
             }
