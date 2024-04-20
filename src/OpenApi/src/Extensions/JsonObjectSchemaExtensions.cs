@@ -54,6 +54,21 @@ internal static class JsonObjectSchemaExtensions
     ///
     /// This implementation only supports mapping validation attributes that have an associated keyword in the
     /// validation vocabulary.
+    ///
+    /// Validation attributes are applied in a last-wins-order. For example, the following set of attributes:
+    ///
+    /// [Range(1, 10), Min(5)]
+    ///
+    /// will result in the schema having a minimum value of 5 and a maximum value of 10. This rule applies even
+    /// though the model binding layer in MVC applies all validation attributes on an argument. The following
+    /// set of attributes:
+    ///
+    /// [Base64String]
+    /// [Url]
+    /// public string Url { get; }
+    ///
+    /// will result in the schema having a type of "string" and a format of "uri" even though the model binding
+    /// layer will validate the string against *both* constraints.
     /// </remarks>
     /// <param name="schema">The <see cref="JsonObject"/> produced by the underlying schema generator.</param>
     /// <param name="validationAttributes">A list of the validation attributes to apply.</param>
@@ -216,13 +231,6 @@ internal static class JsonObjectSchemaExtensions
     /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
     internal static void ApplyParameterInfo(this JsonObject schema, ApiParameterDescription parameterDescription)
     {
-        // Route constraints are only defined on parameters that are sourced from the path. Since
-        // they are encoded in the route template, and not in the type information based to the underlying
-        // schema generator we have to handle them separately here.
-        if (parameterDescription.RouteInfo?.Constraints is { } constraints)
-        {
-            schema.ApplyRouteConstraints(constraints);
-        }
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
         // For example:
         //
@@ -248,6 +256,13 @@ internal static class JsonObjectSchemaExtensions
                 var attributes = property.GetCustomAttributes(true).OfType<ValidationAttribute>();
                 schema.ApplyValidationAttributes(attributes);
             }
+        }
+        // Route constraints are only defined on parameters that are sourced from the path. Since
+        // they are encoded in the route template, and not in the type information based to the underlying
+        // schema generator we have to handle them separately here.
+        if (parameterDescription.RouteInfo?.Constraints is { } constraints)
+        {
+            schema.ApplyRouteConstraints(constraints);
         }
     }
 
