@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
@@ -149,7 +150,7 @@ internal sealed partial class LongPollingTransport : ITransport
             while (!cancellationToken.IsCancellationRequested)
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
-
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                 HttpResponseMessage response;
 
                 try
@@ -228,6 +229,7 @@ internal sealed partial class LongPollingTransport : ITransport
         {
             Log.SendingDeleteRequest(_logger, url);
             var request = new HttpRequestMessage(HttpMethod.Delete, url);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
             var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
