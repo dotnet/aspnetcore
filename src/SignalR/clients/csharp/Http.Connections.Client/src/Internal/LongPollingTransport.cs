@@ -53,6 +53,7 @@ internal sealed partial class LongPollingTransport : ITransport
         // Server uses first long polling request to finish initializing connection and it returns without data
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+
         using (var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
         {
             response.EnsureSuccessStatusCode();

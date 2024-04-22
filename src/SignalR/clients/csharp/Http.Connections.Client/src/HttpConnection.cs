@@ -471,7 +471,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 request.Properties.Add("IsNegotiate", true);
 #endif
 
-                // Set the Accept header to "*/*"
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
