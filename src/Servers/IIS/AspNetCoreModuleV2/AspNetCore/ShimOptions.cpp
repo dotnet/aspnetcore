@@ -96,7 +96,7 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
         if (shutdownDelay.empty())
         {
             // Default if neither process specific config or environment variable aren't set
-            m_fShutdownDelay = std::chrono::seconds(1);
+            m_fShutdownDelay = std::chrono::seconds(0);
         }
         else
         {

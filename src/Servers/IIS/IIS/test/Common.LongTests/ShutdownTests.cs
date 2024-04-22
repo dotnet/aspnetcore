@@ -271,6 +271,8 @@ public class ShutdownTests : IISFunctionalTestBase
             return;
         }
 
+        deploymentParameters.HandlerSettings["shutdownDelay"] = "1000";
+
         var deploymentResult = await DeployAsync(deploymentParameters);
 
         var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
@@ -307,6 +309,8 @@ public class ShutdownTests : IISFunctionalTestBase
             // IISExpress doesn't support recycle
             return;
         }
+
+        deploymentParameters.HandlerSettings["shutdownDelay"] = "1000";
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 
