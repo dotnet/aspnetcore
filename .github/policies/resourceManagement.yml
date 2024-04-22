@@ -758,10 +758,10 @@ configuration:
           action: Opened
       - or:
         - bodyContains:
-            pattern: '[Aa][Oo][Tt]'
+            pattern: '[Aa][Oo][Tt]\W'
             isRegex: True
         - titleContains:
-            pattern: '[Aa][Oo][Tt]'
+            pattern: '[Aa][Oo][Tt]\W'
             isRegex: True
       then:
       - addLabel:
