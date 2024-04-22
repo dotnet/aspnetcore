@@ -28,7 +28,7 @@ public class EventBubblingTest : ServerTestBase<ToggleExecutionModeServerFixture
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<EventBubblingComponent>();
         Browser.Exists(By.Id("event-bubbling"));
     }
