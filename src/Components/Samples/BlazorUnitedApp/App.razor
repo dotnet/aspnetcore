@@ -9,33 +9,10 @@
     <link rel="stylesheet" href="css/site.css" />
     <link href="BlazorUnitedApp.styles.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet></HeadOutlet>
+    <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-
-    <div id="blazor-error-ui">
-        <environment include="Staging,Production">
-            An error has occurred. This application may no longer respond until reloaded.
-        </environment>
-        <environment include="Development">
-            An unhandled exception has occurred. See browser dev tools for details.
-        </environment>
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-
+    <Routes />
     <script src="_framework/blazor.web.js" suppress-error="BL9992"></script>
 </body>
 </html>

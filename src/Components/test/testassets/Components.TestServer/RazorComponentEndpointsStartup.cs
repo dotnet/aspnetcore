@@ -68,6 +68,16 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
+
+            app.Use((ctx, nxt) =>
+            {
+                if (ctx.Request.Query.ContainsKey("add-csp"))
+                {
+                    ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+                }
+                return nxt();
+            });
+
             _ = app.UseEndpoints(endpoints =>
             {
                 _ = endpoints.MapRazorComponents<TRootComponent>()
