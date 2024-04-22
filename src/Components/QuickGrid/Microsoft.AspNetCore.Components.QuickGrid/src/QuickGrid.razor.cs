@@ -69,7 +69,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// scroll smoothness by rendering more items off-screen, they can also increase initial load times. Finding a balance
     /// based on your data set size and user experience requirements is recommended. The default value is 3.
     /// </summary>
-
     [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>
