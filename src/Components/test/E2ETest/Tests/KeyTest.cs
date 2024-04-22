@@ -25,7 +25,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
