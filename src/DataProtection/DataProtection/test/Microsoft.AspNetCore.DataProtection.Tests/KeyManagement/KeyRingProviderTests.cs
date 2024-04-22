@@ -807,6 +807,7 @@ public class KeyRingProviderTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55227")]
     public async Task MultipleThreadsForceRefresh(bool failsToReadKeyRing)
     {
         const int taskCount = 10;
