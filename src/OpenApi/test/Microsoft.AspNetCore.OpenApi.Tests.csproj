@@ -32,4 +32,6 @@
     <ProjectReference Include="$(RepoRoot)\src\OpenApi\sample\Sample.csproj" />
   </ItemGroup>
 
+  <!-- Required to copy dependencies to the output directory for integration test projects. -->
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 </Project>
