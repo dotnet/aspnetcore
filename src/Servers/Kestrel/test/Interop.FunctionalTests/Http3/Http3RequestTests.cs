@@ -1608,6 +1608,63 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task GET_ClientIdlesOut_ConnectionAbortRaised()
+    {
+        // Arrange
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var builder = CreateHostBuilder(
+            context =>
+            {
+                return Task.CompletedTask;
+            },
+            configureKestrel: kestrel =>
+            {
+                kestrel.Listen(IPAddress.Parse("127.0.0.1"), 0, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
+
+                    IMultiplexedConnectionBuilder multiplexedConnectionBuilder = listenOptions;
+                    multiplexedConnectionBuilder.Use(next =>
+                    {
+                        return context =>
+                        {
+                            connectionStartedTcs.SetResult();
+                            context.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
+                            return next(context);
+                        };
+                    });
+                });
+            });
+
+        using (var host = builder.Build())
+        {
+            await host.StartAsync();
+
+            var client = HttpHelpers.CreateClient(idleTimeout: TimeSpan.FromSeconds(1));
+            var port = host.GetPort();
+
+            // Act
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{port}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response1 = await client.SendAsync(request1, CancellationToken.None);
+            response1.EnsureSuccessStatusCode();
+
+            await connectionStartedTcs.Task.DefaultTimeout();
+            // Do not dispose the client, wait for it to idle out.
+
+            Logger.LogInformation("Waiting for server to receive connection close.");
+            await connectionClosedTcs.Task.DefaultTimeout();
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task ConnectionLifetimeNotificationFeature_RequestClose_ConnectionEnds()
     {
         // Arrange

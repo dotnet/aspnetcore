@@ -82,6 +82,11 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             }
 
             var resolvedErrorCode = _error ?? 0;
+            // Allowed error codes are up to 62 bits non-negative integer values: https://www.rfc-editor.org/rfc/rfc9000.html#integer-encoding
+            if (resolvedErrorCode < 0 || resolvedErrorCode > ((1L << 62) - 1))
+            {
+                resolvedErrorCode = _context.Options.DefaultCloseErrorCode;
+            }
             _abortReason = ExceptionDispatchInfo.Capture(abortReason);
             QuicLog.ConnectionAbort(_log, this, resolvedErrorCode, abortReason.Message);
             _closeTask = _connection.CloseAsync(errorCode: resolvedErrorCode).AsTask();

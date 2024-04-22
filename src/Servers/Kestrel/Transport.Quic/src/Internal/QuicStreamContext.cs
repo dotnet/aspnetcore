@@ -502,6 +502,11 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         }
 
         var resolvedErrorCode = _error ?? 0;
+        // Allowed error codes are up to 62 bits non-negative integer values: https://www.rfc-editor.org/rfc/rfc9000.html#integer-encoding
+        if (resolvedErrorCode < 0 || resolvedErrorCode > ((1L << 62) - 1))
+        {
+            resolvedErrorCode = _context.Options.DefaultStreamErrorCode;
+        }
         QuicLog.StreamAbort(_log, this, resolvedErrorCode, abortReason.Message);
 
         if (stream.CanRead)
