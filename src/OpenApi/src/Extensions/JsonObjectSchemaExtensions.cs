@@ -78,43 +78,43 @@ internal static class JsonObjectSchemaExtensions
         {
             if (attribute is Base64StringAttribute)
             {
-                schema["type"] = "string";
-                schema["format"] = "byte";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = "byte";
             }
             else if (attribute is RangeAttribute rangeAttribute)
             {
-                schema["minimum"] = decimal.Parse(rangeAttribute.Minimum.ToString()!, CultureInfo.InvariantCulture);
-                schema["maximum"] = decimal.Parse(rangeAttribute.Maximum.ToString()!, CultureInfo.InvariantCulture);
+                schema[OpenApiSchemaKeywords.MinimumKeyword] = decimal.Parse(rangeAttribute.Minimum.ToString()!, CultureInfo.InvariantCulture);
+                schema[OpenApiSchemaKeywords.MaximumKeyword] = decimal.Parse(rangeAttribute.Maximum.ToString()!, CultureInfo.InvariantCulture);
             }
             else if (attribute is RegularExpressionAttribute regularExpressionAttribute)
             {
-                schema["pattern"] = regularExpressionAttribute.Pattern;
+                schema[OpenApiSchemaKeywords.PatternKeyword] = regularExpressionAttribute.Pattern;
             }
             else if (attribute is MaxLengthAttribute maxLengthAttribute)
             {
-                var targetKey = schema["type"]?.GetValue<string>() == "array" ? "maxItems" : "maxLength";
+                var targetKey = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? OpenApiSchemaKeywords.MaxItemsKeyword : OpenApiSchemaKeywords.MaxLengthKeyword;
                 schema[targetKey] = maxLengthAttribute.Length;
             }
             else if (attribute is MinLengthAttribute minLengthAttribute)
             {
-                var targetKey = schema["type"]?.GetValue<string>() == "array" ? "minItems" : "minLength";
+                var targetKey = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? OpenApiSchemaKeywords.MinItemsKeyword : OpenApiSchemaKeywords.MinLengthKeyword;
                 schema[targetKey] = minLengthAttribute.Length;
             }
             else if (attribute is LengthAttribute lengthAttribute)
             {
-                var targetKeySuffix = schema["type"]?.GetValue<string>() == "array" ? "Items" : "Length";
+                var targetKeySuffix = schema[OpenApiSchemaKeywords.TypeKeyword]?.GetValue<string>() == "array" ? "Items" : "Length";
                 schema[$"min{targetKeySuffix}"] = lengthAttribute.MinimumLength;
                 schema[$"max{targetKeySuffix}"] = lengthAttribute.MaximumLength;
             }
             else if (attribute is UrlAttribute)
             {
-                schema["type"] = "string";
-                schema["format"] = "uri";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = "uri";
             }
             else if (attribute is StringLengthAttribute stringLengthAttribute)
             {
-                schema["minLength"] = stringLengthAttribute.MinimumLength;
-                schema["maxLength"] = stringLengthAttribute.MaximumLength;
+                schema[OpenApiSchemaKeywords.MinLengthKeyword] = stringLengthAttribute.MinimumLength;
+                schema[OpenApiSchemaKeywords.MaxLengthKeyword] = stringLengthAttribute.MaximumLength;
             }
         }
     }
@@ -142,9 +142,9 @@ internal static class JsonObjectSchemaExtensions
     {
         if (_simpleTypeToOpenApiSchema.TryGetValue(type, out var openApiSchema))
         {
-            schema["nullable"] = openApiSchema.Nullable || (schema["type"] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
-            schema["type"] = openApiSchema.Type;
-            schema["format"] = openApiSchema.Format;
+            schema[OpenApiSchemaKeywords.NullableKeyword] = openApiSchema.Nullable || (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray schemaType && schemaType.GetValues<string>().Contains("null"));
+            schema[OpenApiSchemaKeywords.TypeKeyword] = openApiSchema.Type;
+            schema[OpenApiSchemaKeywords.FormatKeyword] = openApiSchema.Format;
         }
     }
 
@@ -161,65 +161,65 @@ internal static class JsonObjectSchemaExtensions
         {
             if (constraint is MinRouteConstraint minRouteConstraint)
             {
-                schema["minimum"] = minRouteConstraint.Min;
+                schema[OpenApiSchemaKeywords.MinimumKeyword] = minRouteConstraint.Min;
             }
             else if (constraint is MaxRouteConstraint maxRouteConstraint)
             {
-                schema["maximum"] = maxRouteConstraint.Max;
+                schema[OpenApiSchemaKeywords.MaximumKeyword] = maxRouteConstraint.Max;
             }
             else if (constraint is MinLengthRouteConstraint minLengthRouteConstraint)
             {
-                schema["minLength"] = minLengthRouteConstraint.MinLength;
+                schema[OpenApiSchemaKeywords.MinLengthKeyword] = minLengthRouteConstraint.MinLength;
             }
             else if (constraint is MaxLengthRouteConstraint maxLengthRouteConstraint)
             {
-                schema["maxLength"] = maxLengthRouteConstraint.MaxLength;
+                schema[OpenApiSchemaKeywords.MaxLengthKeyword] = maxLengthRouteConstraint.MaxLength;
             }
             else if (constraint is RangeRouteConstraint rangeRouteConstraint)
             {
-                schema["minimum"] = rangeRouteConstraint.Min;
-                schema["maximum"] = rangeRouteConstraint.Max;
+                schema[OpenApiSchemaKeywords.MinimumKeyword] = rangeRouteConstraint.Min;
+                schema[OpenApiSchemaKeywords.MaximumKeyword] = rangeRouteConstraint.Max;
             }
             else if (constraint is RegexRouteConstraint regexRouteConstraint)
             {
-                schema["type"] = "string";
-                schema["format"] = null;
-                schema["pattern"] = regexRouteConstraint.Constraint.ToString();
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = null;
+                schema[OpenApiSchemaKeywords.PatternKeyword] = regexRouteConstraint.Constraint.ToString();
             }
             else if (constraint is LengthRouteConstraint lengthRouteConstraint)
             {
-                schema["minLength"] = lengthRouteConstraint.MinLength;
-                schema["maxLength"] = lengthRouteConstraint.MaxLength;
+                schema[OpenApiSchemaKeywords.MinLengthKeyword] = lengthRouteConstraint.MinLength;
+                schema[OpenApiSchemaKeywords.MaxLengthKeyword] = lengthRouteConstraint.MaxLength;
             }
             else if (constraint is FloatRouteConstraint or DecimalRouteConstraint or DoubleRouteConstraint)
             {
-                schema["type"] = "number";
-                schema["format"] = constraint is FloatRouteConstraint ? "float" : "double";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "number";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is FloatRouteConstraint ? "float" : "double";
             }
             else if (constraint is LongRouteConstraint or IntRouteConstraint)
             {
-                schema["type"] = "integer";
-                schema["format"] = constraint is LongRouteConstraint ? "int64" : "int32";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "integer";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is LongRouteConstraint ? "int64" : "int32";
             }
             else if (constraint is GuidRouteConstraint or StringRouteConstraint)
             {
-                schema["type"] = "string";
-                schema["format"] = constraint is GuidRouteConstraint ? "uuid" : null;
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = constraint is GuidRouteConstraint ? "uuid" : null;
             }
             else if (constraint is BoolRouteConstraint)
             {
-                schema["type"] = "boolean";
-                schema["format"] = null;
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "boolean";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = null;
             }
             else if (constraint is AlphaRouteConstraint)
             {
-                schema["type"] = "string";
-                schema["format"] = null;
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = null;
             }
             else if (constraint is DateTimeRouteConstraint)
             {
-                schema["type"] = "string";
-                schema["format"] = "date-time";
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = "date-time";
             }
         }
     }
@@ -285,8 +285,8 @@ internal static class JsonObjectSchemaExtensions
                 // TODO: Use the actual reference ID instead of the empty string.
                 mappings[derivedType.TypeDiscriminator.ToString()!] = string.Empty;
             }
-            schema["discriminatorPropertyName"] = polymorphismOptions.TypeDiscriminatorPropertyName;
-            schema["discriminatorMappings"] = mappings;
+            schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
+            schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
         }
     }
 }

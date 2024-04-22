@@ -166,7 +166,7 @@ internal sealed partial class OpenApiJsonSchema
     {
         switch (propertyName)
         {
-            case "type":
+            case OpenApiSchemaKeywords.TypeKeyword:
                 reader.Read();
                 if (reader.TokenType == JsonTokenType.StartArray)
                 {
@@ -193,7 +193,7 @@ internal sealed partial class OpenApiJsonSchema
                     schema.Type = type;
                 }
                 break;
-            case "enum":
+            case OpenApiSchemaKeywords.EnumKeyword:
                 reader.Read();
                 var enumValues = ReadList<string>(ref reader, options);
                 if (enumValues is not null)
@@ -201,78 +201,78 @@ internal sealed partial class OpenApiJsonSchema
                     schema.Enum = enumValues.Select(v => new OpenApiString(v)).ToList<IOpenApiAny>();
                 }
                 break;
-            case "default":
+            case OpenApiSchemaKeywords.DefaultKeyword:
                 reader.Read();
                 schema.Default = ReadOpenApiAny(ref reader);
                 break;
-            case "items":
+            case OpenApiSchemaKeywords.ItemsKeyword:
                 reader.Read();
                 var valueConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
                 schema.Items = valueConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
                 break;
-            case "nullable":
+            case OpenApiSchemaKeywords.NullableKeyword:
                 reader.Read();
                 schema.Nullable = reader.GetBoolean();
                 break;
-            case "description":
+            case OpenApiSchemaKeywords.DescriptionKeyword:
                 reader.Read();
                 schema.Description = reader.GetString();
                 break;
-            case "format":
+            case OpenApiSchemaKeywords.FormatKeyword:
                 reader.Read();
                 schema.Format = reader.GetString();
                 break;
-            case "required":
+            case OpenApiSchemaKeywords.RequiredKeyword:
                 reader.Read();
                 schema.Required = ReadList<string>(ref reader, options)?.ToHashSet();
                 break;
-            case "minLength":
+            case OpenApiSchemaKeywords.MinLengthKeyword:
                 reader.Read();
                 var minLength = reader.GetInt32();
                 schema.MinLength = minLength;
                 break;
-            case "minItems":
+            case OpenApiSchemaKeywords.MinItemsKeyword:
                 reader.Read();
                 var minItems = reader.GetInt32();
                 schema.MinItems = minItems;
                 break;
-            case "maxLength":
+            case OpenApiSchemaKeywords.MaxLengthKeyword:
                 reader.Read();
                 var maxLength = reader.GetInt32();
                 schema.MaxLength = maxLength;
                 break;
-            case "maxItems":
+            case OpenApiSchemaKeywords.MaxItemsKeyword:
                 reader.Read();
                 var maxItems = reader.GetInt32();
                 schema.MaxItems = maxItems;
                 break;
-            case "minimum":
+            case OpenApiSchemaKeywords.MinimumKeyword:
                 reader.Read();
                 var minimum = reader.GetDecimal();
                 schema.Minimum = minimum;
                 break;
-            case "maximum":
+            case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
                 var maximum = reader.GetDecimal();
                 schema.Maximum = maximum;
                 break;
-            case "pattern":
+            case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
                 var pattern = reader.GetString();
                 schema.Pattern = pattern;
                 break;
-            case "properties":
+            case OpenApiSchemaKeywords.PropertiesKeyword:
                 reader.Read();
                 var props = ReadDictionary<OpenApiJsonSchema>(ref reader, options);
                 schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema);
                 break;
-            case "anyOf":
+            case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = "object";
                 var schemas = ReadList<OpenApiJsonSchema>(ref reader, options);
                 schema.AnyOf = schemas?.Select(s => s.Schema).ToList();
                 break;
-            case "discriminatorPropertyName":
+            case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();
                 var discriminator = reader.GetString();
                 if (discriminator is not null)
@@ -280,7 +280,7 @@ internal sealed partial class OpenApiJsonSchema
                     schema.Discriminator = new OpenApiDiscriminator { PropertyName = discriminator };
                 }
                 break;
-            case "discriminatorMappings":
+            case OpenApiSchemaKeywords.DiscriminatorMappingKeyword:
                 reader.Read();
                 var mappings = ReadDictionary<string>(ref reader, options);
                 schema.Discriminator.Mapping = mappings;

@@ -38,7 +38,7 @@ internal sealed partial class OpenApiJsonSchema(OpenApiSchema schema)
                 }
             } while (reader.Read());
 
-            throw new JsonException("Encountered unexpected token without producing a schema.");
+            throw new JsonException("Encountered unexpected EOF token without producing a schema.");
         }
 
         /// <remarks>
