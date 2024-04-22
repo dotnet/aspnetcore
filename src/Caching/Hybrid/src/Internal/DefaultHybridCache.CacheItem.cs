@@ -73,6 +73,8 @@ partial class DefaultHybridCache
 
     internal abstract class CacheItem<T> : CacheItem
     {
+        internal static CacheItem<T> Create() => ImmutableTypeCache<T>.IsImmutable ? new ImmutableCacheItem<T>() : new MutableCacheItem<T>();
+
         // attempt to get a value that was *not* previously reserved
         public abstract bool TryGetValue(out T value);
 

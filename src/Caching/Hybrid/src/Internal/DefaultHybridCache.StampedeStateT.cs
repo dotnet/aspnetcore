@@ -19,10 +19,8 @@ partial class DefaultHybridCache
         private HybridCacheEntryOptions? _options;
         private Task<T>? _sharedUnwrap; // allows multiple non-cancellable callers to share a single task (when no defensive copy needed)
 
-        private static CacheItem<T> CreateCacheItem() => ImmutableTypeCache<T>.IsImmutable ? new ImmutableCacheItem<T>() : new MutableCacheItem<T>();
-
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
-            : base(cache, key, CreateCacheItem(), canBeCanceled)
+            : base(cache, key, CacheItem<T>.Create(), canBeCanceled)
         {
             _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -30,7 +28,7 @@ partial class DefaultHybridCache
         public override Type Type => typeof(T);
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
-            : base(cache, key, CreateCacheItem(), token) { } // no TCS in this case - this is for SetValue only
+            : base(cache, key, CacheItem<T>.Create(), token) { } // no TCS in this case - this is for SetValue only
 
         public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
@@ -198,7 +196,7 @@ partial class DefaultHybridCache
         }
 
         [DoesNotReturn]
-        static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
+        private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
 
         private CacheItem<T> SetResult(T value)
         {
