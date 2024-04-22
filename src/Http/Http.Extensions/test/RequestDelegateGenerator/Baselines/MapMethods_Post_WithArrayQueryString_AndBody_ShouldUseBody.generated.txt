@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Http.Generated
     {
         private static readonly JsonOptions FallbackJsonOptions = new();
 
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "E7DwaZ7l5yZ8aVx/e7vbIgQDAABUZXN0TWFwQWN0aW9ucy5jcw==")]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapMethods0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,

@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "SSJNUUh4hogD0GOnwZJlDwQDAABUZXN0TWFwQWN0aW9ucy5jcw==")]
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "SSJNUUh4hogD0GOnwZJlDy0DAABUZXN0TWFwQWN0aW9ucy5jcw==")]
+        %INTERCEPTSLOCATIONATTRIBUTE%
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "SSJNUUh4hogD0GOnwZJlD1UDAABUZXN0TWFwQWN0aW9ucy5jcw==")]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "SSJNUUh4hogD0GOnwZJlD5QDAABUZXN0TWFwQWN0aW9ucy5jcw==")]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,

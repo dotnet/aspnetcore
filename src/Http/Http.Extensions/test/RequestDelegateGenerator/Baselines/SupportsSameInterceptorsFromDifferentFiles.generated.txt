@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "J2xjiEMXNArTfc9tYWtlBwQDAABUZXN0TWFwQWN0aW9ucy5jcw==")]
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "J2xjiEMXNArTfc9tYWtlBzYDAABUZXN0TWFwQWN0aW9ucy5jcw==")]
-        [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, "4CZQyZJ2GfxWI+O3CN7TywkDAABPdGhlclRlc3RNYXBBY3Rpb25zLmNz")]
+        %INTERCEPTSLOCATIONATTRIBUTE%
+        %INTERCEPTSLOCATIONATTRIBUTE%
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
