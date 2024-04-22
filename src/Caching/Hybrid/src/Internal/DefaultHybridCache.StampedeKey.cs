@@ -26,7 +26,7 @@ partial class DefaultHybridCache
             _key = key;
             _flags = flags;
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-            _hashCode = HashCode.Combine(key, flags);
+            _hashCode = System.HashCode.Combine(key, flags);
 #else
             _hashCode = key.GetHashCode() ^ (int)flags;
 #endif
@@ -34,6 +34,10 @@ partial class DefaultHybridCache
 
         public string Key => _key;
         public HybridCacheEntryFlags Flags => _flags;
+
+        // allow direct access to the pre-computed hash-code, semantically emphasizing that
+        // this is a constant-time operation against a known value
+        internal int HashCode => _hashCode;
 
         public bool Equals(StampedeKey other) => _flags == other._flags & _key == other._key;
 

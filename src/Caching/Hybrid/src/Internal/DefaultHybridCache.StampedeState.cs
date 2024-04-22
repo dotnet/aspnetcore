@@ -22,7 +22,10 @@ partial class DefaultHybridCache
         private readonly CancellationTokenSource? _sharedCancellation;
         internal readonly CancellationToken SharedToken; // this might have a value even when _sharedCancellation is null
 
-        public StampedeKey Key { get; }
+        // we expose the key as a by-ref readonly; this minimizes the stack work involved in passing the key around
+        // (both in terms of width and copy-semantics)
+        private readonly StampedeKey _key;
+        public ref readonly StampedeKey Key => ref _key;
 
         /// <summary>
         /// Create a stamped token optionally with shared cancellation support
@@ -30,7 +33,7 @@ partial class DefaultHybridCache
         protected StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
         {
             _cache = cache;
-            Key = key;
+            _key = key;
             if (canBeCanceled)
             {
                 // if the first (or any) caller can't be cancelled; we'll never get to zero; no point tracking
@@ -50,7 +53,7 @@ partial class DefaultHybridCache
         protected StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
         {
             _cache = cache;
-            Key = key;
+            _key = key;
             SharedToken = token;
         }
 
@@ -103,5 +106,11 @@ partial class DefaultHybridCache
         }
     }
 
-    private void RemoveStampedeState(StampedeKey key) => _currentOperations.TryRemove(key, out _);
+    private void RemoveStampedeState(in StampedeKey key)
+    {
+        lock (GetPartitionedSyncLock(in key)) // see notes in SyncLock.cs
+        {
+            _currentOperations.TryRemove(key, out _);
+        }
+    }
 }

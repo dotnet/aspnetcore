@@ -134,7 +134,7 @@ partial class DefaultHybridCache
         {
             if (_result is not null)
             {
-                Cache.RemoveStampedeState(Key);
+                Cache.RemoveStampedeState(in Key);
                 _result.TrySetException(ex);
             }
         }
@@ -148,7 +148,7 @@ partial class DefaultHybridCache
 
             if (_result is not null)
             {
-                Cache.RemoveStampedeState(Key);
+                Cache.RemoveStampedeState(in Key);
                 _result.TrySetResult(value);
             }
         }
@@ -158,7 +158,7 @@ partial class DefaultHybridCache
             // note we don't store this dummy result in L1 or L2
             if (_result is not null)
             {
-                Cache.RemoveStampedeState(Key);
+                Cache.RemoveStampedeState(in Key);
                 _result.TrySetResult(ImmutableCacheItem<T>.Default);
             }
         }

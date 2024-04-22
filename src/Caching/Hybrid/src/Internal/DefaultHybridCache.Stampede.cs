@@ -43,7 +43,7 @@ partial class DefaultHybridCache
         // hmm; failed to add - there's concurrent activity on the same key; we're now
         // in very rare race condition territory; go ahead and take a lock while we
         // collect our thoughts
-        lock (_currentOperations)
+        lock (GetPartitionedSyncLock(in stampedeKey)) // see notes in SyncLock.cs
         {
             // check again while we hold the lock
             if (TryJoinExistingSession(this, stampedeKey, out existing))
