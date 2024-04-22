@@ -61,16 +61,9 @@ partial class DefaultHybridCache
             // and for *them* to have updated needs local-cache-write, but since the shared us/them key includes flags,
             // we can skip this if *either* flag is set)
             if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0 && _localCache.TryGetValue(key, out var untyped)
-                && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
+                && untyped is CacheItem<T> typed && typed.TryReserve())
             {
-                // set the value against the *current* stampede-state, essentially making it pre-completed; we
-                // can emulate that by using ImmutableCacheItem (if it isn't already), noting that this state
-                // will never be in the dictionary, so this value is never shared with anyone else
-                if (typed is not ImmutableCacheItem<T> immutable)
-                {
-                    immutable = new ImmutableCacheItem<T>(value);
-                }
-                stampedeState.SetResultDirect(immutable);
+                stampedeState.SetResultDirect(typed);
                 return false; // the work has ALREADY been done
             }
 

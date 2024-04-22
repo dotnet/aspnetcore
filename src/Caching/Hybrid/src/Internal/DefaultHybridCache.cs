@@ -137,7 +137,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
             {
                 // we're going to run to completion; no need to get complicated
                 _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
-                return stampede.UnwrapAsync();
+                return stampede.UnwrapReservedAsync();
             }
         }
 
