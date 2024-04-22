@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -19,7 +20,12 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     {
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
         var document = await documentService.GetOpenApiDocumentAsync();
-        await Verify(GetOpenApiJson(document)).UseParameters(documentName);
+        await Verifier.Verify(GetOpenApiJson(document))
+            .UseDirectory(SkipOnHelixAttribute.OnHelix()
+                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
+                : "snapshots")
+            .ScrubLinesContaining(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DescriptionId)
+            .UseParameters(documentName);
     }
 
     private static string GetOpenApiJson(OpenApiDocument document)
