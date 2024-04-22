@@ -14,15 +14,14 @@ partial class DefaultHybridCache
         {
             if (value is CacheItem item)
             {
-                // perform per-item clean-up; this could be buffer recycling (if defensive copies needed),
-                // or could be disposal
+                // perform per-item clean-up, i.e. buffer recycling (if defensive copies needed)
                 item.OnEviction();
             }
         };
 
         public virtual void Release() { } // for recycling purposes
 
-        public abstract bool NeedsEvictionCallback { get; } // do we need to call Release when evicted?
+        public virtual bool NeedsEvictionCallback => false; // do we need to call Release when evicted?
 
         public virtual void OnEviction() { } // only invoked if NeedsEvictionCallback reported true
 

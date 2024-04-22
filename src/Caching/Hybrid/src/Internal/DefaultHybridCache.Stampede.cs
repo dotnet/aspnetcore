@@ -57,6 +57,23 @@ partial class DefaultHybridCache
                 // the floor; in the grand scheme of things, that's OK; this is a rare outcome
             }
 
+            // and check whether the value was L1-cached by an outgoing operation (for *us* to check needs local-cache-read,
+            // and for *them* to have updated needs local-cache-write, but since the shared us/them key includes flags,
+            // we can skip this if *either* flag is set)
+            if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0 && _localCache.TryGetValue(key, out var untyped)
+                && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
+            {
+                // set the value against the *current* stampede-state, essentially making it pre-completed; we
+                // can emulate that by using ImmutableCacheItem (if it isn't already), noting that this state
+                // will never be in the dictionary, so this value is never shared with anyone else
+                if (typed is not ImmutableCacheItem<T> immutable)
+                {
+                    immutable = new ImmutableCacheItem<T>(value);
+                }
+                stampedeState.SetResultDirect(immutable);
+                return false; // the work has ALREADY been done
+            }
+
             // otherwise, either nothing existed - or the thing that already exists can't be joined;
             // in that case, go ahead and use the state that we invented a moment ago (outside of the lock)
             _currentOperations[stampedeKey] = stampedeState;

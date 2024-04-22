@@ -139,6 +139,10 @@ partial class DefaultHybridCache
             }
         }
 
+        // ONLY set the result, without any other side-effects
+        internal void SetResultDirect(CacheItem<T> value)
+            => _result?.TrySetResult(value);
+
         private void SetResult(CacheItem<T> value)
         {
             if ((Key.Flags & HybridCacheEntryFlags.DisableLocalCacheWrite) == 0)

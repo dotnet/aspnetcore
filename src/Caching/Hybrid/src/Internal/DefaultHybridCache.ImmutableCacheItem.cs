@@ -19,15 +19,6 @@ partial class DefaultHybridCache
         // this is only used when the underlying store is disabled; we don't need 100% singleton; "good enough is"
         public static ImmutableCacheItem<T> Default => _sharedDefault ??= new(default!);
 
-        public override void OnEviction()
-        {
-            var obj = _value as IDisposable;
-            Debug.Assert(obj is not null, "shouldn't be here for non-disposable types");
-            obj?.Dispose();
-        }
-
-        public override bool NeedsEvictionCallback => ImmutableTypeCache<T>.IsDisposable;
-
         public override bool TryGetValue(out T value)
         {
             value = _value;
