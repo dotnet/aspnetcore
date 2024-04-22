@@ -23,7 +23,7 @@ public class ThreadingAppTest
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 

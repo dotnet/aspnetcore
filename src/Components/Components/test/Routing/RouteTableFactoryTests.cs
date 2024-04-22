@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Reflection;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +73,20 @@ public class RouteTableFactoryTests
 
         // Assert
         Assert.Equal(routes.GroupBy(x => x.Handler).Count(), routes.Count);
+    }
+
+    [Fact]
+    public void RespectsExcludeFromInteractiveRoutingAttribute()
+    {
+        // Arrange & Act
+        var routeTableFactory = new RouteTableFactory();
+        var routeTable = routeTableFactory.Create(new RouteKey(GetType().Assembly, Array.Empty<Assembly>()), _serviceProvider);
+
+        var routes = GetRoutes(routeTable);
+
+        // Assert
+        Assert.Contains(routes, r => r.Handler == typeof(ComponentWithoutExcludeFromInteractiveRoutingAttribute));
+        Assert.DoesNotContain(routes, r => r.Handler == typeof(ComponentWithExcludeFromInteractiveRoutingAttribute));
     }
 
     [Fact]
@@ -1120,4 +1135,11 @@ public class RouteTableFactoryTests
 
     class TestHandler1 { }
     class TestHandler2 { }
+
+    [Route("/ComponentWithoutExcludeFromInteractiveRoutingAttribute")]
+    public class ComponentWithoutExcludeFromInteractiveRoutingAttribute : ComponentBase { }
+
+    [Route("/ComponentWithExcludeFromInteractiveRoutingAttribute")]
+    [ExcludeFromInteractiveRouting]
+    public class ComponentWithExcludeFromInteractiveRoutingAttribute : ComponentBase { }
 }

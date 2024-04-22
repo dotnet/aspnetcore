@@ -304,6 +304,7 @@ internal sealed class ChunkingCookieManager
         responseCookies.Append(keyValuePairs, new CookieOptions(options)
         {
             Expires = DateTimeOffset.UnixEpoch,
+            MaxAge = null, // Some browsers require this (https://github.com/dotnet/aspnetcore/issues/52159)
         });
     }
 
@@ -331,6 +332,7 @@ internal sealed class ChunkingCookieManager
             context.Response.Cookies.Append(keyValuePairs.ToArray(), new CookieOptions(options)
             {
                 Expires = DateTimeOffset.UnixEpoch,
+                MaxAge = null, // Some browsers require this (https://github.com/dotnet/aspnetcore/issues/52159)
             });
         }
     }
