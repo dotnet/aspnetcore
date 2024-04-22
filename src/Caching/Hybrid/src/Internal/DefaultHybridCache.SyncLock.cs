@@ -14,8 +14,8 @@ partial class DefaultHybridCache
     // on all executions.
     //
     // To minimize lock contention, we will therefore use partitioning of the lock-token, by using the
-    // low 3 bits of the hash-code (which we calculate eagerly only one, so: already know). This gives
-    // us a fast way to split contention 8, almost an order-of-magnitude, which is sufficient. We *could*
+    // low 3 bits of the hash-code (which we calculate eagerly only once, so: already known). This gives
+    // us a fast way to split contention by 8, almost an order-of-magnitude, which is sufficient. We *could*
     // use an array for this, but: for directness, let's inline it instead (avoiding bounds-checks,
     // an extra layer of dereferencing, and the allocation; I will acknowledge these are miniscule, but:
     // it costs us nothing to do)
