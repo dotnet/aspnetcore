@@ -34,4 +34,8 @@
 
   <!-- Required to copy dependencies to the output directory for integration test projects. -->
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\Integration\snapshots\**" />
+  </ItemGroup>
 </Project>
