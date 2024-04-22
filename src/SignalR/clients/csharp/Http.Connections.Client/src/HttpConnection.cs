@@ -465,11 +465,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, uri))
             {
-    #if NET5_0_OR_GREATER
+#if NET5_0_OR_GREATER
                 request.Options.Set(new HttpRequestOptionsKey<bool>("IsNegotiate"), true);
-    #else
+#else
                 request.Properties.Add("IsNegotiate", true);
-    #endif
+#endif
 
                 // Set the Accept header to "*/*"
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
@@ -481,9 +481,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
                 {
                     response.EnsureSuccessStatusCode();
-    #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
                     var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-    #pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
                     var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                     if (!string.IsNullOrEmpty(negotiateResponse.Error))
                     {
