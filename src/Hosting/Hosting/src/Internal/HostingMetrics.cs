@@ -69,18 +69,23 @@ internal sealed class HostingMetrics : IDisposable
             {
                 tags.Add("http.route", route);
             }
-            // This exception is only present if there is an unhandled exception.
-            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add error.type to custom tags.
-            if (exception != null)
-            {
-                tags.Add("error.type", exception.GetType().FullName);
-            }
+
+            // Add before some built in tags so custom tags are prioritized when dealing with duplicates.
             if (customTags != null)
             {
                 for (var i = 0; i < customTags.Count; i++)
                 {
                     tags.Add(customTags[i]);
                 }
+            }
+
+            // This exception is only present if there is an unhandled exception.
+            // An exception caught by ExceptionHandlerMiddleware and DeveloperExceptionMiddleware isn't thrown to here. Instead, those middleware add error.type to custom tags.
+            if (exception != null)
+            {
+                // Exception tag could have been added by middleware. If an exception is later thrown in request pipeline
+                // then we don't want to add a duplicate tag here because that breaks some metrics systems.
+                tags.TryAddTag("error.type", exception.GetType().FullName);
             }
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
