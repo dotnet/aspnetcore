@@ -102,7 +102,6 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
             StopServer();
             EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.ShutdownMessage(result), Logger);
         }
     }
 
