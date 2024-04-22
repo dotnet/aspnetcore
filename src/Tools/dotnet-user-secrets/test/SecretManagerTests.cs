@@ -112,7 +112,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
-                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
+                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} to the secret store.", keyValue.Key),
                 _console.GetOutput());
         }
 
@@ -154,9 +154,9 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         var secretManager = CreateProgram();
 
         secretManager.RunInternal("set", "secret1", "value1", "-p", projectPath, "--verbose");
-        Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _console.GetOutput());
+        Assert.Contains("Successfully saved secret1 to the secret store.", _console.GetOutput());
         secretManager.RunInternal("set", "secret1", "value2", "-p", projectPath, "--verbose");
-        Assert.Contains("Successfully saved secret1 = value2 to the secret store.", _console.GetOutput());
+        Assert.Contains("Successfully saved secret1 to the secret store.", _console.GetOutput());
 
         _console.ClearOutput();
 
@@ -174,7 +174,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         secretManager.RunInternal("-v", "set", "secret1", "value1", "-p", projectPath);
         Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Project file path {0}.", Path.Combine(projectPath, "TestProject.csproj")), _console.GetOutput());
         Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(secretId)), _console.GetOutput());
-        Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _console.GetOutput());
+        Assert.Contains("Successfully saved secret1 to the secret store.", _console.GetOutput());
         _console.ClearOutput();
 
         secretManager.RunInternal("-v", "list", "-p", projectPath);
@@ -299,7 +299,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
-                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
+                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} to the secret store.", keyValue.Key),
                 _console.GetOutput());
         }
 
