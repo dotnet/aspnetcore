@@ -118,7 +118,7 @@
     <SystemSecurityPermissionsVersion>7.0.0</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>7.0.1</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>7.0.0</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>7.0.5</SystemTextJsonVersion>
+    <SystemTextJsonVersion>7.0.4</SystemTextJsonVersion>
     <SystemThreadingAccessControlVersion>7.0.1</SystemThreadingAccessControlVersion>
     <SystemThreadingChannelsVersion>7.0.0</SystemThreadingChannelsVersion>
     <SystemThreadingRateLimitingVersion>7.0.1</SystemThreadingRateLimitingVersion>
