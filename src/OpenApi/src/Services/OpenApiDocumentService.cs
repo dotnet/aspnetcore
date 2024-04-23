@@ -213,7 +213,7 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            var schema = apiResponseType.Type is {} type ? _componentService.GetOrCreateSchema(type) : new OpenApiSchema();
+            var schema = apiResponseType.Type is { } type ? _componentService.GetOrCreateSchema(type) : new OpenApiSchema();
             response.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
@@ -296,11 +296,78 @@ internal sealed class OpenApiDocumentService(
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
-        // Forms are represented as objects with properties for each form field.
         var schema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
-        foreach (var parameter in formParameters)
+        // Group form parameters by their parameter name because MVC explodes form parameters that are bound from the
+        // same model instance into separate parameters, while minimal APIs does not.
+        //
+        // public record Todo(int Id, string Title, bool Completed, DateTime CreatedAt)
+        // public void PostMvc([FromForm] Todo person) { }
+        // app.MapGet("/form-todo", ([FromForm] Todo todo) => Results.Ok(todo));
+        //
+        // In the example above, MVC will bind four separate arguments to the Todo model while minimal APIs will
+        // bind a single Todo model instance to the todo parameter. Grouping by name allows us to handle both cases.
+        var groupedFormParameters = formParameters.GroupBy(parameter => parameter.ParameterDescriptor.Name).ToList();
+        // If there is only one real parameter derive from the form body, then set it directly in the schema.
+        if (groupedFormParameters is [var groupedParameter])
         {
-            schema.Properties[parameter.Name] = _componentService.GetOrCreateSchema(parameter.Type);
+            // If the group contains one element, then we're dealing with a minimal API scenario where a
+            // single form parameter produces a single API description parameter.
+            if (groupedParameter.Count() == 1)
+            {
+                var description = groupedParameter.Single();
+                // Form files are keyed by their parameter name so we must capture the parameter name
+                // as a property in the schema.
+                if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
+                {
+                    schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                }
+                else
+                {
+                    // POCOs do not need to be subset under their parameter name. The form-binding implementation
+                    // will capture them implicitly.
+                    schema = _componentService.GetOrCreateSchema(description.Type);
+                }
+            }
+            // If there are multiple API description parameters in the group, then we are dealing
+            // with the MVC scenario where form parameters are exploded into separate API parameters
+            // for each property within the complex type.
+            else
+            {
+                foreach (var parameter in groupedParameter)
+                {
+                    schema.Properties[parameter.Name] = _componentService.GetOrCreateSchema(parameter.Type);
+                }
+            }
+        }
+        // If there are multiple parameters sourced from the form, then we use `allOf` to capture each parameter.
+        else
+        {
+            // Process the arguments in the same way that we do for the single-parameter case but
+            // set each sub-schema as an `allOf` item in the schema.
+            foreach (var parameter in groupedFormParameters)
+            {
+                if (parameter.Count() == 1)
+                {
+                    var description = parameter.Single();
+                    if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
+                    {
+                        schema.AllOf.Add(new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema> { [description.Name] = _componentService.GetOrCreateSchema(description.Type) } });
+                    }
+                    else
+                    {
+                        schema.AllOf.Add(_componentService.GetOrCreateSchema(description.Type));
+                    }
+                }
+                else
+                {
+                    var propertySchema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
+                    foreach (var description in parameter)
+                    {
+                        propertySchema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                    }
+                    schema.AllOf.Add(propertySchema);
+                }
+            }
         }
 
         foreach (var requestFormat in supportedRequestFormats)

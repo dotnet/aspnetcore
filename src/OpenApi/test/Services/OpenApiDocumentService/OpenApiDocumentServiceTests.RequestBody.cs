@@ -187,15 +187,24 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
             Assert.Equal("object", content.Value.Schema.Type);
-            Assert.NotNull(content.Value.Schema.Properties);
-            Assert.Contains("formFile1", content.Value.Schema.Properties);
-            Assert.Contains("formFile2", content.Value.Schema.Properties);
-            var formFile1Property = content.Value.Schema.Properties["formFile1"];
-            Assert.Equal("string", formFile1Property.Type);
-            Assert.Equal("binary", formFile1Property.Format);
-            var formFile2Property = content.Value.Schema.Properties["formFile2"];
-            Assert.Equal("string", formFile2Property.Type);
-            Assert.Equal("binary", formFile2Property.Format);
+            Assert.NotNull(content.Value.Schema.AllOf);
+            Assert.Collection(content.Value.Schema.AllOf,
+                allOfItem =>
+                {
+                    Assert.NotNull(allOfItem.Properties);
+                    Assert.Contains("formFile1", allOfItem.Properties);
+                    var formFile1Property = allOfItem.Properties["formFile1"];
+                    Assert.Equal("string", formFile1Property.Type);
+                    Assert.Equal("binary", formFile1Property.Format);
+                },
+                allOfItem =>
+                {
+                    Assert.NotNull(allOfItem.Properties);
+                    Assert.Contains("formFile2", allOfItem.Properties);
+                    var formFile2Property = allOfItem.Properties["formFile2"];
+                    Assert.Equal("string", formFile2Property.Type);
+                    Assert.Equal("binary", formFile2Property.Format);
+                });
         });
     }
 
@@ -388,4 +397,245 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 
+    // Test coverage for https://github.com/dotnet/aspnetcore/issues/52284
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesFromFormWithPoco()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form", ([FromForm] Todo todo) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = operation.RequestBody.Content;
+            // Forms can be provided in both the URL and via form data
+            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
+            Assert.Contains("multipart/form-data", content.Keys);
+            // Same schema should be produced for both content-types
+            foreach (var item in content.Values)
+            {
+                Assert.NotNull(item.Schema);
+                Assert.Equal("object", item.Schema.Type);
+                Assert.NotNull(item.Schema.Properties);
+                Assert.Collection(item.Schema.Properties,
+                    property =>
+                    {
+                        Assert.Equal("id", property.Key);
+                        Assert.Equal("integer", property.Value.Type);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("title", property.Key);
+                        Assert.Equal("string", property.Value.Type);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("completed", property.Key);
+                        Assert.Equal("boolean", property.Value.Type);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("createdAt", property.Key);
+                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal("date-time", property.Value.Format);
+                    });
+            }
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesFromFormWithPoco_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithFormModel));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[OperationType.Get];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = operation.RequestBody.Content;
+            // Forms can be provided in both the URL and via form data
+            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
+            // Same schema should be produced for both content-types
+            foreach (var item in content.Values)
+            {
+                Assert.NotNull(item.Schema);
+                Assert.Equal("object", item.Schema.Type);
+                Assert.NotNull(item.Schema.Properties);
+                Assert.Collection(item.Schema.Properties,
+                    property =>
+                    {
+                        Assert.Equal("Id", property.Key);
+                        Assert.Equal("integer", property.Value.Type);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("Title", property.Key);
+                        Assert.Equal("string", property.Value.Type);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("Completed", property.Key);
+                        Assert.Equal("boolean", property.Value.Type);
+                    },
+                    property =>
+                    {
+                        Assert.Equal("CreatedAt", property.Key);
+                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal("date-time", property.Value.Format);
+                    });
+            }
+        });
+    }
+
+    [Route("/form-model")]
+    private void ActionWithFormModel([FromForm] Todo todo) { }
+
+    // Test coverage for https://github.com/dotnet/aspnetcore/issues/53831
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesMultipleFormWithPoco()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/form", ([FromForm] Todo todo, [FromForm] Error error) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[OperationType.Post];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = operation.RequestBody.Content;
+            // Forms can be provided in both the URL and via form data
+            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
+            Assert.Contains("multipart/form-data", content.Keys);
+            // Same schema should be produced for both content-types
+            foreach (var item in content.Values)
+            {
+                Assert.NotNull(item.Schema);
+                Assert.Equal("object", item.Schema.Type);
+                Assert.NotNull(item.Schema.AllOf);
+                Assert.Collection(item.Schema.AllOf,
+                    allOfItem =>
+                    {
+                        Assert.Collection(allOfItem.Properties, property =>
+                            {
+                                Assert.Equal("id", property.Key);
+                                Assert.Equal("integer", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("title", property.Key);
+                                Assert.Equal("string", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("completed", property.Key);
+                                Assert.Equal("boolean", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("createdAt", property.Key);
+                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal("date-time", property.Value.Format);
+                            });
+                    },
+                    allOfItem =>
+                    {
+                        Assert.Collection(allOfItem.Properties,
+                            property =>
+                            {
+                                Assert.Equal("code", property.Key);
+                                Assert.Equal("integer", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("message", property.Key);
+                                Assert.Equal("string", property.Value.Type);
+                            });
+                    });
+            }
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesMultipleFormWithPoco_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithMultipleFormModel));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[OperationType.Get];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = operation.RequestBody.Content;
+            // Forms can be provided in both the URL and via form data
+            Assert.Contains("application/x-www-form-urlencoded", content.Keys);
+            // Same schema should be produced for both content-types
+            foreach (var item in content.Values)
+            {
+                Assert.NotNull(item.Schema);
+                Assert.Equal("object", item.Schema.Type);
+                Assert.NotNull(item.Schema.AllOf);
+                Assert.Collection(item.Schema.AllOf,
+                    allOfItem =>
+                    {
+                        Assert.Collection(allOfItem.Properties, property =>
+                            {
+                                Assert.Equal("Id", property.Key);
+                                Assert.Equal("integer", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("Title", property.Key);
+                                Assert.Equal("string", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("Completed", property.Key);
+                                Assert.Equal("boolean", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("CreatedAt", property.Key);
+                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal("date-time", property.Value.Format);
+                            });
+                    },
+                    allOfItem =>
+                    {
+                        Assert.Collection(allOfItem.Properties,
+                            property =>
+                            {
+                                Assert.Equal("Code", property.Key);
+                                Assert.Equal("integer", property.Value.Type);
+                            },
+                            property =>
+                            {
+                                Assert.Equal("Message", property.Key);
+                                Assert.Equal("string", property.Value.Type);
+                            });
+                    });
+            }
+        });
+    }
+
+    [Route("/form-model")]
+    private void ActionWithMultipleFormModel([FromForm] Todo todo, [FromForm] Error error) { }
 }

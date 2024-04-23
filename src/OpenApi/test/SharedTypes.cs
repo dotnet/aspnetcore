@@ -10,7 +10,7 @@ internal record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 
 internal record TodoWithDueDate(int Id, string Title, bool Completed, DateTime CreatedAt, DateTime DueDate) : Todo(Id, Title, Completed, CreatedAt);
 
-internal record Error(int code, string Message);
+internal record Error(int Code, string Message);
 
 internal record Result<T>(bool IsSuccessful, T Value, Error Error);
 

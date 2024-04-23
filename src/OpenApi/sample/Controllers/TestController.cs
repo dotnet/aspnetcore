@@ -12,6 +12,13 @@ public class TestController : ControllerBase
         return paramsContainer.Id + "_" + paramsContainer.Name;
     }
 
+    [HttpPost]
+    [Route("/forms")]
+    public IActionResult PostForm([FromForm] MvcTodo todo)
+    {
+        return Ok(todo);
+    }
+
     public class RouteParamsContainer
     {
         [FromRoute]
@@ -21,4 +28,6 @@ public class TestController : ControllerBase
         [MinLength(5)]
         public string? Name { get; set; }
     }
+
+    public record MvcTodo(string Title, string Description, bool IsCompleted);
 }

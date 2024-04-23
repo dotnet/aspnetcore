@@ -227,6 +227,56 @@
           }
         },
       }
+    },
+    "/forms": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "parameters": [
+          {
+            "name": "X-Version",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "1.0"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Title": {
+                    "minLength": 5,
+                    "type": "string"
+                  },
+                  "Description": {
+                    "minLength": 5,
+                    "type": "string"
+                  },
+                  "IsCompleted": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "encoding": {
+                "application/x-www-form-urlencoded": {
+                  "style": "form",
+                  "explode": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+      }
     }
   },
   "components": {

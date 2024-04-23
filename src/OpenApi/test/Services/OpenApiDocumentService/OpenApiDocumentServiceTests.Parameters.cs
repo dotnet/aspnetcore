@@ -116,6 +116,34 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 #nullable restore
 
+#nullable disable
+    // Test coverage for https://github.com/dotnet/aspnetcore/issues/46746
+    [Fact]
+    public async Task GetOpenApiParameters_RouteParametersAreAlwaysRequired_NullabilityDisables()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos/{id}", (int id) => { });
+        builder.MapGet("/api/todos/{guid}", (Guid? guid) => { });
+        builder.MapGet("/api/todos/{isCompleted}", (bool isCompleted = false) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters);
+            Assert.Equal("id", pathParameter.Name);
+            Assert.True(pathParameter.Required);
+            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[OperationType.Get].Parameters);
+            Assert.Equal("guid", guidParameter.Name);
+            Assert.True(guidParameter.Required);
+            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[OperationType.Get].Parameters);
+            Assert.Equal("isCompleted", isCompletedParameter.Name);
+            Assert.True(isCompletedParameter.Required);
+        });
+    }
+#nullable restore
     [Fact]
     public async Task GetOpenApiRequestBody_SkipsRequestBodyParameters()
     {
