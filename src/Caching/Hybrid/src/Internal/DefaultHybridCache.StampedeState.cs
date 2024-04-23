@@ -15,22 +15,27 @@ partial class DefaultHybridCache
 #endif
     {
         private readonly DefaultHybridCache _cache;
-        private int _activeCallers = 1;
+        private readonly CacheItem _cacheItem;
 
         // because multiple callers can enlist, we need to track when the *last* caller cancels
         // (and keep going until then); that means we need to run with custom cancellation
         private readonly CancellationTokenSource? _sharedCancellation;
         internal readonly CancellationToken SharedToken; // this might have a value even when _sharedCancellation is null
 
-        public StampedeKey Key { get; }
+        // we expose the key as a by-ref readonly; this minimizes the stack work involved in passing the key around
+        // (both in terms of width and copy-semantics)
+        private readonly StampedeKey _key;
+        public ref readonly StampedeKey Key => ref _key;
+        protected CacheItem CacheItem => _cacheItem;
 
         /// <summary>
         /// Create a stamped token optionally with shared cancellation support
         /// </summary>
-        protected StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
+        protected StampedeState(DefaultHybridCache cache, in StampedeKey key, CacheItem cacheItem, bool canBeCanceled)
         {
             _cache = cache;
-            Key = key;
+            _key = key;
+            _cacheItem = cacheItem;
             if (canBeCanceled)
             {
                 // if the first (or any) caller can't be cancelled; we'll never get to zero; no point tracking
@@ -47,10 +52,11 @@ partial class DefaultHybridCache
         /// <summary>
         /// Create a stamped token using a fixed cancellation token
         /// </summary>
-        protected StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
+        protected StampedeState(DefaultHybridCache cache, in StampedeKey key, CacheItem cacheItem, CancellationToken token)
         {
             _cache = cache;
-            Key = key;
+            _key = key;
+            _cacheItem = cacheItem;
             SharedToken = token;
         }
 
@@ -68,14 +74,14 @@ partial class DefaultHybridCache
 
         public abstract void SetCanceled();
 
-        public int DebugCallerCount => Volatile.Read(ref _activeCallers);
+        public int DebugCallerCount => _cacheItem.RefCount;
 
         public abstract Type Type { get; }
 
-        public void RemoveCaller()
+        public void CancelCaller()
         {
             // note that TryAddCaller has protections to avoid getting back from zero
-            if (Interlocked.Decrement(ref _activeCallers) == 0)
+            if (_cacheItem.Release())
             {
                 // we're the last to leave; turn off the lights
                 _sharedCancellation?.Cancel();
@@ -83,25 +89,14 @@ partial class DefaultHybridCache
             }
         }
 
-        public bool TryAddCaller() // essentially just interlocked-increment, but with a leading zero check and overflow detection
-        {
-            var oldValue = Volatile.Read(ref _activeCallers);
-            do
-            {
-                if (oldValue is 0 or -1)
-                {
-                    return false; // already burned or about to roll around back to zero
-                }
-
-                var updated = Interlocked.CompareExchange(ref _activeCallers, oldValue + 1, oldValue);
-                if (updated == oldValue)
-                {
-                    return true; // we exchanged
-                }
-                oldValue = updated; // we failed, but we have an updated state
-            } while (true);
-        }
+        public bool TryAddCaller() => _cacheItem.TryReserve();
     }
 
-    private void RemoveStampede(StampedeKey key) => _currentOperations.TryRemove(key, out _);
+    private void RemoveStampedeState(in StampedeKey key)
+    {
+        lock (GetPartitionedSyncLock(in key)) // see notes in SyncLock.cs
+        {
+            _currentOperations.TryRemove(key, out _);
+        }
+    }
 }

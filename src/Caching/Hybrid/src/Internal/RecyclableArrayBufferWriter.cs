@@ -13,6 +13,22 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 // except it uses the array pool for allocations
 internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 {
+    // Usage note: *normally* you might want to use "using" for this, and that is fine;
+    // however, caution should be exercised in exception scenarios where we don't 100%
+    // know that the caller has stopped touching the buffer; in particular, this means
+    // scenarios involving a combination of external code and (for example) "async".
+    // In those cases, it may be preferable to manually dispose in the success case,
+    // and just drop the buffers in the failure case, i.e. instead of:
+    //
+    // using (writer)
+    // { DoStuff(); }
+    //
+    // simply:
+    //
+    // DoStuff();
+    // writer.Dispose();
+    //
+    // This does not represent a problem, and is consistent with many ArrayPool use-cases.
 
     // Copy of Array.MaxLength.
     // Used by projects targeting .NET Framework.

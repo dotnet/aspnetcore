@@ -24,17 +24,17 @@ partial class DefaultHybridCache
 
     private int _outstandingBufferCount;
 
-    internal int DebugGetOutstandingBuffers(bool flush = false)
+    internal int DebugOnlyGetOutstandingBuffers(bool flush = false)
                 => flush ? Interlocked.Exchange(ref _outstandingBufferCount, 0) : Volatile.Read(ref _outstandingBufferCount);
 
     [Conditional("DEBUG")]
-    internal void DebugDecrementOutstandingBuffers()
+    internal void DebugOnlyDecrementOutstandingBuffers()
     {
         Interlocked.Decrement(ref _outstandingBufferCount);
     }
 
     [Conditional("DEBUG")]
-    internal void DebugIncrementOutstandingBuffers()
+    internal void DebugOnlyIncrementOutstandingBuffers()
     {
         Interlocked.Increment(ref _outstandingBufferCount);
     }
@@ -42,27 +42,27 @@ partial class DefaultHybridCache
 
     partial class MutableCacheItem<T>
     {
-        partial void DebugDecrementOutstandingBuffers();
-        partial void DebugTrackBufferCore(DefaultHybridCache cache);
+        partial void DebugOnlyDecrementOutstandingBuffers();
+        partial void DebugOnlyTrackBufferCore(DefaultHybridCache cache);
 
         [Conditional("DEBUG")]
-        internal void DebugTrackBuffer(DefaultHybridCache cache) => DebugTrackBufferCore(cache);
+        internal void DebugOnlyTrackBuffer(DefaultHybridCache cache) => DebugOnlyTrackBufferCore(cache);
 
 #if DEBUG
         private DefaultHybridCache? _cache; // for buffer-tracking - only enabled in DEBUG
-        partial void DebugDecrementOutstandingBuffers()
+        partial void DebugOnlyDecrementOutstandingBuffers()
         {
             if (_buffer.ReturnToPool)
             {
-                _cache?.DebugDecrementOutstandingBuffers();
+                _cache?.DebugOnlyDecrementOutstandingBuffers();
             }
         }
-        partial void DebugTrackBufferCore(DefaultHybridCache cache)
+        partial void DebugOnlyTrackBufferCore(DefaultHybridCache cache)
         {
             _cache = cache;
             if (_buffer.ReturnToPool)
             {
-                _cache?.DebugIncrementOutstandingBuffers();
+                _cache?.DebugOnlyIncrementOutstandingBuffers();
             }
         }
 #endif
