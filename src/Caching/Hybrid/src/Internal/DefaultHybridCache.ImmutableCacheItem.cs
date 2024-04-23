@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -17,8 +15,19 @@ partial class DefaultHybridCache
 
         private static ImmutableCacheItem<T>? _sharedDefault;
 
-        // this is only used when the underlying store is disabled; we don't need 100% singleton; "good enough is"
-        public static ImmutableCacheItem<T> Default => _sharedDefault ??= new();
+        // get a shared instance that passes as "reserved"; doesn't need to be 100% singleton,
+        // but we don't want to break the reservation rules either; if we can't reserve: create new
+        public static ImmutableCacheItem<T> GetReservedShared()
+        {
+            var obj = Volatile.Read(ref _sharedDefault);
+            if (obj is null || !obj.TryReserve())
+            {
+                obj = new();
+                obj.TryReserve(); // this is reliable on a new instance
+                Volatile.Write(ref _sharedDefault, obj);
+            }
+            return obj;
+        }
 
         public override bool TryGetValue(out T value)
         {

@@ -78,7 +78,7 @@ partial class DefaultHybridCache
 
         public abstract Type Type { get; }
 
-        public void RemoveCaller()
+        public void CancelCaller()
         {
             // note that TryAddCaller has protections to avoid getting back from zero
             if (_cacheItem.Release())

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -41,6 +42,7 @@ partial class DefaultHybridCache
         public bool Release() // returns true ONLY for the final release step
         {
             var newCount = Interlocked.Decrement(ref _refCount);
+            Debug.Assert(newCount >= 0, "over-release detected");
             if (newCount == 0)
             {
                 // perform per-item clean-up, i.e. buffer recycling (if defensive copies needed)
@@ -52,6 +54,9 @@ partial class DefaultHybridCache
 
         public bool TryReserve()
         {
+            // this is basically interlocked increment, but with a check against:
+            // a) incrementing upwards from zero
+            // b) overflowing *back* to zero
             var oldValue = Volatile.Read(ref _refCount);
             do
             {

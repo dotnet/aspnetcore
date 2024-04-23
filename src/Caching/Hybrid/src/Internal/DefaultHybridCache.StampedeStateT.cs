@@ -163,7 +163,7 @@ partial class DefaultHybridCache
             if (_result is not null)
             {
                 Cache.RemoveStampedeState(in Key);
-                _result.TrySetResult(ImmutableCacheItem<T>.Default);
+                _result.TrySetResult(ImmutableCacheItem<T>.GetReservedShared());
             }
         }
 
@@ -260,6 +260,7 @@ partial class DefaultHybridCache
                     ((TaskCompletionSource<bool>)obj!).TrySetResult(true);
                 }, cancelStub);
 
+                CacheItem<T> result;
                 try
                 {
                     var first = await System.Threading.Tasks.Task.WhenAny(stampede.Task, cancelStub.Task).ConfigureAwait(false);
@@ -271,12 +272,15 @@ partial class DefaultHybridCache
                     Debug.Assert(ReferenceEquals(first, stampede.Task));
 
                     // this has already completed, but we'll get the stack nicely
-                    return (await stampede.Task.ConfigureAwait(false)).GetReservedValue();
+                    result = await stampede.Task.ConfigureAwait(false);
                 }
-                finally
+                catch
                 {
-                    stampede.RemoveCaller();
+                    stampede.CancelCaller();
+                    throw;
                 }
+                // outside the catch, so we know we only decrement one way or the other
+                return result.GetReservedValue();
             }
         }
     }
