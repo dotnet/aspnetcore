@@ -1667,6 +1667,9 @@ public class Http3RequestTests : LoggedTest
             await connectionStartedTcs.Task.DefaultTimeout();
             // Do not dispose the client, wait for it to idle out.
 
+            Logger.LogInformation("Waiting for server to receive connection close.");
+            await connectionClosedTcs.Task.DefaultTimeout();
+
             // Server has aborted connection.
             await WaitForLogAsync(logs =>
             {
@@ -1684,9 +1687,6 @@ public class Http3RequestTests : LoggedTest
                 Assert.Contains($"aborted by application with error code {closeErrorCode}", connectionAbortLog.Message);
                 return true;
             }, "Wait for connection abort.");
-
-            Logger.LogInformation("Waiting for server to receive connection close.");
-            await connectionClosedTcs.Task.DefaultTimeout();
 
             await host.StopAsync();
         }
