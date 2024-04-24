@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Moq.Protected;
 using Xunit;
+using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -692,4 +693,64 @@ public class LongPollingTransportTests : VerifiableLoggedTest
             Assert.Equal(TestUri, deleteRequest.RequestUri);
         }
     }
+
+    [Fact]
+    public async Task StartAsyncSetsAcceptHeaderCorrectly()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("*/*"))),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
+            .Verifiable("StartAsync did not set the Accept header correctly.");
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var transport = new LongPollingTransport(httpClient, loggerFactory: LoggerFactory);
+
+            await transport.StartAsync(TestUri, TransferFormat.Text);
+            await transport.StopAsync();
+        }
+
+        mockHttpHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(), // Ensure the method was called exactly once
+            ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("*/*"))),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PollSetsAcceptHeaderCorrectly()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req => req.Method == HttpMethod.Get &&
+                                                    req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("*/*"))),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
+            .Verifiable("Poll did not set the Accept header correctly.");
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        {
+            var transport = new LongPollingTransport(httpClient, loggerFactory: LoggerFactory);
+
+            // Start the transport to initialize and begin polling
+            await transport.StartAsync(TestUri, TransferFormat.Text);
+            // Wait a moment to allow the poll method to invoke
+            await Task.Delay(100);
+            await transport.StopAsync();
+        }
+
+        // Verify that the HTTP request sent by the Poll method had the correct Accept header
+        mockHttpHandler.Protected().Verify(
+            "SendAsync",
+            Times.AtLeastOnce(), // Ensure the Poll was called at least once
+             ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("*/*"))),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
 }
