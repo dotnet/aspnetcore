@@ -205,7 +205,7 @@
     </Dependency>
     <Dependency Name="System.Diagnostics.DiagnosticSource" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>57275c8c907c6fd84a7fbc9e549da451ebf35a72</Sha>
+      <Sha>2d7eea252964e69be94cb9c847b371b23e4dd470</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
