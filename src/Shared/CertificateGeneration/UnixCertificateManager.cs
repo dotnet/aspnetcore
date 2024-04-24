@@ -18,7 +18,12 @@ internal sealed class UnixCertificateManager : CertificateManager
     {
     }
 
-    public override bool IsTrusted(X509Certificate2 certificate) => false;
+    public override bool IsTrusted(X509Certificate2 certificate)
+    {
+        using X509Chain chain = new X509Chain();
+        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+        return chain.Build(certificate);
+    }
 
     protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
     {
