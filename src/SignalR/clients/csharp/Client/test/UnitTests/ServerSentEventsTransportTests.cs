@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Moq.Protected;
 using Xunit;
+using System.Net;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -409,4 +410,42 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
             Assert.Equal("transferFormat", exception.ParamName);
         }
     }
+
+    [Fact]
+    public async Task StartAsyncSetsCorrectAcceptHeaderForSSE()
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        var startAsyncCalled = new TaskCompletionSource<bool>();
+
+        // Setup the mocked HttpMessageHandler
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream"))),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
+            .Callback(() => startAsyncCalled.SetResult(true))
+            .Verifiable("Accept header for 'text/event-stream' was not set correctly.");
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            await sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Text);
+
+            // Ensure that StartAsync was called and completed before stopping the transport
+            await startAsyncCalled.Task;
+
+            await sseTransport.StopAsync();
+        }
+
+        // Verify that the SendAsync method was called on the mock HttpMessageHandler
+        mockHttpHandler.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream"))),
+            ItExpr.IsAny<CancellationToken>());
+    }
+
 }
