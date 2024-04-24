@@ -376,9 +376,9 @@ public class KestrelServerOptions
     {
         try
         {
-            var cert = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
-                .FirstOrDefault();
+            var certs = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false);
 
+            var cert = certs.Count > 0 ? certs[0] : null;
             if (cert is null)
             {
                 logger.UnableToLocateDevelopmentCertificate();
