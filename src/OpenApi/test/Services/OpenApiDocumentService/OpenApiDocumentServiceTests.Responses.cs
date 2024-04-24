@@ -17,8 +17,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Act
         builder.MapGet("/api/todos",
             [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created)]
-            [ProducesResponseType(StatusCodes.Status400BadRequest)]
-            () => { });
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () =>
+            { });
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -73,7 +74,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(string), ["text/plain"]));
 
         // Assert
-        await VerifyOpenApiDocument(builder, document => {
+        await VerifyOpenApiDocument(builder, document =>
+        {
             var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
             var response = Assert.Single(operation.Responses);
             Assert.Equal("200", response.Key);
@@ -97,7 +99,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TodoWithDueDate), ["application/json"]));
 
         // Assert
-        await VerifyOpenApiDocument(builder, document => {
+        await VerifyOpenApiDocument(builder, document =>
+        {
             var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
             var response = Assert.Single(operation.Responses);
             Assert.Equal("200", response.Key);
@@ -226,7 +229,19 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var response = Assert.Single(operation.Responses);
             Assert.Equal(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultOpenApiResponseKey, response.Key);
             Assert.Empty(response.Value.Description);
-            // Todo: Validate generated schema.
+            var mediaTypeEntry = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", mediaTypeEntry.Key);
+            var schema = mediaTypeEntry.Value.Schema;
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties, property =>
+            {
+                Assert.Equal("code", property.Key);
+                Assert.Equal("integer", property.Value.Type);
+            }, property =>
+            {
+                Assert.Equal("message", property.Key);
+                Assert.Equal("string", property.Value.Type);
+            });
         });
     }
 
@@ -245,13 +260,45 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         {
             var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
             var defaultResponse = operation.Responses[Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultOpenApiResponseKey];
+            // Generates a default response with the `Error` type.
             Assert.NotNull(defaultResponse);
             Assert.Empty(defaultResponse.Description);
+            var defaultContent = Assert.Single(defaultResponse.Content.Values);
+            Assert.Collection(defaultContent.Schema.Properties, property =>
+            {
+                Assert.Equal("code", property.Key);
+                Assert.Equal("integer", property.Value.Type);
+            }, property =>
+            {
+                Assert.Equal("message", property.Key);
+                Assert.Equal("string", property.Value.Type);
+            });
+            // Generates the 200 status code response with the `Todo` response type.
             var okResponse = operation.Responses["200"];
             Assert.NotNull(okResponse);
             Assert.Equal("OK", okResponse.Description);
-            Assert.Equal("application/json", Assert.Single(okResponse.Content).Key);
-            // Todo: Validate generated schema.
+            var okContent = Assert.Single(okResponse.Content);
+            Assert.Equal("application/json", okContent.Key);
+            var schema = okContent.Value.Schema;
+            Assert.Equal("object", schema.Type);
+            Assert.Collection(schema.Properties, property =>
+            {
+                Assert.Equal("id", property.Key);
+                Assert.Equal("integer", property.Value.Type);
+            }, property =>
+            {
+                Assert.Equal("title", property.Key);
+                Assert.Equal("string", property.Value.Type);
+            }, property =>
+            {
+                Assert.Equal("completed", property.Key);
+                Assert.Equal("boolean", property.Value.Type);
+            }, property =>
+            {
+                Assert.Equal("createdAt", property.Key);
+                Assert.Equal("string", property.Value.Type);
+                Assert.Equal("date-time", property.Value.Format);
+            });
         });
     }
 }

@@ -3,9 +3,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -20,7 +20,7 @@ partial class DefaultHybridCache
         private Task<T>? _sharedUnwrap; // allows multiple non-cancellable callers to share a single task (when no defensive copy needed)
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, bool canBeCanceled)
-            : base(cache, key, canBeCanceled)
+            : base(cache, key, CacheItem<T>.Create(), canBeCanceled)
         {
             _result = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -28,7 +28,7 @@ partial class DefaultHybridCache
         public override Type Type => typeof(T);
 
         public StampedeState(DefaultHybridCache cache, in StampedeKey key, CancellationToken token)
-            : base(cache, key, token) { } // no TCS in this case - this is for SetValue only
+            : base(cache, key, CacheItem<T>.Create(), token) { } // no TCS in this case - this is for SetValue only
 
         public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
@@ -134,10 +134,14 @@ partial class DefaultHybridCache
         {
             if (_result is not null)
             {
-                Cache.RemoveStampede(Key);
+                Cache.RemoveStampedeState(in Key);
                 _result.TrySetException(ex);
             }
         }
+
+        // ONLY set the result, without any other side-effects
+        internal void SetResultDirect(CacheItem<T> value)
+            => _result?.TrySetResult(value);
 
         private void SetResult(CacheItem<T> value)
         {
@@ -148,7 +152,7 @@ partial class DefaultHybridCache
 
             if (_result is not null)
             {
-                Cache.RemoveStampede(Key);
+                Cache.RemoveStampedeState(in Key);
                 _result.TrySetResult(value);
             }
         }
@@ -158,8 +162,8 @@ partial class DefaultHybridCache
             // note we don't store this dummy result in L1 or L2
             if (_result is not null)
             {
-                Cache.RemoveStampede(Key);
-                _result.TrySetResult(ImmutableCacheItem<T>.Default);
+                Cache.RemoveStampedeState(in Key);
+                _result.TrySetResult(ImmutableCacheItem<T>.GetReservedShared());
             }
         }
 
@@ -170,36 +174,50 @@ partial class DefaultHybridCache
 
             var serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
-            if (ImmutableTypeCache<T>.IsImmutable)
+            switch (CacheItem)
             {
-                // deserialize; and store object; buffer can be recycled now
-                cacheItem = new ImmutableCacheItem<T>(serializer.Deserialize(new(value.Array!, 0, value.Length)));
-                value.RecycleIfAppropriate();
+                case ImmutableCacheItem<T> immutable:
+                    // deserialize; and store object; buffer can be recycled now
+                    immutable.SetValue(serializer.Deserialize(new(value.Array!, 0, value.Length)));
+                    value.RecycleIfAppropriate();
+                    cacheItem = immutable;
+                    break;
+                case MutableCacheItem<T> mutable:
+                    // use the buffer directly as the backing in the cache-item; do *not* recycle now
+                    mutable.SetValue(ref value, serializer);
+                    mutable.DebugOnlyTrackBuffer(Cache);
+                    cacheItem = mutable;
+                    break;
+                default:
+                    cacheItem = ThrowUnexpectedCacheItem();
+                    break;
             }
-            else
-            {
-                // use the buffer directly as the backing in the cache-item; do *not* recycle now
-                var tmp = new MutableCacheItem<T>(ref value, serializer);
-                tmp.DebugTrackBuffer(Cache); // conditional: DEBUG
-                cacheItem = tmp;
-            }
-
             SetResult(cacheItem);
         }
+
+        [DoesNotReturn]
+        private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
 
         private CacheItem<T> SetResult(T value)
         {
             // set a result from a value we calculated directly
             CacheItem<T> cacheItem;
-            if (ImmutableTypeCache<T>.IsImmutable)
+            switch (CacheItem)
             {
-                cacheItem = new ImmutableCacheItem<T>(value); // no serialize needed
-            }
-            else
-            {
-                var tmp = new MutableCacheItem<T>(value, Cache.GetSerializer<T>(), MaximumPayloadBytes); // serialization happens here
-                tmp.DebugTrackBuffer(Cache); // conditional: DEBUG
-                cacheItem = tmp;
+                case ImmutableCacheItem<T> immutable:
+                    // no serialize needed
+                    immutable.SetValue(value);
+                    cacheItem = immutable;
+                    break;
+                case MutableCacheItem<T> mutable:
+                    // serialization happens here
+                    mutable.SetValue(value, Cache.GetSerializer<T>(), MaximumPayloadBytes);
+                    mutable.DebugOnlyTrackBuffer(Cache);
+                    cacheItem = mutable;
+                    break;
+                default:
+                    cacheItem = ThrowUnexpectedCacheItem();
+                    break;
             }
             SetResult(cacheItem);
             return cacheItem;
@@ -207,7 +225,7 @@ partial class DefaultHybridCache
 
         public override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
 
-        internal ValueTask<T> UnwrapAsync()
+        internal ValueTask<T> UnwrapReservedAsync()
         {
             var task = Task;
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -216,22 +234,23 @@ partial class DefaultHybridCache
             if (task.Status == TaskStatus.RanToCompletion)
 #endif
             {
-                return new(task.Result.GetValue());
+                return new(task.Result.GetReservedValue());
             }
 
-            // if the type is immutable, callers can share the final step too
+            // if the type is immutable, callers can share the final step too (this may leave dangling
+            // reservation counters, but that's OK)
             var result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= Awaited(Task)) : Awaited(Task);
             return new(result);
 
             static async Task<T> Awaited(Task<CacheItem<T>> task)
-                => (await task.ConfigureAwait(false)).GetValue();
+                => (await task.ConfigureAwait(false)).GetReservedValue();
         }
 
         public ValueTask<T> JoinAsync(CancellationToken token)
         {
             // if the underlying has already completed, and/or our local token can't cancel: we
             // can simply wrap the shared task; otherwise, we need our own cancellation state
-            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellation(this, token) : UnwrapAsync();
+            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellation(this, token) : UnwrapReservedAsync();
 
             static async ValueTask<T> WithCancellation(StampedeState<TState, T> stampede, CancellationToken token)
             {
@@ -241,6 +260,7 @@ partial class DefaultHybridCache
                     ((TaskCompletionSource<bool>)obj!).TrySetResult(true);
                 }, cancelStub);
 
+                CacheItem<T> result;
                 try
                 {
                     var first = await System.Threading.Tasks.Task.WhenAny(stampede.Task, cancelStub.Task).ConfigureAwait(false);
@@ -252,12 +272,15 @@ partial class DefaultHybridCache
                     Debug.Assert(ReferenceEquals(first, stampede.Task));
 
                     // this has already completed, but we'll get the stack nicely
-                    return (await stampede.Task.ConfigureAwait(false)).GetValue();
+                    result = await stampede.Task.ConfigureAwait(false);
                 }
-                finally
+                catch
                 {
-                    stampede.RemoveCaller();
+                    stampede.CancelCaller();
+                    throw;
                 }
+                // outside the catch, so we know we only decrement one way or the other
+                return result.GetReservedValue();
             }
         }
     }

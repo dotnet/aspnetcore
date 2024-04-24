@@ -16,6 +16,7 @@ public static class OperationTransformers
         {
             var schema = OpenApiTypeMapper.MapTypeToOpenApiPrimitiveType(typeof(string));
             schema.Default = new OpenApiString(defaultValue);
+            operation.Parameters ??= [];
             operation.Parameters.Add(new OpenApiParameter
             {
                 Name = headerName,

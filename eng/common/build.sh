@@ -62,7 +62,6 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 restore=false
 build=false
 source_build=false
-vertical_build=false
 product_build=false
 rebuild=false
 test=false
@@ -137,13 +136,6 @@ while [[ $# > 0 ]]; do
       ;;
     -productBuild|-pb)
       build=true
-      product_build=true
-      restore=true
-      pack=true
-      ;;
-    -verticalbuild|-vb)
-      build=true
-      vertical_build=true
       product_build=true
       restore=true
       pack=true

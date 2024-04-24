@@ -365,6 +365,38 @@ public class StampedeTests
         Assert.NotSame(x, y);
     }
 
+    [Fact]
+    public void ValidatePartitioning()
+    {
+        // we just want to validate that key-level partitioning is
+        // happening to some degree, i.e. it isn't fundamentally broken
+        using var scope = GetDefaultCache(out var cache);
+        Dictionary<object, int> counts = [];
+        for(int i = 0; i < 1024; i++)
+        {
+            var key = new DefaultHybridCache.StampedeKey(Guid.NewGuid().ToString(), default);
+            var obj = cache.GetPartitionedSyncLock(in key);
+            if (!counts.TryGetValue(obj, out var count))
+            {
+                count = 0;
+            }
+            counts[obj] = count + 1;
+        }
+
+        // We just want to prove that we got 8 non-empty partitions.
+        // This is *technically* non-deterministic, but: we'd
+        // need to be having a very bad day for the math gods
+        // to conspire against us that badly - if this test
+        // starts failing, maybe buy a lottery ticket?
+        Assert.Equal(8, counts.Count);
+        foreach (var pair in counts)
+        {
+            // the *median* should be 128 here; let's
+            // not be aggressive about it, though
+            Assert.True(pair.Value > 16);
+        }
+    }
+
     class Mutable(Guid value)
     {
         public Guid Value => value;

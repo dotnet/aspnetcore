@@ -7,6 +7,7 @@ using Sample.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 builder.Services.AddAuthentication().AddJwtBearer();
 
 builder.Services.AddOpenApi("v1", options =>
@@ -51,6 +52,8 @@ var v2 = app.MapGroup("v2")
 var responses = app.MapGroup("responses")
     .WithGroupName("responses");
 
+v1.MapGet("/array-of-guids", (Guid[] guids) => guids);
+
 v1.MapPost("/todos", (Todo todo) => Results.Created($"/todos/{todo.Id}", todo))
     .WithSummary("Creates a new todo item.");
 v1.MapGet("/todos/{id}", (int id) => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
@@ -67,4 +70,13 @@ responses.MapGet("/200-add-xml", () => new TodoWithDueDate(1, "Test todo", false
 responses.MapGet("/200-only-xml", () => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
     .Produces<Todo>(contentType: "text/xml");
 
+responses.MapGet("/triangle", () => new Triangle { Color = "red", Sides = 3, Hypotenuse = 5.0 });
+responses.MapGet("/shape", () => new Shape { Color = "blue", Sides = 4 });
+
+app.MapControllers();
+
 app.Run();
+
+// Make Program class public to support snapshot testing
+// against sample app using WebApplicationFactory.
+public partial class Program { }

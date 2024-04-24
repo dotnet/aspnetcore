@@ -497,19 +497,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 9.0-preview4
+          milestone: 9.0-preview5
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-preview3
+          branch: release/9.0-preview4
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-preview3
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview3 branch'
+          milestone: 9.0-preview4
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview4 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -758,10 +758,10 @@ configuration:
           action: Opened
       - or:
         - bodyContains:
-            pattern: '[Aa][Oo][Tt]'
+            pattern: '[Aa][Oo][Tt]\W'
             isRegex: True
         - titleContains:
-            pattern: '[Aa][Oo][Tt]'
+            pattern: '[Aa][Oo][Tt]\W'
             isRegex: True
       then:
       - addLabel:

@@ -16,6 +16,7 @@
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)StaticWebAssets\**\*.cs" LinkBase="StaticWebAssets" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

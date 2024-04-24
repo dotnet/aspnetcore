@@ -113,13 +113,16 @@ partial class DefaultHybridCache
 
     internal void SetL1<T>(string key, CacheItem<T> value, HybridCacheEntryOptions? options)
     {
-        // based on CacheExtensions.Set<TItem>, but with post-eviction recycling
-        using var cacheEntry = _localCache.CreateEntry(key);
-        cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
-        cacheEntry.Value = value;
-        if (value.NeedsEvictionCallback)
+        if (value.TryReserve()) // incr ref-count for the the cache itself; this *may* be released via the NeedsEvictionCallback path
         {
-            cacheEntry.RegisterPostEvictionCallback(CacheItem._sharedOnEviction);
+            // based on CacheExtensions.Set<TItem>, but with post-eviction recycling
+            using var cacheEntry = _localCache.CreateEntry(key);
+            cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
+            cacheEntry.Value = value;
+            if (value.NeedsEvictionCallback)
+            {
+                cacheEntry.RegisterPostEvictionCallback(CacheItem._sharedOnEviction);
+            }
         }
     }
 }

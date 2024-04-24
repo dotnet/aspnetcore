@@ -43,7 +43,7 @@ partial class DefaultHybridCache
         // hmm; failed to add - there's concurrent activity on the same key; we're now
         // in very rare race condition territory; go ahead and take a lock while we
         // collect our thoughts
-        lock (_currentOperations)
+        lock (GetPartitionedSyncLock(in stampedeKey)) // see notes in SyncLock.cs
         {
             // check again while we hold the lock
             if (TryJoinExistingSession(this, stampedeKey, out existing))
@@ -55,6 +55,16 @@ partial class DefaultHybridCache
 
                 // note that in this case we allocated a StampedeState<TState, T> that got dropped on
                 // the floor; in the grand scheme of things, that's OK; this is a rare outcome
+            }
+
+            // and check whether the value was L1-cached by an outgoing operation (for *us* to check needs local-cache-read,
+            // and for *them* to have updated needs local-cache-write, but since the shared us/them key includes flags,
+            // we can skip this if *either* flag is set)
+            if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0 && _localCache.TryGetValue(key, out var untyped)
+                && untyped is CacheItem<T> typed && typed.TryReserve())
+            {
+                stampedeState.SetResultDirect(typed);
+                return false; // the work has ALREADY been done
             }
 
             // otherwise, either nothing existed - or the thing that already exists can't be joined;

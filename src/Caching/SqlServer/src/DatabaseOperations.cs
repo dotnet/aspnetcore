@@ -308,7 +308,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         return value;
     }
 
-    static long StreamOut(SqlDataReader source, int ordinal, IBufferWriter<byte> destination)
+    private static long StreamOut(SqlDataReader source, int ordinal, IBufferWriter<byte> destination)
     {
         long dataIndex = 0;
         int read = 0;
