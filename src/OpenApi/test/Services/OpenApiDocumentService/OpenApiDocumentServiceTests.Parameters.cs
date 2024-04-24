@@ -116,10 +116,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 #nullable restore
 
+// Test coverage for https://github.com/dotnet/aspnetcore/issues/46746 requires disabling nullability
 #nullable disable
-    // Test coverage for https://github.com/dotnet/aspnetcore/issues/46746
     [Fact]
-    public async Task GetOpenApiParameters_RouteParametersAreAlwaysRequired_NullabilityDisables()
+    public async Task GetOpenApiParameters_RouteParametersAreAlwaysRequired_NullabilityDisabled()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -144,6 +144,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 #nullable restore
+
     [Fact]
     public async Task GetOpenApiRequestBody_SkipsRequestBodyParameters()
     {

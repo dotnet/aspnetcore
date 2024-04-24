@@ -1,10 +1,10 @@
 ## About
 
-Microsoft.AspNetCore.OpenApi is a NuGet package that provides built-in support for generating OpenAPI documents from minimal or controller-based APIs in ASP.NET.
+Microsoft.AspNetCore.OpenApi is a NuGet package that provides built-in support for generating OpenAPI documents from minimal or controller-based APIs in ASP.NET Core.
 
 ## Key Features
 
-* Supports generating an OpenAPI document at runtime exposed via an endpoint (`/openapi/{documentName}.json`)
+* Supports viewing generated OpenAPI documents at runtime via a parameterized endpoint (`/openapi/{documentName}.json`)
 * Supports generating an OpenAPI document at build-time
 * Supports customizing the generated document via document transformers
 
@@ -36,7 +36,7 @@ app.MapOpenApi();
 app.Run();
 ```
 
-For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/minimal-apis/openapi).
+For more information on configuring and using Microsoft.AspNetCore.OpenApi, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/openapi).
 
 ## Main Types
 

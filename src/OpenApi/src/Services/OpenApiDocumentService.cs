@@ -306,59 +306,72 @@ internal sealed class OpenApiDocumentService(
         //
         // In the example above, MVC will bind four separate arguments to the Todo model while minimal APIs will
         // bind a single Todo model instance to the todo parameter. Grouping by name allows us to handle both cases.
-        var groupedFormParameters = formParameters.GroupBy(parameter => parameter.ParameterDescriptor.Name).ToList();
-        // If there is only one real parameter derive from the form body, then set it directly in the schema.
-        if (groupedFormParameters is [var groupedParameter])
+        var groupedFormParameters = formParameters.GroupBy(parameter => parameter.ParameterDescriptor.Name);
+        // If there is only one real parameter derived from the form body, then set it directly in the schema.
+        var hasMultipleFormParameters = groupedFormParameters.Count() > 1;
+        foreach (var parameter in groupedFormParameters)
         {
-            // If the group contains one element, then we're dealing with a minimal API scenario where a
-            // single form parameter produces a single API description parameter.
-            if (groupedParameter.Count() == 1)
+            if (parameter.All(parameter => parameter.ModelMetadata.ContainerType is null))
             {
-                var description = groupedParameter.Single();
+                var description = parameter.Single();
                 // Form files are keyed by their parameter name so we must capture the parameter name
                 // as a property in the schema.
                 if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
                 {
-                    schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
-                }
-                else
-                {
-                    // POCOs do not need to be subset under their parameter name. The form-binding implementation
-                    // will capture them implicitly.
-                    schema = _componentService.GetOrCreateSchema(description.Type);
-                }
-            }
-            // If there are multiple API description parameters in the group, then we are dealing
-            // with the MVC scenario where form parameters are exploded into separate API parameters
-            // for each property within the complex type.
-            else
-            {
-                foreach (var parameter in groupedParameter)
-                {
-                    schema.Properties[parameter.Name] = _componentService.GetOrCreateSchema(parameter.Type);
-                }
-            }
-        }
-        // If there are multiple parameters sourced from the form, then we use `allOf` to capture each parameter.
-        else
-        {
-            // Process the arguments in the same way that we do for the single-parameter case but
-            // set each sub-schema as an `allOf` item in the schema.
-            foreach (var parameter in groupedFormParameters)
-            {
-                if (parameter.Count() == 1)
-                {
-                    var description = parameter.Single();
-                    if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
+                    if (hasMultipleFormParameters)
                     {
-                        schema.AllOf.Add(new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema> { [description.Name] = _componentService.GetOrCreateSchema(description.Type) } });
+                        schema.AllOf.Add(new OpenApiSchema
+                        {
+                            Type = "object",
+                            Properties = new Dictionary<string, OpenApiSchema>
+                            {
+                                [description.Name] = _componentService.GetOrCreateSchema(description.Type)
+                            }
+                        });
                     }
                     else
                     {
-                        schema.AllOf.Add(_componentService.GetOrCreateSchema(description.Type));
+                        schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
                     }
                 }
                 else
+                {
+                    if (hasMultipleFormParameters)
+                    {
+                        if (description.ModelMetadata.IsComplexType)
+                        {
+                            schema.AllOf.Add(_componentService.GetOrCreateSchema(description.Type));
+                        }
+                        else
+                        {
+                            schema.AllOf.Add(new OpenApiSchema
+                            {
+                                Type = "object",
+                                Properties = new Dictionary<string, OpenApiSchema>
+                                {
+                                    [description.Name] = _componentService.GetOrCreateSchema(description.Type)
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // POCOs do not need to be subset under their parameter name in the properties grouping.
+                        // The form-binding implementation will capture them implicitly.
+                        if (description.ModelMetadata.IsComplexType)
+                        {
+                            schema = _componentService.GetOrCreateSchema(description.Type);
+                        }
+                        else
+                        {
+                            schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (hasMultipleFormParameters)
                 {
                     var propertySchema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
                     foreach (var description in parameter)
@@ -366,6 +379,13 @@ internal sealed class OpenApiDocumentService(
                         propertySchema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
                     }
                     schema.AllOf.Add(propertySchema);
+                }
+                else
+                {
+                    foreach (var description in parameter)
+                    {
+                        schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                    }
                 }
             }
         }
