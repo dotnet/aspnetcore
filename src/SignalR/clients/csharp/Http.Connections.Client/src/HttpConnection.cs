@@ -471,8 +471,6 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 request.Properties.Add("IsNegotiate", true);
 #endif
 
-                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.
                 // Note that it is important to dispose of the response when doing this to
