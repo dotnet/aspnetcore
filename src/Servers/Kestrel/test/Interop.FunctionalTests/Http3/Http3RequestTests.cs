@@ -13,17 +13,16 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Xunit;
 
 namespace Interop.FunctionalTests.Http3;
 
@@ -1638,6 +1637,18 @@ public class Http3RequestTests : LoggedTest
                 });
             });
 
+        // Error codes of this form are reserved for unknown errors
+        const int closeErrorCode = 0xBC; // 0x1f * 5 + 0x21
+
+        // Set a non-standard error code so we can be sure the option was consumed
+        builder.ConfigureServices(services =>
+        {
+            services.Configure<QuicTransportOptions>(options =>
+            {
+                options.DefaultCloseErrorCode = closeErrorCode;
+            });
+        });
+
         using (var host = builder.Build())
         {
             await host.StartAsync();
@@ -1655,6 +1666,24 @@ public class Http3RequestTests : LoggedTest
 
             await connectionStartedTcs.Task.DefaultTimeout();
             // Do not dispose the client, wait for it to idle out.
+
+            // Server has aborted connection.
+            await WaitForLogAsync(logs =>
+            {
+                const int applicationAbortedConnectionId = 6;
+                var connectionAbortLog = logs.FirstOrDefault(
+                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                        w.EventId == applicationAbortedConnectionId);
+                if (connectionAbortLog == null)
+                {
+                    return false;
+                }
+
+                // This message says the client closed the connection because the server
+                // sends a GOAWAY and the client then closes the connection once all requests are finished.
+                Assert.Contains($"aborted by application with error code {closeErrorCode}", connectionAbortLog.Message);
+                return true;
+            }, "Wait for connection abort.");
 
             Logger.LogInformation("Waiting for server to receive connection close.");
             await connectionClosedTcs.Task.DefaultTimeout();
