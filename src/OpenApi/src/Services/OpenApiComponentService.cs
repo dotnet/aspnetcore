@@ -9,11 +9,12 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using JsonSchemaMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -28,6 +29,7 @@ internal sealed class OpenApiComponentService(IOptions<JsonOptions> jsonOptions)
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
         [(typeof(IFormFile), null)] = new JsonObject { ["type"] = "string", ["format"] = "binary" },
+        [(typeof(FileResult), null)] = new JsonObject { ["type"] = "string", ["format"] = "binary" },
         [(typeof(IFormFileCollection), null)] = new JsonObject
         {
             ["type"] = "array",

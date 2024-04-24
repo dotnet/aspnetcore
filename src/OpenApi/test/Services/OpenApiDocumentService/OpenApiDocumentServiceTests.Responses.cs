@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -301,4 +302,39 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             });
         });
     }
+
+    // Test coverage for https://github.com/dotnet/aspnetcore/issues/30465
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileResultTypes_MvcAction()
+    {
+        var action = CreateActionDescriptor(nameof(GetFileResult));
+
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = Assert.Single(document.Paths["/fileresult"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal("OK", response.Value.Description);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileResultTypes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/fileresult", () => TypedResults.File(Encoding.UTF8.GetBytes("This is a test")));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/fileresult"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal("OK", response.Value.Description);
+        });
+    }
+
+    [Route("/fileresult")]
+    private FileResult GetFileResult() =>
+        new FileStreamResult(new MemoryStream(Encoding.UTF8.GetBytes("This is a test")), "text/plain") { FileDownloadName = "test.txt" };
 }
