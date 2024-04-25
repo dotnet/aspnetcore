@@ -50,7 +50,7 @@ internal static class HPackHeaderWriter
             return HeaderWriteResult.Done;
         }
 
-        // We're ok with not throwing if no headers were encoded because we've already encoded the status.
+        // We're ok with not increasing the buffer size if no headers were encoded because we've already encoded the status.
         // There is a small chance that the header will encode if there is no other content in the next HEADERS frame.
         var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: false, out var headersLength);
         length += headersLength;
