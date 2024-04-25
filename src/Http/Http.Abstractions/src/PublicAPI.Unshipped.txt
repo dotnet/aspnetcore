@@ -4,3 +4,5 @@ Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 *REMOVED*Microsoft.AspNetCore.Http.HostString.Value.get -> string!
 Microsoft.AspNetCore.Http.HostString.Value.get -> string?
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Partitioned.get -> bool
+virtual Microsoft.AspNetCore.Http.CookieBuilder.Partitioned.set -> void

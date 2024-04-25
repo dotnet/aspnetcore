@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Partitioned.get -> bool
+Microsoft.Net.Http.Headers.SetCookieHeaderValue.Partitioned.set -> void

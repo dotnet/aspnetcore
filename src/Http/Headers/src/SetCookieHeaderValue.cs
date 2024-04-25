@@ -30,6 +30,7 @@ public class SetCookieHeaderValue
     private static readonly string SameSiteStrictToken = SameSiteMode.Strict.ToString().ToLowerInvariant();
 
     private const string HttpOnlyToken = "httponly";
+    private const string PartitionedToken = "partitioned";
     private const string SeparatorToken = "; ";
     private const string EqualsToken = "=";
     private const int ExpiresDateLength = 29;
@@ -177,6 +178,16 @@ public class SetCookieHeaderValue
     public bool HttpOnly { get; set; }
 
     /// <summary>
+    /// Gets or sets a value for the <c>Partitioned</c> cookie attribute.
+    /// <para>
+    /// Partitioned instructs the user agent to
+    /// omit the cookie when providing access to cookies on a different top-level site
+    /// as part of CHIPS (Cookies Having Independent Partitioned State).
+    /// </para>
+    /// </summary>
+    public bool Partitioned { get; set; }
+
+    /// <summary>
     /// Gets a collection of additional values to append to the cookie.
     /// </summary>
     public IList<StringSegment> Extensions
@@ -241,6 +252,11 @@ public class SetCookieHeaderValue
             length += SeparatorToken.Length + HttpOnlyToken.Length;
         }
 
+        if (Partitioned)
+        {
+            length += SeparatorToken.Length + PartitionedToken.Length;
+        }
+
         if (_extensions?.Count > 0)
         {
             foreach (var extension in _extensions)
@@ -297,6 +313,11 @@ public class SetCookieHeaderValue
             if (headerValue.HttpOnly)
             {
                 AppendSegment(ref span, HttpOnlyToken, null);
+            }
+
+            if (headerValue.Partitioned)
+            {
+                AppendSegment(ref span, PartitionedToken, null);
             }
 
             if (_extensions?.Count > 0)
@@ -382,6 +403,11 @@ public class SetCookieHeaderValue
         if (HttpOnly)
         {
             AppendSegment(builder, HttpOnlyToken, null);
+        }
+
+        if (Partitioned)
+        {
+            AppendSegment(builder, PartitionedToken, null);
         }
 
         if (_extensions?.Count > 0)
@@ -654,6 +680,11 @@ public class SetCookieHeaderValue
             {
                 result.HttpOnly = true;
             }
+            // partitioned-av = "Partitioned"
+            else if (StringSegment.Equals(token, PartitionedToken, StringComparison.OrdinalIgnoreCase))
+            {
+                result.Partitioned = true;
+            }
             // extension-av = <any CHAR except CTLs or ";">
             else
             {
@@ -729,6 +760,7 @@ public class SetCookieHeaderValue
             && Secure == other.Secure
             && SameSite == other.SameSite
             && HttpOnly == other.HttpOnly
+            && Partitioned == other.Partitioned
             && HeaderUtilities.AreEqualCollections(_extensions, other._extensions, StringSegmentComparer.OrdinalIgnoreCase);
     }
 
@@ -743,7 +775,8 @@ public class SetCookieHeaderValue
             ^ (Path != null ? StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(Path) : 0)
             ^ Secure.GetHashCode()
             ^ SameSite.GetHashCode()
-            ^ HttpOnly.GetHashCode();
+            ^ HttpOnly.GetHashCode()
+            ^ Partitioned.GetHashCode();
 
         if (_extensions?.Count > 0)
         {

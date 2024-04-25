@@ -55,6 +55,168 @@ public class ResponseCookiesTest
     }
 
     [Fact]
+    public void AppendSameSiteNoneWithoutSecureLogsWarningForEachCookie()
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var services = new ServiceCollection();
+
+        var sink = new TestSink(TestSink.EnableWithTypeName<ResponseCookies>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        services.AddLogging();
+        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+        features.Set<IServiceProvidersFeature>(new ServiceProvidersFeature() { RequestServices = services.BuildServiceProvider() });
+
+        var cookies = new ResponseCookies(features);
+        var testCookie1 = "TestCookie1";
+        var testCookie2 = "TestCookie2";
+
+        var cookieDict = new[]
+        {
+            new KeyValuePair<string, string>(testCookie1, "value1"),
+            new KeyValuePair<string, string>(testCookie2, "value2"),
+        };
+
+        cookies.Append(cookieDict, new CookieOptions()
+        {
+            SameSite = SameSiteMode.None,
+        });
+
+        var cookieHeaderValues = headers.SetCookie;
+        Assert.All(headers.SetCookie, cookieHeaderValue =>
+        {
+            Assert.Contains("path=/", cookieHeaderValue);
+            Assert.Contains("samesite=none", cookieHeaderValue);
+            Assert.DoesNotContain("secure", cookieHeaderValue);
+        });
+
+        Assert.Collection(sink.Writes,
+        [
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'SameSite=None' and must also set 'Secure'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'SameSite=None' and must also set 'Secure'.", entry.Message),
+        ]);
+    }
+
+    [Fact]
+    public void AppendPartitionedLogsWarnings()
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var services = new ServiceCollection();
+
+        var sink = new TestSink(TestSink.EnableWithTypeName<ResponseCookies>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        services.AddLogging();
+        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+        features.Set<IServiceProvidersFeature>(new ServiceProvidersFeature() { RequestServices = services.BuildServiceProvider() });
+
+        var cookies = new ResponseCookies(features);
+        var testCookie = "TestCookie";
+
+        cookies.Append(testCookie, "value", new CookieOptions()
+        {
+            Partitioned = true,
+            // Missing SameSite = SameSiteMode.None,
+            // Missing Secure = true,
+        });
+
+        var cookieHeaderValues = headers.SetCookie;
+        Assert.Single(cookieHeaderValues);
+        Assert.Contains("partitioned", cookieHeaderValues[0]);
+        Assert.DoesNotContain("secure", cookieHeaderValues[0]);
+        Assert.DoesNotContain("samesite", cookieHeaderValues[0]);
+
+        Assert.Collection(sink.Writes,
+        [
+            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and must also set 'Secure'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and should also set 'SameSite=None'.", entry.Message),
+        ]);
+    }
+
+    [Fact]
+    public void AppendPartitionedLogsWarningsForEachCookie()
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var services = new ServiceCollection();
+
+        var sink = new TestSink(TestSink.EnableWithTypeName<ResponseCookies>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        services.AddLogging();
+        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+        features.Set<IServiceProvidersFeature>(new ServiceProvidersFeature() { RequestServices = services.BuildServiceProvider() });
+
+        var cookies = new ResponseCookies(features);
+        var testCookie1 = "TestCookie1";
+        var testCookie2 = "TestCookie2";
+
+        var cookieDict = new[]
+        {
+            new KeyValuePair<string, string>(testCookie1, "value1"),
+            new KeyValuePair<string, string>(testCookie2, "value2"),
+        };
+
+        cookies.Append(cookieDict, new CookieOptions()
+        {
+            Partitioned = true,
+            // Missing SameSite = SameSiteMode.None,
+            // Missing Secure = true,
+        });
+
+        var cookieHeaderValues = headers.SetCookie;
+        Assert.All(headers.SetCookie, cookieHeaderValue =>
+        {
+            Assert.Contains("partitioned", cookieHeaderValue);
+            Assert.DoesNotContain("secure", cookieHeaderValue);
+            Assert.DoesNotContain("samesite", cookieHeaderValue);
+        });
+
+        Assert.Collection(sink.Writes,
+        [
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and must also set 'Secure'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and should also set 'SameSite=None'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and must also set 'Secure'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and should also set 'SameSite=None'.", entry.Message),
+        ]);
+    }
+
+    [Fact]
+    public void AppendPartitionedCorrectlyDoesNotLog()
+    {
+        var headers = (IHeaderDictionary)new HeaderDictionary();
+        var features = MakeFeatures(headers);
+        var services = new ServiceCollection();
+
+        var sink = new TestSink(TestSink.EnableWithTypeName<ResponseCookies>);
+        var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+        services.AddLogging();
+        services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+        features.Set<IServiceProvidersFeature>(new ServiceProvidersFeature() { RequestServices = services.BuildServiceProvider() });
+
+        var cookies = new ResponseCookies(features);
+        var testCookie = "TestCookie";
+
+        cookies.Append(testCookie, "value", new CookieOptions()
+        {
+            Partitioned = true,
+            SameSite = SameSiteMode.None,
+            Secure = true,
+        });
+
+        var cookieHeaderValues = headers.SetCookie;
+        Assert.Single(cookieHeaderValues);
+        Assert.Contains("partitioned", cookieHeaderValues[0]);
+        Assert.Contains("secure", cookieHeaderValues[0]);
+        Assert.Contains("samesite=none", cookieHeaderValues[0]);
+
+        Assert.Empty(sink.Writes);
+    }
+
+    [Fact]
     public void AppendWithExtensions()
     {
         var headers = (IHeaderDictionary)new HeaderDictionary();

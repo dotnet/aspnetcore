@@ -40,6 +40,7 @@ public class CookieOptions
         Secure = options.Secure;
         SameSite = options.SameSite;
         HttpOnly = options.HttpOnly;
+        Partitioned = options.Partitioned;
         MaxAge = options.MaxAge;
         IsEssential = options.IsEssential;
 
@@ -86,6 +87,13 @@ public class CookieOptions
     public bool HttpOnly { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that indicates whether a cookie is partitioned across different sites.
+    /// Opts in to CHIPS (Cookies Having Independent Partitioned State).
+    /// </summary>
+    /// <returns>true if a cookie is partitioned; otherwise, false.</returns>
+    public bool Partitioned { get; set; }
+
+    /// <summary>
     /// Gets or sets the max-age for the cookie.
     /// </summary>
     /// <returns>The max-age date and time for the cookie.</returns>
@@ -117,6 +125,7 @@ public class CookieOptions
             Expires = Expires,
             Secure = Secure,
             HttpOnly = HttpOnly,
+            Partitioned = Partitioned,
             MaxAge = MaxAge,
             SameSite = (Net.Http.Headers.SameSiteMode)SameSite,
         };

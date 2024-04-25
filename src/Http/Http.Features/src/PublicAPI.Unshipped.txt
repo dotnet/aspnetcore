@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Http.CookieOptions.Partitioned.get -> bool
+Microsoft.AspNetCore.Http.CookieOptions.Partitioned.set -> void
