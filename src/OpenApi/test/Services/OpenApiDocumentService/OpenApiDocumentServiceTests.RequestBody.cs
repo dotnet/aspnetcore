@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
@@ -983,4 +984,59 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
     [Route("/form-mixed-types")]
     private void ActionWithMixedFormTypes([FromForm] Todo todo, IFormFile formFile, [FromForm] Guid guid) { }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesStreamAndPipeReader()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/stream", (Stream stream) => { });
+        builder.MapGet("/pipereader", (PipeReader pipeReader) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            foreach (var path in document.Paths)
+            {
+                var operation = path.Value.Operations[OperationType.Get];
+                Assert.NotNull(operation.RequestBody.Content);
+                var content = Assert.Single(operation.RequestBody.Content);
+                Assert.Equal("application/octet-stream", content.Key);
+                Assert.NotNull(content.Value.Schema);
+                Assert.Equal("string", content.Value.Schema.Type);
+                Assert.Equal("binary", content.Value.Schema.Format);
+            }
+        });
+    }
+
+    [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/55349")]
+    public async Task GetOpenApiRequestBody_HandlesStreamAndPipeReader_MvcAction()
+    {
+        // Arrange
+        var streamAction = CreateActionDescriptor(nameof(ActionWithStream));
+        var pipeReaderAction = CreateActionDescriptor(nameof(ActionWithPipeReader));
+
+        // Assert
+        await VerifyOpenApiDocument(streamAction, VerifyDocument);
+        await VerifyOpenApiDocument(pipeReaderAction, VerifyDocument);
+
+        static void VerifyDocument(OpenApiDocument document)
+        {
+            var path = Assert.Single(document.Paths);
+            var operation = path.Value.Operations[OperationType.Get];
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/octet-stream", content.Key);
+            Assert.NotNull(content.Value.Schema);
+            Assert.Equal("string", content.Value.Schema.Type);
+            Assert.Equal("binary", content.Value.Schema.Format);
+        }
+    }
+
+    [Route("/stream")]
+    private void ActionWithStream(Stream stream) { }
+    [Route("/pipereader")]
+    private void ActionWithPipeReader(PipeReader pipeReader) { }
 }
