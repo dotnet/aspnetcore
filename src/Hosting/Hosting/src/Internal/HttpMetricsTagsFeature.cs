@@ -12,7 +12,7 @@ internal sealed class HttpMetricsTagsFeature : IHttpMetricsTagsFeature
     public List<KeyValuePair<string, object?>> TagsList { get; } = new List<KeyValuePair<string, object?>>();
 
     // Cache request values when request starts. These are used when writing metrics when the request ends.
-    // This ensures that the tags match between the start and end of the request.
+    // This ensures that the tags match between the start and end of the request. Important for up/down counters.
     public string? Method { get; set; }
     public string? Scheme { get; set; }
     public string? Protocol { get; set; }

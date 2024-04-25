@@ -208,6 +208,7 @@ public class HostingApplicationDiagnosticsTests
         context.HttpContext.Request.Protocol = "HTTP/2";
         context.HttpContext.Request.Method = "PUT";
         context.HttpContext.Request.Scheme = "https";
+        context.HttpContext.Features.GetRequiredFeature<IHttpMetricsTagsFeature>().Tags.Add(new KeyValuePair<string, object>("custom.tag", "custom.value"));
 
         hostingApplication.DisposeContext(context, null);
 
@@ -225,6 +226,11 @@ public class HostingApplicationDiagnosticsTests
                 Assert.Equal("http", m.Tags["url.scheme"]);
                 Assert.Equal("POST", m.Tags["http.request.method"]);
             });
+
+        Assert.Empty(context.MetricsTagsFeature.TagsList);
+        Assert.Null(context.MetricsTagsFeature.Scheme);
+        Assert.Null(context.MetricsTagsFeature.Method);
+        Assert.Null(context.MetricsTagsFeature.Protocol);
     }
 
     [Fact]
