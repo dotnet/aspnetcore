@@ -1649,6 +1649,18 @@ public class Http3RequestTests : LoggedTest
             });
         });
 
+        var logTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        TestSink.MessageLogged += context =>
+        {
+            if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
+                context.EventId.Id == 6) // application aborted connection
+            {
+                Assert.Contains($"aborted by application with error code {closeErrorCode}", context.Message);
+                logTcs.SetResult();
+            }
+        };
+
         using (var host = builder.Build())
         {
             await host.StartAsync();
@@ -1671,22 +1683,7 @@ public class Http3RequestTests : LoggedTest
             await connectionClosedTcs.Task.DefaultTimeout();
 
             // Server has aborted connection.
-            await WaitForLogAsync(logs =>
-            {
-                const int applicationAbortedConnectionId = 6;
-                var connectionAbortLog = logs.FirstOrDefault(
-                    w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" &&
-                        w.EventId == applicationAbortedConnectionId);
-                if (connectionAbortLog == null)
-                {
-                    return false;
-                }
-
-                // This message says the client closed the connection because the server
-                // sends a GOAWAY and the client then closes the connection once all requests are finished.
-                Assert.Contains($"aborted by application with error code {closeErrorCode}", connectionAbortLog.Message);
-                return true;
-            }, "Wait for connection abort.");
+            await logTcs.Task.DefaultTimeout();
 
             await host.StopAsync();
         }
