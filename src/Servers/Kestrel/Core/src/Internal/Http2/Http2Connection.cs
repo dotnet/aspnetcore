@@ -87,6 +87,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     private readonly HttpConnectionContext _context;
     private readonly ConnectionMetricsContext _metricsContext;
+    private readonly IProtocolErrorCodeFeature _errorCodeFeature;
     private readonly Http2FrameWriter _frameWriter;
     private readonly Pipe _input;
     private readonly Task _inputTask;
@@ -139,6 +140,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         _context = context;
         _streamLifetimeHandler = this;
         _metricsContext = context.ConnectionFeatures.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
+        _errorCodeFeature = context.ConnectionFeatures.GetRequiredFeature<IProtocolErrorCodeFeature>();
 
         // Capture the ExecutionContext before dispatching HTTP/2 middleware. Will be restored by streams when processing request
         _context.InitialExecutionContext = ExecutionContext.Capture();
