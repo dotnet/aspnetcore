@@ -50,6 +50,15 @@ public class CookieBuilder
     public virtual bool HttpOnly { get; set; }
 
     /// <summary>
+    /// Gets or sets a value that indicates whether a cookie is partitioned across different sites.
+    /// Opts in to CHIPS (Cookies Having Independent Partitioned State).
+    /// </summary>
+    /// <remarks>
+    /// Determines the value that will be set on <see cref="CookieOptions.Partitioned"/>.
+    /// </remarks>
+    public virtual bool Partitioned { get; set; }
+
+    /// <summary>
     /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Unspecified"/>
     /// but specific components may use a different value.
     /// </summary>
@@ -111,6 +120,7 @@ public class CookieBuilder
             Path = Path ?? "/",
             SameSite = SameSite,
             HttpOnly = HttpOnly,
+            Partitioned = Partitioned,
             MaxAge = MaxAge,
             Domain = Domain,
             IsEssential = IsEssential,
