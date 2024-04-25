@@ -2,11 +2,11 @@
 
 ## Objectives
 
-We want to consolidate dotnet/aspnetcore-tooling into dotnet/aspnetcore to achieve 3 goals
+We want to consolidate dotnet/aspnetcore-tooling into dotnet/aspnetcore to achieve 3 goals:
 
-1. Reduce overall build time end to end for the .NET Core SDK
+1. Reduce overall build time end to end for the .NET Core SDK.
 2. Reduce the complexity of maintaining multiple repositories.
-3. Maintain, or if possible, improve, developer productivity
+3. Maintain, or if possible, improve, developer productivity.
 
 We are prioritizing the first objective since it is part of a cross-team effort to reduce the SDK build time. To ensure we are able to achieve this goal quickly and with minimal risk, we plan to take a multi-phase approach. The first phase will involve moving the language components from aspnetcore-tooling to aspnetcore which is required for the SDK build. The second phase will involve a more gradual migration for the remaining tooling components with an emphasis on maintaining developer productivity.
 
@@ -48,7 +48,7 @@ RazorDeveloperTools
 rzls
 ```
 
-THe following will be deleted:
+The following will be deleted:
 
 ```text
 RazorPageGenerator
