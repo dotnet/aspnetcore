@@ -40,6 +40,7 @@ public class CookieOptionsTests
                 case "HttpOnly":
                 case "IsEssential":
                 case "MaxAge":
+                case "Partitioned":
                 case "Path":
                 case "Secure":
                 case "SameSite":
