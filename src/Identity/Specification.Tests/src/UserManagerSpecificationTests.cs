@@ -644,9 +644,9 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
         var logins = await manager.GetLoginsAsync(user);
         Assert.NotNull(logins);
         Assert.Single(logins);
-        Assert.Equal(login.LoginProvider, logins[logins.Count - 1].LoginProvider);
-        Assert.Equal(login.ProviderKey, logins[logins.Count - 1].ProviderKey);
-        Assert.Equal(login.ProviderDisplayName, logins[logins.Count - 1].ProviderDisplayName);
+        Assert.Equal(login.LoginProvider, logins[^1].LoginProvider);
+        Assert.Equal(login.ProviderKey, logins[^1].ProviderKey);
+        Assert.Equal(login.ProviderDisplayName, logins[^1].ProviderDisplayName);
         var stamp = await manager.GetSecurityStampAsync(user);
         IdentityResultAssert.IsSuccess(await manager.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey));
         Assert.Null(await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
