@@ -51,7 +51,7 @@ public class ResponseCookiesTest
         Assert.DoesNotContain("secure", cookieHeaderValues[0]);
 
         var writeContext = Assert.Single(sink.Writes);
-        Assert.Equal("The cookie 'TestCookie' has set 'SameSite=None' and must also set 'Secure'.", writeContext.Message);
+        Assert.Equal("The cookie 'TestCookie' has set 'SameSite=None' and must also set 'Secure'. This cookie will likely be rejected by the client.", writeContext.Message);
     }
 
     [Fact]
@@ -93,8 +93,8 @@ public class ResponseCookiesTest
 
         Assert.Collection(sink.Writes,
         [
-            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'SameSite=None' and must also set 'Secure'.", entry.Message),
-            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'SameSite=None' and must also set 'Secure'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'SameSite=None' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'SameSite=None' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
         ]);
     }
 
@@ -130,8 +130,8 @@ public class ResponseCookiesTest
 
         Assert.Collection(sink.Writes,
         [
-            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and must also set 'Secure'.", entry.Message),
-            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and should also set 'SameSite=None'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", entry.Message),
         ]);
     }
 
@@ -176,10 +176,10 @@ public class ResponseCookiesTest
 
         Assert.Collection(sink.Writes,
         [
-            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and must also set 'Secure'.", entry.Message),
-            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and should also set 'SameSite=None'.", entry.Message),
-            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and must also set 'Secure'.", entry.Message),
-            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and should also set 'SameSite=None'.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", entry.Message),
         ]);
     }
 
