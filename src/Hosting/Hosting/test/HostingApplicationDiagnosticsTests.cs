@@ -175,6 +175,65 @@ public class HostingApplicationDiagnosticsTests
     }
 
     [Fact]
+    public void Metrics_RequestChanges_OriginalValuesUsed()
+    {
+        // Arrange
+        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
+
+        var testMeterFactory = new TestMeterFactory();
+        using var activeRequestsCollector = new MetricCollector<long>(testMeterFactory, HostingMetrics.MeterName, "http.server.active_requests");
+        using var requestDurationCollector = new MetricCollector<double>(testMeterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory, configure: c =>
+        {
+            c.Request.Protocol = "1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "POST";
+            c.Request.Host = new HostString("localhost");
+            c.Request.Path = "/hello";
+            c.Request.ContentType = "text/plain";
+            c.Request.ContentLength = 1024;
+        });
+        var context = hostingApplication.CreateContext(features);
+
+        Assert.Collection(activeRequestsCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.Equal(1, m.Value);
+                Assert.Equal("http", m.Tags["url.scheme"]);
+                Assert.Equal("POST", m.Tags["http.request.method"]);
+            });
+
+        context.HttpContext.Request.Protocol = "HTTP/2";
+        context.HttpContext.Request.Method = "PUT";
+        context.HttpContext.Request.Scheme = "https";
+        context.HttpContext.Features.GetRequiredFeature<IHttpMetricsTagsFeature>().Tags.Add(new KeyValuePair<string, object>("custom.tag", "custom.value"));
+
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        Assert.Collection(activeRequestsCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.Equal(1, m.Value);
+                Assert.Equal("http", m.Tags["url.scheme"]);
+                Assert.Equal("POST", m.Tags["http.request.method"]);
+            },
+            m =>
+            {
+                Assert.Equal(-1, m.Value);
+                Assert.Equal("http", m.Tags["url.scheme"]);
+                Assert.Equal("POST", m.Tags["http.request.method"]);
+            });
+
+        Assert.Empty(context.MetricsTagsFeature.TagsList);
+        Assert.Null(context.MetricsTagsFeature.Scheme);
+        Assert.Null(context.MetricsTagsFeature.Method);
+        Assert.Null(context.MetricsTagsFeature.Protocol);
+    }
+
+    [Fact]
     public void DisposeContextDoesNotThrowWhenContextScopeIsNull()
     {
         // Arrange
