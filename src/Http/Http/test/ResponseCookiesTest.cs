@@ -120,6 +120,7 @@ public class ResponseCookiesTest
             Partitioned = true,
             // Missing SameSite = SameSiteMode.None,
             // Missing Secure = true,
+            Path = "/a", // Should be Path = "/",
         });
 
         var cookieHeaderValues = headers.SetCookie;
@@ -132,6 +133,7 @@ public class ResponseCookiesTest
         [
             entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
             entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie}' has set 'Partitioned' and should also set 'Path=/'. This cookie may be rejected by the client.", entry.Message),
         ]);
     }
 
@@ -164,6 +166,7 @@ public class ResponseCookiesTest
             Partitioned = true,
             // Missing SameSite = SameSiteMode.None,
             // Missing Secure = true,
+            Path = "/a", // Should be Path = "/",
         });
 
         var cookieHeaderValues = headers.SetCookie;
@@ -178,8 +181,10 @@ public class ResponseCookiesTest
         [
             entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
             entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie1}' has set 'Partitioned' and should also set 'Path=/'. This cookie may be rejected by the client.", entry.Message),
             entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", entry.Message),
             entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", entry.Message),
+            entry => Assert.Equal($"The cookie '{testCookie2}' has set 'Partitioned' and should also set 'Path=/'. This cookie may be rejected by the client.", entry.Message),
         ]);
     }
 
@@ -205,6 +210,7 @@ public class ResponseCookiesTest
             Partitioned = true,
             SameSite = SameSiteMode.None,
             Secure = true,
+            // Path = "/", // implied
         });
 
         var cookieHeaderValues = headers.SetCookie;
@@ -212,6 +218,7 @@ public class ResponseCookiesTest
         Assert.Contains("partitioned", cookieHeaderValues[0]);
         Assert.Contains("secure", cookieHeaderValues[0]);
         Assert.Contains("samesite=none", cookieHeaderValues[0]);
+        Assert.Contains("path=/", cookieHeaderValues[0]);
 
         Assert.Empty(sink.Writes);
     }
