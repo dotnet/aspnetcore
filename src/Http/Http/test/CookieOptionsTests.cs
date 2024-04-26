@@ -23,6 +23,7 @@ public class CookieOptionsTests
             HttpOnly = true,
             IsEssential = true,
             MaxAge = TimeSpan.FromSeconds(10),
+            Partitioned = true,
             Path = "/foo",
             Secure = true,
             SameSite = SameSiteMode.Strict,
