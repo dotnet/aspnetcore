@@ -52,7 +52,7 @@ Run publishing.
 Debug or Release
 
 .PARAMETER Architecture
-The CPU architecture to build for (x64, x86, arm). Default=x64
+The CPU architecture to build for (x64, x86, arm64). Default=x64
 
 .PARAMETER Projects
 A list of projects to build. Globbing patterns are supported, such as "$(pwd)/**/*.csproj"
@@ -66,7 +66,7 @@ You can also use -NoBuildManaged to suppress this project type.
 
 .PARAMETER BuildNative
 Build native projects (C++).
-This is the default for x64 and x86 builds but useful when you want to build _only_ native projects.
+This is the default but useful when you want to build _only_ native projects.
 You can use -NoBuildNative to suppress this project type.
 
 .PARAMETER BuildNodeJS
@@ -150,7 +150,7 @@ param(
     [ValidateSet('Debug', 'Release')]
     $Configuration,
 
-    [ValidateSet('x64', 'x86', 'arm', 'arm64')]
+    [ValidateSet('x64', 'x86', 'arm64')]
     $Architecture = 'x64',
 
     # A list of projects which should be built.
@@ -316,8 +316,7 @@ if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
 # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
 # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
 # managed and native projects.
-$performDesktopBuild = ($BuildInstallers -and $Architecture -ne "arm") -or `
-    ($BuildNative -and -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase))
+$performDesktopBuild = $BuildInstallers -or $BuildNative
 $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
     ($Projects -and -not ($BuildInstallers -or $specifiedBuildNative))
@@ -345,6 +344,10 @@ Remove-Item variable:global:_BuildTool -ea Ignore
 Remove-Item variable:global:_DotNetInstallDir -ea Ignore
 Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
 Remove-Item variable:global:_MSBuildExe -ea Ignore
+
+# tools.ps1 expects the remaining arguments to be available via the $properties string array variable
+# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
+[string[]] $properties = $MSBuildArguments
 
 # Import Arcade
 . "$PSScriptRoot/common/tools.ps1"

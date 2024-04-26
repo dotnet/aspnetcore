@@ -1,0 +1,19 @@
+﻿@page "/globally-interactive/static-via-url"
+
+<h1>Global interactivity page: Static via URL</h1>
+
+<p>
+    This page should be rendered statically by GlobalInteractivityApp because the root component
+    overrides the rendermode for this URL. This is equivalent to how the .NET 8 auth-enabled
+    template overrides global interactivity for the "/account" subdir.
+</p>
+
+<p>
+    Caution: if you navigate here via a link from an interactive page, it will actually render
+    interactively because the router doesn't know to exit from interactive mode. That's the problem
+    fixed by [ExcludeFromInteractiveRouting].
+</p>
+
+<ShowExecutionMode />
+
+<GloballyInteractive_Links />

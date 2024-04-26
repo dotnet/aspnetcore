@@ -163,6 +163,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
         Append(key, string.Empty, new CookieOptions(options)
         {
             Expires = DateTimeOffset.UnixEpoch,
+            MaxAge = null, // Some browsers require this (https://github.com/dotnet/aspnetcore/issues/52159)
         });
     }
 
