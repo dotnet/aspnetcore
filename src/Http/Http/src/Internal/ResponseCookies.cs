@@ -174,14 +174,23 @@ internal sealed partial class ResponseCookies : IResponseCookies
             toLog |= MessagesToLog.SameSiteNotSecure;
         }
 
-        if (!options.Secure && options.Partitioned)
+        if (options.Partitioned)
         {
-            toLog |= MessagesToLog.PartitionedNotSecure;
-        }
+            if (!options.Secure)
+            {
+                toLog |= MessagesToLog.PartitionedNotSecure;
+            }
 
-        if (options.Partitioned && options.SameSite != SameSiteMode.None)
-        {
-            toLog |= MessagesToLog.PartitionedNotSameSiteNone;
+            if (options.SameSite != SameSiteMode.None)
+            {
+                toLog |= MessagesToLog.PartitionedNotSameSiteNone;
+            }
+
+            // Chromium checks this
+            if (options.Path != "/")
+            {
+                toLog |= MessagesToLog.PartitionedNotPathRoot;
+            }
         }
 
         return toLog;
@@ -203,6 +212,11 @@ internal sealed partial class ResponseCookies : IResponseCookies
         {
             Log.PartitionedCookieNotSameSiteNone(logger, cookieName);
         }
+
+        if ((messages & MessagesToLog.PartitionedNotPathRoot) != 0)
+        {
+            Log.PartitionedCookieNotPathRoot(logger, cookieName);
+        }
     }
 
     [Flags]
@@ -212,6 +226,7 @@ internal sealed partial class ResponseCookies : IResponseCookies
         SameSiteNotSecure = 1 << 0,
         PartitionedNotSecure = 1 << 1,
         PartitionedNotSameSiteNone = 1 << 2,
+        PartitionedNotPathRoot = 1 << 3,
     }
 
     private static partial class Log
@@ -224,5 +239,8 @@ internal sealed partial class ResponseCookies : IResponseCookies
 
         [LoggerMessage(3, LogLevel.Debug, "The cookie '{name}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", EventName = "PartitionedNotSameSiteNone")]
         public static partial void PartitionedCookieNotSameSiteNone(ILogger logger, string name);
+
+        [LoggerMessage(4, LogLevel.Debug, "The cookie '{name}' has set 'Partitioned' and should also set 'Path=/'. This cookie may be rejected by the client.", EventName = "PartitionedNotPathRoot")]
+        public static partial void PartitionedCookieNotPathRoot(ILogger logger, string name);
     }
 }
