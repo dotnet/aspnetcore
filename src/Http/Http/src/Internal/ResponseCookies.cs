@@ -216,13 +216,13 @@ internal sealed partial class ResponseCookies : IResponseCookies
 
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Warning, "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.", EventName = "SameSiteNotSecure")]
+        [LoggerMessage(1, LogLevel.Warning, "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'. This cookie will likely be rejected by the client.", EventName = "SameSiteNotSecure")]
         public static partial void SameSiteCookieNotSecure(ILogger logger, string name);
 
-        [LoggerMessage(2, LogLevel.Warning, "The cookie '{name}' has set 'Partitioned' and must also set 'Secure'.", EventName = "PartitionedNotSecure")]
+        [LoggerMessage(2, LogLevel.Warning, "The cookie '{name}' has set 'Partitioned' and must also set 'Secure'. This cookie will likely be rejected by the client.", EventName = "PartitionedNotSecure")]
         public static partial void PartitionedCookieNotSecure(ILogger logger, string name);
 
-        [LoggerMessage(3, LogLevel.Debug, "The cookie '{name}' has set 'Partitioned' and should also set 'SameSite=None'.", EventName = "PartitionedNotSameSiteNone")]
+        [LoggerMessage(3, LogLevel.Debug, "The cookie '{name}' has set 'Partitioned' and should also set 'SameSite=None'. This cookie will likely be rejected by the client.", EventName = "PartitionedNotSameSiteNone")]
         public static partial void PartitionedCookieNotSameSiteNone(ILogger logger, string name);
     }
 }
