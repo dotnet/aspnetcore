@@ -514,8 +514,20 @@ internal sealed class Http2FrameWriter
             var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[0.._maxFrameSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
             var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
             Debug.Assert(done != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, beucase this always writes the status.");
-            _headerEncodingBuffer.Advance(payloadLength);
-            FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
+            if (done == HPackHeaderWriter.HeaderWriteResult.Done)
+            {
+                // Fast path
+                _outgoingFrame.PayloadLength = payloadLength;
+                _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
+                WriteHeaderUnsynchronized();
+                _outputWriter.Write(buffer[0..payloadLength]);
+            }
+            else
+            {
+                // Slow path
+                _headerEncodingBuffer.Advance(payloadLength);
+                FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
+            }
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
         // Since we allow custom header encoders we don't know what type of exceptions to expect.
