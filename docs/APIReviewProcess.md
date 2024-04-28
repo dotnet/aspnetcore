@@ -46,7 +46,7 @@ We use the ref-assembly format because it's more readable and useful for the kin
 
 ## If you are the "champion" for a community-submitted change
 
-If you are assigned a community-submitted change to *champion* in our api-review then just put on your pretend pajamas and pretend that it was your change to begin with. Come to the meeting ready to explain why this addition is needed, and why it's the best approach.
+If you are assigned a community-submitted change to *champion* in our API-review, then just put on your pretend pajamas and pretend that it was your change to begin with. Come to the meeting ready to explain why this addition is needed, and why it's the best approach.
 
 ## API Review Meeting
 
