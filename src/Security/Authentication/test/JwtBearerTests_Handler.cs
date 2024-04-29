@@ -981,7 +981,7 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         Assert.Equal(TimeSpan.FromSeconds(60), jwtBearerOptions.BackchannelTimeout);
         Assert.False(jwtBearerOptions.RequireHttpsMetadata);
         Assert.True(jwtBearerOptions.SaveToken);
-        // ValidateIssuerSignInKey should always be set to its non-default value of true if options are read from config.
+        // ValidateIssuerSigningKey should always be set to its non-default value of true if options are read from config.
         Assert.True(jwtBearerOptions.TokenValidationParameters.ValidateIssuerSigningKey);
         // Assert default values for other options are respected.
         Assert.True(jwtBearerOptions.MapInboundClaims);
