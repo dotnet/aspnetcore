@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR;
 
 internal static class ReflectionHelper
 {
-    private static ConcurrentDictionary<Type, Type> _streamTypeLookup = new();
+    private static readonly ConcurrentDictionary<Type, Type> _streamTypeLookup = new();
 
     // mustBeDirectType - Hub methods must use the base 'stream' type and not be a derived class that just implements the 'stream' type
     // and 'stream' types from the client are allowed to inherit from accepted 'stream' types
