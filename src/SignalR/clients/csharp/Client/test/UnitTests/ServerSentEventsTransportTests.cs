@@ -415,37 +415,34 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
     public async Task StartAsyncSetsCorrectAcceptHeaderForSSE()
     {
         var mockHttpHandler = new Mock<HttpMessageHandler>();
-        var startAsyncCalled = new TaskCompletionSource<bool>();
+        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
 
-        // Setup the mocked HttpMessageHandler
         mockHttpHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream"))),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK))
-            .Callback(() => startAsyncCalled.SetResult(true))
-            .Verifiable("Accept header for 'text/event-stream' was not set correctly.");
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
+            {
+                if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
+                {
+                    responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.OK));
+                }
+                else
+                {
+                    responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.NoContent));
+                }
+                return responseTaskCompletionSource.Task;
+            });
 
         using (var httpClient = new HttpClient(mockHttpHandler.Object))
         using (StartVerifiableLog())
         {
             var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
 
-            await sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Text);
-
-            // Ensure that StartAsync was called and completed before stopping the transport
-            await startAsyncCalled.Task;
+            await sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
             await sseTransport.StopAsync();
+
+            var response = await responseTaskCompletionSource.Task;
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
-
-        // Verify that the SendAsync method was called on the mock HttpMessageHandler
-        mockHttpHandler.Protected().Verify(
-            "SendAsync",
-            Times.Once(),
-            ItExpr.Is<HttpRequestMessage>(req => req.Headers.Accept.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream"))),
-            ItExpr.IsAny<CancellationToken>());
     }
-
 }
