@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,10 +77,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
         var hub = hubActivator.Create();
+        Activity? activity = null;
         try
         {
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, invokeAllowed: false);
+
+            activity = CreateActivity(scope.ServiceProvider, nameof(hub.OnConnectedAsync));
 
             if (_onConnectedMiddleware != null)
             {
@@ -93,6 +97,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
         finally
         {
+            activity?.Stop();
             hubActivator.Release(hub);
         }
     }
@@ -103,9 +108,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
         var hub = hubActivator.Create();
+        Activity? activity = null;
         try
         {
             InitializeHub(hub, connection);
+
+            activity = CreateActivity(scope.ServiceProvider, nameof(hub.OnDisconnectedAsync));
 
             if (_onDisconnectedMiddleware != null)
             {
@@ -119,6 +127,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
         finally
         {
+            activity?.Stop();
             hubActivator.Release(hub);
         }
     }
@@ -367,6 +376,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
 
+                        var activity = CreateActivity(scope.ServiceProvider, methodExecutor.MethodInfo.Name);
+
                         object? result;
                         try
                         {
@@ -382,6 +393,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         }
                         finally
                         {
+                            activity?.Stop();
+
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
                             if (isStreamCall)
@@ -467,6 +480,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         streamCts ??= CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
 
+        var activity = CreateActivity(scope.ServiceProvider, descriptor.MethodExecutor.MethodInfo.Name);
+
         try
         {
             if (!connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts))
@@ -499,8 +514,19 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             Log.StreamingResult(_logger, invocationId, descriptor.MethodExecutor);
             var streamItemMessage = new StreamItemMessage(invocationId, null);
 
+            var count = 0;
             while (await enumerator.MoveNextAsync())
             {
+                if (activity is not null)
+                {
+                    count++;
+                    // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#events
+                    var tags = new ActivityTagsCollection(
+                        [new("rpc.message.type", "SENT"), new("rpc.message.id", count)]);
+                    var @event = new ActivityEvent("rpc.message", tags: tags);
+                    activity.AddEvent(@event);
+                }
+
                 streamItemMessage.Item = enumerator.Current;
                 // Send the stream item
                 await connection.WriteAsync(streamItemMessage);
@@ -523,6 +549,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
         finally
         {
+            activity?.Stop();
+
             await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
             streamCts.Dispose();
@@ -745,6 +773,39 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         if (_cachedMethodNames.TryGetValue(targetUtf8Bytes, out var targetName))
         {
             return targetName;
+        }
+
+        return null;
+    }
+
+    private static Activity? CreateActivity(IServiceProvider serviceProvider, string methodName)
+    {
+        if (serviceProvider.GetService<ActivitySource>() is ActivitySource activitySource
+            && activitySource.HasListeners())
+        {
+            // Get off the parent span.
+            // This is likely the Http Request span and we want Hub method invocations to not be collected under a long running span.
+            Activity.Current = null;
+            var requestContext = serviceProvider.GetService<IHttpActivityFeature>()?.Activity.Context;
+            var activity = activitySource.CreateActivity($"{typeof(THub).Name}/{methodName}", ActivityKind.Server, parentId: null,
+                links: requestContext.HasValue ? [new ActivityLink(requestContext.Value)] : null);
+
+            if (activity is not null)
+            {
+                // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#server-attributes
+                activity.AddTag("rpc.method", methodName);
+                activity.AddTag("rpc.system", "signalr");
+                activity.AddTag("rpc.service", typeof(THub).Name);
+
+                // See https://github.com/dotnet/aspnetcore/blob/027c60168383421750f01e427e4f749d0684bc02/src/Servers/Kestrel/Core/src/Internal/Infrastructure/KestrelMetrics.cs#L308
+                //activity.AddTag("server.address", ...);
+
+                activity.Start();
+
+                // Set Activity.Current so that activities from client method invokes will have the parent span set
+                Activity.Current = activity;
+            }
+            return activity;
         }
 
         return null;
