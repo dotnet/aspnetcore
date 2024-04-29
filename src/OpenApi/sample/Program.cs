@@ -43,7 +43,9 @@ if (app.Environment.IsDevelopment())
 
 forms.MapPost("/form-file", (IFormFile resume) => Results.Ok(resume.FileName));
 forms.MapPost("/form-files", (IFormFileCollection files) => Results.Ok(files.Count));
+forms.MapPost("/form-file-multiple", (IFormFile resume, IFormFileCollection files) => Results.Ok(files.Count + resume.FileName));
 forms.MapPost("/form-todo", ([FromForm] Todo todo) => Results.Ok(todo));
+forms.MapPost("/forms-pocos-and-files", ([FromForm] Todo todo, IFormFile file) => Results.Ok(new { Todo = todo, File = file.FileName }));
 
 var v1 = app.MapGroup("v1")
     .WithGroupName("v1");
