@@ -171,7 +171,7 @@ public class WebApiTemplateTest : LoggedTest
             aspNetProcess.Process.HasExited,
             ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-        await aspNetProcess.AssertNotFound("swagger");
+        await aspNetProcess.AssertNotFound("openapi/v1.json");
     }
 
     [ConditionalTheory]
@@ -206,7 +206,7 @@ public class WebApiTemplateTest : LoggedTest
             aspNetProcess.Process.HasExited,
             ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-        await aspNetProcess.AssertNotFound("swagger");
+        await aspNetProcess.AssertNotFound("openapi/v1.json");
     }
 
     private async Task<Project> PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args = null)
@@ -260,7 +260,7 @@ public class WebApiTemplateTest : LoggedTest
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertOk("weatherforecast");
-            await aspNetProcess.AssertOk("swagger");
+            await aspNetProcess.AssertOk("openapi/v1.json");
             await aspNetProcess.AssertNotFound("/");
         }
 
@@ -271,8 +271,6 @@ public class WebApiTemplateTest : LoggedTest
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertOk("weatherforecast");
-            // Swagger is only available in Development
-            await aspNetProcess.AssertNotFound("swagger");
             await aspNetProcess.AssertNotFound("/");
         }
     }
