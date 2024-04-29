@@ -17,6 +17,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using Moq.Protected;
+using System.IO.Pipelines;
+using System.Text;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -156,5 +161,48 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
         Assert.Equal(2, writeList.Count);
         Assert.Equal("SendingHttpRequest", writeList[0].EventId.Name);
         Assert.Equal("UnsuccessfulHttpResponse", writeList[1].EventId.Name);
+    }
+
+    [Fact]
+    public async Task Negotiation_SendsCorrectHeaders()
+    {
+        try
+        {
+            var mockHandler = new Mock<HttpMessageHandler>();
+            var httpClient = new HttpClient(mockHandler.Object);
+            var options = new HttpConnectionOptions
+            {
+                Url = new Uri("http://fakeuri.org/"),
+                Transports = HttpTransportType.WebSockets,
+                SkipNegotiation = false
+            };
+
+            var loggerFactory = NullLoggerFactory.Instance;
+            var mockTransportFactory = new Mock<ITransportFactory>();
+            var mockTransport = new Mock<ITransport>();
+            mockTransportFactory.Setup(x => x.CreateTransport(It.IsAny<HttpTransportType>(), It.IsAny<bool>()))
+                                .Returns(mockTransport.Object);
+
+            var connection = new HttpConnection(options, loggerFactory, mockTransportFactory.Object, httpClient);
+
+            mockHandler.Protected().Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+            {
+                Assert.Contains(new MediaTypeWithQualityHeaderValue("*/*"), request.Headers.Accept);
+            })
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"connectionId\":\"12345\",\"availableTransports\":[]}", Encoding.UTF8, "application/json")
+            });
+
+            await connection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Assert.False(true, $"Unexpected exception: {ex.Message}");
+        }
     }
 }
