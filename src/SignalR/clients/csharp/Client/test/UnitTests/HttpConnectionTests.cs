@@ -164,7 +164,7 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task Negotiation_SendsCorrectHeaders()
+    public async Task NegotiationSendsCorrectAcceptHeader()
     {
         try
         {
