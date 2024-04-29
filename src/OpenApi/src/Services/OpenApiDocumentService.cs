@@ -297,23 +297,26 @@ internal sealed class OpenApiDocumentService(
         };
 
         var schema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
-        // Group form parameters by their parameter name because MVC explodes form parameters that are bound from the
-        // same model instance into separate parameters, while minimal APIs does not.
+        // Group form parameters by their name because MVC explodes form parameters that are bound from the
+        // same model instance into separate ApiParameterDescriptions in ApiExplorer, while minimal APIs does not.
         //
         // public record Todo(int Id, string Title, bool Completed, DateTime CreatedAt)
         // public void PostMvc([FromForm] Todo person) { }
         // app.MapGet("/form-todo", ([FromForm] Todo todo) => Results.Ok(todo));
         //
-        // In the example above, MVC will bind four separate arguments to the Todo model while minimal APIs will
+        // In the example above, MVC's ApiExplorer will bind four separate arguments to the Todo model while minimal APIs will
         // bind a single Todo model instance to the todo parameter. Grouping by name allows us to handle both cases.
         var groupedFormParameters = formParameters.GroupBy(parameter => parameter.ParameterDescriptor.Name);
         // If there is only one real parameter derived from the form body, then set it directly in the schema.
         var hasMultipleFormParameters = groupedFormParameters.Count() > 1;
         foreach (var parameter in groupedFormParameters)
         {
+            // ContainerType is not null when the parameter has been exploded into separate API
+            // parameters by ApiExplorer as in the MVC model.
             if (parameter.All(parameter => parameter.ModelMetadata.ContainerType is null))
             {
                 var description = parameter.Single();
+                var parameterSchema = _componentService.GetOrCreateSchema(description.Type);
                 // Form files are keyed by their parameter name so we must capture the parameter name
                 // as a property in the schema.
                 if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
@@ -325,22 +328,24 @@ internal sealed class OpenApiDocumentService(
                             Type = "object",
                             Properties = new Dictionary<string, OpenApiSchema>
                             {
-                                [description.Name] = _componentService.GetOrCreateSchema(description.Type)
+                                [description.Name] = parameterSchema
                             }
                         });
                     }
                     else
                     {
-                        schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                        schema.Properties[description.Name] = parameterSchema;
                     }
                 }
                 else
                 {
                     if (hasMultipleFormParameters)
                     {
+                        // Here and below: POCOs do not need to be need under their parameter name in the grouping.
+                        // The form-binding implementation will capture them implicitly.
                         if (description.ModelMetadata.IsComplexType)
                         {
-                            schema.AllOf.Add(_componentService.GetOrCreateSchema(description.Type));
+                            schema.AllOf.Add(parameterSchema);
                         }
                         else
                         {
@@ -349,22 +354,20 @@ internal sealed class OpenApiDocumentService(
                                 Type = "object",
                                 Properties = new Dictionary<string, OpenApiSchema>
                                 {
-                                    [description.Name] = _componentService.GetOrCreateSchema(description.Type)
+                                    [description.Name] = parameterSchema
                                 }
                             });
                         }
                     }
                     else
                     {
-                        // POCOs do not need to be subset under their parameter name in the properties grouping.
-                        // The form-binding implementation will capture them implicitly.
                         if (description.ModelMetadata.IsComplexType)
                         {
-                            schema = _componentService.GetOrCreateSchema(description.Type);
+                            schema = parameterSchema;
                         }
                         else
                         {
-                            schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                            schema.Properties[description.Name] = parameterSchema;
                         }
                     }
                 }

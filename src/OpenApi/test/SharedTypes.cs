@@ -57,3 +57,9 @@ internal enum Status
     Approved,
     Rejected
 }
+
+internal class Proposal
+{
+    public required Proposal ProposalElement { get; set; }
+    public required Stream Stream { get; set; }
+}
