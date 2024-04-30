@@ -832,19 +832,17 @@ public partial class HubConnection : IAsyncDisposable
                     .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
                 continue;
             }
-            else
-            {
-                if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
-                {
-                    _ = _sendStreamItemsMethod
-                        .MakeGenericMethod(channelGenericType)
-                        .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
-                    continue;
-                }
 
-                // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
-                throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
+            if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
+            {
+                _ = _sendStreamItemsMethod
+                    .MakeGenericMethod(channelGenericType)
+                    .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
+                continue;
             }
+
+            // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
+            throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
         }
     }
 

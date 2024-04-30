@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.SignalR;
 
 internal static class ReflectionHelper
 {
-    private static readonly ConcurrentDictionary<Type, Type> _streamTypeLookup = new();
-
     // mustBeDirectType - Hub methods must use the base 'stream' type and not be a derived class that just implements the 'stream' type
     // and 'stream' types from the client are allowed to inherit from accepted 'stream' types
     public static bool IsStreamingType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type, bool mustBeDirectType = false)
@@ -26,21 +24,26 @@ internal static class ReflectionHelper
             return true;
         }
 
-        Type? nullableType = type;
+        return TryGetStreamType(type, out _, mustBeDirectType);
+    }
 
+    public static bool TryGetStreamType(Type streamType, [NotNullWhen(true)] out Type? streamGenericType, bool mustBeDirectType = false)
+    {
+        Type? nullableType = streamType;
         do
         {
             if (nullableType.IsGenericType && nullableType.GetGenericTypeDefinition() == typeof(ChannelReader<>))
             {
                 Debug.Assert(nullableType.GetGenericArguments().Length == 1);
 
-                _streamTypeLookup.GetOrAdd(type, nullableType.GetGenericArguments()[0]);
+                streamGenericType = nullableType.GetGenericArguments()[0];
                 return true;
             }
 
             nullableType = nullableType.BaseType;
         } while (mustBeDirectType == false && nullableType != null);
 
+        streamGenericType = null;
         return false;
     }
 
@@ -66,7 +69,4 @@ internal static class ReflectionHelper
             }
         });
     }
-
-    public static bool TryGetStreamType(Type stream, [NotNullWhen(true)] out Type? streamType)
-        => _streamTypeLookup.TryGetValue(stream, out streamType);
 }
