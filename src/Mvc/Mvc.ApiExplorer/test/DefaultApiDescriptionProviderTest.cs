@@ -2874,6 +2874,8 @@ public class DefaultApiDescriptionProviderTest
 
         public Type Type { get; set; }
 
+        public string Description { get; set; }
+
         public void SetContentTypes(MediaTypeCollection contentTypes)
         {
             contentTypes.Clear();
