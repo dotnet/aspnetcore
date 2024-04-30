@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
@@ -23,11 +23,13 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
     private readonly Dispatcher _dispatcher;
+    private readonly IInternalJSImportMethods _jsMethods;
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+        _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();
 
         // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
         _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
@@ -70,9 +72,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         NotifyEndUpdateRootComponents(batch.BatchId);
     }
 
-    public static void NotifyEndUpdateRootComponents(long batchId)
+    public void NotifyEndUpdateRootComponents(long batchId)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid("Blazor._internal.endUpdateRootComponents", batchId);
+        _jsMethods.EndUpdateRootComponents(batchId);
     }
 
     public override Dispatcher Dispatcher => _dispatcher;
@@ -87,11 +89,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     protected override void AttachRootComponentToBrowser(int componentId, string domElementSelector)
     {
-        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(
-            "Blazor._internal.attachRootComponentToElement",
-            domElementSelector,
-            componentId,
-            RendererId);
+        _jsMethods.AttachRootComponentToElement(domElementSelector, componentId, RendererId);
     }
 
     /// <inheritdoc />

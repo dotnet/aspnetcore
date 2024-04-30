@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -57,6 +58,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     private readonly ILogger _logger;
     private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
     private readonly IDefaultKeyStorageDirectories _keyStorageDirectories;
+    private readonly ConcurrentDictionary<Guid, Key> _knownKeyMap = new(); // Grows unboundedly, like the key ring
 
     private CancellationTokenSource? _cacheExpirationTokenSource;
 
@@ -160,7 +162,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         var allElements = KeyRepository.GetAllElements();
 
         // We aggregate all the information we read into three buckets
-        Dictionary<Guid, KeyBase> keyIdToKeyMap = new Dictionary<Guid, KeyBase>();
+        Dictionary<Guid, Key> keyIdToKeyMap = new Dictionary<Guid, Key>();
         HashSet<Guid>? revokedKeyIds = null;
         DateTimeOffset? mostRecentMassRevocationDate = null;
 
@@ -257,7 +259,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         return Interlocked.CompareExchange<CancellationTokenSource?>(ref _cacheExpirationTokenSource, null, null).Token;
     }
 
-    private KeyBase? ProcessKeyElement(XElement keyElement)
+    private Key? ProcessKeyElement(XElement keyElement)
     {
         Debug.Assert(keyElement.Name == KeyElementName);
 
@@ -265,13 +267,20 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         {
             // Read metadata and prepare the key for deferred instantiation
             Guid keyId = (Guid)keyElement.Attribute(IdAttributeName)!;
+
+            _logger.FoundKey(keyId);
+
+            if (_knownKeyMap.TryGetValue(keyId, out var oldKey))
+            {
+                // Keys are immutable (other than revocation), so there's no need to read it again
+                return oldKey.Clone();
+            }
+
             DateTimeOffset creationDate = (DateTimeOffset)keyElement.Element(CreationDateElementName)!;
             DateTimeOffset activationDate = (DateTimeOffset)keyElement.Element(ActivationDateElementName)!;
             DateTimeOffset expirationDate = (DateTimeOffset)keyElement.Element(ExpirationDateElementName)!;
 
-            _logger.FoundKey(keyId);
-
-            return new DeferredKey(
+            var key = new Key(
                 keyId: keyId,
                 creationDate: creationDate,
                 activationDate: activationDate,
@@ -279,6 +288,10 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                 keyManager: this,
                 keyElement: keyElement,
                 encryptorFactories: _encryptorFactories);
+
+            RecordKey(key);
+
+            return key;
         }
         catch (Exception ex)
         {
@@ -286,6 +299,18 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
             // Don't include this key in the key ring
             return null;
+        }
+    }
+
+    private void RecordKey(Key key)
+    {
+        if (!_knownKeyMap.TryAdd(key.KeyId, key))
+        {
+            // If we lost the race, the winner inserted an equivalent key
+            Debug.Assert(_knownKeyMap.TryGetValue(key.KeyId, out var existingKey));
+            Debug.Assert(existingKey.CreationDate == key.CreationDate);
+            Debug.Assert(existingKey.ActivationDate == key.ActivationDate);
+            Debug.Assert(existingKey.ExpirationDate == key.ExpirationDate);
         }
     }
 
@@ -434,13 +459,17 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         TriggerAndResetCacheExpirationToken();
 
         // And we're done!
-        return new Key(
+        var key = new Key(
             keyId: keyId,
             creationDate: creationDate,
             activationDate: activationDate,
             expirationDate: expirationDate,
             descriptor: newDescriptor,
             encryptorFactories: _encryptorFactories);
+
+        RecordKey(key);
+
+        return key;
     }
 
     IAuthenticatedEncryptorDescriptor IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(XElement keyElement)

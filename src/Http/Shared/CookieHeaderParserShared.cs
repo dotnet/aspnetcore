@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
@@ -9,6 +10,11 @@ namespace Microsoft.Net.Http.Headers;
 
 internal static class CookieHeaderParserShared
 {
+    // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
+    //                     ; US-ASCII characters excluding CTLs, whitespace, DQUOTE, comma, semicolon, and backslash
+    private static readonly SearchValues<char> CookieValueChar =
+        SearchValues.Create("!#$%&'()*+-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+
     public static bool TryParseValues(StringValues values, IDictionary<string, string> store, bool supportsMultipleValues)
     {
         // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
@@ -192,15 +198,14 @@ internal static class CookieHeaderParserShared
             offset++;
         }
 
-        while (offset < input.Length)
+        var delta = input.AsSpan(offset).IndexOfAnyExcept(CookieValueChar);
+        if (delta < 0)
         {
-            var c = input[offset];
-            if (!IsCookieValueChar(c))
-            {
-                break;
-            }
-
-            offset++;
+            offset = input.Length;
+        }
+        else
+        {
+            offset += delta;
         }
 
         if (inQuotes)
@@ -231,16 +236,5 @@ internal static class CookieHeaderParserShared
         }
         offset++;
         return true;
-    }
-
-    // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-    //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-    private static bool IsCookieValueChar(char c)
-    {
-        if (c < 0x21 || c > 0x7E)
-        {
-            return false;
-        }
-        return !(c == '"' || c == ',' || c == ';' || c == '\\');
     }
 }

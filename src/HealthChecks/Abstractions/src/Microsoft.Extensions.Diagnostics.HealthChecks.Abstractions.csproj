@@ -8,7 +8,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
     </Description>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>

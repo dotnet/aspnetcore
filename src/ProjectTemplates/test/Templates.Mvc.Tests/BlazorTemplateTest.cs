@@ -194,7 +194,7 @@ public class BlazorTemplateTest : LoggedTest
     {
         var appRazorPath = Path.Combine(project.TemplateOutputDir, "Components", "App.razor");
         var appRazorText = await File.ReadAllTextAsync(appRazorPath);
-        appRazorText = appRazorText.Replace("IComponentRenderMode?", "IComponentRenderMode").Replace("? null", "? null!");
+        appRazorText = appRazorText.Replace("IComponentRenderMode?", "IComponentRenderMode").Replace(": null", ": null!");
         await File.WriteAllTextAsync(appRazorPath, appRazorText);
     }
 

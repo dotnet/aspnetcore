@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -376,9 +375,9 @@ public class KestrelServerOptions
     {
         try
         {
-            var cert = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
-                .FirstOrDefault();
+            var certs = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: false);
 
+            var cert = certs.Count > 0 ? certs[0] : null;
             if (cert is null)
             {
                 logger.UnableToLocateDevelopmentCertificate();

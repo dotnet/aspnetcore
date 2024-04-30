@@ -12,7 +12,7 @@ std::shared_ptr<ConfigurationSection> WebConfigConfigurationSource::GetSection(c
     const CComBSTR applicationConfigPath = m_application.GetAppConfigPath();
 
     IAppHostElement* sectionElement;
-    if (LOG_IF_FAILED(m_manager->GetAdminSection(bstrAspNetCoreSection, applicationConfigPath, &sectionElement)))
+    if (FAILED_LOG(m_manager->GetAdminSection(bstrAspNetCoreSection, applicationConfigPath, &sectionElement)))
     {
         return nullptr;
     }

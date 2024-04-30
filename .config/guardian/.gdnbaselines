@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "default": {
+      "name": "default",
+      "createdDate": "2024-03-22 19:39:15Z",
+      "lastUpdatedDate": "2024-03-22 19:39:15Z"
+    }
+  },
+  "results": {
+    "b225abd0112d9acb60d51b4140e53f850d297b6fbf8a8a16c2bbcbf74e8117ec": {
+      "signature": "b225abd0112d9acb60d51b4140e53f850d297b6fbf8a8a16c2bbcbf74e8117ec",
+      "alternativeSignatures": [
+        "7428887e9b12f8bfcd82f7a3c558516c0ff010dca528c6e14c651e483e481c3e"
+      ],
+      "target": "src/DataProtection/CreateTestCert.ps1",
+      "line": 11,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "psscriptanalyzer",
+      "ruleId": "PSAvoidUsingConvertToSecureStringWithPlainText",
+      "createdDate": "2024-03-22 19:39:15Z",
+      "expirationDate": "2024-09-08 20:36:51Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-22 20:36:51Z"
+    },
+    "4b9e42233bd060f0007b20cdd0d0cade4dc4e67780b5f5b62b0355e96a610dd2": {
+      "signature": "4b9e42233bd060f0007b20cdd0d0cade4dc4e67780b5f5b62b0355e96a610dd2",
+      "alternativeSignatures": [
+        "e2a5a619bd7c6d200340a7d986cd01fec9427c65df0eef321fc8c853f00c8632"
+      ],
+      "target": "src/Hosting/Server.IntegrationTesting/src/Deployers/RemoteWindowsDeployer/RemotePSSessionHelper.ps1",
+      "line": 40,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "psscriptanalyzer",
+      "ruleId": "PSAvoidUsingConvertToSecureStringWithPlainText",
+      "createdDate": "2024-03-22 19:39:15Z",
+      "expirationDate": "2024-09-08 20:36:51Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-22 20:36:51Z"
+    },
+    "b3736a918ff8d688843a2c76bfce1661c484e260144140c9df23f1147da102c0": {
+      "signature": "b3736a918ff8d688843a2c76bfce1661c484e260144140c9df23f1147da102c0",
+      "alternativeSignatures": [],
+      "target": "spotbugs.xml",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "spotbugs",
+      "ruleId": "gdn.unknownFormatResult",
+      "createdDate": "2024-03-22 20:06:23Z",
+      "expirationDate": "2024-09-08 20:36:51Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-22 20:36:51Z"
+    }
+  }
+}

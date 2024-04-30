@@ -1,1 +1,37 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.OpenApiEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer.TransformAsync(Microsoft.OpenApi.Models.OpenApiDocument! document, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Description.get -> Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription!
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Description.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.DocumentName.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.OpenApiOptions() -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.OpenApiVersion.get -> Microsoft.OpenApi.OpenApiSpecVersion
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.OpenApiVersion.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.ShouldInclude.get -> System.Func<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription!, bool>!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.ShouldInclude.set -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.UseOperationTransformer(System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.UseTransformer(Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.UseTransformer(System.Func<Microsoft.OpenApi.Models.OpenApiDocument!, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.UseTransformer<TTransformerType>() -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions
+static Microsoft.AspNetCore.Builder.OpenApiEndpointRouteBuilderExtensions.MapOpenApi(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern = "/openapi/{documentName}.json") -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
+static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName, System.Action<Microsoft.AspNetCore.OpenApi.OpenApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OpenApi.OpenApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.ApplicationServices.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.DescriptionGroups.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup!>!
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.DescriptionGroups.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.DocumentName.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.DocumentName.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.OpenApiDocumentTransformerContext() -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.ApplicationServices.get -> System.IServiceProvider!
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.ApplicationServices.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.DocumentName.get -> string!
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.DocumentName.init -> void
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiOperationTransformerContext() -> void
