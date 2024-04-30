@@ -5347,14 +5347,12 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
             var mockHttpRequestActivity = new Activity("HttpRequest");
             mockHttpRequestActivity.Start();
-            System.Diagnostics.Activity.Current = mockHttpRequestActivity;
+            Activity.Current = mockHttpRequestActivity;
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             {
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
-                var activityFeature = new HttpActivityFeature() { Activity = mockHttpRequestActivity };
-                builder.AddSingleton<IHttpActivityFeature>(activityFeature);
             }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
@@ -5411,7 +5409,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task StreamResponse()
+    public async Task StreamResponseCreatesEventsOnActivity()
     {
         using (StartVerifiableLog())
         {
@@ -5427,14 +5425,12 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
             var mockHttpRequestActivity = new Activity("HttpRequest");
             mockHttpRequestActivity.Start();
-            System.Diagnostics.Activity.Current = mockHttpRequestActivity;
+            Activity.Current = mockHttpRequestActivity;
 
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
             {
                 // Provided by hosting layer normally
                 builder.AddSingleton(testSource);
-                var activityFeature = new HttpActivityFeature() { Activity = mockHttpRequestActivity };
-                builder.AddSingleton<IHttpActivityFeature>(activityFeature);
             }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
             Mock<IInvocationBinder> invocationBinder = new Mock<IInvocationBinder>();
@@ -5451,7 +5447,37 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
                 Assert.Equal(2, activities.Count);
                 AssertHubMethodActivity(activities[1], nameof(StreamingHub.CounterAsyncEnumerableAsync));
-                _ = activities[1].Events;
+                Assert.Collection(activities[1].Events,
+                    one =>
+                    {
+                        Assert.Equal("rpc.message", one.Name);
+                        AssertTags(one.Tags, messageId: 1);
+                    },
+                    two =>
+                    {
+                        Assert.Equal("rpc.message", two.Name);
+                        AssertTags(two.Tags, messageId: 2);
+                    },
+                    three =>
+                    {
+                        Assert.Equal("rpc.message", three.Name);
+                        AssertTags(three.Tags, messageId: 3);
+                    });
+
+                static void AssertTags(IEnumerable<KeyValuePair<string, object>> tags, int messageId)
+                {
+                    Assert.Collection(tags,
+                        t1 =>
+                        {
+                            Assert.Equal("rpc.message.type", t1.Key);
+                            Assert.Equal("SENT", t1.Value);
+                        },
+                        t2 =>
+                        {
+                            Assert.Equal("rpc.message.id", t2.Key);
+                            Assert.Equal(messageId, t2.Value);
+                        });
+                }
 
                 client.Dispose();
 
@@ -5485,11 +5511,6 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 Assert.Equal(mockHttpRequestActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
             }
         }
-    }
-
-    internal class HttpActivityFeature : IHttpActivityFeature
-    {
-        public Activity Activity { get; set; }
     }
 
 #pragma warning disable CA2252 // This API requires opting into preview features

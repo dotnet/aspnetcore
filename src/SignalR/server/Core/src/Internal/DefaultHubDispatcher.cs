@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -783,10 +782,11 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         if (serviceProvider.GetService<ActivitySource>() is ActivitySource activitySource
             && activitySource.HasListeners())
         {
+            var requestContext = Activity.Current?.Context;
             // Get off the parent span.
             // This is likely the Http Request span and we want Hub method invocations to not be collected under a long running span.
             Activity.Current = null;
-            var requestContext = serviceProvider.GetService<IHttpActivityFeature>()?.Activity.Context;
+
             var activity = activitySource.CreateActivity($"{typeof(THub).Name}/{methodName}", ActivityKind.Server, parentId: null,
                 links: requestContext.HasValue ? [new ActivityLink(requestContext.Value)] : null);
 
