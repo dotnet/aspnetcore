@@ -19,16 +19,16 @@ steps:
   ${{ if parameters.args.continueOnError }}:
     continueOnError: ${{ parameters.args.continueOnError }}
   inputs:
-    TargetPath: ${{ parameters.args.TargetPath }}
-    ${{ if parameters.args.ArtifactName }}:
-      ArtifactName: ${{ parameters.args.ArtifactName }}
-    ${{ if parameters.args.PublishLocation }}:
-      PublishLocation: ${{ parameters.args.PublishLocation }}
-    ${{ if parameters.args.FileSharePath }}:
-      FileSharePath: ${{ parameters.args.FileSharePath }}
+    targetPath: ${{ parameters.args.targetPath }}
+    ${{ if parameters.args.artifactName }}:
+      artifactName: ${{ parameters.args.artifactName }}
+    ${{ if parameters.args.publishLocation }}:
+      publishLocation: ${{ parameters.args.publishLocation }}
+    ${{ if parameters.args.fileSharePath }}:
+      fileSharePath: ${{ parameters.args.fileSharePath }}
     ${{ if parameters.args.Parallel }}:
-      Parallel: ${{ parameters.args.Parallel }}
-    ${{ if parameters.args.ParallelCount }}:
-      ParallelCount: ${{ parameters.args.ParallelCount }}
-    ${{ if parameters.args.Properties }}:
-      Properties: ${{ properties.args.Properties }}
+      parallel: ${{ parameters.args.Parallel }}
+    ${{ if parameters.args.parallelCount }}:
+      parallelCount: ${{ parameters.args.parallelCount }}
+    ${{ if parameters.args.properties }}:
+      properties: ${{ properties.args.properties }}
