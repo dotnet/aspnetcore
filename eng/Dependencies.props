@@ -69,6 +69,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
+    <LatestPackageReference Include="Microsoft.OpenApi.Readers" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -227,6 +228,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="StackExchange.Redis" />
     <LatestPackageReference Include="Swashbuckle.AspNetCore" />
     <LatestPackageReference Include="System.Reactive.Linq" />
+    <LatestPackageReference Include="Verify.Xunit" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />
     <LatestPackageReference Include="xunit.assert" />

@@ -16,6 +16,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\AttributeUtilities.cs" LinkBase="Forms" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*.cs" LinkBase="Forms\ExpressionFommatting" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerialization\JsonConverterFactoryTypeInfoResolver.cs" LinkBase="JsonSerialization" />
   </ItemGroup>
 
   <ItemGroup>

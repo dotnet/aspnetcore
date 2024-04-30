@@ -27,7 +27,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -428,7 +428,6 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/46835")]
     public void CanUseFocusExtensionToFocusElementPreventScroll()
     {
         Browser.Manage().Window.Size = new System.Drawing.Size(600, 600);

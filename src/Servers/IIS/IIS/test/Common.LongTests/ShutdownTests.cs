@@ -257,7 +257,81 @@ public class ShutdownTests : IISFunctionalTestBase
 
         // Shutdown should be graceful here!
         EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            EventLogHelpers.InProcessShutdown(), Logger);
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsWhileRestartingAppFromConfigChangeAreProcessed()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress doesn't support recycle
+            return;
+        }
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        result.Dispose();
+
+        // Just "touching" web.config should be enough to restart the process
+        deploymentResult.ModifyWebConfig(element => { });
+
+        // Default shutdown delay is 1 second, we want to send requests while the shutdown is happening
+        // So we send a bunch of requests and one of them hopefully will run during shutdown and be queued for processing by the new app
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        await deploymentResult.AssertRecycledAsync();
+
+        // Shutdown should be graceful here!
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsWhileRecyclingAppAreProcessed()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress doesn't support recycle
+            return;
+        }
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        result.Dispose();
+
+        // Recycle app pool
+        Helpers.Recycle(deploymentResult.AppPoolName);
+
+        // Default shutdown delay is 1 second, we want to send requests while the shutdown is happening
+        // So we send a bunch of requests and one of them hopefully will run during shutdown and be queued for processing by the new app
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        await deploymentResult.AssertRecycledAsync();
+
+        // Shutdown should be graceful here!
+        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
     [ConditionalFact]

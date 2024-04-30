@@ -4,9 +4,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
 using Microsoft.IdentityModel.Tokens;
 
@@ -144,7 +141,7 @@ internal static class DevJwtCliHelpers
 
         static void PrintJwtJson(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
         {
-            reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+            reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
         }
 
         static void PrintJwtDefault(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)

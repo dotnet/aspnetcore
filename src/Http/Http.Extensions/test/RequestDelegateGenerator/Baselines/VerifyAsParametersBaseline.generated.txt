@@ -14,7 +14,7 @@ namespace System.Runtime.CompilerServices
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
-        public InterceptsLocationAttribute(string filePath, int line, int column)
+        public InterceptsLocationAttribute(int version, string data)
         {
         }
     }
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly string[] PostVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Post };
         private static readonly string[] PutVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Put };
 
-        [InterceptsLocation(@"TestMapActions.cs", 45, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 46, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPost1(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 47, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPut2(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 48, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPatch3(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 49, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet4(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 castHandler.Method);
         }
 
-        [InterceptsLocation(@"TestMapActions.cs", 50, 5)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapPost5(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,

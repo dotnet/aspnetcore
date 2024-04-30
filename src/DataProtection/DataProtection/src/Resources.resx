@@ -190,6 +190,9 @@
   <data name="KeyRingProvider_DefaultKeyRevoked" xml:space="preserve">
     <value>The key ring's default data protection key {0:B} has been revoked.</value>
   </data>
+  <data name="KeyRingProvider_RefreshFailedOnOtherThread" xml:space="preserve">
+    <value>Another thread failed to refresh the key ring. Refer to the inner exception for more information.</value>
+  </data>
   <data name="LifetimeMustNotBeNegative" xml:space="preserve">
     <value>{0} must not be negative.</value>
   </data>

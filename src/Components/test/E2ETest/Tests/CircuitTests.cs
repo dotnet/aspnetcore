@@ -24,7 +24,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
     }
 
     [Theory]

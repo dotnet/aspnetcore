@@ -24,7 +24,7 @@ public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 

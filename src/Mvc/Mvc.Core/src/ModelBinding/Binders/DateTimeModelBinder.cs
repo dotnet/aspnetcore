@@ -26,7 +26,7 @@ public class DateTimeModelBinder : IModelBinder
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _supportedStyles = supportedStyles;
-        _logger = loggerFactory.CreateLogger<DateTimeModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(DateTimeModelBinder));
     }
 
     /// <inheritdoc />
