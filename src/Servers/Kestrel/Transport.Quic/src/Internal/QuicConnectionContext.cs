@@ -56,6 +56,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             lock (_shutdownLock)
             {
+                // The DefaultCloseErrorCode setter validates that the error code is within the valid range
                 _closeTask ??= _connection.CloseAsync(errorCode: _context.Options.DefaultCloseErrorCode).AsTask();
             }
 
@@ -81,12 +82,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
                 return;
             }
 
-            var resolvedErrorCode = _error ?? 0;
-            // Allowed error codes are up to 62 bits non-negative integer values: https://www.rfc-editor.org/rfc/rfc9000.html#integer-encoding
-            if (resolvedErrorCode < 0 || resolvedErrorCode > ((1L << 62) - 1))
-            {
-                resolvedErrorCode = _context.Options.DefaultCloseErrorCode;
-            }
+            var resolvedErrorCode = _error ?? 0; // Only valid error codes are assigned to _error
             _abortReason = ExceptionDispatchInfo.Capture(abortReason);
             QuicLog.ConnectionAbort(_log, this, resolvedErrorCode, abortReason.Message);
             _closeTask = _connection.CloseAsync(errorCode: resolvedErrorCode).AsTask();
@@ -135,7 +131,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Shutdown initiated by peer, abortive.
-            _error = ex.ApplicationErrorCode;
+            _error = ex.ApplicationErrorCode; // Trust Quic to provide us a valid error code
             QuicLog.ConnectionAborted(_log, this, ex.ApplicationErrorCode.GetValueOrDefault(), ex);
 
             ThreadPool.UnsafeQueueUserWorkItem(state =>
