@@ -80,7 +80,8 @@ internal sealed class OpenApiComponentService(IOptions<JsonOptions> jsonOptions)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription);
         }
-        return JsonSerializer.Deserialize<OpenApiJsonSchema>(schemaAsJsonObject)?.Schema ?? new OpenApiSchema();
+        var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
+        return deserializedSchema != null ? deserializedSchema.Schema : new OpenApiSchema();
     }
 
     private JsonObject CreateSchema((Type Type, ParameterInfo? ParameterInfo) key)
