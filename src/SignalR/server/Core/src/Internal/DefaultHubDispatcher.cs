@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
 {
+    private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
+
     private readonly Dictionary<string, HubMethodDescriptor> _methods = new(StringComparer.OrdinalIgnoreCase);
     private readonly Utf8HashLookup _cachedMethodNames = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -375,7 +377,9 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
 
-                        var activity = CreateActivity(scope.ServiceProvider, methodExecutor.MethodInfo.Name);
+                        // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
+                        // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
+                        var activity = CreateActivity(scope.ServiceProvider, hubMethodInvocationMessage.Target);
 
                         object? result;
                         try
@@ -479,7 +483,7 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         streamCts ??= CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
 
-        var activity = CreateActivity(scope.ServiceProvider, descriptor.MethodExecutor.MethodInfo.Name);
+        var activity = CreateActivity(scope.ServiceProvider, hubMethodInvocationMessage.Target);
 
         try
         {
@@ -513,19 +517,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             Log.StreamingResult(_logger, invocationId, descriptor.MethodExecutor);
             var streamItemMessage = new StreamItemMessage(invocationId, null);
 
-            var count = 0;
             while (await enumerator.MoveNextAsync())
             {
-                if (activity is not null)
-                {
-                    count++;
-                    // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#events
-                    var tags = new ActivityTagsCollection(
-                        [new("rpc.message.type", "SENT"), new("rpc.message.id", count)]);
-                    var @event = new ActivityEvent("rpc.message", tags: tags);
-                    activity.AddEvent(@event);
-                }
-
                 streamItemMessage.Item = enumerator.Current;
                 // Send the stream item
                 await connection.WriteAsync(streamItemMessage);
@@ -779,15 +772,15 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
     private static Activity? CreateActivity(IServiceProvider serviceProvider, string methodName)
     {
-        if (serviceProvider.GetService<ActivitySource>() is ActivitySource activitySource
-            && activitySource.HasListeners())
+        if (serviceProvider.GetService<SignalRActivitySource>() is SignalRActivitySource signalRActivitySource
+            && signalRActivitySource.ActivitySource.HasListeners())
         {
             var requestContext = Activity.Current?.Context;
             // Get off the parent span.
             // This is likely the Http Request span and we want Hub method invocations to not be collected under a long running span.
             Activity.Current = null;
 
-            var activity = activitySource.CreateActivity($"{typeof(THub).Name}/{methodName}", ActivityKind.Server, parentId: null,
+            var activity = signalRActivitySource.ActivitySource.CreateActivity($"{_fullHubName}/{methodName}", ActivityKind.Server, parentId: null,
                 links: requestContext.HasValue ? [new ActivityLink(requestContext.Value)] : null);
 
             if (activity is not null)
@@ -795,9 +788,10 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#server-attributes
                 activity.AddTag("rpc.method", methodName);
                 activity.AddTag("rpc.system", "signalr");
-                activity.AddTag("rpc.service", typeof(THub).Name);
+                activity.AddTag("rpc.service", _fullHubName);
 
                 // See https://github.com/dotnet/aspnetcore/blob/027c60168383421750f01e427e4f749d0684bc02/src/Servers/Kestrel/Core/src/Internal/Infrastructure/KestrelMetrics.cs#L308
+                // And https://github.com/dotnet/aspnetcore/issues/43786
                 //activity.AddTag("server.address", ...);
 
                 activity.Start();

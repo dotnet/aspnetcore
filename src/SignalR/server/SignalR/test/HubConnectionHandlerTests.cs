@@ -5339,7 +5339,8 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             var testSource = new ActivitySource("test_source");
             using var listener = new ActivityListener
             {
-                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource)),
+                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource))
+                    || activitySource.Name == "test_custom" || activitySource.Name == "Microsoft.AspNetCore.SignalR.Server",
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
                 ActivityStarted = activities.Add
             };
@@ -5361,55 +5362,44 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var activity = Assert.Single(activities);
-                AssertHubMethodActivity(activity, nameof(MethodHub.OnConnectedAsync));
+                AssertHubMethodActivity<MethodHub>(activity, nameof(MethodHub.OnConnectedAsync), mockHttpRequestActivity);
 
                 await client.SendInvocationAsync(nameof(MethodHub.Echo), "test").DefaultTimeout();
 
-                // Hub asks client for a result, this is an invocation message with an ID
                 var completionMessage = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
-
                 var res = (string)completionMessage.Result;
                 Assert.Equal("test", res);
 
                 Assert.Equal(2, activities.Count);
-                AssertHubMethodActivity(activities[1], nameof(MethodHub.Echo));
+                AssertHubMethodActivity<MethodHub>(activities[1], nameof(MethodHub.Echo), mockHttpRequestActivity);
+
+                await client.SendInvocationAsync("RenamedMethod").DefaultTimeout();
+                Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+
+                Assert.Equal(3, activities.Count);
+                AssertHubMethodActivity<MethodHub>(activities[2], "RenamedMethod", mockHttpRequestActivity);
+
+                await client.SendInvocationAsync(nameof(MethodHub.ActivityMethod)).DefaultTimeout();
+                Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+
+                Assert.Equal(5, activities.Count);
+                AssertHubMethodActivity<MethodHub>(activities[3], nameof(MethodHub.ActivityMethod), mockHttpRequestActivity);
+                Assert.NotNull(activities[4].Parent);
+                Assert.Equal("inner", activities[4].OperationName);
+                Assert.Equal(activities[3], activities[4].Parent);
 
                 client.Dispose();
 
                 await connectionHandlerTask;
             }
 
-            Assert.Equal(3, activities.Count);
-            AssertHubMethodActivity(activities[2], nameof(MethodHub.OnDisconnectedAsync));
-
-            void AssertHubMethodActivity(Activity activity, string methodName)
-            {
-                Assert.Null(activity.Parent);
-                Assert.Equal($"{nameof(MethodHub)}/{methodName}", activity.OperationName);
-                Assert.Collection(activity.Tags,
-                    one =>
-                    {
-                        Assert.Equal("rpc.method", one.Key);
-                        Assert.Equal(methodName, one.Value);
-                    },
-                    two =>
-                    {
-                        Assert.Equal("rpc.system", two.Key);
-                        Assert.Equal("signalr", two.Value);
-                    },
-                    three =>
-                    {
-                        Assert.Equal("rpc.service", three.Key);
-                        Assert.Equal(nameof(MethodHub), three.Value);
-                    });
-                // Linked to original http request span
-                Assert.Equal(mockHttpRequestActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
-            }
+            Assert.Equal(6, activities.Count);
+            AssertHubMethodActivity<MethodHub>(activities[5], nameof(MethodHub.OnDisconnectedAsync), mockHttpRequestActivity);
         }
     }
 
     [Fact]
-    public async Task StreamResponseCreatesEventsOnActivity()
+    public async Task StreamingHubMethodCreatesActivities()
     {
         using (StartVerifiableLog())
         {
@@ -5434,83 +5424,58 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
             Mock<IInvocationBinder> invocationBinder = new Mock<IInvocationBinder>();
-            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
+            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(int));
 
             using (var client = new TestClient(invocationBinder: invocationBinder.Object))
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var activity = Assert.Single(activities);
-                AssertHubMethodActivity(activity, nameof(StreamingHub.OnConnectedAsync));
+                AssertHubMethodActivity<StreamingHub>(activity, nameof(StreamingHub.OnConnectedAsync), mockHttpRequestActivity);
 
-                var responses = await client.StreamAsync(nameof(StreamingHub.CounterAsyncEnumerableAsync), 3).DefaultTimeout();
+                _ = await client.StreamAsync(nameof(StreamingHub.CounterChannel), 3).DefaultTimeout();
 
                 Assert.Equal(2, activities.Count);
-                AssertHubMethodActivity(activities[1], nameof(StreamingHub.CounterAsyncEnumerableAsync));
-                Assert.Collection(activities[1].Events,
-                    one =>
-                    {
-                        Assert.Equal("rpc.message", one.Name);
-                        AssertTags(one.Tags, messageId: 1);
-                    },
-                    two =>
-                    {
-                        Assert.Equal("rpc.message", two.Name);
-                        AssertTags(two.Tags, messageId: 2);
-                    },
-                    three =>
-                    {
-                        Assert.Equal("rpc.message", three.Name);
-                        AssertTags(three.Tags, messageId: 3);
-                    });
+                AssertHubMethodActivity<StreamingHub>(activities[1], nameof(StreamingHub.CounterChannel), mockHttpRequestActivity);
 
-                static void AssertTags(IEnumerable<KeyValuePair<string, object>> tags, int messageId)
-                {
-                    Assert.Collection(tags,
-                        t1 =>
-                        {
-                            Assert.Equal("rpc.message.type", t1.Key);
-                            Assert.Equal("SENT", t1.Value);
-                        },
-                        t2 =>
-                        {
-                            Assert.Equal("rpc.message.id", t2.Key);
-                            Assert.Equal(messageId, t2.Value);
-                        });
-                }
+                _ = await client.StreamAsync("RenamedCounterChannel", 3).DefaultTimeout();
+
+                Assert.Equal(3, activities.Count);
+                AssertHubMethodActivity<StreamingHub>(activities[2], "RenamedCounterChannel", mockHttpRequestActivity);
 
                 client.Dispose();
 
                 await connectionHandlerTask;
             }
 
-            Assert.Equal(3, activities.Count);
-            AssertHubMethodActivity(activities[2], nameof(StreamingHub.OnDisconnectedAsync));
-
-            void AssertHubMethodActivity(Activity activity, string methodName)
-            {
-                Assert.Null(activity.Parent);
-                Assert.Equal($"{nameof(StreamingHub)}/{methodName}", activity.OperationName);
-                Assert.Collection(activity.Tags,
-                    one =>
-                    {
-                        Assert.Equal("rpc.method", one.Key);
-                        Assert.Equal(methodName, one.Value);
-                    },
-                    two =>
-                    {
-                        Assert.Equal("rpc.system", two.Key);
-                        Assert.Equal("signalr", two.Value);
-                    },
-                    three =>
-                    {
-                        Assert.Equal("rpc.service", three.Key);
-                        Assert.Equal(nameof(StreamingHub), three.Value);
-                    });
-                // Linked to original http request span
-                Assert.Equal(mockHttpRequestActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
-            }
+            Assert.Equal(4, activities.Count);
+            AssertHubMethodActivity<StreamingHub>(activities[3], nameof(StreamingHub.OnDisconnectedAsync), mockHttpRequestActivity);
         }
+    }
+
+    private static void AssertHubMethodActivity<THub>(Activity activity, string methodName, Activity httpActivity)
+    {
+        Assert.Null(activity.Parent);
+        Assert.True(activity.IsStopped);
+        Assert.Equal($"{typeof(THub).FullName}/{methodName}", activity.OperationName);
+        Assert.Collection(activity.Tags,
+            one =>
+            {
+                Assert.Equal("rpc.method", one.Key);
+                Assert.Equal(methodName, one.Value);
+            },
+            two =>
+            {
+                Assert.Equal("rpc.system", two.Key);
+                Assert.Equal("signalr", two.Value);
+            },
+            three =>
+            {
+                Assert.Equal("rpc.service", three.Key);
+                Assert.Equal(typeof(THub).FullName, three.Value);
+            });
+        // Linked to original http request span
+        Assert.Equal(httpActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
     }
 
 #pragma warning disable CA2252 // This API requires opting into preview features
