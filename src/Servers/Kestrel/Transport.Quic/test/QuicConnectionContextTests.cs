@@ -8,8 +8,8 @@ using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 
@@ -278,6 +278,41 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
         // Receive complete in client.
         readCount = await clientStream.ReadAsync(buffer).DefaultTimeout();
         Assert.Equal(0, readCount);
+    }
+
+    [Fact]
+    public void DoubleCatch()
+    {
+        try
+        {
+            Logger.LogInformation("Try");
+            throw new QuicException(QuicError.ConnectionAborted, applicationErrorCode: null, "Message");
+        }
+        catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
+        {
+            Logger.LogInformation("ConnectionAborted");
+            throw new Exception("Repro failed");
+        }
+        catch (QuicException)
+        {
+            try
+            {
+                Assert.Fail("How did we get here?");
+            }
+            finally // Required for repro
+            {
+                Assert.Fail("How did we get here?");
+            }
+        }
+        catch (Exception)
+        {
+            Logger.LogInformation("Exception");
+            Assert.Fail("Repro succeeded");
+        }
+        finally
+        {
+            Logger.LogInformation("Finally");
+        }
     }
 
     [ConditionalFact]
