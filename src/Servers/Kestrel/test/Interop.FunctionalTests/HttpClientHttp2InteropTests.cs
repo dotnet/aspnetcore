@@ -1381,7 +1381,18 @@ public class HttpClientHttp2InteropTests : LoggedTest
         var hostBuilder = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
-                ConfigureKestrel(webHostBuilder, scheme);
+                webHostBuilder.UseKestrel(options =>
+                {
+                    options.Limits.MaxResponseHeadersTotalSize = null;
+                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http2;
+                        if (scheme == "https")
+                        {
+                            listenOptions.UseHttps(TestResources.GetTestCertificate());
+                        }
+                    });
+                });
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(context =>
                 {

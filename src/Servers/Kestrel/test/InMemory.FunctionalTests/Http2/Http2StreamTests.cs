@@ -5554,4 +5554,193 @@ public class Http2StreamTests : Http2TestBase
         Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", _decodedHeaders[InternalHeaderNames.Status]);
     }
+
+    [Fact]
+    public async Task Headers_LargerMaxResponseHeadersTotalSize_AbortsConnection()
+    {
+        _serviceContext.ServerOptions.Limits.MaxResponseHeadersTotalSize = 1;
+        await InitializeConnectionAsync(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        // Just the StatusCode gets written before aborting in the continuation frame
+        var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+            withLength: 8,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 0);
+
+        VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+
+        _pair.Application.Output.Complete();
+        await _connectionTask;
+    }
+
+    [Fact]
+    public async Task HeadersContinuation_LargerMaxResponseHeadersTotalSize_AbortsConnection()
+    {
+        _serviceContext.ServerOptions.Limits.MaxResponseHeadersTotalSize = (int)Http2PeerSettings.DefaultMaxFrameSize * 2;
+        await InitializeConnectionAsync(async context =>
+        {
+            context.Response.Headers["My"] = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
+            context.Response.Headers["My2"] = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
+            await context.Response.WriteAsync("Hello World");
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        // Just the StatusCode gets written before aborting in the continuation frame
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+        var headersFrame2 = await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 16384,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+        var headersFrame3 = await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 7,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+
+        var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+            withLength: 8,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 0);
+
+        VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+
+        _pair.Application.Output.Complete();
+        await _connectionTask;
+    }
+
+    [Fact]
+    public async Task HeadersContinuation_BufferGrowsOverMaxResponseHeadersTotalSize_AbortsConnection()
+    {
+        _serviceContext.ServerOptions.Limits.MaxResponseHeadersTotalSize = (int)Http2PeerSettings.DefaultMaxFrameSize * 2;
+        await InitializeConnectionAsync(async context =>
+        {
+            context.Response.Headers["My"] = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize * 2);
+            await context.Response.WriteAsync("Hello World");
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        // Just the StatusCode gets written before aborting in the continuation frame
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+
+        var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+            withLength: 8,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 0);
+
+        VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+
+        _pair.Application.Output.Complete();
+        await _connectionTask;
+    }
+
+    [Fact]
+    public async Task TrailersWhenDone_LargerMaxResponseHeadersTotalSize_AbortsConnection()
+    {
+        _serviceContext.ServerOptions.Limits.MaxResponseHeadersTotalSize = 100;
+        await InitializeConnectionAsync(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("too_long", new string('a', 100));
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+          withLength: 32,
+          withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+          withStreamId: 1);
+
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        // Just the StatusCode gets written before aborting in the continuation frame
+        var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+            withLength: 8,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 0);
+
+        VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+
+        _pair.Application.Output.Complete();
+        await _connectionTask;
+    }
+
+    [Fact]
+    public async Task TrailersWhenMoreHeader_LargerMaxResponseHeadersTotalSize_AbortsConnection()
+    {
+        _serviceContext.ServerOptions.Limits.MaxResponseHeadersTotalSize = 100;
+        await InitializeConnectionAsync(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("My", new string('a', 100));
+            context.Response.AppendTrailer("My2", new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize));
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+            withLength: 8,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 0);
+
+        VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+
+        _pair.Application.Output.Complete();
+        await _connectionTask;
+    }
+
+    [Fact]
+    public async Task TrailersWhenBufferTooSmall_LargerMaxResponseHeadersTotalSize_AbortsConnection()
+    {
+        _serviceContext.ServerOptions.Limits.MaxResponseHeadersTotalSize = 100;
+        await InitializeConnectionAsync(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("My", new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize + 1));
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        var goAway = await ExpectAsync(Http2FrameType.GOAWAY,
+            withLength: 8,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 0);
+
+        VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
+
+        _pair.Application.Output.Complete();
+        await _connectionTask;
+    }
 }

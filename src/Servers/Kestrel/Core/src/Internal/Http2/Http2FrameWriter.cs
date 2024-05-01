@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
@@ -73,6 +74,8 @@ internal sealed class Http2FrameWriter
 
     private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
     private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
+    private readonly int? _maxResponseHeadersTotalSize;
+    private int _currentResponseHeadersTotalSize;
     private long _unflushedBytes;
 
     private bool _completed;
@@ -110,7 +113,7 @@ internal sealed class Http2FrameWriter
         _headerEncodingBuffer = new ArrayBufferWriter<byte>(_maxFrameSize);
 
         _scheduleInline = serviceContext.Scheduler == PipeScheduler.Inline;
-
+        _maxResponseHeadersTotalSize = _http2Connection.Limits.MaxResponseHeadersTotalSize;
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
 
         _maximumFlowControlQueueSize = AppContextMaximumFlowControlQueueSize is null
@@ -508,15 +511,21 @@ internal sealed class Http2FrameWriter
     {
         try
         {
+            // In the case of the headers, there is always a status header to be returned, so BeginEncodeHeaders will not return BufferTooSmall.
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             _headerEncodingBuffer.ResetWrittenCount();
             var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[0.._maxFrameSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
             var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
             Debug.Assert(done != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, beucase this always writes the status.");
+            if (_maxResponseHeadersTotalSize.HasValue && payloadLength > _maxResponseHeadersTotalSize.Value)
+            {
+                ThrowResponseHeadersLimitException();
+            }
+            _currentResponseHeadersTotalSize = payloadLength;
             if (done == HPackHeaderWriter.HeaderWriteResult.Done)
             {
-                // Fast path
+                // Fast path, only a single HEADER frame.
                 _outgoingFrame.PayloadLength = payloadLength;
                 _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
                 WriteHeaderUnsynchronized();
@@ -524,9 +533,10 @@ internal sealed class Http2FrameWriter
             }
             else
             {
-                // Slow path
+                // More headers sent in CONTINUATION frames.
                 _headerEncodingBuffer.Advance(payloadLength);
-                FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
+                SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
+                FinishWritingHeadersUnsynchronized(streamId);
             }
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
@@ -564,19 +574,46 @@ internal sealed class Http2FrameWriter
 
             try
             {
+                // In the case of the trailers, there is no status header to be written, so even the first call to BeginEncodeHeaders can return BufferTooSmall.
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
-                var done = HPackHeaderWriter.HeaderWriteResult.MoreHeaders;
-                int payloadLength;
+                var bufferSize = _headerEncodingBuffer.Capacity;
+                HPackHeaderWriter.HeaderWriteResult done;
                 do
                 {
                     _headersEnumerator.Initialize(headers);
                     _headerEncodingBuffer.ResetWrittenCount();
-                    var bufferSize = done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall ? _headerEncodingBuffer.Capacity * 2 : _headerEncodingBuffer.Capacity;
                     var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
-                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
+                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+                    if (done == HPackHeaderWriter.HeaderWriteResult.Done)
+                    {
+                        if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize + payloadLength > _maxResponseHeadersTotalSize.Value)
+                        {
+                            ThrowResponseHeadersLimitException();
+                        }
+                        _headerEncodingBuffer.Advance(payloadLength);
+                        SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
+                    }
+                    else if (done == HPackHeaderWriter.HeaderWriteResult.MoreHeaders)
+                    {
+                        // More headers sent in CONTINUATION frames.
+                        _currentResponseHeadersTotalSize += payloadLength;
+                        if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize > _maxResponseHeadersTotalSize.Value)
+                        {
+                            ThrowResponseHeadersLimitException();
+                        }
+                        _headerEncodingBuffer.Advance(payloadLength);
+                        SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
+                        FinishWritingHeadersUnsynchronized(streamId);
+                    }
+                    else
+                    {
+                        if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize + bufferSize > _maxResponseHeadersTotalSize.Value)
+                        {
+                            ThrowResponseHeadersLimitException();
+                        }
+                        bufferSize *= 2;
+                    }
                 } while (done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall);
-                _headerEncodingBuffer.Advance(payloadLength);
-                FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
             }
             // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
             // Since we allow custom header encoders we don't know what type of exceptions to expect.
@@ -618,18 +655,36 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    private void FinishWritingHeadersUnsynchronized(int streamId, int payloadLength, HPackHeaderWriter.HeaderWriteResult done)
+    private void FinishWritingHeadersUnsynchronized(int streamId)
     {
-        SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
-        while (done != HPackHeaderWriter.HeaderWriteResult.Done)
+        HPackHeaderWriter.HeaderWriteResult done;
+        var bufferSize = _headerEncodingBuffer.Capacity;
+        do
         {
             _headerEncodingBuffer.ResetWrittenCount();
-            var bufferSize = done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall ? _headerEncodingBuffer.Capacity * 2 : _headerEncodingBuffer.Capacity;
             var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize];
-            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
-            _headerEncodingBuffer.Advance(payloadLength);
-            SplitHeaderFramesToOutput(streamId, done, isFramePrepared: false);
-        }
+            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+
+            if (done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall)
+            {
+                if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize + bufferSize > _maxResponseHeadersTotalSize.Value)
+                {
+                    ThrowResponseHeadersLimitException();
+                }
+                bufferSize *= 2;
+            }
+            else
+            {
+                // In case of Done or MoreHeaders: write to output.
+                _currentResponseHeadersTotalSize += payloadLength;
+                if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize > _maxResponseHeadersTotalSize.Value)
+                {
+                    ThrowResponseHeadersLimitException();
+                }
+                _headerEncodingBuffer.Advance(payloadLength);
+                SplitHeaderFramesToOutput(streamId, done, isFramePrepared: false);
+            }
+        } while (done != HPackHeaderWriter.HeaderWriteResult.Done);
     }
 
     /*  Padding is not implemented
@@ -1060,4 +1115,6 @@ internal sealed class Http2FrameWriter
             _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
         }
     }
+
+    private void ThrowResponseHeadersLimitException() => throw new HPackEncodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxResponseHeadersTotalSize!));
 }
