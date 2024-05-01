@@ -73,6 +73,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.HttpsPolicy" />
     <TrimmableProject Include="Microsoft.AspNetCore.Localization.Routing" />
     <TrimmableProject Include="Microsoft.AspNetCore.Localization" />
+    <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
     <TrimmableProject Include="Microsoft.AspNetCore.OutputCaching" />
     <TrimmableProject Include="Microsoft.AspNetCore.RateLimiting" />
     <TrimmableProject Include="Microsoft.AspNetCore.RequestDecompression" />
