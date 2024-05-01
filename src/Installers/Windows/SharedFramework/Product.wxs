@@ -60,7 +60,7 @@
             <ComponentRef Id="C_ProductVersion_NonNative" />
             <ComponentRef Id="C_ProductInstallDir_NonNative" />
             <?endif?>
-            <ComponentRef ID="C_ProductCentralVersion" />
+            <ComponentRef Id="C_ProductCentralVersion" />
         </ComponentGroup>
 
         <DirectoryRef Id="SharedFolder">
