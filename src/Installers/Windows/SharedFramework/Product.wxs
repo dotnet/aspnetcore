@@ -73,6 +73,12 @@
 
             <?define ProductVersionKey=SOFTWARE\Microsoft\ASP.NET Core\Shared Framework\v$(var.MajorVersion).$(var.MinorVersion)\$(var.PackageVersion)?>
 
+            <?ifdef ProductVersionCentralKey?>
+            <?undef ProductVersionCentralKey?>
+            <?endif?>
+
+            <?define ProductVersionCentralKey=SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\$(var.Platform)\sharedfx?>
+
             <Component Id="C_ProductVersion">
                 <?if $(var.Platform)=x64 ?>
                 <!-- Only install when actually on native architecture -->
@@ -109,6 +115,12 @@
                 </RegistryKey>
             </Component>
             <?endif?>
+
+            <Component Id="C_ProductCentralVersion">
+                <RegistryKey Key="$(var.ProductVersionCentralKey)" Root="HKLM">
+                    <RegistryValue Name="Version" Type="string" Value="$(var.Version)" />
+                </RegistryKey>
+            </Component>
         </DirectoryRef>
     </Fragment>
 </Wix>
