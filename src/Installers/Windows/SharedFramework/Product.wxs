@@ -119,7 +119,7 @@
 
             <Component Id="C_ProductCentralVersion" Win64="no">
                 <RegistryKey Key="$(var.ProductVersionCentralKey)" Root="HKLM">
-                    <RegistryValue Action="write" Name="$(var.Version)" Type="integer" Value="1" KeyPath="yes"/>
+                    <RegistryValue Action="write" Name="$(var.PackageVersion)" Type="integer" Value="1" KeyPath="yes"/>
                 </RegistryKey>
             </Component>
         </DirectoryRef>
