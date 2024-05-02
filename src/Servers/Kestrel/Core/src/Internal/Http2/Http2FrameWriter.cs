@@ -74,8 +74,8 @@ internal sealed class Http2FrameWriter
 
     private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
     private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
-    private readonly int? _maxResponseHeadersTotalSize;
-    private int _currentResponseHeadersTotalSize;
+    private readonly long? _maxResponseHeadersTotalSize;
+    private long _currentResponseHeadersTotalSize;
     private long _unflushedBytes;
 
     private bool _completed;
