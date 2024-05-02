@@ -164,45 +164,45 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task NegotiationSendsCorrectAcceptHeader()
+    public async Task NegotiateAsyncAppendsCorrectAcceptHeader()
     {
-        try
+        var handlerMock = new Mock<HttpMessageHandler>();
+        ITransport transport = null;
+        ITransportFactory transportFactory = null;
+
+        transportFactory = new TestTransportFactory(transport);
+
+        var response = new HttpResponseMessage
         {
-            var mockHandler = new Mock<HttpMessageHandler>();
-            var httpClient = new HttpClient(mockHandler.Object);
-            var options = new HttpConnectionOptions
-            {
-                Url = new Uri("http://fakeuri.org/"),
-                Transports = HttpTransportType.WebSockets,
-                SkipNegotiation = false
-            };
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent("{\"connectionId\":\"12345\",\"availableTransports\":[]}")
+        };
 
-            var loggerFactory = NullLoggerFactory.Instance;
-            var mockTransportFactory = new Mock<ITransportFactory>();
-            var mockTransport = new Mock<ITransport>();
-            mockTransportFactory.Setup(x => x.CreateTransport(It.IsAny<HttpTransportType>(), It.IsAny<bool>()))
-                                .Returns(mockTransport.Object);
-
-            var connection = new HttpConnection(options, loggerFactory, mockTransportFactory.Object, httpClient);
-
-            mockHandler.Protected().Setup<Task<HttpResponseMessage>>(
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .Callback<HttpRequestMessage, CancellationToken>((request, token) =>
             {
-                Assert.Contains(new MediaTypeWithQualityHeaderValue("*/*"), request.Headers.Accept);
+                Assert.Equal("application/json", request.Headers.Accept.ToString());
             })
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{\"connectionId\":\"12345\",\"availableTransports\":[]}", Encoding.UTF8, "application/json")
-            });
+            .ReturnsAsync(response)
+            .Verifiable();
 
-            await connection.StartAsync();
-        }
-        catch (Exception ex)
-        {
-            Assert.False(true, $"Unexpected exception: {ex.Message}");
-        }
+        var url = new Uri("http://fakeurl/");
+        var options = new HttpConnectionOptions { Url = url, Transports = HttpTransportType.WebSockets };
+        var connection = new HttpConnection(options, NullLoggerFactory.Instance, transportFactory, handlerMock.Object);
+
+        await connection.StartAsync().DefaultTimeout();
+
+        handlerMock.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.IsAny<HttpRequestMessage>(),
+            ItExpr.IsAny<CancellationToken>()
+        );
     }
 }
