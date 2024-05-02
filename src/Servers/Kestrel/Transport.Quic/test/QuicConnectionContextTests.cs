@@ -304,11 +304,13 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
                 Assert.Fail("How did we get here?");
             }
         }
+#if DEBUG
         catch (Exception)
         {
             Logger.LogInformation("Exception");
             Assert.Fail("Repro succeeded");
         }
+#endif
         finally
         {
             Logger.LogInformation("Finally");
