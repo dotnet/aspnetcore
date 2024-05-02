@@ -40,12 +40,14 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             return;
         }
 
+        var validateIssuer = StringHelpers.ParseValueOrDefault(configSection[nameof(TokenValidationParameters.ValidateIssuer)], bool.Parse, options.TokenValidationParameters.ValidateIssuer);
         var issuer = configSection[nameof(TokenValidationParameters.ValidIssuer)];
         var issuers = configSection.GetSection(nameof(TokenValidationParameters.ValidIssuers)).GetChildren().Select(iss => iss.Value).ToList();
         if (issuer is not null)
         {
             issuers.Add(issuer);
         }
+        var validateAudience = StringHelpers.ParseValueOrDefault(configSection[nameof(TokenValidationParameters.ValidateAudience)], bool.Parse, options.TokenValidationParameters.ValidateAudience);
         var audience = configSection[nameof(TokenValidationParameters.ValidAudience)];
         var audiences = configSection.GetSection(nameof(TokenValidationParameters.ValidAudiences)).GetChildren().Select(aud => aud.Value).ToList();
         if (audience is not null)
@@ -71,9 +73,9 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         options.SaveToken = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SaveToken)], bool.Parse, options.SaveToken);
         options.TokenValidationParameters = new()
         {
-            ValidateIssuer = issuers.Count > 0,
+            ValidateIssuer = validateIssuer,
             ValidIssuers = issuers,
-            ValidateAudience = audiences.Count > 0,
+            ValidateAudience = validateAudience,
             ValidAudiences = audiences,
             ValidateIssuerSigningKey = true,
             IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers),
