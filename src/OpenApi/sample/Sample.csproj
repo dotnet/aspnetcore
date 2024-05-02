@@ -6,9 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTrimmable>true</IsTrimmable>
     <!-- Required to generated trimmable Map-invocations. -->
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
-    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

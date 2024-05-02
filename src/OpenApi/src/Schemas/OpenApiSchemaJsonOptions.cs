@@ -10,7 +10,7 @@ internal sealed class OpenApiSchemaJsonOptions : IConfigureOptions<JsonOptions>
 {
     public void Configure(JsonOptions options)
     {
-        // Put our resolver in front of the reflection-based one.
+        // Put our resolver in front of the reflection-based one. See ProblemDetailsJsonOptionsSetup for more info.
         options.SerializerOptions.TypeInfoResolverChain.Insert(0, OpenApiJsonSchemaContext.Default);
     }
 }

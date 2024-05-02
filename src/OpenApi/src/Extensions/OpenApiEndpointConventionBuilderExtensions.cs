@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class OpenApiEndpointConventionBuilderExtensions
 {
-    private const string TrimWarningMessage = "Calls Microsoft.AspNetCore.OpenApi.OpenApiGenerator.GetOpenApiOperation(MethodInfo, EndpointMetadataCollection, RoutePattern) which uses dynamic analysis.";
+    private const string TrimWarningMessage = "Calls Microsoft.AspNetCore.OpenApi.OpenApiGenerator.GetOpenApiOperation(MethodInfo, EndpointMetadataCollection, RoutePattern) which uses dynamic analysis. Use IServiceCollection.AddOpenApi() to generate OpenAPI metadata at startup for all endpoints,";
 
     /// <summary>
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
