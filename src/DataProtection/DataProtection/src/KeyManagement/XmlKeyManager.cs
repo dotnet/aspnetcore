@@ -137,12 +137,16 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
     internal IXmlRepository KeyRepository { get; }
 
+    // Internal for testing
+    // Can't use TimeProvider since it's not available in framework
+    internal Func<DateTimeOffset> GetUtcNow { get; set; } = () => DateTimeOffset.UtcNow;
+
     /// <inheritdoc />
     public IKey CreateNewKey(DateTimeOffset activationDate, DateTimeOffset expirationDate)
     {
         // For an immediately-activated key, the caller's Now may be slightly before ours,
         // so we'll compensate to ensure that activation is never before creation.
-        var now = DateTimeOffset.UtcNow;
+        var now = GetUtcNow();
         return _internalKeyManager.CreateNewKey(
             keyId: Guid.NewGuid(),
             creationDate: activationDate < now ? activationDate : now,
@@ -377,7 +381,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     {
         _internalKeyManager.RevokeSingleKey(
             keyId: keyId,
-            revocationDate: DateTimeOffset.UtcNow,
+            revocationDate: GetUtcNow(),
             reason: reason);
     }
 
