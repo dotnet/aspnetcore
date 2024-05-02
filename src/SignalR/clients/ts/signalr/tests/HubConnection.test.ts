@@ -818,6 +818,38 @@ describe("HubConnection", () => {
             });
         });
 
+        it("callback invoked when server invokes a method on the client and then handles rejected promise on send", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                let promiseRejected = false;
+                try {
+                    await hubConnection.start();
+                    const p = new PromiseSource<void>();
+                    hubConnection.on("message", async () => {
+                        // Force sending of response to error
+                        connection.send = () => {
+                            promiseRejected = true;
+                            return Promise.reject(new Error("Send error"));
+                        }
+                        p.resolve();
+                    });
+                    connection.receive({
+                        arguments: ["test"],
+                        nonblocking: true,
+                        target: "message",
+                        invocationId: "0",
+                        type: MessageType.Invocation,
+                    });
+
+                    await p;
+                    expect(promiseRejected).toBe(true);
+                } finally {
+                    await hubConnection.stop();
+                }
+            }, new RegExp("Invoke client method threw error: Error: Send error"));
+        });
+
         it("stop on handshake error", async () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection(false);
