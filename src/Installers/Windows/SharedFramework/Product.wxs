@@ -78,7 +78,7 @@
             <?undef ProductVersionCentralKey?>
             <?endif?>
 
-            <?define ProductVersionCentralKey=SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\$(var.Platform)\sharedfx?>
+            <?define ProductVersionCentralKey=SOFTWARE\dotnet\Setup\InstalledVersions\$(var.Platform)\sharedfx\Microsoft.AspNetCore.App?>
 
             <Component Id="C_ProductVersion">
                 <?if $(var.Platform)=x64 ?>
@@ -117,9 +117,9 @@
             </Component>
             <?endif?>
 
-            <Component Id="C_ProductCentralVersion">
+            <Component Id="C_ProductCentralVersion" Win64="no">
                 <RegistryKey Key="$(var.ProductVersionCentralKey)" Root="HKLM">
-                    <RegistryValue Name="Version" Type="string" Value="$(var.Version)" />
+                    <RegistryValue Action="write" Name="$(var.Version)" Type="integer" Value="1" KeyPath="yes"/>
                 </RegistryKey>
             </Component>
         </DirectoryRef>
