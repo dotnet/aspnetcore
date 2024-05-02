@@ -366,7 +366,7 @@ sealed class AppInstance
 
     /// <summary>
     /// The problem-time-score for this instance.
-    /// 
+    ///
     /// This score is a little hard to explain.  Suppose there were two instances, A and B.
     /// If for a period of length T, B had a default key that was unknown to A, then T would
     /// be added to A's score.  So, if A didn't know about B's default key for 5 minutes at
@@ -389,7 +389,6 @@ sealed class AppInstance
         // Update this before calling GetCacheableKeyRing so that it's available to XmlKeyManager
         _now = now;
 
-        //Console.WriteLine($"[{_instanceNumber}] RefreshKeyRingAndGetDescriptor({now})");
         var keyRing = _cacheableKeyRingProvider.GetCacheableKeyRing(now);
 
         _knownKeyIds = new(((KeyRing)keyRing.KeyRing).GetAllKeyIds());
@@ -400,8 +399,6 @@ sealed class AppInstance
     /// <param name="defaultKeyIds">The default keys of all key rings, including this one.</param>
     public void UpdateMetrics(DateTimeOffset now, IReadOnlyCollection<Guid> defaultKeyIds)
     {
-        //Console.WriteLine($"[{_instanceNumber}] UpdateMetrics({now}, {new HashSet<Guid>(defaultKeyIds).Count} distinct keys)");
-        //Console.WriteLine($"[{_instanceNumber}] UpdateMetrics({now}, [{string.Join(", ", defaultKeyIds)}])");
         Debug.Assert(now >= _now);
         var knownKeyIds = _knownKeyIds;
 
@@ -431,8 +428,6 @@ sealed class AppInstance
     /// <returns>True if the key needed to be marked as missing (i.e. it is and was not already known to be).</returns>
     public bool UpdateSingleKeyMetric(DateTimeOffset now, Guid defaultKeyId)
     {
-        //Console.WriteLine($"[{_instanceNumber}] UpdateSingleKeyMetric({now}, keyId)");
-        //Console.WriteLine($"[{_instanceNumber}] UpdateSingleKeyMetric({now}, {defaultKeyId})");
         if (!_knownKeyIds.Contains(defaultKeyId) && !_missingSinceMap.ContainsKey(defaultKeyId))
         {
             _missingSinceMap[defaultKeyId] = now;
@@ -449,7 +444,6 @@ sealed class AppInstance
     /// </summary>
     public void FinalizeMetrics(DateTimeOffset now)
     {
-        //Console.WriteLine($"[{_instanceNumber}] FinalizeMetrics({now})");
         foreach (var missingSince in _missingSinceMap.Values)
         {
             _cumulativeProblemTime += now - missingSince;
@@ -536,7 +530,6 @@ sealed class FlakyXmlRepository(Random random, double pFail) : FlakyObject(rando
     IReadOnlyCollection<XElement> IXmlRepository.GetAllElements()
     {
         _getAllElementsCallCount++;
-        //Console.WriteLine($"GetAllElements => {_elements.Count} ({_elements.Select(e => e.FirstAttribute.Value).Distinct().Count()} distinct)");
         // Simulate blob storage issues
         MaybeFail();
         return _elements.AsReadOnly();
@@ -545,7 +538,6 @@ sealed class FlakyXmlRepository(Random random, double pFail) : FlakyObject(rando
     void IXmlRepository.StoreElement(XElement element, string _friendlyName)
     {
         _storeElementCallCount++;
-        //Console.WriteLine($"StoreElement({element.FirstAttribute.Value})");
         // Simulate blob storage issues
         MaybeFail();
         _elements.Add(element);
