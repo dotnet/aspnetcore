@@ -2030,7 +2030,8 @@ public class Http3RequestTests : LoggedTest
         }
     }
 
-    [Fact]
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task ServerReset_InvalidErrorCode()
     {
         var ranHandler = false;
