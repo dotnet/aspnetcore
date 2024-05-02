@@ -275,7 +275,7 @@ sealed class MockActivator(IXmlDecryptor decryptor, IAuthenticatedEncryptorDescr
 }
 
 /// <summary>
-/// A mock authenticated encryptor that doesn't only applies the identity function (i.e. does nothing).
+/// A mock authenticated encryptor that only applies the identity function (i.e. does nothing).
 /// </summary>
 sealed class MockAuthenticatedEncryptor : IAuthenticatedEncryptor
 {
