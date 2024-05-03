@@ -61,6 +61,12 @@
     </Otherwise>
   </Choose>
 
+  <ItemGroup Condition="'$(_UseHelixOpenQueues)' != 'true'">
+    <_TempQueues Include="@(HelixAvailableTargetQueue)" />
+    <HelixAvailableTargetQueue Remove="@(HelixAvailableTargetQueue)" />
+    <HelixAvailableTargetQueue Include="@(_TempQueues->'%(Identity)'->Replace('.Open',''))" />
+  </ItemGroup>
+
   <Choose>
     <When Condition=" '$(HelixTargetQueue)' == '' ">
       <PropertyGroup>
