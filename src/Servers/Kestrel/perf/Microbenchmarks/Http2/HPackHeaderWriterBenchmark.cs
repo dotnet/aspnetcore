@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using System.Net.Http.HPack;
 using System.Text;
-using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -21,6 +17,7 @@ public class HPackHeaderWriterBenchmark
     private HttpResponseHeaders _knownResponseHeaders;
     private HttpResponseHeaders _unknownResponseHeaders;
     private byte[] _buffer;
+    private long _accumulatedHeaderLength;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -56,7 +53,7 @@ public class HPackHeaderWriterBenchmark
     public void BeginEncodeHeaders_KnownHeaders()
     {
         _http2HeadersEnumerator.Initialize(_knownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
     }
 
     [Benchmark]
@@ -64,14 +61,14 @@ public class HPackHeaderWriterBenchmark
     {
         _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
         _http2HeadersEnumerator.Initialize(_knownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
     }
 
     [Benchmark]
     public void BeginEncodeHeaders_UnknownHeaders()
     {
         _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
     }
 
     [Benchmark]
@@ -79,6 +76,6 @@ public class HPackHeaderWriterBenchmark
     {
         _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
         _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
     }
 }

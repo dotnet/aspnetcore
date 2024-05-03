@@ -5,7 +5,6 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Net.Http;
 using System.Net.Http.HPack;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
@@ -515,14 +514,10 @@ internal sealed class Http2FrameWriter
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             _headerEncodingBuffer.ResetWrittenCount();
+            _currentResponseHeadersTotalSize = 0;
             var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[0.._maxFrameSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
-            var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+            var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, ref _currentResponseHeadersTotalSize, _maxResponseHeadersTotalSize, out var payloadLength);
             Debug.Assert(done != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, beucase this always writes the status.");
-            if (_maxResponseHeadersTotalSize.HasValue && payloadLength > _maxResponseHeadersTotalSize.Value)
-            {
-                ThrowResponseHeadersLimitException();
-            }
-            _currentResponseHeadersTotalSize = payloadLength;
             if (done == HPackHeaderWriter.HeaderWriteResult.Done)
             {
                 // Fast path, only a single HEADER frame.
@@ -583,34 +578,21 @@ internal sealed class Http2FrameWriter
                     _headersEnumerator.Initialize(headers);
                     _headerEncodingBuffer.ResetWrittenCount();
                     var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
-                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
+                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, ref _currentResponseHeadersTotalSize, _maxResponseHeadersTotalSize, out var payloadLength);
                     if (done == HPackHeaderWriter.HeaderWriteResult.Done)
                     {
-                        if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize + payloadLength > _maxResponseHeadersTotalSize.Value)
-                        {
-                            ThrowResponseHeadersLimitException();
-                        }
                         _headerEncodingBuffer.Advance(payloadLength);
                         SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
                     }
                     else if (done == HPackHeaderWriter.HeaderWriteResult.MoreHeaders)
                     {
                         // More headers sent in CONTINUATION frames.
-                        _currentResponseHeadersTotalSize += payloadLength;
-                        if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize > _maxResponseHeadersTotalSize.Value)
-                        {
-                            ThrowResponseHeadersLimitException();
-                        }
                         _headerEncodingBuffer.Advance(payloadLength);
                         SplitHeaderFramesToOutput(streamId, done, isFramePrepared: true);
                         FinishWritingHeadersUnsynchronized(streamId);
                     }
                     else
                     {
-                        if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize + bufferSize > _maxResponseHeadersTotalSize.Value)
-                        {
-                            ThrowResponseHeadersLimitException();
-                        }
                         bufferSize *= 2;
                     }
                 } while (done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall);
@@ -663,24 +645,14 @@ internal sealed class Http2FrameWriter
         {
             _headerEncodingBuffer.ResetWrittenCount();
             var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize];
-            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-
+            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, ref _currentResponseHeadersTotalSize, _maxResponseHeadersTotalSize, out var payloadLength);
             if (done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall)
             {
-                if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize + bufferSize > _maxResponseHeadersTotalSize.Value)
-                {
-                    ThrowResponseHeadersLimitException();
-                }
                 bufferSize *= 2;
             }
             else
             {
                 // In case of Done or MoreHeaders: write to output.
-                _currentResponseHeadersTotalSize += payloadLength;
-                if (_maxResponseHeadersTotalSize.HasValue && _currentResponseHeadersTotalSize > _maxResponseHeadersTotalSize.Value)
-                {
-                    ThrowResponseHeadersLimitException();
-                }
                 _headerEncodingBuffer.Advance(payloadLength);
                 SplitHeaderFramesToOutput(streamId, done, isFramePrepared: false);
             }
@@ -1115,6 +1087,4 @@ internal sealed class Http2FrameWriter
             _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
         }
     }
-
-    private void ThrowResponseHeadersLimitException() => throw new HPackEncodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxResponseHeadersTotalSize!));
 }

@@ -1381,18 +1381,7 @@ public class HttpClientHttp2InteropTests : LoggedTest
         var hostBuilder = new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
-                webHostBuilder.UseKestrel(options =>
-                {
-                    options.Limits.MaxResponseHeadersTotalSize = null;
-                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http2;
-                        if (scheme == "https")
-                        {
-                            listenOptions.UseHttps(TestResources.GetTestCertificate());
-                        }
-                    });
-                });
+                ConfigureKestrel(webHostBuilder, scheme, headerLimit: null);
                 webHostBuilder.ConfigureServices(AddTestLogging)
                 .Configure(app => app.Run(context =>
                 {
@@ -1718,14 +1707,28 @@ public class HttpClientHttp2InteropTests : LoggedTest
     {
         webHostBuilder.UseKestrel(options =>
         {
-            options.Listen(IPAddress.Loopback, 0, listenOptions =>
+            ConfigureListeneOptions(scheme, options);
+        });
+    }
+
+    private static void ConfigureKestrel(IWebHostBuilder webHostBuilder, string scheme, int? headerLimit)
+    {
+        webHostBuilder.UseKestrel(options =>
+        {
+            options.Limits.MaxResponseHeadersTotalSize = headerLimit;
+            ConfigureListeneOptions(scheme, options);
+        });
+    }
+
+    private static void ConfigureListeneOptions(string scheme, KestrelServerOptions options)
+    {
+        options.Listen(IPAddress.Loopback, 0, listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+            if (scheme == "https")
             {
-                listenOptions.Protocols = HttpProtocols.Http2;
-                if (scheme == "https")
-                {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate());
-                }
-            });
+                listenOptions.UseHttps(TestResources.GetTestCertificate());
+            }
         });
     }
 

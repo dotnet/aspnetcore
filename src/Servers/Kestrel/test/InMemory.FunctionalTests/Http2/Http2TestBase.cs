@@ -633,8 +633,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         var extendedHeader = buffer.Slice(0, extendedHeaderLength);
         extendedHeader[0] = padLength;
         var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
+        long accumulatedHeaderLength = 0;
 
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, ref accumulatedHeaderLength, null, out var length);
         var padding = buffer.Slice(extendedHeaderLength + length, padLength);
         padding.Clear();
 
@@ -676,8 +677,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Bitshifter.WriteUInt31BigEndian(extendedHeader, (uint)streamDependency);
         extendedHeader[4] = priority;
         var payload = buffer.Slice(extendedHeaderLength);
+        long accumulatedHeaderLength = 0;
 
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, ref accumulatedHeaderLength, null, out var length);
 
         frame.PayloadLength = extendedHeaderLength + length;
 
@@ -723,8 +725,9 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Bitshifter.WriteUInt31BigEndian(extendedHeader.Slice(1), (uint)streamDependency);
         extendedHeader[5] = priority;
         var payload = buffer.Slice(extendedHeaderLength, buffer.Length - padLength - extendedHeaderLength);
+        long accumulatedHeaderLength = 0;
 
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, out var length);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), payload, ref accumulatedHeaderLength, null, out var length);
         var padding = buffer.Slice(extendedHeaderLength + length, padLength);
         padding.Clear();
 
@@ -840,10 +843,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         var outputWriter = _pair.Application.Output;
         var frame = new Http2Frame();
+        long accumulatedHeaderLength = 0;
 
         frame.PrepareHeaders(flags, streamId);
         var buffer = _headerEncodingBuffer.AsMemory();
-        var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, headersEnumerator, buffer.Span, out var length);
+        var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, headersEnumerator, buffer.Span, ref accumulatedHeaderLength, null, out var length);
         frame.PayloadLength = length;
 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
@@ -910,10 +914,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         var outputWriter = _pair.Application.Output;
         var frame = new Http2Frame();
+        long accumulatedHeaderLength = 0;
 
         frame.PrepareContinuation(flags, streamId);
         var buffer = _headerEncodingBuffer.AsMemory();
-        var done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, headersEnumerator, buffer.Span, out var length);
+        var done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, headersEnumerator, buffer.Span, ref accumulatedHeaderLength, null, out var length);
         frame.PayloadLength = length;
 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
@@ -938,10 +943,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     {
         var outputWriter = _pair.Application.Output;
         var frame = new Http2Frame();
+        long accumulatedHeaderLength = 0;
 
         frame.PrepareContinuation(flags, streamId);
         var buffer = _headerEncodingBuffer.AsMemory();
-        var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), buffer.Span, out var length);
+        var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, GetHeadersEnumerator(headers), buffer.Span, ref accumulatedHeaderLength, null, out var length);
         frame.PayloadLength = length;
 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
