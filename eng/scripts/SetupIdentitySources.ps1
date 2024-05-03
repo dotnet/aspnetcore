@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true)][string]$ConfigFile
+    [Parameter(Mandatory = $true)][string]$ConfigFile,
+    [Parameter(Mandatory = $true)][string]$IdentityModelPackageSource
 )
 
 $ErrorActionPreference = "Stop"
@@ -40,6 +41,6 @@ if ($sources -eq $null) {
     $doc.DocumentElement.AppendChild($sources) | Out-Null
 }
 
-AddPackageSource -Sources $sources -SourceName "identitymodel-nightlies" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/identitymodel-nightlies/nuget/v3/index.json"
+AddPackageSource -Sources $sources -SourceName "identitymodel-nightlies" -SourceEndPoint $IdentityModelPackageSource
 
 $doc.Save($filename)
