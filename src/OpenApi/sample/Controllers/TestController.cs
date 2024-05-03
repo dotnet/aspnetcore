@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -26,6 +27,7 @@ public class TestController : ControllerBase
 
         [FromRoute]
         [MinLength(5)]
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "MinLengthAttribute works without reflection on string properties.")]
         public string? Name { get; set; }
     }
 
