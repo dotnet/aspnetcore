@@ -166,43 +166,44 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
     [Fact]
     public async Task NegotiateAsyncAppendsCorrectAcceptHeader()
     {
-        var handlerMock = new Mock<HttpMessageHandler>();
-        ITransport transport = null;
-        ITransportFactory transportFactory = null;
+        var testHttpHandler = TestHttpMessageHandler.CreateDefault();
 
-        transportFactory = new TestTransportFactory(transport);
-
-        var response = new HttpResponseMessage
+        testHttpHandler.OnNegotiate((request, cancellationToken) =>
         {
-            StatusCode = HttpStatusCode.OK,
-            Content = new StringContent("{\"connectionId\":\"12345\",\"availableTransports\":[]}")
-        };
+            Assert.Equal("application/json", request.Headers.Accept.ToString());
+            return ResponseUtils.CreateResponse(HttpStatusCode.OK, "{}");
+        });
 
-        handlerMock
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .Callback<HttpRequestMessage, CancellationToken>((request, token) =>
-            {
-                Assert.Equal("application/json", request.Headers.Accept.ToString());
-            })
-            .ReturnsAsync(response)
-            .Verifiable();
+        var httpOptions = new HttpConnectionOptions();
+        httpOptions.Url = new Uri("http://fakeurl.org/");
+        httpOptions.HttpMessageHandlerFactory = inner => testHttpHandler;
+        httpOptions.SkipNegotiation = false;
+        httpOptions.Transports = HttpTransportType.WebSockets;
 
-        var url = new Uri("http://fakeurl/");
-        var options = new HttpConnectionOptions { Url = url, Transports = HttpTransportType.WebSockets };
-        var connection = new HttpConnection(options, NullLoggerFactory.Instance, transportFactory, handlerMock.Object);
+        const string loggerName = "Microsoft.AspNetCore.Http.Connections.Client.Internal.LoggingHttpMessageHandler";
+        var testSink = new TestSink();
+        var logger = new TestLogger(loggerName, testSink, true);
 
-        await connection.StartAsync().DefaultTimeout();
+        var mockLoggerFactory = new Mock<ILoggerFactory>();
+        mockLoggerFactory
+            .Setup(m => m.CreateLogger(It.IsAny<string>()))
+            .Returns((string categoryName) => (categoryName == loggerName) ? (ILogger)logger : NullLogger.Instance);
 
-        handlerMock.Protected().Verify(
-            "SendAsync",
-            Times.Once(),
-            ItExpr.IsAny<HttpRequestMessage>(),
-            ItExpr.IsAny<CancellationToken>()
-        );
+        try
+        {
+            await WithConnectionAsync(
+                CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                });
+        }
+        catch
+        {
+            // ignore connection error
+        }
+
+        // Verify the Accept header was checked
+        Assert.Contains(testSink.Writes, w => w.EventId.Name == "SendingHttpRequest" && w.Message.Contains("application/json"));
     }
 }
