@@ -12,7 +12,8 @@
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
     <ValidateBaseline>false</ValidateBaseline>
-    <IdentityModelVersion>7.1.2</IdentityModelVersion>
+    <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">7.1.2</IdentityModelVersion>
+    <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
     <!--
         When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
     -->
