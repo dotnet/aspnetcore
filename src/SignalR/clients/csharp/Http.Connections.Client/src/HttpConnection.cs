@@ -165,11 +165,10 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     }
 
     // Used by unit tests
-    internal HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, ITransportFactory transportFactory, HttpMessageHandler? messageHandler = null)
+    internal HttpConnection(HttpConnectionOptions httpConnectionOptions, ILoggerFactory loggerFactory, ITransportFactory transportFactory)
         : this(httpConnectionOptions, loggerFactory)
     {
         _transportFactory = transportFactory;
-        _httpClient = CreateHttpClient(messageHandler);
     }
 
     /// <summary>
@@ -544,9 +543,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         Log.TransportStarted(_logger, transportType);
     }
 
-    private HttpClient CreateHttpClient(HttpMessageHandler? messageHandler = null)
+    private HttpClient CreateHttpClient()
     {
-        var httpClientHandler = messageHandler as HttpClientHandler ?? new HttpClientHandler();
+        var httpClientHandler = new HttpClientHandler();
         HttpMessageHandler httpMessageHandler = httpClientHandler;
 
         var isBrowser = OperatingSystem.IsBrowser();
