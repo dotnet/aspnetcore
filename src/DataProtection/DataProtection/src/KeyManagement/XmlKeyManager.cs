@@ -412,7 +412,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     public bool CanDeleteKeys => KeyRepository.CanRemoveElements;
 
     /// <inheritdoc/>
-    public bool DeleteKeys(Func<IKey, bool> shouldDelete, bool unsafeIncludeUnexpired = false)
+    public bool DeleteKeys(Func<IKey, bool> shouldDelete)
     {
         if (!CanDeleteKeys)
         {
@@ -439,7 +439,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                     var keyId = key.KeyId;
                     allKeyIds.Add(keyId);
 
-                    if ((unsafeIncludeUnexpired || key.ExpirationDate < now) && shouldDelete(key))
+                    if (shouldDelete(key))
                     {
                         _logger.DeletingKey(keyId);
                         deletedKeyIds.Add(keyId);
