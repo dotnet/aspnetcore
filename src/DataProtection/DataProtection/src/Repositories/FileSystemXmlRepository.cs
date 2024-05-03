@@ -197,22 +197,23 @@ public class FileSystemXmlRepository : IXmlRepository
 
         var allSucceeded = true;
 
-        foreach (var deletableElement in deletableElements)
+        var elementsToDelete = deletableElements
+            .Where(e => e.DeletionOrder.HasValue)
+            .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+        foreach (var deletableElement in elementsToDelete)
         {
-            if (deletableElement.ShouldDelete)
+            var fileSystemInfo = deletableElement.FileSystemInfo;
+            _logger.DeletingFile(fileSystemInfo.FullName);
+            try
             {
-                var fileSystemInfo = deletableElement.FileSystemInfo;
-                _logger.DeletingFile(fileSystemInfo.FullName);
-                try
-                {
-                    fileSystemInfo.Delete();
-                }
-                catch (Exception ex)
-                {
-                    Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
-                    _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
-                    allSucceeded = false;
-                }
+                fileSystemInfo.Delete();
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
+                _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
+                allSucceeded = false;
             }
         }
 
@@ -227,10 +228,13 @@ public class FileSystemXmlRepository : IXmlRepository
             Element = element;
         }
 
+        /// <inheritdoc/>
         public XElement Element { get; }
 
+        /// <summary>The FileSystemInfo from which <see cref="Element"/> was read.</summary>
         public FileSystemInfo FileSystemInfo { get; }
 
-        public bool ShouldDelete { get; set; }
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
     }
 }

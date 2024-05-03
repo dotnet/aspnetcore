@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Principal;
@@ -179,21 +180,22 @@ public class RegistryXmlRepository : IXmlRepository
 
         var allSucceeded = true;
 
-        foreach (var deletableElement in deletableElements)
+        var elementsToDelete = deletableElements
+            .Where(e => e.DeletionOrder.HasValue)
+            .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+        foreach (var deletableElement in elementsToDelete)
         {
-            if (deletableElement.ShouldDelete)
+            var valueName = deletableElement.ValueName;
+            _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
+            try
             {
-                var valueName = deletableElement.ValueName;
-                _logger.RemovingDataFromRegistryKeyValue(RegistryKey, valueName);
-                try
-                {
-                    RegistryKey.DeleteValue(valueName);
-                }
-                catch (Exception ex)
-                {
-                    _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
-                    allSucceeded = false;
-                }
+                RegistryKey.DeleteValue(valueName);
+            }
+            catch (Exception ex)
+            {
+                _logger.FailedToRemoveDataFromRegistryKeyValue(RegistryKey, valueName, ex);
+                allSucceeded = false;
             }
         }
 
@@ -208,10 +210,13 @@ public class RegistryXmlRepository : IXmlRepository
             Element = element;
         }
 
+        /// <inheritdoc/>
         public XElement Element { get; }
 
+        /// <summary>The name of the registry value from which <see cref="Element"/> was read.</summary>
         public string ValueName { get; }
 
-        public bool ShouldDelete { get; set; }
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
     }
 }

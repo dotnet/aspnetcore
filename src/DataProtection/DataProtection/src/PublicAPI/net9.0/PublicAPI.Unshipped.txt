@@ -4,9 +4,9 @@ Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.DeleteKeys(System.
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CanDeleteKeys.get -> bool
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete) -> bool
 Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.get -> int?
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.set -> void
 Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.Element.get -> System.Xml.Linq.XElement!
-Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.ShouldDelete.get -> bool
-Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.ShouldDelete.set -> void
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.CanRemoveElements.get -> bool
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.RemoveElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
 virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.CanRemoveElements.get -> bool
