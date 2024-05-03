@@ -27,7 +27,7 @@ public class TestController : ControllerBase
 
         [FromRoute]
         [MinLength(5)]
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Suppress trim-related warnings for MVC.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "MinLengthAttribute works without reflection on string properties.")]
         public string? Name { get; set; }
     }
 
