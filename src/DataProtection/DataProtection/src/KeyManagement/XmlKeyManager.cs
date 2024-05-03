@@ -421,6 +421,15 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
 
         return KeyRepository.RemoveElements((deletableElements) =>
         {
+            // It is important to delete key elements before the corresponding revocation elements,
+            // in case the deletion fails part way - we don't want to accidentally unrevoke a key
+            // and then not delete it.
+            // Don't start at zero just to make it a little clearer in the debugger that it was set
+            // explicitly.
+            const int deletionOrderKey = 1;
+            const int deletionOrderRevocation = 2;
+            const int deletionOrderMassRevocation = 3;
+
             var deletableElementsArray = deletableElements.ToArray();
 
             var allElements = deletableElements.Select(d => d.Element).ToArray();
@@ -443,7 +452,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                     {
                         _logger.DeletingKey(keyId);
                         deletedKeyIds.Add(keyId);
-                        deletableElementsArray[i].ShouldDelete = true;
+                        deletableElementsArray[i].DeletionOrder = deletionOrderKey;
                     }
                 }
                 else if (obj is DateTimeOffset massRevocationDate)
@@ -451,7 +460,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                     if (massRevocationDate < mostRecentMassRevocationDate)
                     {
                         // Delete superceded mass revocation elements
-                        deletableElementsArray[i].ShouldDelete = true;
+                        deletableElementsArray[i].DeletionOrder = deletionOrderMassRevocation;
                     }
                 }
             }
@@ -463,7 +472,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
                     // Delete individual revocations of keys that don't (still) exist
                     if (deletedKeyIds.Contains(revocationId) || !allKeyIds.Contains(revocationId))
                     {
-                        deletableElementsArray[i].ShouldDelete = true;
+                        deletableElementsArray[i].DeletionOrder = deletionOrderRevocation;
                     }
                 }
             }

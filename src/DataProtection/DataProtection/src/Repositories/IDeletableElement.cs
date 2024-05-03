@@ -12,6 +12,6 @@ public interface IDeletableElement
 {
     /// <summary>The XML element.</summary>
     public XElement Element { get; }
-    /// <summary>Set to true if the element should be deleted.</summary>
-    public bool ShouldDelete { get; set; }
+    /// <summary>Elements are deleted in increasing DeletionOrder.  <c>null</c> means "don't delete".</summary>
+    public int? DeletionOrder { get; set; }
 }

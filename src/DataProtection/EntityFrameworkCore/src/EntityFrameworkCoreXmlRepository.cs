@@ -103,21 +103,22 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
 
             var allSucceeded = true;
 
-            foreach (var deletableElement in deletableElements)
+            var elementsToDelete = deletableElements
+                .Where(e => e.DeletionOrder.HasValue)
+                .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+            foreach (var deletableElement in elementsToDelete)
             {
-                if (deletableElement.ShouldDelete)
+                var key = deletableElement.Key;
+                _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
+                try
                 {
-                    var key = deletableElement.Key;
-                    _logger.DeletingKeyFromDbContext(key.FriendlyName, typeof(TContext).Name);
-                    try
-                    {
-                        context.DataProtectionKeys.Remove(key);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
-                        allSucceeded = false;
-                    }
+                    context.DataProtectionKeys.Remove(key);
+                }
+                catch (Exception ex)
+                {
+                    _logger.FailedToDeleteKeyFromDbContext(key.FriendlyName, typeof(TContext).Name, ex);
+                    allSucceeded = false;
                 }
             }
 
@@ -143,10 +144,13 @@ public class EntityFrameworkCoreXmlRepository<TContext> : IXmlRepository
             Element = element;
         }
 
+        /// <inheritdoc/>
         public XElement Element { get; }
 
+        /// <summary>The <see cref="DataProtectionKey"/> from which <see cref="Element"/> was read.</summary>
         public DataProtectionKey Key { get; }
 
-        public bool ShouldDelete { get; set; }
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
     }
 }
