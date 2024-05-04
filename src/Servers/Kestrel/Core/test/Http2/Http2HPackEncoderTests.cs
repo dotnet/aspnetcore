@@ -68,6 +68,44 @@ public class Http2HPackEncoderTests
     }
 
     [Fact]
+    public void BeginEncodeHeaders_CustomHeader_AccumulatedBytesIncreased()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+        long accumulatedLength = 0;
+
+        var headers = (IHeaderDictionary)new HttpResponseHeaders();
+        headers["My"] = "hello world";
+
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HPackHeaderWriter.HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, ref accumulatedLength, null, out var length));
+
+        Assert.Equal(21, length);
+        Assert.Equal(16, accumulatedLength); // Excludes status.
+    }
+
+    [Fact]
+    public void NoStatusBeginEncodeHeaders_CustomHeader_AccumulatedLengthEqualsPayloadLength()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+        long accumulatedLength = 0;
+
+        var headers = (IHeaderDictionary)new HttpResponseHeaders();
+        headers["My"] = "hello world";
+
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HPackHeaderWriter.HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, ref accumulatedLength, null, out var length));
+
+        Assert.Equal(16, length);
+        Assert.Equal(16, accumulatedLength);
+    }
+
+    [Fact]
     public void BeginEncodeHeaders_MaxHeaderTableSizeExceeded_EvictionsToFit()
     {
         // Test follows example https://tools.ietf.org/html/rfc7541#appendix-C.5
@@ -616,7 +654,7 @@ public class Http2HPackEncoderTests
     }
 
     [Fact]
-    public void WithStatusCode_TooLargeHeader_ReturnsNotDone()
+    public void WithStatusCode_TooLargeHeader_ReturnsMoreHeaders()
     {
         Span<byte> buffer = new byte[1024 * 16];
         long accumulatedLength = 0;
@@ -628,6 +666,8 @@ public class Http2HPackEncoderTests
 
         var hpackEncoder = new DynamicHPackEncoder();
         Assert.Equal(HPackHeaderWriter.HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, ref accumulatedLength, null, out var length));
+        Assert.Equal(1, length);
+        Assert.Equal(0, accumulatedLength); // Status exluded
     }
 
     [Fact]
@@ -643,10 +683,12 @@ public class Http2HPackEncoderTests
 
         var hpackEncoder = new DynamicHPackEncoder();
         Assert.Equal(HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, ref accumulatedLength, null, out var length));
+        Assert.Equal(0, length);
+        Assert.Equal(0, accumulatedLength);
     }
 
     [Fact]
-    public void WithStatusCode_JustFittingHeaderNoSpace_ReturnsNotDone()
+    public void WithStatusCode_JustFittingHeaderNoSpace_ReturnsMoreHeaders()
     {
         Span<byte> buffer = new byte[1024 * 16];
         long accumulatedLength = 0;
@@ -658,10 +700,12 @@ public class Http2HPackEncoderTests
 
         var hpackEncoder = new DynamicHPackEncoder();
         Assert.Equal(HPackHeaderWriter.HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, ref accumulatedLength, null, out var length));
+        Assert.Equal(1, length);
+        Assert.Equal(0, accumulatedLength); // No status
     }
 
     [Fact]
-    public void NoStatusCode_JustFittingHeaderNoSpace_ReturnsNotDone()
+    public void NoStatusCode_JustFittingHeaderNoSpace_ReturnsMoreHeaders()
     {
         Span<byte> buffer = new byte[1024 * 16];
         long accumulatedLength = 0;
@@ -674,6 +718,63 @@ public class Http2HPackEncoderTests
 
         var hpackEncoder = new DynamicHPackEncoder();
         Assert.Equal(HPackHeaderWriter.HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, ref accumulatedLength, null, out var length));
+        Assert.Equal(26, length);
+        Assert.Equal(26, accumulatedLength);
+    }
+
+    [Fact]
+    public void MaxHeaderTotalLength_ThrowsBeforeDone()
+    {
+        int headerLength = 10;
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers["My"] = new string('a', headerLength);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Throws<HPackEncodingException>(() =>
+        {
+            Span<byte> buffer = new byte[1024 * 16];
+            long accumulatedLength = 0;
+            HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, ref accumulatedLength, headerLength - 1, out var length);
+        });
+    }
+
+    [Fact]
+    public void MaxHeaderTotalLength_ThrowsBeforeMoreHeaders()
+    {
+        int headerLength = 1000;
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers["My"] = new string('a', headerLength);
+        headers["My2"] = new string('a', headerLength);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Throws<HPackEncodingException>(() =>
+        {
+            Span<byte> buffer = new byte[1024];
+            long accumulatedLength = 0;
+            HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, ref accumulatedLength, headerLength + 1, out var length);
+        });
+    }
+
+    [Fact]
+    public void MaxHeaderTotalLength_ThrowsBeforeBufferTooSmall()
+    {
+        int headerLength = 1200;
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers["My"] = new string('a', headerLength);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Throws<HPackEncodingException>(() =>
+        {
+            Span<byte> buffer = new byte[1024];
+            long accumulatedLength = 0;
+            HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, ref accumulatedLength, 1, out var length);
+        });
     }
 
     private static Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)
