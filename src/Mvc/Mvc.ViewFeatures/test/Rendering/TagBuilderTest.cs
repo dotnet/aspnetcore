@@ -95,6 +95,16 @@ public class TagBuilderTest
     [InlineData("0", "z")]
     [InlineData("-", "z")]
     [InlineData(",", "z")]
+    [InlineData(",.", "z-")]
+    [InlineData("a\uD83D\uDE0A", "a--")]
+    [InlineData("a\uD83D\uDE0A.", "a---")]
+    [InlineData("\uD83D\uDE0A", "z-")]
+    [InlineData("\uD83D\uDE0A.", "z--")]
+    [InlineData(",a", "za")]
+    [InlineData("a,", "a-")]
+    [InlineData("a0,", "a0-")]
+    [InlineData("a,0,", "a-0-")]
+    [InlineData("a,0", "a-0")]
     [InlineData("00Hello,World", "z0Hello-World")]
     [InlineData(",,Hello,,World,,", "z-Hello--World--")]
     [InlineData("-_:Hello-_:Hello-_:", "z_:Hello-_:Hello-_:")]
@@ -108,6 +118,23 @@ public class TagBuilderTest
 
         // Assert
         Assert.Equal(output, result);
+    }
+
+    [Fact]
+    public void CreateSanitizedIdCreatesIdReplacesAllInvalidCharacters()
+    {
+        foreach (char c in Enumerable.Range(char.MinValue, char.MaxValue))
+        {
+            var result = TagBuilder.CreateSanitizedId($"a{c}", "z");
+            if (char.IsAsciiLetterOrDigit(c) || c == '-' || c == '_' || c == ':')
+            {
+                Assert.Equal($"a{c}", result);
+            }
+            else
+            {
+                Assert.Equal("az", result);
+            }
+        }
     }
 
     [Theory]

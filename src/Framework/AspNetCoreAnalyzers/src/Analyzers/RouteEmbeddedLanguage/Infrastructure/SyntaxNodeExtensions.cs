@@ -33,6 +33,12 @@ internal static class SyntaxNodeExtensions
         return parent;
     }
 
+    public static bool IsLiteralExpression([NotNullWhen(true)] this SyntaxNode? node)
+        => node is LiteralExpressionSyntax;
+
+    public static bool IsBinaryExpression([NotNullWhen(true)] this SyntaxNode? node)
+        => node is BinaryExpressionSyntax;
+
     [return: NotNullIfNotNull("node")]
     public static SyntaxNode? WalkUpParentheses(this SyntaxNode? node)
     {

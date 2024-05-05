@@ -5,8 +5,6 @@ using System.Buffers;
 using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -40,8 +38,6 @@ internal static class OutputCacheEntryFormatter
     public static async ValueTask StoreAsync(string key, OutputCacheEntry value, HashSet<string>? tags, TimeSpan duration, IOutputCacheStore store, ILogger logger, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(value);
-        ArgumentNullException.ThrowIfNull(value.Body);
-        ArgumentNullException.ThrowIfNull(value.Headers);
 
         var buffer = new RecyclableArrayBufferWriter<byte>();
         Serialize(buffer, value);

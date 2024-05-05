@@ -19,11 +19,19 @@ public class UrlResolutionTagHelperTest
             return new TheoryData<string, string>
                 {
                    { "~/home/index.html", "/approot/home/index.html" },
+                   { "~/home/index.html\r\n", "/approot/home/index.html" },
                    { "  ~/home/index.html", "/approot/home/index.html" },
+                   { "\u000C~/home/index.html\r\n", "/approot/home/index.html" },
+                   { "\t ~/home/index.html\n", "/approot/home/index.html" },
+                   { "\r\n~/home/index.html\u000C\t", "/approot/home/index.html" },
+                   { "\r~/home/index.html\t", "/approot/home/index.html" },
+                   { "\n~/home/index.html\u202F", "/approot/home/index.html\u202F" },
                    {
                         "~/home/index.html ~/secondValue/index.html",
                         "/approot/home/index.html ~/secondValue/index.html"
                    },
+                   { "  ~/   ", "/approot/" },
+                   { "  ~/", "/approot/" },
                 };
         }
     }
@@ -166,6 +174,8 @@ public class UrlResolutionTagHelperTest
                    { "/home/index.html ~/second/wontresolve.html" },
                    { "  ~\\home\\index.html" },
                    { "~\\/home/index.html" },
+                   { "  ~" },
+                   { "   " },
                 };
         }
     }

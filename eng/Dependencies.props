@@ -69,6 +69,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
+    <LatestPackageReference Include="Microsoft.OpenApi.Readers" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -137,7 +138,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="@(_LatestRuntimePackageReference->Distinct())" />
   </ItemGroup>
 
-  <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" />
@@ -191,7 +192,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
-  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Label="External dependencies" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <LatestPackageReference Include="AngleSharp" />
     <LatestPackageReference Include="Azure.Identity" />
     <LatestPackageReference Include="BenchmarkDotNet" />
@@ -227,6 +228,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="StackExchange.Redis" />
     <LatestPackageReference Include="Swashbuckle.AspNetCore" />
     <LatestPackageReference Include="System.Reactive.Linq" />
+    <LatestPackageReference Include="Verify.Xunit" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />
     <LatestPackageReference Include="xunit.assert" />

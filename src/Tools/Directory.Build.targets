@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- Microsoft tool packages are required to target both x64 and x86. -->
-    <PackAsToolShimRuntimeIdentifiers Condition=" '$(IsShippingPackage)' == 'true' AND '$(DotNetBuildFromSource)' != 'true' ">win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <PackAsToolShimRuntimeIdentifiers Condition=" '$(IsShippingPackage)' == 'true' AND '$(DotNetBuildSourceOnly)' != 'true' ">win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
     <!-- None of the tool projects are project reference providers. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <!--

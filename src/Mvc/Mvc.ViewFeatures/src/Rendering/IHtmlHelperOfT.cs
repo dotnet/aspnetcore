@@ -188,9 +188,8 @@ public interface IHtmlHelper<TModel> : IHtmlHelper
     /// <summary>
     /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>. Adds a
     /// "value" attribute to the element containing the first non-<c>null</c> value found in:
-    /// the <see cref="ActionContext.ModelState"/> entry with full name,
-    /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>, or
-    /// the <paramref name="htmlAttributes"/> dictionary entry with key "value".
+    /// the <see cref="ActionContext.ModelState"/> entry with full name or
+    /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
     /// See <see cref="NameFor"/> for more information about a "full name".
     /// </summary>
     /// <param name="expression">An expression to be evaluated against the current model.</param>

@@ -17,8 +17,8 @@
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux8);
-      $(HelixQueueAlpine316);
-      $(HelixQueueDebian11);
+      $(HelixQueueAlpine318);
+      $(HelixQueueDebian12);
       $(HelixQueueFedora38);
       $(HelixQueueMariner);
       Ubuntu.2004.Amd64.Open;
@@ -141,7 +141,7 @@
     <ItemGroup Condition="'$(_UseHelixOpenQueues)' != 'true'">
       <_Temp Include="@(HelixAvailableTargetQueue)" />
       <HelixAvailableTargetQueue Remove="@(HelixAvailableTargetQueue)" />
-      <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open',''))" />
+      <HelixAvailableTargetQueue Include="@(_Temp->'%(Identity)'->Replace('.Open','')->Replace('.open',''))" />
     </ItemGroup>
 
     <ItemGroup>

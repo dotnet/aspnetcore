@@ -42,7 +42,7 @@ public sealed class ControllerActionEndpointConventionBuilder : IEndpointConvent
     /// <inheritdoc />
     public void Finally(Action<EndpointBuilder> finalConvention)
     {
-        ArgumentNullException.ThrowIfNull(nameof(finalConvention));
+        ArgumentNullException.ThrowIfNull(finalConvention);
 
         lock (_lock)
         {

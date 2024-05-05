@@ -1,3 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime
+Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string!
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.set -> void

@@ -107,6 +107,16 @@ internal class EndpointParameter
             {
                 AssigningCode = "httpContext.Request.Form";
             }
+            // Complex form binding is only supported in RDF because it uses shared source with Blazor that requires dynamic analysis
+            // and codegen. Emit a diagnostic when these are encountered to avoid producing buggy code.
+            else if (!(SymbolEqualityComparer.Default.Equals(Type, wellKnownTypes.Get(WellKnownType.Microsoft_Extensions_Primitives_StringValues))
+                    || Type.SpecialType == SpecialType.System_String
+                    || TryGetParsability(Type, wellKnownTypes, out var _)
+                    || (IsArray && TryGetParsability(ElementType, wellKnownTypes, out var _))))
+            {
+                var location = endpoint.Operation.Syntax.GetLocation();
+                endpoint.Diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveParameterDescriptor, location, symbol.Name));
+            }
             else
             {
                 AssigningCode = !IsArray

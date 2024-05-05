@@ -20,13 +20,14 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'dotnet' }}
     steps:
       - name: Checkout Actions
         uses: actions/checkout@v4
         with:
           repository: "microsoft/vscode-github-triage-actions"
           path: ./actions
-          ref: 0e46b66330f7fbece9aacc65c31c38f434041050 # Pin to commit: https://github.com/microsoft/vscode-github-triage-actions/commit/0e46b66330f7fbece9aacc65c31c38f434041050
+          ref: 066bee9cefa6f0b4bf306040ff36fc7d96a6d56d # Pin to commit: https://github.com/microsoft/vscode-github-triage-actions/commit/066bee9cefa6f0b4bf306040ff36fc7d96a6d56d
       - name: Install Actions
         run: npm install --production --prefix ./actions
       - name: Run Locker

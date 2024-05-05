@@ -230,7 +230,7 @@ public partial class HubConnection : IAsyncDisposable
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        _logger = _loggerFactory.CreateLogger<HubConnection>();
+        _logger = _loggerFactory.CreateLogger(typeof(HubConnection));
         _state = new ReconnectingConnectionState(_logger);
 
         _logScope = new ConnectionLogScope();
@@ -829,12 +829,20 @@ public partial class HubConnection : IAsyncDisposable
             {
                 _ = _sendIAsyncStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1")!.GetGenericArguments())
-                    .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
+                    .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
                 continue;
             }
-            _ = _sendStreamItemsMethod
-                .MakeGenericMethod(reader.GetType().GetGenericArguments())
-                .Invoke(this, new object[] { connectionState, kvp.Key.ToString(), reader, cts });
+
+            if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
+            {
+                _ = _sendStreamItemsMethod
+                    .MakeGenericMethod(channelGenericType)
+                    .Invoke(this, [connectionState, kvp.Key.ToString(), reader, cts]);
+                continue;
+            }
+
+            // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
+            throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
         }
     }
 

@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Diagnostics.Runtime.Interop;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 

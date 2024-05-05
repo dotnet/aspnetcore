@@ -1,0 +1,41 @@
+parameters:
+- name: displayName
+  type: string
+  default: 'Publish to Build Artifact'
+
+- name: condition
+  type: string
+  default: succeeded()
+
+- name: artifactName
+  type: string
+
+- name: pathToPublish
+  type: string
+
+- name: continueOnError
+  type: boolean
+  default: false
+
+- name: publishLocation
+  type: string
+  default: 'Container'
+
+- name: is1ESPipeline
+  type: boolean
+  default: true
+  
+steps:
+- ${{ if ne(parameters.is1ESPipeline, true) }}:
+  - 'eng/common/templates-official cannot be referenced from a non-1ES managed template': error
+- task: 1ES.PublishBuildArtifacts@1
+  displayName: ${{ parameters.displayName }}
+  condition: ${{ parameters.condition }}
+  ${{ if parameters.continueOnError }}:
+    continueOnError: ${{ parameters.continueOnError }}
+  inputs:
+    PublishLocation: ${{ parameters.publishLocation }}
+    PathtoPublish: ${{ parameters.pathToPublish }}
+    ${{ if parameters.artifactName }}:
+      ArtifactName: ${{ parameters.artifactName }}
+      

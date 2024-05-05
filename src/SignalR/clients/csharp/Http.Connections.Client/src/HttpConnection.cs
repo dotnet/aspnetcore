@@ -142,7 +142,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
-        _logger = _loggerFactory.CreateLogger<HttpConnection>();
+        _logger = _loggerFactory.CreateLogger(typeof(HttpConnection));
         _httpConnectionOptions = httpConnectionOptions;
 
         _url = _httpConnectionOptions.Url;

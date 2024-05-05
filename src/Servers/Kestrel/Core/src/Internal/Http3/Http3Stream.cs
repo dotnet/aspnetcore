@@ -166,6 +166,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 abortReason = new ConnectionAbortedException(exception.Message, exception);
             }
 
+            // This has the side-effect of validating the error code, so do it before we consume the error code
+            _errorCodeFeature.Error = (long)errorCode;
+
             _context.WebTransportSession?.Abort(abortReason, errorCode);
 
             Log.Http3StreamAbort(TraceIdentifier, errorCode, abortReason);
@@ -181,7 +184,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             RequestBodyPipe.Writer.Complete(exception);
 
             // Abort framewriter and underlying transport after stopping output.
-            _errorCodeFeature.Error = (long)errorCode;
             _frameWriter.Abort(abortReason);
         }
     }
@@ -832,6 +834,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (!_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Authority) || !_parsedPseudoHeaderFields.HasFlag(PseudoHeaderFields.Path))
             {
                 throw new Http3StreamErrorException(CoreStrings.Http3MissingAuthorityOrPathPseudoHeaders, Http3ErrorCode.ProtocolError);
+            }
+
+            if (_context.ClientPeerSettings.EnableWebTransport != _context.ServerPeerSettings.EnableWebTransport)
+            {
+                throw new Http3StreamErrorException(CoreStrings.FormatHttp3WebTransportStatusMismatch(_context.ClientPeerSettings.EnableWebTransport == 1, _context.ServerPeerSettings.EnableWebTransport == 1), Http3ErrorCode.SettingsError);
             }
 
             if (_context.ClientPeerSettings.H3Datagram != _context.ServerPeerSettings.H3Datagram)
