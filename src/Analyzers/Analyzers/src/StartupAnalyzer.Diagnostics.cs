@@ -39,21 +39,11 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
             isEnabledByDefault: true,
             helpLinkUri: "https://aka.ms/AA64fv1");
 
-        internal static readonly DiagnosticDescriptor IncorrectlyConfiguredProblemDetailsWriter = new(
-            "ASP0026",
-            "Custom IProblemDetailsWriter is incorrectly configured",
-            "The custom IProblemDetailsWriter must be registered before calling AddControllers, AddControllersWithViews, AddMvc, or AddRazorPages.",
-            "Usage",
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
-            helpLinkUri: "https://aka.ms/aspnet/analyzers");
-
         public static readonly ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics = ImmutableArray.Create<DiagnosticDescriptor>(new[]
         {
             // ASP
             BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
             IncorrectlyConfiguredAuthorizationMiddleware,
-            IncorrectlyConfiguredProblemDetailsWriter,
 
             // MVC
             UnsupportedUseMvcWithEndpointRouting,

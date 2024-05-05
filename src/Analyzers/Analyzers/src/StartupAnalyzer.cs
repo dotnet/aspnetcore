@@ -5,6 +5,7 @@ using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
@@ -90,13 +91,12 @@ public partial class StartupAnalyzer : DiagnosticAnalyzer
 
             // Run after analyses have had a chance to finish to add diagnostics.
             context.RegisterSymbolEndAction(context =>
-            {
-                var analysis = builder.Build();
-                new UseMvcAnalyzer(analysis).AnalyzeSymbol(context);
-                new BuildServiceProviderAnalyzer(analysis).AnalyzeSymbol(context);
-                new UseAuthorizationAnalyzer(analysis).AnalyzeSymbol(context);
-                new ProblemDetailsWriterAnalyzer(analysis).AnalyzeSymbol(context);
-            });
+        {
+            var analysis = builder.Build();
+            new UseMvcAnalyzer(analysis).AnalyzeSymbol(context);
+            new BuildServiceProviderAnalyzer(analysis).AnalyzeSymbol(context);
+            new UseAuthorizationAnalyzer(analysis).AnalyzeSymbol(context);
+        });
 
         }, SymbolKind.NamedType);
     }
