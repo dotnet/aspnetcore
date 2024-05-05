@@ -22,6 +22,7 @@ internal sealed class OptionsAnalyzer
     {
         var configureServicesMethod = (IMethodSymbol)context.OwningSymbol;
         var options = ImmutableArray.CreateBuilder<OptionsItem>();
+
         context.RegisterOperationAction(context =>
         {
             if (context.Operation is ISimpleAssignmentOperation operation &&
