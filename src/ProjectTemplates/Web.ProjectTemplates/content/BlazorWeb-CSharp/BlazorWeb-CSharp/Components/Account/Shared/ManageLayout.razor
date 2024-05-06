@@ -1,5 +1,9 @@
 ﻿@inherits LayoutComponentBase
-@layout AccountLayout
+@*#if (UseWebAssembly && InteractiveAtRoot)
+@layout BlazorWeb_CSharp.Client.Layout.MainLayout
+##else
+@layout BlazorWeb_CSharp.Components.Layout.MainLayout
+##endif*@
 
 <h1>Manage your account</h1>
 

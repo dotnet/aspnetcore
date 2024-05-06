@@ -98,8 +98,8 @@ internal static class Error
         return new InvalidOperationException(message);
     }
 
-    public static InvalidOperationException KeyRingProvider_RefreshFailedOnOtherThread()
+    public static InvalidOperationException KeyRingProvider_RefreshFailedOnOtherThread(Exception? inner)
     {
-        return new InvalidOperationException(Resources.KeyRingProvider_RefreshFailedOnOtherThread);
+        return new InvalidOperationException(Resources.KeyRingProvider_RefreshFailedOnOtherThread, inner);
     }
 }

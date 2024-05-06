@@ -29,17 +29,17 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
     {
         using var provider = GetDefaultCache(out var cache);
 #if DEBUG
-        cache.DebugGetOutstandingBuffers(flush: true);
+        cache.DebugOnlyGetOutstandingBuffers(flush: true);
 #endif
 
         var key = Me();
 #if DEBUG
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         var first = await cache.GetOrCreateAsync(key, _ => GetAsync());
         Assert.NotNull(first);
 #if DEBUG
-        Assert.Equal(1, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(1, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         Assert.True(cache.DebugTryGetCacheItem(key, out var cacheItem));
 
@@ -52,6 +52,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.NotNull(second);
         Assert.NotSame(first, second);
 
+        Assert.Equal(1, cacheItem.RefCount);
         await cache.RemoveKeyAsync(key);
         var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
@@ -62,10 +63,11 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
             await Task.Delay(250);
         }
 #if DEBUG
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         // assert that we can *no longer* reserve this buffer, because we've already recycled it
         Assert.False(cacheItem.TryReserveBuffer(out _));
+        Assert.Equal(0, cacheItem.RefCount);
         Assert.False(cacheItem.NeedsEvictionCallback, "should be recycled now");
         static ValueTask<Customer> GetAsync() => new(new Customer { Id = 42, Name = "Fred" });
     }
@@ -116,13 +118,13 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
             cache.BackendCache.Set(key, writer.ToArray());
         }
 #if DEBUG
-        cache.DebugGetOutstandingBuffers(flush: true);
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        cache.DebugOnlyGetOutstandingBuffers(flush: true);
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         var first = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying); // we expect this to come from L2, hence NoUnderlying
         Assert.NotNull(first);
 #if DEBUG
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         Assert.True(cache.DebugTryGetCacheItem(key, out var cacheItem));
 
@@ -135,6 +137,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.NotNull(second);
         Assert.NotSame(first, second);
 
+        Assert.Equal(1, cacheItem.RefCount);
         await cache.RemoveKeyAsync(key);
         var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
@@ -146,11 +149,12 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
             await Task.Delay(250);
         }
 #if DEBUG
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         // assert that we can *no longer* reserve this buffer, because we've already recycled it
         Assert.True(cacheItem.TryReserveBuffer(out _)); // always readable
         cacheItem.Release();
+        Assert.Equal(1, cacheItem.RefCount); // not decremented because there was no need to add the hook
 
         Assert.False(cacheItem.NeedsEvictionCallback, "should still not need recycling");
         static ValueTask<Customer> GetAsync() => new(new Customer { Id = 42, Name = "Fred" });
@@ -172,13 +176,13 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
             cache.BackendCache.Set(key, writer.ToArray());
         }
 #if DEBUG
-        cache.DebugGetOutstandingBuffers(flush: true);
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        cache.DebugOnlyGetOutstandingBuffers(flush: true);
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         var first = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying); // we expect this to come from L2, hence NoUnderlying
         Assert.NotNull(first);
 #if DEBUG
-        Assert.Equal(1, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(1, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         Assert.True(cache.DebugTryGetCacheItem(key, out var cacheItem));
 
@@ -191,6 +195,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         Assert.NotNull(second);
         Assert.NotSame(first, second);
 
+        Assert.Equal(1, cacheItem.RefCount);
         await cache.RemoveKeyAsync(key);
         var third = await cache.GetOrCreateAsync(key, _ => GetAsync(), _noUnderlying);
         Assert.Null(third);
@@ -202,10 +207,11 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
             await Task.Delay(250);
         }
 #if DEBUG
-        Assert.Equal(0, cache.DebugGetOutstandingBuffers());
+        Assert.Equal(0, cache.DebugOnlyGetOutstandingBuffers());
 #endif
         // assert that we can *no longer* reserve this buffer, because we've already recycled it
         Assert.False(cacheItem.TryReserveBuffer(out _)); // released now
+        Assert.Equal(0, cacheItem.RefCount);
 
         Assert.False(cacheItem.NeedsEvictionCallback, "should be recycled by now");
         static ValueTask<Customer> GetAsync() => new(new Customer { Id = 42, Name = "Fred" });

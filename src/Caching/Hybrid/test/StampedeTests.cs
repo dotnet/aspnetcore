@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
@@ -214,6 +215,7 @@ public class StampedeTests
     [InlineData(10, 0)]
     [InlineData(10, 1)]
     [InlineData(10, 7)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55474")]
     public async Task MultipleCallsShareExecution_MostCancel(int callerCount, int remaining)
     {
         Assert.True(callerCount >= 2); // "most" is not "one"
@@ -363,6 +365,38 @@ public class StampedeTests
         var y = await second;
         Assert.Equal(x.Value, y.Value);
         Assert.NotSame(x, y);
+    }
+
+    [Fact]
+    public void ValidatePartitioning()
+    {
+        // we just want to validate that key-level partitioning is
+        // happening to some degree, i.e. it isn't fundamentally broken
+        using var scope = GetDefaultCache(out var cache);
+        Dictionary<object, int> counts = [];
+        for(int i = 0; i < 1024; i++)
+        {
+            var key = new DefaultHybridCache.StampedeKey(Guid.NewGuid().ToString(), default);
+            var obj = cache.GetPartitionedSyncLock(in key);
+            if (!counts.TryGetValue(obj, out var count))
+            {
+                count = 0;
+            }
+            counts[obj] = count + 1;
+        }
+
+        // We just want to prove that we got 8 non-empty partitions.
+        // This is *technically* non-deterministic, but: we'd
+        // need to be having a very bad day for the math gods
+        // to conspire against us that badly - if this test
+        // starts failing, maybe buy a lottery ticket?
+        Assert.Equal(8, counts.Count);
+        foreach (var pair in counts)
+        {
+            // the *median* should be 128 here; let's
+            // not be aggressive about it, though
+            Assert.True(pair.Value > 16);
+        }
     }
 
     class Mutable(Guid value)
