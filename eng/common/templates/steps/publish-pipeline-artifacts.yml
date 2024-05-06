@@ -31,4 +31,4 @@ steps:
     ${{ if parameters.args.parallelCount }}:
       parallelCount: ${{ parameters.args.parallelCount }}
     ${{ if parameters.args.properties }}:
-      properties: ${{ properties.args.properties }}
+      properties: ${{ parameters.args.properties }}
