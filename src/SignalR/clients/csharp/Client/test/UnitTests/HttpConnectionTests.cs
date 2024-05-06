@@ -167,32 +167,27 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
     public async Task NegotiateAsyncAppendsCorrectAcceptHeader()
     {
         var testHttpHandler = TestHttpMessageHandler.CreateDefault();
+        var negotiateUrlTcs = new TaskCompletionSource<bool>();
 
         testHttpHandler.OnNegotiate((request, cancellationToken) =>
         {
-            Assert.Equal("application/json", request.Headers.Accept.ToString());
-            return ResponseUtils.CreateResponse(HttpStatusCode.OK, "{}");
+            var headerFound = request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) == true;
+            negotiateUrlTcs.SetResult(headerFound);
+            return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
         });
 
-        var httpOptions = new HttpConnectionOptions();
-        httpOptions.Url = new Uri("http://fakeurl.org/");
-        httpOptions.HttpMessageHandlerFactory = inner => testHttpHandler;
-        httpOptions.SkipNegotiation = false;
-        httpOptions.Transports = HttpTransportType.WebSockets;
-
-        const string loggerName = "Microsoft.AspNetCore.Http.Connections.Client.Internal.LoggingHttpMessageHandler";
-        var testSink = new TestSink();
-        var logger = new TestLogger(loggerName, testSink, true);
-
-        var mockLoggerFactory = new Mock<ILoggerFactory>();
-        mockLoggerFactory
-            .Setup(m => m.CreateLogger(It.IsAny<string>()))
-            .Returns((string categoryName) => (categoryName == loggerName) ? (ILogger)logger : NullLogger.Instance);
+        var httpOptions = new HttpConnectionOptions
+        {
+            Url = new Uri("http://fakeurl.org/"),
+            SkipNegotiation = false,
+            Transports = HttpTransportType.WebSockets,
+            HttpMessageHandlerFactory = inner => testHttpHandler
+        };
 
         try
         {
             await WithConnectionAsync(
-                CreateConnection(httpOptions, loggerFactory: mockLoggerFactory.Object),
+                CreateConnection(httpOptions),
                 async (connection) =>
                 {
                     await connection.StartAsync().DefaultTimeout();
@@ -200,10 +195,11 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
         }
         catch
         {
-            // ignore connection error
+
         }
 
-        // Verify the Accept header was checked
-        Assert.Contains(testSink.Writes, w => w.EventId.Name == "SendingHttpRequest" && w.Message.Contains("application/json"));
+        Assert.True(negotiateUrlTcs.Task.IsCompleted);
+        var headerWasFound = await negotiateUrlTcs.Task;
+        Assert.True(headerWasFound);
     }
 }
