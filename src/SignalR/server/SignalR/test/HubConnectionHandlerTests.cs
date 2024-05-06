@@ -5407,7 +5407,8 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             var testSource = new ActivitySource("test_source");
             using var listener = new ActivityListener
             {
-                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource)),
+                ShouldListenTo = activitySource => (ReferenceEquals(activitySource, testSource)
+                || activitySource.Name == "Microsoft.AspNetCore.SignalR.Server"),
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
                 ActivityStarted = activities.Add
             };
