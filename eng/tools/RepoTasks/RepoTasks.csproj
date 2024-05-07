@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
-    <!-- Manually updated version from 6.0.0 to address CVE-2021-43877 -->
+    <!-- Manually updated version from 6.0.0 to address CVE-2023-29331 -->
     <PackageReference Include="System.Security.Cryptography.Xml" Version="$(RepoTasksSystemSecurityCryptographyXmlVersion)" />
   </ItemGroup>
 

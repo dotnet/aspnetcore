@@ -42,7 +42,26 @@ internal sealed class OpenApiComponentService(IOptions<JsonOptions> jsonOptions)
     {
         OnSchemaGenerated = (context, schema) =>
         {
-            schema.ApplyPrimitiveTypesAndFormats(context.TypeInfo.Type);
+            var type = context.TypeInfo.Type;
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, and PipeReader
+            // that appear as properties within complex types.
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader))
+            {
+                schema.Clear();
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+                schema[OpenApiSchemaKeywords.FormatKeyword] = "binary";
+            }
+            else if (type == typeof(IFormFileCollection))
+            {
+                schema.Clear();
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "array";
+                schema[OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.FormatKeyword] = "binary"
+                };
+            }
+            schema.ApplyPrimitiveTypesAndFormats(type);
             if (context.GetCustomAttributes(typeof(ValidationAttribute)) is { } validationAttributes)
             {
                 schema.ApplyValidationAttributes(validationAttributes);
@@ -61,7 +80,8 @@ internal sealed class OpenApiComponentService(IOptions<JsonOptions> jsonOptions)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription);
         }
-        return JsonSerializer.Deserialize<OpenApiJsonSchema>(schemaAsJsonObject)?.Schema ?? new OpenApiSchema();
+        var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
+        return deserializedSchema != null ? deserializedSchema.Schema : new OpenApiSchema();
     }
 
     private JsonObject CreateSchema((Type Type, ParameterInfo? ParameterInfo) key)

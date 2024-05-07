@@ -59,7 +59,17 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         AutoRefreshWindowEnd = DateTime.UtcNow.AddMinutes(2);
 
         AppContext.TryGetSwitch(DisableAsyncKeyRingUpdateSwitchKey, out _disableAsyncKeyRingUpdate);
+
+        // We use the Random class since we don't need a secure PRNG for this.
+#if NET6_0_OR_GREATER
+        JitterRandom = Random.Shared;
+#else
+        JitterRandom = new Random();
+#endif
     }
+
+    // Internal for testing
+    internal Random JitterRandom { get; set; }
 
     // for testing
     internal ICacheableKeyRingProvider CacheableKeyRingProvider { get; set; }
@@ -470,18 +480,12 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         }
     }
 
-    private static TimeSpan GetRefreshPeriodWithJitter(TimeSpan refreshPeriod)
+    private TimeSpan GetRefreshPeriodWithJitter(TimeSpan refreshPeriod)
     {
         // We'll fudge the refresh period up to -20% so that multiple applications don't try to
         // hit a single repository simultaneously. For instance, if the refresh period is 1 hour,
-        // we'll return a value in the vicinity of 48 - 60 minutes. We use the Random class since
-        // we don't need a secure PRNG for this.
-#if NET6_0_OR_GREATER
-        var random = Random.Shared;
-#else
-        var random = new Random();
-#endif
-        return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (random.NextDouble() / 5))));
+        // we'll return a value in the vicinity of 48 - 60 minutes.
+        return TimeSpan.FromTicks((long)(refreshPeriod.Ticks * (1.0d - (JitterRandom.NextDouble() / 5))));
     }
 
     private static DateTimeOffset Min(DateTimeOffset a, DateTimeOffset b)
