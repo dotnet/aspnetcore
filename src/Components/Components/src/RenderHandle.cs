@@ -52,6 +52,11 @@ public readonly struct RenderHandle
         ?? throw new InvalidOperationException("No renderer has been initialized.");
 
     /// <summary>
+    /// Gets the <see cref="ComponentPlatform"/> the component is running on.
+    /// </summary>
+    public ComponentPlatform Platform => _renderer?.ComponentPlatform ?? throw new InvalidOperationException("No renderer has been initialized.");
+
+    /// <summary>
     /// Notifies the renderer that the component should be rendered.
     /// </summary>
     /// <param name="renderFragment">The content that should be rendered.</param>

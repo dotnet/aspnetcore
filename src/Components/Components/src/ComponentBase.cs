@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -40,6 +41,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             BuildRenderTree(builder);
         };
     }
+
+    /// <summary>
+    /// Gets the <see cref="ComponentPlatform"/> the component is running on.
+    /// </summary>
+    protected ComponentPlatform Platform => _renderHandle.Platform;
 
     /// <summary>
     /// Renders the component to the supplied <see cref="RenderTreeBuilder"/>.

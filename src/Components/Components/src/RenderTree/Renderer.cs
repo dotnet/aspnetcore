@@ -150,6 +150,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     protected internal ComponentState GetComponentState(IComponent component)
         => _componentStateByComponent.GetValueOrDefault(component);
 
+    /// <summary>
+    /// Gets the <see cref="ComponentPlatform"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual ComponentPlatform ComponentPlatform { get; }
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework

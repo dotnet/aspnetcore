@@ -92,9 +92,6 @@ public static class ComponentServiceCollectionExtensions
             services.Configure(configure);
         }
 
-        builder.Services.TryAddScoped<InteractiveHostServerRenderModeProvider>();
-        builder.Services.TryAddCascadingValue(sp => sp.GetRequiredService<InteractiveHostServerRenderModeProvider>()?.HostRenderMode ?? null);
-
         return builder;
     }
 

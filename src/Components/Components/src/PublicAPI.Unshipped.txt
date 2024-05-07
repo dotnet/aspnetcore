@@ -1,3 +1,11 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ComponentBase.Platform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
+Microsoft.AspNetCore.Components.RenderHandle.Platform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!
+Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform
+Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.ComponentPlatform(string! platformName, bool isInteractive, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> void
+Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.IsInteractive.get -> bool
+Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.PlatformName.get -> string!
+Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ComponentPlatform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!

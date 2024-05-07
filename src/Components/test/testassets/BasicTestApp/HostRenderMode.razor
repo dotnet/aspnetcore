@@ -5,14 +5,12 @@
 
     private string _message = "";
 
-    [CascadingParameter] public InteractiveHostRenderMode? InteractiveHost { get; set; }
-
     protected override void OnInitialized()
     {
-        if (InteractiveHost is { RenderMode: InteractiveServerRenderMode })
+        if (Platform is { RenderMode: InteractiveServerRenderMode })
         {
             _message = $"Host Render Mode: Interactive Server";
-        }else if (InteractiveHost is { RenderMode: InteractiveWebAssemblyRenderMode })
+        }else if (Platform is { RenderMode: InteractiveWebAssemblyRenderMode })
         {
             _message = $"Host Render Mode: Interactive Webassembly";
         }
