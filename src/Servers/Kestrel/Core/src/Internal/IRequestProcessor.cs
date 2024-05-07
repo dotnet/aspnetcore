@@ -14,5 +14,5 @@ internal interface IRequestProcessor
     void HandleReadDataRateTimeout();
     void OnInputOrOutputCompleted();
     void Tick(long timestamp);
-    void Abort(ConnectionAbortedException ex);
+    void Abort(ConnectionAbortedException ex, ConnectionErrorReason reason);
 }

@@ -5,6 +5,8 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -29,6 +31,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     private readonly MemoryPool<byte> _memoryPool;
     private readonly KestrelTrace _log;
     private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
+    private readonly IConnectionMetricsTagsFeature? _metricsTagsFeature;
     private readonly IHttpOutputAborter _outputAborter;
     private readonly TimingPipeFlusher _flusher;
 
@@ -74,6 +77,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         KestrelTrace log,
         ITimeoutControl timeoutControl,
         IHttpMinResponseDataRateFeature minResponseDataRateFeature,
+        IConnectionMetricsTagsFeature? metricsTagsFeature,
         IHttpOutputAborter outputAborter)
     {
         // Allow appending more data to the PipeWriter when a flush is pending.
@@ -83,6 +87,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         _memoryPool = memoryPool;
         _log = log;
         _minResponseDataRateFeature = minResponseDataRateFeature;
+        _metricsTagsFeature = metricsTagsFeature;
         _outputAborter = outputAborter;
 
         _flusher = new TimingPipeFlusher(timeoutControl, log);
@@ -444,7 +449,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
-    public void Abort(ConnectionAbortedException error)
+    public void Abort(ConnectionAbortedException error, ConnectionErrorReason errorReason)
     {
         // Abort can be called after Dispose if there's a flush timeout.
         // It's important to still call _lifetimeFeature.Abort() in this case.
@@ -453,6 +458,11 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             if (_aborted)
             {
                 return;
+            }
+
+            if (errorReason != ConnectionErrorReason.NoError && _metricsTagsFeature != null)
+            {
+                _metricsTagsFeature.TryAddTag("kestrel.connection.error_reason", errorReason.ToString());
             }
 
             _aborted = true;

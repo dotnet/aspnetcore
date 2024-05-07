@@ -757,10 +757,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             Http3FrameType.CancelPush or
             Http3FrameType.GoAway or
             Http3FrameType.MaxPushId => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionErrorReason.ReceivedUnsupportedFrame),
             // The server should never receive push promise
             Http3FrameType.PushPromise => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionErrorReason.ReceivedUnsupportedFrame),
             _ => ProcessUnknownFrameAsync(),
         };
     }
@@ -778,7 +778,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
-            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame, ConnectionErrorReason.UnexpectedFrame);
         }
 
         if (_requestHeaderParsingState == RequestHeaderParsingState.Body)
@@ -877,7 +877,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
         if (_requestHeaderParsingState == RequestHeaderParsingState.Ready)
         {
-            throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(CoreStrings.Http3StreamErrorDataReceivedBeforeHeaders, Http3ErrorCode.UnexpectedFrame, ConnectionErrorReason.UnexpectedFrame);
         }
 
         // DATA frame after trailing headers is invalid.
@@ -885,7 +885,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
             var message = CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data));
-            throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame);
+            throw new Http3ConnectionErrorException(message, Http3ErrorCode.UnexpectedFrame, ConnectionErrorReason.UnexpectedFrame);
         }
 
         if (InputRemaining.HasValue)

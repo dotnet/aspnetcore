@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
@@ -70,6 +71,8 @@ public class Program
                 factory.SetMinimumLevel(LogLevel.Trace);
                 factory.AddConsole();
             });
+
+        Console.WriteLine($"Process ID: {Environment.ProcessId}");
 
         hostBuilder.Build().Run();
     }

@@ -175,7 +175,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         }
     }
 
-    private void Abort(ConnectionAbortedException ex)
+    private void Abort(ConnectionAbortedException ex, ConnectionErrorReason errorReason)
     {
         ProtocolSelectionState previousState;
 
@@ -190,7 +190,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (previousState)
         {
             case ProtocolSelectionState.Selected:
-                _requestProcessor!.Abort(ex);
+                _requestProcessor!.Abort(ex, errorReason);
                 break;
             case ProtocolSelectionState.Aborted:
                 break;
@@ -275,11 +275,11 @@ internal sealed class HttpConnection : ITimeoutHandler
                 break;
             case TimeoutReason.WriteDataRate:
                 Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection?.TraceIdentifier);
-                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied), ConnectionErrorReason.ResponseMininumDataRateNotSatisfied);
                 break;
             case TimeoutReason.RequestBodyDrain:
             case TimeoutReason.TimeoutFeature:
-                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer));
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer), ConnectionErrorReason.ServerTimeout);
                 break;
             default:
                 Debug.Assert(false, "Invalid TimeoutReason");
