@@ -183,7 +183,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
             }
         }
 #if DEBUG
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ConnectionResetException)
         {
             Debug.Fail($"Unexpected exception in {nameof(QuicConnectionContext)}.{nameof(AcceptAsync)}: {ex}");
             throw;
