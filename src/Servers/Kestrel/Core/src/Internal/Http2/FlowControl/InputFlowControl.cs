@@ -41,7 +41,7 @@ internal sealed class InputFlowControl
             // flow-control window at the time of the abort.
             if (bytes > _flow.Available)
             {
-                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorFlowControlWindowExceeded, Http2ErrorCode.FLOW_CONTROL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorFlowControlWindowExceeded, Http2ErrorCode.FLOW_CONTROL_ERROR, ConnectionErrorReason.FlowControlWindowExceeded);
             }
 
             if (_flow.IsAborted)

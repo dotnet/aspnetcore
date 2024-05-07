@@ -64,6 +64,7 @@ internal sealed class HttpConnection : ITimeoutHandler
                     // _http2Connection must be initialized before yielding control to the transport thread,
                     // to prevent a race condition where _http2Connection.Abort() is called just as
                     // _http2Connection is about to be initialized.
+                    _context.ConnectionFeatures.Set<IProtocolErrorCodeFeature>(new ProtocolErrorCodeFeature());
                     requestProcessor = new Http2Connection((HttpConnectionContext)_context);
                     _protocolSelectionState = ProtocolSelectionState.Selected;
                     AddMetricsHttpProtocolTag(KestrelMetrics.Http2);
@@ -112,6 +113,11 @@ internal sealed class HttpConnection : ITimeoutHandler
         {
             Log.LogCritical(0, ex, $"Unexpected exception in {nameof(HttpConnection)}.{nameof(ProcessRequestsAsync)}.");
         }
+    }
+
+    private sealed class ProtocolErrorCodeFeature : IProtocolErrorCodeFeature
+    {
+        public long Error { get; set; }
     }
 
     private void AddMetricsHttpProtocolTag(string httpVersion)
