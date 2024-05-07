@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
+
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class InputNumberTest
@@ -59,17 +62,27 @@ public class InputNumberTest
             EditContext = new EditContext(model),
             ValueExpression = () => model.SomeNumber,
             AdditionalAttributes = new Dictionary<string, object>
-            {
-                { "type", "range" }  // User-defined 'type' attribute
-            }
+        {
+            { "type", "range" }  // User-defined 'type' attribute to override default
+        }
         };
 
         // Act
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-        var componentTypeName = inputComponent.Element.GetType().Name;
+        var testRenderer = new TestRenderer();
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        // Retrieve the render tree frames and extract attributes
+        var frames = testRenderer.GetCurrentRenderTreeFrames(componentId);
+        var attributes = frames.AsEnumerable()
+            .SkipWhile(frame => frame.FrameType != RenderTreeFrameType.Element || frame.ElementName != "input")
+            .Skip(1)  // Skip the input element frame itself
+            .TakeWhile(frame => frame.FrameType == RenderTreeFrameType.Attribute)
+            .ToDictionary(frame => frame.AttributeName, frame => frame.AttributeValue.ToString());
 
         // Assert
-        Assert.Equal("range", componentTypeName);
+        Assert.True(attributes.ContainsKey("type"));
+        Assert.Equal("range", attributes["type"]);
     }
 
     private class TestModel
