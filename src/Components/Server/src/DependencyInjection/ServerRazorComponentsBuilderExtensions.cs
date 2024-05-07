@@ -37,6 +37,9 @@ public static class ServerRazorComponentsBuilderExtensions
         builder.Services.AddServerSideBlazor(configure);
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, CircuitEndpointProvider>());
 
+        builder.Services.TryAddScoped<InteractiveHostServerRenderModeProvider>();
+        builder.Services.TryAddCascadingValue(sp => sp.GetRequiredService<InteractiveHostServerRenderModeProvider>().HostRenderMode); ;
+
         return new DefaultServerSideBlazorBuilder(builder.Services);
     }
 
@@ -196,4 +199,9 @@ public static class ServerRazorComponentsBuilderExtensions
             }
         }
     }
+}
+
+internal class InteractiveHostServerRenderModeProvider
+{
+    public InteractiveHostRenderMode HostRenderMode { get; internal set; }
 }

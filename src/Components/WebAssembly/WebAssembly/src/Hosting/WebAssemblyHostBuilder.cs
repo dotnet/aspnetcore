@@ -84,6 +84,7 @@ public sealed class WebAssemblyHostBuilder
         InitializeNavigationManager();
         InitializeRegisteredRootComponents();
         InitializePersistedState();
+        InitializeHostRenderMode();
         InitializeDefaultServices();
 
         var hostEnvironment = InitializeEnvironment();
@@ -93,6 +94,13 @@ public sealed class WebAssemblyHostBuilder
         {
             return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
         };
+    }
+
+    private void InitializeHostRenderMode()
+    {
+        var webAssemblyRenderMode = new InteractiveHostRenderMode(RenderMode.InteractiveWebAssembly);
+        var cascadingValueSource = new CascadingValueSource<InteractiveHostRenderMode>(webAssemblyRenderMode, isFixed: true);
+        Services.TryAddCascadingValue(_ => cascadingValueSource);
     }
 
     private static void InitializeRoutingAppContextSwitch(Assembly assembly)

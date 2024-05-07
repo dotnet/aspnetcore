@@ -1,0 +1,24 @@
+﻿
+<p id="host-render-mode">@_message</p>
+
+@code {
+
+    private string _message = "";
+
+    [CascadingParameter] public InteractiveHostRenderMode? InteractiveHost { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (InteractiveHost is { RenderMode: InteractiveServerRenderMode })
+        {
+            _message = $"Host Render Mode: Interactive Server";
+        }else if (InteractiveHost is { RenderMode: InteractiveWebAssemblyRenderMode })
+        {
+            _message = $"Host Render Mode: Interactive Webassembly";
+        }
+        else
+        {
+            _message = "Host Render Mode: Static";
+        }
+    }
+}

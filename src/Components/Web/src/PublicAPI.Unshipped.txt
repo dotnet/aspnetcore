@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Components.InteractiveHostRenderMode
+Microsoft.AspNetCore.Components.InteractiveHostRenderMode.HostRenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
+Microsoft.AspNetCore.Components.InteractiveHostRenderMode.InteractiveHostRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string!
 Microsoft.AspNetCore.Components.Web.KeyboardEventArgs.IsComposing.get -> bool
