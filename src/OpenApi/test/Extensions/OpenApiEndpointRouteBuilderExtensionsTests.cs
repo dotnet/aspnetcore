@@ -3,6 +3,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Routing;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 using Microsoft.AspNetCore.Builder;
@@ -164,6 +166,7 @@ public class OpenApiEndpointRouteBuilderExtensionsTests : OpenApiDocumentService
             .AddSingleton<IServiceProviderIsService>(serviceProviderIsService)
             .AddSingleton<IHostEnvironment>(hostEnvironment)
             .AddSingleton(CreateApiDescriptionGroupCollectionProvider())
+            .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
             .AddOpenApi(documentName)
             .BuildServiceProvider();
         return serviceProvider;

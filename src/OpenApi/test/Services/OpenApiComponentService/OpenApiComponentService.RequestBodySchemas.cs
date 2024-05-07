@@ -80,6 +80,34 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
     }
 
     [Fact]
+    public async Task GetOpenApiRequestBody_GeneratesSchemaForFilesInRecursiveType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/proposal", (Proposal stream) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths[$"/proposal"].Operations[OperationType.Post];
+            var requestBody = operation.RequestBody;
+            var schema = requestBody.Content["application/json"].Schema;
+            Assert.Collection(schema.Properties,
+                property => {
+                    Assert.Equal("proposalElement", property.Key);
+                    // Todo: Assert that refs are used correctly.
+                },
+                property => {
+                    Assert.Equal("stream", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                    Assert.Equal("binary", property.Value.Format);
+                });
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiRequestBody_GeneratesSchemaForListOf()
     {
         // Arrange
