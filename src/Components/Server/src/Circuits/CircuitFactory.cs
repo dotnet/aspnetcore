@@ -48,7 +48,6 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
         var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
-
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
@@ -116,9 +115,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         [LoggerMessage(1, LogLevel.Debug, "Created circuit {CircuitId} for connection {ConnectionId}", EventName = "CreatedCircuit")]
         private static partial void CreatedCircuit(ILogger logger, string circuitId, string connectionId);
 
-        internal static void CreatedCircuit(ILogger logger, CircuitHost circuitHost)
-        {
+        internal static void CreatedCircuit(ILogger logger, CircuitHost circuitHost) =>
             CreatedCircuit(logger, circuitHost.CircuitId.Id, circuitHost.Client.ConnectionId);
-        }
     }
 }
