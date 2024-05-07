@@ -1660,7 +1660,7 @@ public class Http2ConnectionTests : Http2TestBase
         CreateConnection();
         // Kestrel always tracks at least 100 streams
         Assert.Equal(100u, _connection.MaxTrackedStreams);
-        _connection.Abort(new ConnectionAbortedException());
+        _connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
     }
 
     [Fact]
@@ -4809,7 +4809,7 @@ public class Http2ConnectionTests : Http2TestBase
     {
         await InitializeConnectionAsync(_noopApplication);
 
-        _connection.Abort(new ConnectionAbortedException());
+        _connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
         await _closedStateReached.Task.DefaultTimeout();
 
         VerifyGoAway(await ReceiveFrameAsync(), int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);

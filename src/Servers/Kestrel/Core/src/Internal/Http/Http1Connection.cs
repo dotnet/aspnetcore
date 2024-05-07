@@ -62,6 +62,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             _context.ServiceContext.Log,
             _context.TimeoutControl,
             minResponseDataRateFeature: this,
+            _context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>(),
             outputAborter: this);
 
         Input = _context.Transport.Input;
@@ -98,22 +99,22 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     void IRequestProcessor.OnInputOrOutputCompleted()
     {
         // Closed gracefully.
-        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
+        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!, ConnectionErrorReason.InputOrOutputCompleted);
         CancelRequestAbortedToken();
     }
 
     void IHttpOutputAborter.OnInputOrOutputCompleted()
     {
-        _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+        _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), ConnectionErrorReason.InputOrOutputCompleted);
         CancelRequestAbortedToken();
     }
 
     /// <summary>
     /// Immediately kill the connection and poison the request body stream with an error.
     /// </summary>
-    public void Abort(ConnectionAbortedException abortReason)
+    public void Abort(ConnectionAbortedException abortReason, ConnectionErrorReason reason)
     {
-        _http1Output.Abort(abortReason);
+        _http1Output.Abort(abortReason, reason);
         CancelRequestAbortedToken();
         PoisonBody(abortReason);
     }
@@ -121,7 +122,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     protected override void ApplicationAbort()
     {
         Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
-        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), ConnectionErrorReason.AbortedByApplication);
     }
 
     /// <summary>

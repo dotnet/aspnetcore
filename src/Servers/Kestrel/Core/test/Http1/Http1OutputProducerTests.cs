@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -124,11 +125,11 @@ public class Http1OutputProducerTests : IDisposable
 
         mockConnectionContext.Verify(f => f.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never());
 
-        outputProducer.Abort(null);
+        outputProducer.Abort(null, ConnectionErrorReason.AbortedByApplication);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
 
-        outputProducer.Abort(null);
+        outputProducer.Abort(null, ConnectionErrorReason.AbortedByApplication);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
     }
@@ -233,6 +234,7 @@ public class Http1OutputProducerTests : IDisposable
             serviceContext.Log,
             Mock.Of<ITimeoutControl>(),
             Mock.Of<IHttpMinResponseDataRateFeature>(),
+            Mock.Of<IConnectionMetricsTagsFeature>(),
             Mock.Of<IHttpOutputAborter>());
 
         return socketOutput;
@@ -240,8 +242,8 @@ public class Http1OutputProducerTests : IDisposable
 
     private class TestHttpOutputProducer : Http1OutputProducer
     {
-        public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, MemoryPool<byte> memoryPool, KestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, IHttpOutputAborter outputAborter)
-            : base(pipe.Writer, connectionId, connectionContext, memoryPool, log, timeoutControl, minResponseDataRateFeature, outputAborter)
+        public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, MemoryPool<byte> memoryPool, KestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, IConnectionMetricsTagsFeature metricsTagsFeature, IHttpOutputAborter outputAborter)
+            : base(pipe.Writer, connectionId, connectionContext, memoryPool, log, timeoutControl, minResponseDataRateFeature, metricsTagsFeature, outputAborter)
         {
             Pipe = pipe;
         }
