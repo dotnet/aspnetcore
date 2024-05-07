@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
+
 public class ServerInteractiveHostRenderModeTest : InteractiveHostRendermodeTest
 {
     public ServerInteractiveHostRenderModeTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output) : base(browserFixture, serverFixture.WithServerExecution(), output)
