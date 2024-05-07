@@ -26,6 +26,7 @@ using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Connections.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -459,6 +460,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         var features = new FeatureCollection();
         features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
+        features.Set<IProtocolErrorCodeFeature>(new TestProtocolErrorCodeFeature());
         _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
@@ -482,6 +484,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
     {
         public ConnectionMetricsContext MetricsContext { get; }
+    }
+
+    private class TestProtocolErrorCodeFeature : IProtocolErrorCodeFeature
+    {
+        public long Error { get; set; }
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler

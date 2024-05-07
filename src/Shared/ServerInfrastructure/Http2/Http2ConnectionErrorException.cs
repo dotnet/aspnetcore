@@ -7,11 +7,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 internal sealed class Http2ConnectionErrorException : Exception
 {
-    public Http2ConnectionErrorException(string message, Http2ErrorCode errorCode)
+    public Http2ConnectionErrorException(string message, Http2ErrorCode errorCode, ConnectionErrorReason errorReason)
         : base($"HTTP/2 connection error ({errorCode}): {message}")
     {
         ErrorCode = errorCode;
+        ErrorReason = errorReason;
     }
 
     public Http2ErrorCode ErrorCode { get; }
+    public ConnectionErrorReason ErrorReason { get; }
 }

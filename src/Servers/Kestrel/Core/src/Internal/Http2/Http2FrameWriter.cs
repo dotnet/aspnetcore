@@ -323,7 +323,7 @@ internal sealed class Http2FrameWriter
 
     private async Task HandleFlowControlErrorAsync()
     {
-        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR);
+        var connectionError = new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, Http2ErrorCode.FLOW_CONTROL_ERROR, ConnectionErrorReason.WindowUpdateSizeInvalid);
         _log.Http2ConnectionError(_connectionId, connectionError);
         await WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.FLOW_CONTROL_ERROR);
 

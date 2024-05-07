@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http;
@@ -12,6 +13,18 @@ internal static class MetricsExtensions
     {
         var tags = feature.Tags;
 
+        return TryAddTagCore(name, value, tags);
+    }
+
+    public static bool TryAddTag(this IConnectionMetricsTagsFeature feature, string name, object? value)
+    {
+        var tags = feature.Tags;
+
+        return TryAddTagCore(name, value, tags);
+    }
+
+    private static bool TryAddTagCore(string name, object? value, ICollection<KeyValuePair<string, object?>> tags)
+    {
         // Tags is internally represented as a List<T>.
         // Prefer looping through the list to avoid allocating an enumerator.
         if (tags is List<KeyValuePair<string, object?>> list)
