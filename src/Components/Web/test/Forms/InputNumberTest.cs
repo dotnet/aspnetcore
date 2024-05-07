@@ -49,6 +49,29 @@ public class InputNumberTest
         Assert.NotNull(inputSelectComponent.Element);
     }
 
+    [Fact]
+    public async Task UserDefinedTypeAttributeOverridesDefault()
+    {
+        // Arrange
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.SomeNumber,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "type", "range" }  // User-defined 'type' attribute
+            }
+        };
+
+        // Act
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var componentTypeName = inputComponent.Element.GetType().Name;
+
+        // Assert
+        Assert.Equal("range", componentTypeName);
+    }
+
     private class TestModel
     {
         public int SomeNumber { get; set; }
