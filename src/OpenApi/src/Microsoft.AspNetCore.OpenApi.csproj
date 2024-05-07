@@ -7,6 +7,10 @@
     <!-- Needed to support compiling Utf8BufferTextWriter implementation shared with SignalR -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Description>Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.</Description>
+    <IsAotCompatible>true</IsAotCompatible>
+    <!-- Required to generated native AoT friendly `MapOpenApi` endpoint. -->
+    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,6 +38,11 @@
   <ItemGroup>
     <Compile Include="$(RepoRoot)/src/SignalR/common/Shared/Utf8BufferTextWriter.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)/src/SignalR/common/Shared/MemoryBufferWriter.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <!-- Required to generated native AoT friendly `MapOpenApi` endpoint. -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

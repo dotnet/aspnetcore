@@ -5,12 +5,15 @@
 // and benchmark apps.
 
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 
 internal record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 
 internal record TodoWithDueDate(int Id, string Title, bool Completed, DateTime CreatedAt, DateTime DueDate) : Todo(Id, Title, Completed, CreatedAt);
 
-internal record Error(int code, string Message);
+internal record Error(int Code, string Message);
+
+internal record ResumeUpload(string Name, string Description, IFormFile Resume);
 
 internal record Result<T>(bool IsSuccessful, T Value, Error Error);
 
@@ -53,4 +56,10 @@ internal enum Status
     Pending,
     Approved,
     Rejected
+}
+
+internal class Proposal
+{
+    public required Proposal ProposalElement { get; set; }
+    public required Stream Stream { get; set; }
 }

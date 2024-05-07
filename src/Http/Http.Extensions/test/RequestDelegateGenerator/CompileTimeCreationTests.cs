@@ -737,4 +737,24 @@ namespace TestApp
         var diagnostics = updatedCompilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning));
     }
+
+    [Fact]
+    public async Task RequestDelegateGenerator_SkipsComplexFormParameter()
+    {
+        var source = """
+app.MapPost("/", ([FromForm] Todo todo) => { });
+app.MapPost("/", ([FromForm] Todo todo, IFormFile formFile) => { });
+app.MapPost("/", ([FromForm] Todo todo, [FromForm] int[] ids) => { });
+""";
+        var (generatorRunResult, _) = await RunGeneratorAsync(source);
+
+        // Emits diagnostics but no generated sources
+        var result = Assert.IsType<GeneratorRunResult>(generatorRunResult);
+        Assert.Empty(result.GeneratedSources);
+        Assert.All(result.Diagnostics, diagnostic =>
+        {
+            Assert.Equal(DiagnosticDescriptors.UnableToResolveParameterDescriptor.Id, diagnostic.Id);
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        });
+    }
 }
