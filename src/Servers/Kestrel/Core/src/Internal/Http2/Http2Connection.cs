@@ -209,15 +209,21 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     public void OnInputOrOutputCompleted()
     {
-        TryClose();
+        if (TryClose())
+        {
+            SetConnectionErrorCode(ConnectionErrorReason.InputOrOutputCompleted, Http2ErrorCode.PROTOCOL_ERROR);
+        }
         var useException = _context.ServiceContext.ServerOptions.FinOnError || _clientActiveStreamCount != 0;
         _frameWriter.Abort(useException ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
     }
 
-    private void SetError(ConnectionErrorReason reason, Http2ErrorCode errorCode)
+    private void SetConnectionErrorCode(ConnectionErrorReason? reason, Http2ErrorCode errorCode)
     {
+        Debug.Assert(_isClosed == 1, "Should only be set when connection is closed.");
+        Debug.Assert(_errorCodeFeature.Error == -1, "Error code feature should only be set once.");
+
         _errorCodeFeature.Error = (long)errorCode;
-        if (_tagsFeature != null)
+        if (reason != null && _tagsFeature != null)
         {
             _tagsFeature.TryAddTag("ConnectionError", reason.ToString());
         }
@@ -225,9 +231,14 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     public void Abort(ConnectionAbortedException ex)
     {
+        Abort(ex, Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.ServerAbort);
+    }
+
+    public void Abort(ConnectionAbortedException ex, Http2ErrorCode errorCode, ConnectionErrorReason reason)
+    {
         if (TryClose())
         {
-            _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.INTERNAL_ERROR).Preserve();
+            _frameWriter.WriteGoAwayAsync(int.MaxValue, errorCode).Preserve();
         }
 
         _frameWriter.Abort(ex);
@@ -239,7 +250,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     public void HandleRequestHeadersTimeout()
     {
         Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout));
+        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.RequestHeadersTimeout);
     }
 
     public void HandleReadDataRateTimeout()
@@ -247,7 +258,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Debug.Assert(Limits.MinRequestBodyDataRate != null);
 
         Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout));
+        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.RequestBodyTimeout);
     }
 
     public void StopProcessingNextRequest(bool serverInitiated)
@@ -413,7 +424,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 if (TryClose())
                 {
-                    SetError(errorReason, errorCode);
+                    SetConnectionErrorCode(errorReason, errorCode);
                     await _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
                 }
 
@@ -561,7 +572,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                                 await _context.Transport.Output.WriteAsync(responseBytes);
 
                                 // Close connection here so a GOAWAY frame isn't written.
-                                TryClose();
+                                if (TryClose())
+                                {
+                                    SetConnectionErrorCode(ConnectionErrorReason.InvalidHttpVersion, Http2ErrorCode.PROTOCOL_ERROR);
+                                }
 
                                 return false;
                             }
@@ -1282,7 +1296,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                     // messages in case they somehow make it back to the client (not expected)
 
                     // This will close the socket - we want to do that right away
-                    Abort(new ConnectionAbortedException(CoreStrings.Http2ConnectionFaulted));
+                    Abort(new ConnectionAbortedException(CoreStrings.Http2ConnectionFaulted), Http2ErrorCode.ENHANCE_YOUR_CALM, ConnectionErrorReason.StreamResetLimitExceeded);
                     // Throwing an exception as well will help us clean up on our end more quickly by (e.g.) skipping processing of already-buffered input
                     throw new Http2ConnectionErrorException(CoreStrings.Http2ConnectionFaulted, Http2ErrorCode.ENHANCE_YOUR_CALM, ConnectionErrorReason.StreamResetLimitExceeded);
                 }
@@ -1477,6 +1491,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 if (TryClose())
                 {
+                    SetConnectionErrorCode(reason: null, Http2ErrorCode.NO_ERROR);
                     _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR).Preserve();
                 }
             }

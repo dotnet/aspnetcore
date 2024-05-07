@@ -488,7 +488,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
     private class TestProtocolErrorCodeFeature : IProtocolErrorCodeFeature
     {
-        public long Error { get; set; }
+        public long Error { get; set; } = -1;
     }
 
     private class LifetimeHandlerInterceptor : IHttp2StreamLifetimeHandler

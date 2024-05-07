@@ -117,7 +117,7 @@ internal sealed class HttpConnection : ITimeoutHandler
 
     private sealed class ProtocolErrorCodeFeature : IProtocolErrorCodeFeature
     {
-        public long Error { get; set; }
+        public long Error { get; set; } = -1;
     }
 
     private void AddMetricsHttpProtocolTag(string httpVersion)
