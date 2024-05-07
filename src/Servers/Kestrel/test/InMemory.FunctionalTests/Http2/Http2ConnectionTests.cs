@@ -1727,7 +1727,7 @@ public class Http2ConnectionTests : Http2TestBase
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
             ignoreNonGoAwayFrames: true,
             expectedLastStreamId: int.MaxValue,
-            expectedErrorCode: Http2ErrorCode.INTERNAL_ERROR,
+            expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
             expectedErrorMessage: CoreStrings.Http2ConnectionFaulted);
     }
 

@@ -154,7 +154,7 @@ internal sealed class Http2FrameWriter
             // exceeding the channel size.  Disconnecting seems appropriate in this case.
             var ex = new ConnectionAbortedException("HTTP/2 connection exceeded the output operations maximum queue size.");
             _log.Http2QueueOperationsExceeded(_connectionId, ex);
-            _http2Connection.Abort(ex);
+            _http2Connection.Abort(ex, Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.OutputQueueSizeExceeded);
         }
     }
 
@@ -330,7 +330,7 @@ internal sealed class Http2FrameWriter
         // Prevent Abort() from writing an INTERNAL_ERROR GOAWAY frame after our FLOW_CONTROL_ERROR.
         Complete();
         // Stop processing any more requests and immediately close the connection.
-        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError));
+        _http2Connection.Abort(new ConnectionAbortedException(CoreStrings.Http2ErrorWindowUpdateSizeInvalid, connectionError), Http2ErrorCode.FLOW_CONTROL_ERROR, ConnectionErrorReason.WindowUpdateSizeInvalid);
     }
 
     private bool TryQueueProducerForConnectionWindowUpdate(long actual, Http2OutputProducer producer)
@@ -527,7 +527,7 @@ internal sealed class Http2FrameWriter
         catch (Exception ex)
         {
             _log.HPackEncodingError(_connectionId, streamId, ex);
-            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+            _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex), Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.ErrorWritingHeaders);
         }
     }
 
@@ -568,7 +568,7 @@ internal sealed class Http2FrameWriter
             catch (Exception ex)
             {
                 _log.HPackEncodingError(_connectionId, streamId, ex);
-                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
+                _http2Connection.Abort(new ConnectionAbortedException(ex.Message, ex), Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.ErrorWritingHeaders);
             }
 
             return TimeFlushUnsynchronizedAsync();
@@ -1099,7 +1099,7 @@ internal sealed class Http2FrameWriter
         if (!_aborted && IsFlowControlQueueLimitEnabled && _waitingForMoreConnectionWindow.Count > _maximumFlowControlQueueSize)
         {
             _log.Http2FlowControlQueueOperationsExceeded(_connectionId, _maximumFlowControlQueueSize);
-            _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."));
+            _http2Connection.Abort(new ConnectionAbortedException("HTTP/2 connection exceeded the outgoing flow control maximum queue size."), Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.FlowControlQueueSizeExceeded);
         }
     }
 }

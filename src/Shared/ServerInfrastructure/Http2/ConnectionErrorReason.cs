@@ -26,5 +26,12 @@ internal enum ConnectionErrorReason
     MissingStreamEnd,
     MaxFrameLengthExceeded,
     ErrorReadingHeaders,
-    Other
+    ErrorWritingHeaders,
+    Other,
+    InputOrOutputCompleted,
+    InvalidHttpVersion,
+    RequestHeadersTimeout,
+    RequestBodyTimeout,
+    FlowControlQueueSizeExceeded,
+    OutputQueueSizeExceeded
 }
