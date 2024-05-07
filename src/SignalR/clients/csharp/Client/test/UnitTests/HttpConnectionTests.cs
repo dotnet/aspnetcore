@@ -166,7 +166,7 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
     [Fact]
     public async Task NegotiateAsyncAppendsCorrectAcceptHeader()
     {
-        var testHttpHandler = TestHttpMessageHandler.CreateDefault();
+        var testHttpHandler = new TestHttpMessageHandler(false);
         var negotiateUrlTcs = new TaskCompletionSource<bool>();
 
         testHttpHandler.OnNegotiate((request, cancellationToken) =>
@@ -195,7 +195,7 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
         }
         catch
         {
-
+            // ignore connection error
         }
 
         Assert.True(negotiateUrlTcs.Task.IsCompleted);
