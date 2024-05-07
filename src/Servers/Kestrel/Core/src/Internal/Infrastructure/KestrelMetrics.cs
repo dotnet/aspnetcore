@@ -100,6 +100,7 @@ internal sealed class KestrelMetrics
     {
         if (metricsContext.CurrentConnectionsCounterEnabled || metricsContext.ConnectionDurationEnabled)
         {
+            // Add protocol error code if feature is available and it's not the unset value (-1).
             long? errorCode = null;
             if (metricsContext.ConnectionContext.Features.Get<IProtocolErrorCodeFeature>() is IProtocolErrorCodeFeature errorCodeFeature && errorCodeFeature.Error != -1)
             {
