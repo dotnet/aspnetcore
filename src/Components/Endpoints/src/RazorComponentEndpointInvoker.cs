@@ -163,11 +163,22 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             // want to run the form handling logic against the error page.
             context.Features.Get<IExceptionHandlerFeature>() == null;
 
+
         if (processPost)
         {
-            var valid = false;
+            if (!context.Request.HasFormContentType)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                if (context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                {
+                    await context.Response.WriteAsync("The request has an incorrect Content-type.");
+                }
+                return RequestValidationState.InvalidPostRequest;
+            }
+
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
             // run the validation here.
+            var valid = false;
             if (context.Features.Get<IAntiforgeryValidationFeature>() is { } antiForgeryValidationFeature)
             {
                 if (!antiForgeryValidationFeature.IsValid)
