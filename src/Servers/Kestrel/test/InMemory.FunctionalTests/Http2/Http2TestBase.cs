@@ -155,9 +155,13 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
     internal TestServiceContext _serviceContext;
 
     internal DuplexPipe.DuplexPipePair _pair;
+    internal IConnectionMetricsTagsFeature _metricsTagsFeature;
+    internal IProtocolErrorCodeFeature _errorCodeFeature;
     internal Http2Connection _connection;
     protected Task _connectionTask;
     protected long _bytesReceived;
+
+    internal IDictionary<string, object> ConnectionTags => _metricsTagsFeature.Tags.ToDictionary(t => t.Key, t => t.Value);
 
     public Http2TestBase()
     {
@@ -458,9 +462,13 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
 
         _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
+        _metricsTagsFeature = new TestConnectionMetricsTagsFeature();
+        _errorCodeFeature = new TestProtocolErrorCodeFeature();
+
         var features = new FeatureCollection();
         features.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
-        features.Set<IProtocolErrorCodeFeature>(new TestProtocolErrorCodeFeature());
+        features.Set<IConnectionMetricsTagsFeature>(_metricsTagsFeature);
+        features.Set<IProtocolErrorCodeFeature>(_errorCodeFeature);
         _mockConnectionContext.Setup(x => x.Features).Returns(features);
         var httpConnectionContext = TestContextFactory.CreateHttpConnectionContext(
             serviceContext: _serviceContext,
@@ -479,6 +487,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
                            .Callback<TimeoutReason>(r => httpConnection.OnTimeout(r));
 
         _timeoutControl.Initialize();
+    }
+
+    private sealed class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
     }
 
     private class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature

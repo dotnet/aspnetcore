@@ -31,6 +31,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
@@ -207,6 +208,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         var requestAbortedWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestStartWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testServiceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
         await using (var server = new TestServer(async httpContext =>
         {
             requestStartWh.SetResult();
@@ -233,7 +239,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
 
             writeTcs.SetException(new Exception("This shouldn't be reached."));
-        }, new TestServiceContext(LoggerFactory), listenOptions))
+        }, testServiceContext, listenOptions))
         {
             using (var connection = server.CreateConnection())
             {
@@ -254,6 +260,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             // RequestAborted tripped
             await requestAbortedWh.Task.DefaultTimeout();
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionErrorReason, m.Tags.Keys);
+        });
     }
 
     [Theory]
@@ -427,7 +438,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         // There's no guarantee that the app even gets invoked in this test. The connection reset can be observed
         // as early as accept.
-        var testServiceContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testServiceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         await using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
         {
             for (var i = 0; i < numConnections; i++)
@@ -453,6 +467,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
         Assert.Empty(coreLogs.Where(w => w.LogLevel > LogLevel.Information));
+
+        await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+        var measurement = connectionDuration.GetMeasurementSnapshot().First();
+        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionErrorReason, measurement.Tags.Keys);
     }
 
     [Theory]
@@ -492,7 +511,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         };
 
-        var testContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions =
             {
@@ -584,6 +606,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), (string)m.Tags[KestrelMetrics.KestrelConnectionErrorReason]);
+        });
     }
 
     [Theory]
@@ -742,7 +769,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         };
 
-        var testContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions =
             {
@@ -827,6 +857,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await AssertStreamAborted(connection.Stream, responseSize);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), (string)m.Tags[KestrelMetrics.KestrelConnectionErrorReason]);
+        });
     }
 
     [ConditionalFact]
@@ -1000,7 +1035,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         var requestAborted = false;
         var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var testContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions =
             {
@@ -1063,6 +1101,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, TestSink.Writes.Count(w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied"));
         Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
         Assert.False(requestAborted);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionErrorReason, m.Tags.Keys);
+        });
     }
 
     private async Task AssertStreamAborted(Stream stream, int totalBytes)

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 internal enum ConnectionErrorReason
 {
     NoError,
-    ClientAbort,
+    ConnectionReset,
     FlowControlWindowExceeded,
     KeepAliveTimeout,
     InsufficientTlsVersion,
@@ -27,7 +27,7 @@ internal enum ConnectionErrorReason
     MaxFrameLengthExceeded,
     ErrorReadingHeaders,
     ErrorWritingHeaders,
-    Other,
+    UnexpectedError,
     InputOrOutputCompleted,
     InvalidHttpVersion,
     RequestHeadersTimeout,
@@ -38,5 +38,8 @@ internal enum ConnectionErrorReason
     ResponseMininumDataRateNotSatisfied,
     AbortedByApplication,
     ServerTimeout,
-    StreamCreationError
+    StreamCreationError,
+    IOError,
+    ClientGoAway,
+    ApplicationShutdown
 }

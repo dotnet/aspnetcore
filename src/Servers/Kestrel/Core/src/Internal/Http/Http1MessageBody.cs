@@ -72,7 +72,7 @@ internal abstract class Http1MessageBody : MessageBody
             _context.ReportApplicationError(connectionAbortedException);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest();
+            _context.StopProcessingNextRequest(ConnectionErrorReason.AbortedByApplication);
             return Task.CompletedTask;
         }
 
@@ -108,7 +108,7 @@ internal abstract class Http1MessageBody : MessageBody
             _context.ReportApplicationError(connectionAbortedException);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest();
+            _context.StopProcessingNextRequest(ConnectionErrorReason.AbortedByApplication);
         }
         finally
         {

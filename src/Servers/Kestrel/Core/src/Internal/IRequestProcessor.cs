@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal interface IRequestProcessor
 {
     Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull;
-    void StopProcessingNextRequest();
+    void StopProcessingNextRequest(ConnectionErrorReason errorReason);
     void HandleRequestHeadersTimeout();
     void HandleReadDataRateTimeout();
     void OnInputOrOutputCompleted();

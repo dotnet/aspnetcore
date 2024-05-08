@@ -30,6 +30,8 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using System.Diagnostics.Metrics;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
@@ -583,6 +585,9 @@ public class RequestTests : LoggedTest
     [Fact]
     public async Task RequestAbortedTokenFiredOnClientFIN()
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var appStarted = new SemaphoreSlim(0);
         var requestAborted = new SemaphoreSlim(0);
         var builder = TransportSelector.GetHostBuilder()
@@ -600,7 +605,8 @@ public class RequestTests : LoggedTest
                         await requestAborted.WaitAsync().DefaultTimeout();
                     }));
             })
-            .ConfigureServices(AddTestLogging);
+            .ConfigureServices(AddTestLogging)
+            .ConfigureServices(s => s.AddSingleton<IMeterFactory>(testMeterFactory));
 
         using (var host = builder.Build())
         {
@@ -617,6 +623,11 @@ public class RequestTests : LoggedTest
 
             await host.StopAsync();
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionErrorReason, m.Tags.Keys);
+        });
     }
 
     [Fact]
@@ -669,6 +680,9 @@ public class RequestTests : LoggedTest
     [InlineData(false)]
     public async Task AbortingTheConnection(bool fin)
     {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
         var builder = TransportSelector.GetHostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
@@ -688,7 +702,8 @@ public class RequestTests : LoggedTest
                         return Task.CompletedTask;
                     }));
             })
-            .ConfigureServices(AddTestLogging);
+            .ConfigureServices(AddTestLogging)
+            .ConfigureServices(s => s.AddSingleton<IMeterFactory>(testMeterFactory));
 
         using (var host = builder.Build())
         {
@@ -711,6 +726,11 @@ public class RequestTests : LoggedTest
 
             await host.StopAsync();
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.Equal(nameof(ConnectionErrorReason.AbortedByApplication), (string)m.Tags[KestrelMetrics.KestrelConnectionErrorReason]);
+        });
     }
 
     [Theory]
