@@ -75,10 +75,9 @@ public class InputNumberTest
         // Retrieve the render tree frames and extract attributes
         var frames = testRenderer.GetCurrentRenderTreeFrames(componentId);
         var attributes = frames.AsEnumerable()
-            .SkipWhile(frame => frame.FrameType != RenderTreeFrameType.Element || frame.ElementName != "input")
-            .Skip(1)  // Skip the input element frame itself
+            .SkipWhile(frame => frame.FrameType != RenderTreeFrameType.Element)
             .TakeWhile(frame => frame.FrameType == RenderTreeFrameType.Attribute)
-            .ToDictionary(frame => frame.AttributeName, frame => frame.AttributeValue.ToString());
+            .ToDictionary(frame => frame.AttributeName, frame => frame.AttributeValue);
 
         // Assert
         Assert.True(attributes.ContainsKey("type"));
