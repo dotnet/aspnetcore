@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Extensions;
 
@@ -210,18 +209,48 @@ public static class UriHelper
         var path = request.Path.Value ?? string.Empty;
         var queryString = request.QueryString.Value ?? string.Empty;
 
-        // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
         var length = scheme.Length + SchemeDelimiter.Length + host.Length
             + pathBase.Length + path.Length + queryString.Length;
 
-        return new StringBuilder(length)
-            .Append(scheme)
-            .Append(SchemeDelimiter)
-            .Append(host)
-            .Append(pathBase)
-            .Append(path)
-            .Append(queryString)
-            .ToString();
+        return string.Create(
+            length,
+            (scheme, host, pathBase, path, queryString),
+            static (buffer, uriParts) =>
+            {
+                var (scheme, host, pathBase, path, queryString) = uriParts;
+
+                if (scheme.Length > 0)
+                {
+                    scheme.CopyTo(buffer);
+                    buffer = buffer.Slice(scheme.Length);
+                }
+
+                SchemeDelimiter.CopyTo(buffer);
+                buffer = buffer.Slice(SchemeDelimiter.Length);
+
+                if (host.Length > 0)
+                {
+                    host.CopyTo(buffer);
+                    buffer = buffer.Slice(host.Length);
+                }
+
+                if (pathBase.Length > 0)
+                {
+                    pathBase.CopyTo(buffer);
+                    buffer = buffer.Slice(pathBase.Length);
+                }
+
+                if (path.Length > 0)
+                {
+                    path.CopyTo(buffer);
+                    buffer = buffer.Slice(path.Length);
+                }
+
+                if (queryString.Length > 0)
+                {
+                    queryString.CopyTo(buffer);
+                }
+            });
     }
 
     /// <summary>
