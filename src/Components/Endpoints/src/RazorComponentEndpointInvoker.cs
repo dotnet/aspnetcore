@@ -216,7 +216,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                if (context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
                 {
                     await context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
                 }
