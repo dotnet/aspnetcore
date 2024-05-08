@@ -126,6 +126,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
     private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
     private int _gracefulCloseInitiator;
+    private ConnectionErrorReason _gracefulCloseReason;
     private int _isClosed;
 
     // Internal for testing
@@ -209,11 +210,12 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
     public void OnInputOrOutputCompleted()
     {
+        var hasActiveStreams = _clientActiveStreamCount != 0;
         if (TryClose())
         {
-            SetConnectionErrorCode(ConnectionErrorReason.InputOrOutputCompleted, Http2ErrorCode.PROTOCOL_ERROR);
+            SetConnectionErrorCode(hasActiveStreams ? ConnectionErrorReason.ConnectionReset : ConnectionErrorReason.NoError, Http2ErrorCode.NO_ERROR);
         }
-        var useException = _context.ServiceContext.ServerOptions.FinOnError || _clientActiveStreamCount != 0;
+        var useException = _context.ServiceContext.ServerOptions.FinOnError || hasActiveStreams;
         _frameWriter.Abort(useException ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
     }
 
@@ -245,8 +247,8 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         _frameWriter.Abort(ex);
     }
 
-    public void StopProcessingNextRequest()
-        => StopProcessingNextRequest(serverInitiated: true);
+    public void StopProcessingNextRequest(ConnectionErrorReason reason)
+        => StopProcessingNextRequest(serverInitiated: true, reason);
 
     public void HandleRequestHeadersTimeout()
     {
@@ -262,12 +264,13 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), Http2ErrorCode.INTERNAL_ERROR, ConnectionErrorReason.RequestBodyTimeout);
     }
 
-    public void StopProcessingNextRequest(bool serverInitiated)
+    public void StopProcessingNextRequest(bool serverInitiated, ConnectionErrorReason reason)
     {
         var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
 
         if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
         {
+            _gracefulCloseReason = reason;
             Input.CancelPendingRead();
         }
     }
@@ -276,7 +279,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Exception? error = null;
         var errorCode = Http2ErrorCode.NO_ERROR;
-        var errorReason = ConnectionErrorReason.Other;
+        var errorReason = ConnectionErrorReason.NoError;
 
         try
         {
@@ -380,6 +383,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             if (_clientActiveStreamCount > 0)
             {
                 Log.RequestProcessingError(ConnectionId, ex);
+                errorReason = ConnectionErrorReason.ConnectionReset;
             }
 
             error = ex;
@@ -388,6 +392,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         {
             Log.RequestProcessingError(ConnectionId, ex);
             error = ex;
+            errorReason = ConnectionErrorReason.IOError;
         }
         catch (ConnectionAbortedException ex)
         {
@@ -415,6 +420,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);
             error = ex;
             errorCode = Http2ErrorCode.INTERNAL_ERROR;
+            errorReason = ConnectionErrorReason.UnexpectedError;
         }
         finally
         {
@@ -1085,7 +1091,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
 
         // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
-        StopProcessingNextRequest(serverInitiated: false);
+        StopProcessingNextRequest(serverInitiated: false, ConnectionErrorReason.ClientGoAway);
         _context.ConnectionFeatures.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
 
         return Task.CompletedTask;
@@ -1492,7 +1498,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 if (TryClose())
                 {
-                    SetConnectionErrorCode(ConnectionErrorReason.NoError, Http2ErrorCode.NO_ERROR);
+                    SetConnectionErrorCode(_gracefulCloseReason, Http2ErrorCode.NO_ERROR);
                     _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.NO_ERROR).Preserve();
                 }
             }

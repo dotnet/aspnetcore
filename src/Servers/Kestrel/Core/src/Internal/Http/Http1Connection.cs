@@ -99,7 +99,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     void IRequestProcessor.OnInputOrOutputCompleted()
     {
         // Closed gracefully.
-        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!, ConnectionErrorReason.InputOrOutputCompleted);
+        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!, ConnectionErrorReason.NoError);
         CancelRequestAbortedToken();
     }
 
@@ -130,7 +130,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// Called on all active connections when the server wants to initiate a shutdown
     /// and after a keep-alive timeout.
     /// </summary>
-    public void StopProcessingNextRequest()
+    public void StopProcessingNextRequest(ConnectionErrorReason errorReason)
     {
         _keepAlive = false;
         Input.CancelPendingRead();

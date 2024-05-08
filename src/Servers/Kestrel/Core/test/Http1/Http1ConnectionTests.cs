@@ -246,7 +246,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         }
         Assert.Equal($"{connectionId}:{count:X8}", feature.TraceIdentifier);
 
-        _http1Connection.StopProcessingNextRequest();
+        _http1Connection.StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown);
         await requestProcessingTask.DefaultTimeout();
     }
 
@@ -572,7 +572,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout;
         _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
-        _http1Connection.StopProcessingNextRequest();
+        _http1Connection.StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown);
         _application.Output.Complete();
 
         await requestProcessingTask.DefaultTimeout();
@@ -657,7 +657,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
         await _application.Output.WriteAsync(data);
 
-        _http1Connection.StopProcessingNextRequest();
+        _http1Connection.StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown);
         Assert.IsNotType<Task<Task>>(requestProcessingTask);
 
         await requestProcessingTask.DefaultTimeout();

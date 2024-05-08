@@ -101,7 +101,7 @@ internal sealed class HttpConnection : ITimeoutHandler
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state!).OnConnectionClosed(), this);
@@ -137,7 +137,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         _protocolSelectionState = ProtocolSelectionState.Selected;
     }
 
-    private void StopProcessingNextRequest()
+    private void StopProcessingNextRequest(ConnectionErrorReason reason)
     {
         ProtocolSelectionState previousState;
         lock (_protocolSelectionLock)
@@ -149,7 +149,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (previousState)
         {
             case ProtocolSelectionState.Selected:
-                _requestProcessor!.StopProcessingNextRequest();
+                _requestProcessor!.StopProcessingNextRequest(reason);
                 break;
             case ProtocolSelectionState.Aborted:
                 break;
@@ -265,7 +265,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (reason)
         {
             case TimeoutReason.KeepAlive:
-                _requestProcessor!.StopProcessingNextRequest();
+                _requestProcessor!.StopProcessingNextRequest(ConnectionErrorReason.KeepAliveTimeout);
                 break;
             case TimeoutReason.RequestHeaders:
                 _requestProcessor!.HandleRequestHeadersTimeout();

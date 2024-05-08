@@ -19,6 +19,8 @@ internal sealed class KestrelMetrics
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
 
+    public const string KestrelConnectionErrorReason = "kestrel.connection.error_reason";
+
     public const string Http11 = "1.1";
     public const string Http2 = "2";
     public const string Http3 = "3";

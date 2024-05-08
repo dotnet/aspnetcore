@@ -99,6 +99,7 @@ public class Http2TimeoutTests : Http2TestBase
         _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        Assert.Equal(nameof(ConnectionErrorReason.KeepAliveTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -193,6 +194,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             CoreStrings.BadRequest_RequestHeadersTimeout);
+        Assert.Equal(nameof(ConnectionErrorReason.RequestHeadersTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
@@ -211,6 +213,7 @@ public class Http2TimeoutTests : Http2TestBase
         await SendGoAwayAsync();
 
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+        Assert.Equal(nameof(ConnectionErrorReason.ClientGoAway), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         AdvanceTime(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
             limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
@@ -298,6 +301,20 @@ public class Http2TimeoutTests : Http2TestBase
             Http2ErrorCode.STREAM_CLOSED,
             CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
 
+        switch (finalFrameType)
+        {
+            case Http2FrameType.DATA:
+                Assert.Equal(nameof(ConnectionErrorReason.ReceivedFrameUnknownStream), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
+                break;
+
+            case Http2FrameType.CONTINUATION:
+                Assert.Equal(nameof(ConnectionErrorReason.ReceivedFrameAfterStreamClose), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
+                break;
+
+            default:
+                throw new NotImplementedException(finalFrameType.ToString());
+        }
+
         closed = true;
 
         await sendTask.DefaultTimeout();
@@ -371,6 +388,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
+        Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -425,6 +443,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         Assert.True((await _pair.Application.Input.ReadAsync().AsTask().DefaultTimeout()).IsCompleted);
+        Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -476,6 +495,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -529,6 +549,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -594,6 +615,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.ResponseMininumDataRateNotSatisfied), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
@@ -640,6 +662,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.RequestBodyTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -690,6 +713,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.RequestBodyTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -756,6 +780,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.RequestBodyTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -823,6 +848,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.RequestBodyTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
@@ -877,6 +903,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionErrorReason, ConnectionTags.Keys);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
         _mockConnectionContext.VerifyNoOtherCalls();
@@ -962,6 +989,7 @@ public class Http2TimeoutTests : Http2TestBase
             expectedLastStreamId: int.MaxValue,
             Http2ErrorCode.INTERNAL_ERROR,
             null);
+        Assert.Equal(nameof(ConnectionErrorReason.RequestBodyTimeout), ConnectionTags[KestrelMetrics.KestrelConnectionErrorReason]);
 
         _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
              e.Message == CoreStrings.BadRequest_RequestBodyTimeout)), Times.Once);
