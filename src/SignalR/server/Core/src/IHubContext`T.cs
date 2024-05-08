@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// <summary>
 /// A context abstraction for a hub.
 /// </summary>
-public interface IHubContext<THub, T>
+public interface IHubContext<out THub, T>
     where THub : Hub<T>
     where T : class
 {
