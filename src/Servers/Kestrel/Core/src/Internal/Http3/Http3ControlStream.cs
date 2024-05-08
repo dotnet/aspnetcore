@@ -387,7 +387,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         EnsureSettingsFrame(Http3FrameType.GoAway);
 
         // StopProcessingNextRequest must be called before RequestClose to ensure it's considered client initiated.
-        _context.Connection.StopProcessingNextRequest(serverInitiated: false);
+        _context.Connection.StopProcessingNextRequest(serverInitiated: false, ConnectionErrorReason.ClientGoAway);
         _context.ConnectionContext.Features.Get<IConnectionLifetimeNotificationFeature>()?.RequestClose();
 
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-goaway
