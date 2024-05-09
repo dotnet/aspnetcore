@@ -7,13 +7,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 
 internal sealed class Http3ConnectionErrorException : Exception
 {
-    public Http3ConnectionErrorException(string message, Http3ErrorCode errorCode, ConnectionEndReason errorReason)
+    public Http3ConnectionErrorException(string message, Http3ErrorCode errorCode, ConnectionEndReason reason)
         : base($"HTTP/3 connection error ({Http3Formatting.ToFormattedErrorCode(errorCode)}): {message}")
     {
         ErrorCode = errorCode;
-        ErrorReason = errorReason;
+        Reason = reason;
     }
 
     public Http3ErrorCode ErrorCode { get; }
-    public ConnectionEndReason ErrorReason { get; }
+    public ConnectionEndReason Reason { get; }
 }

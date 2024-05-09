@@ -175,7 +175,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         }
     }
 
-    private void Abort(ConnectionAbortedException ex, ConnectionEndReason errorReason)
+    private void Abort(ConnectionAbortedException ex, ConnectionEndReason reason)
     {
         ProtocolSelectionState previousState;
 
@@ -190,7 +190,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (previousState)
         {
             case ProtocolSelectionState.Selected:
-                _requestProcessor!.Abort(ex, errorReason);
+                _requestProcessor!.Abort(ex, reason);
                 break;
             case ProtocolSelectionState.Aborted:
                 break;
