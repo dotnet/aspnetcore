@@ -59,7 +59,7 @@ public class Program
         builder.Services.AddControllers();
         #endif
         #if (EnableOpenAPI)
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnetcore/openapi
+        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
         #endif
         #if (WindowsAuth)

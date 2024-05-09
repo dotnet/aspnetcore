@@ -42,7 +42,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 #if (EnableOpenAPI)
-// Learn more about configuring OpenAPI at https://aka.ms/aspnetcore/openapi
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 #endif
 

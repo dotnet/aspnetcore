@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 #if (EnableOpenAPI)
-// Learn more about configuring OpenAPI at https://aka.ms/aspnetcore/openapi
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 #endif
 #if (WindowsAuth)

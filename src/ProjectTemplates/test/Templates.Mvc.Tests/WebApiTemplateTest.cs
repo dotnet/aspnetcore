@@ -271,6 +271,8 @@ public class WebApiTemplateTest : LoggedTest
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertOk("weatherforecast");
+            // OpenAPI endpoint is only enabled in Development
+            await aspNetProcess.AssertNotFound("openapi/v1.json");
             await aspNetProcess.AssertNotFound("/");
         }
     }
