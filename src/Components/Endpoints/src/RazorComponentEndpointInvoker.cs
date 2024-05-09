@@ -163,7 +163,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             // want to run the form handling logic against the error page.
             context.Features.Get<IExceptionHandlerFeature>() == null;
 
-
         if (processPost)
         {
             if (!context.Request.HasFormContentType)
