@@ -12,6 +12,7 @@
     {"testName": {"contains": "CanLaunchPhotinoWebViewAndClickButton"}},
     {"testName": {"contains": "CheckInvalidHostingModelParameter"}},
     {"testAssembly": {"contains": "IIS"}},
+    {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},
     {"failureMessage": {"contains": "network disconnected"}}
   ],

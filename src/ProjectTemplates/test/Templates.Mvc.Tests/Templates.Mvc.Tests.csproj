@@ -20,6 +20,7 @@
     <RestoreFolderName>Mvc</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
     <HelixTimeout>01:50:00</HelixTimeout>
+    <TestDependsOnPlaywright>true</TestDependsOnPlaywright>
   </PropertyGroup>
 
   <ItemGroup>
