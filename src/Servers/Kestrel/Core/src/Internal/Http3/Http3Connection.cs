@@ -47,7 +47,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private long _highestOpenedRequestStreamId = DefaultHighestOpenedRequestStreamId;
     private bool _aborted;
     private int _gracefulCloseInitiator;
-    private ConnectionErrorReason _gracefulCloseReason;
+    private ConnectionEndReason _gracefulCloseReason;
     private int _stoppedAcceptingStreams;
     private bool _gracefulCloseStarted;
     private int _activeRequestCount;
@@ -105,10 +105,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     public string ConnectionId => _context.ConnectionId;
     public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
-    public void StopProcessingNextRequest(ConnectionErrorReason reason)
+    public void StopProcessingNextRequest(ConnectionEndReason reason)
         => StopProcessingNextRequest(serverInitiated: true, reason);
 
-    public void StopProcessingNextRequest(bool serverInitiated, ConnectionErrorReason reason)
+    public void StopProcessingNextRequest(bool serverInitiated, ConnectionEndReason reason)
     {
         bool previousState;
         lock (_protocolSelectionLock)
@@ -155,12 +155,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         return false;
     }
 
-    public void Abort(ConnectionAbortedException ex, ConnectionErrorReason reason)
+    public void Abort(ConnectionAbortedException ex, ConnectionEndReason reason)
     {
         Abort(ex, Http3ErrorCode.InternalError, reason);
     }
 
-    public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode, ConnectionErrorReason reason)
+    public void Abort(ConnectionAbortedException ex, Http3ErrorCode errorCode, ConnectionEndReason reason)
     {
         bool previousState;
 
@@ -188,9 +188,9 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         if (!previousState)
         {
             _errorCodeFeature.Error = (long)errorCode;
-            if (_metricsTagsFeature != null && reason != ConnectionErrorReason.NoError)
+            if (_metricsTagsFeature != null && reason != ConnectionEndReason.NoError)
             {
-                _metricsTagsFeature.TryAddTag("kestrel.connection.error_reason", reason.ToString());
+                _metricsTagsFeature.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
             }
 
             if (TryStopAcceptingStreams())
@@ -245,7 +245,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                     if (stream.StreamTimeoutTimestamp < timestamp)
                     {
-                        connection.OnStreamConnectionError(new Http3ConnectionErrorException("A control stream used by the connection was closed or reset.", Http3ErrorCode.ClosedCriticalStream, ConnectionErrorReason.ClosedCriticalStream));
+                        connection.OnStreamConnectionError(new Http3ConnectionErrorException(CoreStrings.Http3ErrorControlStreamClosed, Http3ErrorCode.ClosedCriticalStream, ConnectionEndReason.ClosedCriticalStream));
                     }
                 }
             }
@@ -323,7 +323,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     {
                         // Cancel connection to be consistent with other data rate limits.
                         Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, stream.TraceIdentifier);
-                        OnStreamConnectionError(new Http3ConnectionErrorException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied, Http3ErrorCode.InternalError, ConnectionErrorReason.ResponseMininumDataRateNotSatisfied));
+                        OnStreamConnectionError(new Http3ConnectionErrorException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied, Http3ErrorCode.InternalError, ConnectionEndReason.MinResponseDataRate));
                     }
                 }
             }
@@ -346,7 +346,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         Http3ControlStream? outboundControlStream = null;
         ValueTask outboundControlStreamTask = default;
         bool clientAbort = false;
-        ConnectionErrorReason errorReason = ConnectionErrorReason.NoError;
+        ConnectionEndReason errorReason = ConnectionEndReason.NoError;
 
         try
         {
@@ -470,7 +470,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 if (_activeRequestCount > 0)
                 {
                     Log.RequestProcessingError(_context.ConnectionId, ex);
-                    errorReason = ConnectionErrorReason.ConnectionReset;
+                    errorReason = ConnectionEndReason.ConnectionReset;
                 }
             }
             error = ex;
@@ -480,13 +480,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             Log.RequestProcessingError(_context.ConnectionId, ex);
             error = ex;
-            errorReason = ConnectionErrorReason.IOError;
+            errorReason = ConnectionEndReason.IOError;
         }
         catch (ConnectionAbortedException ex)
         {
             Log.RequestProcessingError(_context.ConnectionId, ex);
             error = ex;
-            errorReason = ConnectionErrorReason.UnexpectedError;
+            errorReason = ConnectionEndReason.UnexpectedError;
 
             Debug.Fail("Figure out error reason");
         }
@@ -499,7 +499,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         catch (Exception ex)
         {
             error = ex;
-            errorReason = ConnectionErrorReason.UnexpectedError;
+            errorReason = ConnectionEndReason.UnexpectedError;
         }
         finally
         {
@@ -548,6 +548,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     await outboundControlStreamTask;
                 }
 
+                // Use graceful close reason if it has been set.
+                if (errorReason == ConnectionEndReason.NoError && _gracefulCloseReason != ConnectionEndReason.NoError)
+                {
+                    errorReason = _gracefulCloseReason;
+                }
+
                 // Complete
                 Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error, errorReason);
 
@@ -561,7 +567,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             }
             catch
             {
-                Abort(CreateConnectionAbortError(error, clientAbort), Http3ErrorCode.InternalError, ConnectionErrorReason.UnexpectedError);
+                Abort(CreateConnectionAbortError(error, clientAbort), Http3ErrorCode.InternalError, ConnectionEndReason.UnexpectedError);
                 throw;
             }
             finally
@@ -722,11 +728,11 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             Log.Http3OutboundControlStreamError(ConnectionId, ex);
 
-            var connectionError = new Http3ConnectionErrorException(CoreStrings.Http3ControlStreamErrorInitializingOutbound, Http3ErrorCode.ClosedCriticalStream, ConnectionErrorReason.ClosedCriticalStream);
+            var connectionError = new Http3ConnectionErrorException(CoreStrings.Http3ControlStreamErrorInitializingOutbound, Http3ErrorCode.ClosedCriticalStream, ConnectionEndReason.ClosedCriticalStream);
             Log.Http3ConnectionError(ConnectionId, connectionError);
 
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-6.2.1
-            Abort(new ConnectionAbortedException(connectionError.Message, connectionError), connectionError.ErrorCode, ConnectionErrorReason.ClosedCriticalStream);
+            Abort(new ConnectionAbortedException(connectionError.Message, connectionError), connectionError.ErrorCode, ConnectionEndReason.ClosedCriticalStream);
         }
     }
 
@@ -892,7 +898,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     public void HandleRequestHeadersTimeout()
     {
         Log.ConnectionBadRequest(ConnectionId, KestrelBadHttpRequestException.GetException(RequestRejectionReason.RequestHeadersTimeout));
-        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), ConnectionErrorReason.RequestHeadersTimeout);
+        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout), ConnectionEndReason.RequestHeadersTimeout);
     }
 
     public void HandleReadDataRateTimeout()
@@ -900,7 +906,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         Debug.Assert(Limits.MinRequestBodyDataRate != null);
 
         Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
-        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), ConnectionErrorReason.RequestBodyTimeout);
+        Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout), ConnectionEndReason.MinRequestBodyDataRate);
     }
 
     public void OnInputOrOutputCompleted()
@@ -908,7 +914,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         TryStopAcceptingStreams();
 
         // Abort the connection using the error code the client used. For a graceful close, this should be H3_NO_ERROR.
-        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error, ConnectionErrorReason.InputOrOutputCompleted);
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error, ConnectionEndReason.InputOrOutputCompleted);
     }
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)

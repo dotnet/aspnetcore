@@ -93,6 +93,8 @@ internal class Http3InMemory
 
     internal TestMultiplexedConnectionContext MultiplexedConnectionContext { get; set; }
 
+    internal IDictionary<string, object> ConnectionTags => MultiplexedConnectionContext.Tags.ToDictionary(t => t.Key, t => t.Value);
+
     internal long GetStreamId(long mask)
     {
         var id = (_currentStreamId << 2) | mask;
@@ -981,7 +983,7 @@ internal class Http3ControlStream : Http3StreamBase
     }
 }
 
-internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature, IConnectionMetricsContextFeature
+internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, IConnectionLifetimeNotificationFeature, IConnectionLifetimeFeature, IConnectionHeartbeatFeature, IProtocolErrorCodeFeature, IConnectionMetricsContextFeature, IConnectionMetricsTagsFeature
 {
     public readonly Channel<ConnectionContext> ToServerAcceptQueue = Channel.CreateUnbounded<ConnectionContext>(new UnboundedChannelOptions
     {
@@ -1006,6 +1008,7 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         Features.Set<IConnectionHeartbeatFeature>(this);
         Features.Set<IProtocolErrorCodeFeature>(this);
         Features.Set<IConnectionMetricsContextFeature>(this);
+        Features.Set<IConnectionMetricsTagsFeature>(this);
         ConnectionClosedRequested = ConnectionClosingCts.Token;
     }
 
@@ -1024,7 +1027,10 @@ internal class TestMultiplexedConnectionContext : MultiplexedConnectionContext, 
         get => _error ?? -1;
         set => _error = value;
     }
+
     public ConnectionMetricsContext MetricsContext { get; }
+
+    public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
 
     public override void Abort()
     {

@@ -125,11 +125,11 @@ public class Http1OutputProducerTests : IDisposable
 
         mockConnectionContext.Verify(f => f.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never());
 
-        outputProducer.Abort(null, ConnectionErrorReason.AbortedByApplication);
+        outputProducer.Abort(null, ConnectionEndReason.AbortedByApplication);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
 
-        outputProducer.Abort(null, ConnectionErrorReason.AbortedByApplication);
+        outputProducer.Abort(null, ConnectionEndReason.AbortedByApplication);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
     }

@@ -626,7 +626,7 @@ public class RequestTests : LoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionErrorReason, m.Tags.Keys);
+            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, m.Tags.Keys);
         });
     }
 
@@ -729,7 +729,7 @@ public class RequestTests : LoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.Equal(nameof(ConnectionErrorReason.AbortedByApplication), (string)m.Tags[KestrelMetrics.KestrelConnectionErrorReason]);
+            Assert.Equal(nameof(ConnectionEndReason.AbortedByApplication), (string)m.Tags[KestrelMetrics.KestrelConnectionEndReason]);
         });
     }
 

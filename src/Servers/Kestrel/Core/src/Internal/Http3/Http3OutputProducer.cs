@@ -95,7 +95,7 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionErrorReason errorReason)
+    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionEndReason errorReason)
     {
         _stream.Abort(abortReason, Http3ErrorCode.InternalError);
     }
