@@ -56,6 +56,16 @@ public readonly struct RenderHandle
     /// </summary>
     public ComponentPlatform Platform => _renderer?.ComponentPlatform ?? throw new InvalidOperationException("No renderer has been initialized.");
 
+    internal IComponentRenderMode? GetInteractiveRenderMode()
+    {
+        if (_renderer == null)
+        {
+            throw new InvalidOperationException("No renderer has been initialized.");
+        }
+
+        return _renderer.ComponentPlatform.RenderMode ?? _renderer.GetComponentRenderMode(_componentId);
+    }
+
     /// <summary>
     /// Notifies the renderer that the component should be rendered.
     /// </summary>

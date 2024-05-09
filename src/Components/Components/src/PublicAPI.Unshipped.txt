@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ComponentBase.InteractiveRenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.ComponentBase.Platform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
