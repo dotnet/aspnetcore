@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -165,7 +164,9 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (processPost)
         {
-            if (!context.Request.HasFormContentType)
+            // We can't use request.HasFormContentType here because it will throw. We should revisit that.
+            if (!string.Equals(context.Request.ContentType, "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(context.Request.ContentType, "multipart/form-data", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
