@@ -168,7 +168,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             if (!context.Request.HasFormContentType)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                if (context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
                 {
                     await context.Response.WriteAsync("The request has an incorrect Content-type.");
                 }
