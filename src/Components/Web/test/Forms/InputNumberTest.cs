@@ -81,7 +81,6 @@ public class InputNumberTest
                         .ToDictionary(frame => frame.AttributeName, frame => frame.AttributeValue);
 
         // Assert
-        Assert.True(attributes.ContainsKey("type"));
         Assert.Equal("range", attributes["type"]);
     }
 
