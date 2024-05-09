@@ -117,9 +117,10 @@ public class Http1OutputProducerTests : IDisposable
     [Fact]
     public void AbortsTransportEvenAfterDispose()
     {
+        var metricsTagsFeature = new TestConnectionMetricsTagsFeature();
         var mockConnectionContext = new Mock<ConnectionContext>();
 
-        var outputProducer = CreateOutputProducer(connectionContext: mockConnectionContext.Object);
+        var outputProducer = CreateOutputProducer(connectionContext: mockConnectionContext.Object, metricsTagsFeature: metricsTagsFeature);
 
         outputProducer.Dispose();
 
@@ -132,6 +133,8 @@ public class Http1OutputProducerTests : IDisposable
         outputProducer.Abort(null, ConnectionEndReason.AbortedByApplication);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
+
+        Assert.Equal(nameof(ConnectionEndReason.AbortedByApplication), metricsTagsFeature.Tags.Single(t => t.Key == KestrelMetrics.KestrelConnectionEndReason).Value);
     }
 
     [Fact]
@@ -219,7 +222,8 @@ public class Http1OutputProducerTests : IDisposable
 
     private TestHttpOutputProducer CreateOutputProducer(
         PipeOptions pipeOptions = null,
-        ConnectionContext connectionContext = null)
+        ConnectionContext connectionContext = null,
+        IConnectionMetricsTagsFeature metricsTagsFeature = null)
     {
         pipeOptions = pipeOptions ?? new PipeOptions();
         connectionContext = connectionContext ?? Mock.Of<ConnectionContext>();
@@ -234,10 +238,15 @@ public class Http1OutputProducerTests : IDisposable
             serviceContext.Log,
             Mock.Of<ITimeoutControl>(),
             Mock.Of<IHttpMinResponseDataRateFeature>(),
-            Mock.Of<IConnectionMetricsTagsFeature>(),
+            metricsTagsFeature ?? new TestConnectionMetricsTagsFeature(),
             Mock.Of<IHttpOutputAborter>());
 
         return socketOutput;
+    }
+
+    private class TestConnectionMetricsTagsFeature : IConnectionMetricsTagsFeature
+    {
+        public ICollection<KeyValuePair<string, object>> Tags { get; } = new List<KeyValuePair<string, object>>();
     }
 
     private class TestHttpOutputProducer : Http1OutputProducer
