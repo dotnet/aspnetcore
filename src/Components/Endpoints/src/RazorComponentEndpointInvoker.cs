@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -164,16 +165,19 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (processPost)
         {
-            // We can't use request.HasFormContentType here because it will throw. We should revisit that.
-            if (!string.Equals(context.Request.ContentType, "application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(context.Request.ContentType, "multipart/form-data", StringComparison.OrdinalIgnoreCase))
+            if (context.Request.ContentType is not null && MediaTypeHeaderValue.TryParse(context.Request.ContentType, out var type))
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
+                // We can't use request.HasFormContentType here because it will throw. We should revisit that.
+                if (!type.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) &&
+                    !type.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase))
                 {
-                    await context.Response.WriteAsync("The request has an incorrect Content-type.");
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
+                    {
+                        await context.Response.WriteAsync("The request has an incorrect Content-type.");
+                    }
+                    return RequestValidationState.InvalidPostRequest;
                 }
-                return RequestValidationState.InvalidPostRequest;
             }
 
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
