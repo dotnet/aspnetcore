@@ -903,7 +903,7 @@ public class Http2TimeoutTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
         _mockConnectionContext.VerifyNoOtherCalls();

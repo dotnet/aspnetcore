@@ -213,7 +213,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         var hasActiveStreams = _clientActiveStreamCount != 0;
         if (TryClose())
         {
-            SetConnectionErrorCode(hasActiveStreams ? ConnectionEndReason.ConnectionReset : ConnectionEndReason.NoError, Http2ErrorCode.NO_ERROR);
+            SetConnectionErrorCode(hasActiveStreams ? ConnectionEndReason.ConnectionReset : ConnectionEndReason.TransportCompleted, Http2ErrorCode.NO_ERROR);
         }
         var useException = _context.ServiceContext.ServerOptions.FinOnError || hasActiveStreams;
         _frameWriter.Abort(useException ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!);
@@ -225,7 +225,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Debug.Assert(_errorCodeFeature.Error == -1, "Error code feature should only be set once.");
 
         _errorCodeFeature.Error = (long)errorCode;
-        if (_metricsTagsFeature != null && reason != ConnectionEndReason.NoError)
+        if (_metricsTagsFeature != null)
         {
             _metricsTagsFeature.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
         }
@@ -279,7 +279,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Exception? error = null;
         var errorCode = Http2ErrorCode.NO_ERROR;
-        var reason = ConnectionEndReason.NoError;
+        var reason = ConnectionEndReason.Unknown;
 
         try
         {
@@ -290,6 +290,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
             if (!await TryReadPrefaceAsync())
             {
+                reason = ConnectionEndReason.TransportCompleted;
                 return;
             }
 
@@ -349,6 +350,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
                     if (result.IsCompleted)
                     {
+                        reason = ConnectionEndReason.TransportCompleted;
                         return;
                     }
 
@@ -384,6 +386,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 Log.RequestProcessingError(ConnectionId, ex);
                 reason = ConnectionEndReason.ConnectionReset;
+            }
+            else
+            {
+                reason = ConnectionEndReason.TransportCompleted;
             }
 
             error = ex;

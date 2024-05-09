@@ -48,7 +48,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(1, LogMessages.Count(m => m.EventId.Name == "Http2MaxConcurrentStreamsReached"));
 
         await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Same(path1, path2);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -278,7 +278,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(StringValues.Empty, contentTypeValue2);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     private class ResponseTrailersWrapper : IHeaderDictionary
@@ -396,7 +396,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.NotSame(trailersFirst, trailersLast);
 
         await StopConnectionAsync(expectedLastStreamId: 5, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -430,7 +430,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -555,7 +555,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 3);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -623,7 +623,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(0, _connection.StreamPool.Count);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -653,7 +653,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(0, _connection.StreamPool.Count);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -695,7 +695,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.True(((Http2OutputProducer)pooledStream.Output)._disposed);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -746,7 +746,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -771,7 +771,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -799,7 +799,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -894,7 +894,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         foreach (var frame in dataFrames)
         {
@@ -934,7 +934,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new Memory<byte>(), endStream: true);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -965,7 +965,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -1029,7 +1029,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 3);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         Assert.True(_helloBytes.AsSpan().SequenceEqual(stream1DataFrame1.PayloadSequence.ToArray()));
         Assert.True(_worldBytes.AsSpan().SequenceEqual(stream1DataFrame2.PayloadSequence.ToArray()));
@@ -1142,7 +1142,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         foreach (var frame in dataFrames)
         {
@@ -1221,7 +1221,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -1249,7 +1249,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
     }
@@ -1319,7 +1319,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
 
@@ -1360,7 +1360,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 0);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         var updateSize = ((framesConnectionInWindow / 2) + 1) * _maxData.Length;
         Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
@@ -1452,7 +1452,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
 
         foreach (var frame in dataFrames)
         {
@@ -1650,7 +1650,7 @@ public class Http2ConnectionTests : Http2TestBase
         firstRequestBlock.SetResult();
 
         await StopConnectionAsync(3, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -1663,7 +1663,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal((uint)100, _connection.MaxTrackedStreams);
 
         await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -1676,7 +1676,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal((uint)200, _connection.MaxTrackedStreams);
 
         await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -1689,7 +1689,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal((uint)int.MaxValue * 2, _connection.MaxTrackedStreams);
 
         await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -1800,7 +1800,7 @@ public class Http2ConnectionTests : Http2TestBase
         tcs.SetResult();
 
         await StopConnectionAsync(streamId, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -1968,7 +1968,7 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         await WaitForAllStreamsAsync();
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2054,7 +2054,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2108,7 +2108,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2127,7 +2127,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -2149,7 +2149,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2168,7 +2168,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -2190,7 +2190,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -2238,7 +2238,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2272,7 +2272,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2323,7 +2323,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2359,7 +2359,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -2845,7 +2845,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -3004,7 +3004,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3024,7 +3024,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3256,7 +3256,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Contains(1, _abortedStreamIds);
         Assert.Contains(3, _abortedStreamIds);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3342,7 +3342,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Contains(3, _abortedStreamIds);
         Assert.Contains(5, _abortedStreamIds);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3539,7 +3539,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53744")]
@@ -3615,7 +3615,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3676,7 +3676,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3882,7 +3882,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -3923,7 +3923,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4262,7 +4262,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Contains(3, _abortedStreamIds);
         Assert.Contains(5, _abortedStreamIds);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4341,7 +4341,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Contains(3, _abortedStreamIds);
         Assert.Contains(5, _abortedStreamIds);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4516,7 +4516,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4609,7 +4609,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4878,7 +4878,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4920,7 +4920,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(_4kHeaderValue, _decodedHeaders["g"]);
         Assert.Equal(_4kHeaderValue, _decodedHeaders["h"]);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -4939,7 +4939,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5011,7 +5011,7 @@ public class Http2ConnectionTests : Http2TestBase
         await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         Assert.DoesNotContain(LogMessages, m => m.Exception is ConnectionResetException);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5026,7 +5026,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.True(result.IsCompleted);
         Assert.True(result.Buffer.IsEmpty);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5053,7 +5053,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.NO_ERROR);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5099,7 +5099,7 @@ public class Http2ConnectionTests : Http2TestBase
         result = await readTask;
         Assert.True(result.IsCompleted);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5295,7 +5295,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -5341,7 +5341,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -5387,7 +5387,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -5473,7 +5473,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5545,7 +5545,7 @@ public class Http2ConnectionTests : Http2TestBase
         requestBlock.SetResult();
         await StopConnectionAsync(expectedLastStreamId: 7, ignoreNonGoAwayFrames: true);
 
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5590,7 +5590,7 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(streamPayload, streamResponse);
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: true);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
@@ -5745,7 +5745,7 @@ public class Http2ConnectionTests : Http2TestBase
             withStreamId: 0);
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: true);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5792,7 +5792,7 @@ public class Http2ConnectionTests : Http2TestBase
         await SendAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
@@ -5801,7 +5801,7 @@ public class Http2ConnectionTests : Http2TestBase
         InitializeConnectionWithoutPreface(_noopApplication);
 
         await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, ConnectionTags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     public static TheoryData<byte[]> UpperCaseHeaderNameData
