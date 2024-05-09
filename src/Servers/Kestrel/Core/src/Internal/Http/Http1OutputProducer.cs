@@ -460,10 +460,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 return;
             }
 
-            if (_metricsTagsFeature != null)
-            {
-                _metricsTagsFeature.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
-            }
+            _metricsTagsFeature?.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
 
             _aborted = true;
             _connectionContext.Abort(error);
