@@ -1,0 +1,10 @@
+﻿Microsoft.AspNetCore.Builder.StaticAssetsEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointDataSource
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointDataSource.DefaultBuilder.get -> Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder!
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointDataSource.ManifestName.get -> string!
+override Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointDataSource.Endpoints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint!>!
+override Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointDataSource.GetChangeToken() -> Microsoft.Extensions.Primitives.IChangeToken!
+static Microsoft.AspNetCore.Builder.StaticAssetsEndpointRouteBuilderExtensions.MapStaticAssetEndpoints(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string? staticAssetsManifestPath = null) -> Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder!
