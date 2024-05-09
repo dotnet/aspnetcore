@@ -136,12 +136,12 @@ public class Program
         #else
         }
         #endif
-        app.UseStaticFiles();
 
         app.UseRouting();
 
         app.UseAuthorization();
 
+        app.MapStaticAssetEndpoints();
         app.MapRazorPages();
         #if (IndividualB2CAuth || OrganizationalAuth)
         app.MapControllers();

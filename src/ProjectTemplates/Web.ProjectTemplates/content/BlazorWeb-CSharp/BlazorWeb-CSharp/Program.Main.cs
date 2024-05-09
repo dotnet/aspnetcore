@@ -108,9 +108,9 @@ public class Program
         app.UseHttpsRedirection();
 
         #endif
-        app.UseStaticFiles();
         app.UseAntiforgery();
 
+        app.MapStaticAssetEndpoints();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()

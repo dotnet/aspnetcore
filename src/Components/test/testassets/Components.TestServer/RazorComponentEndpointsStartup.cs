@@ -9,6 +9,7 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -64,7 +65,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
             }
 
-            app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
@@ -80,6 +80,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             _ = app.UseEndpoints(endpoints =>
             {
+                endpoints.MapStaticAssetEndpoints();
                 _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddInteractiveServerRenderMode(options =>

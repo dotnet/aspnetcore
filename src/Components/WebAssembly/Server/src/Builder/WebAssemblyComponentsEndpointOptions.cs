@@ -26,4 +26,11 @@ public sealed class WebAssemblyComponentsEndpointOptions
     /// information, see <see href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer#security_requirements" />.
     /// </summary>
     public bool ServeMultithreadingHeaders { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="string"/> that determines the static assets manifest path mapped to this app.
+    /// </summary>
+    public string? AssetsManifestPath { get; set; }
+
+    internal bool ConventionsApplied { get; set; }
 }

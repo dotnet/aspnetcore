@@ -1,3 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentsWebAssemblyStaticAssetsEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.AssetsManifestPath.get -> string?
+Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.AssetsManifestPath.set -> void
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.ServeMultithreadingHeaders.get -> bool
 Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.ServeMultithreadingHeaders.set -> void

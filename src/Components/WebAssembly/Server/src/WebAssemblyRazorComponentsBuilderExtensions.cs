@@ -36,33 +36,37 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         {
             if (renderMode is not WebAssemblyRenderModeWithOptions wasmWithOptions)
             {
-                if (renderMode is InteractiveWebAssemblyRenderMode)
-                {
-                    throw new InvalidOperationException("Invalid render mode. Use AddInteractiveWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.");
-                }
-
-                return Array.Empty<RouteEndpointBuilder>();
+                return renderMode is InteractiveWebAssemblyRenderMode
+                    ? throw new InvalidOperationException("Invalid render mode. Use AddInteractiveWebAssemblyRenderMode(Action<WebAssemblyComponentsEndpointOptions>) to configure the WebAssembly render mode.")
+                    : (IEnumerable<RouteEndpointBuilder>)Array.Empty<RouteEndpointBuilder>();
             }
-
-            var endpointRouteBuilder = new EndpointRouteBuilder(services, applicationBuilder);
-            var pathPrefix = wasmWithOptions.EndpointOptions?.PathPrefix;
-
-            applicationBuilder.UseBlazorFrameworkFiles(pathPrefix ?? default);
-            var app = applicationBuilder.Build();
-
-            endpointRouteBuilder.Map($"{pathPrefix}/_framework/{{*path}}", context =>
+            if (wasmWithOptions is { EndpointOptions.ConventionsApplied: true })
             {
-                // Set endpoint to null so the static files middleware will handle the request.
-                context.SetEndpoint(null);
+                return []; // No need to add additional endpoints to the DS, they are already added
+            }
+            else
+            {
+                // In case the app didn't call MapStaticAssetEndpoints, use the 8.0 approach to map the assets.
+                var endpointRouteBuilder = new EndpointRouteBuilder(services, applicationBuilder);
+                var pathPrefix = wasmWithOptions.EndpointOptions?.PathPrefix;
 
-                return app(context);
-            });
+                applicationBuilder.UseBlazorFrameworkFiles(pathPrefix ?? default);
+                var app = applicationBuilder.Build();
 
-            return endpointRouteBuilder.GetEndpoints();
+                endpointRouteBuilder.Map($"{pathPrefix}/_framework/{{*path}}", context =>
+                {
+                    // Set endpoint to null so the static files middleware will handle the request.
+                    context.SetEndpoint(null);
+
+                    return app(context);
+                });
+
+                return endpointRouteBuilder.GetEndpoints();
+            }
         }
 
-        public override bool Supports(IComponentRenderMode renderMode)
-            => renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
+        public override bool Supports(IComponentRenderMode renderMode) =>
+            renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
 
         private class EndpointRouteBuilder : IEndpointRouteBuilder
         {
@@ -76,7 +80,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
 
             public IServiceProvider ServiceProvider { get; }
 
-            public ICollection<EndpointDataSource> DataSources { get; } = new List<EndpointDataSource>() { };
+            public ICollection<EndpointDataSource> DataSources { get; } = [];
 
             public IApplicationBuilder CreateApplicationBuilder()
             {

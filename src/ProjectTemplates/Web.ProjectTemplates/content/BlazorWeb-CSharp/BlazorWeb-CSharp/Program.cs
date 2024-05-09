@@ -102,9 +102,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #endif
-app.UseStaticFiles();
+
 app.UseAntiforgery();
 
+app.MapStaticAssetEndpoints();
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
