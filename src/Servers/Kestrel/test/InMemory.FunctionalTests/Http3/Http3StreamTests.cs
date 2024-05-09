@@ -2139,7 +2139,7 @@ public class Http3StreamTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.UnexpectedFrame,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.UnexpectedFrame), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(nameof(ConnectionEndReason.UnsupportedFrame), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
