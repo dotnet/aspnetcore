@@ -9,10 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-/// <summary>
-/// Extension methods for <see cref="StaticAssetsEndpointConventionBuilder"/>.
-/// </summary>
-public static class ComponentsWebAssemblyStaticAssetsEndpointConventionBuilderExtensions
+internal static class ComponentsWebAssemblyStaticAssetsEndpointConventionBuilderExtensions
 {
     private static readonly string? s_dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
     private static readonly string? s_aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
