@@ -45,7 +45,7 @@ internal static class Http2FrameReader
         var payloadLength = (int)Bitshifter.ReadUInt24BigEndian(header);
         if (payloadLength > maxFrameSize)
         {
-            throw new Http2ConnectionErrorException(SharedStrings.FormatHttp2ErrorFrameOverLimit(payloadLength, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionErrorReason.MaxFrameLengthExceeded);
+            throw new Http2ConnectionErrorException(SharedStrings.FormatHttp2ErrorFrameOverLimit(payloadLength, maxFrameSize), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionEndReason.MaxFrameLengthExceeded);
         }
 
         // Make sure the whole frame is buffered
@@ -77,7 +77,7 @@ internal static class Http2FrameReader
         if (extendedHeaderLength > frame.PayloadLength)
         {
             throw new Http2ConnectionErrorException(
-                SharedStrings.FormatHttp2ErrorUnexpectedFrameLength(frame.Type, expectedLength: extendedHeaderLength), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionErrorReason.InvalidFrameLength);
+                SharedStrings.FormatHttp2ErrorUnexpectedFrameLength(frame.Type, expectedLength: extendedHeaderLength), Http2ErrorCode.FRAME_SIZE_ERROR, ConnectionEndReason.InvalidFrameLength);
         }
 
         var extendedHeaders = readableBuffer.Slice(HeaderLength, extendedHeaderLength).ToSpan();

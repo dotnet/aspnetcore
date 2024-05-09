@@ -101,7 +101,7 @@ internal sealed class HttpConnection : ITimeoutHandler
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(ConnectionEndReason.ApplicationShutdown), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state!).OnConnectionClosed(), this);
@@ -137,7 +137,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         _protocolSelectionState = ProtocolSelectionState.Selected;
     }
 
-    private void StopProcessingNextRequest(ConnectionErrorReason reason)
+    private void StopProcessingNextRequest(ConnectionEndReason reason)
     {
         ProtocolSelectionState previousState;
         lock (_protocolSelectionLock)
@@ -175,7 +175,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         }
     }
 
-    private void Abort(ConnectionAbortedException ex, ConnectionErrorReason errorReason)
+    private void Abort(ConnectionAbortedException ex, ConnectionEndReason errorReason)
     {
         ProtocolSelectionState previousState;
 
@@ -265,7 +265,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (reason)
         {
             case TimeoutReason.KeepAlive:
-                _requestProcessor!.StopProcessingNextRequest(ConnectionErrorReason.KeepAliveTimeout);
+                _requestProcessor!.StopProcessingNextRequest(ConnectionEndReason.KeepAliveTimeout);
                 break;
             case TimeoutReason.RequestHeaders:
                 _requestProcessor!.HandleRequestHeadersTimeout();
@@ -275,11 +275,11 @@ internal sealed class HttpConnection : ITimeoutHandler
                 break;
             case TimeoutReason.WriteDataRate:
                 Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection?.TraceIdentifier);
-                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied), ConnectionErrorReason.ResponseMininumDataRateNotSatisfied);
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied), ConnectionEndReason.MinResponseDataRate);
                 break;
             case TimeoutReason.RequestBodyDrain:
             case TimeoutReason.TimeoutFeature:
-                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer), ConnectionErrorReason.ServerTimeout);
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer), ConnectionEndReason.ServerTimeout);
                 break;
             default:
                 Debug.Assert(false, "Invalid TimeoutReason");

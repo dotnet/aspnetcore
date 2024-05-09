@@ -246,7 +246,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         }
         Assert.Equal($"{connectionId}:{count:X8}", feature.TraceIdentifier);
 
-        _http1Connection.StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown);
+        _http1Connection.StopProcessingNextRequest(ConnectionEndReason.ApplicationShutdown);
         await requestProcessingTask.DefaultTimeout();
     }
 
@@ -572,7 +572,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout;
         _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
-        _http1Connection.StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown);
+        _http1Connection.StopProcessingNextRequest(ConnectionEndReason.ApplicationShutdown);
         _application.Output.Complete();
 
         await requestProcessingTask.DefaultTimeout();
@@ -657,7 +657,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
         await _application.Output.WriteAsync(data);
 
-        _http1Connection.StopProcessingNextRequest(ConnectionErrorReason.ApplicationShutdown);
+        _http1Connection.StopProcessingNextRequest(ConnectionEndReason.ApplicationShutdown);
         Assert.IsNotType<Task<Task>>(requestProcessingTask);
 
         await requestProcessingTask.DefaultTimeout();
@@ -680,7 +680,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }));
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -702,7 +702,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -717,7 +717,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var successResult = await writer.WriteAsync(payload);
         Assert.False(successResult.IsCompleted);
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
         var failResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
         Assert.True(failResult.IsCompleted);
     }
@@ -762,7 +762,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -780,7 +780,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.ProduceEndAsync();
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -792,7 +792,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var originalToken = _http1Connection.RequestAborted;
         var originalRegistration = originalToken.Register(() => { });
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
 
         Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
         Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
@@ -806,7 +806,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var originalToken = _http1Connection.RequestAborted;
         var originalRegistration = originalToken.Register(() => { });
 
-        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionErrorReason.AbortedByApplication);
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApplication);
 
         // The following line will throw an ODE because the original CTS backing the token has been diposed.
         // See https://github.com/dotnet/aspnetcore/pull/4447 for the history behind this test.

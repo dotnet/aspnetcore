@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal interface IHttpOutputAborter
 {
-    void Abort(ConnectionAbortedException abortReason, ConnectionErrorReason errorReason);
+    void Abort(ConnectionAbortedException abortReason, ConnectionEndReason errorReason);
     void OnInputOrOutputCompleted();
 }

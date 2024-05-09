@@ -99,20 +99,20 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     void IRequestProcessor.OnInputOrOutputCompleted()
     {
         // Closed gracefully.
-        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!, ConnectionErrorReason.NoError);
+        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!, ConnectionEndReason.NoError);
         CancelRequestAbortedToken();
     }
 
     void IHttpOutputAborter.OnInputOrOutputCompleted()
     {
-        _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), ConnectionErrorReason.InputOrOutputCompleted);
+        _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), ConnectionEndReason.InputOrOutputCompleted);
         CancelRequestAbortedToken();
     }
 
     /// <summary>
     /// Immediately kill the connection and poison the request body stream with an error.
     /// </summary>
-    public void Abort(ConnectionAbortedException abortReason, ConnectionErrorReason reason)
+    public void Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
     {
         _http1Output.Abort(abortReason, reason);
         CancelRequestAbortedToken();
@@ -122,7 +122,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     protected override void ApplicationAbort()
     {
         Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
-        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), ConnectionErrorReason.AbortedByApplication);
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), ConnectionEndReason.AbortedByApplication);
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// Called on all active connections when the server wants to initiate a shutdown
     /// and after a keep-alive timeout.
     /// </summary>
-    public void StopProcessingNextRequest(ConnectionErrorReason errorReason)
+    public void StopProcessingNextRequest(ConnectionEndReason errorReason)
     {
         _keepAlive = false;
         Input.CancelPendingRead();
