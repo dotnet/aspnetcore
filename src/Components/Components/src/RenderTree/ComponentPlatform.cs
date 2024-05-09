@@ -18,7 +18,7 @@ public class ComponentPlatform
     {
         PlatformName = platformName;
         IsInteractive = isInteractive;
-        RenderMode = renderMode;
+        PlatformRenderMode = renderMode;
     }
 
     /// <summary>
@@ -34,5 +34,5 @@ public class ComponentPlatform
     /// <summary>
     /// Gets the <see cref="IComponentRenderMode"/> of the platform.
     /// </summary>
-    public IComponentRenderMode? RenderMode { get; }
+    internal IComponentRenderMode? PlatformRenderMode { get; }
 }

@@ -7,10 +7,11 @@
 
     protected override void OnInitialized()
     {
-        if (Platform is { RenderMode: InteractiveServerRenderMode })
+        if (GetRenderMode() is InteractiveServerRenderMode)
         {
             _message = $"Host Render Mode: Interactive Server";
-        }else if (Platform is { RenderMode: InteractiveWebAssemblyRenderMode })
+        }
+        else if (GetRenderMode() is InteractiveWebAssemblyRenderMode)
         {
             _message = $"Host Render Mode: Interactive Webassembly";
         }

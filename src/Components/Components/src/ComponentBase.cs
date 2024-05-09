@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components;
 public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
 {
     private readonly RenderFragment _renderFragment;
-    private IComponentRenderMode? _interactiveRenderMode;
+    private (IComponentRenderMode? mode, bool cached) _renderMode;
     private RenderHandle _renderHandle;
     private bool _initialized;
     private bool _hasNeverRendered = true;
@@ -49,9 +49,19 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     protected ComponentPlatform Platform => _renderHandle.Platform;
 
     /// <summary>
-    /// Gets the <see cref="IComponentRenderMode"/> the component is rendering or will render in when it becomes interactive.
+    /// Gets the target <see cref="IComponentRenderMode"/> this component will run in after prerendering.
     /// </summary>
-    protected IComponentRenderMode? InteractiveRenderMode => _interactiveRenderMode ??= _renderHandle.GetInteractiveRenderMode();
+    protected IComponentRenderMode? GetRenderMode()
+    {
+        if (!_renderMode.cached)
+        {
+            // We use the platform render mode to avoid having to look up the render mode when the platform
+            // has a single render mode.
+            _renderMode = (_renderHandle.Platform.PlatformRenderMode ?? _renderHandle.GetRenderMode(), true);
+        }
+
+        return _renderMode.mode;
+    }
 
     /// <summary>
     /// Renders the component to the supplied <see cref="RenderTreeBuilder"/>.
