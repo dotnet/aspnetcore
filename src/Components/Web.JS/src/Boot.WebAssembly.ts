@@ -20,7 +20,8 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
-  setWebAssemblyOptions(Promise.resolve(options || {}));
+  const normalizedOptions = options?.webAssembly ?? options;
+  setWebAssemblyOptions(Promise.resolve(normalizedOptions || {}));
 
   JSEventRegistry.create(Blazor);
   const webAssemblyComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
