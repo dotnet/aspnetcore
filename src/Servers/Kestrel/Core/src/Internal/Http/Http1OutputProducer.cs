@@ -449,7 +449,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
-    public void Abort(ConnectionAbortedException error, ConnectionEndReason errorReason)
+    public void Abort(ConnectionAbortedException error, ConnectionEndReason reason)
     {
         // Abort can be called after Dispose if there's a flush timeout.
         // It's important to still call _lifetimeFeature.Abort() in this case.
@@ -460,9 +460,9 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 return;
             }
 
-            if (errorReason != ConnectionEndReason.NoError && _metricsTagsFeature != null)
+            if (reason != ConnectionEndReason.NoError && _metricsTagsFeature != null)
             {
-                _metricsTagsFeature.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, errorReason.ToString());
+                _metricsTagsFeature.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
             }
 
             _aborted = true;

@@ -279,7 +279,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Exception? error = null;
         var errorCode = Http2ErrorCode.NO_ERROR;
-        var errorReason = ConnectionEndReason.NoError;
+        var reason = ConnectionEndReason.NoError;
 
         try
         {
@@ -383,7 +383,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             if (_clientActiveStreamCount > 0)
             {
                 Log.RequestProcessingError(ConnectionId, ex);
-                errorReason = ConnectionEndReason.ConnectionReset;
+                reason = ConnectionEndReason.ConnectionReset;
             }
 
             error = ex;
@@ -392,7 +392,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         {
             Log.RequestProcessingError(ConnectionId, ex);
             error = ex;
-            errorReason = ConnectionEndReason.IOError;
+            reason = ConnectionEndReason.IOError;
         }
         catch (ConnectionAbortedException ex)
         {
@@ -404,7 +404,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             Log.Http2ConnectionError(ConnectionId, ex);
             error = ex;
             errorCode = ex.ErrorCode;
-            errorReason = ex.ErrorReason;
+            reason = ex.Reason;
         }
         catch (HPackDecodingException ex)
         {
@@ -413,14 +413,14 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             Log.HPackDecodingError(ConnectionId, _currentHeadersStream.StreamId, ex);
             error = ex;
             errorCode = Http2ErrorCode.COMPRESSION_ERROR;
-            errorReason = ConnectionEndReason.ErrorReadingHeaders;
+            reason = ConnectionEndReason.ErrorReadingHeaders;
         }
         catch (Exception ex)
         {
             Log.LogWarning(0, ex, CoreStrings.RequestProcessingEndError);
             error = ex;
             errorCode = Http2ErrorCode.INTERNAL_ERROR;
-            errorReason = ConnectionEndReason.UnexpectedError;
+            reason = ConnectionEndReason.UnexpectedError;
         }
         finally
         {
@@ -431,7 +431,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             {
                 if (TryClose())
                 {
-                    SetConnectionErrorCode(errorReason, errorCode);
+                    SetConnectionErrorCode(reason, errorCode);
                     await _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
                 }
 

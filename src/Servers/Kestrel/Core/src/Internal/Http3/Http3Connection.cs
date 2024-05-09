@@ -346,7 +346,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         Http3ControlStream? outboundControlStream = null;
         ValueTask outboundControlStreamTask = default;
         bool clientAbort = false;
-        ConnectionEndReason errorReason = ConnectionEndReason.NoError;
+        ConnectionEndReason reason = ConnectionEndReason.NoError;
 
         try
         {
@@ -470,7 +470,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 if (_activeRequestCount > 0)
                 {
                     Log.RequestProcessingError(_context.ConnectionId, ex);
-                    errorReason = ConnectionEndReason.ConnectionReset;
+                    reason = ConnectionEndReason.ConnectionReset;
                 }
             }
             error = ex;
@@ -480,13 +480,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             Log.RequestProcessingError(_context.ConnectionId, ex);
             error = ex;
-            errorReason = ConnectionEndReason.IOError;
+            reason = ConnectionEndReason.IOError;
         }
         catch (ConnectionAbortedException ex)
         {
             Log.RequestProcessingError(_context.ConnectionId, ex);
             error = ex;
-            errorReason = ConnectionEndReason.UnexpectedError;
+            reason = ConnectionEndReason.UnexpectedError;
 
             Debug.Fail("Figure out error reason");
         }
@@ -494,12 +494,12 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             Log.Http3ConnectionError(_context.ConnectionId, ex);
             error = ex;
-            errorReason = ex.ErrorReason;
+            reason = ex.Reason;
         }
         catch (Exception ex)
         {
             error = ex;
-            errorReason = ConnectionEndReason.UnexpectedError;
+            reason = ConnectionEndReason.UnexpectedError;
         }
         finally
         {
@@ -549,13 +549,13 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 }
 
                 // Use graceful close reason if it has been set.
-                if (errorReason == ConnectionEndReason.NoError && _gracefulCloseReason != ConnectionEndReason.NoError)
+                if (reason == ConnectionEndReason.NoError && _gracefulCloseReason != ConnectionEndReason.NoError)
                 {
-                    errorReason = _gracefulCloseReason;
+                    reason = _gracefulCloseReason;
                 }
 
                 // Complete
-                Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error, errorReason);
+                Abort(CreateConnectionAbortError(error, clientAbort), (Http3ErrorCode)_errorCodeFeature.Error, reason);
 
                 // Wait for active requests to complete.
                 while (_activeRequestCount > 0)
@@ -865,7 +865,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     private void OnStreamConnectionError(Http3ConnectionErrorException ex)
     {
         Log.Http3ConnectionError(ConnectionId, ex);
-        Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode, ex.ErrorReason);
+        Abort(new ConnectionAbortedException(ex.Message, ex), ex.ErrorCode, ex.Reason);
     }
 
     void IHttp3StreamLifetimeHandler.OnInboundControlStreamSetting(Http3SettingType type, long value)

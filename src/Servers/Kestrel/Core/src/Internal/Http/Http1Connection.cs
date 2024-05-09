@@ -130,7 +130,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// Called on all active connections when the server wants to initiate a shutdown
     /// and after a keep-alive timeout.
     /// </summary>
-    public void StopProcessingNextRequest(ConnectionEndReason errorReason)
+    public void StopProcessingNextRequest(ConnectionEndReason reason)
     {
         _keepAlive = false;
         Input.CancelPendingRead();
