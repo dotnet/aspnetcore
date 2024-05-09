@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
 internal enum ConnectionEndReason
 {
-    NoError,
+    Unknown,
     ConnectionReset,
     FlowControlWindowExceeded,
     KeepAliveTimeout,
@@ -28,7 +28,6 @@ internal enum ConnectionEndReason
     ErrorReadingHeaders,
     ErrorWritingHeaders,
     UnexpectedError,
-    InputOrOutputCompleted,
     InvalidHttpVersion,
     RequestHeadersTimeout,
     MinRequestBodyDataRate,
@@ -41,5 +40,6 @@ internal enum ConnectionEndReason
     StreamCreationError,
     IOError,
     ClientGoAway,
-    ApplicationShutdown
+    ApplicationShutdown,
+    TransportCompleted
 }

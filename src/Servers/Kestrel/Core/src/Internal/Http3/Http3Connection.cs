@@ -188,7 +188,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         if (!previousState)
         {
             _errorCodeFeature.Error = (long)errorCode;
-            if (_metricsTagsFeature != null && reason != ConnectionEndReason.NoError)
+            if (_metricsTagsFeature != null)
             {
                 _metricsTagsFeature.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
             }
@@ -346,7 +346,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         Http3ControlStream? outboundControlStream = null;
         ValueTask outboundControlStreamTask = default;
         bool clientAbort = false;
-        ConnectionEndReason reason = ConnectionEndReason.NoError;
+        ConnectionEndReason reason = ConnectionEndReason.Unknown;
 
         try
         {
@@ -549,7 +549,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 }
 
                 // Use graceful close reason if it has been set.
-                if (reason == ConnectionEndReason.NoError && _gracefulCloseReason != ConnectionEndReason.NoError)
+                if (reason == ConnectionEndReason.Unknown && _gracefulCloseReason != ConnectionEndReason.Unknown)
                 {
                     reason = _gracefulCloseReason;
                 }
@@ -914,7 +914,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         TryStopAcceptingStreams();
 
         // Abort the connection using the error code the client used. For a graceful close, this should be H3_NO_ERROR.
-        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error, ConnectionEndReason.InputOrOutputCompleted);
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), (Http3ErrorCode)_errorCodeFeature.Error, ConnectionEndReason.TransportCompleted);
     }
 
     internal WebTransportSession OpenNewWebTransportSession(Http3Stream http3Stream)

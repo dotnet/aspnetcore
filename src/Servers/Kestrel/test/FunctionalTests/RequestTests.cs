@@ -626,7 +626,7 @@ public class RequestTests : LoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, m.Tags.Keys);
+            Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), (string)m.Tags[KestrelMetrics.KestrelConnectionEndReason]);
         });
     }
 

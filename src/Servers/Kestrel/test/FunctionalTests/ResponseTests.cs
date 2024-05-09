@@ -263,7 +263,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, m.Tags.Keys);
+            Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), (string)m.Tags[KestrelMetrics.KestrelConnectionEndReason]);
         });
     }
 
@@ -471,7 +471,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         var measurement = connectionDuration.GetMeasurementSnapshot().First();
-        Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, measurement.Tags.Keys);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), (string)measurement.Tags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Theory]
