@@ -465,7 +465,7 @@ public class StaticAssetsIntegrationTests
         var req = new HttpRequestMessage(method, "http://localhost/sample.txt");
         req.Headers.Add("If-Match", "*");
         var resp = await client.SendAsync(req);
-        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.MethodNotAllowed, resp.StatusCode);
     }
 
     // 14.26 If-None-Match
@@ -518,7 +518,7 @@ public class StaticAssetsIntegrationTests
         var req2 = new HttpRequestMessage(method, "http://localhost/sample.txt");
         req2.Headers.Add("If-None-Match", resp1.Headers.ETag.ToString());
         var resp2 = await client.SendAsync(req2);
-        Assert.Equal(HttpStatusCode.NotFound, resp2.StatusCode);
+        Assert.Equal(HttpStatusCode.MethodNotAllowed, resp2.StatusCode);
     }
 
     // 14.26 If-None-Match
