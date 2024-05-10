@@ -13,6 +13,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
+// These tests test razor caching which is affected if the site is built by another test class
+// Use a named Collection to avoid the test classes running in parallel
+[Collection("RazorBuildWebSite")]
 public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
 {
     protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
