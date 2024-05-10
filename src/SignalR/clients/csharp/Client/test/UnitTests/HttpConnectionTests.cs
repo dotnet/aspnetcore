@@ -167,8 +167,8 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
     public async Task NegotiateAsyncAppendsCorrectAcceptHeader()
     {
         var testHttpHandler = new TestHttpMessageHandler(false);
-        var negotiateUrlTcs = new TaskCompletionSource<bool>();
-
+        var negotiateUrlTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        
         testHttpHandler.OnNegotiate((request, cancellationToken) =>
         {
             var headerFound = request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) == true;

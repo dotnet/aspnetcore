@@ -698,7 +698,7 @@ public class LongPollingTransportTests : VerifiableLoggedTest
     public async Task StartAsyncSetsAcceptHeaderCorrectly()
     {
         var mockHttpHandler = new Mock<HttpMessageHandler>();
-        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
+        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         mockHttpHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())

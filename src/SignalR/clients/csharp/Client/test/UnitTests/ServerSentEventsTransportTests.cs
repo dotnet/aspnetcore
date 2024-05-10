@@ -415,7 +415,7 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
     public async Task StartAsyncSetsCorrectAcceptHeaderForSSE()
     {
         var mockHttpHandler = new Mock<HttpMessageHandler>();
-        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
+        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         mockHttpHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
