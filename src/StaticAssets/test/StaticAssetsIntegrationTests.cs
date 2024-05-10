@@ -51,7 +51,7 @@ public class StaticAssetsIntegrationTests
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapStaticAssetEndpoints();
+            endpoints.MapStaticAssets();
         });
 
         await app.StartAsync();
@@ -101,7 +101,7 @@ public class StaticAssetsIntegrationTests
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapStaticAssetEndpoints();
+            endpoints.MapStaticAssets();
         });
 
         await app.StartAsync();
@@ -156,7 +156,7 @@ public class StaticAssetsIntegrationTests
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapStaticAssetEndpoints();
+            endpoints.MapStaticAssets();
         });
 
         await app.StartAsync();
@@ -209,7 +209,7 @@ public class StaticAssetsIntegrationTests
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapStaticAssetEndpoints();
+            endpoints.MapStaticAssets();
         });
 
         await app.StartAsync();

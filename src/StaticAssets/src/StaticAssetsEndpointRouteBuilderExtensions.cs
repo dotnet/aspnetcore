@@ -23,7 +23,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
     /// The <paramref name="staticAssetsManifestPath"/> can be null to use the <see cref="IHostEnvironment.ApplicationName"/> to locate the manifes.
     /// As an alternative, a full path can be specified to the manifest file. If a relative path is used, we'll search for the file in the <see cref="AppContext.BaseDirectory"/>." />
     /// </remarks>
-    public static StaticAssetsEndpointConventionBuilder MapStaticAssetEndpoints(this IEndpointRouteBuilder endpoints, string? staticAssetsManifestPath = null)
+    public static StaticAssetsEndpointConventionBuilder MapStaticAssets(this IEndpointRouteBuilder endpoints, string? staticAssetsManifestPath = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 

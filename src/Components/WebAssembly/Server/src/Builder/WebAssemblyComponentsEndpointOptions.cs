@@ -30,7 +30,7 @@ public sealed class WebAssemblyComponentsEndpointOptions
     /// <summary>
     /// Gets or sets the <see cref="string"/> that determines the static assets manifest path mapped to this app.
     /// </summary>
-    public string? AssetsManifestPath { get; set; }
+    public string? StaticAssetsManifestPath { get; set; }
 
     internal bool ConventionsApplied { get; set; }
 }

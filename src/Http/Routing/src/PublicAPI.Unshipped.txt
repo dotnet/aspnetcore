@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.ContentEncodingMetadata(string! value, double quality) -> void
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.Quality.get -> double
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.Value.get -> string!
 Microsoft.AspNetCore.Routing.Matching.ContentEncodingMetadata
 Microsoft.AspNetCore.Routing.Matching.ContentEncodingMetadata.ContentEncodingMetadata(string! value, double quality) -> void
 Microsoft.AspNetCore.Routing.Matching.ContentEncodingMetadata.Quality.get -> double

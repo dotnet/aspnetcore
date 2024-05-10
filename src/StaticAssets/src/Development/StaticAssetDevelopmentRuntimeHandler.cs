@@ -10,18 +10,20 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder;
 
 // Handles changes during development to support common scenarios where for example, a developer changes a file in the wwwroot folder.
-internal class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
+internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
 {
     public void AttachRuntimePatching(EndpointBuilder builder)
     {
@@ -46,7 +48,7 @@ internal class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> 
 
                 // In case we were dealing with a compressed asset, we are going to wrap the response body feature to re-compress the asset on the fly.
                 // and write that to the response instead.
-                context.Features.Set<IHttpResponseBodyFeature>(new HotReloadStaticAsset(originalFeature, context, asset));
+                context.Features.Set<IHttpResponseBodyFeature>(new RuntimeStaticAssetResponseBodyFeature(originalFeature, context, asset));
             }
 
             await original(context);
@@ -60,13 +62,13 @@ internal class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> 
         return $"\"{Convert.ToBase64String(SHA256.HashData(stream))}\"";
     }
 
-    internal class HotReloadStaticAsset : IHttpResponseBodyFeature
+    internal sealed class RuntimeStaticAssetResponseBodyFeature : IHttpResponseBodyFeature
     {
         private readonly IHttpResponseBodyFeature _original;
         private readonly HttpContext _context;
         private readonly StaticAssetDescriptor _asset;
 
-        public HotReloadStaticAsset(IHttpResponseBodyFeature original, HttpContext context, StaticAssetDescriptor asset)
+        public RuntimeStaticAssetResponseBodyFeature(IHttpResponseBodyFeature original, HttpContext context, StaticAssetDescriptor asset)
         {
             _original = original;
             _context = context;
@@ -172,12 +174,16 @@ internal class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> 
 
         if (!disableFallback)
         {
+            var logger = endpoints.ServiceProvider.GetRequiredService<ILogger<StaticAssetDevelopmentRuntimeHandler>>();
+
             // Add a fallback static file handler to serve any file that might have been added after the initial startup.
-            endpoints.MapFallback(
+            var fallback = endpoints.MapFallback(
                 "{**path:file}",
                 endpoints.CreateApplicationBuilder()
                     .Use((ctx, nxt) =>
                     {
+                        Log.StaticAssetNotFoundInManifest(logger, ctx.Request.Path);
+
                         ctx.SetEndpoint(null);
                         ctx.Response.OnStarting((context) =>
                         {
@@ -197,83 +203,49 @@ internal class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> 
                     })
                     .UseStaticFiles()
                     .Build());
-        }
 
-    }
-}
-
-internal static class StaticAssetDescriptorExtensions
-{
-    internal static long GetContentLength(this StaticAssetDescriptor descriptor)
-    {
-        foreach (var header in descriptor.ResponseHeaders)
-        {
-            if (header.Name == "Content-Length")
-            {
-                return long.Parse(header.Value, CultureInfo.InvariantCulture);
-            }
-        }
-
-        throw new InvalidOperationException("Content-Length header not found.");
-    }
-
-    internal static DateTimeOffset GetLastModified(this StaticAssetDescriptor descriptor)
-    {
-        foreach (var header in descriptor.ResponseHeaders)
-        {
-            if (header.Name == "Last-Modified")
-            {
-                return DateTimeOffset.Parse(header.Value, CultureInfo.InvariantCulture);
-            }
-        }
-
-        throw new InvalidOperationException("Last-Modified header not found.");
-    }
-
-    internal static EntityTagHeaderValue GetWeakETag(this StaticAssetDescriptor descriptor)
-    {
-        foreach (var header in descriptor.ResponseHeaders)
-        {
-            if (header.Name == "ETag")
-            {
-                var eTag = EntityTagHeaderValue.Parse(header.Value);
-                if (eTag.IsWeak)
+            // Set up a custom constraint to only match existing files.
+            fallback
+                .Add(endpoint =>
                 {
-                    return eTag;
-                }
-            }
-        }
+                    if (endpoint is not RouteEndpointBuilder routeEndpoint || routeEndpoint is not { RoutePattern.RawText: { } pattern })
+                    {
+                        return;
+                    }
 
-        throw new InvalidOperationException("ETag header not found.");
+                    // Add a custom constraint (not inline) to check if the file exists as part of the route matching
+                    routeEndpoint.RoutePattern = RoutePatternFactory.Parse(
+                        pattern,
+                        null,
+                        new RouteValueDictionary { ["path"] = new FileExistsConstraint(environment) });
+                });
+
+            // Limit matching to supported methods.
+            fallback.Add(b => b.Metadata.Add(new HttpMethodMetadata(["GET", "HEAD"])));
+        }
     }
 
-    internal static bool HasContentEncoding(this StaticAssetDescriptor descriptor)
+    private static partial class Log
     {
-        foreach (var selector in descriptor.Selectors)
-        {
-            if (selector.Name == "Content-Encoding")
-            {
-                return true;
-            }
-        }
+        private const string StaticAssetNotFoundInManifestMessage = """The static asset '{Path}' was not found in the built time manifest. This file will not be available at runtime if it is not available at compile time during the publish process. If the file was not added to the project during development, and is created at runtime, use the StaticFiles middleware to serve it instead.""";
 
-        return false;
+        [LoggerMessage(1, LogLevel.Warning, StaticAssetNotFoundInManifestMessage)]
+        public static partial void StaticAssetNotFoundInManifest(ILogger logger, string path);
     }
 
-    internal static bool HasETag(this StaticAssetDescriptor descriptor, string tag)
+    private sealed class FileExistsConstraint(IWebHostEnvironment environment) : IRouteConstraint
     {
-        foreach (var header in descriptor.ResponseHeaders)
-        {
-            if (header.Name == "ETag")
-            {
-                var eTag = EntityTagHeaderValue.Parse(header.Value);
-                if (!eTag.IsWeak && eTag.Tag == tag)
-                {
-                    return true;
-                }
-            }
-        }
+        private readonly IWebHostEnvironment _environment = environment;
 
-        return false;
+        public bool Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+        {
+            if (values[routeKey] is not string path)
+            {
+                return false;
+            }
+
+            var fileInfo = _environment.WebRootFileProvider.GetFileInfo(path);
+            return fileInfo.Exists;
+        }
     }
 }

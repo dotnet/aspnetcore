@@ -55,12 +55,12 @@ public static class WebAssemblyRazorComponentsEndpointConventionBuilderExtension
 
         // If the static assets data source for the given manifest name is already added, then just wire-up the Blazor WebAssembly conventions.
         // MapStaticWebAssetEndpoints is idempotent and will not add the data source if it already exists.
-        var staticAssetsManifestPath = options.AssetsManifestPath ?? Path.Combine(AppContext.BaseDirectory, $"{environment.ApplicationName}.staticwebassets.endpoints.json");
+        var staticAssetsManifestPath = options.StaticAssetsManifestPath ?? Path.Combine(AppContext.BaseDirectory, $"{environment.ApplicationName}.staticwebassets.endpoints.json");
         staticAssetsManifestPath = Path.IsPathRooted(staticAssetsManifestPath) ? staticAssetsManifestPath : Path.Combine(AppContext.BaseDirectory, staticAssetsManifestPath);
         if (HasStaticAssetDataSource(endpointBuilder, staticAssetsManifestPath))
         {
             options.ConventionsApplied = true;
-            endpointBuilder.MapStaticAssetEndpoints(staticAssetsManifestPath)
+            endpointBuilder.MapStaticAssets(staticAssetsManifestPath)
                 .AddBlazorWebAssemblyConventions();
 
             return builder;

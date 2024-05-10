@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.StaticAssets;
 /// <summary>
 /// A builder for configuring conventions for static assets.
 /// </summary>
-public class StaticAssetsEndpointConventionBuilder : IEndpointConventionBuilder
+public sealed class StaticAssetsEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly object _lck;
     private readonly List<StaticAssetDescriptor> _descriptors;

@@ -80,7 +80,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
             _ = app.UseEndpoints(endpoints =>
             {
-                endpoints.MapStaticAssetEndpoints();
+                endpoints.MapStaticAssets();
                 _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddInteractiveServerRenderMode(options =>

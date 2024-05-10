@@ -46,7 +46,7 @@ public class StaticAssetsEndpointDataSource : EndpointDataSource
     public string ManifestName => _manifestName;
 
     /// <inheritdoc />
-    public StaticAssetsEndpointConventionBuilder DefaultBuilder { get; internal set; }
+    internal StaticAssetsEndpointConventionBuilder DefaultBuilder { get; set; }
 
     /// <inheritdoc />
     public override IReadOnlyList<Endpoint> Endpoints
