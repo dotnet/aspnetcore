@@ -133,7 +133,7 @@ internal sealed class KestrelMetrics
 
             if (exception != null)
             {
-                tags.Add("error.type", exception.GetType().FullName);
+                tags.TryAddTag("error.type", exception.GetType().FullName);
             }
 
             // Add custom tags for duration.
@@ -315,7 +315,7 @@ internal sealed class KestrelMetrics
         }
         if (exception != null)
         {
-            tags.Add("error.type", exception.GetType().FullName);
+            tags.TryAddTag("error.type", exception.GetType().FullName);
         }
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -411,5 +411,28 @@ internal sealed class KestrelMetrics
         name = null;
         version = null;
         return false;
+    }
+
+    public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason)
+    {
+        if (feature != null)
+        {
+            var s = reason.ToString();
+            feature.TryAddTag(KestrelConnectionEndReason, s);
+            if (IsErrorReason(reason))
+            {
+                feature.TryAddTag("error.type", s);
+            }
+        }
+    }
+
+    private static bool IsErrorReason(ConnectionEndReason reason)
+    {
+        return reason switch
+        {
+            ConnectionEndReason.ClientGoAway => false,
+            ConnectionEndReason.TransportCompleted => false,
+            _ => true,
+        };
     }
 }

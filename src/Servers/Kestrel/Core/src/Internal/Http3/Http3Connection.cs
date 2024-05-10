@@ -188,7 +188,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         if (!previousState)
         {
             _errorCodeFeature.Error = (long)errorCode;
-            _metricsTagsFeature?.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
+            KestrelMetrics.AddConnectionEndReason(_metricsTagsFeature, reason);
 
             if (TryStopAcceptingStreams())
             {
