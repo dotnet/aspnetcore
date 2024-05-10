@@ -85,6 +85,7 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         // Assert
         Assert.True(endpoints.IsValidCandidate(0));
         Assert.False(endpoints.IsValidCandidate(1));
+        Assert.Null(httpContext.GetEndpoint());
     }
 
     [Fact]
@@ -104,6 +105,7 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         // Assert
         Assert.False(endpoints.IsValidCandidate(0));
         Assert.True(endpoints.IsValidCandidate(1));
+        Assert.Null(httpContext.GetEndpoint());
     }
 
     [Fact]
@@ -123,6 +125,7 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         // Assert
         Assert.True(endpoints.IsValidCandidate(0));
         Assert.False(endpoints.IsValidCandidate(1));
+        Assert.Null(httpContext.GetEndpoint());
     }
 
     [Fact]
@@ -142,6 +145,7 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         // Assert
         Assert.False(endpoints.IsValidCandidate(0));
         Assert.True(endpoints.IsValidCandidate(1));
+        Assert.Null(httpContext.GetEndpoint());
     }
 
     [Fact]
@@ -161,6 +165,7 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         // Assert
         Assert.False(endpoints.IsValidCandidate(1));
         Assert.True(endpoints.IsValidCandidate(0));
+        Assert.Null(httpContext.GetEndpoint());
     }
 
     [Fact]
@@ -173,6 +178,86 @@ public class ContentEncodingNegotiationMatcherPolicyTest
             CreateEndpoint("br", 0.5d));
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers["Accept-Encoding"] = "gzip, br";
+
+        // Act
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        // Assert
+        Assert.True(endpoints.IsValidCandidate(0));
+        Assert.False(endpoints.IsValidCandidate(1));
+    }
+
+    [Fact]
+    public async Task ApplyAsync_SetsEndpointIfNoResourceCanSupportTheAcceptHeaderValues()
+    {
+        // Arrange
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var endpoints = CreateCandidateSet(
+            CreateEndpoint("gzip", 1.0d),
+            CreateEndpoint("br", 0.5d));
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "zstd";
+
+        // Act
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        // Assert
+        Assert.False(endpoints.IsValidCandidate(0));
+        Assert.False(endpoints.IsValidCandidate(1));
+        Assert.NotNull(httpContext.GetEndpoint());
+    }
+
+    [Fact]
+    public async Task ApplyAsync_DoesNotSetEndpointIfNoEndpointCanSupportTheAcceptHeaderValues_ButAnEndpointWithoutMetadataExists()
+    {
+        // Arrange
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var endpoints = CreateCandidateSet(
+            CreateEndpoint("gzip", 1.0d),
+            CreateEndpoint("br", 0.5d),
+            new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Endpoint -> No Content Encoding"));
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "zstd";
+
+        // Act
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        // Assert
+        Assert.False(endpoints.IsValidCandidate(0));
+        Assert.False(endpoints.IsValidCandidate(1));
+        Assert.True(endpoints.IsValidCandidate(2));
+        Assert.Null(httpContext.GetEndpoint());
+    }
+
+    [Fact]
+    public async Task ApplyAsync_SelectsFirstValidEndpointWhenContentEncodingMetadataQualityIsTheSame_IfAcceptEncodingQualityIsEqual()
+    {
+        // Arrange
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var endpoints = CreateCandidateSet(
+            CreateEndpoint("gzip", 1.0d),
+            CreateEndpoint("br", 1.0d));
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "gzip, br";
+
+        // Act
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        // Assert
+        Assert.True(endpoints.IsValidCandidate(0));
+        Assert.False(endpoints.IsValidCandidate(1));
+    }
+
+    [Fact]
+    public async Task ApplyAsync_SelectsFirstValidEndpointWhenContentEncodingMetadataQualityIsTheSame_IfAcceptEncodingQualityIsEqual_Reverse()
+    {
+        // Arrange
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var endpoints = CreateCandidateSet(
+            CreateEndpoint("gzip", 1.0d),
+            CreateEndpoint("br", 1.0d));
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "br, gzip";
 
         // Act
         await policy.ApplyAsync(httpContext, endpoints);
