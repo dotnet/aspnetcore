@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -14,9 +15,8 @@ internal sealed partial class OpenApiJsonSchema
     /// </summary>
     /// <typeparam name="T">The type of the elements that will populate the list.</typeparam>
     /// <param name="reader">The <see cref="Utf8JsonReader"/> to consume the list from.</param>
-    /// <param name="options">The <see cref="JsonSerializerOptions"/> instance.</param>
     /// <returns>A list parsed from the JSON array.</returns>
-    public static List<T>? ReadList<T>(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    public static List<T>? ReadList<T>(ref Utf8JsonReader reader)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -29,7 +29,7 @@ internal sealed partial class OpenApiJsonSchema
             reader.Read();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
-                values.Add(JsonSerializer.Deserialize<T>(ref reader, options)!);
+                values.Add((T)JsonSerializer.Deserialize(ref reader, typeof(T), OpenApiJsonSchemaContext.Default)!);
                 reader.Read();
             }
 
@@ -49,10 +49,9 @@ internal sealed partial class OpenApiJsonSchema
     /// </summary>
     /// <typeparam name="T">The type associated with the values in the dictionary.</typeparam>
     /// <param name="reader">The <see cref="Utf8JsonReader"/> to consume the dictionary from.</param>
-    /// <param name="options">The <see cref="JsonSerializerOptions"/> instance.</param>
     /// <returns>A dictionary parsed from the JSON object.</returns>
     /// <exception cref="JsonException">Thrown if JSON object is not valid.</exception>
-    public static Dictionary<string, T>? ReadDictionary<T>(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    public static Dictionary<string, T>? ReadDictionary<T>(ref Utf8JsonReader reader)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -75,7 +74,7 @@ internal sealed partial class OpenApiJsonSchema
 
             var key = reader.GetString()!;
             reader.Read();
-            values[key] = JsonSerializer.Deserialize<T>(ref reader, options)!;
+            values[key] = (T)JsonSerializer.Deserialize(ref reader, typeof(T), OpenApiJsonSchemaContext.Default)!;
             reader.Read();
         }
 
@@ -170,7 +169,7 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 if (reader.TokenType == JsonTokenType.StartArray)
                 {
-                    var types = ReadList<string>(ref reader, options);
+                    var types = ReadList<string>(ref reader);
                     foreach (var type in types ?? [])
                     {
                         // JSON Schema represents nullable types using an array consisting of
@@ -195,7 +194,7 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.EnumKeyword:
                 reader.Read();
-                var enumValues = ReadList<string>(ref reader, options);
+                var enumValues = ReadList<string>(ref reader);
                 if (enumValues is not null)
                 {
                     schema.Enum = enumValues.Select(v => new OpenApiString(v)).ToList<IOpenApiAny>();
@@ -224,7 +223,7 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.RequiredKeyword:
                 reader.Read();
-                schema.Required = ReadList<string>(ref reader, options)?.ToHashSet();
+                schema.Required = ReadList<string>(ref reader)?.ToHashSet();
                 break;
             case OpenApiSchemaKeywords.MinLengthKeyword:
                 reader.Read();
@@ -263,13 +262,13 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.PropertiesKeyword:
                 reader.Read();
-                var props = ReadDictionary<OpenApiJsonSchema>(ref reader, options);
+                var props = ReadDictionary<OpenApiJsonSchema>(ref reader);
                 schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema);
                 break;
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = "object";
-                var schemas = ReadList<OpenApiJsonSchema>(ref reader, options);
+                var schemas = ReadList<OpenApiJsonSchema>(ref reader);
                 schema.AnyOf = schemas?.Select(s => s.Schema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
@@ -282,7 +281,7 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.DiscriminatorMappingKeyword:
                 reader.Read();
-                var mappings = ReadDictionary<string>(ref reader, options);
+                var mappings = ReadDictionary<string>(ref reader);
                 schema.Discriminator.Mapping = mappings;
                 break;
         }

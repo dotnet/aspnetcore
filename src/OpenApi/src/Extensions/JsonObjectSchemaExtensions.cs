@@ -4,7 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json.Nodes;
 using JsonSchemaMapper;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -248,14 +247,10 @@ internal static class JsonObjectSchemaExtensions
         // based on our model binding heuristics. In that case, to access the validation attributes that the
         // model binder will respect we will need to get the property from the container type and map the
         // attributes on it to the schema.
-        if (parameterDescription.ModelMetadata.PropertyName is { } propertyName)
+        if (parameterDescription.ModelMetadata is { PropertyName: { }, ContainerType: { }, HasValidators: true, ValidatorMetadata: { } validations })
         {
-            var property = parameterDescription.ModelMetadata.ContainerType?.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-            if (property is not null)
-            {
-                var attributes = property.GetCustomAttributes(true).OfType<ValidationAttribute>();
-                schema.ApplyValidationAttributes(attributes);
-            }
+            var attributes = validations.OfType<ValidationAttribute>();
+            schema.ApplyValidationAttributes(attributes);
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying
