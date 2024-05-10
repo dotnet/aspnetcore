@@ -135,7 +135,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssetEndpoints();
+app.MapStaticAssets();
 app.MapRazorPages();
 #if (IndividualB2CAuth || OrganizationalAuth)
 app.MapControllers();

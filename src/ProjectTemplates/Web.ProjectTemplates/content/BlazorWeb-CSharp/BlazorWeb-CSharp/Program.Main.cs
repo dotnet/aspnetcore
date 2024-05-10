@@ -110,7 +110,7 @@ public class Program
         #endif
         app.UseAntiforgery();
 
-        app.MapStaticAssetEndpoints();
+        app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()

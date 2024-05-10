@@ -136,7 +136,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssetEndpoints();
+app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
