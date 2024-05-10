@@ -46,7 +46,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
             }
             else
             {
-                // In case the app didn't call MapStaticAssetEndpoints, use the 8.0 approach to map the assets.
+                // In case the app didn't call MapStaticAssets, use the 8.0 approach to map the assets.
                 var endpointRouteBuilder = new EndpointRouteBuilder(services, applicationBuilder);
                 var pathPrefix = wasmWithOptions.EndpointOptions?.PathPrefix;
 

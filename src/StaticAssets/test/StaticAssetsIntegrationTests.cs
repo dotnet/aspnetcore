@@ -387,7 +387,7 @@ public class StaticAssetsIntegrationTests
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapStaticAssetEndpoints(manifest);
+            endpoints.MapStaticAssets(manifest);
         });
 
         await app.StartAsync();

@@ -34,7 +34,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
             Path.Combine(AppContext.BaseDirectory, staticAssetsManifestPath) :
             staticAssetsManifestPath;
 
-        var result = MapStaticAssetEndpointsCore(endpoints, staticAssetsManifestPath);
+        var result = MapStaticAssetsCore(endpoints, staticAssetsManifestPath);
 
         if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(endpoints.ServiceProvider, environment))
         {
@@ -44,7 +44,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
         return result;
     }
 
-    private static StaticAssetsEndpointConventionBuilder MapStaticAssetEndpointsCore(
+    private static StaticAssetsEndpointConventionBuilder MapStaticAssetsCore(
         IEndpointRouteBuilder endpoints,
         string manifestPath,
         StaticAssetsManifest? manifest = null)
@@ -69,12 +69,12 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
     }
 
     // For testing purposes
-    internal static StaticAssetsEndpointConventionBuilder MapStaticAssetEndpoints(this IEndpointRouteBuilder endpoints, StaticAssetsManifest manifest)
+    internal static StaticAssetsEndpointConventionBuilder MapStaticAssets(this IEndpointRouteBuilder endpoints, StaticAssetsManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var environment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-        var result = MapStaticAssetEndpointsCore(endpoints, "unused", manifest);
+        var result = MapStaticAssetsCore(endpoints, "unused", manifest);
 
         if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(endpoints.ServiceProvider, environment))
         {
