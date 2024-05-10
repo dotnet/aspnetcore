@@ -272,8 +272,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null);
-            Assert.Equal("System.InvalidOperationException", (string)m.Tags["error.type"]);
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null, error: "System.InvalidOperationException");
         });
         Assert.Collection(activeConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
         Assert.Collection(queuedConnections.GetMeasurementSnapshot(), m => AssertCount(m, 1, "127.0.0.1", localPort: 0, "tcp", "ipv4"), m => AssertCount(m, -1, "127.0.0.1", localPort: 0, "tcp", "ipv4"));
@@ -405,6 +404,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         {
             Assert.True(m.Value > 0);
             Assert.Equal("1.2", (string)m.Tags["tls.protocol.version"]);
+            Assert.DoesNotContain("error.type", m.Tags.Keys);
         });
         Assert.Collection(activeTlsHandshakes.GetMeasurementSnapshot(), m => Assert.Equal(1, m.Value), m => Assert.Equal(-1, m.Value));
 
@@ -414,6 +414,85 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
             Assert.Equal("http", (string)measurement.Tags["network.protocol.name"]);
             Assert.Equal(httpVersion, (string)measurement.Tags["network.protocol.version"]);
         }
+    }
+
+    [ConditionalFact]
+    [TlsAlpnSupported]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+    public async Task Http2Connection_TlsError()
+    {
+        string connectionId = null;
+
+        //const int requestsToSend = 2;
+        var requestsReceived = 0;
+
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+        using var tlsHandshakeDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.tls_handshake.duration");
+
+        await using (var server = new TestServer(context =>
+        {
+            connectionId = context.Features.Get<IHttpConnectionFeature>().ConnectionId;
+            requestsReceived++;
+            return Task.CompletedTask;
+        },
+        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory)),
+        listenOptions =>
+        {
+            listenOptions.UseHttps(_x509Certificate2, options =>
+            {
+                options.SslProtocols = SslProtocols.Tls12;
+                options.ClientCertificateMode = Https.ClientCertificateMode.RequireCertificate;
+            });
+            listenOptions.Protocols = HttpProtocols.Http2;
+        }))
+        {
+            using var connection = server.CreateConnection();
+
+            using var socketsHandler = new SocketsHttpHandler()
+            {
+                ConnectCallback = (_, _) =>
+                {
+                    // This test should only require a single connection.
+                    if (connectionId != null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+
+                    return new ValueTask<Stream>(connection.Stream);
+                },
+                SslOptions = new SslClientAuthenticationOptions
+                {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true
+                }
+            };
+
+            using var httpClient = new HttpClient(socketsHandler);
+
+            //for (int i = 0; i < requestsToSend; i++)
+            {
+                using var httpRequestMessage = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri("https://localhost/"),
+                    Version = new Version(2, 0),
+                    VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+                };
+
+                await Assert.ThrowsAsync<HttpRequestException>(() => httpClient.SendAsync(httpRequestMessage));
+            }
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null, tlsProtocolVersion: null, error: ConnectionEndReason.TlsHandshakeFailed.ToString());
+        });
+
+        Assert.Collection(tlsHandshakeDuration.GetMeasurementSnapshot(), m =>
+        {
+            Assert.True(m.Value > 0);
+            Assert.Equal(typeof(AuthenticationException).FullName, (string)m.Tags["error.type"]);
+            Assert.DoesNotContain("tls.protocol.version", m.Tags.Keys);
+        });
     }
 
     private static async Task EchoApp(HttpContext httpContext)
@@ -429,7 +508,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    private static void AssertDuration(CollectedMeasurement<double> measurement, string localAddress, int? localPort, string networkTransport, string networkType, string httpVersion, string tlsProtocolVersion = null)
+    private static void AssertDuration(CollectedMeasurement<double> measurement, string localAddress, int? localPort, string networkTransport, string networkType, string httpVersion, string tlsProtocolVersion = null, string error = null)
     {
         Assert.True(measurement.Value > 0);
         Assert.Equal(networkTransport, (string)measurement.Tags["network.transport"]);
@@ -467,6 +546,14 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         else
         {
             Assert.False(measurement.Tags.ContainsKey("tls.protocol.version"));
+        }
+        if (error is not null)
+        {
+            Assert.Equal(error, (string)measurement.Tags["error.type"]);
+        }
+        else
+        {
+            Assert.False(measurement.Tags.ContainsKey("error.type"));
         }
     }
 

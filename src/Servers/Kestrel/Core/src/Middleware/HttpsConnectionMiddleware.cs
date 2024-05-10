@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -154,6 +155,7 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ISslStreamFeature>(feature);
         context.Features.Set<SslStream>(sslStream); // Anti-pattern, but retain for back compat
 
+        var metricsTagsFeature = context.Features.Get<IConnectionMetricsTagsFeature>();
         var metricsContext = context.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
         var startTimestamp = Stopwatch.GetTimestamp();
         try
@@ -173,7 +175,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (OperationCanceledException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationTimedOut();
             await sslStream.DisposeAsync();
@@ -181,7 +183,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
             await sslStream.DisposeAsync();
@@ -189,10 +191,9 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
-
             await sslStream.DisposeAsync();
             return;
         }
@@ -202,15 +203,16 @@ internal sealed class HttpsConnectionMiddleware
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
-        if (context.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        if (metricsTagsFeature != null)
         {
             if (KestrelMetrics.TryGetHandshakeProtocol(sslStream.SslProtocol, out var protocolName, out var protocolVersion))
             {
+                // "tls" is considered the default protocol name and isn't explicitly recorded.
                 if (protocolName != "tls")
                 {
-                    metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.name", protocolName));
+                    metricsTagsFeature.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.name", protocolName));
                 }
-                metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", protocolVersion));
+                metricsTagsFeature.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", protocolVersion));
             }
         }
 
@@ -235,10 +237,12 @@ internal sealed class HttpsConnectionMiddleware
             context.Transport = originalTransport;
         }
 
-        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionMetricsContext metricsContext, Exception ex)
+        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionMetricsContext metricsContext, IConnectionMetricsTagsFeature? metricsTagsFeature, Exception ex)
         {
             KestrelEventSource.Log.TlsHandshakeFailed(metricsContext.ConnectionContext.ConnectionId);
             KestrelEventSource.Log.TlsHandshakeStop(metricsContext.ConnectionContext, null);
+
+            KestrelMetrics.AddConnectionEndReason(metricsTagsFeature, ConnectionEndReason.TlsHandshakeFailed);
             metrics.TlsHandshakeStop(metricsContext, startTimestamp, currentTimestamp, exception: ex);
         }
     }

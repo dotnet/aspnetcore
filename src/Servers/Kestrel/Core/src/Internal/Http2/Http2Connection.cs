@@ -225,7 +225,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         Debug.Assert(_errorCodeFeature.Error == -1, "Error code feature should only be set once.");
 
         _errorCodeFeature.Error = (long)errorCode;
-        _metricsTagsFeature?.TryAddTag(KestrelMetrics.KestrelConnectionEndReason, reason.ToString());
+        KestrelMetrics.AddConnectionEndReason(_metricsTagsFeature, reason);
     }
 
     public void Abort(ConnectionAbortedException ex, ConnectionEndReason reason)

@@ -41,5 +41,6 @@ internal enum ConnectionEndReason
     IOError,
     ClientGoAway,
     ApplicationShutdown,
-    TransportCompleted
+    TransportCompleted,
+    TlsHandshakeFailed
 }
