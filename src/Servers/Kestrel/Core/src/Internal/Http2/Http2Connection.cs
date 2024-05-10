@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
