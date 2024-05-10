@@ -2,26 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
-using Xunit;
 using Moq.Protected;
-using System.IO.Pipelines;
-using System.Text;
-using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
