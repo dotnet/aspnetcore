@@ -56,7 +56,7 @@ public class Startup
         {
             endpoints.MapRazorPages();
             endpoints.MapControllers();
-            endpoints.MapStaticAssetEndpoints();
+            endpoints.MapStaticAssets();
             endpoints.MapFallbackToPage("/_Host");
         });
     }

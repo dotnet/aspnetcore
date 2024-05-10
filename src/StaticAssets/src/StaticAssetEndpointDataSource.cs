@@ -13,11 +13,10 @@ namespace Microsoft.AspNetCore.StaticAssets;
 /// An <see cref="EndpointDataSource"/> for static assets.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticAssetsEndpointDataSource : EndpointDataSource
+internal class StaticAssetsEndpointDataSource : EndpointDataSource
 {
     private readonly object _lock = new();
     private readonly StaticAssetsManifest _manifest;
-    private readonly string _manifestName;
     private readonly StaticAssetEndpointFactory _endpointFactory;
     private readonly List<Action<EndpointBuilder>> _conventions = [];
     private readonly List<Action<EndpointBuilder>> _finallyConventions = [];
@@ -25,10 +24,11 @@ public class StaticAssetsEndpointDataSource : EndpointDataSource
     private CancellationTokenSource _cancellationTokenSource;
     private CancellationChangeToken _changeToken;
 
-    internal StaticAssetsEndpointDataSource(StaticAssetsManifest manifest, StaticAssetEndpointFactory endpointFactory, string manifestName, List<StaticAssetDescriptor> descriptors)
+    internal StaticAssetsEndpointDataSource(IServiceProvider serviceProvider, StaticAssetsManifest manifest, StaticAssetEndpointFactory endpointFactory, string manifestName, List<StaticAssetDescriptor> descriptors)
     {
+        ServiceProvider = serviceProvider;
         _manifest = manifest;
-        _manifestName = manifestName;
+        ManifestPath = manifestName;
         _endpointFactory = endpointFactory;
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
@@ -43,7 +43,7 @@ public class StaticAssetsEndpointDataSource : EndpointDataSource
     /// <summary>
     /// Gets the manifest name associated with this static asset endpoint data source.
     /// </summary>
-    public string ManifestName => _manifestName;
+    public string ManifestPath { get; }
 
     /// <inheritdoc />
     internal StaticAssetsEndpointConventionBuilder DefaultBuilder { get; set; }
@@ -66,6 +66,8 @@ public class StaticAssetsEndpointDataSource : EndpointDataSource
             return _endpoints;
         }
     }
+
+    internal IServiceProvider ServiceProvider { get; }
 
     private void Initialize()
     {
@@ -110,5 +112,8 @@ public class StaticAssetsEndpointDataSource : EndpointDataSource
         return _changeToken;
     }
 
-    private string GetDebuggerDisplay() => _manifestName;
+    private string GetDebuggerDisplay()
+    {
+        return ManifestPath;
+    }
 }

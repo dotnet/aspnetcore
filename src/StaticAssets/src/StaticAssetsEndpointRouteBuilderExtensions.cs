@@ -51,7 +51,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
     {
         foreach (var ds in endpoints.DataSources)
         {
-            if (ds is StaticAssetsEndpointDataSource sads && sads.ManifestName.Equals(manifestPath, StringComparison.Ordinal))
+            if (ds is StaticAssetsEndpointDataSource sads && sads.ManifestPath.Equals(manifestPath, StringComparison.Ordinal))
             {
                 return sads.DefaultBuilder;
             }

@@ -37,7 +37,7 @@ internal class StaticAssetsManifest
 
     internal StaticAssetsEndpointDataSource CreateDataSource(IEndpointRouteBuilder endpoints, string manifestName, List<StaticAssetDescriptor> descriptors)
     {
-        var dataSource = new StaticAssetsEndpointDataSource(this, new StaticAssetEndpointFactory(endpoints.ServiceProvider), manifestName, descriptors);
+        var dataSource = new StaticAssetsEndpointDataSource(endpoints.ServiceProvider, this, new StaticAssetEndpointFactory(endpoints.ServiceProvider), manifestName, descriptors);
         endpoints.DataSources.Add(dataSource);
         return dataSource;
     }
