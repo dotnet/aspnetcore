@@ -9,12 +9,20 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
-
+/// <summary>
+/// The `DefaultProblemDetailsFactory` is a concrete implementation of the `ProblemDetailsFactory` abstract class.
+/// It provides methods to create instances of `ProblemDetails` and `ValidationProblemDetails` with default settings.
+/// This class uses the provided `ApiBehaviorOptions` for client error mapping and an optional custom configuration action to further customize the problem details.
+/// </summary>
 public sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
 {
     private readonly ApiBehaviorOptions _options;
     private readonly Action<ProblemDetailsContext>? _configure;
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultProblemDetailsFactory"/> class.
+    /// </summary>
+    /// <param name="options">The options for API behavior.</param>
+    /// <param name="problemDetailsOptions">The options for customizing problem details.</param>
     public DefaultProblemDetailsFactory(
         IOptions<ApiBehaviorOptions> options,
         IOptions<ProblemDetailsOptions>? problemDetailsOptions = null)
@@ -22,7 +30,16 @@ public sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _configure = problemDetailsOptions?.Value?.CustomizeProblemDetails;
     }
-
+    /// <summary>
+    /// Creates a new instance of the <see cref="ProblemDetails"/> class with the specified parameters.
+    /// </summary>
+    /// <param name="httpContext">The HTTP context.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <param name="title">The title.</param>
+    /// <param name="type">The type.</param>
+    /// <param name="detail">The detail.</param>
+    /// <param name="instance">The instance.</param>
+    /// <returns>A new instance of the <see cref="ProblemDetails"/> class.</returns>
     public override ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
         int? statusCode = null,
@@ -46,7 +63,18 @@ public sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
 
         return problemDetails;
     }
-
+    /// <summary>
+    /// Creates a new instance of the <see cref="ValidationProblemDetails"/> class with the specified parameters.
+    /// This method uses the provided ModelStateDictionary to initialize the ValidationProblemDetails instance.
+    /// </summary>
+    /// <param name="httpContext">The HTTP context.</param>
+    /// <param name="modelStateDictionary">The ModelStateDictionary containing the validation errors.</param>
+    /// <param name="statusCode">The status code. Defaults to 400 if not provided.</param>
+    /// <param name="title">The title.</param>
+    /// <param name="type">The type.</param>
+    /// <param name="detail">The detail.</param>
+    /// <param name="instance">The instance.</param>
+    /// <returns>A new instance of the <see cref="ValidationProblemDetails"/> class.</returns>
     public override ValidationProblemDetails CreateValidationProblemDetails(
         HttpContext httpContext,
         ModelStateDictionary modelStateDictionary,
