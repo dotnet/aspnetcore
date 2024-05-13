@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -125,7 +126,12 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
             StatefulReconnectBufferSize = _statefulReconnectBufferSize,
+            OriginalActivity = Activity.Current,
         };
+
+        // Get off the parent span.
+        // This is likely the Http Request span and we want Hub method invocations to not be collected under a long running span.
+        Activity.Current = null;
 
         Log.ConnectedStarting(_logger);
 

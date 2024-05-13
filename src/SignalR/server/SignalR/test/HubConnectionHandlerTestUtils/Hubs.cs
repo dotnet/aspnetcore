@@ -371,11 +371,9 @@ public class MethodHub : TestHub
         yield return sum;
     }
 
-    public void ActivityMethod()
+    public void ActivityMethod(TestActivitySource testActivitySource)
     {
-        var activitySource = new ActivitySource("test_custom");
-        var activity = activitySource.CreateActivity("inner", ActivityKind.Server);
-        activity.Start();
+        var activity = testActivitySource.ActivitySource.StartActivity("inner", ActivityKind.Server);
         activity.Stop();
     }
 }
@@ -388,6 +386,11 @@ internal class SelfRef
     }
 
     public SelfRef Self { get; set; }
+}
+
+public class TestActivitySource
+{
+    public ActivitySource ActivitySource { get; set; }
 }
 
 public abstract class TestHub : Hub
