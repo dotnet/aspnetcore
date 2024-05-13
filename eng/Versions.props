@@ -137,8 +137,8 @@
     <SystemIOHashingVersion>9.0.0-preview.5.24256.1</SystemIOHashingVersion>
     <SystemRuntimeCachingVersion>9.0.0-preview.5.24256.1</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsDiagnosticsTestingVersion>9.0.0-preview.4.24255.1</MicrosoftExtensionsDiagnosticsTestingVersion>
-    <MicrosoftExtensionsTimeProviderTestingVersion>9.0.0-preview.4.24255.1</MicrosoftExtensionsTimeProviderTestingVersion>
+    <MicrosoftExtensionsDiagnosticsTestingVersion>9.0.0-preview.4.24261.1</MicrosoftExtensionsDiagnosticsTestingVersion>
+    <MicrosoftExtensionsTimeProviderTestingVersion>9.0.0-preview.4.24261.1</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>9.0.0-preview.5.24258.8</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>9.0.0-preview.5.24258.8</MicrosoftEntityFrameworkCoreInMemoryVersion>
@@ -165,16 +165,16 @@
     <MicrosoftDotNetRemoteExecutorVersion>9.0.0-beta.24229.1</MicrosoftDotNetRemoteExecutorVersion>
     <MicrosoftSourceBuildIntermediatearcadeVersion>9.0.0-beta.24229.1</MicrosoftSourceBuildIntermediatearcadeVersion>
     <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>9.0.0-alpha.1.24222.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>9.0.0-alpha.1.24258.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
     <!-- Packages from dotnet/source-build-reference-packages -->
-    <MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>9.0.0-alpha.1.24252.1</MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>9.0.0-alpha.1.24256.2</MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>
     <!-- Packages from dotnet/symreader -->
     <MicrosoftSourceBuildIntermediatesymreaderVersion>2.1.0-beta.24208.1</MicrosoftSourceBuildIntermediatesymreaderVersion>
     <!-- Packages from dotnet/winforms -->
     <SystemDrawingCommonVersion>9.0.0-preview.5.24228.1</SystemDrawingCommonVersion>
     <!-- Packages from dotnet/xdt -->
-    <MicrosoftWebXdtVersion>9.0.0-preview.24230.1</MicrosoftWebXdtVersion>
-    <MicrosoftSourceBuildIntermediatexdtVersion>9.0.0-preview.24230.1</MicrosoftSourceBuildIntermediatexdtVersion>
+    <MicrosoftWebXdtVersion>9.0.0-preview.24256.3</MicrosoftWebXdtVersion>
+    <MicrosoftSourceBuildIntermediatexdtVersion>9.0.0-preview.24256.3</MicrosoftSourceBuildIntermediatexdtVersion>
   </PropertyGroup>
   <!--
 
