@@ -47,6 +47,10 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 class ReconnectionProcess {
   static readonly MaximumFirstRetryInterval = 3000;
 
+  static readonly DefaultRetryInterval = 10000;
+
+  static readonly MinimumBackoffRetryInterval = 2000;
+
   readonly reconnectDisplay: ReconnectDisplay;
 
   isDisposed = false;
@@ -66,9 +70,17 @@ class ReconnectionProcess {
     for (let i = 0; i < options.maxRetries; i++) {
       this.reconnectDisplay.update(i + 1);
 
-      const delayDuration = i === 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
-        ? ReconnectionProcess.MaximumFirstRetryInterval
-        : options.retryIntervalMilliseconds;
+      let delayDuration: number;
+      if (options.exponentialBackoffFactor !== undefined) {
+        const minimumRetryinterval = options.retryIntervalMilliseconds ?? ReconnectionProcess.MinimumBackoffRetryInterval;
+        delayDuration = minimumRetryinterval + Math.pow(options.exponentialBackoffFactor, i);
+      } else {
+        const retryIntervalMilliseconds = options.retryIntervalMilliseconds ?? ReconnectionProcess.DefaultRetryInterval;
+        delayDuration = i === 0 && retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+          ? ReconnectionProcess.MaximumFirstRetryInterval
+          : retryIntervalMilliseconds;
+      }
+
       await this.delay(delayDuration);
 
       if (this.isDisposed) {

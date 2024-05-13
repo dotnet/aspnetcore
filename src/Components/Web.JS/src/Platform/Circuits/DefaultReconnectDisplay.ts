@@ -6,6 +6,242 @@ import { Logger, LogLevel } from '../Logging/Logger';
 import { Blazor } from '../../GlobalExports';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
+  static readonly ReconnectOverlayClassName = 'components-reconnect-overlay';
+
+  static readonly ReconnectDialogClassName = 'components-reconnect-dialog';
+
+  static readonly ReconnectVisibleClassName = 'components-reconnect-visible';
+
+  static readonly RippleGroupClassName = 'components-ripple-group';
+
+  static readonly RippleCount = 2;
+
+  static readonly ShowCheckInternetDelayMilliseconds = 5000;
+
+  style: HTMLStyleElement;
+
+  overlay: HTMLDivElement;
+
+  dialog: HTMLDivElement;
+
+  checkInternetElement: HTMLParagraphElement;
+
+  showCheckInternetTimeout?: number;
+
+  constructor(dialogId: string, private readonly maxRetries: number, private readonly document: Document, private readonly logger: Logger) {
+    this.style = this.document.createElement('style');
+    this.style.innerHTML = DefaultReconnectDisplay.Css;
+
+    this.overlay = this.document.createElement('div');
+    this.overlay.className = DefaultReconnectDisplay.ReconnectOverlayClassName;
+    this.overlay.id = dialogId;
+
+    this.dialog = this.document.createElement('div');
+    this.dialog.className = DefaultReconnectDisplay.ReconnectDialogClassName;
+
+    const rippleGroup = document.createElement('div');
+    rippleGroup.className = DefaultReconnectDisplay.RippleGroupClassName;
+
+    for (let i = 0; i < DefaultReconnectDisplay.RippleCount; i++) {
+      const ripple = document.createElement('div');
+      rippleGroup.appendChild(ripple);
+    }
+
+    const rejoiningMessage = document.createElement('p');
+    rejoiningMessage.innerHTML = 'Rejoining the server...';
+
+    this.checkInternetElement = document.createElement('p');
+    this.checkInternetElement.innerHTML = 'Check your internet connection';
+
+    const reloadButton = document.createElement('button');
+    reloadButton.setAttribute('onclick', 'location.reload()');
+    reloadButton.style.display = 'none';
+    reloadButton.innerHTML = 'Reload';
+
+    this.dialog.appendChild(rippleGroup);
+    this.dialog.appendChild(rejoiningMessage);
+    this.dialog.appendChild(this.checkInternetElement);
+    this.dialog.appendChild(reloadButton);
+
+    this.overlay.appendChild(this.dialog);
+  }
+
+  show(): void {
+    if (!this.document.contains(this.overlay)) {
+      this.document.body.appendChild(this.overlay);
+    }
+
+    if (!this.document.contains(this.style)) {
+      this.document.body.appendChild(this.style);
+    }
+
+    this.overlay.classList.add(DefaultReconnectDisplay.ReconnectVisibleClassName);
+    this.checkInternetElement.style.display = 'none';
+    clearTimeout(this.showCheckInternetTimeout);
+    this.showCheckInternetTimeout = setTimeout(() => {
+      this.checkInternetElement.style.display = 'block';
+    }, DefaultReconnectDisplay.ShowCheckInternetDelayMilliseconds) as unknown as number;
+  }
+
+  update(currentAttempt: number): void {
+    // TODO
+  }
+
+  hide(): void {
+    this.overlay.classList.remove(DefaultReconnectDisplay.ReconnectVisibleClassName);
+    clearTimeout(this.showCheckInternetTimeout);
+  }
+
+  failed(): void {
+    location.reload();
+  }
+
+  rejected(): void {
+    location.reload();
+  }
+
+  static readonly Css = `
+    .${this.ReconnectOverlayClassName} {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10000;
+      display: none;
+      animation: components-reconnect-fade-in;
+    }
+
+    .${this.ReconnectOverlayClassName}.${this.ReconnectVisibleClassName} {
+      display: block;
+    }
+
+    .${this.ReconnectOverlayClassName}::before {
+      content: '';
+      background-color: rgba(0, 0, 0, 0.4);
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      animation: components-reconnect-fadeInOpacity 0.5s ease-in-out;
+      opacity: 1;
+    }
+
+    .${this.ReconnectOverlayClassName} p {
+      margin: 0;
+    }
+
+    .${this.ReconnectOverlayClassName} button {
+      border: 0;
+      background-color: #6b9ed2;
+      color: white;
+      padding: 4px 24px;
+      border-radius: 4px;
+    }
+
+    .${this.ReconnectOverlayClassName} button:hover {
+      background-color: #3b6ea2;
+    }
+
+    .${this.ReconnectOverlayClassName} button:active {
+      background-color: #6b9ed2;
+    }
+
+    .${this.ReconnectDialogClassName} {
+      position: relative;
+      background-color: white;
+      width: 20rem;
+      margin: 20vh auto;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 3px 6px 2px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      animation: components-reconnect-slideUp 1.5s cubic-bezier(.05, .89, .25, 1.02) 0.3s, components-reconnect-fadeInOpacity 0.5s ease-out 0.3s;
+      animation-fill-mode: forwards;
+      z-index: 10001;
+    }
+
+    .${this.RippleGroupClassName} {
+      display: block;
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .${this.RippleGroupClassName} div {
+      position: absolute;
+      border: 3px solid #0087ff;
+      opacity: 1;
+      border-radius: 50%;
+      animation: ${this.RippleGroupClassName} 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+
+    .${this.RippleGroupClassName} div:nth-child(2) {
+      animation-delay: -0.5s;
+    }
+
+    @keyframes ${this.RippleGroupClassName} {
+      0% {
+        top: 40px;
+        left: 40px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+      }
+
+      4.9% {
+        top: 40px;
+        left: 40px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+      }
+
+      5% {
+        top: 40px;
+        left: 40px;
+        width: 0;
+        height: 0;
+        opacity: 1;
+      }
+
+      100% {
+        top: 0px;
+        left: 0px;
+        width: 80px;
+        height: 80px;
+        opacity: 0;
+      }
+    }
+
+    @keyframes components-reconnect-fadeInOpacity {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes components-reconnect-slideUp {
+      0% {
+        transform: translateY(30px) scale(0.95);
+      }
+
+      100% {
+        transform: translateY(0);
+      }
+    }
+  `;
+}
+
+export class DefaultReconnectDisplayOld implements ReconnectDisplay {
   modal: HTMLDivElement;
 
   message: HTMLHeadingElement;
