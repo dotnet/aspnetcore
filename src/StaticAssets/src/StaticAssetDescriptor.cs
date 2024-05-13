@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.StaticAssets;
 
 // Represents a static resource.
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal class StaticAssetDescriptor(
+internal sealed class StaticAssetDescriptor(
     string route,
     string assetFile,
     StaticAssetSelector[] selectors,
@@ -22,6 +22,6 @@ internal class StaticAssetDescriptor(
 
     private string GetDebuggerDisplay()
     {
-        return $"Route: {Route} Path:{AssetFile}";
+        return $"Route: {Route} Path: {AssetFile}";
     }
 }

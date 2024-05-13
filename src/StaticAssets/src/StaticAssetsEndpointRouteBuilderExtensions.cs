@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder;
 public static class StaticAssetsEndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps static files produced during the build as endpoints.
+    /// Maps static files produced during the build as endpoints..
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <param name="staticAssetsManifestPath">The path to the static assets manifest file.</param>
@@ -83,5 +83,4 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
 
         return result;
     }
-
 }

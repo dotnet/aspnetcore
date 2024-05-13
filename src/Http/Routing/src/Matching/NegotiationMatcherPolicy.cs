@@ -198,8 +198,8 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
     }
 
     // Explainer:
-    // This is responsible for building the branches in the DFA that will be used to match the
-    // based on the Accept-Encoding header of the request.
+    // This is responsible for building the branches in the DFA that will be used to match a
+    // concrete endpoint based on the Accept-Encoding header of the request.
     // To give you an idea lets explain this through a sample.
     // Say we have the following endpoints:
     // 1 - Resource.css - [ Accept-Encoding: gzip ]

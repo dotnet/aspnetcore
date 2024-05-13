@@ -144,10 +144,8 @@ internal class StaticAssetsInvoker
                         await SendRangeAsync(requestContext, range);
                         return;
                     }
-                    else
-                    {
-                        context.Response.ContentLength = _length;
-                    }
+
+                    context.Response.ContentLength = _length;
 
                     await SendAsync(requestContext);
                     _logger.FileServed(Route, PhysicalPath);

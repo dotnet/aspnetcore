@@ -90,7 +90,7 @@ public class StaticAssetsIntegrationTests
             WebRootPath = webRoot
         });
 
-        builder.WebHost.UseSetting("HotReloadStaticAssets", "true");
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
         builder.WebHost.ConfigureServices(services =>
         {
             services.AddRouting();
@@ -145,7 +145,7 @@ public class StaticAssetsIntegrationTests
             EnvironmentName = "Development",
             WebRootPath = webRoot
         });
-        builder.WebHost.UseSetting("HotReloadStaticAssets", "true");
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
         builder.WebHost.ConfigureServices(services =>
         {
             services.AddRouting();
@@ -198,7 +198,7 @@ public class StaticAssetsIntegrationTests
             EnvironmentName = "Development",
             WebRootPath = webRoot
         });
-        builder.WebHost.UseSetting("HotReloadStaticAssets", "true");
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
         builder.WebHost.ConfigureServices(services =>
         {
             services.AddRouting();

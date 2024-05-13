@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
@@ -62,7 +63,7 @@ internal static class ComponentsWebAssemblyStaticAssetsEndpointConventionBuilder
         {
             var webHostEnvironment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
             context.Response.Headers.Add("Blazor-Environment", webHostEnvironment.EnvironmentName);
-            context.Response.Headers.Add("Cache-Control", "no-cache");
+            context.Response.Headers.Add(HeaderNames.CacheControl, "no-cache");
 
             // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
             // by the launching process (dotnet-watch / Visual Studio).
@@ -83,5 +84,5 @@ internal static class ComponentsWebAssemblyStaticAssetsEndpointConventionBuilder
         };
     }
 
-    private sealed class WebAssemblyConventionsAppliedMetadata { };
+    private sealed class WebAssemblyConventionsAppliedMetadata;
 }

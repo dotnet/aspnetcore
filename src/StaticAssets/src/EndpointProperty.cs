@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.StaticAssets;
 
 // Represents a property of an endpoint.
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal class EndpointProperty(string name, string value)
+internal sealed class EndpointProperty(string name, string value)
 {
     public string Name { get; } = name;
     public string Value { get; } = value;

@@ -52,7 +52,6 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
         ComponentEndpointConventionBuilderHelper.AddRenderMode(builder, new WebAssemblyRenderModeWithOptions(options));
 
         var endpointBuilder = ComponentEndpointConventionBuilderHelper.GetEndpointRouteBuilder(builder);
-        var environment = endpointBuilder.ServiceProvider.GetRequiredService<IHostEnvironment>();
 
         // If the static assets data source for the given manifest name is already added, then just wire-up the Blazor WebAssembly conventions.
         // MapStaticWebAssetEndpoints is idempotent and will not add the data source if it already exists.
@@ -64,7 +63,9 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
 
             return builder;
         }
-        else if (environment.IsDevelopment())
+
+        var environment = endpointBuilder.ServiceProvider.GetRequiredService<IHostEnvironment>();
+        if (environment.IsDevelopment())
         {
             var logger = endpointBuilder.ServiceProvider.GetRequiredService<ILogger<WebAssemblyComponentsEndpointOptions>>();
             if (options.StaticAssetsManifestPath is null)

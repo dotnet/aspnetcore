@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Builder;
 // Handles changes during development to support common scenarios where for example, a developer changes a file in the wwwroot folder.
 internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
 {
+    internal const string ReloadStaticAssetsAtRuntimeKey = "ReloadStaticAssetsAtRuntime";
+
     public void AttachRuntimePatching(EndpointBuilder builder)
     {
         var original = builder.RequestDelegate!;
@@ -125,7 +127,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
             {
                 // Clear all the ETag headers, as they'll be replaced with the new ones.
                 _context.Response.Headers.ETag = "";
-                // Compute the new ETag, if this is a compressed asset, HotReloadStaticAsset will update it.
+                // Compute the new ETag, if this is a compressed asset, RuntimeStaticAssetResponseBodyFeature will update it.
                 _context.Response.Headers.ETag = GetETag(fileInfo);
                 _context.Response.Headers.ContentLength = fileInfo.Length;
                 _context.Response.Headers.LastModified = fileInfo.LastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
@@ -157,7 +159,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
     internal static bool IsEnabled(IServiceProvider serviceProvider, IWebHostEnvironment environment)
     {
         var config = serviceProvider.GetRequiredService<IConfiguration>();
-        var explicitlyConfigured = bool.TryParse(config["HotReloadStaticAssets"], out var hotReload);
+        var explicitlyConfigured = bool.TryParse(config[ReloadStaticAssetsAtRuntimeKey], out var hotReload);
         return (!explicitlyConfigured && environment.IsDevelopment()) || (explicitlyConfigured && hotReload);
     }
 
@@ -170,7 +172,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         var config = endpoints.ServiceProvider.GetRequiredService<IConfiguration>();
         var hotReloadHandler = new StaticAssetDevelopmentRuntimeHandler(descriptors);
         builder.Add(hotReloadHandler.AttachRuntimePatching);
-        var disableFallback = bool.TryParse(config["DisableStaticAssetFallback"], out var disableFallbackValue) && disableFallbackValue;
+        var disableFallback = bool.TryParse(config["DisableStaticAssetNotFoundRuntimeFallback"], out var disableFallbackValue) && disableFallbackValue;
 
         if (!disableFallback)
         {

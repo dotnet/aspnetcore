@@ -8,16 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.StaticAssets.Infrastructure;
 
 /// <summary>
-/// This type is not recommended for use outside of ASP.NET Core.
+/// For internal framework use only.
 /// </summary>
 public static class StaticAssetsEndpointDataSourceHelper
 {
     /// <summary>
-    /// This method is not recommended for use outside of ASP.NET Core.
+    /// For internal framework use only.
     /// </summary>
-    /// <param name="dataSource"></param>
-    /// <param name="staticAssetsManifestPath"></param>
-
     public static bool IsStaticAssetsDataSource(EndpointDataSource dataSource, string? staticAssetsManifestPath = null)
     {
         if (dataSource is StaticAssetsEndpointDataSource staticAssetsDataSource)

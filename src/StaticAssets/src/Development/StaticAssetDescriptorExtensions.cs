@@ -13,7 +13,7 @@ internal static class StaticAssetDescriptorExtensions
     {
         foreach (var header in descriptor.ResponseHeaders)
         {
-            if (header.Name == "Content-Length")
+            if (string.Equals(header.Name, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
             {
                 return long.Parse(header.Value, CultureInfo.InvariantCulture);
             }
@@ -26,7 +26,7 @@ internal static class StaticAssetDescriptorExtensions
     {
         foreach (var header in descriptor.ResponseHeaders)
         {
-            if (header.Name == "Last-Modified")
+            if (string.Equals(header.Name, HeaderNames.LastModified, StringComparison.OrdinalIgnoreCase))
             {
                 return DateTimeOffset.Parse(header.Value, CultureInfo.InvariantCulture);
             }
@@ -39,7 +39,7 @@ internal static class StaticAssetDescriptorExtensions
     {
         foreach (var header in descriptor.ResponseHeaders)
         {
-            if (header.Name == "ETag")
+            if (string.Equals(header.Name, HeaderNames.ETag, StringComparison.OrdinalIgnoreCase))
             {
                 var eTag = EntityTagHeaderValue.Parse(header.Value);
                 if (eTag.IsWeak)
@@ -56,7 +56,7 @@ internal static class StaticAssetDescriptorExtensions
     {
         foreach (var selector in descriptor.Selectors)
         {
-            if (selector.Name == "Content-Encoding")
+            if (string.Equals(selector.Name, HeaderNames.ContentEncoding, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -69,7 +69,7 @@ internal static class StaticAssetDescriptorExtensions
     {
         foreach (var header in descriptor.ResponseHeaders)
         {
-            if (header.Name == "ETag")
+            if (string.Equals(header.Name, HeaderNames.ETag, StringComparison.OrdinalIgnoreCase))
             {
                 var eTag = EntityTagHeaderValue.Parse(header.Value);
                 if (!eTag.IsWeak && eTag.Tag == tag)

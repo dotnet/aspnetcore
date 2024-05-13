@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.StaticAssets;
 
 // Represents a selector for a static resource.
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal class StaticAssetSelector(string name, string value, string quality)
+internal sealed class StaticAssetSelector(string name, string value, string quality)
 {
     public string Name { get; } = name;
     public string Value { get; } = value;
     public string Quality { get; } = quality;
 
-    private string GetDebuggerDisplay() => $"Name: {Name} Value:{Value} Quality:{Quality}";
+    private string GetDebuggerDisplay() => $"Name: {Name} Value: {Value} Quality: {Quality}";
 }

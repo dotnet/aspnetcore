@@ -6,7 +6,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
-internal class ContentEncodingNegotiationMatcherPolicy : NegotiationMatcherPolicy<ContentEncodingMetadata>
+internal sealed class ContentEncodingNegotiationMatcherPolicy : NegotiationMatcherPolicy<ContentEncodingMetadata>
 {
     internal static string HeaderName => "Accept-Encoding";
 
@@ -28,7 +28,7 @@ internal class ContentEncodingNegotiationMatcherPolicy : NegotiationMatcherPolic
 
     private protected override NegotiationPolicyJumpTable CreateTable(int exitDestination, (string negotiationValue, double quality, int destination)[] destinations, int noNegotiationHeaderDestination) => new ContentEncodingPolicyJumpTable(exitDestination, noNegotiationHeaderDestination, new ContentEncodingDestinationsLookUp(destinations));
 
-    internal class ContentEncodingPolicyJumpTable(int anyContentEncodingDestination, int noContentEncodingDestination, ContentEncodingDestinationsLookUp destinations) : NegotiationPolicyJumpTable("Accept-Encoding", anyContentEncodingDestination, noContentEncodingDestination)
+    internal sealed class ContentEncodingPolicyJumpTable(int anyContentEncodingDestination, int noContentEncodingDestination, ContentEncodingDestinationsLookUp destinations) : NegotiationPolicyJumpTable("Accept-Encoding", anyContentEncodingDestination, noContentEncodingDestination)
     {
         private readonly ContentEncodingDestinationsLookUp _destinations = destinations;
 
@@ -37,7 +37,7 @@ internal class ContentEncodingNegotiationMatcherPolicy : NegotiationMatcherPolic
         protected override double GetQuality(string? value) => _destinations.GetValueQuality(value);
     }
 
-    internal class ContentEncodingDestinationsLookUp
+    internal sealed class ContentEncodingDestinationsLookUp
     {
         private readonly int _brotliDestination = -1;
         private readonly double _brotliQuality;
@@ -76,6 +76,9 @@ internal class ContentEncodingNegotiationMatcherPolicy : NegotiationMatcherPolic
 
         public int GetDestination(string? negotiationValue)
         {
+            // Specialcase the lookup based on the length of the negotiation value
+            // to reduce the number of required comparisons needed to find a match.
+            // The match will be validated after this selection.
             var (matchedEncoding, destination) = negotiationValue?.Length switch
             {
                 2 => ("br", _brotliDestination),
