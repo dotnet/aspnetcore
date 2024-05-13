@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -25,6 +26,8 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// Defines a set of methods for generating OpenAPI definitions for endpoints.
 /// </summary>
+[RequiresUnreferencedCode("OpenApiGenerator performs reflection to generate OpenAPI descriptors. This cannot be statically analyzed.")]
+[RequiresDynamicCode("OpenApiGenerator performs reflection to generate OpenAPI descriptors. This cannot be statically analyzed.")]
 internal sealed class OpenApiGenerator
 {
     private readonly IHostEnvironment? _environment;

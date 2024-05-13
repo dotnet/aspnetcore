@@ -13,6 +13,7 @@ public interface IOutputCachePolicy
     /// At that point the cache middleware can still be enabled or disabled for the request.
     /// </summary>
     /// <param name="context">The current request's cache context.</param>
+    /// <param name="cancellation">The token to monitor for cancellation requests.</param>
     ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellation);
 
     /// <summary>
@@ -20,11 +21,14 @@ public interface IOutputCachePolicy
     /// At that point the freshness of the cached response can be updated.
     /// </summary>
     /// <param name="context">The current request's cache context.</param>
+    /// <param name="cancellation">The token to monitor for cancellation requests.</param>
     ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellation);
 
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the response is served and can be cached.
     /// At that point cacheability of the response can be updated.
     /// </summary>
+    /// <param name="context">The current request's cache context.</param>
+    /// <param name="cancellation">The token to monitor for cancellation requests.</param>
     ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken cancellation);
 }

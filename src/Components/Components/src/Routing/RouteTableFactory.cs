@@ -73,7 +73,9 @@ internal class RouteTableFactory
         {
             foreach (var type in assembly.ExportedTypes)
             {
-                if (typeof(IComponent).IsAssignableFrom(type) && type.IsDefined(typeof(RouteAttribute)))
+                if (typeof(IComponent).IsAssignableFrom(type)
+                    && type.IsDefined(typeof(RouteAttribute))
+                    && !type.IsDefined(typeof(ExcludeFromInteractiveRoutingAttribute)))
                 {
                     routeableComponents.Add(type);
                 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Text;
 
 namespace Microsoft.Net.Http.Headers;
 
@@ -210,6 +211,53 @@ public class ContentDispositionHeaderValueTest
 
         contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
         Assert.Null(contentDisposition.FileNameStar.Value);
+    }
+
+    [Fact]
+    public void NonValidAscii_WhenNeedsEncoding_UsesHex()
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("inline");
+        contentDisposition.FileNameStar = "a\u0080b";
+        Assert.Equal($"UTF-8\'\'a%C2%80b", contentDisposition.Parameters.First().Value); //%C2 added because the value in UTF-8 is encoded on 2 bytes.
+    }
+
+    [Fact]
+    public void LongValidAscii_FullyProcessedWithout()
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("inline");
+        contentDisposition.FileNameStar = new string('a', 400); // 400 is larger to the max stackallow size
+        Assert.Equal($"UTF-8\'\'{new string('a', 400)}", contentDisposition.Parameters.First().Value);
+    }
+
+    [Fact]
+    public void FileNameStar_WhenNeedsEncoding_UsesHex()
+    {
+        var contentDisposition = new ContentDispositionHeaderValue("inline");
+        foreach (byte b in Enumerable.Range(0, 128))
+        {
+            contentDisposition.FileNameStar = $"a{(char)b}b";
+            if (b <= 0x20
+                || b == '"'
+                || b == '%'
+                || (b >= 0x27 && b <= 0x2A)
+                || b == ','
+                || b == '/'
+                || (b >= 0x3A && b <= 0x40)
+                || (b >= 0x5B && b <= 0x5D)
+                || (b >= 0x61 && b <= 0x5D)
+                || b == '{'
+                || b == '}'
+                || b >= 0x7F)
+            {
+                var hexC = Convert.ToHexString([b]);
+                Assert.Equal($"UTF-8\'\'a%{hexC}b", contentDisposition.Parameters.First().Value);
+            }
+            else
+            {
+                Assert.Equal($"UTF-8\'\'a{(char)b}b", contentDisposition.Parameters.First().Value);
+            }
+            contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
+        }
     }
 
     [Fact]

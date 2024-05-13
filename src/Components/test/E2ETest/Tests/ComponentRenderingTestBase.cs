@@ -27,7 +27,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]

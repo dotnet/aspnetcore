@@ -73,7 +73,7 @@ internal static partial class LoggingExtensions
     [LoggerMessage(11, LogLevel.Debug, "Using managed symmetric algorithm '{FullName}'.", EventName = "UsingManagedSymmetricAlgorithm")]
     public static partial void UsingManagedSymmetricAlgorithm(this ILogger logger, string fullName);
 
-    [LoggerMessage(12, LogLevel.Warning, "Key {KeyId:B} is ineligible to be the default key because its {MethodName} method failed.", EventName = "KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed")]
+    [LoggerMessage(12, LogLevel.Warning, "Key {KeyId:B} is ineligible to be the default key because its {MethodName} method failed after the maximum number of retries.", EventName = "KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed")]
     public static partial void KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(this ILogger logger, Guid keyId, string methodName, Exception exception);
 
     [LoggerMessage(13, LogLevel.Debug, "Considering key {KeyId:B} with expiration date {ExpirationDate:u} as default key.", EventName = "ConsideringKeyWithExpirationDateAsDefaultKey")]
@@ -252,4 +252,7 @@ internal static partial class LoggingExtensions
 
     [LoggerMessage(72, LogLevel.Error, "The key ring's default data protection key {KeyId:B} has been revoked.", EventName = "KeyRingDefaultKeyIsRevoked")]
     public static partial void KeyRingDefaultKeyIsRevoked(this ILogger logger, Guid keyId);
+
+    [LoggerMessage(73, LogLevel.Debug, "Key {KeyId:B} method {MethodName} failed. Retrying.", EventName = "RetryingMethodOfKeyAfterFailure")]
+    public static partial void RetryingMethodOfKeyAfterFailure(this ILogger logger, Guid keyId, string methodName, Exception exception);
 }

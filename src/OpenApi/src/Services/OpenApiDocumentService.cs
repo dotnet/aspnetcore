@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -167,7 +168,7 @@ internal sealed class OpenApiDocumentService(
         return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
     }
 
-    private static OpenApiResponses GetResponses(ApiDescription description)
+    private OpenApiResponses GetResponses(ApiDescription description)
     {
         // OpenAPI requires that each operation have a response, usually a successful one.
         // if there are no response types defined, we assume a successful 200 OK response
@@ -195,7 +196,7 @@ internal sealed class OpenApiDocumentService(
         return responses;
     }
 
-    private static OpenApiResponse GetResponse(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType)
+    private OpenApiResponse GetResponse(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType)
     {
         var description = ReasonPhrases.GetReasonPhrase(statusCode);
         var response = new OpenApiResponse
@@ -212,7 +213,8 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            response.Content[contentType] = new OpenApiMediaType();
+            var schema = apiResponseType.Type is { } type ? _componentService.GetOrCreateSchema(type) : new OpenApiSchema();
+            response.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
@@ -229,7 +231,7 @@ internal sealed class OpenApiDocumentService(
         return response;
     }
 
-    private static List<OpenApiParameter>? GetParameters(ApiDescription description)
+    private List<OpenApiParameter>? GetParameters(ApiDescription description)
     {
         List<OpenApiParameter>? parameters = null;
         foreach (var parameter in description.ParameterDescriptions)
@@ -254,6 +256,7 @@ internal sealed class OpenApiDocumentService(
                 // Per the OpenAPI specification, parameters that are sourced from the path
                 // are always required, regardless of the requiredness status of the parameter.
                 Required = parameter.Source == BindingSource.Path || parameter.IsRequired,
+                Schema = _componentService.GetOrCreateSchema(parameter.Type, parameter),
             };
             parameters ??= [];
             parameters.Add(openApiParameter);
@@ -293,11 +296,101 @@ internal sealed class OpenApiDocumentService(
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
-        // Forms are represented as objects with properties for each form field.
         var schema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
-        foreach (var parameter in formParameters)
+        // Group form parameters by their name because MVC explodes form parameters that are bound from the
+        // same model instance into separate ApiParameterDescriptions in ApiExplorer, while minimal APIs does not.
+        //
+        // public record Todo(int Id, string Title, bool Completed, DateTime CreatedAt)
+        // public void PostMvc([FromForm] Todo person) { }
+        // app.MapGet("/form-todo", ([FromForm] Todo todo) => Results.Ok(todo));
+        //
+        // In the example above, MVC's ApiExplorer will bind four separate arguments to the Todo model while minimal APIs will
+        // bind a single Todo model instance to the todo parameter. Grouping by name allows us to handle both cases.
+        var groupedFormParameters = formParameters.GroupBy(parameter => parameter.ParameterDescriptor.Name);
+        // If there is only one real parameter derived from the form body, then set it directly in the schema.
+        var hasMultipleFormParameters = groupedFormParameters.Count() > 1;
+        foreach (var parameter in groupedFormParameters)
         {
-            schema.Properties[parameter.Name] = _componentService.GetOrCreateSchema(parameter.Type);
+            // ContainerType is not null when the parameter has been exploded into separate API
+            // parameters by ApiExplorer as in the MVC model.
+            if (parameter.All(parameter => parameter.ModelMetadata.ContainerType is null))
+            {
+                var description = parameter.Single();
+                var parameterSchema = _componentService.GetOrCreateSchema(description.Type);
+                // Form files are keyed by their parameter name so we must capture the parameter name
+                // as a property in the schema.
+                if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
+                {
+                    if (hasMultipleFormParameters)
+                    {
+                        schema.AllOf.Add(new OpenApiSchema
+                        {
+                            Type = "object",
+                            Properties = new Dictionary<string, OpenApiSchema>
+                            {
+                                [description.Name] = parameterSchema
+                            }
+                        });
+                    }
+                    else
+                    {
+                        schema.Properties[description.Name] = parameterSchema;
+                    }
+                }
+                else
+                {
+                    if (hasMultipleFormParameters)
+                    {
+                        // Here and below: POCOs do not need to be need under their parameter name in the grouping.
+                        // The form-binding implementation will capture them implicitly.
+                        if (description.ModelMetadata.IsComplexType)
+                        {
+                            schema.AllOf.Add(parameterSchema);
+                        }
+                        else
+                        {
+                            schema.AllOf.Add(new OpenApiSchema
+                            {
+                                Type = "object",
+                                Properties = new Dictionary<string, OpenApiSchema>
+                                {
+                                    [description.Name] = parameterSchema
+                                }
+                            });
+                        }
+                    }
+                    else
+                    {
+                        if (description.ModelMetadata.IsComplexType)
+                        {
+                            schema = parameterSchema;
+                        }
+                        else
+                        {
+                            schema.Properties[description.Name] = parameterSchema;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (hasMultipleFormParameters)
+                {
+                    var propertySchema = new OpenApiSchema { Type = "object", Properties = new Dictionary<string, OpenApiSchema>() };
+                    foreach (var description in parameter)
+                    {
+                        propertySchema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                    }
+                    schema.AllOf.Add(propertySchema);
+                }
+                else
+                {
+                    foreach (var description in parameter)
+                    {
+                        schema.Properties[description.Name] = _componentService.GetOrCreateSchema(description.Type);
+                    }
+                }
+            }
         }
 
         foreach (var requestFormat in supportedRequestFormats)
@@ -313,11 +406,22 @@ internal sealed class OpenApiDocumentService(
         return requestBody;
     }
 
-    private static OpenApiRequestBody GetJsonRequestBody(IList<ApiRequestFormat> supportedRequestFormats, ApiParameterDescription bodyParameter)
+    private OpenApiRequestBody GetJsonRequestBody(IList<ApiRequestFormat> supportedRequestFormats, ApiParameterDescription bodyParameter)
     {
         if (supportedRequestFormats.Count == 0)
         {
-            supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json" }];
+            if (bodyParameter.Type == typeof(Stream) || bodyParameter.Type == typeof(PipeReader))
+            {
+                // Assume "application/octet-stream" as the default media type
+                // for stream-based parameter types.
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/octet-stream" }];
+            }
+            else
+            {
+                // Assume "application/json" as the default media type
+                // for everything else.
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json" }];
+            }
         }
 
         var requestBody = new OpenApiRequestBody
@@ -329,7 +433,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var requestForm in supportedRequestFormats)
         {
             var contentType = requestForm.MediaType;
-            requestBody.Content[contentType] = new OpenApiMediaType();
+            requestBody.Content[contentType] = new OpenApiMediaType { Schema = _componentService.GetOrCreateSchema(bodyParameter.Type) };
         }
 
         return requestBody;

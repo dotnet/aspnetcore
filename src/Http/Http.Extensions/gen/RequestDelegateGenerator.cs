@@ -54,7 +54,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
             .WithTrackingName(GeneratorSteps.EndpointsWithoutDiagnosicsStep);
 
         var interceptorDefinitions = endpoints
-            .GroupWith((endpoint) => endpoint.Location, EndpointDelegateComparer.Instance)
+            .GroupWith((endpoint) => endpoint.InterceptableLocation, EndpointDelegateComparer.Instance)
             .Select((endpointWithLocations, _) =>
             {
                 var endpoint = endpointWithLocations.Source;
@@ -62,7 +62,9 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
                 using var codeWriter = new CodeWriter(stringWriter, baseIndent: 2);
                 foreach (var location in endpointWithLocations.Elements)
                 {
-                    codeWriter.WriteLine($$"""[InterceptsLocation(@"{{location.File}}", {{location.LineNumber}}, {{location.CharacterNumber}})]""");
+#pragma warning disable RSEXPERIMENTAL002 // Experimental interceptable location API
+                    codeWriter.WriteLine(location.GetInterceptsLocationAttributeSyntax());
+#pragma warning restore RSEXPERIMENTAL002
                 }
                 codeWriter.WriteLine($"internal static RouteHandlerBuilder {endpoint.HttpMethod}{endpointWithLocations.Index}(");
                 codeWriter.Indent++;

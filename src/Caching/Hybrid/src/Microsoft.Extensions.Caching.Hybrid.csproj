@@ -2,7 +2,14 @@
 
   <PropertyGroup>
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <!--
+      relevant TFM feature summary (all "nice to have", with reasonable workarounds):
+        nca 2.0 / ns 2.1: RuntimeHelpers.IsReferenceOrContainsReferences; Task.IsCompletedSuccessfully; HashCode
+        nca 3.0 : IThreadPoolWorkItem
+        net 5.0 : [DynamicallyAccessedMembers], EncodingExtensions.GetString/GetBytes, IsExternalInit
+        net 7.0 : ArgumentNullException.ThrowIfNull
+    -->
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;hybrid</PackageTags>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
@@ -12,18 +19,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Caching.Hybrid.Tests" />
+
+    <!-- this provides the default L1 implementation; L2 is optional -->
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
     <Reference Include="System.Text.Json" />
     <Reference Include="Microsoft.Bcl.TimeProvider" />
   </ItemGroup>

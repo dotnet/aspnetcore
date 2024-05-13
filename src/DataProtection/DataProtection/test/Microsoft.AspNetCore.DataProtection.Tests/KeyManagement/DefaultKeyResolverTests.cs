@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -291,9 +292,180 @@ public class DefaultKeyResolverTests
         Assert.False(resolution.ShouldGenerateNewKey);
     }
 
+    [Fact]
+    public void CreateEncryptor_NoRetryOnNullReturn()
+    {
+        // Arrange
+        var resolver = CreateDefaultKeyResolver();
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        int descriptorFactoryCalls = 0;
+
+        // Retries don't work with mock keys
+        var key = new Key(
+            Guid.NewGuid(),
+            creationDate: now.AddDays(-3), // Propagated
+            activationDate: now.AddDays(-1), // Activated
+            expirationDate: now.AddDays(14), // Unexpired
+            encryptorFactories: [], // Causes CreateEncryptor to return null
+            descriptorFactory: () =>
+            {
+                descriptorFactoryCalls++;
+                throw new InvalidOperationException("Shouldn't be called");
+            });
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [key]);
+
+        // Assert
+        Assert.Null(resolution.DefaultKey);
+        Assert.Null(resolution.FallbackKey);
+        Assert.True(resolution.ShouldGenerateNewKey);
+
+        Assert.Equal(0, descriptorFactoryCalls); // Not retried
+    }
+
+    [Theory]
+    [InlineData(0)] // Retries disabled (as by appcontext switch)
+    [InlineData(1)]
+    [InlineData(10)]
+    public void CreateEncryptor_FirstAttemptIsNotARetry(int maxRetries)
+    {
+        // Arrange
+        var options = Options.Create(new KeyManagementOptions()
+        {
+            MaximumTotalDefaultKeyResolverRetries = maxRetries,
+            DefaultKeyResolverRetryDelay = TimeSpan.Zero,
+        });
+
+        var resolver = new DefaultKeyResolver(options, NullLoggerFactory.Instance);
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var keyId1 = Guid.NewGuid();
+        var creation1 = now.AddDays(-3);
+        var activation1 = creation1.AddDays(2);
+        var expiration1 = creation1.AddDays(90);
+
+        // Newer but still propagated => preferred
+        var keyId2 = Guid.NewGuid();
+        var creation2 = creation1.AddHours(1);
+        var activation2 = activation1.AddHours(1);
+        var expiration2 = expiration1.AddHours(1);
+
+        var mockEncryptor = new Mock<IAuthenticatedEncryptor>();
+        var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+
+        var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+        mockEncryptorFactory
+            .Setup(o => o.CreateEncryptorInstance(It.IsAny<Key>()))
+            .Returns<Key>(key =>
+            {
+                _ = key.Descriptor; // A normal implementation would call this
+                return mockEncryptor.Object;
+            });
+
+        var descriptorFactoryCalls1 = 0;
+        var descriptorFactoryCalls2 = 0;
+
+        // Retries don't work with mock keys
+        var key1 = new Key(
+            keyId1,
+            creation1,
+            activation1,
+            expiration1,
+            encryptorFactories: [mockEncryptorFactory.Object],
+            descriptorFactory: () =>
+            {
+                descriptorFactoryCalls1++;
+                return mockDescriptor.Object;
+            });
+
+        var key2 = new Key(
+            keyId2,
+            creation2,
+            activation2,
+            expiration2,
+            encryptorFactories: [mockEncryptorFactory.Object],
+            descriptorFactory: () =>
+            {
+                descriptorFactoryCalls2++;
+                throw new InvalidOperationException("Simulated decryption failure");
+            });
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [key1, key2]);
+
+        // Assert
+        Assert.Null(resolution.DefaultKey);
+        Assert.Same(key1, resolution.FallbackKey);
+        Assert.True(resolution.ShouldGenerateNewKey);
+
+        Assert.Equal(1, descriptorFactoryCalls1); // 1 try
+        Assert.Equal(1 + maxRetries, descriptorFactoryCalls2); // 1 try plus max retries
+    }
+
+    [Fact]
+    public void CreateEncryptor_SucceedsOnRetry()
+    {
+        // Arrange
+        var options = Options.Create(new KeyManagementOptions()
+        {
+            MaximumTotalDefaultKeyResolverRetries = 3,
+            DefaultKeyResolverRetryDelay = TimeSpan.Zero,
+        });
+
+        var resolver = new DefaultKeyResolver(options, NullLoggerFactory.Instance);
+
+        var now = ParseDateTimeOffset("2010-01-01 00:00:00Z");
+
+        var creation = now.AddDays(-3);
+        var activation = creation.AddDays(2);
+        var expiration = creation.AddDays(90);
+
+        var mockEncryptor = new Mock<IAuthenticatedEncryptor>();
+        var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
+
+        var mockEncryptorFactory = new Mock<IAuthenticatedEncryptorFactory>();
+        mockEncryptorFactory
+            .Setup(o => o.CreateEncryptorInstance(It.IsAny<Key>()))
+            .Returns<Key>(key =>
+            {
+                _ = key.Descriptor; // A normal implementation would call this
+                return mockEncryptor.Object;
+            });
+
+        var descriptorFactoryCalls = 0;
+
+        // Retries don't work with mock keys
+        var key = new Key(
+            Guid.NewGuid(),
+            creation,
+            activation,
+            expiration,
+            encryptorFactories: [mockEncryptorFactory.Object],
+            descriptorFactory: () =>
+            {
+                descriptorFactoryCalls++;
+                if (descriptorFactoryCalls == 1)
+                {
+                    throw new InvalidOperationException("Simulated decryption failure");
+                }
+                return mockDescriptor.Object;
+            });
+
+        // Act
+        var resolution = resolver.ResolveDefaultKeyPolicy(now, [key]);
+
+        // Assert
+        Assert.Same(key, resolution.DefaultKey);
+        Assert.Equal(2, descriptorFactoryCalls); // 1 try plus 1 retry
+    }
+
     private static IDefaultKeyResolver CreateDefaultKeyResolver()
     {
-        return new DefaultKeyResolver(NullLoggerFactory.Instance);
+        return new DefaultKeyResolver(Options.Create(new KeyManagementOptions()), NullLoggerFactory.Instance);
     }
 
     private static IKey CreateKey(string activationDate, string expirationDate, string creationDate = null, bool isRevoked = false, bool createEncryptorThrows = false)

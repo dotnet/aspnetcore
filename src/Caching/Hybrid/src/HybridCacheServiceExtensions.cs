@@ -2,15 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Caching.Hybrid;
 
@@ -50,7 +44,6 @@ public static class HybridCacheServiceExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddOptions();
         services.AddMemoryCache();
-        services.AddDistributedMemoryCache(); // we need a backend; use in-proc by default
         services.TryAddSingleton<IHybridCacheSerializerFactory, DefaultJsonSerializerFactory>();
         services.TryAddSingleton<IHybridCacheSerializer<string>>(InbuiltTypeSerializer.Instance);
         services.TryAddSingleton<IHybridCacheSerializer<byte[]>>(InbuiltTypeSerializer.Instance);

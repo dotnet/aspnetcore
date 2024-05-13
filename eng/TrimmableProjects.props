@@ -107,5 +107,6 @@
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <TrimmableProject Include="Microsoft.Extensions.Features" />
+    <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 </Project>

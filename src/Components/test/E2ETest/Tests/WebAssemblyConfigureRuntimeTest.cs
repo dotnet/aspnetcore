@@ -25,7 +25,7 @@ public class WebAssemblyConfigureRuntimeTest : ServerTestBase<BlazorWasmTestAppF
     {
         base.InitializeAsyncCore();
 
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<ConfigureRuntime>();
     }
 

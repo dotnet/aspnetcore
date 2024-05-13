@@ -1,19 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Microsoft.Extensions.Caching.Hybrid;
 
 /// <summary>
 /// Options for configuring the default <see cref="HybridCache"/> implementation.
 /// </summary>
-public class HybridCacheOptions
+public class HybridCacheOptions // : IOptions<HybridCacheOptions>
 {
+    // TODO: should we implement IOptions<T>?
+
     /// <summary>
     /// Default global options to be applied to <see cref="HybridCache"/> operations; if options are
     /// specified at the individual call level, the non-null values are merged (with the per-call
@@ -45,4 +41,6 @@ public class HybridCacheOptions
     /// tags do not contain data that should not be visible in metrics systems.
     /// </summary>
     public bool ReportTagMetrics { get; set; }
+
+    // HybridCacheOptions IOptions<HybridCacheOptions>.Value => this;
 }
