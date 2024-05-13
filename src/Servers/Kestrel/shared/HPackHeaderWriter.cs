@@ -52,7 +52,7 @@ internal static class HPackHeaderWriter
             return HeaderWriteResult.Done;
         }
 
-        // We're ok with not increasing the buffer size if no headers were encoded because we've already encoded the status.
+        // Since we've already encoded the status, we know we didn't start with an empty buffer.  We don't need to increase it immediately because
         // There is a small chance that the header will encode if there is no other content in the next HEADERS frame.
         var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: false, ref accumulatedLength, maxLength, out var headersLength);
         length += headersLength;
@@ -168,10 +168,14 @@ internal static class HPackHeaderWriter
         {
             return;
         }
+        var maxLengthValue = maxLength.GetValueOrDefault();
+
+        // The default encoding is Latin1, hence we can use the value.Length. HPack encoder uses the same
+        // calculation for the header value length.
         var length = HeaderField.GetLength(name.Length, valueEncoding?.GetByteCount(value) ?? value.Length);
-        if (length + accumulatedLength > maxLength)
+        if (length + accumulatedLength > maxLengthValue)
         {
-            ThrowResponseHeadersLimitException(maxLength.Value);
+            ThrowResponseHeadersLimitException(maxLengthValue);
         }
     }
 
