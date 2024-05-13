@@ -64,4 +64,13 @@
 
   <!-- Shared testing infrastructure for running E2E tests -->
   <Import Condition="'$(SkipTestBuild)' != 'true'" Project="..\..\TestInfrastructure\PrepareForTest.targets" />
+
+  <!-- See https://github.com/dotnet/aspnetcore/issues/55695 -->
+  <PropertyGroup>
+    <SkipHelixQueues>
+      $(HelixQueueArmDebian12);
+      $(HelixQueueMariner);
+      $(SkipHelixQueues)
+    </SkipHelixQueues>
+  </PropertyGroup>
 </Project>
