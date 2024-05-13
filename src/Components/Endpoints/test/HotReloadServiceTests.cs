@@ -220,7 +220,7 @@ public class HotReloadServiceTests
         var result = new RazorComponentEndpointDataSource<TComponent>(
             builder,
             new[] { new MockEndpointProvider() },
-            new ApplicationBuilder(services),
+            new TestEndpointRouteBuilder(services),
             new RazorComponentEndpointFactory(),
             new HotReloadService() { MetadataUpdateSupported = true });
 
@@ -255,5 +255,19 @@ public class HotReloadServiceTests
         }
 
         public override bool Supports(IComponentRenderMode renderMode) => true;
+    }
+
+    private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+    {
+        private IServiceProvider _serviceProvider;
+        private List<EndpointDataSource> _dataSources = new();
+
+        public TestEndpointRouteBuilder(IServiceProvider serviceProvider) => _serviceProvider = serviceProvider;
+
+        public IServiceProvider ServiceProvider => _serviceProvider;
+
+        public ICollection<EndpointDataSource> DataSources => _dataSources;
+
+        public IApplicationBuilder CreateApplicationBuilder() => new ApplicationBuilder(_serviceProvider);
     }
 }
