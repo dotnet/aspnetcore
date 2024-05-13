@@ -1,6 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Components.ComponentBase.GetRenderMode() -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.ComponentBase.Platform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!
+Microsoft.AspNetCore.Components.ComponentBase.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.ComponentPlatform
 Microsoft.AspNetCore.Components.ComponentPlatform.ComponentPlatform(string! platformName, bool isInteractive) -> void
 Microsoft.AspNetCore.Components.ComponentPlatform.IsInteractive.get -> bool

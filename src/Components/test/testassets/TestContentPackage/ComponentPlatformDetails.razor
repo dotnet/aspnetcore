@@ -9,15 +9,15 @@
 
     protected override void OnInitialized()
     {
-        if (GetRenderMode() is InteractiveServerRenderMode)
+        if (AssignedRenderMode is InteractiveServerRenderMode)
         {
             _renderMode = $"server";
         }
-        else if (GetRenderMode() is InteractiveWebAssemblyRenderMode)
+        else if (AssignedRenderMode is InteractiveWebAssemblyRenderMode)
         {
             _renderMode = $"webassembly";
         }
-        else if (GetRenderMode() is InteractiveAutoRenderMode)
+        else if (AssignedRenderMode is InteractiveAutoRenderMode)
         {
             _renderMode = $"auto";
         }

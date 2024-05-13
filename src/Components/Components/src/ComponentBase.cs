@@ -50,16 +50,19 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     /// <summary>
     /// Gets the target <see cref="IComponentRenderMode"/> this component will run in after prerendering.
     /// </summary>
-    protected IComponentRenderMode? GetRenderMode()
+    protected IComponentRenderMode? AssignedRenderMode
     {
-        if (!_renderMode.cached)
+        get
         {
-            // We use the platform render mode to avoid having to look up the render mode when the platform
-            // has a single render mode.
-            _renderMode = (_renderHandle.RenderMode, true);
-        }
+            if (!_renderMode.cached)
+            {
+                // We use the platform render mode to avoid having to look up the render mode when the platform
+                // has a single render mode.
+                _renderMode = (_renderHandle.RenderMode, true);
+            }
 
-        return _renderMode.mode;
+            return _renderMode.mode;
+        }
     }
 
     /// <summary>
