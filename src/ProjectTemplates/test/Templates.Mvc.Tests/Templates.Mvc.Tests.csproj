@@ -67,10 +67,6 @@
 
   <!-- See https://github.com/dotnet/aspnetcore/issues/55695 -->
   <PropertyGroup>
-    <SkipHelixQueues>
-      $(HelixQueueArmDebian12);
-      $(HelixQueueMariner);
-      $(SkipHelixQueues)
-    </SkipHelixQueues>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 </Project>
