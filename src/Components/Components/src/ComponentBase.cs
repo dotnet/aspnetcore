@@ -56,7 +56,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         {
             // We use the platform render mode to avoid having to look up the render mode when the platform
             // has a single render mode.
-            _renderMode = (_renderHandle.Platform.PlatformRenderMode ?? _renderHandle.GetRenderMode(), true);
+            _renderMode = (_renderHandle.RenderMode, true);
         }
 
         return _renderMode.mode;

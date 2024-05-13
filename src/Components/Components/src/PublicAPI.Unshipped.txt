@@ -2,11 +2,11 @@
 Microsoft.AspNetCore.Components.ComponentBase.GetRenderMode() -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.ComponentBase.Platform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!
 Microsoft.AspNetCore.Components.ComponentPlatform
-Microsoft.AspNetCore.Components.ComponentPlatform.ComponentPlatform(string! platformName, bool isInteractive, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> void
+Microsoft.AspNetCore.Components.ComponentPlatform.ComponentPlatform(string! platformName, bool isInteractive) -> void
 Microsoft.AspNetCore.Components.ComponentPlatform.IsInteractive.get -> bool
-Microsoft.AspNetCore.Components.ComponentPlatform.PlatformName.get -> string!
+Microsoft.AspNetCore.Components.ComponentPlatform.Name.get -> string!
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
-Microsoft.AspNetCore.Components.RenderHandle.GetRenderMode() -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.RenderHandle.Platform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!
+Microsoft.AspNetCore.Components.RenderHandle.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ComponentPlatform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!

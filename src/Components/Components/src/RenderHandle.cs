@@ -60,14 +60,17 @@ public readonly struct RenderHandle
     /// Retrieves the <see cref="IComponentRenderMode"/> of the component the component will run in after prerendering.
     /// </summary>
     /// <returns>The <see cref="IComponentRenderMode"/> of the component the component will run in after prerendering.</returns>
-    public IComponentRenderMode? GetRenderMode()
+    public IComponentRenderMode? RenderMode
     {
-        if (_renderer == null)
+        get
         {
-            throw new InvalidOperationException("No renderer has been initialized.");
-        }
+            if (_renderer == null)
+            {
+                throw new InvalidOperationException("No renderer has been initialized.");
+            }
 
-        return _renderer.ComponentPlatform.PlatformRenderMode ?? _renderer.GetComponentRenderMode(_componentId);
+            return _renderer.GetComponentRenderMode(_componentId);
+        }
     }
 
     /// <summary>

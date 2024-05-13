@@ -24,7 +24,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly ILogger _logger;
     private readonly Dispatcher _dispatcher;
     private readonly IInternalJSImportMethods _jsMethods;
-    private static readonly ComponentPlatform _componentPlatform = new("Webassembly", isInteractive: true, RenderMode.InteractiveWebAssembly);
+    private static readonly ComponentPlatform _componentPlatform = new("Webassembly", isInteractive: true);
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
@@ -72,6 +72,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
         NotifyEndUpdateRootComponents(batch.BatchId);
     }
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;
 
     public void NotifyEndUpdateRootComponents(long batchId)
     {
