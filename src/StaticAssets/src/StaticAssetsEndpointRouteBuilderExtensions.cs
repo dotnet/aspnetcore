@@ -10,12 +10,12 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.AspNetCore.Builder;
 
 /// <summary>
-/// Contains methods to integrate static assets with endpoints
+/// Contains methods to integrate static assets with endpoints.
 /// </summary>
 public static class StaticAssetsEndpointRouteBuilderExtensions
 {
     /// <summary>
-    /// Maps static files produced during the build as endpoints..
+    /// Maps static files produced during the build as endpoints.
     /// </summary>
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <param name="staticAssetsManifestPath">The path to the static assets manifest file.</param>
@@ -46,8 +46,31 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
 
     private static StaticAssetsEndpointConventionBuilder MapStaticAssetsCore(
         IEndpointRouteBuilder endpoints,
-        string manifestPath,
-        StaticAssetsManifest? manifest = null)
+        string manifestPath)
+    {
+        var builder = GetExistingBuilder(endpoints, manifestPath);
+        if (builder != null)
+        {
+            return builder;
+        }
+
+        var manifest = ResolveManifest(manifestPath);
+
+        var dataSource = manifest.CreateDataSource(endpoints, manifestPath, manifest.Endpoints);
+        return dataSource.DefaultBuilder;
+    }
+
+    private static StaticAssetsManifest ResolveManifest(string manifestPath)
+    {
+        if (!File.Exists(manifestPath))
+        {
+            throw new InvalidOperationException($"The static resources manifest file '{manifestPath}' was not found.");
+        }
+
+        return StaticAssetsManifest.Parse(manifestPath);
+    }
+
+    private static StaticAssetsEndpointConventionBuilder? GetExistingBuilder(IEndpointRouteBuilder endpoints, string manifestPath)
     {
         foreach (var ds in endpoints.DataSources)
         {
@@ -57,15 +80,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
             }
         }
 
-        if (manifest == null && !File.Exists(manifestPath))
-        {
-            throw new InvalidOperationException($"The static resources manifest file '{manifestPath}' was not found.");
-        }
-
-        manifest ??= StaticAssetsManifest.Parse(manifestPath);
-
-        var dataSource = manifest.CreateDataSource(endpoints, manifestPath, manifest.Endpoints);
-        return dataSource.DefaultBuilder;
+        return null;
     }
 
     // For testing purposes
@@ -74,7 +89,7 @@ public static class StaticAssetsEndpointRouteBuilderExtensions
         ArgumentNullException.ThrowIfNull(endpoints);
 
         var environment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-        var result = MapStaticAssetsCore(endpoints, "unused", manifest);
+        var result = manifest.CreateDataSource(endpoints, "", manifest.Endpoints).DefaultBuilder;
 
         if (StaticAssetDevelopmentRuntimeHandler.IsEnabled(endpoints.ServiceProvider, environment))
         {
