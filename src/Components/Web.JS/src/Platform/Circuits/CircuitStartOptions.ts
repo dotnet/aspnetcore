@@ -35,7 +35,8 @@ export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): Circ
 
 export interface ReconnectionOptions {
   maxRetries: number;
-  retryIntervalMilliseconds: number;
+  retryIntervalMilliseconds?: number;
+  exponentialBackoffFactor?: number;
   dialogId: string;
 }
 
@@ -57,7 +58,8 @@ const defaultOptions: CircuitStartOptions = {
   circuitHandlers: [],
   reconnectionOptions: {
     maxRetries: 8,
-    retryIntervalMilliseconds: 20000,
+    // retryIntervalMilliseconds: 20000,
+    exponentialBackoffFactor: 2,
     dialogId: 'components-reconnect-modal',
   },
 };
