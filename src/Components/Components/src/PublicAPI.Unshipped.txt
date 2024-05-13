@@ -1,12 +1,12 @@
 #nullable enable
 Microsoft.AspNetCore.Components.ComponentBase.GetRenderMode() -> Microsoft.AspNetCore.Components.IComponentRenderMode?
-Microsoft.AspNetCore.Components.ComponentBase.Platform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!
+Microsoft.AspNetCore.Components.ComponentBase.Platform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!
+Microsoft.AspNetCore.Components.ComponentPlatform
+Microsoft.AspNetCore.Components.ComponentPlatform.ComponentPlatform(string! platformName, bool isInteractive, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> void
+Microsoft.AspNetCore.Components.ComponentPlatform.IsInteractive.get -> bool
+Microsoft.AspNetCore.Components.ComponentPlatform.PlatformName.get -> string!
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
 Microsoft.AspNetCore.Components.RenderHandle.GetRenderMode() -> Microsoft.AspNetCore.Components.IComponentRenderMode?
-Microsoft.AspNetCore.Components.RenderHandle.Platform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!
-Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform
-Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.ComponentPlatform(string! platformName, bool isInteractive, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> void
-Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.IsInteractive.get -> bool
-Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform.PlatformName.get -> string!
-virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ComponentPlatform.get -> Microsoft.AspNetCore.Components.RenderTree.ComponentPlatform!
+Microsoft.AspNetCore.Components.RenderHandle.Platform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ComponentPlatform.get -> Microsoft.AspNetCore.Components.ComponentPlatform!
