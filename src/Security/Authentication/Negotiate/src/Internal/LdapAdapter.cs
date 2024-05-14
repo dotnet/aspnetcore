@@ -77,7 +77,7 @@ internal static partial class LdapAdapter
                 }
             }
 
-            HashSet<string> uniqueGroups = new HashSet<string>();
+            var uniqueGroups = new HashSet<string>();
             if (memberof is not null)
             {
                 foreach (var group in memberof)
@@ -93,7 +93,7 @@ internal static partial class LdapAdapter
                     else
                     {
                         retrievedClaims.Add(new KeyValuePair<string, string>(identity.RoleClaimType, groupCN));
-                        string? groupSID = GetGroupSID(settings.LdapConnection, distinguishedName, groupCN, logger);
+                        var groupSID = GetGroupSID(settings.LdapConnection, distinguishedName, groupCN, logger);
                         if (groupSID is not null)
                         {
                             retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, groupSID));
@@ -124,7 +124,7 @@ internal static partial class LdapAdapter
         }
     }
 
-    private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList< KeyValuePair<string, string> > retrievedClaims, HashSet<string> processedGroups)
+    private static void GetNestedGroups(LdapConnection connection, ClaimsIdentity principal, string distinguishedName, string groupCN, ILogger logger, IList<KeyValuePair<string, string>> retrievedClaims, HashSet<string> processedGroups)
     {
         var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
         var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
@@ -166,14 +166,14 @@ internal static partial class LdapAdapter
                                 byte[] bytes = BitConverter.GetBytes(groupSIDspn[i]);
                                 lgroupSIDba[i] = bytes[0];
                             }
-                            string? lgsid = ParseSID(lgroupSIDba);
+                            var lgsid = ParseSID(lgroupSIDba);
                             if (lgsid is not null)
                             {
                                 retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, lgsid));
                             }
                             break;
                         case byte[] groupSIDba:
-                            string? gsid = ParseSID(groupSIDba);
+                            var gsid = ParseSID(groupSIDba);
                             if (gsid is not null)
                             {
                                 retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, gsid));
@@ -240,10 +240,11 @@ internal static partial class LdapAdapter
                 }
             }
         }
+        
         return null;
     }
 
-    //Straight from SID.cs of the .NET runtime library
+    // Straight from SID.cs of the .NET runtime library
     internal const int MaxSubAuthorities = 15;
     internal const long MaxIdentifierAuthority = 0xFFFFFFFFFFFF;
     private const int MinBinaryLength = 1 + 1 + 6; // Revision (1) + subauth count (1) + identifier authority (6)

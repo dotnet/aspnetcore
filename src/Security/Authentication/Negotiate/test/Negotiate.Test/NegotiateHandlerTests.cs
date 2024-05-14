@@ -208,7 +208,7 @@ public class NegotiateHandlerTests
     public async Task RBACClaimsRetrievedFromCacheAfterKerberosCompleted()
     {
         var claimsCache = new MemoryCache(new MemoryCacheOptions());
-        var claimsList = List< KeyValuePair<string, string> >();
+        var claimsList = List<KeyValuePair<string, string>>();
         claimsList.Add(new KeyValuePair<string, string>(ClaimTypes.X500DistinguishedName, "CN=Domain Admins,CN=Users,DC=domain,DC=net"));
         claimsCache.Set("name", claimsList);
         NegotiateOptions negotiateOptions = null;
