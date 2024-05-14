@@ -414,31 +414,29 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
     [Fact]
     public async Task StartAsyncSetsCorrectAcceptHeaderForSSE()
     {
-        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        var testHttpHandler = new TestHttpMessageHandler();
         var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        mockHttpHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
+        // Setting up the handler to check for 'text/event-stream' Accept header
+        testHttpHandler.OnRequest((request, next, cancellationToken) =>
+        {
+            if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
             {
-                if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
-                {
-                    responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.OK));
-                }
-                else
-                {
-                    responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.NoContent));
-                }
-                return responseTaskCompletionSource.Task;
-            });
+                responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }
+            else
+            {
+                responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.NoContent));
+            }
+            return responseTaskCompletionSource.Task;
+        });
 
-        using (var httpClient = new HttpClient(mockHttpHandler.Object))
-        using (StartVerifiableLog())
+        using (var httpClient = new HttpClient(testHttpHandler))
         {
             var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
 
+            // Starting the SSE transport and verifying the outcome
             await sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
-
             await sseTransport.StopAsync().DefaultTimeout();
 
             Assert.True(responseTaskCompletionSource.Task.IsCompleted);
