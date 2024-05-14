@@ -40,8 +40,8 @@ internal static partial class LdapAdapter
         }
 
         var distinguishedName = settings.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
-        var retrievedClaims = new List< KeyValuePair<string, string> >();
-        //sAMAccountName is always unique (at least within a forest)
+        var retrievedClaims = new List<KeyValuePair<string, string>>();
+        // sAMAccountName is always unique (at least within a forest)
         var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
         var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
 
@@ -60,10 +60,10 @@ internal static partial class LdapAdapter
                 logger.LogWarning($"More than one response received for query: {filter} with distinguished name: {distinguishedName}");
             }
 
-            var userFound = searchResponse.Entries[0]; //Get the object that was found on ldap
+            var userFound = searchResponse.Entries[0]; // Get the object that was found on ldap
             var memberof = userFound.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
 
-            //Get the user SID
+            // Get the user SID
             var userSID = userFound.Attributes["objectsid"];
             if (userSID is not null)
             {
@@ -102,11 +102,11 @@ internal static partial class LdapAdapter
                 }
             }
 
-            var entrySize = user.Length * 2; //Approximate the size of stored key in memory cache.
+            var entrySize = user.Length * 2; // Approximate the size of stored key in memory cache.
             foreach (var claim in retrievedClaims)
             {
                 identity.AddClaim(new Claim(claim.Key, claim.Value));
-                //Approximate the size of stored value in memory cache.
+                // Approximate the size of stored value in memory cache.
                 entrySize += claim.Key.Length * 2;
                 entrySize += claim.Value.Length * 2;
             }
@@ -141,21 +141,20 @@ internal static partial class LdapAdapter
             var groupDN = group.DistinguishedName;
 
             if (processedGroups.Contains(groupDN)) {
-                //No need to continue, this group was resolved before
+                // No need to continue, this group was resolved before
                 return;
             }
 
             retrievedClaims.Add(new KeyValuePair<string, string>(principal.RoleClaimType, groupCN));
             processedGroups.Add(groupDN);
 
-            //Get the group SID
+            // Get the group SID
             var groupSID = group.Attributes["objectsid"];
             if (groupSID is not null)
             {
                 if (groupSID.Count == 1)
                 {
-                    //For some reason it is sometimes string and sometimes byte[]
-                    //when it is returned as a string then every byte is converted to a char and simply put together as a string
+                    // For some reason it is sometimes string and sometimes byte[] when it is returned as a string, then every byte is converted to a char and simply put together as a string
                     switch (groupSID[0])
                     {
                         case string groupSIDstr:
@@ -265,7 +264,7 @@ internal static partial class LdapAdapter
 
     private static string? ParseSID(ReadOnlySpan<byte> binaryForm)
     {
-        //See SID.cs of the .NET runtime library
+        // See SID.cs of the .NET runtime library
         if (binaryForm.Length < MinBinaryLength)
         {
             return null;
@@ -318,7 +317,7 @@ internal static partial class LdapAdapter
         int length = 4;
         ((ulong)authority).TryFormat(result.Slice(length), out int written, provider: CultureInfo.InvariantCulture);
         length += written;
-        //Might need a check against a stack overflow, but this is directly taken from SID.cs of the .NET runtime library
+        // Might need a check against a stack overflow, but this is directly taken from SID.cs of the .NET runtime library
         for (int index = 0; index < subAuthorities.Length; index++)
         {
             result[length] = '-';
