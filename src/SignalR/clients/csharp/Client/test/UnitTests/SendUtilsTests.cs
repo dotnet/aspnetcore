@@ -18,33 +18,29 @@ public partial class SendUtilsTests : VerifiableLoggedTest
     [Fact]
     public async Task SendMessagesSetsCorrectAcceptHeader()
     {
-        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        var testHttpHandler = new TestHttpMessageHandler();
         var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        mockHttpHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
+        testHttpHandler.OnRequest((request, next, cancellationToken) =>
+        {
+            if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) == true)
             {
-                if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) == true)
-                {
-                    responseTaskCompletionSource.SetResult(ResponseUtils.CreateResponse(HttpStatusCode.OK));
-                }
-                else
-                {
-                    responseTaskCompletionSource.SetResult(ResponseUtils.CreateResponse(HttpStatusCode.BadRequest));
-                }
-                return responseTaskCompletionSource.Task;
-            });
+                responseTaskCompletionSource.SetResult(ResponseUtils.CreateResponse(HttpStatusCode.OK));
+            }
+            else
+            {
+                responseTaskCompletionSource.SetResult(ResponseUtils.CreateResponse(HttpStatusCode.BadRequest));
+            }
+            return responseTaskCompletionSource.Task;
+        });
 
-        using (var httpClient = new HttpClient(mockHttpHandler.Object))
-        using (StartVerifiableLog())
+        using (var httpClient = new HttpClient(testHttpHandler))
         {
             var pipe = new Pipe();
             var application = new DuplexPipe(pipe.Reader, pipe.Writer);
 
             // Simulate writing data to send
             await application.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
-
             application.Output.Complete();
 
             await SendUtils.SendMessages(new Uri("http://fakeuri.org"), application, httpClient, logger: Logger).DefaultTimeout();
