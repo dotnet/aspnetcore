@@ -194,13 +194,19 @@ internal partial class EndpointHtmlRenderer
         return depth;
     }
 
+    internal static bool ShouldShowDetailedErrors(HttpContext httpContext)
+    {
+        var env = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
+        var showDetailedErrors = env.IsDevelopment() || options.Value.DetailedErrors;
+        return showDetailedErrors;
+    }
+
     private static void HandleExceptionAfterResponseStarted(HttpContext httpContext, TextWriter writer, Exception exception)
     {
         // We already started the response so we have no choice but to return a 200 with HTML and will
         // have to communicate the error information within that
-        var env = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var options = httpContext.RequestServices.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
-        var showDetailedErrors = env.IsDevelopment() || options.Value.DetailedErrors;
+        var showDetailedErrors = ShouldShowDetailedErrors(httpContext);
         var message = showDetailedErrors
             ? exception.ToString()
             : "There was an unhandled exception on the current request. For more details turn on detailed exceptions by setting 'DetailedErrors: true' in 'appSettings.Development.json'";

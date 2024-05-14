@@ -25,6 +25,9 @@
       "src\\Components\\WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",
       "src\\Components\\WebAssembly\\DevServer\\src\\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj",
       "src\\Components\\WebAssembly\\JSInterop\\src\\Microsoft.JSInterop.WebAssembly.csproj",
+      "src\\Components\\WebAssembly\\Samples\\HostedBlazorWebassemblyApp\\Client\\HostedBlazorWebassemblyApp.Client.csproj",
+      "src\\Components\\WebAssembly\\Samples\\HostedBlazorWebassemblyApp\\Server\\HostedBlazorWebassemblyApp.Server.csproj",
+      "src\\Components\\WebAssembly\\Samples\\HostedBlazorWebassemblyApp\\Shared\\HostedBlazorWebassemblyApp.Shared.csproj",
       "src\\Components\\WebAssembly\\Server\\src\\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj",
       "src\\Components\\WebAssembly\\Server\\test\\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj",
       "src\\Components\\WebAssembly\\WebAssembly.Authentication\\src\\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj",
@@ -145,6 +148,8 @@
       "src\\SignalR\\common\\SignalR.Common\\src\\Microsoft.AspNetCore.SignalR.Common.csproj",
       "src\\SignalR\\server\\Core\\src\\Microsoft.AspNetCore.SignalR.Core.csproj",
       "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj",
+      "src\\StaticAssets\\src\\Microsoft.AspNetCore.StaticAssets.csproj",
+      "src\\StaticAssets\\test\\Microsoft.AspNetCore.StaticAssets.Tests.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
