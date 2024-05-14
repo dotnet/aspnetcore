@@ -137,7 +137,7 @@ class ReconnectionProcess {
         return;
       }
 
-      const nextTimeout = intervalMs - (deltaTime - simulatedTime);
+      const nextTimeout = Math.min(totalTimeMs, intervalMs - (deltaTime - simulatedTime));
       callback(totalTimeMs);
       setTimeout(step, nextTimeout);
     }
