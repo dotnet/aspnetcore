@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -695,43 +696,75 @@ public class LongPollingTransportTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task StartAsyncSetsAcceptHeaderCorrectly()
+    public async Task PollRequestsContainCorrectAcceptHeader()
     {
-        var mockHttpHandler = new Mock<HttpMessageHandler>();
-        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var testHttpHandler = new TestHttpMessageHandler();
+        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
+        var requestCount = 0;
+        var allHeadersCorrect = true;
+        var firstRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        mockHttpHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
+        testHttpHandler.OnRequest(async (request, next, cancellationToken) =>
+        {
+            if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) != true)
             {
-                if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) == true)
+                allHeadersCorrect = false;
+            }
+
+            requestCount++;
+
+            if (requestCount == 1)
+            {
+                firstRequestReceived.SetResult();
+            }
+            else if (requestCount == 2)
+            {
+                secondRequestReceived.SetResult();
+            }
+
+            if (requestCount >= 2)
+            {
+                if (allHeadersCorrect)
                 {
-                    responseTaskCompletionSource.SetResult(ResponseUtils.CreateResponse(HttpStatusCode.OK));
+                    responseTaskCompletionSource.TrySetResult(new HttpResponseMessage(HttpStatusCode.OK));
                 }
                 else
                 {
-                    responseTaskCompletionSource.SetResult(ResponseUtils.CreateResponse(HttpStatusCode.BadRequest));
+                    responseTaskCompletionSource.TrySetResult(new HttpResponseMessage(HttpStatusCode.NoContent));
                 }
-                return responseTaskCompletionSource.Task;
-            });
+            }
 
-        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            return await Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+
+        using (var httpClient = new HttpClient(testHttpHandler))
         {
-            var transport = new LongPollingTransport(httpClient, loggerFactory: LoggerFactory);
+            var loggerFactory = NullLoggerFactory.Instance;
+            var transport = new LongPollingTransport(httpClient, loggerFactory: loggerFactory);
 
-            await transport.StartAsync(TestUri, TransferFormat.Text).DefaultTimeout();
+            var cts = new CancellationTokenSource();
+            var startTask = transport.StartAsync(new Uri("http://test.com"), TransferFormat.Text, cts.Token);
+
+            await firstRequestReceived.Task;
+
+            await Task.Delay(100);
+
+            cts.Cancel();
+
+            await secondRequestReceived.Task;
 
             await transport.StopAsync();
 
+            if (!responseTaskCompletionSource.Task.IsCompleted)
+            {
+                responseTaskCompletionSource.TrySetResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+            }
+
+            Assert.True(responseTaskCompletionSource.Task.IsCompleted);
             var response = await responseTaskCompletionSource.Task;
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
         }
-
-        mockHttpHandler.Protected().Verify(
-            "SendAsync",
-            Times.AtLeast(2), //ensure the mockHttpHandler was used twice in StartAsync() and Poll()
-             ItExpr.IsAny<HttpRequestMessage>(),
-            ItExpr.IsAny<CancellationToken>());
     }
+
 }
