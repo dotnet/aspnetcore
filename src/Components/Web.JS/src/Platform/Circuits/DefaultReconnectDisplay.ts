@@ -101,13 +101,14 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   static readonly Css = `
     .${this.ReconnectOverlayClassName} {
-      position: absolute;
+      position: fixed;
       top: 0;
       bottom: 0;
       left: 0;
       right: 0;
       z-index: 10000;
       display: none;
+      overflow: hidden;
       animation: components-reconnect-fade-in;
     }
 
