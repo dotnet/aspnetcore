@@ -18,6 +18,10 @@
     <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
     <script src="_content/TestContentPackage/counterInterop.js"></script>
     <script>
+        function getQueryParam(key) {
+            return new URLSearchParams(window.location.search).get(key);
+        }
+
         function appendHiddenParagraph(id) {
             const paragraph = document.createElement('p');
             paragraph.id = id;
