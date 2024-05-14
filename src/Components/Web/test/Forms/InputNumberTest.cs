@@ -74,13 +74,32 @@ public class InputNumberTest
 
         // Retrieve the render tree frames and extract attributes
         var frames = testRenderer.GetCurrentRenderTreeFrames(componentId);
-        var attributes = frames.AsEnumerable()
-                        .SkipWhile(frame => frame.FrameType != RenderTreeFrameType.Element || frame.ElementName != "input")
-                        .Skip(1)
-                        .TakeWhile(frame => frame.FrameType == RenderTreeFrameType.Attribute)
-                        .ToDictionary(frame => frame.AttributeName, frame => frame.AttributeValue);
+        bool inputElementFound = false;
+        var attributes = new Dictionary<string, object>();
+
+        for (int i = 0; i < frames.Count; i++)
+        {
+            var frame = frames.Array[i];
+            if (frame.FrameType == RenderTreeFrameType.Element && frame.ElementName == "input")
+            {
+                inputElementFound = true;
+                // Start looking for attributes
+                for (int j = i + 1; j < frames.Count; j++)
+                {
+                    var attributeFrame = frames.Array[j];
+                    if (attributeFrame.FrameType != RenderTreeFrameType.Attribute)
+                    {
+                        break;
+                    }
+                    attributes[attributeFrame.AttributeName] = attributeFrame.AttributeValue;
+                }
+                break;
+            }
+        }
 
         // Assert
+        Assert.True(inputElementFound, "Input element was not found.");
+        Assert.True(attributes.ContainsKey("type"), "Type attribute was not found.");
         Assert.Equal("range", attributes["type"]);
     }
 
