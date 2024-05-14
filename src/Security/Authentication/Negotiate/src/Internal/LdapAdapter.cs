@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Numerics;
 using System.DirectoryServices.Protocols;
 using System.Linq;
 using System.Security.Claims;
@@ -158,17 +159,25 @@ internal static partial class LdapAdapter
                     switch (groupSID[0])
                     {
                         case string groupSIDstr:
-                            ReadOnlySpan<char> groupSIDspn = groupSIDstr;
-                            Span<byte> lgroupSIDba = stackalloc byte[groupSIDspn.Length];
-                            for (int i = 0; i < groupSIDspn.Length; ++i)
+                            // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
+                            // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
+                            // slice method will be used here. The maximum size will be rounded up to the
+                            // next power of two to increase allocation speed.
+                            // Because this is a recursive function the stack allocation may need to be replaced
+                            // by a slower heap allocation.
+                            int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
+                            if (groupSIDstr.Length <= allocSize)
                             {
-                                byte[] bytes = BitConverter.GetBytes(groupSIDspn[i]);
-                                lgroupSIDba[i] = bytes[0];
-                            }
-                            var lgsid = ParseSID(lgroupSIDba);
-                            if (lgsid is not null)
-                            {
-                                retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, lgsid));
+                                Span<byte> lgroupSIDba = stackalloc byte[allocSize];
+                                for (int i = 0; i < groupSIDstr.Length; ++i)
+                                {
+                                    lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
+                                }
+                                var lgsid = ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
+                                if (lgsid is not null)
+                                {
+                                    retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, lgsid));
+                                }
                             }
                             break;
                         case byte[] groupSIDba:
@@ -223,14 +232,21 @@ internal static partial class LdapAdapter
                 {
                     if (groupSID[0] is string)
                     {
-                        ReadOnlySpan<char> groupSIDspn = (string)groupSID[0];
-                        Span<byte> groupSIDba = stackalloc byte[groupSIDspn.Length];
-                        for (int i = 0; i < groupSIDspn.Length; ++i)
+                        string groupSIDstr = (string)groupSID[0];
+                        // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
+                        // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
+                        // slice method will be used here. The maximum size will be rounded up to the
+                        // next power of two to increase allocation speed.
+                        int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
+                        if (groupSIDstr.Length <= allocSize)
                         {
-                            byte[] bytes = BitConverter.GetBytes(groupSIDspn[i]);
-                            groupSIDba[i] = bytes[0];
+                            Span<byte> lgroupSIDba = stackalloc byte[allocSize];
+                            for (int i = 0; i < groupSIDstr.Length; ++i)
+                            {
+                                lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
+                            }
+                            return ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
                         }
-                        return ParseSID(groupSIDba);
                     }
                     else if (groupSID[0] is byte[])
                     {
@@ -283,6 +299,7 @@ internal static partial class LdapAdapter
         {
             return null;
         }
+        // Already checked that subAuthoritiesLength <= MaxSubAuthorities
         Span<int> subAuthorities = stackalloc int[subAuthoritiesLength];
         IdentifierAuthority authority = (IdentifierAuthority)(
             (((long)binaryForm[2]) << 40) +
