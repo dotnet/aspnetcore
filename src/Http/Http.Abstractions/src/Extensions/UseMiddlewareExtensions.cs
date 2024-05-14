@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Abstractions;
-using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -21,6 +21,7 @@ public static class UseMiddlewareExtensions
     internal const string InvokeAsyncMethodName = "InvokeAsync";
 
     private static readonly MethodInfo GetServiceInfo = typeof(UseMiddlewareExtensions).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static)!;
+    private static readonly MethodInfo GetKeyedServiceInfo = typeof(UseMiddlewareExtensions).GetMethod(nameof(GetKeyedService), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     // We're going to keep all public constructors and public methods on middleware
     private const DynamicallyAccessedMemberTypes MiddlewareAccessibility =
@@ -215,11 +216,53 @@ public static class UseMiddlewareExtensions
             methodArguments[0] = context;
             for (var i = 1; i < parameters.Length; i++)
             {
-                methodArguments[i] = GetService(serviceProvider, parameters[i].ParameterType, methodInfo.DeclaringType!);
+                var parameter = parameters[i];
+
+                var hasServiceKey = TryGetServiceKey(parameter, out object? key);
+                var parameterType = parameter.ParameterType;
+                var declaringType = methodInfo.DeclaringType;
+
+                methodArguments[i] = hasServiceKey ? GetKeyedService(serviceProvider, key!, parameterType, declaringType!) : GetService(serviceProvider, parameterType, declaringType!);
             }
 
             return (Task)methodInfo.Invoke(middleware, BindingFlags.DoNotWrapExceptions, binder: null, methodArguments, culture: null)!;
         };
+    }
+
+    private static bool TryGetServiceKey(ParameterInfo parameterInfo, out object? key)
+    {
+        if (parameterInfo.CustomAttributes != null)
+        {
+            foreach (var attribute in parameterInfo.GetCustomAttributes(true))
+            {
+                if (attribute is FromKeyedServicesAttribute keyed)
+                {
+                    key = keyed.Key;
+                    return true;
+                }
+            }
+        }
+        key = null;
+        return false;
+    }
+
+    private static UnaryExpression GetMethodArgument(ParameterInfo parameter, ParameterExpression providerArg, Type parameterType, Type? declaringType)
+    {
+        var parameterTypeExpression = new List<Expression>() { providerArg };
+        var hasServiceKey = TryGetServiceKey(parameter, out object? key);
+
+        if (hasServiceKey)
+        {
+            parameterTypeExpression.Add(Expression.Constant(key, typeof(object)));
+        }
+
+        parameterTypeExpression.Add(Expression.Constant(parameterType, typeof(Type)));
+        parameterTypeExpression.Add(Expression.Constant(declaringType, typeof(Type)));
+
+        var getServiceCall = Expression.Call(hasServiceKey ? GetKeyedServiceInfo : GetServiceInfo, parameterTypeExpression);
+        var methodArgument = Expression.Convert(getServiceCall, parameterType);
+
+        return methodArgument;
     }
 
     private static Func<T, HttpContext, IServiceProvider, Task> CompileExpression<T>(MethodInfo methodInfo, ParameterInfo[] parameters)
@@ -262,21 +305,14 @@ public static class UseMiddlewareExtensions
         methodArguments[0] = httpContextArg;
         for (var i = 1; i < parameters.Length; i++)
         {
-            var parameterType = parameters[i].ParameterType;
+            var parameter = parameters[i];
+            var parameterType = parameter.ParameterType;
             if (parameterType.IsByRef)
             {
                 throw new NotSupportedException(Resources.FormatException_InvokeDoesNotSupportRefOrOutParams(InvokeMethodName));
             }
 
-            var parameterTypeExpression = new Expression[]
-            {
-                providerArg,
-                Expression.Constant(parameterType, typeof(Type)),
-                Expression.Constant(methodInfo.DeclaringType, typeof(Type))
-            };
-
-            var getServiceCall = Expression.Call(GetServiceInfo, parameterTypeExpression);
-            methodArguments[i] = Expression.Convert(getServiceCall, parameterType);
+            methodArguments[i] = GetMethodArgument(parameter, providerArg, parameterType, methodInfo.DeclaringType);
         }
 
         Expression middlewareInstanceArg = instanceArg;
@@ -294,12 +330,20 @@ public static class UseMiddlewareExtensions
 
     private static object GetService(IServiceProvider sp, Type type, Type middleware)
     {
-        var service = sp.GetService(type);
-        if (service == null)
-        {
-            throw new InvalidOperationException(Resources.FormatException_InvokeMiddlewareNoService(type, middleware));
-        }
+        var service = sp.GetService(type) ?? throw new InvalidOperationException(Resources.FormatException_InvokeMiddlewareNoService(type, middleware));
 
         return service;
+    }
+
+    private static object GetKeyedService(IServiceProvider sp, object key, Type type, Type middleware)
+    {
+        if (sp is IKeyedServiceProvider ksp)
+        {
+            var service = ksp.GetKeyedService(type, key) ?? throw new InvalidOperationException(Resources.FormatException_InvokeMiddlewareNoService(type, middleware));
+
+            return service;
+        }
+
+        throw new InvalidOperationException(Resources.Exception_KeyedServicesNotSupported);
     }
 }
