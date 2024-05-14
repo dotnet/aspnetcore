@@ -28,7 +28,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
         ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
-        : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
+        : new DefaultReconnectDisplay(options.dialogId, document);
     }
 
     if (!this._currentReconnectionProcess) {
@@ -68,20 +68,20 @@ class ReconnectionProcess {
 
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
     for (let i = 0; i < options.maxRetries; i++) {
-      this.reconnectDisplay.update(i + 1);
+      const currentAttempt = i + 1;
 
-      let delayDuration: number;
-      if (options.exponentialBackoffFactor !== undefined) {
-        const minimumRetryinterval = options.retryIntervalMilliseconds ?? ReconnectionProcess.MinimumBackoffRetryInterval;
-        delayDuration = minimumRetryinterval + Math.pow(options.exponentialBackoffFactor, i);
+      let retryInterval: number;
+      if (typeof(options.retryIntervalMilliseconds) === 'function') {
+        retryInterval = options.retryIntervalMilliseconds(currentAttempt);
       } else {
-        const retryIntervalMilliseconds = options.retryIntervalMilliseconds ?? ReconnectionProcess.DefaultRetryInterval;
-        delayDuration = i === 0 && retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+        retryInterval = i === 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
           ? ReconnectionProcess.MaximumFirstRetryInterval
-          : retryIntervalMilliseconds;
+          : options.retryIntervalMilliseconds;
       }
 
-      await this.delay(delayDuration);
+      await this.runTimer(retryInterval, 1000, remainingMs => {
+        this.reconnectDisplay.update(currentAttempt, Math.round(remainingMs / 1000));
+      });
 
       if (this.isDisposed) {
         break;
@@ -108,7 +108,41 @@ class ReconnectionProcess {
     this.reconnectDisplay.failed();
   }
 
-  delay(durationMilliseconds: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, durationMilliseconds));
+  private async runTimer(totalTimeMs: number, intervalMs: number, callback: (remainingMs: number) => void): Promise<void> {
+    if (totalTimeMs <= 0) {
+      callback(0);
+      return;
+    }
+
+    let lastTime = Date.now();
+    let resolveTimerPromise: () => void;
+
+    callback(totalTimeMs);
+    setTimeout(step, intervalMs);
+
+    await new Promise<void>(resolve => resolveTimerPromise = resolve);
+
+    function step() {
+      const currentTime = Date.now();
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+
+      // Get the number of steps that should have passed have since the last
+      // call to "step". We expect this to be 1 in most cases, but it may
+      // be higher if the browser tab sleeps, for example.
+      const simulatedSteps = Math.max(1, Math.floor(deltaTime / intervalMs));
+      const simulatedTime = intervalMs * simulatedSteps;
+
+      totalTimeMs -= simulatedTime;
+      if (totalTimeMs <= 0) {
+        callback(0);
+        resolveTimerPromise();
+        return;
+      }
+
+      const nextTimeout = intervalMs - (deltaTime - simulatedTime);
+      callback(totalTimeMs);
+      setTimeout(step, nextTimeout);
+    }
   }
 }
