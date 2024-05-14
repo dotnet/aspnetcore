@@ -69,7 +69,7 @@ internal static partial class LdapAdapter
             {
                 if (userSID.Count == 1)
                 {
-                    string? usid = ParseSID((byte[])userSID[0]);
+                    var usid = ParseSID((byte[])userSID[0]);
                     if (usid is not null)
                     {
                         retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.Sid, usid.ToString()));
