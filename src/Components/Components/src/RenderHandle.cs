@@ -57,9 +57,9 @@ public readonly struct RenderHandle
     public ComponentPlatform Platform => _renderer?.ComponentPlatform ?? throw new InvalidOperationException("No renderer has been initialized.");
 
     /// <summary>
-    /// Retrieves the <see cref="IComponentRenderMode"/> of the component the component will run in after prerendering.
+    /// Retrieves the <see cref="IComponentRenderMode"/> assigned to the component.
     /// </summary>
-    /// <returns>The <see cref="IComponentRenderMode"/> of the component the component will run in after prerendering.</returns>
+    /// <returns>The <see cref="IComponentRenderMode"/> assigned to the component.</returns>
     public IComponentRenderMode? RenderMode
     {
         get

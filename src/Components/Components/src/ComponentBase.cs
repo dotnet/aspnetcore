@@ -48,7 +48,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     protected ComponentPlatform Platform => _renderHandle.Platform;
 
     /// <summary>
-    /// Gets the target <see cref="IComponentRenderMode"/> this component will run in after prerendering.
+    /// Gets the <see cref="IComponentRenderMode"/> assigned to this component.
     /// </summary>
     protected IComponentRenderMode? AssignedRenderMode
     {
@@ -56,8 +56,6 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         {
             if (!_renderMode.cached)
             {
-                // We use the platform render mode to avoid having to look up the render mode when the platform
-                // has a single render mode.
                 _renderMode = (_renderHandle.RenderMode, true);
             }
 

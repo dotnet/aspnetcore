@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// Provide information about the platform that the component is running on.
+/// Provides information about the platform that the component is running on.
 /// </summary>
 public sealed class ComponentPlatform
 {
     /// <summary>
-    /// Initialize a new instance of <see cref="ComponentPlatform"/>.
+    /// Constructs a new instance of <see cref="ComponentPlatform"/>.
     /// </summary>
     /// <param name="platformName">The name of the platform.</param>
     /// <param name="isInteractive">A flag to indicate if the platform is interactive.</param>

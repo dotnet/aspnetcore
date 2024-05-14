@@ -26,7 +26,6 @@ public class InteractiveHostRendermodeTest : ServerTestBase<BasicTestAppServerSi
     [InlineData("webassembly")]
     [InlineData("auto")]
     [InlineData("static")]
-
     public void EmbeddingServerAppInsideIframe_Works(string renderMode)
     {
         Navigate($"/subdir/ComponentPlatform?suppress-autostart&ComponentRenderMode={renderMode}");
