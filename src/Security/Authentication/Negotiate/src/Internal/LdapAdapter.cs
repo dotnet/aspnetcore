@@ -230,27 +230,26 @@ internal static partial class LdapAdapter
             {
                 if (groupSID.Count == 1)
                 {
-                    if (groupSID[0] is string)
+                    switch (groupSID[0])
                     {
-                        string groupSIDstr = (string)groupSID[0];
-                        // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
-                        // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
-                        // slice method will be used here. The maximum size will be rounded up to the
-                        // next power of two to increase allocation speed.
-                        int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
-                        if (groupSIDstr.Length <= allocSize)
-                        {
-                            Span<byte> lgroupSIDba = stackalloc byte[allocSize];
-                            for (int i = 0; i < groupSIDstr.Length; ++i)
+                        case string groupSIDstr:
+                            // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
+                            // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
+                            // slice method will be used here. The maximum size will be rounded up to the
+                            // next power of two to increase allocation speed.
+                            int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
+                            if (groupSIDstr.Length <= allocSize)
                             {
-                                lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
+                                Span<byte> lgroupSIDba = stackalloc byte[allocSize];
+                                for (int i = 0; i < groupSIDstr.Length; ++i)
+                                {
+                                    lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
+                                }
+                                return ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
                             }
-                            return ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
-                        }
-                    }
-                    else if (groupSID[0] is byte[])
-                    {
-                        return ParseSID((byte[])groupSID[0]);
+                            break;
+                        case byte[] groupSIDba:
+                            return ParseSID(groupSIDba);
                     }
                 }
             }
