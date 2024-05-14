@@ -23,11 +23,12 @@ public class ThreadingAppTest
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasTitle()
     {
         Assert.Equal("Blazor standalone", Browser.Title);
@@ -68,6 +69,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
@@ -85,6 +87,7 @@ public class ThreadingAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54754")]
     public void HasFetchDataPage()
     {
         // Navigate to "Fetch data"

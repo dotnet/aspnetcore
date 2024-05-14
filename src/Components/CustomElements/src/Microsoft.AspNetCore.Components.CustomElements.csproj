@@ -32,10 +32,21 @@
       RelativePathFilter="**.js"
       RelativePathPattern="**"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_JSBuildStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_JsBuildOutput)' != ''"
+      CandidateAssets="@(_JSBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_JSBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
+      <StaticWebAsset Include="@(_JSBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_JSBuildStaticWebAssetEndpoint)" />
       <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
       <FileWrites Include="$(_JsBuildOutput)" />
     </ItemGroup>

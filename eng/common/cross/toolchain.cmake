@@ -382,6 +382,26 @@ if(TARGET_ARCH_NAME MATCHES "^(arm|armel|x86)$")
   endif()
 endif()
 
+# Set C++ standard library options if specified
+set(CLR_CMAKE_CXX_STANDARD_LIBRARY "" CACHE STRING "Standard library flavor to link against. Only supported with the Clang compiler.")
+if (CLR_CMAKE_CXX_STANDARD_LIBRARY)
+  add_compile_options($<$<COMPILE_LANG_AND_ID:CXX,Clang>:--stdlib=${CLR_CMAKE_CXX_STANDARD_LIBRARY}>)
+  add_link_options($<$<LINK_LANG_AND_ID:CXX,Clang>:--stdlib=${CLR_CMAKE_CXX_STANDARD_LIBRARY}>)
+endif()
+
+option(CLR_CMAKE_CXX_STANDARD_LIBRARY_STATIC "Statically link against the C++ standard library" OFF)
+if(CLR_CMAKE_CXX_STANDARD_LIBRARY_STATIC)
+  add_link_options($<$<LINK_LANGUAGE:CXX>:-static-libstdc++>)
+endif()
+
+set(CLR_CMAKE_CXX_ABI_LIBRARY "" CACHE STRING "C++ ABI implementation library to link against. Only supported with the Clang compiler.")
+if (CLR_CMAKE_CXX_ABI_LIBRARY)
+  # The user may specify the ABI library with the 'lib' prefix, like 'libstdc++'. Strip the prefix here so the linker finds the right library.
+  string(REGEX REPLACE "^lib(.+)" "\\1" CLR_CMAKE_CXX_ABI_LIBRARY ${CLR_CMAKE_CXX_ABI_LIBRARY})
+  # We need to specify this as a linker-backend option as Clang will filter this option out when linking to libc++.
+  add_link_options("LINKER:-l${CLR_CMAKE_CXX_ABI_LIBRARY}")
+endif()
+
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

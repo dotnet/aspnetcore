@@ -9,6 +9,7 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -64,12 +65,22 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 app.UseExceptionHandler("/Error", createScopeForErrors: true);
             }
 
-            app.UseStaticFiles();
             app.UseRouting();
             UseFakeAuthState(app);
             app.UseAntiforgery();
+
+            app.Use((ctx, nxt) =>
+            {
+                if (ctx.Request.Query.ContainsKey("add-csp"))
+                {
+                    ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+                }
+                return nxt();
+            });
+
             _ = app.UseEndpoints(endpoints =>
             {
+                endpoints.MapStaticAssets();
                 _ = endpoints.MapRazorComponents<TRootComponent>()
                     .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                     .AddInteractiveServerRenderMode(options =>

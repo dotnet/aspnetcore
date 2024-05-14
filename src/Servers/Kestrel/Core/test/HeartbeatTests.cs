@@ -20,6 +20,7 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55297")]
     public async void HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;
@@ -38,7 +39,7 @@ public class HeartbeatTests : LoggedTest
             {
                 sw = Stopwatch.StartNew();
             }
-            else
+            else if (heartbeatCallCount <= 5)
             {
                 var split = sw.Elapsed;
                 splits.Add(split);
@@ -46,6 +47,12 @@ public class HeartbeatTests : LoggedTest
                 Logger.LogInformation($"Heartbeat split: {split.TotalMilliseconds}ms");
 
                 sw.Restart();
+            }
+            else
+            {
+                // If shutdown takes too long there could be more OnHeartbeat calls, but that shouldn't fail the test,
+                // so we ignore them. See https://github.com/dotnet/aspnetcore/issues/55297
+                Logger.LogInformation("Extra OnHeartbeat call().");
             }
 
             if (heartbeatCallCount == 5)

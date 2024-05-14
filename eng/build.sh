@@ -338,6 +338,10 @@ if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
 fi
 
+# tools.sh expects the remaining arguments to be available via the $properties string array variable
+# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
+properties=$msbuild_args
+
 # Import Arcade
 . "$DIR/common/tools.sh"
 

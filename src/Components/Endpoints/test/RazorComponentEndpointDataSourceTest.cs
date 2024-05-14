@@ -228,7 +228,7 @@ public class RazorComponentEndpointDataSourceTest
         var result = new RazorComponentEndpointDataSource<TComponent>(
             builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
-            new ApplicationBuilder(services ?? new ServiceCollection().BuildServiceProvider()),
+            new TestEndpointRouteBuilder(services ?? new ServiceCollection().BuildServiceProvider()),
             new RazorComponentEndpointFactory(),
             new HotReloadService() { MetadataUpdateSupported = true });
 
@@ -276,6 +276,20 @@ public class RazorComponentEndpointDataSourceTest
         }
 
         public override bool Supports(IComponentRenderMode renderMode) => renderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode;
+    }
+
+    private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+    {
+        private IServiceProvider _serviceProvider;
+        private List<EndpointDataSource> _dataSources = new();
+
+        public TestEndpointRouteBuilder(IServiceProvider serviceProvider) => _serviceProvider = serviceProvider;
+
+        public IServiceProvider ServiceProvider => _serviceProvider;
+
+        public ICollection<EndpointDataSource> DataSources => _dataSources;
+
+        public IApplicationBuilder CreateApplicationBuilder() => new ApplicationBuilder(_serviceProvider);
     }
 }
 
