@@ -47,10 +47,6 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 class ReconnectionProcess {
   static readonly MaximumFirstRetryInterval = 3000;
 
-  static readonly DefaultRetryInterval = 10000;
-
-  static readonly MinimumBackoffRetryInterval = 2000;
-
   readonly reconnectDisplay: ReconnectDisplay;
 
   isDisposed = false;
@@ -79,7 +75,7 @@ class ReconnectionProcess {
           : options.retryIntervalMilliseconds;
       }
 
-      await this.runTimer(retryInterval, 1000, remainingMs => {
+      await this.runTimer(retryInterval, /* intervalMs */ 1000, remainingMs => {
         this.reconnectDisplay.update(currentAttempt, Math.round(remainingMs / 1000));
       });
 
@@ -129,7 +125,8 @@ class ReconnectionProcess {
 
       // Get the number of steps that should have passed have since the last
       // call to "step". We expect this to be 1 in most cases, but it may
-      // be higher if the browser tab sleeps, for example.
+      // be higher if something causes the timeout to get significantly
+      // delayed (e.g., the browser sleeps the tab).
       const simulatedSteps = Math.max(1, Math.floor(deltaTime / intervalMs));
       const simulatedTime = intervalMs * simulatedSteps;
 
