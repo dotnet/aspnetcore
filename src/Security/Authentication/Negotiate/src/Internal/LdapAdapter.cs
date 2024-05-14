@@ -29,7 +29,7 @@ internal static partial class LdapAdapter
             settings.ClaimsCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = settings.ClaimsCacheSize });
         }
 
-        if (settings.ClaimsCache.TryGetValue< IEnumerable< KeyValuePair<string, string> > >(user, out var cachedClaims) && cachedClaims is not null)
+        if (settings.ClaimsCache.TryGetValue<IEnumerable<KeyValuePair<string, string>>>(user, out var cachedClaims) && cachedClaims is not null)
         {
             foreach (var claim in cachedClaims)
             {
