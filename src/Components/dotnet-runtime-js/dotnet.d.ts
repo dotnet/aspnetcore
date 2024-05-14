@@ -3,7 +3,7 @@
 //!
 //! This is generated file, see src/mono/wasm/runtime/rollup.config.js
 
-//! This is not considered public API with backward compatibility guarantees. 
+//! This is not considered public API with backward compatibility guarantees.
 
 declare interface NativePointer {
     __brandNativePointer: "NativePointer";
@@ -179,6 +179,7 @@ interface ResourceGroups {
     lazyAssembly?: ResourceList;
     pdb?: ResourceList;
     jsModuleWorker?: ResourceList;
+    jsModuleGlobalization?: ResourceList;
     jsModuleNative: ResourceList;
     jsModuleRuntime: ResourceList;
     wasmSymbols?: ResourceList;
@@ -250,7 +251,7 @@ interface AssetEntry extends ResourceRequest {
      */
     pendingDownload?: LoadingResource;
 }
-type SingleAssetBehaviors = 
+type SingleAssetBehaviors =
 /**
  * The binary of the dotnet runtime.
  */
@@ -272,10 +273,14 @@ type SingleAssetBehaviors =
  */
  | "js-module-native"
 /**
+ * The javascript module for hybrid globalization.
+ */
+ | "js-module-globalization"
+/**
  * Typically blazor.boot.json
  */
  | "manifest";
-type AssetBehaviors = SingleAssetBehaviors | 
+type AssetBehaviors = SingleAssetBehaviors |
 /**
  * Load asset as a managed resource assembly.
  */
