@@ -4,12 +4,10 @@
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Moq;
-using Moq.Protected;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
