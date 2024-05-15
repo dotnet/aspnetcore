@@ -30,7 +30,7 @@ internal sealed class LinearSearchJumpTable : JumpTable
         }
 
         var entries = _entries;
-        var pathSpan = path.AsSpan(segment.Start..(segment.Start + segment.Length));
+        var pathSpan = path.AsSpan(segment.Start, segment.Length);
         for (var i = 0; i < entries.Length; i++)
         {
             var text = entries[i].text;
