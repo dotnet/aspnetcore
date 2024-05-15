@@ -209,7 +209,7 @@ public class NegotiateHandlerTests
     {
         var claimsCache = new MemoryCache(new MemoryCacheOptions());
         var claimsList = new List<KeyValuePair<string, string>>();
-        claimsList.Add(new KeyValuePair<string, string>(ClaimTypes.X500DistinguishedName, "CN=Domain Admins,CN=Users,DC=domain,DC=net"));
+        claimsList.Add(new KeyValuePair<string, string>("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "CN=Domain Admins,CN=Users,DC=domain,DC=net"));
         claimsCache.Set("name", claimsList);
         NegotiateOptions negotiateOptions = null;
         using var host = await CreateHostAsync(options =>
