@@ -238,11 +238,14 @@ public static class UseMiddlewareExtensions
                 if (attribute is FromKeyedServicesAttribute keyed)
                 {
                     key = keyed.Key;
+
                     return true;
                 }
             }
         }
+
         key = null;
+
         return false;
     }
 

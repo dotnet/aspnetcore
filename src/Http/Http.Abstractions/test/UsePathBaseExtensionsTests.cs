@@ -257,6 +257,7 @@ public class UsePathBaseExtensionsTests
             {
                 return value;
             }
+
             return null;
         }
     }
