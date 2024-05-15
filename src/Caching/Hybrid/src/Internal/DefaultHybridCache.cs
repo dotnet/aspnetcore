@@ -144,13 +144,13 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return stampede.JoinAsync(token);
     }
 
-    public override ValueTask RemoveKeyAsync(string key, CancellationToken token = default)
+    public override ValueTask RemoveAsync(string key, CancellationToken token = default)
     {
         _localCache.Remove(key);
         return _backendCache is null ? default : new(_backendCache.RemoveAsync(key, token));
     }
 
-    public override ValueTask RemoveTagAsync(string tag, CancellationToken token = default)
+    public override ValueTask RemoveByTagAsync(string tag, CancellationToken token = default)
         => default; // tags not yet implemented
 
     public override ValueTask SetAsync<T>(string key, T value, HybridCacheEntryOptions? options = null, IReadOnlyCollection<string>? tags = null, CancellationToken token = default)
