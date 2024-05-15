@@ -43,7 +43,7 @@ public partial class SendUtilsTests : VerifiableLoggedTest
 
             await SendUtils.SendMessages(new Uri("http://fakeuri.org"), application, httpClient, logger: Logger).DefaultTimeout();
 
-            var response = await responseTaskCompletionSource.Task;
+            var response = await responseTaskCompletionSource.Task.DefaultTimeout();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
