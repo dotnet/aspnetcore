@@ -702,7 +702,6 @@ public class LongPollingTransportTests : VerifiableLoggedTest
         var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
         var requestCount = 0;
         var allHeadersCorrect = true;
-        var firstRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var secondRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         testHttpHandler.OnRequest(async (request, next, cancellationToken) =>
@@ -714,11 +713,7 @@ public class LongPollingTransportTests : VerifiableLoggedTest
 
             requestCount++;
 
-            if (requestCount == 1)
-            {
-                firstRequestReceived.SetResult();
-            }
-            else if (requestCount == 2)
+            if (requestCount == 2)
             {
                 secondRequestReceived.SetResult();
             }
@@ -743,28 +738,15 @@ public class LongPollingTransportTests : VerifiableLoggedTest
             var loggerFactory = NullLoggerFactory.Instance;
             var transport = new LongPollingTransport(httpClient, loggerFactory: loggerFactory);
 
-            var cts = new CancellationTokenSource();
-            var startTask = transport.StartAsync(new Uri("http://test.com"), TransferFormat.Text, cts.Token);
+            var startTask = transport.StartAsync(TestUri, TransferFormat.Text);
 
-            await firstRequestReceived.Task;
-
-            await Task.Delay(100);
-
-            cts.Cancel();
-
-            await secondRequestReceived.Task;
+            await secondRequestReceived.Task.DefaultTimeout();
 
             await transport.StopAsync();
-
-            if (!responseTaskCompletionSource.Task.IsCompleted)
-            {
-                responseTaskCompletionSource.TrySetResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
-            }
 
             Assert.True(responseTaskCompletionSource.Task.IsCompleted);
             var response = await responseTaskCompletionSource.Task.DefaultTimeout();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
-
 }
