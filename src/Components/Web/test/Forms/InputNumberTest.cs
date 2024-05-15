@@ -83,7 +83,7 @@ public class InputNumberTest
             if (frame.FrameType == RenderTreeFrameType.Element && frame.ElementName == "input")
             {
                 inputElementFound = true;
-                // Start looking for attributes
+                // Collect attributes for the input element
                 for (int j = i + 1; j < frames.Count; j++)
                 {
                     var attributeFrame = frames.Array[j];
