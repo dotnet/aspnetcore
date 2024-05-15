@@ -33,8 +33,7 @@ internal static class PipeWriterHttp2FrameExtensions
         frame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
 
         var buffer = headerEncodingBuffer.AsSpan();
-        var currentLength = 0L;
-        var done = HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, headers, buffer, ref currentLength, null, out var length);
+        var done = HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, headers, buffer, out var length);
         frame.PayloadLength = length;
 
         if (done == HPackHeaderWriter.HeaderWriteResult.Done)
@@ -54,7 +53,7 @@ internal static class PipeWriterHttp2FrameExtensions
         {
             frame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-            done = HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headers, buffer, ref currentLength, null, out length);
+            done = HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headers, buffer, out length);
             frame.PayloadLength = length;
 
             if (done == HPackHeaderWriter.HeaderWriteResult.Done)

@@ -17,7 +17,6 @@ public class HPackHeaderWriterBenchmark
     private HttpResponseHeaders _knownResponseHeaders;
     private HttpResponseHeaders _unknownResponseHeaders;
     private byte[] _buffer;
-    private long _accumulatedHeaderLength;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -53,7 +52,7 @@ public class HPackHeaderWriterBenchmark
     public void BeginEncodeHeaders_KnownHeaders()
     {
         _http2HeadersEnumerator.Initialize(_knownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
     }
 
     [Benchmark]
@@ -61,14 +60,14 @@ public class HPackHeaderWriterBenchmark
     {
         _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
         _http2HeadersEnumerator.Initialize(_knownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
     }
 
     [Benchmark]
     public void BeginEncodeHeaders_UnknownHeaders()
     {
         _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
     }
 
     [Benchmark]
@@ -76,6 +75,6 @@ public class HPackHeaderWriterBenchmark
     {
         _knownResponseHeaders.EncodingSelector = _ => Encoding.UTF8;
         _http2HeadersEnumerator.Initialize(_unknownResponseHeaders);
-        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, ref _accumulatedHeaderLength, null, out _);
+        HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _http2HeadersEnumerator, _buffer, out _);
     }
 }

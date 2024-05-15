@@ -15,9 +15,6 @@ public class KestrelServerLimits
     // Matches the non-configurable default response buffer size for Kestrel in 1.0.0
     private long? _maxResponseBufferSize = 64 * 1024;
 
-    // Matches the HttpClientHandler.MaxResponseHeadersLength's response header size.
-    private int? _maxResponseHeadersTotalSize = 64 * 1024;
-
     // Matches the default client_max_body_size in nginx.
     // Also large enough that most requests should be under the limit.
     private long? _maxRequestBufferSize = 1024 * 1024;
@@ -259,27 +256,6 @@ public class KestrelServerLimits
         }
     }
 
-    /// <summary>
-    /// Gets or sets the maximum size of the total response headers. When set to null, the response headers total size is unlimited.
-    /// Defaults to 65,536 bytes (64 KB).
-    /// </summary>
-    /// <remarks>
-    /// When set to null, the size of the response buffer is unlimited.
-    /// When set to zero, no headers are allowed to be returned.
-    /// </remarks>
-    public int? MaxResponseHeadersTotalSize
-    {
-        get => _maxResponseHeadersTotalSize;
-        set
-        {
-            if (value.HasValue && value.Value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
-            }
-            _maxResponseHeadersTotalSize = value;
-        }
-    }
-
     internal void Serialize(Utf8JsonWriter writer)
     {
         writer.WriteString(nameof(KeepAliveTimeout), KeepAliveTimeout.ToString());
@@ -346,16 +322,6 @@ public class KestrelServerLimits
         writer.WriteString(nameof(MinRequestBodyDataRate), MinRequestBodyDataRate?.ToString());
         writer.WriteString(nameof(MinResponseDataRate), MinResponseDataRate?.ToString());
         writer.WriteString(nameof(RequestHeadersTimeout), RequestHeadersTimeout.ToString());
-
-        writer.WritePropertyName(nameof(MaxResponseHeadersTotalSize));
-        if (MaxResponseHeadersTotalSize is null)
-        {
-            writer.WriteNullValue();
-        }
-        else
-        {
-            writer.WriteNumberValue(MaxResponseHeadersTotalSize.Value);
-        }
 
         // HTTP2
         writer.WritePropertyName(nameof(Http2));

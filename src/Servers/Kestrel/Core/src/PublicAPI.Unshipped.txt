@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseHeadersTotalSize.get -> int?
-Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits.MaxResponseHeadersTotalSize.set -> void

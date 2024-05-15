@@ -4,7 +4,6 @@
 #nullable enable
 using System.Net.Http;
 using System.Net.Http.HPack;
-using System.Text;
 
 #if !(IS_TESTS || IS_BENCHMARKS)
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -31,7 +30,7 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
-    public static HeaderWriteResult BeginEncodeHeaders(int statusCode, DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, ref long accumulatedLength, long? maxLength, out int length)
+    public static HeaderWriteResult BeginEncodeHeaders(int statusCode, DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
     {
         length = 0;
 
@@ -54,7 +53,7 @@ internal static class HPackHeaderWriter
 
         // Since we've already encoded the status, we know we didn't start with an empty buffer.  We don't need to increase it immediately because
         // There is a small chance that the header will encode if there is no other content in the next HEADERS frame.
-        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: false, ref accumulatedLength, maxLength, out var headersLength);
+        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: false, out var headersLength);
         length += headersLength;
         return done;
     }
@@ -62,7 +61,7 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
-    public static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, ref long accumulatedLength, long? maxLength, out int length)
+    public static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
     {
         length = 0;
 
@@ -77,7 +76,7 @@ internal static class HPackHeaderWriter
             return HeaderWriteResult.Done;
         }
 
-        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: true, ref accumulatedLength, maxLength, out var headersLength);
+        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: true, out var headersLength);
         length += headersLength;
         return done;
     }
@@ -85,9 +84,9 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Continue encoding headers in the next HEADERS frame. The enumerator should already have a current value.
     /// </summary>
-    public static HeaderWriteResult ContinueEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, ref long accumulatedLength, long? maxLength, out int length)
+    public static HeaderWriteResult ContinueEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
     {
-        return EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer, canRequestLargerBuffer: true, ref accumulatedLength, maxLength, out length);
+        return EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer, canRequestLargerBuffer: true, out length);
     }
 
     private static bool EncodeStatusHeader(int statusCode, DynamicHPackEncoder hpackEncoder, Span<byte> buffer, out int length)
@@ -105,7 +104,7 @@ internal static class HPackHeaderWriter
         }
     }
 
-    private static HeaderWriteResult EncodeHeadersCore(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool canRequestLargerBuffer, ref long accumulatedLength, long? maxLength, out int length)
+    private static HeaderWriteResult EncodeHeadersCore(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool canRequestLargerBuffer, out int length)
     {
         var currentLength = 0;
         do
@@ -132,54 +131,19 @@ internal static class HPackHeaderWriter
                 // Request for a larger buffer to write large header.
                 if (currentLength == 0 && canRequestLargerBuffer)
                 {
-                    // Estimate the encoded header length (without compression) to check if it fits the max length.
-                    // This stops the BufferTooSmall responses to run away with allocating larger and larger buffers.
-                    // The header is probably not indexed by the static or dynamic tables, otherwise it woudld an empty buffer,
-                    // hence calculating a header length.
-                    CheckRequiredHeaderSize(accumulatedLength + currentLength, maxLength, name, value, valueEncoding);
                     length = 0;
                     return HeaderWriteResult.BufferTooSmall;
-                }
-
-                if (maxLength.HasValue && accumulatedLength > maxLength)
-                {
-                    ThrowResponseHeadersLimitException(maxLength.Value);
                 }
                 length = currentLength;
                 return HeaderWriteResult.MoreHeaders;
             }
 
             currentLength += headerLength;
-            accumulatedLength += headerLength;
         }
         while (headersEnumerator.MoveNext());
-
-        if (maxLength.HasValue && accumulatedLength > maxLength)
-        {
-            ThrowResponseHeadersLimitException(maxLength.Value);
-        }
         length = currentLength;
         return HeaderWriteResult.Done;
     }
-
-    private static void CheckRequiredHeaderSize(long accumulatedLength, long? maxLength, string name, string value, Encoding? valueEncoding)
-    {
-        if (!maxLength.HasValue)
-        {
-            return;
-        }
-        var maxLengthValue = maxLength.GetValueOrDefault();
-
-        // The default encoding is Latin1, hence we can use the value.Length. HPack encoder uses the same
-        // calculation for the header value length.
-        var length = HeaderField.GetLength(name.Length, valueEncoding?.GetByteCount(value) ?? value.Length);
-        if (length + accumulatedLength > maxLengthValue)
-        {
-            ThrowResponseHeadersLimitException(maxLengthValue);
-        }
-    }
-
-    private static void ThrowResponseHeadersLimitException(long maxLength) => throw new HPackEncodingException(SR.Format(SR.net_http_headers_exceeded_length, maxLength!));
 
     private static HeaderEncodingHint ResolveHeaderEncodingHint(int staticTableId, string name)
     {

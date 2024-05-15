@@ -3,10 +3,8 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -51,18 +49,8 @@ public class Http2FrameWriterTests
 
     private Http2FrameWriter CreateFrameWriter(Pipe pipe)
     {
-        var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
         var serviceContext = TestContextFactory.CreateServiceContext(new KestrelServerOptions());
-        var featureCollection = new FeatureCollection();
-        featureCollection.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
-        var connectionContext = TestContextFactory.CreateHttpConnectionContext(
-                   serviceContext: serviceContext,
-                   connectionContext: null,
-                   transport: pair.Transport,
-                   connectionFeatures: featureCollection);
-
-        var http2Connection = new Http2Connection(connectionContext);
-        return new Http2FrameWriter(pipe.Writer, null, http2Connection, 1, null, null, null, _dirtyMemoryPool, serviceContext);
+        return new Http2FrameWriter(pipe.Writer, null, null, 1, null, null, null, _dirtyMemoryPool, serviceContext);
     }
 
     [Fact]
@@ -97,11 +85,6 @@ public class Http2FrameWriterTests
         var payload = await pipe.Reader.ReadForLengthAsync(Http2FrameReader.HeaderLength);
 
         Assert.Equal(new byte[] { 0x00, 0x00, 0x00, 0x00 }, payload.Skip(5).Take(4).ToArray());
-    }
-
-    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
-    {
-        public ConnectionMetricsContext MetricsContext { get; }
     }
 }
 

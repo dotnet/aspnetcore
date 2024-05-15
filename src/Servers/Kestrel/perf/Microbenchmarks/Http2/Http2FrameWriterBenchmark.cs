@@ -5,12 +5,10 @@ using System.Buffers;
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -34,19 +32,10 @@ public class Http2FrameWriterBenchmark
             httpParser: new HttpParser<Http1ParsingHandler>(),
             dateHeaderValueManager: new DateHeaderValueManager(TimeProvider.System));
 
-        var featureCollection = new FeatureCollection();
-        featureCollection.Set<IConnectionMetricsContextFeature>(new TestConnectionMetricsContextFeature());
-        var connectionContext = TestContextFactory.CreateHttpConnectionContext(
-                   serviceContext: serviceContext,
-                   connectionContext: null,
-                   transport: new DuplexPipe(_pipe.Reader, _pipe.Writer),
-                   connectionFeatures: featureCollection);
-        var http2Connection = new Http2Connection(connectionContext);
-
         _frameWriter = new Http2FrameWriter(
             new NullPipeWriter(),
             connectionContext: null,
-            http2Connection: http2Connection,
+            http2Connection: null,
             maxStreamsPerConnection: 1,
             timeoutControl: null,
             minResponseDataRate: null,
@@ -71,10 +60,5 @@ public class Http2FrameWriterBenchmark
     {
         _pipe.Writer.Complete();
         _memoryPool?.Dispose();
-    }
-
-    private sealed class TestConnectionMetricsContextFeature : IConnectionMetricsContextFeature
-    {
-        public ConnectionMetricsContext MetricsContext { get; }
     }
 }

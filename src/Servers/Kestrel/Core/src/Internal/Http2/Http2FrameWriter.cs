@@ -73,8 +73,6 @@ internal sealed class Http2FrameWriter
 
     private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
     private readonly ArrayBufferWriter<byte> _headerEncodingBuffer;
-    private readonly long? _maxResponseHeadersTotalSize;
-    private long _currentResponseHeadersTotalSize;
     private long _unflushedBytes;
 
     private bool _completed;
@@ -112,7 +110,6 @@ internal sealed class Http2FrameWriter
         _headerEncodingBuffer = new ArrayBufferWriter<byte>(_maxFrameSize);
 
         _scheduleInline = serviceContext.Scheduler == PipeScheduler.Inline;
-        _maxResponseHeadersTotalSize = _http2Connection.Limits.MaxResponseHeadersTotalSize;
         _hpackEncoder = new DynamicHPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
 
         _maximumFlowControlQueueSize = AppContextMaximumFlowControlQueueSize is null
@@ -369,15 +366,13 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    public void UpdateMaxFrameSize(uint maxFrameSize)
+    public void UpdateMaxFrameSize(int maxFrameSize)
     {
         lock (_writeLock)
         {
             if (_maxFrameSize != maxFrameSize)
             {
-                // Safe cast, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
-                // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
-                _maxFrameSize = (int)maxFrameSize;
+                _maxFrameSize = maxFrameSize;
             }
         }
     }
@@ -514,9 +509,8 @@ internal sealed class Http2FrameWriter
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             _headerEncodingBuffer.ResetWrittenCount();
-            _currentResponseHeadersTotalSize = 0;
             var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[0.._maxFrameSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
-            var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, ref _currentResponseHeadersTotalSize, _maxResponseHeadersTotalSize, out var payloadLength);
+            var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
             Debug.Assert(done != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, because this always writes the status.");
             if (done == HPackHeaderWriter.HeaderWriteResult.Done)
             {
@@ -578,7 +572,7 @@ internal sealed class Http2FrameWriter
                     _headersEnumerator.Initialize(headers);
                     _headerEncodingBuffer.ResetWrittenCount();
                     var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
-                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, ref _currentResponseHeadersTotalSize, _maxResponseHeadersTotalSize, out var payloadLength);
+                    done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     if (done == HPackHeaderWriter.HeaderWriteResult.Done)
                     {
                         _headerEncodingBuffer.Advance(payloadLength);
@@ -643,7 +637,7 @@ internal sealed class Http2FrameWriter
         {
             _headerEncodingBuffer.ResetWrittenCount();
             var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[..bufferSize];
-            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, ref _currentResponseHeadersTotalSize, _maxResponseHeadersTotalSize, out var payloadLength);
+            done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
             if (done == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall)
             {
                 bufferSize *= 2;
