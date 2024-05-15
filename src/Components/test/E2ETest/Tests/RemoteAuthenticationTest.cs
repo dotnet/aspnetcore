@@ -54,7 +54,7 @@ public class RemoteAuthenticationTest :
         Host.CreateDefaultBuilder(args)
             .ConfigureLogging((ctx, lb) =>
             {
-                TestSink sink = new TestSink();
+                var sink = new TestSink();
                 lb.AddProvider(new TestLoggerProvider(sink));
                 lb.Services.AddSingleton(sink);
             })

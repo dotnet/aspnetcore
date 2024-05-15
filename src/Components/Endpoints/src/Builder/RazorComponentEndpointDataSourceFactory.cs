@@ -31,6 +31,6 @@ internal class RazorComponentEndpointDataSourceFactory
         var builder = ComponentApplicationBuilder.GetBuilder<TRootComponent>() ??
             DefaultRazorComponentApplication<TRootComponent>.Instance.GetBuilder();
 
-        return new RazorComponentEndpointDataSource<TRootComponent>(builder, _providers, endpoints.CreateApplicationBuilder(), _factory, _hotReloadService);
+        return new RazorComponentEndpointDataSource<TRootComponent>(builder, _providers, endpoints, _factory, _hotReloadService);
     }
 }
