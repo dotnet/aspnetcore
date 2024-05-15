@@ -199,7 +199,7 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
         }
 
         Assert.True(negotiateUrlTcs.Task.IsCompleted);
-        var headerWasFound = await negotiateUrlTcs.Task;
+        var headerWasFound = await negotiateUrlTcs.Task.DefaultTimeout();
         Assert.True(headerWasFound);
     }
 }

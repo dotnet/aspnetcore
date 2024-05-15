@@ -440,7 +440,7 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
             await sseTransport.StopAsync().DefaultTimeout();
 
             Assert.True(responseTaskCompletionSource.Task.IsCompleted);
-            var response = await responseTaskCompletionSource.Task;
+            var response = await responseTaskCompletionSource.Task.DefaultTimeout();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
