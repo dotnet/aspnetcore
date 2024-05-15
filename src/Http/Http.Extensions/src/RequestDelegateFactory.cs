@@ -276,7 +276,7 @@ public static partial class RequestDelegateFactory
         var serviceProvider = options?.ServiceProvider ?? options?.EndpointBuilder?.ApplicationServices ?? EmptyServiceProvider.Instance;
         var endpointBuilder = options?.EndpointBuilder ?? new RdfEndpointBuilder(serviceProvider);
         var jsonSerializerOptions = serviceProvider.GetService<IOptions<JsonOptions>>()?.Value.SerializerOptions ?? JsonOptions.DefaultSerializerOptions;
-        var formDataMapperOptions = new FormDataMapperOptions();;
+        var formDataMapperOptions = new FormDataMapperOptions(); ;
 
         var factoryContext = new RequestDelegateFactoryContext
         {
@@ -719,7 +719,25 @@ public static partial class RequestDelegateFactory
         else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
         {
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.HeaderAttribute);
-            return BindParameterFromProperty(parameter, HeadersExpr, HeaderIndexerProperty, headerAttribute.Name ?? parameter.Name, factoryContext, "header");
+
+            var headerName = headerAttribute.Name ?? parameter.Name;
+            var headerValuesExpr = Expression.Property(HeadersExpr, HeaderIndexerProperty, Expression.Constant(headerName));
+            var stringValueExpr = Expression.Call(headerValuesExpr, "ToString", Type.EmptyTypes);
+
+            Expression boundValueExpr;
+
+            if (parameter.ParameterType.IsArray || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType))
+            {
+                var valuesExpr = Expression.Call(stringValueExpr, "Split", Type.EmptyTypes, Expression.Constant(new[] { ',' }, typeof(char[])));
+                var trimmedValuesExpr = Expression.Call(typeof(RequestDelegateFactory), nameof(TrimValues), Type.EmptyTypes, valuesExpr);
+                boundValueExpr = Expression.Convert(trimmedValuesExpr, parameter.ParameterType);
+            }
+            else
+            {
+                boundValueExpr = Expression.Convert(stringValueExpr, parameter.ParameterType);
+            }
+
+            return boundValueExpr;
         }
         else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
         {
@@ -758,7 +776,6 @@ public static partial class RequestDelegateFactory
                 {
                     throw new NotSupportedException(
                         $"Assigning a value to the {nameof(IFromFormMetadata)}.{nameof(IFromFormMetadata.Name)} property is not supported for parameters of type {nameof(IFormCollection)}.");
-
                 }
                 return BindParameterFromFormCollection(parameter, factoryContext);
             }
@@ -2846,6 +2863,15 @@ public static partial class RequestDelegateFactory
         }
     }
 
+    private static string[] TrimValues(string[] values)
+    {
+        for (var i = 0; i < values.Length; i++)
+        {
+            values[i] = values[i].Trim();
+        }
+        return values;
+    }
+
     private sealed class RdfEndpointBuilder : EndpointBuilder
     {
         public RdfEndpointBuilder(IServiceProvider applicationServices)
@@ -2864,4 +2890,5 @@ public static partial class RequestDelegateFactory
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;
     }
+
 }
