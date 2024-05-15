@@ -38,7 +38,11 @@ internal sealed partial class QuicStreamContext :
     public long Error
     {
         get => _error ?? -1;
-        set => _error = value;
+        set
+        {
+            QuicTransportOptions.ValidateErrorCode(value);
+            _error = value;
+        }
     }
 
     public long StreamId { get; private set; }
@@ -54,6 +58,8 @@ internal sealed partial class QuicStreamContext :
 
     public void AbortRead(long errorCode, ConnectionAbortedException abortReason)
     {
+        QuicTransportOptions.ValidateErrorCode(errorCode);
+
         lock (_shutdownLock)
         {
             if (_stream != null)
@@ -74,6 +80,8 @@ internal sealed partial class QuicStreamContext :
 
     public void AbortWrite(long errorCode, ConnectionAbortedException abortReason)
     {
+        QuicTransportOptions.ValidateErrorCode(errorCode);
+
         lock (_shutdownLock)
         {
             if (_stream != null)
