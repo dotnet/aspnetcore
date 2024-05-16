@@ -459,10 +459,6 @@ public static class TypedResults
 
     /// <summary>
     /// Allows writing directly to the response body.
-    /// <para>
-    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
-    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
-    /// </para>
     /// </summary>
     /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
