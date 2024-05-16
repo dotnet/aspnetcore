@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.Caching.Hybrid;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Configuration extension methods for <see cref="HybridCache"/>.
