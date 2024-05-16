@@ -210,17 +210,22 @@ public static class UseMiddlewareExtensions
             }
         }
 
+        // Performance optimization: Precompute and cache the results for each parameter
+        var parameterData = new (bool hasServiceKey, object? key, Type parameterType, Type declaringType)[parameters.Length];
+        for (var i = 1; i < parameters.Length; i++)
+        {
+            var parameter = parameters[i];
+            var hasServiceKey = TryGetServiceKey(parameter, out object? key);
+            parameterData[i] = (hasServiceKey, key, parameter.ParameterType, methodInfo.DeclaringType!);
+        }
+
         return (middleware, context, serviceProvider) =>
         {
             var methodArguments = new object[parameters.Length];
             methodArguments[0] = context;
             for (var i = 1; i < parameters.Length; i++)
             {
-                var parameter = parameters[i];
-
-                var hasServiceKey = TryGetServiceKey(parameter, out object? key);
-                var parameterType = parameter.ParameterType;
-                var declaringType = methodInfo.DeclaringType;
+                var (hasServiceKey, key, parameterType, declaringType) = parameterData[i];
 
                 methodArguments[i] = hasServiceKey ? GetKeyedService(serviceProvider, key!, parameterType, declaringType!) : GetService(serviceProvider, parameterType, declaringType!);
             }
