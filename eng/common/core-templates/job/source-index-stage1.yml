@@ -1,0 +1,91 @@
+parameters:
+  runAsPublic: false
+  sourceIndexUploadPackageVersion: 2.0.0-20240502.12
+  sourceIndexProcessBinlogPackageVersion: 1.0.1-20240129.2
+  sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+  sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
+  preSteps: []
+  binlogPath: artifacts/log/Debug/Build.binlog
+  condition: ''
+  dependsOn: ''
+  pool: ''
+  is1ESPipeline: ''
+
+jobs:
+- job: SourceIndexStage1
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  variables:
+  - name: SourceIndexUploadPackageVersion
+    value: ${{ parameters.sourceIndexUploadPackageVersion }}
+  - name: SourceIndexProcessBinlogPackageVersion
+    value: ${{ parameters.sourceIndexProcessBinlogPackageVersion }}
+  - name: SourceIndexPackageSource
+    value: ${{ parameters.sourceIndexPackageSource }}
+  - name: BinlogPath
+    value: ${{ parameters.binlogPath }}
+  - template: /eng/common/core-templates/variables/pool-providers.yml
+    parameters:
+      is1ESPipeline: ${{ parameters.is1ESPipeline }}
+
+  ${{ if ne(parameters.pool, '') }}:
+    pool: ${{ parameters.pool }}
+  ${{ if eq(parameters.pool, '') }}:
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: $(DncEngPublicBuildPool)
+        image: windows.vs2022.amd64.open
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: $(DncEngInternalBuildPool)
+        image: windows.vs2022.amd64
+
+  steps:
+  - ${{ if eq(parameters.is1ESPipeline, '') }}:
+    - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
+
+  - ${{ each preStep in parameters.preSteps }}:
+    - ${{ preStep }}
+
+  - task: UseDotNet@2
+    displayName: Use .NET 8 SDK
+    inputs:
+      packageType: sdk
+      version: 8.0.x
+      installationPath: $(Agent.TempDirectory)/dotnet
+      workingDirectory: $(Agent.TempDirectory)
+
+  - script: |
+      $(Agent.TempDirectory)/dotnet/dotnet tool install BinLogToSln --version $(sourceIndexProcessBinlogPackageVersion) --add-source $(SourceIndexPackageSource) --tool-path $(Agent.TempDirectory)/.source-index/tools
+      $(Agent.TempDirectory)/dotnet/dotnet tool install UploadIndexStage1 --version $(sourceIndexUploadPackageVersion) --add-source $(SourceIndexPackageSource) --tool-path $(Agent.TempDirectory)/.source-index/tools
+    displayName: Download Tools
+    # Set working directory to temp directory so 'dotnet' doesn't try to use global.json and use the repo's sdk.
+    workingDirectory: $(Agent.TempDirectory)
+
+  - script: ${{ parameters.sourceIndexBuildCommand }}
+    displayName: Build Repository
+
+  - script: $(Agent.TempDirectory)/.source-index/tools/BinLogToSln -i $(BinlogPath) -r $(Build.SourcesDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
+    displayName: Process Binlog into indexable sln
+
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - task: AzureCLI@2
+      displayName: Get stage 1 auth token
+      inputs:
+        azureSubscription: 'SourceDotNet Stage1 Publish'
+        addSpnToEnvironment: true
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "##vso[task.setvariable variable=ARM_CLIENT_ID]$env:servicePrincipalId"
+          echo "##vso[task.setvariable variable=ARM_ID_TOKEN]$env:idToken"
+          echo "##vso[task.setvariable variable=ARM_TENANT_ID]$env:tenantId"
+
+    - script: |
+        echo "Client ID: $(ARM_CLIENT_ID)"
+        echo "ID Token: $(ARM_ID_TOKEN)"
+        echo "Tenant ID: $(ARM_TENANT_ID)"
+        az login --service-principal -u $(ARM_CLIENT_ID) --tenant $(ARM_TENANT_ID) --allow-no-subscriptions --federated-token $(ARM_ID_TOKEN)
+      displayName: "Login to Azure"
+
+    - script: $(Agent.TempDirectory)/.source-index/tools/UploadIndexStage1 -i .source-index/stage1output -n $(Build.Repository.Name) -s netsourceindexstage1 -b stage1
+      displayName: Upload stage1 artifacts to source index
