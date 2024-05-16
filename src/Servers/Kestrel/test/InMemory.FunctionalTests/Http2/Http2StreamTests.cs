@@ -3404,6 +3404,42 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Fact]
+    public async Task ResponseHeader_OneMegaByte_SplitsHeaderToContinuationFrames()
+    {
+        int frameSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
+        int count = 64;
+        var headerValue = new string('a', frameSize * count); // 1 MB value
+        await InitializeConnectionAsync(async context =>
+        {
+            context.Response.Headers["my"] = headerValue;
+            await context.Response.WriteAsync("Hello World");
+        });
+
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        // Just the StatusCode gets written before aborting in the continuation frame
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+        for (int i = 0; i < count; i++)
+        {
+            await ExpectAsync(Http2FrameType.CONTINUATION,
+                withLength: 16384,
+                withFlags: (byte)Http2HeadersFrameFlags.NONE,
+                withStreamId: 1);
+        }
+
+        // One more frame because of the header name + size of header value + size header name + 2 * H encoding
+        await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 8,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+    }
+
+    [Fact]
     public async Task WriteAsync_PreCancelledCancellationToken_DoesNotAbort()
     {
         var headers = new[]
