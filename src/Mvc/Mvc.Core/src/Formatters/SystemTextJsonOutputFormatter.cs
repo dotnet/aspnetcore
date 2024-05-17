@@ -88,6 +88,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         {
             try
             {
+                await httpContext.Response.StartAsync();
                 if (jsonTypeInfo is not null)
                 {
                     await JsonSerializer.SerializeAsync(responseWriter, context.Object, jsonTypeInfo, httpContext.RequestAborted);

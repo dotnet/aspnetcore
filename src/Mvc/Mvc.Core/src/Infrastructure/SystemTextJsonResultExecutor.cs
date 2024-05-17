@@ -66,6 +66,7 @@ internal sealed partial class SystemTextJsonResultExecutor : IActionResultExecut
         {
             try
             {
+                await response.StartAsync();
                 await JsonSerializer.SerializeAsync(responseWriter, value, objectType, jsonSerializerOptions, context.HttpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
