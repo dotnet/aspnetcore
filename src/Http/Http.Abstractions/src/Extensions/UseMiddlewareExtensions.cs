@@ -214,7 +214,8 @@ public static class UseMiddlewareExtensions
         var precomputedKeys = new object?[parameters.Length];
         for (var i = 1; i < parameters.Length; i++)
         {
-            var hasServiceKey = TryGetServiceKey(parameters[i], out object? key);
+            _ = TryGetServiceKey(parameters[i], out object? key);
+
             precomputedKeys[i] = key;
         }
 
@@ -235,24 +236,11 @@ public static class UseMiddlewareExtensions
         };
     }
 
-    private static bool TryGetServiceKey(ParameterInfo parameterInfo, out object? key)
+    private static bool TryGetServiceKey(ParameterInfo parameterInfo, [NotNullWhen(true)] out object? key)
     {
-        if (parameterInfo.CustomAttributes != null)
-        {
-            foreach (var attribute in parameterInfo.GetCustomAttributes(true))
-            {
-                if (attribute is FromKeyedServicesAttribute keyed)
-                {
-                    key = keyed.Key;
+        key = parameterInfo.GetCustomAttribute<FromKeyedServicesAttribute>(false)?.Key;
 
-                    return true;
-                }
-            }
-        }
-
-        key = null;
-
-        return false;
+        return key != null;
     }
 
     private static UnaryExpression GetMethodArgument(ParameterInfo parameter, ParameterExpression providerArg, Type parameterType, Type? declaringType)
