@@ -210,13 +210,12 @@ public static class UseMiddlewareExtensions
             }
         }
 
-        // Performance optimization: Precompute and cache the results for each parameter
-        var parameterData = new (bool hasServiceKey, object? key, Type parameterType, Type declaringType)[parameters.Length];
+        // Performance optimization: Precompute and cache the key results for each parameter
+        var precomputedKeys = new object?[parameters.Length];
         for (var i = 1; i < parameters.Length; i++)
         {
-            var parameter = parameters[i];
-            var hasServiceKey = TryGetServiceKey(parameter, out object? key);
-            parameterData[i] = (hasServiceKey, key, parameter.ParameterType, methodInfo.DeclaringType!);
+            var hasServiceKey = TryGetServiceKey(parameters[i], out object? key);
+            precomputedKeys[i] = key;
         }
 
         return (middleware, context, serviceProvider) =>
@@ -225,9 +224,11 @@ public static class UseMiddlewareExtensions
             methodArguments[0] = context;
             for (var i = 1; i < parameters.Length; i++)
             {
-                var (hasServiceKey, key, parameterType, declaringType) = parameterData[i];
+                var key = precomputedKeys[i];
+                var parameterType = parameters[i].ParameterType;
+                var declaringType = methodInfo.DeclaringType!;
 
-                methodArguments[i] = hasServiceKey ? GetKeyedService(serviceProvider, key!, parameterType, declaringType!) : GetService(serviceProvider, parameterType, declaringType!);
+                methodArguments[i] = key == null ? GetService(serviceProvider, parameterType, declaringType) : GetKeyedService(serviceProvider, key, parameterType, declaringType);
             }
 
             return (Task)methodInfo.Invoke(middleware, BindingFlags.DoNotWrapExceptions, binder: null, methodArguments, culture: null)!;
