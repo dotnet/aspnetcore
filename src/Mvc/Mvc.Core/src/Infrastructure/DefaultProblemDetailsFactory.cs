@@ -108,6 +108,6 @@ public sealed class DefaultProblemDetailsFactory : ProblemDetailsFactory
             problemDetails.Extensions["traceId"] = traceId;
         }
 
-        _configure?.Invoke(new() {HttpContext = httpContext!, ProblemDetails = problemDetails});
+        _configure?.Invoke(new() { HttpContext = httpContext!, ProblemDetails = problemDetails });
     }
 }
