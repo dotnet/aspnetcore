@@ -370,10 +370,7 @@ internal sealed class Http2FrameWriter
     {
         lock (_writeLock)
         {
-            if (_maxFrameSize != maxFrameSize)
-            {
-                _maxFrameSize = maxFrameSize;
-            }
+            _maxFrameSize = maxFrameSize;
         }
     }
 
@@ -509,7 +506,7 @@ internal sealed class Http2FrameWriter
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             _headerEncodingBuffer.ResetWrittenCount();
-            var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[0.._maxFrameSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
+            var buffer = _headerEncodingBuffer.GetSpan(_maxFrameSize)[.._maxFrameSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
             var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
             Debug.Assert(done != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, because this always writes the status.");
             if (done == HPackHeaderWriter.HeaderWriteResult.Done)
@@ -518,11 +515,12 @@ internal sealed class Http2FrameWriter
                 _outgoingFrame.PayloadLength = payloadLength;
                 _outgoingFrame.HeadersFlags |= Http2HeadersFrameFlags.END_HEADERS;
                 WriteHeaderUnsynchronized();
-                _outputWriter.Write(buffer[0..payloadLength]);
+                _outputWriter.Write(buffer[..payloadLength]);
             }
             else
             {
-                // More headers sent in CONTINUATION frames.
+                // Sending the current HEADERS frame to output and the remaining headers
+                // are processed by FinishWritingHeadersUnsynchronized using CONTINUATION frames.
                 _headerEncodingBuffer.Advance(payloadLength);
                 SplitHeaderFramesToOutput(streamId, endOfHeaders: false, isFramePrepared: true);
                 FinishWritingHeadersUnsynchronized(streamId);
@@ -571,7 +569,7 @@ internal sealed class Http2FrameWriter
                 {
                     _headersEnumerator.Initialize(headers);
                     _headerEncodingBuffer.ResetWrittenCount();
-                    var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[0..bufferSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
+                    var buffer = _headerEncodingBuffer.GetSpan(bufferSize)[..bufferSize]; // GetSpan might return more data that can result in a less deterministic behavior on the way headers are split into frames.
                     done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     if (done == HPackHeaderWriter.HeaderWriteResult.Done)
                     {
@@ -580,7 +578,8 @@ internal sealed class Http2FrameWriter
                     }
                     else if (done == HPackHeaderWriter.HeaderWriteResult.MoreHeaders)
                     {
-                        // More headers sent in CONTINUATION frames.
+                        // Sending the current HEADERS frame to output and the remaining headers
+                        // are processed by FinishWritingHeadersUnsynchronized using CONTINUATION frames.
                         _headerEncodingBuffer.Advance(payloadLength);
                         SplitHeaderFramesToOutput(streamId, endOfHeaders: false, isFramePrepared: true);
                         FinishWritingHeadersUnsynchronized(streamId);
