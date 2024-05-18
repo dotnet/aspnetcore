@@ -335,9 +335,9 @@
       <Sha>d62d4e036e024404581283f02321453a331821c2</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24266.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24267.2">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>e781a7d41c364738b36f42fb3582cdbe8f8f4de2</Sha>
+      <Sha>4642f9b75b588565642dd00dabcfedfe67ca106f</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
