@@ -719,25 +719,7 @@ public static partial class RequestDelegateFactory
         else if (parameterCustomAttributes.OfType<IFromHeaderMetadata>().FirstOrDefault() is { } headerAttribute)
         {
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.HeaderAttribute);
-
-            var headerName = headerAttribute.Name ?? parameter.Name;
-            var headerValuesExpr = Expression.Property(HeadersExpr, HeaderIndexerProperty, Expression.Constant(headerName));
-            var stringValueExpr = Expression.Call(headerValuesExpr, "ToString", Type.EmptyTypes);
-
-            Expression boundValueExpr;
-
-            if (parameter.ParameterType.IsArray || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType))
-            {
-                var valuesExpr = Expression.Call(stringValueExpr, "Split", Type.EmptyTypes, Expression.Constant(new[] { ',' }, typeof(char[])));
-                var trimmedValuesExpr = Expression.Call(typeof(RequestDelegateFactory), nameof(TrimValues), Type.EmptyTypes, valuesExpr);
-                boundValueExpr = Expression.Convert(trimmedValuesExpr, parameter.ParameterType);
-            }
-            else
-            {
-                boundValueExpr = Expression.Convert(stringValueExpr, parameter.ParameterType);
-            }
-
-            return boundValueExpr;
+            return BindParameterFromProperty(parameter, HeadersExpr, HeaderIndexerProperty, headerAttribute.Name ?? parameter.Name, factoryContext, "header");
         }
         else if (parameterCustomAttributes.OfType<IFromBodyMetadata>().FirstOrDefault() is { } bodyAttribute)
         {
@@ -1645,6 +1627,7 @@ public static partial class RequestDelegateFactory
 
     private static Expression BindParameterFromValue(ParameterInfo parameter, Expression valueExpression, RequestDelegateFactoryContext factoryContext, string source)
     {
+
         if (parameter.ParameterType == typeof(string) || parameter.ParameterType == typeof(string[])
             || parameter.ParameterType == typeof(StringValues) || parameter.ParameterType == typeof(StringValues?))
         {
@@ -1871,10 +1854,10 @@ public static partial class RequestDelegateFactory
     }
 
     private static Expression BindParameterFromExpression(
-        ParameterInfo parameter,
-        Expression valueExpression,
-        RequestDelegateFactoryContext factoryContext,
-        string source)
+    ParameterInfo parameter,
+    Expression valueExpression,
+    RequestDelegateFactoryContext factoryContext,
+     string source)
     {
         var nullability = factoryContext.NullabilityContext.Create(parameter);
         var isOptional = IsOptionalParameter(parameter, factoryContext);
@@ -1885,16 +1868,62 @@ public static partial class RequestDelegateFactory
         var parameterNameConstant = Expression.Constant(parameter.Name);
         var sourceConstant = Expression.Constant(source);
 
+        if (source == "header" && (parameter.ParameterType.IsArray || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType)))
+        {
+            // Convert StringValues to string array
+            var stringValuesExpr = Expression.Convert(valueExpression, typeof(StringValues));
+            var toStringArrayMethod = typeof(StringValues).GetMethod(nameof(StringValues.ToArray));
+            var headerValuesArrayExpr = Expression.Call(stringValuesExpr, toStringArrayMethod);
+
+            // Process each string in the array: split and trim
+            var splitAndTrimMethod = typeof(RequestDelegateFactory).GetMethod(nameof(SplitAndTrim), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var splitAndTrimExpr = Expression.Call(splitAndTrimMethod, headerValuesArrayExpr);
+
+            // Convert the split and trimmed values to the parameter type
+            var boundValueExpr = Expression.Convert(splitAndTrimExpr, parameter.ParameterType);
+
+            if (!isOptional)
+            {
+                var checkRequiredStringParameterBlock = Expression.Block(
+                    Expression.Assign(argument, boundValueExpr),
+                    Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
+                        Expression.Block(
+                            Expression.Assign(WasParamCheckFailureExpr, Expression.Constant(true)),
+                            Expression.Call(LogRequiredParameterNotProvidedMethod,
+                                HttpContextExpr, parameterTypeNameConstant, parameterNameConstant, sourceConstant,
+                                Expression.Constant(factoryContext.ThrowOnBadRequest))
+                        )
+                    )
+                );
+
+                factoryContext.ExtraLocals.Add(argument);
+                factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
+                return argument;
+            }
+
+            // Allow nullable parameters that don't have a default value
+            if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
+            {
+                if (parameter.ParameterType == typeof(StringValues?))
+                {
+                    return Expression.Block(
+                        Expression.Condition(Expression.Equal(boundValueExpr, Expression.Convert(Expression.Constant(StringValues.Empty), parameter.ParameterType)),
+                            Expression.Convert(Expression.Constant(null), parameter.ParameterType),
+                            boundValueExpr
+                        )
+                    );
+                }
+                return boundValueExpr;
+            }
+
+            return Expression.Block(
+                Expression.Condition(Expression.NotEqual(boundValueExpr, Expression.Constant(null)),
+                    boundValueExpr,
+                    Expression.Convert(Expression.Constant(parameter.DefaultValue), parameter.ParameterType)));
+        }
+
         if (!isOptional)
         {
-            // The following is produced if the parameter is required:
-            //
-            // argument = value["param1"];
-            // if (argument == null)
-            // {
-            //      wasParamCheckFailure = true;
-            //      Log.RequiredParameterNotProvided(httpContext, "TypeOfValue", "param1");
-            // }
             var checkRequiredStringParameterBlock = Expression.Block(
                 Expression.Assign(argument, valueExpression),
                 Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
@@ -1907,35 +1936,25 @@ public static partial class RequestDelegateFactory
                 )
             );
 
-            // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
-
             factoryContext.ExtraLocals.Add(argument);
             factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
             return argument;
         }
 
-        // Allow nullable parameters that don't have a default value
         if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
         {
             if (parameter.ParameterType == typeof(StringValues?))
             {
-                // when Nullable<StringValues> is used and the actual value is StringValues.Empty, we should pass in a Nullable<StringValues>
                 return Expression.Block(
                     Expression.Condition(Expression.Equal(valueExpression, Expression.Convert(Expression.Constant(StringValues.Empty), parameter.ParameterType)),
-                            Expression.Convert(Expression.Constant(null), parameter.ParameterType),
-                            valueExpression
-                        )
-                    );
+                        Expression.Convert(Expression.Constant(null), parameter.ParameterType),
+                        valueExpression
+                    )
+                );
             }
             return valueExpression;
         }
 
-        // The following is produced if the parameter is optional. Note that we convert the
-        // default value to the target ParameterType to address scenarios where the user is
-        // is setting null as the default value in a context where nullability is disabled.
-        //
-        // param1_local = httpContext.RouteValue["param1"] ?? httpContext.Query["param1"];
-        // param1_local != null ? param1_local : Convert(null, Int32)
         return Expression.Block(
             Expression.Condition(Expression.NotEqual(valueExpression, Expression.Constant(null)),
                 valueExpression,
@@ -2870,6 +2889,12 @@ public static partial class RequestDelegateFactory
             values[i] = values[i].Trim();
         }
         return values;
+    }
+
+    private static string[] SplitAndTrim(string[] values)
+    {
+        var result = values.SelectMany(v => v.Split(',').Select(s => s.Trim())).ToArray();
+        return result;
     }
 
     private sealed class RdfEndpointBuilder : EndpointBuilder
