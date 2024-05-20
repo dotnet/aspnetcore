@@ -1885,7 +1885,6 @@ public static partial class RequestDelegateFactory
             }
             var splitAndTrimExpr = Expression.Call(splitAndTrimMethod, headerValuesArrayExpr);
 
-
             var boundValueExpr = Expression.Convert(splitAndTrimExpr, parameter.ParameterType);
 
             if (!isOptional)
