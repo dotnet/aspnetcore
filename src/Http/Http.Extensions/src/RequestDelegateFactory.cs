@@ -2893,8 +2893,40 @@ public static partial class RequestDelegateFactory
 
     private static string[] SplitAndTrim(string[] values)
     {
-        var result = values.SelectMany(v => v.Split(',').Select(s => s.Trim())).ToArray();
-        return result;
+        if (values == null || values.Length == 0)
+        {
+            return [];
+        }
+
+        var result = new List<string>();
+
+        foreach (var value in values)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var span = value.AsSpan();
+            var start = 0;
+
+            for (var i = 0; i <= span.Length; i++)
+            {
+                if (i == span.Length || span[i] == ',')
+                {
+                    var slice = span.Slice(start, i - start).Trim();
+
+                    if (!slice.IsEmpty)
+                    {
+                        result.Add(new string(slice));
+                    }
+
+                    start = i + 1;
+                }
+            }
+        }
+
+        return [.. result];
     }
 
     private sealed class RdfEndpointBuilder : EndpointBuilder
