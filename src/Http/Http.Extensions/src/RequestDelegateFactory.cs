@@ -2882,15 +2882,6 @@ public static partial class RequestDelegateFactory
         }
     }
 
-    private static string[] TrimValues(string[] values)
-    {
-        for (var i = 0; i < values.Length; i++)
-        {
-            values[i] = values[i].Trim();
-        }
-        return values;
-    }
-
     private static string[] SplitAndTrim(string[] values)
     {
         var result = values.SelectMany(v => v.Split(',').Select(s => s.Trim())).ToArray();
