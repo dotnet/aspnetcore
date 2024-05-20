@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Caching.Hybrid;
 
-namespace Microsoft.Extensions.Caching.Hybrid;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Configuration extension methods for <see cref="IHybridCacheBuilder"/> / <see cref="HybridCache"/>.
@@ -14,7 +14,7 @@ public static class HybridCacheBuilderExtensions
     /// <summary>
     /// Serialize values of type <typeparamref name="T"/> with the specified serializer from <paramref name="serializer"/>.
     /// </summary>
-    public static IHybridCacheBuilder WithSerializer<T>(this IHybridCacheBuilder builder, IHybridCacheSerializer<T> serializer)
+    public static IHybridCacheBuilder AddSerializer<T>(this IHybridCacheBuilder builder, IHybridCacheSerializer<T> serializer)
     {
         builder.Services.AddSingleton<IHybridCacheSerializer<T>>(serializer);
         return builder;
@@ -23,7 +23,7 @@ public static class HybridCacheBuilderExtensions
     /// <summary>
     /// Serialize values of type <typeparamref name="T"/> with the serializer of type <typeparamref name="TImplementation"/>.
     /// </summary>
-    public static IHybridCacheBuilder WithSerializer<T,
+    public static IHybridCacheBuilder AddSerializer<T,
 #if NET5_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
@@ -37,7 +37,7 @@ public static class HybridCacheBuilderExtensions
     /// <summary>
     /// Add <paramref name="factory"/> as an additional serializer factory, which can provide serializers for multiple types.
     /// </summary>
-    public static IHybridCacheBuilder WithSerializerFactory(this IHybridCacheBuilder builder, IHybridCacheSerializerFactory factory)
+    public static IHybridCacheBuilder AddSerializerFactory(this IHybridCacheBuilder builder, IHybridCacheSerializerFactory factory)
     {
         builder.Services.AddSingleton<IHybridCacheSerializerFactory>(factory);
         return builder;
@@ -46,7 +46,7 @@ public static class HybridCacheBuilderExtensions
     /// <summary>
     /// Add a factory of type <typeparamref name="TImplementation"/> as an additional serializer factory, which can provide serializers for multiple types.
     /// </summary>
-    public static IHybridCacheBuilder WithSerializerFactory<
+    public static IHybridCacheBuilder AddSerializerFactory<
 #if NET5_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
