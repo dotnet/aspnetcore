@@ -1870,16 +1870,13 @@ public static partial class RequestDelegateFactory
 
         if (source == "header" && (parameter.ParameterType.IsArray || typeof(IEnumerable<string>).IsAssignableFrom(parameter.ParameterType)))
         {
-            // Convert StringValues to string array
             var stringValuesExpr = Expression.Convert(valueExpression, typeof(StringValues));
             var toStringArrayMethod = typeof(StringValues).GetMethod(nameof(StringValues.ToArray));
             var headerValuesArrayExpr = Expression.Call(stringValuesExpr, toStringArrayMethod);
 
-            // Process each string in the array: split and trim
             var splitAndTrimMethod = typeof(RequestDelegateFactory).GetMethod(nameof(SplitAndTrim), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             var splitAndTrimExpr = Expression.Call(splitAndTrimMethod, headerValuesArrayExpr);
 
-            // Convert the split and trimmed values to the parameter type
             var boundValueExpr = Expression.Convert(splitAndTrimExpr, parameter.ParameterType);
 
             if (!isOptional)
@@ -1897,7 +1894,6 @@ public static partial class RequestDelegateFactory
                 );
 
                 // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
-
                 factoryContext.ExtraLocals.Add(argument);
                 factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
                 return argument;
@@ -1939,8 +1935,6 @@ public static partial class RequestDelegateFactory
                 )
             );
 
-            // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
-
             factoryContext.ExtraLocals.Add(argument);
             factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
             return argument;
@@ -1962,9 +1956,6 @@ public static partial class RequestDelegateFactory
             return valueExpression;
         }
 
-        // The following is produced if the parameter is optional. Note that we convert the
-        // default value to the target ParameterType to address scenarios where the user is
-        // is setting null as the default value in a context where nullability is disabled.
         return Expression.Block(
             Expression.Condition(Expression.NotEqual(valueExpression, Expression.Constant(null)),
                 valueExpression,
