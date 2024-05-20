@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 {
-    public class ClientCertificateAuthenticationTests
+    public class ClientCertificateAuthenticationTests : LoggedTest
     {
 
         [Fact]
@@ -788,7 +788,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(laterExpected, count.First().Value);
         }
 
-        private static async Task<IHost> CreateHost(
+        private async Task<IHost> CreateHost(
             CertificateAuthenticationOptions configureOptions,
             X509Certificate2 clientCertificate = null,
             Func<HttpContext, bool> handler = null,
@@ -847,6 +847,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                         })
                     .ConfigureServices(services =>
                     {
+                        AddTestLogging(services);
+
                         AuthenticationBuilder authBuilder;
                         if (configureOptions != null)
                         {
