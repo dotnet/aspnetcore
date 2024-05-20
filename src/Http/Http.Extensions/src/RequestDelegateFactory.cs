@@ -1896,6 +1896,8 @@ public static partial class RequestDelegateFactory
                     )
                 );
 
+                // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
+
                 factoryContext.ExtraLocals.Add(argument);
                 factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
                 return argument;
@@ -1924,6 +1926,7 @@ public static partial class RequestDelegateFactory
 
         if (!isOptional)
         {
+            // The following is produced if the parameter is optional. 
             var checkRequiredStringParameterBlock = Expression.Block(
                 Expression.Assign(argument, valueExpression),
                 Expression.IfThen(Expression.Equal(argument, Expression.Constant(null)),
@@ -1936,15 +1939,19 @@ public static partial class RequestDelegateFactory
                 )
             );
 
+            // NOTE: when StringValues is used as a parameter, value["some_unpresent_parameter"] returns StringValue.Empty, and it's equivalent to (string?)null
+
             factoryContext.ExtraLocals.Add(argument);
             factoryContext.ParamCheckExpressions.Add(checkRequiredStringParameterBlock);
             return argument;
         }
 
+        // Allow nullable parameters that don't have a default value
         if (nullability.ReadState != NullabilityState.NotNull && !parameter.HasDefaultValue)
         {
             if (parameter.ParameterType == typeof(StringValues?))
             {
+                // when Nullable<StringValues> is used and the actual value is StringValues.Empty, we should pass in a Nullable<StringValues>
                 return Expression.Block(
                     Expression.Condition(Expression.Equal(valueExpression, Expression.Convert(Expression.Constant(StringValues.Empty), parameter.ParameterType)),
                         Expression.Convert(Expression.Constant(null), parameter.ParameterType),
@@ -1955,6 +1962,9 @@ public static partial class RequestDelegateFactory
             return valueExpression;
         }
 
+        // The following is produced if the parameter is optional. Note that we convert the
+        // default value to the target ParameterType to address scenarios where the user is
+        // is setting null as the default value in a context where nullability is disabled.
         return Expression.Block(
             Expression.Condition(Expression.NotEqual(valueExpression, Expression.Constant(null)),
                 valueExpression,
@@ -2906,5 +2916,4 @@ public static partial class RequestDelegateFactory
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;
     }
-
 }
