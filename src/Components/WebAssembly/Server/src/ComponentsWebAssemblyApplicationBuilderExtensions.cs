@@ -23,7 +23,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
     private static readonly string? s_aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
 
     private static string? GetNonEmptyEnvironmentVariableValue(string name)
-        => Environment.GetEnvironmentVariable(name) is { Length: >0 } value ? value : null;
+        => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value ? value : null;
 
     /// <summary>
     /// Configures the application to serve Blazor WebAssembly framework files from the path <paramref name="pathPrefix"/>. This path must correspond to a referenced Blazor WebAssembly application project.

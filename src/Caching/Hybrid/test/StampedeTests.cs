@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.Caching.Memory;
@@ -214,6 +215,7 @@ public class StampedeTests
     [InlineData(10, 0)]
     [InlineData(10, 1)]
     [InlineData(10, 7)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55474")]
     public async Task MultipleCallsShareExecution_MostCancel(int callerCount, int remaining)
     {
         Assert.True(callerCount >= 2); // "most" is not "one"

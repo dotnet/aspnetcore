@@ -67,19 +67,21 @@ public abstract class HybridCache
     /// <summary>
     /// Asynchronously removes the value associated with the key if it exists.
     /// </summary>
-    public abstract ValueTask RemoveKeyAsync(string key, CancellationToken token = default);
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Not ambiguous in context")]
+    public abstract ValueTask RemoveAsync(string key, CancellationToken token = default);
 
     /// <summary>
     /// Asynchronously removes the value associated with the key if it exists.
     /// </summary>
     /// <remarks>Implementors should treat <c>null</c> as empty</remarks>
-    public virtual ValueTask RemoveKeysAsync(IEnumerable<string> keys, CancellationToken token = default)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Not ambiguous in context")]
+    public virtual ValueTask RemoveAsync(IEnumerable<string> keys, CancellationToken token = default)
     {
         return keys switch
         {
             // for consistency with GetOrCreate/Set: interpret null as "none"
             null or ICollection<string> { Count: 0 } => default,
-            ICollection<string> { Count: 1 } => RemoveTagAsync(keys.Single(), token),
+            ICollection<string> { Count: 1 } => RemoveByTagAsync(keys.Single(), token),
             _ => ForEachAsync(this, keys, token),
         };
 
@@ -88,7 +90,7 @@ public abstract class HybridCache
         {
             foreach (var key in keys)
             {
-                await @this.RemoveKeyAsync(key, token).ConfigureAwait(false);
+                await @this.RemoveAsync(key, token).ConfigureAwait(false);
             }
         }
     }
@@ -97,13 +99,14 @@ public abstract class HybridCache
     /// Asynchronously removes all values associated with the specified tags.
     /// </summary>
     /// <remarks>Implementors should treat <c>null</c> as empty</remarks>
-    public virtual ValueTask RemoveTagsAsync(IEnumerable<string> tags, CancellationToken token = default)
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Not ambiguous in context")]
+    public virtual ValueTask RemoveByTagAsync(IEnumerable<string> tags, CancellationToken token = default)
     {
         return tags switch
         {
             // for consistency with GetOrCreate/Set: interpret null as "none"
             null or ICollection<string> { Count: 0 } => default,
-            ICollection<string> { Count: 1 } => RemoveTagAsync(tags.Single(), token),
+            ICollection<string> { Count: 1 } => RemoveByTagAsync(tags.Single(), token),
             _ => ForEachAsync(this, tags, token),
         };
 
@@ -112,7 +115,7 @@ public abstract class HybridCache
         {
             foreach (var key in keys)
             {
-                await @this.RemoveTagAsync(key, token).ConfigureAwait(false);
+                await @this.RemoveByTagAsync(key, token).ConfigureAwait(false);
             }
         }
     }
@@ -120,5 +123,6 @@ public abstract class HybridCache
     /// <summary>
     /// Asynchronously removes all values associated with the specified tag.
     /// </summary>
-    public abstract ValueTask RemoveTagAsync(string tag, CancellationToken token = default);
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Not ambiguous in context")]
+    public abstract ValueTask RemoveByTagAsync(string tag, CancellationToken token = default);
 }

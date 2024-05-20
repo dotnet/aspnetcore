@@ -60,6 +60,10 @@ internal sealed class HostingApplicationDiagnostics
             context.MetricsTagsFeature ??= new HttpMetricsTagsFeature();
             httpContext.Features.Set<IHttpMetricsTagsFeature>(context.MetricsTagsFeature);
 
+            context.MetricsTagsFeature.Method = httpContext.Request.Method;
+            context.MetricsTagsFeature.Protocol = httpContext.Request.Protocol;
+            context.MetricsTagsFeature.Scheme = httpContext.Request.Scheme;
+
             startTimestamp = Stopwatch.GetTimestamp();
 
             // To keep the hot path short we defer logging in this function to non-inlines
@@ -152,19 +156,18 @@ internal sealed class HostingApplicationDiagnostics
             {
                 var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
                 var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-                var customTags = context.MetricsTagsFeature?.TagsList;
+
+                Debug.Assert(context.MetricsTagsFeature != null, "MetricsTagsFeature should be set if MetricsEnabled is true.");
 
                 _metrics.RequestEnd(
-                    httpContext.Request.Protocol,
-                    httpContext.Request.IsHttps,
-                    httpContext.Request.Scheme,
-                    httpContext.Request.Method,
-                    httpContext.Request.Host,
+                    context.MetricsTagsFeature.Protocol!,
+                    context.MetricsTagsFeature.Scheme!,
+                    context.MetricsTagsFeature.Method!,
                     route,
                     httpContext.Response.StatusCode,
                     reachedPipelineEnd,
                     exception,
-                    customTags,
+                    context.MetricsTagsFeature.TagsList,
                     startTimestamp,
                     currentTimestamp);
             }
@@ -372,7 +375,7 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RecordRequestStartMetrics(HttpContext httpContext)
     {
-        _metrics.RequestStart(httpContext.Request.IsHttps, httpContext.Request.Scheme, httpContext.Request.Method, httpContext.Request.Host);
+        _metrics.RequestStart(httpContext.Request.Scheme, httpContext.Request.Method);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

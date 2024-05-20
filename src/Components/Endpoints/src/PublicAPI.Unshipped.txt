@@ -1,3 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions
+static Microsoft.AspNetCore.Components.Endpoints.Infrastructure.ComponentEndpointConventionBuilderHelper.GetEndpointRouteBuilder(Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Routing.IEndpointRouteBuilder!
 static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.AcceptsInteractiveRouting(this Microsoft.AspNetCore.Http.HttpContext! context) -> bool

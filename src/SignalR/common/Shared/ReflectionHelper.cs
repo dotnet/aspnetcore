@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Channels;
@@ -22,18 +24,26 @@ internal static class ReflectionHelper
             return true;
         }
 
-        Type? nullableType = type;
+        return TryGetStreamType(type, out _, mustBeDirectType);
+    }
 
+    public static bool TryGetStreamType(Type streamType, [NotNullWhen(true)] out Type? streamGenericType, bool mustBeDirectType = false)
+    {
+        Type? nullableType = streamType;
         do
         {
             if (nullableType.IsGenericType && nullableType.GetGenericTypeDefinition() == typeof(ChannelReader<>))
             {
+                Debug.Assert(nullableType.GetGenericArguments().Length == 1);
+
+                streamGenericType = nullableType.GetGenericArguments()[0];
                 return true;
             }
 
             nullableType = nullableType.BaseType;
         } while (mustBeDirectType == false && nullableType != null);
 
+        streamGenericType = null;
         return false;
     }
 
