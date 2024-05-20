@@ -3168,6 +3168,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         // Assert
+        Assert.True(httpContext.Items.ContainsKey("headerValue"));
         Assert.Equal("HeaderValue", httpContext.Items["headerValue"]);
     }
 
