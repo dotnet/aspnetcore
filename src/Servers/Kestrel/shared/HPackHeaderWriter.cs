@@ -82,6 +82,24 @@ internal static class HPackHeaderWriter
     }
 
     /// <summary>
+    /// Begin encoding headers in the first HEADERS frame without stepping the iterator.
+    /// </summary>
+    public static HeaderWriteResult RetryBeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+    {
+        length = 0;
+
+        if (!hpackEncoder.EnsureDynamicTableSizeUpdate(buffer, out var sizeUpdateLength))
+        {
+            throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
+        }
+        length += sizeUpdateLength;
+
+        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: true, out var headersLength);
+        length += headersLength;
+        return done;
+    }
+
+    /// <summary>
     /// Continue encoding headers in the next HEADERS frame. The enumerator should already have a current value.
     /// </summary>
     public static HeaderWriteResult ContinueEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
