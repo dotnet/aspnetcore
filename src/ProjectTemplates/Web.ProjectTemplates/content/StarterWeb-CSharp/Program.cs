@@ -132,11 +132,11 @@ app.UseHttpsRedirection();
 #else
 }
 #endif
-app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",

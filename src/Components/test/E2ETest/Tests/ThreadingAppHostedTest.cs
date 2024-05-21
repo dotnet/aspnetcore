@@ -28,7 +28,7 @@ public class ThreadingHostedAppTest
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 
@@ -85,6 +85,7 @@ public class ThreadingHostedAppTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
     public void HasFetchDataPage()
     {
         // Navigate to "Fetch data"

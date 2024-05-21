@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -16,7 +17,13 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 /// </summary>
 internal sealed class Key : IKey
 {
-    private readonly Lazy<IAuthenticatedEncryptorDescriptor> _lazyDescriptor;
+    private IAuthenticatedEncryptorDescriptor? _descriptor;
+
+    // If descriptor is available at construction time, these will remain null forever
+    private readonly object? _descriptorLock; // Protects _descriptor and _descriptorException
+    private readonly Func<IAuthenticatedEncryptorDescriptor>? _descriptorFactory; // May not be used
+    private Exception? _descriptorException;
+
     private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
 
     private IAuthenticatedEncryptor? _encryptor;
@@ -36,8 +43,10 @@ internal sealed class Key : IKey
               creationDate,
               activationDate,
               expirationDate,
-              new Lazy<IAuthenticatedEncryptorDescriptor>(() => descriptor),
-              encryptorFactories)
+              encryptorFactories,
+              descriptor,
+              descriptorFactory: null,
+              descriptorException: null)
     {
     }
 
@@ -57,8 +66,29 @@ internal sealed class Key : IKey
               creationDate,
               activationDate,
               expirationDate,
-              new Lazy<IAuthenticatedEncryptorDescriptor>(GetLazyDescriptorDelegate(keyManager, keyElement)),
-              encryptorFactories)
+              encryptorFactories,
+              descriptor: null,
+              descriptorFactory: GetLazyDescriptorDelegate(keyManager, keyElement),
+              descriptorException: null)
+    {
+    }
+
+    // internal for testing
+    internal Key(
+        Guid keyId,
+        DateTimeOffset creationDate,
+        DateTimeOffset activationDate,
+        DateTimeOffset expirationDate,
+        IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories,
+        Func<IAuthenticatedEncryptorDescriptor>? descriptorFactory)
+        : this(keyId,
+              creationDate,
+              activationDate,
+              expirationDate,
+              encryptorFactories,
+              descriptor: null,
+              descriptorFactory: descriptorFactory,
+              descriptorException: null)
     {
     }
 
@@ -67,15 +97,20 @@ internal sealed class Key : IKey
         DateTimeOffset creationDate,
         DateTimeOffset activationDate,
         DateTimeOffset expirationDate,
-        Lazy<IAuthenticatedEncryptorDescriptor> lazyDescriptor,
-        IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories)
+        IEnumerable<IAuthenticatedEncryptorFactory> encryptorFactories,
+        IAuthenticatedEncryptorDescriptor? descriptor,
+        Func<IAuthenticatedEncryptorDescriptor>? descriptorFactory,
+        Exception? descriptorException)
     {
         KeyId = keyId;
         CreationDate = creationDate;
         ActivationDate = activationDate;
         ExpirationDate = expirationDate;
-        _lazyDescriptor = lazyDescriptor;
         _encryptorFactories = encryptorFactories;
+        _descriptor = descriptor;
+        _descriptorFactory = descriptorFactory;
+        _descriptorException = descriptorException;
+        _descriptorLock = descriptor is null ? new() : null;
     }
 
     public DateTimeOffset ActivationDate { get; }
@@ -92,7 +127,56 @@ internal sealed class Key : IKey
     {
         get
         {
-            return _lazyDescriptor.Value;
+            // We could check for _descriptorException here, but there's no reason to optimize that case
+            // (i.e. by avoiding taking the lock)
+
+            if (_descriptor is not null) // Can only go from null to non-null, so losing a race here doesn't matter
+            {
+                Debug.Assert(_descriptorException is null); // Mutually exclusive with _descriptor
+                return _descriptor;
+            }
+
+            lock (_descriptorLock!)
+            {
+                if (_descriptorException is not null)
+                {
+                    throw _descriptorException;
+                }
+
+                if (_descriptor is not null)
+                {
+                    return _descriptor;
+                }
+
+                Debug.Assert(_descriptorFactory is not null, "Key constructed without either descriptor or descriptor factory");
+
+                try
+                {
+                    _descriptor = _descriptorFactory();
+                    return _descriptor;
+                }
+                catch (Exception ex)
+                {
+                    _descriptorException = ex;
+                    throw;
+                }
+            }
+        }
+    }
+
+    internal void ResetDescriptor()
+    {
+        if (_descriptor is not null)
+        {
+            Debug.Fail("ResetDescriptor called with descriptor available");
+            Debug.Assert(_descriptorException is null); // Mutually exclusive with _descriptor
+            return;
+        }
+
+        lock (_descriptorLock!)
+        {
+            _descriptor = null;
+            _descriptorException = null;
         }
     }
 
@@ -121,13 +205,16 @@ internal sealed class Key : IKey
 
     internal Key Clone()
     {
+        // Note that we don't reuse _descriptorLock
         return new Key(
             keyId: KeyId,
             creationDate: CreationDate,
             activationDate: ActivationDate,
             expirationDate: ExpirationDate,
-            lazyDescriptor: _lazyDescriptor,
-            encryptorFactories: _encryptorFactories)
+            encryptorFactories: _encryptorFactories,
+            descriptor: _descriptor,
+            descriptorFactory: _descriptorFactory,
+            descriptorException: _descriptorException)
         {
             IsRevoked = IsRevoked,
         };

@@ -29,11 +29,6 @@
     <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/*4.5.3*" />
 
-    <!--
-      To be removed when the SDK is bringing this version, see https://github.com/dotnet/aspnetcore/issues/51339
-      -->
-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Ref/*8.0*" />
-
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
     <UsagePattern IdentityGlob="Microsoft.NET.ILLink.Tasks/*9.0.*" />
     <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*9.0.*" />
@@ -41,5 +36,9 @@
     <!-- Transivite dependency of Microsoft.CodeAnalysis.ExternalAccess.AspNetCore -> Microsoft.CodeAnalysis.Features.
          In product build the dependency is bumped to latest, which also bumps the version of DiaSymReader  -->
     <UsagePattern IdentityGlob="Microsoft.DiaSymReader/*2.0.0*" />
+
+    <!-- Transitive dependency of Roslyn dependencies. -->
+    <UsagePattern IdentityGlob="System.Text.Json/8.0.0*" />
+    <UsagePattern IdentityGlob="System.Text.Encodings.Web/8.0.0*" />
   </IgnorePatterns>
 </UsageData>

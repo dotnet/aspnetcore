@@ -12,12 +12,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
 {
-    private static readonly JsonSerializerOptions JsonOptions = new();
-
     [Fact]
     public void CanResolve_AccessTokenProvider()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddApiAuthorization();
         var host = builder.Build();
 
@@ -27,7 +25,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void CanResolve_IRemoteAuthenticationService()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddApiAuthorization();
         var host = builder.Build();
 
@@ -37,7 +35,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationOptions_ConfigurationDefaultsGetApplied()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddApiAuthorization();
         var host = builder.Build();
 
@@ -71,7 +69,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationOptionsConfigurationCallback_GetsCalledOnce()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var calls = 0;
         builder.Services.AddApiAuthorization(options =>
         {
@@ -98,7 +96,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationTestAuthenticationState_SetsUpConfiguration()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var calls = 0;
         builder.Services.AddApiAuthorization<TestAuthenticationState>(options => calls++);
 
@@ -124,7 +122,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationTestAuthenticationState_NoCallback_SetsUpConfiguration()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddApiAuthorization<TestAuthenticationState>();
 
         var host = builder.Build();
@@ -147,7 +145,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationCustomAuthenticationStateAndAccount_SetsUpConfiguration()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var calls = 0;
         builder.Services.AddApiAuthorization<TestAuthenticationState, TestAccount>(options => calls++);
 
@@ -173,7 +171,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationTestAuthenticationStateAndAccount_NoCallback_SetsUpConfiguration()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddApiAuthorization<TestAuthenticationState, TestAccount>();
 
         var host = builder.Build();
@@ -196,7 +194,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void ApiAuthorizationOptions_DefaultsCanBeOverriden()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddApiAuthorization(options =>
         {
             options.AuthenticationPaths.LogInPath = "a";
@@ -247,7 +245,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void OidcOptions_ConfigurationDefaultsGetApplied()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.Replace(ServiceDescriptor.Singleton<NavigationManager, TestNavigationManager>());
         builder.Services.AddOidcAuthentication(options => { });
         var host = builder.Build();
@@ -286,7 +284,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void OidcOptions_DefaultsCanBeOverriden()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         builder.Services.AddOidcAuthentication(options =>
         {
             options.AuthenticationPaths.LogInPath = "a";
@@ -348,7 +346,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void AddOidc_ConfigurationGetsCalledOnce()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var calls = 0;
 
         builder.Services.AddOidcAuthentication(options => calls++);
@@ -365,7 +363,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void AddOidc_CustomState_SetsUpConfiguration()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var calls = 0;
 
         builder.Services.AddOidcAuthentication<TestAuthenticationState>(options => options.ProviderOptions.Authority = (++calls).ToString(CultureInfo.InvariantCulture));
@@ -387,7 +385,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void AddOidc_CustomStateAndAccount_SetsUpConfiguration()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var calls = 0;
 
         builder.Services.AddOidcAuthentication<TestAuthenticationState, TestAccount>(options => options.ProviderOptions.Authority = (++calls).ToString(CultureInfo.InvariantCulture));
@@ -409,7 +407,7 @@ public class WebAssemblyAuthenticationServiceCollectionExtensionsTests
     [Fact]
     public void OidcProviderOptionsAndDependencies_NotResolvedFromRootScope()
     {
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(), JsonOptions);
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
 
         var calls = 0;
 
