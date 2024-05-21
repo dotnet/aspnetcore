@@ -23,5 +23,9 @@ public class GetDocumentCommandContext
     // Defaults to runtime option if not provided.
     public string OpenApiVersion { get; set; }
 
+    // The name of the OpenAPI document to generate.
+    // Generates all documents if not provided.
+    public string DocumentName { get; set; }
+
     public IReporter Reporter { get; set; }
 }

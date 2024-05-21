@@ -197,4 +197,7 @@
   <data name="OpenApiVersionDescription" xml:space="preserve">
     <value>The OpenAPI spec version to use when generating the document. Optional.</value>
   </data>
+  <data name="DocumentNameDescription" xml:space="preserve">
+    <value>The name of the OpenAPI document to generate. Optional.</value>
+  </data>
 </root>

@@ -236,7 +236,10 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
-        var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
+        // If an explicit document name is provided, then generate only that document.
+        var documentNames = _context.DocumentName != null
+            ? [_context.DocumentName]
+            : (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
             return false;

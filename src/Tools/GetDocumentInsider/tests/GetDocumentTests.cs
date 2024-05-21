@@ -67,4 +67,30 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.Equal(OpenApiSpecVersion.OpenApi2_0, diagnostic.SpecificationVersion);
         Assert.Equal("GetDocumentSample | v1", document.Info.Title);
     }
+
+    [Fact]
+    public void GetDocument_WithDocumentName_Works()
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--document-name", "internal"
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+        var document = new OpenApiStreamReader().Read(File.OpenRead(Path.Combine(outputPath.FullName, "Sample_internal.json")), out var diagnostic);
+        Assert.Empty(diagnostic.Errors);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_0, diagnostic.SpecificationVersion);
+        // Document name in the title gives us a clue that the correct document was actually resolved
+        Assert.Equal("GetDocumentSample | internal", document.Info.Title);
+    }
 }

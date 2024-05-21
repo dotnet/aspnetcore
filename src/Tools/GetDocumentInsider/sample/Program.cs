@@ -10,12 +10,15 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddOpenApi();
+        builder.Services.AddOpenApi("internal");
 
         var app = builder.Build();
 
         app.MapOpenApi();
 
         app.MapGet("/hello/{name}", (string name) => $"Hello {name}!");
+        app.MapGet("/bye/{name}", (string name) => $"Bye {name}!")
+            .WithGroupName("internal");
 
         app.Run();
     }
