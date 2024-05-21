@@ -135,13 +135,13 @@ public class UseMiddlewareTest
     public async Task UseMiddleware_ThrowsIfKeyedArgCantBeResolvedFromContainer()
     {
         var builder = new ApplicationBuilder(new DummyKeyedServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvokeNoService));
+        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvoke));
         var app = builder.Build();
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app(new DefaultHttpContext()));
         Assert.Equal(
             Resources.FormatException_InvokeMiddlewareNoService(
-                typeof(object),
-                typeof(MiddlewareKeyedInjectInvokeNoService)),
+                typeof(IKeyedServiceProvider),
+                typeof(MiddlewareKeyedInjectInvoke)),
             exception.Message);
     }
 
@@ -149,7 +149,7 @@ public class UseMiddlewareTest
     public async Task UseMiddleware_ThrowsIfServiceProviderIsNotAIKeyedServiceProvider()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
-        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvokeNoService));
+        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvoke));
         var app = builder.Build();
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app(new DefaultHttpContext()));
         Assert.Equal(
@@ -377,13 +377,6 @@ public class UseMiddlewareTest
         public MiddlewareInjectInvokeNoService(RequestDelegate next) { }
 
         public Task Invoke(HttpContext context, object value) => Task.CompletedTask;
-    }
-
-    private class MiddlewareKeyedInjectInvokeNoService
-    {
-        public MiddlewareKeyedInjectInvokeNoService(RequestDelegate next) { }
-
-        public Task Invoke(HttpContext context, [FromKeyedServices("test")] object value) => Task.CompletedTask;
     }
 
     private class MiddlewareInjectInvoke
