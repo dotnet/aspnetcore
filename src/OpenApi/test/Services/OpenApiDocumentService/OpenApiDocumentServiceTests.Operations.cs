@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests
@@ -178,4 +180,58 @@ public partial class OpenApiDocumentServiceTests
             });
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiOperation_CapturesEndpointNameAsOperationId()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { }).WithName("GetTodos");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            Assert.Equal("GetTodos", operation.OperationId);
+
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiOperation_CapturesEndpointNameAttributeAsOperationId()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", [EndpointName("GetTodos")] () => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            Assert.Equal("GetTodos", operation.OperationId);
+
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiOperation_CapturesRouteAttributeAsOperationId()
+    {
+        // Act
+        var action = CreateActionDescriptor(nameof(ActionWithRouteAttributeName));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            Assert.Equal("GetTodos", operation.OperationId);
+
+        });
+    }
+
+    [Route("/api/todos", Name = "GetTodos")]
+    private void ActionWithRouteAttributeName() { }
 }
