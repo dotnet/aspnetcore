@@ -29,7 +29,7 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
 
     /// <summary>
     /// Serializes the OpenAPI document associated with a given document name to
-    /// the provided writer.
+    /// the provided writer under the provided OpenAPI spec version.
     /// </summary>
     /// <param name="documentName">The name of the document to resolve.</param>
     /// <param name="writer">A text writer associated with the document to write to.</param>
