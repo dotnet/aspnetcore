@@ -1,8 +1,4 @@
 #if (IndividualLocalAuth)
-using Microsoft.AspNetCore.Components.Authorization;
-#if (!UseServer && !UseWebAssembly)
-using Microsoft.AspNetCore.Components.Server;
-#endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
@@ -22,11 +18,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseWebAssembly)
+    #if (UseServer && UseWebAssembly && IndividualLocalAuth)
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents()
+    .AddAuthenticationStateSerialization();
+    #elif (UseServer && UseWebAssembly)
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
     #elif (UseServer)
     .AddInteractiveServerComponents();
+    #elif (UseWebAssembly && IndividualLocalAuth)
+    .AddInteractiveWebAssemblyComponents()
+    .AddAuthenticationStateSerialization();
     #elif (UseWebAssembly)
     .AddInteractiveWebAssemblyComponents();
     #endif
@@ -36,19 +39,10 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
-#if (UseServer && UseWebAssembly)
-builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
-#elif (UseServer)
+#if (UseServer)
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-#elif (UseWebAssembly)
-builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
-#else
-builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 #endif
 
-#if (!UseServer)
-builder.Services.AddAuthorization();
-#endif
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
