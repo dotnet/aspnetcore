@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddSingleton<AsyncOperationService>();
 builder.Services.AddCascadingAuthenticationState();
-
-var additionalClaim = DefaultWebAssemblyJSRuntime.Instance.Invoke<string>("getQueryParam", "additionalClaim");
 
 builder.Services.AddAuthenticationStateDeserialization(options =>
 {
@@ -18,12 +16,23 @@ builder.Services.AddAuthenticationStateDeserialization(options =>
     options.DeserializationCallback = async authenticationStateData =>
     {
         var authenticationState = await originalCallback(authenticationStateData);
-        if (!string.IsNullOrEmpty(additionalClaim))
+        var identity = authenticationState.User.Identities.First();
+        if (identity.IsAuthenticated)
         {
-            authenticationState.User.Identities.First().AddClaim(new Claim("additional-claim", additionalClaim));
+            var additionalClaim = JSImports.GetQueryParam("additionalClaim");
+            if (!string.IsNullOrEmpty(additionalClaim))
+            {
+                identity.AddClaim(new Claim("additional-claim", additionalClaim));
+            }
         }
         return authenticationState;
     };
 });
 
 await builder.Build().RunAsync();
+
+internal static partial class JSImports
+{
+    [JSImport("globalThis.getQueryParam")]
+    public static partial string GetQueryParam(string name);
+}

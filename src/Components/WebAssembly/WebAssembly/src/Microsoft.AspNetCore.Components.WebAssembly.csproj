@@ -49,7 +49,6 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
     <InternalsVisibleTo Include="BasicTestApp" />
-    <InternalsVisibleTo Include="Components.WasmMinimal" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -40,7 +40,6 @@ public static class RazorComponentsServiceCollectionExtensions
         // Dependencies
         services.AddLogging();
         services.AddAntiforgery();
-        services.AddAuthorizationCore();
 
         services.TryAddSingleton<RazorComponentsMarkerService>();
 

@@ -1,4 +1,7 @@
 #if (IndividualLocalAuth)
+#if (UseServer)
+using Microsoft.AspNetCore.Components.Authorization;
+#endif
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
@@ -55,6 +58,9 @@ public class Program
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             })
             .AddIdentityCookies();
+        #if (!UseServer)
+        builder.Services.AddAuthorization();
+        #endif
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
