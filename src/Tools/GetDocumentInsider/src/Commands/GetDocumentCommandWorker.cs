@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Tools.Internal;
+using Microsoft.OpenApi;
 #if NET7_0_OR_GREATER
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,18 +28,19 @@ internal sealed class GetDocumentCommandWorker
     private const string InvalidFilenameString = "..";
     private const string JsonExtension = ".json";
     private const string UnderscoreString = "_";
-    private static readonly char[] InvalidFilenameCharacters = Path.GetInvalidFileNameChars();
-    private static readonly Encoding UTF8EncodingWithoutBOM
+    private static readonly char[] _invalidFilenameCharacters = Path.GetInvalidFileNameChars();
+    private static readonly Encoding _utf8EncodingWithoutBOM
         = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     private const string GetDocumentsMethodName = "GetDocumentNames";
-    private static readonly object[] GetDocumentsArguments = Array.Empty<object>();
-    private static readonly Type[] GetDocumentsParameterTypes = Type.EmptyTypes;
-    private static readonly Type GetDocumentsReturnType = typeof(IEnumerable<string>);
+    private static readonly object[] _getDocumentsArguments = Array.Empty<object>();
+    private static readonly Type[] _getDocumentsParameterTypes = Type.EmptyTypes;
+    private static readonly Type _getDocumentsReturnType = typeof(IEnumerable<string>);
 
     private const string GenerateMethodName = "GenerateAsync";
-    private static readonly Type[] GenerateMethodParameterTypes = new[] { typeof(string), typeof(TextWriter) };
-    private static readonly Type GenerateMethodReturnType = typeof(Task);
+    private static readonly Type[] _generateMethodParameterTypes = [typeof(string), typeof(TextWriter)];
+    private static readonly Type[] _generateWithVersionMethodParameterTypes = [typeof(string), typeof(TextWriter), typeof(OpenApiSpecVersion)];
+    private static readonly Type _generateMethodReturnType = typeof(Task);
 
     private readonly GetDocumentCommandContext _context;
     private readonly IReporter _reporter;
@@ -110,7 +112,7 @@ internal sealed class GetDocumentCommandWorker
         try
         {
             // Retrieve the service provider from the target host.
-            var services = ((IHost)factory(new[] { $"--{HostDefaults.ApplicationKey}={assemblyName}" })).Services;
+            var services = ((IHost)factory([$"--{HostDefaults.ApplicationKey}={assemblyName}"])).Services;
             if (services == null)
             {
                 _reporter.WriteError(Resources.FormatServiceProviderNotFound(
@@ -206,18 +208,22 @@ internal sealed class GetDocumentCommandWorker
         var getDocumentsMethod = GetMethod(
             GetDocumentsMethodName,
             serviceType,
-            GetDocumentsParameterTypes,
-            GetDocumentsReturnType);
+            _getDocumentsParameterTypes,
+            _getDocumentsReturnType);
         if (getDocumentsMethod == null)
         {
             return false;
         }
 
+        var generateWithVersionMethod = serviceType.GetMethod(
+            GenerateMethodName,
+            _generateWithVersionMethodParameterTypes);
+
         var generateMethod = GetMethod(
             GenerateMethodName,
             serviceType,
-            GenerateMethodParameterTypes,
-            GenerateMethodReturnType);
+            _generateMethodParameterTypes,
+            _generateMethodReturnType);
         if (generateMethod == null)
         {
             return false;
@@ -230,7 +236,7 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
-        var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, GetDocumentsArguments);
+        var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
             return false;
@@ -247,7 +253,8 @@ internal sealed class GetDocumentCommandWorker
                 _context.ProjectName,
                 _context.OutputDirectory,
                 generateMethod,
-                service);
+                service,
+                generateWithVersionMethod);
             if (filePath == null)
             {
                 return false;
@@ -275,15 +282,19 @@ internal sealed class GetDocumentCommandWorker
         string projectName,
         string outputDirectory,
         MethodInfo generateMethod,
-        object service)
+        object service,
+        MethodInfo? generateWithVersionMethod)
     {
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
         using var stream = new MemoryStream();
-        using (var writer = new StreamWriter(stream, UTF8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
+        using (var writer = new StreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
         {
-            var arguments = new object[] { documentName, writer };
-            using var resultTask = (Task)InvokeMethod(generateMethod, service, arguments);
+            var targetMethod = generateWithVersionMethod ?? generateMethod;
+            object[] arguments = generateWithVersionMethod != null
+                ? [documentName, writer, Enum.TryParse<OpenApiSpecVersion>(_context.OpenApiVersion, out var version) ? version : OpenApiSpecVersion.OpenApi3_0]
+                : [documentName, writer];
+            using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);
             if (resultTask == null)
             {
                 return null;
@@ -338,7 +349,7 @@ internal sealed class GetDocumentCommandWorker
             // characters such as '/' and '?' and the string "..". Do not treat slashes as folder separators.
             var sanitizedDocumentName = string.Join(
                 UnderscoreString,
-                documentName.Split(InvalidFilenameCharacters));
+                documentName.Split(_invalidFilenameCharacters));
 
             while (sanitizedDocumentName.Contains(InvalidFilenameString))
             {
@@ -395,19 +406,19 @@ internal sealed class GetDocumentCommandWorker
     }
 
 #if NET7_0_OR_GREATER
-        private sealed class NoopHostLifetime : IHostLifetime
-        {
-            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-            public Task WaitForStartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-        }
+    private sealed class NoopHostLifetime : IHostLifetime
+    {
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task WaitForStartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
 
-        private sealed class NoopServer : IServer
-        {
-            public IFeatureCollection Features { get; } = new FeatureCollection();
-            public void Dispose() { }
-            public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) => Task.CompletedTask;
-            public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    private sealed class NoopServer : IServer
+    {
+        public IFeatureCollection Features { get; } = new FeatureCollection();
+        public void Dispose() { }
+        public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        }
+    }
 #endif
 }

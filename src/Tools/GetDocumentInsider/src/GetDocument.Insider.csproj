@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.OpenApi" />
     <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
