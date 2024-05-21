@@ -13,7 +13,7 @@
   <ItemGroup>
     <Reference Include="GetDocument.Insider" />
     <Reference Include="Microsoft.OpenApi.Readers" />
-    <ProjectReference Include="$(RepoRoot)\src\Tools\GetDocumentInsider\sample\Sample.csproj" />
+    <ProjectReference Include="$(RepoRoot)\src\Tools\GetDocumentInsider\sample\GetDocumentSample.csproj" />
   </ItemGroup>
 
 </Project>
