@@ -104,6 +104,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Gets or sets the callback event that is triggered when a row in the grid is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<TGridItem> OnRowClicked { get; set; }
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -439,6 +444,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // The JS side may routinely be gone already if the reason we're disposing is that
             // the client disconnected. This is not an error.
         }
+    }
+    private Task HandleRowClick(TGridItem item)
+    {
+        return OnRowClicked.InvokeAsync(item);
     }
 
     private void CloseColumnOptions()
