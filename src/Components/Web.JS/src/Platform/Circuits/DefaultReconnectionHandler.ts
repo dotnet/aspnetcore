@@ -68,7 +68,11 @@ class ReconnectionProcess {
 
       let retryInterval: number;
       if (typeof(options.retryIntervalMilliseconds) === 'function') {
-        retryInterval = options.retryIntervalMilliseconds(currentAttempt);
+        const computedRetryInterval = options.retryIntervalMilliseconds(currentAttempt);
+        if (computedRetryInterval === null || computedRetryInterval === undefined) {
+          break;
+        }
+        retryInterval = computedRetryInterval;
       } else {
         retryInterval = i === 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
           ? ReconnectionProcess.MaximumFirstRetryInterval
@@ -111,14 +115,18 @@ class ReconnectionProcess {
     }
 
     let lastTime = Date.now();
+    let timeoutId: unknown;
     let resolveTimerPromise: () => void;
 
     callback(totalTimeMs);
-    setTimeout(step, intervalMs);
 
-    await new Promise<void>(resolve => resolveTimerPromise = resolve);
+    const step = () => {
+      if (this.isDisposed) {
+        // Stop invoking the callback
+        resolveTimerPromise();
+        return;
+      }
 
-    function step() {
       const currentTime = Date.now();
       const deltaTime = currentTime - lastTime;
       lastTime = currentTime;
@@ -131,7 +139,7 @@ class ReconnectionProcess {
       const simulatedTime = intervalMs * simulatedSteps;
 
       totalTimeMs -= simulatedTime;
-      if (totalTimeMs <= 0) {
+      if (totalTimeMs < Number.EPSILON) {
         callback(0);
         resolveTimerPromise();
         return;
@@ -139,7 +147,23 @@ class ReconnectionProcess {
 
       const nextTimeout = Math.min(totalTimeMs, intervalMs - (deltaTime - simulatedTime));
       callback(totalTimeMs);
-      setTimeout(step, nextTimeout);
-    }
+      timeoutId = setTimeout(step, nextTimeout);
+    };
+
+    const stepIfDocumentIsVisible = () => {
+      // If the document becomes visible while the timeout is running, immediately
+      // invoke the callback.
+      if (document.visibilityState === 'visible') {
+        clearTimeout(timeoutId as number);
+        callback(0);
+        resolveTimerPromise();
+      }
+    };
+
+    timeoutId = setTimeout(step, intervalMs);
+
+    document.addEventListener('visibilitychange', stepIfDocumentIsVisible);
+    await new Promise<void>(resolve => resolveTimerPromise = resolve);
+    document.removeEventListener('visibilitychange', stepIfDocumentIsVisible);
   }
 }

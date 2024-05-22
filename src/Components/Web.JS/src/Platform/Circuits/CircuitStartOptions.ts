@@ -35,7 +35,7 @@ export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): Circ
 
 export interface ReconnectionOptions {
   maxRetries: number;
-  retryIntervalMilliseconds: number | ((attempt: number) => number);
+  retryIntervalMilliseconds: number | ((attempt: number) => number | undefined | null);
   dialogId: string;
 }
 
@@ -49,8 +49,21 @@ export interface ReconnectionHandler {
   onConnectionUp(): void;
 }
 
-// eslint-disable-next-line array-element-newline, array-bracket-newline
-const defaultRetryIntervalsSeconds = [1, 3, 5, 10, 15, 30];
+function computeDefaultRetryInterval(attempt: number): number {
+  if (attempt <= 10) {
+    // Retry as quickly as possible for the first 10 tries
+    return 0;
+  }
+
+  if (attempt <= 20) {
+    // Retry every 5 seconds for the next 10 tries
+    return 5000;
+  }
+
+  // Then retry every 30 seconds indefinitely
+  return 30000;
+}
+
 const defaultOptions: CircuitStartOptions = {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   configureSignalR: (_) => { },
@@ -58,8 +71,8 @@ const defaultOptions: CircuitStartOptions = {
   initializers: undefined!,
   circuitHandlers: [],
   reconnectionOptions: {
-    maxRetries: 8,
-    retryIntervalMilliseconds: (attempt) => 1000 * (defaultRetryIntervalsSeconds[attempt - 1] ?? defaultRetryIntervalsSeconds.at(-1)),
+    maxRetries: Number.MAX_SAFE_INTEGER,
+    retryIntervalMilliseconds: computeDefaultRetryInterval,
     dialogId: 'components-reconnect-modal',
   },
 };
