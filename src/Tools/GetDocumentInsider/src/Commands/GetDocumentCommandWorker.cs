@@ -44,7 +44,7 @@ internal sealed class GetDocumentCommandWorker
     private readonly IReporter _reporter;
     private readonly string _environment;
 
-    public GetDocumentCommandWorker(GetDocumentCommandContext context, string environment) // Modify constructor
+    public GetDocumentCommandWorker(GetDocumentCommandContext context, string environment)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _reporter = context.Reporter;
@@ -53,7 +53,6 @@ internal sealed class GetDocumentCommandWorker
 
     public int Process()
     {
-        // Set the environment variable if specified
         var assemblyName = new AssemblyName(_context.AssemblyName);
         var assembly = Assembly.Load(assemblyName);
         var entryPointType = assembly.EntryPoint?.DeclaringType;
@@ -72,7 +71,6 @@ internal sealed class GetDocumentCommandWorker
             {
                 services.AddSingleton<IServer, NoopServer>();
                 services.AddSingleton<IHostLifetime, NoopHostLifetime>();
-
             })
              .ConfigureAppConfiguration((context, config) =>
             {
