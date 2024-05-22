@@ -27,7 +27,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
-        ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
+        ? new UserSpecifiedDisplay(modal, document, options.maxRetries)
         : new DefaultReconnectDisplay(options.dialogId, document);
     }
 
@@ -63,12 +63,10 @@ class ReconnectionProcess {
   }
 
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
-    for (let i = 0; i < options.maxRetries; i++) {
-      const currentAttempt = i + 1;
-
+    for (let i = 0; options.maxRetries === undefined || i < options.maxRetries; i++) {
       let retryInterval: number;
       if (typeof(options.retryIntervalMilliseconds) === 'function') {
-        const computedRetryInterval = options.retryIntervalMilliseconds(currentAttempt);
+        const computedRetryInterval = options.retryIntervalMilliseconds(i);
         if (computedRetryInterval === null || computedRetryInterval === undefined) {
           break;
         }
@@ -80,7 +78,7 @@ class ReconnectionProcess {
       }
 
       await this.runTimer(retryInterval, /* intervalMs */ 1000, remainingMs => {
-        this.reconnectDisplay.update(currentAttempt, Math.round(remainingMs / 1000));
+        this.reconnectDisplay.update(i + 1, Math.round(remainingMs / 1000));
       });
 
       if (this.isDisposed) {

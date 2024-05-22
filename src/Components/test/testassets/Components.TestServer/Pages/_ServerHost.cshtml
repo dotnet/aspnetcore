@@ -50,7 +50,16 @@
         }
     </script>
     
-    <script src="_framework/blazor.server.js"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            reconnectionOptions: {
+                // It's easier to test the reconnection logic if we wait a bit
+                // before attempting to reconnect
+                retryIntervalMilliseconds: 5000,
+            },
+        });
+    </script>
     <script src="js/jsRootComponentInitializers.js"></script>
 
     <!-- Used by ExternalContentPackage -->

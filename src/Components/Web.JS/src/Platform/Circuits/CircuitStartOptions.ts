@@ -28,14 +28,19 @@ export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): Circ
   // The spread operator can't be used for a deep merge, so do the same for subproperties
   if (userOptions && userOptions.reconnectionOptions) {
     result.reconnectionOptions = { ...defaultOptions.reconnectionOptions, ...userOptions.reconnectionOptions };
+
+    if (typeof(result.reconnectionOptions.retryIntervalMilliseconds) !== 'function' && result.reconnectionOptions.maxRetries === undefined) {
+      // For backwards compatibility, use default max retry count when a non-function retry interval is specified
+      result.reconnectionOptions.maxRetries = 8;
+    }
   }
 
   return result;
 }
 
 export interface ReconnectionOptions {
-  maxRetries: number;
-  retryIntervalMilliseconds: number | ((attempt: number) => number | undefined | null);
+  maxRetries?: number;
+  retryIntervalMilliseconds: number | ((previousAttempts: number, maxRetries?: number) => number | undefined | null);
   dialogId: string;
 }
 
@@ -49,13 +54,17 @@ export interface ReconnectionHandler {
   onConnectionUp(): void;
 }
 
-function computeDefaultRetryInterval(attempt: number): number {
-  if (attempt <= 10) {
+function computeDefaultRetryInterval(previousAttempts: number, maxRetries?: number): number | null {
+  if (maxRetries && previousAttempts >= maxRetries) {
+    return null;
+  }
+
+  if (previousAttempts < 10) {
     // Retry as quickly as possible for the first 10 tries
     return 0;
   }
 
-  if (attempt <= 20) {
+  if (previousAttempts < 20) {
     // Retry every 5 seconds for the next 10 tries
     return 5000;
   }
@@ -71,7 +80,6 @@ const defaultOptions: CircuitStartOptions = {
   initializers: undefined!,
   circuitHandlers: [],
   reconnectionOptions: {
-    maxRetries: Number.MAX_SAFE_INTEGER,
     retryIntervalMilliseconds: computeDefaultRetryInterval,
     dialogId: 'components-reconnect-modal',
   },
