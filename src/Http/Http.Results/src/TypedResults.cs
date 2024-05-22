@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
@@ -760,7 +761,7 @@ public static class TypedResults
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         var problemDetails = new ProblemDetails
         {
@@ -771,7 +772,7 @@ public static class TypedResults
             Type = type,
         };
 
-        CopyExtensions(extensions, problemDetails);
+        CopyExtensions(extensions?.ToFrozenDictionary(), problemDetails);
 
         return new(problemDetails);
     }
@@ -810,16 +811,16 @@ public static class TypedResults
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
     public static ValidationProblem ValidationProblem(
-        IDictionary<string, string[]> errors,
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         ArgumentNullException.ThrowIfNull(errors);
 
-        var problemDetails = new HttpValidationProblemDetails(errors)
+        var problemDetails = new HttpValidationProblemDetails(errors.ToFrozenDictionary())
         {
             Detail = detail,
             Instance = instance,
@@ -828,7 +829,7 @@ public static class TypedResults
 
         problemDetails.Title = title ?? problemDetails.Title;
 
-        CopyExtensions(extensions, problemDetails);
+        CopyExtensions(extensions?.ToFrozenDictionary(), problemDetails);
 
         return new(problemDetails);
     }

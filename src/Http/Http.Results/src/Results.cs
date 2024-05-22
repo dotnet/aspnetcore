@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Security.Claims;
@@ -717,7 +718,7 @@ public static partial class Results
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
         => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
 
     /// <summary>
@@ -741,16 +742,16 @@ public static partial class Results
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult ValidationProblem(
-        IDictionary<string, string[]> errors,
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
-        var problemDetails = new HttpValidationProblemDetails(errors)
+        var problemDetails = new HttpValidationProblemDetails(errors.ToFrozenDictionary())
         {
             Detail = detail,
             Instance = instance,
@@ -760,7 +761,7 @@ public static partial class Results
 
         problemDetails.Title = title ?? problemDetails.Title;
 
-        CopyExtensions(extensions, problemDetails);
+        CopyExtensions(extensions?.ToFrozenDictionary(), problemDetails);
 
         return TypedResults.Problem(problemDetails);
     }
