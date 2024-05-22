@@ -87,7 +87,7 @@
     {
         foreach (var col in _columns)
         {
-            <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
+            <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col" title="@col.Title">
                 <div class="col-header-content">@col.HeaderContent</div>
 
                 @if (col == _displayOptionsForColumn)
