@@ -89,6 +89,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._connection = await this.startConnection();
 
     if (this._connection.state !== HubConnectionState.Connected) {
+      this.setCircuitStatus('disconnected');
       return false;
     }
 
@@ -102,8 +103,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     );
 
     if (!this._circuitId) {
+      this.setCircuitStatus('disconnected');
       return false;
     }
+
+    this.setCircuitStatus('connected');
 
     for (const handler of this._options.circuitHandlers) {
       if (handler.onCircuitOpened){
@@ -115,6 +119,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async startConnection(): Promise<HubConnection> {
+    this.setCircuitStatus('connecting');
+
     const hubProtocol = new MessagePackHubProtocol();
     (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -158,6 +164,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      this.setCircuitStatus('disconnected');
 
       if (!this._disposed && !this._renderingFailed) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
@@ -172,6 +179,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     try {
       await connection.start();
     } catch (ex: any) {
+      this.setCircuitStatus('disconnected');
       this.unhandledError(ex as Error);
 
       if (ex.errorType === 'FailedToNegotiateWithServerError') {
@@ -224,9 +232,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
+      this.setCircuitStatus('disconnected');
       return false;
     }
 
+    this.setCircuitStatus('connected');
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
@@ -295,6 +305,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     // Disconnect on errors.
     // Trying to call methods on the connection after its been closed will throw.
     this.disconnect();
+  }
+
+  private setCircuitStatus(status: 'connecting' | 'connected' | 'disconnected') {
+    document.documentElement.style.setProperty('--blazor-circuit-status', status);
   }
 
   private getDisconnectFormData(): FormData {

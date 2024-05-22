@@ -94,9 +94,9 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   rejected(): void {
-    this.reloadButton.style.display = 'block';
-    this.rejoiningAnimation.style.display = 'none';
-    this.status.innerHTML = 'Unable to rejoin.<br />Please reload the page to restore functionality.';
+    // We have been able to reach the server, but the circuit is no longer available.
+    // We'll reload the page so the user can continue using the app as quickly as possible.
+    location.reload();
   }
 
   static readonly Css = `
