@@ -319,6 +319,7 @@ internal sealed class GetDocumentCommandWorker
             object[] arguments = [documentName, writer];
             if (generateWithVersionMethod != null)
             {
+                _reporter.WriteInformation(Resources.VersionedGenerateMethod);
                 if (Enum.TryParse<OpenApiSpecVersion>(_context.OpenApiVersion, out var version))
                 {
                     arguments = [documentName, writer, version];

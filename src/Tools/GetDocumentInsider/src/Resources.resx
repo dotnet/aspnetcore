@@ -201,9 +201,12 @@
     <value>The name of the OpenAPI document to generate. Optional.</value>
   </data>
   <data name="InvalidOpenApiVersion" xml:space="preserve">
-    <value>Invalid OpenAPI spec version '{0}' provided. Falling back to default: v3.1.</value>
+    <value>Invalid OpenAPI spec version '{0}' provided. Falling back to default: v3.0.</value>
   </data>
   <data name="DocumentNotFound" xml:space="preserve">
     <value>Document with name '{0}' not found.</value>
+  </data>
+  <data name="VersionedGenerateMethod" xml:space="preserve">
+    <value>Using discovered `GenerateAsync` overload with version parameter.</value>
   </data>
 </root>
