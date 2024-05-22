@@ -65,10 +65,12 @@
 
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex">
+        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" @onclick="() => HandleRowClick(item)">
             @foreach (var col in _columns)
             {
-                <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+                <td class="@ColumnClass(col)" @key="@col">@{
+                        col.CellContent(__builder, item);
+                    }</td>
             }
         </tr>
     }
