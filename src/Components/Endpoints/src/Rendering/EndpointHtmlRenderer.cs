@@ -78,10 +78,22 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
         navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
 
-        if (httpContext.RequestServices.GetService<AuthenticationStateProvider>() is IHostEnvironmentAuthenticationStateProvider authenticationStateProvider)
+        var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
+        if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
         {
             var authenticationState = new AuthenticationState(httpContext.User);
-            authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+            hostEnvironmentAuthenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
+        }
+
+        if (authenticationStateProvider != null)
+        {
+            var authStateListeners = httpContext.RequestServices.GetServices<IHostEnvironmentAuthenticationStateProvider>();
+            Task<AuthenticationState>? authStateTask = null;
+            foreach (var authStateListener in authStateListeners)
+            {
+                authStateTask ??= authenticationStateProvider.GetAuthenticationStateAsync();
+                authStateListener.SetAuthenticationState(authStateTask);
+            }
         }
 
         if (handler != null && form != null)
