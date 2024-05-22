@@ -91,5 +91,20 @@ namespace System.Net.Http
         /// The requested operation cannot be served over HTTP/3. The peer should retry over HTTP/1.1.
         /// </summary>
         VersionFallback = 0x110,
+        /// <summary>
+        /// H3_QPACK_DECOMPRESSION_FAILED (0x200):
+        /// The decoder failed to interpret an encoded field section and is not able to continue decoding that field section.
+        /// </summary>
+        QPackDecompressionFailed = 0x200,
+        /// <summary>
+        /// H3_QPACK_ENCODER_STREAM_ERROR (0x201):
+        /// The decoder failed to interpret an encoder instruction received on the encoder stream.
+        /// </summary>
+        QPackEncoderStreamError = 0x201,
+        /// <summary>
+        /// H3_QPACK_DECODER_STREAM_ERROR (0x202):
+        /// The encoder failed to interpret an decoder instruction received on the decoder stream.
+        /// </summary>
+        QPackDecoderStreamError = 0x202,
     }
 }
