@@ -42,13 +42,11 @@ internal sealed class GetDocumentCommandWorker
 
     private readonly GetDocumentCommandContext _context;
     private readonly IReporter _reporter;
-    private readonly string _environment;
 
-    public GetDocumentCommandWorker(GetDocumentCommandContext context, string environment)
+    public GetDocumentCommandWorker(GetDocumentCommandContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _reporter = context.Reporter;
-        _environment = environment;
     }
 
     public int Process()
@@ -71,13 +69,6 @@ internal sealed class GetDocumentCommandWorker
             {
                 services.AddSingleton<IServer, NoopServer>();
                 services.AddSingleton<IHostLifetime, NoopHostLifetime>();
-            })
-             .ConfigureAppConfiguration((context, config) =>
-            {
-                if (!string.IsNullOrEmpty(_environment))
-                {
-                    context.HostingEnvironment.EnvironmentName = _environment;
-                }
             });
         }
 
