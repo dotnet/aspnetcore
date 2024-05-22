@@ -325,19 +325,19 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1f08a3621e6b531b31e358b99b4c54ba556a61c0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24263.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24270.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>d62d4e036e024404581283f02321453a331821c2</Sha>
+      <Sha>ab3fab3f13fe09c8eb14aafc7811bf33e6de5654</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24263.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24270.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>d62d4e036e024404581283f02321453a331821c2</Sha>
+      <Sha>ab3fab3f13fe09c8eb14aafc7811bf33e6de5654</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24264.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24270.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>216c1c057d7080c9b587da04ea373d84dbb687d6</Sha>
+      <Sha>0df72d85186994facaefcb4eb832b8c8a8e5ae3d</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
@@ -384,31 +384,31 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>c5967ff09814601cc8828668589ab66b946a4b16</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24260.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24266.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>480401b003bfd2eb989c315da5d6b99ad13a968c</Sha>
+      <Sha>ed14da5934ffb536cff8f41f8b5719334524cbed</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24260.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24266.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>480401b003bfd2eb989c315da5d6b99ad13a968c</Sha>
+      <Sha>ed14da5934ffb536cff8f41f8b5719334524cbed</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24260.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24266.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>480401b003bfd2eb989c315da5d6b99ad13a968c</Sha>
+      <Sha>ed14da5934ffb536cff8f41f8b5719334524cbed</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.24260.2">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.24266.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>480401b003bfd2eb989c315da5d6b99ad13a968c</Sha>
+      <Sha>ed14da5934ffb536cff8f41f8b5719334524cbed</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24260.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24266.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>480401b003bfd2eb989c315da5d6b99ad13a968c</Sha>
+      <Sha>ed14da5934ffb536cff8f41f8b5719334524cbed</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24260.2">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24266.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>480401b003bfd2eb989c315da5d6b99ad13a968c</Sha>
+      <Sha>ed14da5934ffb536cff8f41f8b5719334524cbed</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.4.24261.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
