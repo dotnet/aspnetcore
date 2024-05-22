@@ -200,4 +200,10 @@
   <data name="DocumentNameDescription" xml:space="preserve">
     <value>The name of the OpenAPI document to generate. Optional.</value>
   </data>
+  <data name="InvalidOpenApiVersion" xml:space="preserve">
+    <value>Invalid OpenAPI spec version '{0}' provided. Falling back to default: v3.1.</value>
+  </data>
+  <data name="DocumentNotFound" xml:space="preserve">
+    <value>Document with name '{0}' not found.</value>
+  </data>
 </root>

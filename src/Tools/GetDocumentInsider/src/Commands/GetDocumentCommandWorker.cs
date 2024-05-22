@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -219,6 +220,23 @@ internal sealed class GetDocumentCommandWorker
             GenerateMethodName,
             _generateWithVersionMethodParameterTypes);
 
+        if (generateWithVersionMethod is not null)
+        {
+            if (generateWithVersionMethod.IsStatic)
+            {
+                _reporter.WriteWarning(Resources.FormatMethodIsStatic(GenerateMethodName, serviceType));
+                generateWithVersionMethod = null;
+            }
+
+            if (!_generateMethodReturnType.IsAssignableFrom(generateWithVersionMethod.ReturnType))
+            {
+                _reporter.WriteWarning(
+                    Resources.FormatMethodReturnTypeUnsupported(GenerateMethodName, serviceType, generateWithVersionMethod.ReturnType, _generateMethodReturnType));
+                generateWithVersionMethod = null;
+
+            }
+        }
+
         var generateMethod = GetMethod(
             GenerateMethodName,
             serviceType,
@@ -237,11 +255,15 @@ internal sealed class GetDocumentCommandWorker
         }
 
         // If an explicit document name is provided, then generate only that document.
-        var documentNames = _context.DocumentName != null
-            ? [_context.DocumentName]
-            : (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
+        var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(_context.DocumentName) && !documentNames.Contains(_context.DocumentName))
+        {
+            _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
             return false;
         }
 
@@ -294,9 +316,19 @@ internal sealed class GetDocumentCommandWorker
         using (var writer = new StreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
         {
             var targetMethod = generateWithVersionMethod ?? generateMethod;
-            object[] arguments = generateWithVersionMethod != null
-                ? [documentName, writer, Enum.TryParse<OpenApiSpecVersion>(_context.OpenApiVersion, out var version) ? version : OpenApiSpecVersion.OpenApi3_0]
-                : [documentName, writer];
+            object[] arguments = [documentName, writer];
+            if (generateWithVersionMethod != null)
+            {
+                if (Enum.TryParse<OpenApiSpecVersion>(_context.OpenApiVersion, out var version))
+                {
+                    arguments = [documentName, writer, version];
+                }
+                else
+                {
+                    _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_0];
+                }
+            }
             using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);
             if (resultTask == null)
             {

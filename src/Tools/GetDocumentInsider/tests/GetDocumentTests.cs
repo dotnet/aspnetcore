@@ -69,6 +69,32 @@ public class GetDocumentTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public void GetDocument_WithInvalidOpenApiVersion_Errors()
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--openapi-version", "OpenApi4_0"
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert that error was produced and files were generated with v3.
+        Assert.Contains("Invalid OpenAPI spec version 'OpenApi4_0' provided. Falling back to default: v3.1.", _console.GetOutput());
+        var document = new OpenApiStreamReader().Read(File.OpenRead(Path.Combine(outputPath.FullName, "Sample.json")), out var diagnostic);
+        Assert.Empty(diagnostic.Errors);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_0, diagnostic.SpecificationVersion);
+        Assert.Equal("GetDocumentSample | v1", document.Info.Title);
+    }
+
+    [Fact]
     public void GetDocument_WithDocumentName_Works()
     {
         // Arrange
@@ -92,5 +118,30 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.Equal(OpenApiSpecVersion.OpenApi3_0, diagnostic.SpecificationVersion);
         // Document name in the title gives us a clue that the correct document was actually resolved
         Assert.Equal("GetDocumentSample | internal", document.Info.Title);
+    }
+
+    [Fact]
+    public void GetDocument_WithInvalidDocumentName_Errors()
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--document-name", "invalid"
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert that error was produced and no files were generated
+        Assert.Contains("Document with name 'invalid' not found.", _console.GetOutput());
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
+        Assert.False(File.Exists(Path.Combine(outputPath.FullName, "Sample_invalid.json")));
     }
 }

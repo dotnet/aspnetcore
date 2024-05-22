@@ -19,8 +19,11 @@ public class GetDocumentCommandContext
 
     public string ProjectName { get; set; }
 
-    // Can be OpenApi2_0, OpenApi3_0, etc.
-    // Defaults to runtime option if not provided.
+    /// <summary>
+    /// The version of the OpenAPI document to generate.
+    /// Maps to <see cref="OpenApi.OpenApiSpecVersion" />.
+    /// Can be null, in which case <see cref="OpenApiSpecVersion.OpenApi3_0"/> is used.
+    /// </summary>
     public string OpenApiVersion { get; set; }
 
     // The name of the OpenAPI document to generate.
