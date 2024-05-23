@@ -159,6 +159,7 @@ internal class TestUtils
                     {
                         services.AddOutputCache(outputCachingOptions =>
                         {
+                            Assert.NotNull(outputCachingOptions.ApplicationServices);
                             if (options != null)
                             {
                                 outputCachingOptions.MaximumBodySize = options.MaximumBodySize;
