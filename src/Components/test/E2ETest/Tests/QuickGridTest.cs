@@ -6,8 +6,10 @@ using BasicTestApp.QuickGridTest;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
@@ -120,5 +122,30 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         var grid = app.FindElement(By.CssSelector("#grid > table"));
         Assert.Equal("somevalue", grid.GetAttribute("custom-attrib"));
         Assert.Contains("custom-class-attrib", grid.GetAttribute("class")?.Split(" "));
+    }
+
+    [Fact]
+    public void QuickGrid_RowClick_DisplaysDetails()
+    {
+        // Arrange
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        var detailsBeforeClick = app.FindElements(By.Id("personDetails")).Count;
+
+        // Act
+        firstRow.Click();
+
+        var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(5));
+        var detailsAfterClick = wait.Until(driver =>
+        {
+            var elements = driver.FindElements(By.Id("personDetails"));
+            if (elements.Count > 0 && elements[0].Displayed){ return elements[0];}    
+            return null;
+        });
+
+        // Assert
+        Assert.Equal(0, detailsBeforeClick);
+        Assert.True(detailsAfterClick.Displayed, "Details panel should be displayed after a row is clicked.");
+        Assert.Contains("Details:", detailsAfterClick.Text);
     }
 }
