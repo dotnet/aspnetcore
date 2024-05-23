@@ -3,7 +3,7 @@
 <h3>Sample QuickGrid Component</h3>
 
 <div id="grid">
-    <QuickGrid Items="@FilteredPeople" Pagination="@pagination" custom-attrib="somevalue" class="custom-class-attrib" OnRowClicked=HandleRowClick>
+    <QuickGrid Items="@FilteredPeople" Pagination="@pagination" custom-attrib="somevalue" class="custom-class-attrib" OnRowClicked="@EventCallback.Factory.Create(this, (Person p) => HandleRowClick(p))">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.firstName)" Sortable="true">
             <ColumnOptions>
@@ -30,8 +30,8 @@
     record Person(int PersonId, string firstName, string lastName, DateOnly BirthDate);
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     string firstNameFilter;
-    Person selectedPerson = new Person(0, "", "", new DateOnly()); // Initialize with a default empty person
-    bool hasSelectedPerson = false; // Flag to track if a person is selected
+    Person selectedPerson = new Person(0, "", "", new DateOnly());
+    bool hasSelectedPerson = false;
 
     private Task HandleRowClick(Person person)
     {
