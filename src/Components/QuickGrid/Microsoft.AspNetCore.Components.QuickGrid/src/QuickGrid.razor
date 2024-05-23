@@ -63,9 +63,10 @@
         }
     }
 
+
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" @onclick="() => HandleRowClick(item)">
+        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" @onclick="@(async () => await HandleRowClick(item))">
             @foreach (var col in _columns)
             {
                 <td class="@ColumnClass(col)" @key="@col">@{
