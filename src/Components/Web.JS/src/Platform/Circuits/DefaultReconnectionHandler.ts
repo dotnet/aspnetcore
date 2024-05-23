@@ -120,7 +120,7 @@ class ReconnectionProcess {
 
     const step = () => {
       if (this.isDisposed) {
-        // Stop invoking the callback
+        // Stop invoking the callback after disposal.
         resolveTimerPromise();
         return;
       }
