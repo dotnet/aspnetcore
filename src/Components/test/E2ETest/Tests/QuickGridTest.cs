@@ -125,7 +125,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void QuickGrid_RowClick_DisplaysDetails()
+    public void QuickGridRowClickDisplaysDetails()
     {
         // Arrange
         var grid = app.FindElement(By.CssSelector("#grid > table"));
