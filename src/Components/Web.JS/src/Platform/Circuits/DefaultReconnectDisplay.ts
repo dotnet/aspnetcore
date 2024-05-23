@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { Blazor } from '../../GlobalExports';
+import { LogLevel, Logger } from '../Logging/Logger';
 import { ReconnectDisplay } from './ReconnectDisplay';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
@@ -26,7 +28,9 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   status: HTMLParagraphElement;
 
-  constructor(dialogId: string, private readonly document: Document) {
+  retryWhenDocumentBecomesVisible: () => void;
+
+  constructor(dialogId: string, private readonly document: Document, private readonly logger: Logger) {
     this.style = this.document.createElement('style');
     this.style.innerHTML = DefaultReconnectDisplay.Css;
 
@@ -49,15 +53,21 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.status.innerHTML = '';
 
     this.reloadButton = document.createElement('button');
-    this.reloadButton.addEventListener('click', () => location.reload());
     this.reloadButton.style.display = 'none';
-    this.reloadButton.innerHTML = 'Reload';
+    this.reloadButton.innerHTML = 'Retry';
+    this.reloadButton.addEventListener('click', this.retry.bind(this));
 
     this.dialog.appendChild(this.rejoiningAnimation);
     this.dialog.appendChild(this.status);
     this.dialog.appendChild(this.reloadButton);
 
     this.overlay.appendChild(this.dialog);
+
+    this.retryWhenDocumentBecomesVisible = () => {
+      if (this.document.visibilityState === 'visible') {
+        this.retry();
+      }
+    };
   }
 
   show(): void {
@@ -69,6 +79,9 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       this.document.body.appendChild(this.style);
     }
 
+    this.reloadButton.style.display = 'none';
+    this.rejoiningAnimation.style.display = 'block';
+    this.status.innerHTML = 'Rejoining the server...';
     this.overlay.style.display = 'block';
     this.overlay.classList.add(DefaultReconnectDisplay.ReconnectVisibleClassName);
   }
@@ -90,13 +103,34 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   failed(): void {
     this.reloadButton.style.display = 'block';
     this.rejoiningAnimation.style.display = 'none';
-    this.status.innerHTML = 'Failed to rejoin.<br />Please reload the page to attempt reconnection.';
+    this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
+    this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
   }
 
   rejected(): void {
     // We have been able to reach the server, but the circuit is no longer available.
     // We'll reload the page so the user can continue using the app as quickly as possible.
     location.reload();
+  }
+
+  private async retry() {
+    this.document.removeEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
+    this.show();
+
+    try {
+      // reconnect will asynchronously return:
+      // - true to mean success
+      // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
+      // - exception to mean we didn't reach the server (this can be sync or async)
+      const successful = await Blazor.reconnect!();
+      if (!successful) {
+        this.rejected();
+      }
+    } catch (err: unknown) {
+      // We got an exception, server is currently unavailable
+      this.logger.log(LogLevel.Error, err as Error);
+      this.failed();
+    }
   }
 
   static readonly Css = `

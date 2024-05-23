@@ -28,7 +28,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
         ? new UserSpecifiedDisplay(modal, document, options.maxRetries)
-        : new DefaultReconnectDisplay(options.dialogId, document);
+        : new DefaultReconnectDisplay(options.dialogId, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {

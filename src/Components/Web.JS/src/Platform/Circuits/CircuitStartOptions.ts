@@ -28,11 +28,6 @@ export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): Circ
   // The spread operator can't be used for a deep merge, so do the same for subproperties
   if (userOptions && userOptions.reconnectionOptions) {
     result.reconnectionOptions = { ...defaultOptions.reconnectionOptions, ...userOptions.reconnectionOptions };
-
-    if (typeof(result.reconnectionOptions.retryIntervalMilliseconds) !== 'function' && result.reconnectionOptions.maxRetries === undefined) {
-      // For backwards compatibility, use default max retry count when a non-function retry interval is specified
-      result.reconnectionOptions.maxRetries = 8;
-    }
   }
 
   return result;
@@ -80,6 +75,7 @@ const defaultOptions: CircuitStartOptions = {
   initializers: undefined!,
   circuitHandlers: [],
   reconnectionOptions: {
+    maxRetries: 30,
     retryIntervalMilliseconds: computeDefaultRetryInterval,
     dialogId: 'components-reconnect-modal',
   },
