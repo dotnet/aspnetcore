@@ -107,7 +107,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <summary>
     /// Gets or sets the callback event that is triggered when a row in the grid is clicked.
     /// </summary>
-    [Parameter] public EventCallback<TGridItem> OnRowClicked { get; set; }
+    [Parameter] public EventCallback<TGridItem> OnRowClicked { get; private set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
