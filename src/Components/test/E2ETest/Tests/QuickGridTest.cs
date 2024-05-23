@@ -135,7 +135,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         // Act
         firstRow.Click();
 
-        var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(5));
+        var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(1));
         var detailsAfterClick = wait.Until(driver =>
         {
             var elements = driver.FindElements(By.Id("personDetails"));
