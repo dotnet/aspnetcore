@@ -108,7 +108,6 @@ internal static partial class LdapAdapter
             {
                 identity.AddClaim(new Claim(claim.Key, claim.Value));
                 // Approximate the size of stored value in memory cache.
-                entrySize += claim.Key.Length * 2;
                 entrySize += claim.Value.Length * 2;
             }
 
