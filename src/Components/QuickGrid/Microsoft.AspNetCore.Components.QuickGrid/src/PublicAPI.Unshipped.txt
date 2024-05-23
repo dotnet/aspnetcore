@@ -1,4 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClicked.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClicked.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OverscanCount.get -> int
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OverscanCount.set -> void

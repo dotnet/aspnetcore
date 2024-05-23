@@ -107,7 +107,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <summary>
     /// Gets or sets the callback event that is triggered when a row in the grid is clicked.
     /// </summary>
-    [Parameter] public EventCallback<TGridItem> OnRowClicked { get; private set; }
+    [Parameter] public EventCallback<TGridItem> OnRowClicked { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -445,9 +445,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // the client disconnected. This is not an error.
         }
     }
-    private Task HandleRowClick(TGridItem item)
+
+    private async Task HandleRowClick(TGridItem item)
     {
-        return OnRowClicked.InvokeAsync(item);
+        if (OnRowClicked.HasDelegate)
+        {
+            await OnRowClicked.InvokeAsync(item);
+        }
     }
 
     private void CloseColumnOptions()
