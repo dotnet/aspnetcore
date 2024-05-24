@@ -62,7 +62,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </Reference>
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
   <Import Project="..\..\build\assets.props" />

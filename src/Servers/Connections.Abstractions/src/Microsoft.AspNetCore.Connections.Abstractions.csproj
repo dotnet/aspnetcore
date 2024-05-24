@@ -14,7 +14,8 @@
     <Reference Include="Microsoft.Bcl.AsyncInterfaces" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
 
     <Reference Include="Microsoft.Extensions.Features" />
-    <Reference Include="System.IO.Pipelines" />
+
+    <Reference Include="System.IO.Pipelines" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'"/>
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
