@@ -125,7 +125,6 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     public async Task CacheTagHelper_VaryByCultureComposesWithOtherVaryByOptions()
     {
         // Arrange
