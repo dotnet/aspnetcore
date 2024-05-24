@@ -595,6 +595,8 @@ internal sealed class Http2FrameWriter
     {
         Debug.Assert(payloadLength <= _maxFrameSize, "The initial payload lengths is written to _headerEncodingBuffer with size of _maxFrameSize");
         var bufferSize = _maxFrameSize;
+        byte[]? largeHeaderBuffer = null;
+        Span<byte> buffer;
         if (writeResult == HPackHeaderWriter.HeaderWriteResult.Done)
         {
             // Fast path, only a single HEADER frame.
@@ -617,38 +619,46 @@ internal sealed class Http2FrameWriter
             {
                 Debug.Assert(payloadLength == 0, "Payload written even though buffer is too small");
                 bufferSize *= 2;
-                var headerBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-                var buffer = headerBuffer.AsSpan(0, bufferSize);
+                largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+                buffer = largeHeaderBuffer.AsSpan(0, bufferSize);
                 writeResult = HPackHeaderWriter.RetryBeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
                 if (writeResult != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall)
                 {
                     SplitHeaderFramesToOutput(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HPackHeaderWriter.HeaderWriteResult.Done, isFramePrepared: true);
                 }
-                ArrayPool<byte>.Shared.Return(headerBuffer);
+                ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
+            }
+            if (writeResult == HPackHeaderWriter.HeaderWriteResult.Done)
+            {
+                return;
             }
         }
 
-        bufferSize = _maxFrameSize;
-
         // HEADERS and zero or more CONTINUATIONS sent - all subsequent frames are (unprepared) CONTINUATIONs
+        bufferSize = _maxFrameSize;
+        buffer = _headerEncodingBuffer;
         while (writeResult != HPackHeaderWriter.HeaderWriteResult.Done)
         {
-            byte[]? headerBuffer = null;
-            Span<byte> buffer = bufferSize == _maxFrameSize ? _headerEncodingBuffer : headerBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             writeResult = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer[..bufferSize], out payloadLength);
             if (writeResult == HPackHeaderWriter.HeaderWriteResult.BufferTooSmall)
             {
+                if (largeHeaderBuffer != null)
+                {
+                    ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
+                }
                 bufferSize *= 2;
+                largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+                buffer = largeHeaderBuffer.AsSpan(0, bufferSize);
             }
             else
             {
                 // In case of Done or MoreHeaders: write to output.
                 SplitHeaderFramesToOutput(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HPackHeaderWriter.HeaderWriteResult.Done, isFramePrepared: false);
             }
-            if (headerBuffer != null)
-            {
-                ArrayPool<byte>.Shared.Return(headerBuffer);
-            }
+        }
+        if (largeHeaderBuffer != null)
+        {
+            ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
         }
     }
 
