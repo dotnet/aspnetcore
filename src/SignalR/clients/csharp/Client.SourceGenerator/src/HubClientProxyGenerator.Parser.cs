@@ -249,10 +249,11 @@ internal sealed partial class HubClientProxyGenerator
                     var argModel = _compilation.GetSemanticModel(argType.SyntaxTree);
                     symbol = (ITypeSymbol)argModel.GetSymbolInfo(argType).Symbol;
                 }
-                else if (memberAccess.Name is not GenericNameSyntax
-                         && memberAccess.Parent.ChildNodes().FirstOrDefault(x => x is ArgumentListSyntax) is
-                             ArgumentListSyntax
-                         { Arguments: { Count: 1 } } als)
+                else if (memberAccess.Name is SimpleNameSyntax
+                        && memberAccess.Parent.ChildNodes().FirstOrDefault(x => x is ArgumentListSyntax) is
+                            ArgumentListSyntax
+                        { Arguments: { Count: 1 } } als)
+
                 {
                     // Method isn't using generic syntax so inspect first expression in arguments to deduce the type
                     var argModel = _compilation.GetSemanticModel(als.Arguments[0].Expression.SyntaxTree);
