@@ -134,10 +134,7 @@ internal sealed partial class HubClientProxyGenerator
             return true;
         }
 
-        internal static bool IsSyntaxTargetForGeneration(SyntaxNode node) => node is MemberAccessExpressionSyntax
-        {
-            Name: SimpleNameSyntax
-        }
+        internal static bool IsSyntaxTargetForGeneration(SyntaxNode node) => node is MemberAccessExpressionSyntax{ Name: SimpleNameSyntax };
 
         internal static MemberAccessExpressionSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
         {
