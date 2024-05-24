@@ -139,7 +139,6 @@ internal sealed partial class HubClientProxyGenerator
             Name: SimpleNameSyntax
         }
 
-
         internal static MemberAccessExpressionSyntax? GetSemanticTargetForGeneration(GeneratorSyntaxContext context)
         {
             var memberAccessExpressionSyntax = (MemberAccessExpressionSyntax)context.Node;
