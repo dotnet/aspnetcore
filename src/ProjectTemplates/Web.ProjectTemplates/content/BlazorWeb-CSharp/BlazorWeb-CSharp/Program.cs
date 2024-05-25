@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
 #if (UseWebAssembly && SampleContent)
+using Microsoft.AspNetCore.Mvc;
 using BlazorWeb_CSharp.Client.Pages;
+using BlazorWeb_CSharp.Services;
 #endif
 using BlazorWeb_CSharp.Components;
 #if (IndividualLocalAuth)
@@ -22,14 +24,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseWebAssembly)
+#if (UseServer && UseWebAssembly)
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-    #elif (UseServer)
+#elif (UseServer)
     .AddInteractiveServerComponents();
-    #elif (UseWebAssembly)
+#elif (UseWebAssembly)
     .AddInteractiveWebAssemblyComponents();
-    #endif
+#endif
 #endif
 
 #if (IndividualLocalAuth)
@@ -73,6 +75,12 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 #endif
+
+#if (UseWebAssembly)
+// Register services required by the application
+builder.Services.AddScoped<WeatherForecastService>();
+
+#endif
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -105,6 +113,11 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
+#if (UseWebAssembly)
+// Expose the weather forecast API
+app.MapGet("/api/weather", async (WeatherForecastService wfs) => await wfs.GetWeatherForecastAsync());
+
+#endif
 app.MapStaticAssets();
 #if (UseServer && UseWebAssembly)
 app.MapRazorComponents<App>()

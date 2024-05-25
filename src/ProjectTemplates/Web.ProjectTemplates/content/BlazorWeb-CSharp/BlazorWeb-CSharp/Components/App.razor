@@ -22,7 +22,7 @@
     ##elseif (UseServer)
     <HeadOutlet @rendermode="InteractiveServer" />
     ##else
-    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+    <HeadOutlet @rendermode="@(new InteractiveWebAssemblyRenderMode(false))" />
     ##endif*@
 </head>
 
@@ -36,7 +36,7 @@
     ##elseif (UseServer)
     <Routes @rendermode="InteractiveServer" />
     ##else
-    <Routes @rendermode="InteractiveWebAssembly" />
+    <Routes @rendermode="@(new InteractiveWebAssemblyRenderMode(false))" />
     ##endif*@
     <script src="_framework/blazor.web.js"></script>
 </body>
