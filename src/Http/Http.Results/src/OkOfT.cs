@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -20,9 +22,13 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider, IStatusCode
     /// Initializes a new instance of the <see cref="Ok"/> class with the values.
     /// </summary>
     /// <param name="value">The value to format in the entity body.</param>
-    internal Ok(TValue? value)
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    internal Ok(TValue? value, string? contentType = null, Encoding? contentEncoding = null)
     {
         Value = value;
+        ContentType = contentType;
+        ContentEncoding = contentEncoding;
         HttpResultsHelper.ApplyProblemDetailsDefaultsIfNeeded(Value, StatusCode);
     }
 
@@ -40,6 +46,16 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider, IStatusCode
 
     int? IStatusCodeHttpResult.StatusCode => StatusCode;
 
+    /// <summary>
+    /// Gets the content type.
+    /// </summary>
+    public string? ContentType { get; }
+
+    /// <summary>
+    /// Gets the content encoding.
+    /// </summary>
+    public Encoding? ContentEncoding { get; }
+
     /// <inheritdoc/>
     public Task ExecuteAsync(HttpContext httpContext)
     {
@@ -52,10 +68,18 @@ public sealed class Ok<TValue> : IResult, IEndpointMetadataProvider, IStatusCode
         HttpResultsHelper.Log.WritingResultAsStatusCode(logger, StatusCode);
         httpContext.Response.StatusCode = StatusCode;
 
+        MediaTypeHeaderValue? mediaTypeHeaderValue = null;
+        if (ContentType is not null)
+        {
+            mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(ContentType);
+            mediaTypeHeaderValue.Encoding = ContentEncoding ?? mediaTypeHeaderValue.Encoding;
+        }
+
         return HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
                 logger: logger,
-                Value);
+                value: Value,
+                contentType: mediaTypeHeaderValue?.ToString());
     }
 
     /// <inheritdoc/>

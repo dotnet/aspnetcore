@@ -261,10 +261,6 @@ static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.
 static Microsoft.AspNetCore.Http.Results.Json<TValue>(TValue? data, System.Text.Json.Serialization.Metadata.JsonTypeInfo<TValue>! jsonTypeInfo, string? contentType = null, int? statusCode = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.LocalRedirect(string! localUrl, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.NoContent() -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.NotFound(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.NotFound<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Ok(object? value = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Ok<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Problem(Microsoft.AspNetCore.Mvc.ProblemDetails! problemDetails) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.Redirect(string! url, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.IResult!
@@ -320,9 +316,7 @@ static Microsoft.AspNetCore.Http.TypedResults.Json<TValue>(TValue? data, System.
 static Microsoft.AspNetCore.Http.TypedResults.LocalRedirect(string! localUrl, bool permanent = false, bool preserveMethod = false) -> Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.NoContent() -> Microsoft.AspNetCore.Http.HttpResults.NoContent!
 static Microsoft.AspNetCore.Http.TypedResults.NotFound() -> Microsoft.AspNetCore.Http.HttpResults.NotFound!
-static Microsoft.AspNetCore.Http.TypedResults.NotFound<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.Ok() -> Microsoft.AspNetCore.Http.HttpResults.Ok!
-static Microsoft.AspNetCore.Http.TypedResults.Ok<TValue>(TValue? value) -> Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.PhysicalFile(string! path, string? contentType = null, string? fileDownloadName = null, System.DateTimeOffset? lastModified = null, Microsoft.Net.Http.Headers.EntityTagHeaderValue? entityTag = null, bool enableRangeProcessing = false) -> Microsoft.AspNetCore.Http.HttpResults.PhysicalFileHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Problem(Microsoft.AspNetCore.Mvc.ProblemDetails! problemDetails) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
 static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!

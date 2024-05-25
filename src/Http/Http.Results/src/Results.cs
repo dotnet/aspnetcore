@@ -595,18 +595,24 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
     /// </summary>
-    /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult NotFound(object? value = null)
-        => NotFound<object>(value);
+    public static IResult NotFound()
+        => NotFound<object>(null);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
     /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult NotFound<TValue>(TValue? value)
-        => value is null ? TypedResults.NotFound() : TypedResults.NotFound(value);
+    public static IResult NotFound<TValue>(
+        TValue? value,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => value is null
+        ? TypedResults.NotFound()
+        : TypedResults.NotFound(value, contentType, contentEncoding);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -663,18 +669,24 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
-    /// <param name="value">The value to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Ok(object? value = null)
-        => Ok<object>(value);
+    public static IResult Ok()
+        => Ok<object>(null);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status200OK"/> response.
     /// </summary>
     /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult Ok<TValue>(TValue? value)
-        => value is null ? TypedResults.Ok() : TypedResults.Ok(value);
+    public static IResult Ok<TValue>(
+        TValue? value,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => value is null
+        ? TypedResults.Ok()
+        : TypedResults.Ok(value, contentType, contentEncoding);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -703,9 +715,16 @@ public static partial class Results
     /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
     /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult InternalServerError<TValue>(TValue? error)
-        => error is null ? TypedResults.InternalServerError() : TypedResults.InternalServerError(error);
+    public static IResult InternalServerError<TValue>(
+        TValue? error,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => error is null
+        ? TypedResults.InternalServerError()
+        : TypedResults.InternalServerError(error, contentType, contentEncoding);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
