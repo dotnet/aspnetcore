@@ -618,18 +618,24 @@ public static partial class Results
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
-    /// <param name="error">An error object to be included in the HTTP response body.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult BadRequest(object? error = null)
-        => BadRequest<object>(error);
+    public static IResult BadRequest()
+        => BadRequest<object>(null);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
     /// </summary>
     /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
-    public static IResult BadRequest<TValue>(TValue? error)
-        => error is null ? TypedResults.BadRequest() : TypedResults.BadRequest(error);
+    public static IResult BadRequest<TValue>(
+        TValue? error,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => error is null
+        ? TypedResults.BadRequest()
+        : TypedResults.BadRequest(error, contentType, contentEncoding);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.

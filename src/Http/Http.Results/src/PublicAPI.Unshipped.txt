@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Http.HttpResults.BadRequest<TValue>.ContentEncoding.get -> System.Text.Encoding?
+Microsoft.AspNetCore.Http.HttpResults.BadRequest<TValue>.ContentType.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError.StatusCode.get -> int
@@ -6,7 +8,10 @@ Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.StatusCode.get -> int
 Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.Value.get -> TValue?
+static Microsoft.AspNetCore.Http.Results.BadRequest() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.BadRequest<TValue>(TValue? error, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.InternalServerError() -> Microsoft.AspNetCore.Http.IResult!
 static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.BadRequest<TValue>(TValue? error, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.BadRequest<TValue>!
 static Microsoft.AspNetCore.Http.TypedResults.InternalServerError() -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError!
 static Microsoft.AspNetCore.Http.TypedResults.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>!
