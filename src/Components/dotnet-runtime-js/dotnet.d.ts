@@ -3,7 +3,7 @@
 //!
 //! This is generated file, see src/mono/wasm/runtime/rollup.config.js
 
-//! This is not considered public API with backward compatibility guarantees.
+//! This is not considered public API with backward compatibility guarantees. 
 
 declare interface NativePointer {
     __brandNativePointer: "NativePointer";
@@ -280,7 +280,7 @@ type SingleAssetBehaviors =
  * Typically blazor.boot.json
  */
  | "manifest";
-type AssetBehaviors = SingleAssetBehaviors |
+type AssetBehaviors = SingleAssetBehaviors | 
 /**
  * Load asset as a managed resource assembly.
  */
