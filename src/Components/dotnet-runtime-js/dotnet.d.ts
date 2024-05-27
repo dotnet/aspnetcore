@@ -251,7 +251,7 @@ interface AssetEntry extends ResourceRequest {
      */
     pendingDownload?: LoadingResource;
 }
-type SingleAssetBehaviors =
+type SingleAssetBehaviors = 
 /**
  * The binary of the dotnet runtime.
  */
