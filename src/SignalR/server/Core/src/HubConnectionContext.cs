@@ -59,7 +59,7 @@ public partial class HubConnectionContext
     // Tracks groups that the connection has been added to
     internal HashSet<string> GroupNames { get; } = new HashSet<string>();
 
-    internal Activity? OriginalActivity { get; }
+    internal Activity? OriginalActivity { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -75,7 +75,6 @@ public partial class HubConnectionContext
         _streamBufferCapacity = contextOptions.StreamBufferCapacity;
         _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
         _statefulReconnectBufferSize = contextOptions.StatefulReconnectBufferSize;
-        OriginalActivity = contextOptions.OriginalActivity;
 
         _connectionContext = connectionContext;
         _logger = loggerFactory.CreateLogger(typeof(HubConnectionContext));

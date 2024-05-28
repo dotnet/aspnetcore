@@ -41,6 +41,4 @@ public class HubConnectionContextOptions
     /// Gets or sets the maximum bytes to buffer per connection when using stateful reconnect.
     /// </summary>
     internal long StatefulReconnectBufferSize { get; set; } = 100_000;
-
-    internal Activity? OriginalActivity { get; set; }
 }

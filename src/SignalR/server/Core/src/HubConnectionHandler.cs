@@ -126,16 +126,18 @@ public class HubConnectionHandler<THub> : ConnectionHandler where THub : Hub
             TimeProvider = TimeProvider,
             MaximumParallelInvocations = _maxParallelInvokes,
             StatefulReconnectBufferSize = _statefulReconnectBufferSize,
+        };
+
+        Log.ConnectedStarting(_logger);
+
+        var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory)
+        {
             OriginalActivity = Activity.Current,
         };
 
         // Get off the parent span.
         // This is likely the Http Request span and we want Hub method invocations to not be collected under a long running span.
         Activity.Current = null;
-
-        Log.ConnectedStarting(_logger);
-
-        var connectionContext = new HubConnectionContext(connection, contextOptions, _loggerFactory);
 
         var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
         if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
