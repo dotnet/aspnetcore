@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+
 namespace Microsoft.AspNetCore.Components;
 
 internal sealed class ChangeDetection
 {
+    private static ConcurrentDictionary<Type, bool> _immutableNonObjectTypesCache = new();
     public static bool MayHaveChanged<T1, T2>(T1 oldValue, T2 newValue)
     {
         var oldIsNotNull = oldValue != null;
@@ -41,6 +44,24 @@ internal sealed class ChangeDetection
     // For performance reasons, the following immutable types are not supported: IntPtr, UIntPtr, Type.
     private static bool IsKnownImmutableType(Type type)
         => Type.GetTypeCode(type) != TypeCode.Object
-        || type == typeof(Guid)
+        || _immutableNonObjectTypesCache.GetOrAdd(type, IsImmutableNonObjectCore);
+
+    private static bool IsImmutableNonObjectCore(Type type)
+        => type == typeof(Guid)
+        || type == typeof(DateOnly)
+        || type == typeof(TimeOnly)
         || typeof(IEventCallback).IsAssignableFrom(type);
+
+    public static event Action? OnHotReload;
+
+    public static void ClearImmutableTypeCache()
+    {
+        _immutableNonObjectTypesCache.Clear();
+    }
+
+    public static void HotReloadHandler()
+    {
+        ClearImmutableTypeCache();
+        OnHotReload?.Invoke();
+    }
 }
