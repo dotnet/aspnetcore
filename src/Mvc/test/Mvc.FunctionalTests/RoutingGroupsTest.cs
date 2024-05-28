@@ -23,6 +23,7 @@ public class RoutingGroupsTests : IClassFixture<MvcTestFixture<StartupForGroups>
 
     public WebApplicationFactory<StartupForGroups> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55931")]
     [Fact]
     public async Task MatchesControllerGroup()
     {

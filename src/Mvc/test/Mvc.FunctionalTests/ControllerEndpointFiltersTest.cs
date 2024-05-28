@@ -23,6 +23,7 @@ public class ControllerEndpointFiltersTest : IClassFixture<MvcTestFixture<Startu
 
     public WebApplicationFactory<StartupForEndpointFilters> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55929")]
     [Fact]
     public async Task CanApplyEndpointFilterToController()
     {

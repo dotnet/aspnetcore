@@ -75,6 +75,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55930")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByUICulture()
     {

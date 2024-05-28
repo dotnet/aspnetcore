@@ -21,6 +21,7 @@ public class RoutingGroupsWithMetadataTests : IClassFixture<MvcTestFixture<Start
 
     public WebApplicationFactory<StartupForRouteGroupsWithMetadata> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55927")]
     [Fact]
     public async Task OrderedGroupMetadataForControllers()
     {

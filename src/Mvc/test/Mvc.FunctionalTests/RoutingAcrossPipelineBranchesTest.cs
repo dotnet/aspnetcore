@@ -21,6 +21,7 @@ public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<R
 
     public WebApplicationFactory<StartupRoutingDifferentBranches> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55933")]
     [Fact]
     public async Task MatchesConventionalRoutesInTheirBranches()
     {

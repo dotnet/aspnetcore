@@ -136,6 +136,7 @@ public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<Ba
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55932")]
     [Fact]
     public async Task TestingInfrastructure_RedirectHandlerFollowsStatusCode303()
     {
