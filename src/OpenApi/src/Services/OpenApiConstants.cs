@@ -16,7 +16,7 @@ internal static class OpenApiConstants
     // OpenApiPaths, we can pre-allocate an array of these types and use a direct
     // lookup on the OpenApiPaths dictionary to avoid allocating an enumerator
     // over the KeyValuePairs in OpenApiPaths.
-    internal static OperationType[] OperationTypes = [
+    internal static readonly OperationType[] OperationTypes = [
         OperationType.Get,
         OperationType.Post,
         OperationType.Put,
