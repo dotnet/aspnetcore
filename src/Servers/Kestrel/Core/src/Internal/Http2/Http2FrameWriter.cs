@@ -379,19 +379,36 @@ internal sealed class Http2FrameWriter
         }
     }
 
+    /// <summary>
+    /// Call while in the <see cref="_writeLock"/>.
+    /// </summary>
+    /// <returns><c>true</c> if already completed.</returns>
+    private bool CompleteUnsynchronized()
+    {
+        if (_completed)
+        {
+            return true;
+        }
+
+        _completed = true;
+        _outputWriter.Abort();
+
+        return false;
+    }
+
     public void Complete()
     {
         lock (_writeLock)
         {
-            if (_completed)
+            if (CompleteUnsynchronized())
             {
                 return;
             }
-
-            _completed = true;
-            AbortConnectionFlowControl();
-            _outputWriter.Abort();
         }
+
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
+        AbortConnectionFlowControl();
     }
 
     public Task ShutdownAsync()
@@ -413,8 +430,15 @@ internal sealed class Http2FrameWriter
             _aborted = true;
             _connectionContext.Abort(error);
 
-            Complete();
+            if (CompleteUnsynchronized())
+            {
+                return;
+            }
         }
+
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
+        AbortConnectionFlowControl();
     }
 
     private ValueTask<FlushResult> FlushEndOfStreamHeadersAsync(Http2Stream stream)
@@ -487,7 +511,7 @@ internal sealed class Http2FrameWriter
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             var buffer = _headerEncodingBuffer.AsSpan();
             var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-            FinishWritingHeaders(streamId, payloadLength, done);
+            FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
         // Since we allow custom header encoders we don't know what type of exceptions to expect.
@@ -528,7 +552,7 @@ internal sealed class Http2FrameWriter
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                 var buffer = _headerEncodingBuffer.AsSpan();
                 var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
-                FinishWritingHeaders(streamId, payloadLength, done);
+                FinishWritingHeadersUnsynchronized(streamId, payloadLength, done);
             }
             // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
             // Since we allow custom header encoders we don't know what type of exceptions to expect.
@@ -542,7 +566,7 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    private void FinishWritingHeaders(int streamId, int payloadLength, bool done)
+    private void FinishWritingHeadersUnsynchronized(int streamId, int payloadLength, bool done)
     {
         var buffer = _headerEncodingBuffer.AsSpan();
         _outgoingFrame.PayloadLength = payloadLength;
@@ -934,6 +958,11 @@ internal sealed class Http2FrameWriter
         }
     }
 
+    /// <summary>
+    /// Do not call this method under the _writeLock.
+    /// This method can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+    /// which is not the desired lock order
+    /// </summary>
     private void AbortConnectionFlowControl()
     {
         lock (_windowUpdateLock)
