@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -140,6 +141,7 @@ internal sealed class OpenApiDocumentService(
         }
         var operation = new OpenApiOperation
         {
+            OperationId = GetOperationId(description),
             Summary = GetSummary(description),
             Description = GetDescription(description),
             Responses = GetResponses(description),
@@ -155,6 +157,10 @@ internal sealed class OpenApiDocumentService(
 
     private static string? GetDescription(ApiDescription description)
         => description.ActionDescriptor.EndpointMetadata.OfType<IEndpointDescriptionMetadata>().LastOrDefault()?.Description;
+
+    private static string? GetOperationId(ApiDescription description)
+        => description.ActionDescriptor.AttributeRouteInfo?.Name ??
+            description.ActionDescriptor.EndpointMetadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName;
 
     private static List<OpenApiTag>? GetTags(ApiDescription description)
     {

@@ -81,7 +81,7 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(8, backend.OpCount); // SET
 
         Log.WriteLine("Removing key...");
-        await cache.RemoveKeyAsync(Me());
+        await cache.RemoveAsync(Me());
         Assert.Equal(9, backend.OpCount); // DEL
 
         Log.WriteLine("Fetching new...");
@@ -136,7 +136,7 @@ public class L2Tests(ITestOutputHelper Log)
         Assert.Equal(8, backend.OpCount); // SET
 
         Log.WriteLine("Removing key...");
-        await cache.RemoveKeyAsync(Me());
+        await cache.RemoveAsync(Me());
         Assert.Equal(9, backend.OpCount); // DEL
 
         Log.WriteLine("Fetching new...");

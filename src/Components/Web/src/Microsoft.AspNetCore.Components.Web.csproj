@@ -25,7 +25,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Primitives" />
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
   <ItemGroup>
