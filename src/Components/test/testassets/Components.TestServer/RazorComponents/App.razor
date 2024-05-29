@@ -93,6 +93,13 @@
                         }
                     },
                 },
+                circuit: {
+                    reconnectionOptions: {
+                        // It's easier to test the reconnection logic if we wait a bit
+                        // before attempting to reconnect
+                        retryIntervalMilliseconds: 5000,
+                    },
+                },
             }).then(() => appendHiddenParagraph('blazor-started'));
         }
 
