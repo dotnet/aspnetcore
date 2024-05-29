@@ -470,4 +470,63 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                 });
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesValidationProblem()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/", () => TypedResults.ValidationProblem(new Dictionary<string, string[]>
+        {
+            ["Name"] = ["Name is required"]
+        }));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/problem+json", out var mediaType));
+            Assert.Equal("object", mediaType.Schema.Type);
+            Assert.Collection(mediaType.Schema.Properties,
+                property =>
+                {
+                    Assert.Equal("type", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("title", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("status", property.Key);
+                    Assert.Equal("integer", property.Value.Type);
+                    Assert.Equal("int32", property.Value.Format);
+                },
+                property =>
+                {
+                    Assert.Equal("detail", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("instance", property.Key);
+                    Assert.Equal("string", property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("errors", property.Key);
+                    Assert.Equal("object", property.Value.Type);
+                    // The errors object is a dictionary of string[]. Use `additionalProperties`
+                    // to indicate that the payload can be arbitrary keys with string[] values.
+                    Assert.Equal("array", property.Value.AdditionalProperties.Type);
+                    Assert.Equal("string", property.Value.AdditionalProperties.Items.Type);
+                });
+        });
+    }
 }

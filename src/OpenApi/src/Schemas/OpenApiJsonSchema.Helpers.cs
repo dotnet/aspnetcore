@@ -265,6 +265,11 @@ internal sealed partial class OpenApiJsonSchema
                 var props = ReadDictionary<OpenApiJsonSchema>(ref reader);
                 schema.Properties = props?.ToDictionary(p => p.Key, p => p.Value.Schema);
                 break;
+            case OpenApiSchemaKeywords.AdditionalPropertiesKeyword:
+                reader.Read();
+                var additionalPropsConverter = (JsonConverter<OpenApiJsonSchema>)options.GetTypeInfo(typeof(OpenApiJsonSchema)).Converter;
+                schema.AdditionalProperties = additionalPropsConverter.Read(ref reader, typeof(OpenApiJsonSchema), options)?.Schema;
+                break;
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = "object";
