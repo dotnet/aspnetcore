@@ -31,6 +31,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
 
     public HttpClient Client { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByCulture()
     {
@@ -75,7 +76,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
         }
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55930")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/4907")]
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByUICulture()
     {
