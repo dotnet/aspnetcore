@@ -16,7 +16,7 @@ internal readonly struct ThisAndExtensionMethod(ITypeSymbol thisType, string ext
         if (obj is ThisAndExtensionMethod other)
         {
             return SymbolEqualityComparer.Default.Equals(ThisType, other.ThisType) &&
-                ExtensionMethod.Equals(other.ExtensionMethod, StringComparison.OrdinalIgnoreCase);
+                ExtensionMethod.Equals(other.ExtensionMethod, StringComparison.Ordinal);
         }
         return false;
     }

@@ -57,7 +57,13 @@ public sealed class AddPackageFixer : CodeFixProvider
             {
                 return;
             }
-            var symbol = semanticModel.GetSymbolInfo(((MemberAccessExpressionSyntax)node.Parent!).Expression).Symbol;
+
+            if (node.Parent is not MemberAccessExpressionSyntax)
+            {
+                return;
+            }
+
+            var symbol = semanticModel.GetSymbolInfo(((MemberAccessExpressionSyntax)node.Parent).Expression).Symbol;
             var symbolType = symbol switch
             {
                 IMethodSymbol methodSymbol => methodSymbol.ReturnType,

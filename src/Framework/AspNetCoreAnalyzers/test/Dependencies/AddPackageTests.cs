@@ -6,6 +6,12 @@ using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.Dependencies.AddPackageFixer>;
 
 namespace Microsoft.AspNetCore.Analyzers.Dependencies;
+
+/// <remarks>
+/// These tests don't assert the fix is applied, since it takes a dependency on the internal
+/// VS-specific `PackageInstallerService`. However, the fixer is invoked in these codepaths
+/// so we can validate that the symbol resolution and checks function correctly.
+/// </remarks>
 public class AddPackagesTest
 {
     [Fact]
@@ -21,19 +27,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.{|CS1061:AddOpenApi|}();
 ";
-        var fixedSource = @"
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOpenApi();
-";
 
         // Assert
-        await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 
     [Fact]
@@ -49,17 +45,8 @@ var app = WebApplication.Create();
 
 app.{|CS1061:MapOpenApi|}();
 ";
-        var fixedSource = @"
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-var app = WebApplication.Create(args);
-
-app.MapOpenApi();
-";
 
         // Assert
-        await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        await VerifyCS.VerifyCodeFixAsync(source, source);
     }
 }
