@@ -90,12 +90,22 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
-        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!cancellationToken.CanBeCanceled)
+        var startTask = Task.CompletedTask;
+        if (!response.HasStarted)
         {
-            return WriteAsJsonAsyncSlow(response.BodyWriter, value, options, response.HttpContext.RequestAborted);
+            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+            startTask = response.StartAsync(cancellationToken);
         }
 
+        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        {
+            return WriteAsJsonAsyncSlow(startTask, response.BodyWriter, value, options,
+                ignoreOCE: !cancellationToken.CanBeCanceled,
+                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+        }
+
+        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, options, cancellationToken);
     }
 
@@ -121,21 +131,33 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
-        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!cancellationToken.CanBeCanceled)
+        var startTask = Task.CompletedTask;
+        if (!response.HasStarted)
         {
-            return WriteAsJsonAsyncSlow(response, value, jsonTypeInfo);
+            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+            startTask = response.StartAsync(cancellationToken);
         }
 
+        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        {
+            return WriteAsJsonAsyncSlow(startTask, response, value, jsonTypeInfo,
+                ignoreOCE: !cancellationToken.CanBeCanceled,
+                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+        }
+
+        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
 
-        static async Task WriteAsJsonAsyncSlow(HttpResponse response, TValue value, JsonTypeInfo<TValue> jsonTypeInfo)
+        static async Task WriteAsJsonAsyncSlow(Task startTask, HttpResponse response, TValue value, JsonTypeInfo<TValue> jsonTypeInfo,
+            bool ignoreOCE, CancellationToken cancellationToken)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, response.HttpContext.RequestAborted);
+                await startTask;
+                await JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException) when (ignoreOCE) { }
         }
     }
 
@@ -162,37 +184,52 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
-        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!cancellationToken.CanBeCanceled)
+        var startTask = Task.CompletedTask;
+        if (!response.HasStarted)
         {
-            return WriteAsJsonAsyncSlow(response, value, jsonTypeInfo);
+            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+            startTask = response.StartAsync(cancellationToken);
         }
 
+        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        {
+            return WriteAsJsonAsyncSlow(startTask, response, value, jsonTypeInfo,
+                ignoreOCE: !cancellationToken.CanBeCanceled,
+                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+        }
+
+        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
 
-        static async Task WriteAsJsonAsyncSlow(HttpResponse response, object? value, JsonTypeInfo jsonTypeInfo)
+        static async Task WriteAsJsonAsyncSlow(Task startTask, HttpResponse response, object? value, JsonTypeInfo jsonTypeInfo,
+            bool ignoreOCE, CancellationToken cancellationToken)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, response.HttpContext.RequestAborted);
+                await startTask;
+                await JsonSerializer.SerializeAsync(response.BodyWriter, value, jsonTypeInfo, cancellationToken);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException) when (ignoreOCE) { }
         }
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow<TValue>(
+        Task startTask,
         PipeWriter body,
         TValue value,
         JsonSerializerOptions? options,
+        bool ignoreOCE,
         CancellationToken cancellationToken)
     {
         try
         {
+            await startTask;
             await JsonSerializer.SerializeAsync(body, value, options, cancellationToken);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) when (ignoreOCE) { }
     }
 
     /// <summary>
@@ -267,29 +304,42 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
-        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!cancellationToken.CanBeCanceled)
+        var startTask = Task.CompletedTask;
+        if (!response.HasStarted)
         {
-            return WriteAsJsonAsyncSlow(response.BodyWriter, value, type, options, response.HttpContext.RequestAborted);
+            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+            startTask = response.StartAsync(cancellationToken);
         }
 
+        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        {
+            return WriteAsJsonAsyncSlow(startTask, response.BodyWriter, value, type, options,
+                ignoreOCE: !cancellationToken.CanBeCanceled,
+                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+        }
+
+        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, type, options, cancellationToken);
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     [RequiresDynamicCode(RequiresDynamicCodeMessage)]
     private static async Task WriteAsJsonAsyncSlow(
+        Task startTask,
         PipeWriter body,
         object? value,
         Type type,
         JsonSerializerOptions? options,
+        bool ignoreOCE,
         CancellationToken cancellationToken)
     {
         try
         {
+            await startTask;
             await JsonSerializer.SerializeAsync(body, value, type, options, cancellationToken);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) when (ignoreOCE) { }
     }
 
     /// <summary>
@@ -317,21 +367,33 @@ public static partial class HttpResponseJsonExtensions
 
         response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
 
-        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
-        if (!cancellationToken.CanBeCanceled)
+        var startTask = Task.CompletedTask;
+        if (!response.HasStarted)
         {
-            return WriteAsJsonAsyncSlow();
+            // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+            startTask = response.StartAsync(cancellationToken);
         }
 
+        // if no user provided token, pass the RequestAborted token and ignore OperationCanceledException
+        if (!startTask.IsCompleted || !cancellationToken.CanBeCanceled)
+        {
+            return WriteAsJsonAsyncSlow(startTask, response.BodyWriter, value, type, context,
+                ignoreOCE: !cancellationToken.CanBeCanceled,
+                cancellationToken.CanBeCanceled ? cancellationToken : response.HttpContext.RequestAborted);
+        }
+
+        startTask.GetAwaiter().GetResult();
         return JsonSerializer.SerializeAsync(response.BodyWriter, value, type, context, cancellationToken);
 
-        async Task WriteAsJsonAsyncSlow()
+        static async Task WriteAsJsonAsyncSlow(Task startTask, PipeWriter body, object? value, Type type, JsonSerializerContext context,
+            bool ignoreOCE, CancellationToken cancellationToken)
         {
             try
             {
-                await JsonSerializer.SerializeAsync(response.BodyWriter, value, type, context, cancellationToken);
+                await startTask;
+                await JsonSerializer.SerializeAsync(body, value, type, context, cancellationToken);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException) when (ignoreOCE) { }
         }
     }
 

@@ -83,12 +83,17 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             }
         }
 
-        var responseWriter = httpContext.Response.BodyWriter;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
-                await httpContext.Response.StartAsync();
+                var responseWriter = httpContext.Response.BodyWriter;
+                if (!httpContext.Response.HasStarted)
+                {
+                    // Flush headers before starting Json serialization. This avoids an extra layer of buffering before the first flush.
+                    await httpContext.Response.StartAsync();
+                }
+
                 if (jsonTypeInfo is not null)
                 {
                     await JsonSerializer.SerializeAsync(responseWriter, context.Object, jsonTypeInfo, httpContext.RequestAborted);
