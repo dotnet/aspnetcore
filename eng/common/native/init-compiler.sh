@@ -2,7 +2,9 @@
 #
 # This file detects the C/C++ compiler and exports it to the CC/CXX environment variables
 #
-# NOTE: some scripts source this file and rely on stdout being empty, make sure to not output anything here!
+# NOTE: some scripts source this file and rely on stdout being empty, make sure
+# to not output *anything* here, unless it is an error message that fails the
+# build.
 
 if [ -z "$build_arch" ] || [ -z "$compiler" ]; then
   echo "Usage..."
@@ -58,6 +60,26 @@ check_version_exists() {
     echo "$desired_version"
 }
 
+__baseOS="$(uname)"
+set_compiler_version_from_CC() {
+    if [ "$__baseOS" = "Darwin" ]; then
+        # On Darwin, the versions from -version/-dumpversion refer to Xcode
+        # versions, not llvm versions, so we can't rely on them.
+        return
+    fi
+
+    version="$("$CC" -dumpversion)"
+    if [ -z "$version" ]; then
+        echo "Error: $CC -dumpversion didn't provide a version"
+        exit 1
+    fi
+
+    # gcc and clang often display 3 part versions. However, gcc can show only 1 part in some environments.
+    IFS=. read -r majorVersion minorVersion _ <<EOF
+$version
+EOF
+}
+
 if [ -z "$CLR_CC" ]; then
 
     # Set default versions
@@ -74,64 +96,67 @@ if [ -z "$CLR_CC" ]; then
         done
 
         if [ -z "$majorVersion" ]; then
-            if command -v "$compiler" > /dev/null; then
-                if [ "$(uname)" != "Darwin" ]; then
-                    echo "Warning: Specific version of $compiler not found, falling back to use the one in PATH."
-                fi
-                CC="$(command -v "$compiler")"
-                CXX="$(command -v "$cxxCompiler")"
-            else
-                echo "No usable version of $compiler found."
+            if ! command -v "$compiler" > /dev/null; then
+                echo "Error: No usable version of $compiler found."
                 exit 1
             fi
+
+            CC="$(command -v "$compiler" 2> /dev/null)"
+            CXX="$(command -v "$cxxCompiler" 2> /dev/null)"
+            set_compiler_version_from_CC
         else
-            if [ "$compiler" = "clang" ] && [ "$majorVersion" -lt 5 ]; then
-                if [ "$build_arch" = "arm" ] || [ "$build_arch" = "armel" ]; then
-                    if command -v "$compiler" > /dev/null; then
-                        echo "Warning: Found clang version $majorVersion which is not supported on arm/armel architectures, falling back to use clang from PATH."
-                        CC="$(command -v "$compiler")"
-                        CXX="$(command -v "$cxxCompiler")"
-                    else
-                        echo "Found clang version $majorVersion which is not supported on arm/armel architectures, and there is no clang in PATH."
-                        exit 1
-                    fi
+            if [ "$compiler" = "clang" ] && [ "$majorVersion" -lt 5 ] && { [ "$build_arch" = "arm" ] || [ "$build_arch" = "armel" ]; }; then
+                # If a major version was provided explicitly, and it was too old, find a newer compiler instead
+                if ! command -v "$compiler" > /dev/null; then
+                    echo "Error: Found clang version $majorVersion which is not supported on arm/armel architectures, and there is no clang in PATH."
+                    exit 1
                 fi
+
+                CC="$(command -v "$compiler" 2> /dev/null)"
+                CXX="$(command -v "$cxxCompiler" 2> /dev/null)"
+                set_compiler_version_from_CC
             fi
         fi
     else
         desired_version="$(check_version_exists "$majorVersion" "$minorVersion")"
         if [ "$desired_version" = "-1" ]; then
-            echo "Could not find specific version of $compiler: $majorVersion $minorVersion."
+            echo "Error: Could not find specific version of $compiler: $majorVersion $minorVersion."
             exit 1
         fi
     fi
 
     if [ -z "$CC" ]; then
-        CC="$(command -v "$compiler$desired_version")"
-        CXX="$(command -v "$cxxCompiler$desired_version")"
-        if [ -z "$CXX" ]; then CXX="$(command -v "$cxxCompiler")"; fi
+        CC="$(command -v "$compiler$desired_version" 2> /dev/null)"
+        CXX="$(command -v "$cxxCompiler$desired_version" 2> /dev/null)"
+        if [ -z "$CXX" ]; then CXX="$(command -v "$cxxCompiler" 2> /dev/null)"; fi
+        set_compiler_version_from_CC
     fi
 else
     if [ ! -f "$CLR_CC" ]; then
-        echo "CLR_CC is set but path '$CLR_CC' does not exist"
+        echo "Error: CLR_CC is set but path '$CLR_CC' does not exist"
         exit 1
     fi
     CC="$CLR_CC"
     CXX="$CLR_CXX"
+    set_compiler_version_from_CC
 fi
 
 if [ -z "$CC" ]; then
-    echo "Unable to find $compiler."
+    echo "Error: Unable to find $compiler."
     exit 1
 fi
 
-# Only lld version >= 9 can be considered stable. lld supports s390x starting from 18.0.
-if [ "$compiler" = "clang" ] && [ -n "$majorVersion" ] && [ "$majorVersion" -ge 9 ] && ([ "$build_arch" != "s390x" ] || [ "$majorVersion" -ge 18 ]); then
-    if "$CC" -fuse-ld=lld -Wl,--version >/dev/null 2>&1; then
-        LDFLAGS="-fuse-ld=lld"
+if [ "$__baseOS" != "Darwin" ]; then
+    # On Darwin, we always want to use the Apple linker.
+
+    # Only lld version >= 9 can be considered stable. lld supports s390x starting from 18.0.
+    if [ "$compiler" = "clang" ] && [ -n "$majorVersion" ] && [ "$majorVersion" -ge 9 ] && { [ "$build_arch" != "s390x" ] || [ "$majorVersion" -ge 18 ]; }; then
+        if "$CC" -fuse-ld=lld -Wl,--version >/dev/null 2>&1; then
+            LDFLAGS="-fuse-ld=lld"
+        fi
     fi
 fi
 
-SCAN_BUILD_COMMAND="$(command -v "scan-build$desired_version")"
+SCAN_BUILD_COMMAND="$(command -v "scan-build$desired_version" 2> /dev/null)"
 
 export CC CXX LDFLAGS SCAN_BUILD_COMMAND
