@@ -86,6 +86,13 @@ public class Http2FrameWriterTests
 
         Assert.Equal(new byte[] { 0x00, 0x00, 0x00, 0x00 }, payload.Skip(5).Take(4).ToArray());
     }
+
+    [Fact]
+    public void UpdateMaxFrameSize_To_ProtocolMaximum()
+    {
+        var sut = CreateFrameWriter(new Pipe());
+        sut.UpdateMaxFrameSize((int)Math.Pow(2, 24) - 1);
+    }
 }
 
 public static class PipeReaderExtensions
