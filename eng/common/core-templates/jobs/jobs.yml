@@ -21,7 +21,6 @@ parameters:
     # Optional: Include toolset dependencies in the generated graph files
     includeToolset: false
     
-
   # Required: A collection of jobs to run - https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   jobs: []
 
