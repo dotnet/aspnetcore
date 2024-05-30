@@ -181,28 +181,18 @@ internal sealed class RemoteJSDataStream : Stream
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        var linkedCancellationToken = GetLinkedCancellationToken(_streamCancellationToken, cancellationToken);
-        return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCancellationToken);
+        using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken))
+        {
+            return await _pipeReaderStream.ReadAsync(buffer.AsMemory(offset, count), linkedCts.Token);
+        }
     }
 
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        var linkedCancellationToken = GetLinkedCancellationToken(_streamCancellationToken, cancellationToken);
-        return await _pipeReaderStream.ReadAsync(buffer, linkedCancellationToken);
-    }
-
-    private static CancellationToken GetLinkedCancellationToken(CancellationToken a, CancellationToken b)
-    {
-        if (a.CanBeCanceled && b.CanBeCanceled)
+        using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_streamCancellationToken, cancellationToken))
         {
-            return CancellationTokenSource.CreateLinkedTokenSource(a, b).Token;
+            return await _pipeReaderStream.ReadAsync(buffer, linkedCts.Token);
         }
-        else if (a.CanBeCanceled)
-        {
-            return a;
-        }
-
-        return b;
     }
 
     private async Task ThrowOnTimeout()
