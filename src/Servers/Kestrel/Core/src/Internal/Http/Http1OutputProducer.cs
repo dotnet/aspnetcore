@@ -273,6 +273,19 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         }
     }
 
+    public long UnflushedBytes
+    {
+        get
+        {
+            var bytes = _position + _advancedBytesForChunk + _pipeWriter.UnflushedBytes;
+            for (var i = 0; i < _completedSegments?.Count; i++)
+            {
+                bytes += _completedSegments[i].Length;
+            }
+            return bytes;
+        }
+    }
+
     public void CancelPendingFlush()
     {
         _pipeWriter.CancelPendingFlush();
