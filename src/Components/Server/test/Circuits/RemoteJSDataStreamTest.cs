@@ -287,6 +287,56 @@ public class RemoteJSDataStreamTest
         Assert.False(success);
     }
 
+    [Fact]
+    public async Task ReadAsync_ByteArray_DisposesCancellationTokenSource()
+    {
+        // Arrange
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None).DefaultTimeout();
+        var buffer = new byte[100];
+        var chunk = new byte[100];
+        new Random().NextBytes(chunk);
+
+        // Act
+        var cts = new CancellationTokenSource();
+        var sendDataTask = Task.Run(async () =>
+        {
+            await RemoteJSDataStream.ReceiveData(_jsRuntime, GetStreamId(remoteJSDataStream, _jsRuntime), chunkId: 0, chunk, error: null);
+        });
+
+        await sendDataTask;
+        var result = await remoteJSDataStream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+
+        // Assert
+        Assert.True(cts.Token.CanBeCanceled);
+        Assert.False(cts.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task ReadAsync_Memory_DisposesCancellationTokenSource()
+    {
+        // Arrange
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(_jsRuntime, jsStreamReference, totalLength: 100, signalRMaximumIncomingBytes: 10_000, jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1), cancellationToken: CancellationToken.None).DefaultTimeout();
+        var buffer = new Memory<byte>(new byte[100]);
+        var chunk = new byte[100];
+        new Random().NextBytes(chunk);
+
+        // Act
+        var cts = new CancellationTokenSource();
+        var sendDataTask = Task.Run(async () =>
+        {
+            await RemoteJSDataStream.ReceiveData(_jsRuntime, GetStreamId(remoteJSDataStream, _jsRuntime), chunkId: 0, chunk, error: null);
+        });
+
+        await sendDataTask;
+        var result = await remoteJSDataStream.ReadAsync(buffer, cts.Token);
+
+        // Assert
+        Assert.True(cts.Token.CanBeCanceled);
+        Assert.False(cts.IsCancellationRequested);
+    }
+
     private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)
     {
         var jsStreamReference = Mock.Of<IJSStreamReference>();
