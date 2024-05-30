@@ -21,7 +21,8 @@ parameters:
     # Optional: Include toolset dependencies in the generated graph files
     includeToolset: false
     
-  # Required: A collection of jobs to run - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+
+  # Required: A collection of jobs to run - https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   jobs: []
 
   # Optional: Override automatically derived dependsOn value for "publish build assets" job
