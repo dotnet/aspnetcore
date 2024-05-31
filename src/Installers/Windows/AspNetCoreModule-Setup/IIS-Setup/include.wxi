@@ -4,7 +4,7 @@
   <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
 
   <!-- NativeMachine values match the expected values for image file machine constants
-     https://learn.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
+     https://learn.microsoft.com/windows/win32/sysinfo/image-file-machine-constants -->
   <?define NativeMachine_x86=332?>
   <?define NativeMachine_x64=34404?>
   <?define NativeMachine_arm64=43620?>
