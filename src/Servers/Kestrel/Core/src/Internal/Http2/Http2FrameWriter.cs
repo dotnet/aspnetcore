@@ -633,7 +633,7 @@ internal sealed class Http2FrameWriter
                 }
                 else
                 {
-                    _headersEncodingLargeBufferSize *= HeaderBufferSizeMultiplier;
+                    _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier, _maxFrameSize);
                 }
                 ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
                 largeHeaderBuffer = null;
@@ -654,7 +654,7 @@ internal sealed class Http2FrameWriter
                 if (largeHeaderBuffer != null)
                 {
                     ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
-                    _headersEncodingLargeBufferSize *= HeaderBufferSizeMultiplier;
+                    _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier, _maxFrameSize);
                 }
                 largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(_headersEncodingLargeBufferSize);
                 buffer = largeHeaderBuffer.AsSpan(0, _headersEncodingLargeBufferSize);
