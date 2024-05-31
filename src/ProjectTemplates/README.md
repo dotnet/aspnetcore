@@ -136,7 +136,7 @@ If this timeout is exceeded, the Helix test runner will capture a dump of the te
 
 ##### Helix runner `dotnet test` timeout
 
-When running in Helix, a test hang timeout, e.g. `dotnet test --blame-hang-timeout 15m` , is configured in [eng\tools\HelixTestRunner\TestRunner.cs](eng/tools/HelixTestRunner/TestRunner.cs)
+When running in Helix, a test hang timeout, e.g. `dotnet test --blame-hang-timeout 15m` , is configured in [eng\tools\HelixTestRunner\TestRunner.cs](/eng/tools/HelixTestRunner/TestRunner.cs)
 
 ```csharp
 public async Task<int> RunTestsAsync()
