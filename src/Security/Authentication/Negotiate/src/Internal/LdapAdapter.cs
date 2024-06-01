@@ -66,21 +66,18 @@ internal static partial class LdapAdapter
 
             // Get the user SID
             var userSID = userFound.Attributes["objectsid"];
-            if (userSID is not null)
+            if (userSID is { Count: 1 })
             {
-                if (userSID.Count == 1)
+                var usid = ParseSID((byte[])userSID[0]);
+                if (usid is not null)
                 {
-                    var usid = ParseSID((byte[])userSID[0]);
-                    if (usid is not null)
-                    {
-                        retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.Sid, usid.ToString()));
-                    }
+                    retrievedClaims.Add(new(ClaimTypes.PrimarySid, usid.ToString()));
                 }
             }
 
-            var uniqueGroups = new HashSet<string>();
             if (memberof is not null)
             {
+                var uniqueGroups = !settings.IgnoreNestedGroups ? new HashSet<string>() : null;
                 foreach (var group in memberof)
                 {
                     // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
@@ -89,15 +86,16 @@ internal static partial class LdapAdapter
 
                     if (!settings.IgnoreNestedGroups)
                     {
-                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims, uniqueGroups);
+                        // Due to the instantiation condition of uniqueGroups it will not be null here
+                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger, retrievedClaims, uniqueGroups!);
                     }
                     else
                     {
-                        retrievedClaims.Add(new KeyValuePair<string, string>(identity.RoleClaimType, groupCN));
+                        retrievedClaims.Add(new(identity.RoleClaimType, groupCN));
                         var groupSID = GetGroupSID(settings.LdapConnection, distinguishedName, groupCN, logger);
                         if (groupSID is not null)
                         {
-                            retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, groupSID));
+                            retrievedClaims.Add(new(ClaimTypes.GroupSid, groupSID));
                         }
                     }
                 }
@@ -140,53 +138,51 @@ internal static partial class LdapAdapter
             var group = searchResponse.Entries[0]; // Get the object that was found on ldap
             var groupDN = group.DistinguishedName;
 
-            if (processedGroups.Contains(groupDN)) {
+            if (processedGroups.Contains(groupDN))
+            {
                 // No need to continue, this group was resolved before
                 return;
             }
 
-            retrievedClaims.Add(new KeyValuePair<string, string>(principal.RoleClaimType, groupCN));
+            retrievedClaims.Add(new(principal.RoleClaimType, groupCN));
             processedGroups.Add(groupDN);
 
             // Get the group SID
             var groupSID = group.Attributes["objectsid"];
-            if (groupSID is not null)
+            if (groupSID is { Count: 1 })
             {
-                if (groupSID.Count == 1)
+                // For some reason it is sometimes string and sometimes byte[] when it is returned as a string, then every byte is converted to a char and simply put together as a string
+                switch (groupSID[0])
                 {
-                    // For some reason it is sometimes string and sometimes byte[] when it is returned as a string, then every byte is converted to a char and simply put together as a string
-                    switch (groupSID[0])
-                    {
-                        case string groupSIDstr:
-                            // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
-                            // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
-                            // slice method will be used here. The maximum size will be rounded up to the
-                            // next power of two to increase allocation speed.
-                            // Because this is a recursive function the stack allocation may need to be replaced
-                            // by a slower heap allocation.
-                            int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
-                            if (groupSIDstr.Length <= allocSize)
+                    case string groupSIDstr:
+                        // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
+                        // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
+                        // slice method will be used here. The maximum size will be rounded up to the
+                        // next power of two to increase allocation speed.
+                        // Because this is a recursive function the stack allocation may need to be replaced
+                        // by a slower heap allocation.
+                        int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
+                        if (groupSIDstr.Length <= allocSize)
+                        {
+                            Span<byte> lgroupSIDba = stackalloc byte[allocSize];
+                            for (int i = 0; i < groupSIDstr.Length; ++i)
                             {
-                                Span<byte> lgroupSIDba = stackalloc byte[allocSize];
-                                for (int i = 0; i < groupSIDstr.Length; ++i)
-                                {
-                                    lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
-                                }
-                                var lgsid = ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
-                                if (lgsid is not null)
-                                {
-                                    retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, lgsid));
-                                }
+                                lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
                             }
-                            break;
-                        case byte[] groupSIDba:
-                            var gsid = ParseSID(groupSIDba);
-                            if (gsid is not null)
+                            var lgsid = ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
+                            if (lgsid is not null)
                             {
-                                retrievedClaims.Add(new KeyValuePair<string, string>(ClaimTypes.GroupSid, gsid));
+                                retrievedClaims.Add(new(ClaimTypes.GroupSid, lgsid));
                             }
-                            break;
-                    }
+                        }
+                        break;
+                    case byte[] groupSIDba:
+                        var gsid = ParseSID(groupSIDba);
+                        if (gsid is not null)
+                        {
+                            retrievedClaims.Add(new(ClaimTypes.GroupSid, gsid));
+                        }
+                        break;
                 }
             }
 
@@ -225,35 +221,32 @@ internal static partial class LdapAdapter
 
             var group = searchResponse.Entries[0]; // Get the object that was found on ldap
             var groupSID = group.Attributes["objectsid"];
-            if (groupSID is not null)
+            if (groupSID is { Count: 1 })
             {
-                if (groupSID.Count == 1)
+                switch (groupSID[0])
                 {
-                    switch (groupSID[0])
-                    {
-                        case string groupSIDstr:
-                            // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
-                            // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
-                            // slice method will be used here. The maximum size will be rounded up to the
-                            // next power of two to increase allocation speed.
-                            int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
-                            if (groupSIDstr.Length <= allocSize)
+                    case string groupSIDstr:
+                        // The maximum permitted size of a SID is 1 + 1 + 6 + 4 * MaxSubAuthorities
+                        // and to avoid unsafe dynamic stackalloc allocations a max static allocation and
+                        // slice method will be used here. The maximum size will be rounded up to the
+                        // next power of two to increase allocation speed.
+                        int allocSize = (int)BitOperations.RoundUpToPowerOf2((uint)(1 + 1 + 6 + 4 * MaxSubAuthorities));
+                        if (groupSIDstr.Length <= allocSize)
+                        {
+                            Span<byte> lgroupSIDba = stackalloc byte[allocSize];
+                            for (int i = 0; i < groupSIDstr.Length; ++i)
                             {
-                                Span<byte> lgroupSIDba = stackalloc byte[allocSize];
-                                for (int i = 0; i < groupSIDstr.Length; ++i)
-                                {
-                                    lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
-                                }
-                                return ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
+                                lgroupSIDba[i] = Convert.ToByte(groupSIDstr[i]);
                             }
-                            break;
-                        case byte[] groupSIDba:
-                            return ParseSID(groupSIDba);
-                    }
+                            return ParseSID(lgroupSIDba.Slice(0, groupSIDstr.Length));
+                        }
+                        break;
+                    case byte[] groupSIDba:
+                        return ParseSID(groupSIDba);
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -332,7 +325,6 @@ internal static partial class LdapAdapter
         int length = 4;
         ((ulong)authority).TryFormat(result.Slice(length), out int written, provider: CultureInfo.InvariantCulture);
         length += written;
-        // Might need a check against a stack overflow, but this is directly taken from SID.cs of the .NET runtime library
         for (int index = 0; index < subAuthorities.Length; index++)
         {
             result[length] = '-';
