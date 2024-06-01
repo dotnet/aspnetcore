@@ -377,7 +377,7 @@ internal sealed class Http2FrameWriter
             {
                 // Safe multiply, MaxFrameSize is limited to 2^24-1 bytes by the protocol and by Http2PeerSettings.
                 // Ref: https://datatracker.ietf.org/doc/html/rfc7540#section-4.2
-                _headersEncodingLargeBufferSize = Math.Max(_headersEncodingLargeBufferSize, maxFrameSize * HeaderBufferSizeMultiplier);
+                _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize, maxFrameSize * HeaderBufferSizeMultiplier);
                 _maxFrameSize = maxFrameSize;
                 _headerEncodingBuffer = new byte[_maxFrameSize];
             }
@@ -633,7 +633,7 @@ internal sealed class Http2FrameWriter
                 }
                 else
                 {
-                    _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier, _maxFrameSize);
+                    _headersEncodingLargeBufferSize = checked(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier);
                 }
                 ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
                 largeHeaderBuffer = null;
@@ -654,7 +654,7 @@ internal sealed class Http2FrameWriter
                 if (largeHeaderBuffer != null)
                 {
                     ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
-                    _headersEncodingLargeBufferSize = int.Max(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier, _maxFrameSize);
+                    _headersEncodingLargeBufferSize = checked(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier);
                 }
                 largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(_headersEncodingLargeBufferSize);
                 buffer = largeHeaderBuffer.AsSpan(0, _headersEncodingLargeBufferSize);
