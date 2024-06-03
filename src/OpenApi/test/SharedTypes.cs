@@ -63,3 +63,12 @@ internal class Proposal
     public required Proposal ProposalElement { get; set; }
     public required Stream Stream { get; set; }
 }
+
+internal class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, int totalPages, IEnumerable<T> items) where T : class
+{
+    public int PageIndex { get; set; } = pageIndex;
+    public int PageSize { get; set; } = pageSize;
+    public long TotalItems { get; set; } = totalItems;
+    public int TotalPages { get; set; } = totalPages;
+    public IEnumerable<T> Items { get; set; } = items;
+}
