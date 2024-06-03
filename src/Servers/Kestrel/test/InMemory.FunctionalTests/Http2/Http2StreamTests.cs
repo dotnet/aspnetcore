@@ -2626,6 +2626,99 @@ public class Http2StreamTests : Http2TestBase
     }
 
     [Fact]
+    public async Task ResponseTrailers_ShortHeadersBeforeSingleLong_MultipleRequests_ShortHeadersInDynamicTable()
+    {
+        var trailerValue = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
+        await InitializeConnectionAsync(async context =>
+        {
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("a-key", "a-value");
+            context.Response.AppendTrailer("b-key", "b-value");
+            context.Response.AppendTrailer("too_long", trailerValue);
+        });
+
+        // Request 1
+        await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 32,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 1);
+
+        var request1TrailerFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 30,
+            withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+            withStreamId: 1);
+
+        var request1TrailierContinuation1 = await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 16384,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 1);
+
+        var request1TrailierContinuation2 = await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 13,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 1);
+
+        _hpackDecoder.Decode(request1TrailerFrame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Equal("a-value", _decodedHeaders["a-key"]);
+        Assert.Equal("b-value", _decodedHeaders["b-key"]);
+
+        _decodedHeaders.Clear();
+        _hpackDecoder.Decode(request1TrailierContinuation1.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        _hpackDecoder.Decode(request1TrailierContinuation2.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Equal(trailerValue, _decodedHeaders["too_long"]);
+
+        // Request 2
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+
+        await ExpectAsync(Http2FrameType.DATA,
+            withLength: 11,
+            withFlags: (byte)Http2DataFrameFlags.NONE,
+            withStreamId: 3);
+
+        var request2TrailerFrame = await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 2,
+            withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
+            withStreamId: 3);
+
+        var request2TrailierContinuation1 = await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 16384,
+            withFlags: (byte)Http2HeadersFrameFlags.NONE,
+            withStreamId: 3);
+
+        var request2TrailierContinuation2 = await ExpectAsync(Http2FrameType.CONTINUATION,
+            withLength: 13,
+            withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+            withStreamId: 3);
+
+        _hpackDecoder.Decode(request2TrailerFrame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Equal("a-value", _decodedHeaders["a-key"]);
+        Assert.Equal("b-value", _decodedHeaders["b-key"]);
+
+        _decodedHeaders.Clear();
+        _hpackDecoder.Decode(request2TrailierContinuation1.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        _hpackDecoder.Decode(request2TrailierContinuation2.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Equal(trailerValue, _decodedHeaders["too_long"]);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false).DefaultTimeout();
+    }
+
+    [Fact]
     public async Task ResponseTrailers_DoubleLong_SplitsTrailersToContinuationFrames()
     {
         var trailerValue = new string('a', (int)Http2PeerSettings.DefaultMaxFrameSize);
@@ -2648,25 +2741,38 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)Http2DataFrameFlags.NONE,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.HEADERS,
+        var frame = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 13,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Equal(trailerValue, _decodedHeaders["too_long"]);
+        _decodedHeaders.Clear();
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 14,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
+
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Equal(trailerValue, _decodedHeaders["too_long2"]);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
     }
@@ -2701,27 +2807,29 @@ public class Http2StreamTests : Http2TestBase
             withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
             withStreamId: 1);
 
+        _hpackDecoder.Decode(trailerFrame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Single(_decodedHeaders);
+        Assert.Equal(shortValue, _decodedHeaders["short"]);
+        _decodedHeaders.Clear();
+
         var trailierContinuation1 = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 1);
+
+        _hpackDecoder.Decode(trailierContinuation1.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
 
         var trailierContinuation2 = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 27,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
 
-        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
-
-        var buffer = new byte[trailerFrame.PayloadLength + trailierContinuation1.PayloadLength + trailierContinuation2.PayloadLength];
-        trailerFrame.PayloadSequence.CopyTo(buffer);
-        trailierContinuation1.PayloadSequence.CopyTo(buffer.AsSpan(trailerFrame.PayloadLength));
-        trailierContinuation2.PayloadSequence.CopyTo(buffer.AsSpan(trailerFrame.PayloadLength + trailierContinuation1.PayloadLength));
-        _hpackDecoder.Decode(buffer, endHeaders: true, handler: this);
-        Assert.Equal(3, _decodedHeaders.Count);
+        _hpackDecoder.Decode(trailierContinuation2.PayloadSequence, endHeaders: true, handler: this);
         Assert.Equal(trailerValue, _decodedHeaders["long"]);
-        Assert.Equal(shortValue, _decodedHeaders["short"]);
         Assert.Equal(shortValue, _decodedHeaders["short2"]);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false).DefaultTimeout();
     }
 
     [Fact]
@@ -2739,20 +2847,34 @@ public class Http2StreamTests : Http2TestBase
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
         // Response headers
-        await ExpectAsync(Http2FrameType.HEADERS,
+        var frame = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 32,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Equal(2, _decodedHeaders.Count);
+        Assert.Equal("200", _decodedHeaders[":status"]);
+        Assert.Equal("Sat, 01 Jan 2000 00:00:00 GMT", _decodedHeaders["date"]);
+        _decodedHeaders.Clear();
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 20,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
+
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Single(_decodedHeaders);
+        Assert.Equal(value, _decodedHeaders["too_long_header"]);
+        _decodedHeaders.Clear();
 
         // Data
         await ExpectAsync(Http2FrameType.DATA,
@@ -2761,34 +2883,56 @@ public class Http2StreamTests : Http2TestBase
             withStreamId: 1);
 
         // Trailers
-        await ExpectAsync(Http2FrameType.HEADERS,
+        frame = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
             withStreamId: 1);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 21,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 1);
+
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Single(_decodedHeaders);
+        Assert.Equal(value, _decodedHeaders["too_long_trailer"]);
+        _decodedHeaders.Clear();
 
         // Stream 3
         await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
 
         // Response headers
-        await ExpectAsync(Http2FrameType.HEADERS,
+        frame = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 2,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 3);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Equal(2, _decodedHeaders.Count);
+        Assert.Equal("200", _decodedHeaders[":status"]);
+        Assert.Equal("Sat, 01 Jan 2000 00:00:00 GMT", _decodedHeaders["date"]);
+        _decodedHeaders.Clear();
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.NONE,
             withStreamId: 3);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 20,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 3);
+
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Single(_decodedHeaders);
+        Assert.Equal(value, _decodedHeaders["too_long_header"]);
+        _decodedHeaders.Clear();
 
         // Data
         await ExpectAsync(Http2FrameType.DATA,
@@ -2797,15 +2941,23 @@ public class Http2StreamTests : Http2TestBase
             withStreamId: 3);
 
         // Trailers
-        await ExpectAsync(Http2FrameType.HEADERS,
+        frame = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 16384,
             withFlags: (byte)Http2HeadersFrameFlags.END_STREAM,
             withStreamId: 3);
 
-        await ExpectAsync(Http2FrameType.CONTINUATION,
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: false, handler: this);
+        Assert.Empty(_decodedHeaders);
+
+        frame = await ExpectAsync(Http2FrameType.CONTINUATION,
             withLength: 21,
             withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
             withStreamId: 3);
+
+        _hpackDecoder.Decode(frame.PayloadSequence, endHeaders: true, handler: this);
+        Assert.Single(_decodedHeaders);
+        Assert.Equal(value, _decodedHeaders["too_long_trailer"]);
+        _decodedHeaders.Clear();
 
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false).DefaultTimeout();
     }
