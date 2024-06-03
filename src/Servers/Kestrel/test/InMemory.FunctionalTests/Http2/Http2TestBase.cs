@@ -849,7 +849,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         await SendAsync(buffer.Span.Slice(0, length));
 
-        return done == HPackHeaderWriter.HeaderWriteResult.Done;
+        return done == HeaderWriteResult.Done;
     }
 
     internal Task<bool> SendHeadersAsync(int streamId, Http2HeadersFrameFlags flags, IEnumerable<KeyValuePair<string, string>> headers)
@@ -919,7 +919,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         await SendAsync(buffer.Span.Slice(0, length));
 
-        return done == HPackHeaderWriter.HeaderWriteResult.Done;
+        return done == HeaderWriteResult.Done;
     }
 
     internal async Task SendContinuationAsync(int streamId, Http2ContinuationFrameFlags flags, byte[] payload)
@@ -947,7 +947,7 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         Http2FrameWriter.WriteHeader(frame, outputWriter);
         await SendAsync(buffer.Span.Slice(0, length));
 
-        return done == HPackHeaderWriter.HeaderWriteResult.Done;
+        return done == HeaderWriteResult.Done;
     }
 
     internal Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)

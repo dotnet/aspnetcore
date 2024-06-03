@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
 using System.Net.Http;
 using System.Net.Http.HPack;
 
@@ -11,22 +10,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 #endif
 
+internal enum HeaderWriteResult : byte
+{
+    // Not all headers written.
+    MoreHeaders = 0,
+
+    // All headers written.
+    Done = 1,
+
+    // Oversized header for the given buffer.
+    BufferTooSmall = 2,
+}
+
 // This file is used by Kestrel to write response headers and tests to write request headers.
 // To avoid adding test code to Kestrel this file is shared. Test specifc code is excluded from Kestrel by ifdefs.
 internal static class HPackHeaderWriter
 {
-    internal enum HeaderWriteResult : byte
-    {
-        // Not all headers written.
-        MoreHeaders = 0,
-
-        // All headers written.
-        Done = 1,
-
-        // Oversized header for the given buffer.
-        BufferTooSmall = 2,
-    }
-
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
