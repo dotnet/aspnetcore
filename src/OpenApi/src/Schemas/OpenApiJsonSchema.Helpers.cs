@@ -289,6 +289,9 @@ internal sealed partial class OpenApiJsonSchema
                 var mappings = ReadDictionary<string>(ref reader);
                 schema.Discriminator.Mapping = mappings;
                 break;
+            default:
+                reader.Skip();
+                break;
         }
     }
 }
