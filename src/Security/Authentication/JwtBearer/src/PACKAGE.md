@@ -59,7 +59,7 @@ The main types provided by this library are:
 
 <!-- Links to further documentation. Remove conceptual documentation if not available for the library. -->
 
-* [Overview of ASP.NET Core authentication](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/?view=aspnetcore-8.0)
+* [Overview of ASP.NET Core authentication](https://learn.microsoft.com/aspnet/core/security/authentication/?view=aspnetcore-8.0)
 * [JwtBearer sample](https://github.com/dotnet/aspnetcore/tree/main/src/Security/Authentication/JwtBearer/samples)
 
 ## Feedback & Contributing

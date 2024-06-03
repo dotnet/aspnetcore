@@ -6,6 +6,7 @@ using System.Net.Http;
 using AngleSharp.Parser.Html;
 using BasicWebSite;
 using BasicWebSite.Services;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,6 +36,7 @@ public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<Ba
         AssertComponent("<p>Hello world!</p>", "Greetings", content);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55928")]
     [Fact]
     public async Task Renders_RoutingComponent()
     {

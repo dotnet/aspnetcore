@@ -31,6 +31,7 @@ internal sealed class OpenApiDocumentService(
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiComponentService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiComponentService>(documentName);
+    private readonly IOpenApiDocumentTransformer _scrubExtensionsTransformer = new ScrubExtensionsTransformer();
 
     private static readonly OpenApiEncoding _defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
 
@@ -75,6 +76,8 @@ internal sealed class OpenApiDocumentService(
             var transformer = _options.DocumentTransformers[i];
             await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
         }
+        // Remove `x-aspnetcore-id` extension from operations after all transformers have run.
+        await _scrubExtensionsTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
     }
 
     // Note: Internal for testing.

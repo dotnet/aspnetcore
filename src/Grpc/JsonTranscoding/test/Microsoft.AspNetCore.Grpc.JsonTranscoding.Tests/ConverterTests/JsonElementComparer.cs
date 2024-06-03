@@ -98,7 +98,7 @@ public class JsonElementComparer : IEqualityComparer<JsonElement>
 
     public int GetHashCode(JsonElement obj)
     {
-        var hash = new HashCode(); // New in .Net core: https://learn.microsoft.com/en-us/dotnet/api/system.hashcode
+        var hash = new HashCode(); // New in .Net core: https://learn.microsoft.com/dotnet/api/system.hashcode
         ComputeHashCode(obj, ref hash, 0);
         return hash.ToHashCode();
     }
