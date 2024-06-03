@@ -384,31 +384,31 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>b546fbde291f4562dd1c0ab30f6dc39f8fa0253d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24272.5">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24281.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2001d73c8ff942331a73300ba61fa6164805b231</Sha>
+      <Sha>e6b3f32f9855dccbe2447471c8f729b66f17d242</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24272.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24281.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2001d73c8ff942331a73300ba61fa6164805b231</Sha>
+      <Sha>e6b3f32f9855dccbe2447471c8f729b66f17d242</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24272.5">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24281.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2001d73c8ff942331a73300ba61fa6164805b231</Sha>
+      <Sha>e6b3f32f9855dccbe2447471c8f729b66f17d242</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.24272.5">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="9.0.0-beta.24281.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2001d73c8ff942331a73300ba61fa6164805b231</Sha>
+      <Sha>e6b3f32f9855dccbe2447471c8f729b66f17d242</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24272.5">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24281.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2001d73c8ff942331a73300ba61fa6164805b231</Sha>
+      <Sha>e6b3f32f9855dccbe2447471c8f729b66f17d242</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24272.5">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24281.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2001d73c8ff942331a73300ba61fa6164805b231</Sha>
+      <Sha>e6b3f32f9855dccbe2447471c8f729b66f17d242</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.0.0-preview.5.24273.3">
       <Uri>https://github.com/dotnet/extensions</Uri>

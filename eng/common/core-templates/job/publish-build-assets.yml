@@ -13,7 +13,7 @@ parameters:
   # Optional: Include PublishBuildArtifacts task
   enablePublishBuildArtifacts: false
 
-  # Optional: A defined YAML pool - https://learn.microsoft.com/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
   pool: {}
 
   # Optional: should run as a public build even in the internal project

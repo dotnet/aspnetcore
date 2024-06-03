@@ -438,7 +438,7 @@ function StopProcesses {
 }
 
 function MSBuild {
-  local args=$@
+  local args=( "$@" )
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
@@ -473,7 +473,7 @@ function MSBuild {
     args+=( "-logger:$selectedPath" )
   fi
 
-  MSBuild-Core ${args[@]}
+  MSBuild-Core "${args[@]}"
 }
 
 function MSBuild-Core {

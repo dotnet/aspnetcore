@@ -37,6 +37,7 @@ jobs:
                 displayName: 'Publish logs'
                 continueOnError: true
                 condition: always()
+                sbomEnabled: false  # we don't need SBOM for logs
 
       - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
         - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
@@ -59,3 +60,4 @@ jobs:
               artifactName: 'BuildConfiguration'
               displayName: 'Publish build retry configuration'
               continueOnError: true
+              sbomEnabled: false  # we don't need SBOM for BuildConfiguration
