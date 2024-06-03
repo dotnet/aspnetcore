@@ -516,7 +516,7 @@ internal sealed class Http2FrameWriter
             _headersEnumerator.Initialize(headers);
             _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
             var writeResult = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, _headerEncodingBuffer, out var payloadLength);
-            Debug.Assert(writeResult != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "Oversized frames should not be returned, because this always writes the status.");
+            Debug.Assert(writeResult != HPackHeaderWriter.HeaderWriteResult.BufferTooSmall, "This always writes the status as the first header, and it should never be an over the buffer size.");
             FinishWritingHeadersUnsynchronized(streamId, payloadLength, writeResult);
         }
         // Any exception from the HPack encoder can leave the dynamic table in a corrupt state.
