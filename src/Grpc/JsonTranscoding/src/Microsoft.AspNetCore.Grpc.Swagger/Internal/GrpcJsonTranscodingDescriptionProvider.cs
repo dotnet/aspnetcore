@@ -106,40 +106,56 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             var field = routeParameter.Value.DescriptorsPath.Last();
             var parameterName = ServiceDescriptorHelpers.FormatUnderscoreName(field.Name, pascalCase: true, preservePeriod: false);
             var propertyInfo = field.ContainingType.ClrType.GetProperty(parameterName);
+            var fieldType = MessageDescriptorHelpers.ResolveFieldType(field);
 
             // If from a property, create model as property to get its XML comments.
             var identity = propertyInfo != null
-                ? ModelMetadataIdentity.ForProperty(propertyInfo, MessageDescriptorHelpers.ResolveFieldType(field), field.ContainingType.ClrType)
-                : ModelMetadataIdentity.ForType(MessageDescriptorHelpers.ResolveFieldType(field));
+                ? ModelMetadataIdentity.ForProperty(propertyInfo, fieldType, field.ContainingType.ClrType)
+                : ModelMetadataIdentity.ForType(fieldType);
 
             apiDescription.ParameterDescriptions.Add(new ApiParameterDescription
             {
                 Name = routeParameter.Value.JsonPath,
                 ModelMetadata = new GrpcModelMetadata(identity),
                 Source = BindingSource.Path,
-                DefaultValue = string.Empty
+                DefaultValue = string.Empty,
+                Type = fieldType
             });
         }
 
         var bodyDescriptor = ServiceDescriptorHelpers.ResolveBodyDescriptor(httpRule.Body, methodMetadata.ServiceType, methodDescriptor);
         if (bodyDescriptor != null)
         {
-            // If from a property, create model as property to get its XML comments.
-            var identity = bodyDescriptor.PropertyInfo != null
-                ? ModelMetadataIdentity.ForProperty(bodyDescriptor.PropertyInfo, bodyDescriptor.PropertyInfo.PropertyType, bodyDescriptor.PropertyInfo.DeclaringType!)
-                : ModelMetadataIdentity.ForType(bodyDescriptor.Descriptor.ClrType);
+            ModelMetadataIdentity identity;
+            Type type;
+            ControllerParameterDescriptor? parameterDescriptor = null;
 
-            // Or if from a parameter, create model as parameter to get its XML comments.
-            var parameterDescriptor = bodyDescriptor.ParameterInfo != null
-                ? new ControllerParameterDescriptor { ParameterInfo = bodyDescriptor.ParameterInfo }
-                : null;
+            if (bodyDescriptor.PropertyInfo != null)
+            {
+                // If from a property, create model as property to get its XML comments.
+                identity = ModelMetadataIdentity.ForProperty(bodyDescriptor.PropertyInfo, bodyDescriptor.PropertyInfo.PropertyType, bodyDescriptor.PropertyInfo.DeclaringType!);
+                type = bodyDescriptor.PropertyInfo.PropertyType;
+            }
+            else if (bodyDescriptor.ParameterInfo != null)
+            {
+                // Or if from a parameter, create model as parameter to get its XML comments.
+                identity = ModelMetadataIdentity.ForType(bodyDescriptor.Descriptor.ClrType);
+                type = bodyDescriptor.Descriptor.ClrType;
+                parameterDescriptor = new ControllerParameterDescriptor { ParameterInfo = bodyDescriptor.ParameterInfo };
+            }
+            else
+            {
+                identity = ModelMetadataIdentity.ForType(bodyDescriptor.Descriptor.ClrType);
+                type = bodyDescriptor.Descriptor.ClrType;
+            }
 
             apiDescription.ParameterDescriptions.Add(new ApiParameterDescription
             {
                 Name = "Input",
                 ModelMetadata = new GrpcModelMetadata(identity),
                 Source = BindingSource.Body,
-                ParameterDescriptor = parameterDescriptor!
+                ParameterDescriptor = parameterDescriptor!,
+                Type = type
             });
         }
 
@@ -148,18 +164,20 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         {
             var field = queryDescription.Value;
             var propertyInfo = field.ContainingType.ClrType.GetProperty(field.PropertyName);
+            var fieldType = MessageDescriptorHelpers.ResolveFieldType(field);
 
             // If from a property, create model as property to get its XML comments.
             var identity = propertyInfo != null
-                ? ModelMetadataIdentity.ForProperty(propertyInfo, MessageDescriptorHelpers.ResolveFieldType(field), field.ContainingType.ClrType)
-                : ModelMetadataIdentity.ForType(MessageDescriptorHelpers.ResolveFieldType(field));
+                ? ModelMetadataIdentity.ForProperty(propertyInfo, fieldType, field.ContainingType.ClrType)
+                : ModelMetadataIdentity.ForType(fieldType);
 
             apiDescription.ParameterDescriptions.Add(new ApiParameterDescription
             {
                 Name = queryDescription.Key,
                 ModelMetadata = new GrpcModelMetadata(identity),
                 Source = BindingSource.Query,
-                DefaultValue = string.Empty
+                DefaultValue = string.Empty,
+                Type = fieldType
             });
         }
 

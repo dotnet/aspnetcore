@@ -12,6 +12,8 @@ public class Startup
         services.AddGrpc().AddJsonTranscoding();
         services.AddMvc();
 
+        services.AddOpenApi();
+
         #region Secret
         services.AddSwaggerGen(c =>
         {
@@ -43,6 +45,7 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapOpenApi();
             endpoints.MapGrpcService<JsonTranscodingGreeterService>();
             endpoints.MapGrpcService<GreeterService>();
         });
