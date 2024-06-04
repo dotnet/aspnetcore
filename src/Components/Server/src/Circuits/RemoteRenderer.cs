@@ -24,6 +24,7 @@ internal partial class RemoteRenderer : WebRenderer
     private readonly CircuitOptions _options;
     private readonly IServerComponentDeserializer _serverComponentDeserializer;
     private readonly ILogger _logger;
+    private readonly ResourceAssetCollection _resourceCollection;
     internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
     private long _nextRenderId = 1;
     private bool _disposing;
@@ -44,18 +45,22 @@ internal partial class RemoteRenderer : WebRenderer
         IServerComponentDeserializer serverComponentDeserializer,
         ILogger logger,
         RemoteJSRuntime jsRuntime,
-        CircuitJSComponentInterop jsComponentInterop)
+        CircuitJSComponentInterop jsComponentInterop,
+        ResourceAssetCollection resourceCollection = null)
         : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _client = client;
         _options = options;
         _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
+        _resourceCollection = resourceCollection;
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
+
+    protected override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
 
     protected override ComponentPlatform ComponentPlatform => _componentPlatform;
 

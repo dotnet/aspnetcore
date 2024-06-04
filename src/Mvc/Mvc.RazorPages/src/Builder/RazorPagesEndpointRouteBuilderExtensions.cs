@@ -28,7 +28,12 @@ public static class RazorPagesEndpointRouteBuilderExtensions
 
         EnsureRazorPagesServices(endpoints);
 
-        return GetOrCreateDataSource(endpoints).DefaultBuilder;
+        var builder = GetOrCreateDataSource(endpoints).DefaultBuilder;
+        if (!builder.Items.ContainsKey("__EndpointRouteBuilder"))
+        {
+            builder.Items["__EndpointRouteBuilder"] = endpoints;
+        }
+        return builder;
     }
 
     /// <summary>

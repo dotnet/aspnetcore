@@ -28,7 +28,9 @@ public static class ControllerEndpointRouteBuilderExtensions
 
         EnsureControllerServices(endpoints);
 
-        return GetOrCreateDataSource(endpoints).DefaultBuilder;
+        var result = GetOrCreateDataSource(endpoints).DefaultBuilder;
+        result.Items["__EndpointRouteBuilder"] = endpoints;
+        return result;
     }
 
     /// <summary>

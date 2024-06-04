@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -123,8 +125,9 @@ public class ImageTagHelper : UrlResolutionTagHelper
             // pipeline have touched the value. If the value is already encoded this ImageTagHelper may
             // not function properly.
             Src = output.Attributes[SrcAttributeName].Value as string;
+            var src = GetVersionedResourceUrl(Src);
 
-            output.Attributes.SetAttribute(SrcAttributeName, FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src));
+            output.Attributes.SetAttribute(SrcAttributeName, src);
         }
     }
 
@@ -134,5 +137,42 @@ public class ImageTagHelper : UrlResolutionTagHelper
         {
             FileVersionProvider = ViewContext.HttpContext.RequestServices.GetRequiredService<IFileVersionProvider>();
         }
+    }
+
+    private string GetVersionedResourceUrl(string value)
+    {
+        if (AppendVersion == true)
+        {
+            var assetCollection = GetAssetCollection();
+            var pathBase = ViewContext.HttpContext.Request.PathBase;
+            if (assetCollection != null)
+            {
+                var src = assetCollection[value];
+                if (!string.Equals(src, value, StringComparison.Ordinal))
+                {
+                    return src;
+                }
+                if (pathBase.HasValue && value.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
+                {
+                    var relativePath = value[pathBase.Value.Length..];
+                    src = assetCollection[relativePath];
+                    if (!string.Equals(src, relativePath, StringComparison.Ordinal))
+                    {
+                        return src;
+                    }
+                }
+            }
+
+            EnsureFileVersionProvider();
+
+            value = FileVersionProvider.AddFileVersionToPath(pathBase, value);
+        }
+
+        return value;
+    }
+
+    private ResourceAssetCollection GetAssetCollection()
+    {
+        return ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
     }
 }

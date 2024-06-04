@@ -46,6 +46,8 @@ public readonly struct ParameterView
 
     internal ParameterViewLifetime Lifetime => _lifetime;
 
+    internal int Count => _frames?.Length ?? 0;
+
     /// <summary>
     /// Returns an enumerator that iterates through the <see cref="ParameterView"/>.
     /// </summary>

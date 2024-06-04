@@ -158,6 +158,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </summary>
     protected internal virtual ComponentPlatform ComponentPlatform { get; }
 
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> associated with this <see cref="Renderer"/>.
+    /// </summary>
+    protected internal virtual ResourceAssetCollection Assets { get; } = ResourceAssetCollection.Empty;
+
     private async void RenderRootComponentsOnHotReload()
     {
         // Before re-rendering the root component, also clear any well-known caches in the framework

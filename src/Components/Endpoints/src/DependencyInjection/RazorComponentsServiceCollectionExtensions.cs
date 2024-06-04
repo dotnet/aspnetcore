@@ -72,6 +72,8 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddSupplyValueFromQueryProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
 
+        services.TryAddScoped<ResourceCollectionProvider>();
+
         // Form handling
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();

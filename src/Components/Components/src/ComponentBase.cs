@@ -48,6 +48,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     protected ComponentPlatform Platform => _renderHandle.Platform;
 
     /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> for the application.
+    /// </summary>
+    protected ResourceAssetCollection Assets => _renderHandle.Assets;
+
+    /// <summary>
     /// Gets the <see cref="IComponentRenderMode"/> assigned to this component.
     /// </summary>
     protected IComponentRenderMode? AssignedRenderMode

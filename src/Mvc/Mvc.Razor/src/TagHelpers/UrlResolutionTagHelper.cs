@@ -4,7 +4,9 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -221,6 +223,8 @@ public class UrlResolutionTagHelper : TagHelper
             return false;
         }
 
+        trimmedUrl = GetVersionedResourceUrl(trimmedUrl);
+
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         resolvedUrl = urlHelper.Content(trimmedUrl);
 
@@ -243,6 +247,8 @@ public class UrlResolutionTagHelper : TagHelper
         {
             return false;
         }
+
+        trimmedUrl = GetVersionedResourceUrl(trimmedUrl);
 
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         var appRelativeUrl = urlHelper.Content(trimmedUrl);
@@ -297,6 +303,36 @@ public class UrlResolutionTagHelper : TagHelper
         // Substring returns same string if start == 0 && len == Length
         trimmed = input.Substring(start, remainingLength);
         return true;
+    }
+
+    private string GetVersionedResourceUrl(string value)
+    {
+        var assetCollection = GetAssetCollection();
+        if (assetCollection != null)
+        {
+            var src = assetCollection[value];
+            if (!string.Equals(src, value, StringComparison.Ordinal))
+            {
+                return src;
+            }
+            var pathBase = ViewContext.HttpContext.Request.PathBase;
+            if (pathBase.HasValue && value.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
+            {
+                var relativePath = value[pathBase.Value.Length..];
+                src = assetCollection[relativePath];
+                if (!string.Equals(src, relativePath, StringComparison.Ordinal))
+                {
+                    return src;
+                }
+            }
+        }
+
+        return value;
+    }
+
+    private ResourceAssetCollection? GetAssetCollection()
+    {
+        return ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
     }
 
     private sealed class EncodeFirstSegmentContent : IHtmlContent

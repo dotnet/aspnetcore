@@ -194,7 +194,8 @@ public class ComponentHubTest
             string baseUri,
             string uri,
             ClaimsPrincipal user,
-            IPersistentComponentStateStore store)
+            IPersistentComponentStateStore store,
+            ResourceAssetCollection resourceCollection)
         {
             var serviceScope = new Mock<IServiceScope>();
             var circuitHost = TestCircuitHost.Create(serviceScope: new AsyncServiceScope(serviceScope.Object));

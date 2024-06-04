@@ -143,12 +143,13 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
 
         var tcs = new TaskCompletionSource();
-
         using (cancellationToken.Register(() => tcs.TrySetResult()))
         {
             var loggerFactory = Services.GetRequiredService<ILoggerFactory>();
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
-            _renderer = new WebAssemblyRenderer(Services, loggerFactory, jsComponentInterop);
+            var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
+            var collection = await collectionProvider.GetResourceCollection();
+            _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
