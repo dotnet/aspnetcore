@@ -24,7 +24,7 @@ internal class StaticAssetsInvoker
     private readonly EntityTagHeaderValue _etag;
     private readonly long _length;
     private readonly DateTimeOffset _lastModified;
-    private readonly List<ResponseHeader> _remainingHeaders;
+    private readonly List<StaticAssetResponseHeader> _remainingHeaders;
 
     public StaticAssetsInvoker(StaticAssetDescriptor resource, IFileInfo fileInfo, ILogger<StaticAssetsInvoker> logger)
     {
@@ -46,7 +46,7 @@ internal class StaticAssetsInvoker
                     {
                         if (_etag != null)
                         {
-                            _remainingHeaders.Add(new ResponseHeader("ETag", _etag.ToString()));
+                            _remainingHeaders.Add(new StaticAssetResponseHeader("ETag", _etag.ToString()));
                         }
 
                         _etag = EntityTagHeaderValue.Parse(etag);

@@ -43,5 +43,6 @@ internal class StaticAssetsManifest
     }
 
     public int Version { get; set; }
+
     public List<StaticAssetDescriptor> Endpoints { get; set; } = [];
 }

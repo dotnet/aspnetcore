@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
@@ -276,31 +275,33 @@ public class StaticAssetsIntegrationTests
             var lastModified = DateTimeOffset.UtcNow;
             File.WriteAllText(filePath, resource.Content);
 
-            manifest.Endpoints.Add(new StaticAssetDescriptor(
-                resource.Path,
-                resource.Path,
-                [],
-                [],
-                [
+            manifest.Endpoints.Add(new StaticAssetDescriptor
+            {
+                Route = resource.Path,
+                AssetPath = resource.Path,
+                Selectors = [],
+                Properties = [],
+                ResponseHeaders = [
                     new ("Accept-Ranges", "bytes"),
                     new("Content-Length", resource.Content.Length.ToString(CultureInfo.InvariantCulture)),
                     new("Content-Type", GetContentType(filePath)),
                     new ("ETag", $"\"{GetEtag(resource.Content)}\""),
                     new("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture))
                 ]
-                ));
+            });
 
             if (resource.IncludeCompressedVersion)
             {
                 var compressedFilePath = Path.Combine(webRoot, resource.Path + ".gz");
                 var length = CreateCompressedFile(compressedFilePath, resource);
 
-                manifest.Endpoints.Add(new StaticAssetDescriptor(
-                    resource.Path,
-                    $"{resource.Path}.gz",
-                    [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
-                    [],
-                    [
+                manifest.Endpoints.Add(new StaticAssetDescriptor
+                {
+                    Route = resource.Path,
+                    AssetPath = $"{resource.Path}.gz",
+                    Selectors = [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
+                    Properties = [],
+                    ResponseHeaders = [
                         new ("Accept-Ranges", "bytes"),
                         new ("Content-Type", GetContentType(filePath)),
 
@@ -312,7 +313,7 @@ public class StaticAssetsIntegrationTests
                         new ("Content-Encoding", "gzip"),
                         new ("Vary", "Accept-Encoding"),
                     ]
-                    ));
+                });
             }
         }
         using var stream = File.Create(manifestPath);
@@ -352,19 +353,20 @@ public class StaticAssetsIntegrationTests
         {
             Version = 1
         };
-        manifest.Endpoints.Add(new StaticAssetDescriptor(
-            "sample.txt",
-            "sample.txt",
-            [],
-            [],
-            [
+        manifest.Endpoints.Add(new StaticAssetDescriptor
+        {
+            Route = "sample.txt",
+            AssetPath = "sample.txt",
+            Selectors = [],
+            Properties = [],
+            ResponseHeaders = [
                 new ("Accept-Ranges", "bytes"),
                 new("Content-Length", "Hello, World!".Length.ToString(CultureInfo.InvariantCulture)),
                 new("Content-Type", GetContentType("sample.txt")),
                 new ("ETag", $"\"{GetEtag("Hello, World!")}\""),
                 new("Last-Modified", new DateTimeOffset(2023,03,03,0,0,0,TimeSpan.Zero).ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture))
             ]
-        ));
+        });
 
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         {
