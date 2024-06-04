@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Options;
+using System.Reflection;
 using Microsoft.OpenApi.Models;
 
 namespace Server;
@@ -10,7 +12,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddGrpc().AddJsonTranscoding();
-        services.AddMvc();
+        //services.AddMvc();
 
         services.AddOpenApi();
 
@@ -18,6 +20,11 @@ public class Startup
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            xmlFilename = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+            c.IncludeXmlComments(xmlFilename);
+            c.IncludeGrpcXmlComments(xmlFilename, includeControllerXmlComments: true);
         });
         services.AddGrpcSwagger();
         #endregion
@@ -43,7 +50,7 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapOpenApi();
-            endpoints.MapGrpcService<JsonTranscodingGreeterService>();
+            //endpoints.MapGrpcService<JsonTranscodingGreeterService>();
             endpoints.MapGrpcService<GreeterService>();
         });
     }
