@@ -48,6 +48,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
+        dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+
         return dataSource.AddRoute(
             "default",
             "{controller=Home}/{action=Index}/{id?}",
@@ -92,6 +94,8 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
+        dataSource.DefaultBuilder.Items["__EndpointRouteBuilder"] = endpoints;
+
         return dataSource.AddRoute(
             name,
             pattern,

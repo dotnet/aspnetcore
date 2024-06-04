@@ -140,7 +140,9 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}")
+    .WithResourceCollection();
+
 #if (OrganizationalAuth || IndividualAuth)
 app.MapRazorPages()
    .WithResourceCollection();
