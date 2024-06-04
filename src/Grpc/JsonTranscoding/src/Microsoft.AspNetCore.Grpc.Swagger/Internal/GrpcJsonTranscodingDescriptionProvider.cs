@@ -81,13 +81,15 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         {
             ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
             ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(responseType)),
-            StatusCode = 200
+            StatusCode = 200,
+            Type = responseType
         });
         apiDescription.SupportedResponseTypes.Add(new ApiResponseType
         {
             ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
             ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(typeof(Google.Rpc.Status))),
-            IsDefaultResponse = true
+            IsDefaultResponse = true,
+            Type = typeof(Google.Rpc.Status)
         });
         var explorerSettings = routeEndpoint.Metadata.GetMetadata<ApiExplorerSettingsAttribute>();
         if (explorerSettings != null)
