@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
@@ -23,6 +24,7 @@ public class RoutingGroupsTests : IClassFixture<MvcTestFixture<StartupForGroups>
 
     public WebApplicationFactory<StartupForGroups> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55931")]
     [Fact]
     public async Task MatchesControllerGroup()
     {

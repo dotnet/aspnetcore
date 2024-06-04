@@ -1,5 +1,5 @@
 parameters:
-# Job schema parameters - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+# Job schema parameters - https://learn.microsoft.com/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   cancelTimeoutInMinutes: ''
   condition: ''
   container: ''
@@ -83,7 +83,7 @@ jobs:
     - name: EnableRichCodeNavigation
       value: 'true'
   # Retry signature validation up to three times, waiting 2 seconds between attempts.
-  # See https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu3028#retry-untrusted-root-failures
+  # See https://learn.microsoft.com/nuget/reference/errors-and-warnings/nu3028#retry-untrusted-root-failures
   - name: NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY
     value: 3,2000
   - ${{ each variable in parameters.variables }}:

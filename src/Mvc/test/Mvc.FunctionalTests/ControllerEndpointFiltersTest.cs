@@ -7,6 +7,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
 
@@ -23,6 +24,7 @@ public class ControllerEndpointFiltersTest : IClassFixture<MvcTestFixture<Startu
 
     public WebApplicationFactory<StartupForEndpointFilters> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55929")]
     [Fact]
     public async Task CanApplyEndpointFilterToController()
     {
