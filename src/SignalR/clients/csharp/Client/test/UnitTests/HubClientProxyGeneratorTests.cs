@@ -31,7 +31,7 @@ public class HubClientProxyGeneratorTests
         Task ReturnTask();
     }
 
-    private class MyClient : IMyClient
+    internal class MyClient : IMyClient
     {
         public int CallsOfNoArg;
         public void NoArg()
