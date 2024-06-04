@@ -6,10 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     @*#if (SampleContent)
-    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="@Assets["bootstrap/bootstrap.min.css"]" />
     ##endif*@
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="BlazorWeb-CSharp.styles.css" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["BlazorWeb-CSharp.styles.css"]" />
+    <ImportMap />
     @*#if (SampleContent)
     <link rel="icon" type="image/png" href="favicon.png" />
     ##endif*@

@@ -142,7 +142,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 #if (OrganizationalAuth || IndividualAuth)
-app.MapRazorPages();
+app.MapRazorPages()
+   .WithResourceCollection();
 #endif
 
 app.Run();
