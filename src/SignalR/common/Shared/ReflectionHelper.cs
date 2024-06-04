@@ -15,7 +15,7 @@ internal static class ReflectionHelper
 {
     // mustBeDirectType - Hub methods must use the base 'stream' type and not be a derived class that just implements the 'stream' type
     // and 'stream' types from the client are allowed to inherit from accepted 'stream' types
-    public static bool IsStreamingType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type, bool mustBeDirectType = false)
+    public static bool IsStreamingType(Type type, bool mustBeDirectType = false)
     {
         // TODO #2594 - add Streams here, to make sending files easy
 
@@ -47,26 +47,28 @@ internal static class ReflectionHelper
         return false;
     }
 
-    public static bool IsIAsyncEnumerable([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type)
+    public static bool IsIAsyncEnumerable(Type type) => GetIAsyncEnumerableInterface(type) is not null;
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070:UnrecognizedReflectionPattern",
+        Justification = "The 'IAsyncEnumerable<>' Type must exist and so trimmer kept it. In which case " +
+            "It also kept it on any type which implements it. The below call to GetInterfaces " +
+            "may return fewer results when trimmed but it will return 'IAsyncEnumerable<>' " +
+            "if the type implemented it, even after trimming.")]
+    public static Type? GetIAsyncEnumerableInterface(Type type)
     {
-        if (type.IsGenericType)
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
         {
-            if (type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+            return type;
+        }
+
+        foreach (Type typeToCheck in type.GetInterfaces())
+        {
+            if (typeToCheck.IsGenericType && typeToCheck.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
             {
-                return true;
+                return typeToCheck;
             }
         }
 
-        return type.GetInterfaces().Any(t =>
-        {
-            if (t.IsGenericType)
-            {
-                return t.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>);
-            }
-            else
-            {
-                return false;
-            }
-        });
+        return null;
     }
 }

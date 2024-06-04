@@ -19,9 +19,9 @@
 
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CodeAnalysis\*.cs" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
