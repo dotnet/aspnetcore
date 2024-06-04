@@ -134,7 +134,6 @@
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/**",
             "BlazorWeb-CSharp/Data/**",
-            "BlazorWeb-CSharp.Client/PersistentAuthenticationStateProvider.cs",
             "BlazorWeb-CSharp.Client/UserInfo.cs",
             "BlazorWeb-CSharp.Client/Pages/Auth.razor"
           ]
@@ -152,21 +151,9 @@
           ]
         },
         {
-          "condition": "(!(IndividualLocalAuth && UseServer && UseWebAssembly))",
-          "exclude": [
-            "BlazorWeb-CSharp/Components/Account/PersistingRevalidatingAuthenticationStateProvider.cs"
-          ]
-        },
-        {
-          "condition": "(!(IndividualLocalAuth && UseServer && !UseWebAssembly))",
+          "condition": "(!(IndividualLocalAuth && UseServer))",
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
-          ]
-        },
-        {
-          "condition": "(!(IndividualLocalAuth && !UseServer && UseWebAssembly))",
-          "exclude": [
-            "BlazorWeb-CSharp/Components/Account/PersistingServerAuthenticationStateProvider.cs"
           ]
         },
         {

@@ -1,0 +1,43 @@
+parameters:
+- name: federatedServiceConnection
+  type: string
+- name: outputVariableName
+  type: string
+- name: expiryInHours
+  type: number
+  default: 1
+- name: base64Encode
+  type: boolean
+  default: false
+- name: storageAccount
+  type: string
+- name: container
+  type: string
+- name: permissions
+  type: string
+  default: 'rl'
+
+steps:
+- task: AzureCLI@2
+  displayName: 'Generate delegation SAS Token for ${{ parameters.storageAccount }}/${{ parameters.container }}'
+  inputs:
+    azureSubscription: ${{ parameters.federatedServiceConnection }}
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      # Calculate the expiration of the SAS token and convert to UTC
+      $expiry = (Get-Date).AddHours(${{ parameters.expiryInHours }}).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+
+      $sas = az storage container generate-sas --account-name ${{ parameters.storageAccount }} --name ${{ parameters.container }} --permissions ${{ parameters.permissions }} --expiry $expiry --auth-mode login --as-user -o tsv
+
+      if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to generate SAS token."
+        exit 1
+      }
+
+      if ('${{ parameters.base64Encode }}' -eq 'true') {
+        $sas = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($sas))
+      }
+
+      Write-Host "Setting '${{ parameters.outputVariableName }}' with the access token value"
+      Write-Host "##vso[task.setvariable variable=${{ parameters.outputVariableName }};issecret=true]$sas"

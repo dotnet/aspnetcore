@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -12,6 +13,7 @@ public class ClientValidationOptionsTests : IClassFixture<MvcTestFixture<RazorPa
 
     public MvcTestFixture<RazorPagesWebSite.Startup> Fixture { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55926")]
     [Fact]
     public async Task DisablingClientValidation_DisablesItForPagesAndViews()
     {

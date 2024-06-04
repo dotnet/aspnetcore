@@ -24,6 +24,10 @@ public static class OpenApiEndpointConventionBuilderExtensions
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
     /// with the current endpoint.
     /// </summary>
+    /// <remarks>
+    /// This method does not integrate with built-in OpenAPI document generation support in ASP.NET Core
+    /// and is primarily intended for consumption along-side Swashbuckle.AspNetCore.
+    /// </remarks>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     [RequiresDynamicCode(TrimWarningMessage)]
@@ -38,6 +42,10 @@ public static class OpenApiEndpointConventionBuilderExtensions
     /// Adds an OpenAPI annotation to <see cref="Endpoint.Metadata" /> associated
     /// with the current endpoint and modifies it with the given <paramref name="configureOperation"/>.
     /// </summary>
+    /// <remarks>
+    /// This method does not integrate with built-in OpenAPI document generation support in ASP.NET Core
+    /// and is primarily intended for consumption along-side Swashbuckle.AspNetCore.
+    /// </remarks>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="configureOperation">An <see cref="Func{T, TResult}"/> that returns a new OpenAPI annotation given a generated operation.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
