@@ -1,9 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.AddPackage;
+using Moq;
 using VerifyCS = Microsoft.AspNetCore.Analyzers.Verifiers.CSharpCodeFixVerifier<
     Microsoft.AspNetCore.Analyzers.WebApplicationBuilder.WebApplicationBuilderAnalyzer,
-    Microsoft.AspNetCore.Analyzers.Dependencies.AddPackageFixer>;
+    Microsoft.AspNetCore.Analyzers.Dependencies.AddPackagesTest.MockAddPackageFixer>;
 
 namespace Microsoft.AspNetCore.Analyzers.Dependencies;
 
@@ -29,7 +33,9 @@ builder.Services.{|CS1061:AddOpenApi|}();
 ";
 
         // Assert
+        MockAddPackageFixer.Invoked = false;
         await VerifyCS.VerifyCodeFixAsync(source, source);
+        Assert.True(MockAddPackageFixer.Invoked);
     }
 
     [Fact]
@@ -47,6 +53,23 @@ app.{|CS1061:MapOpenApi|}();
 ";
 
         // Assert
+        MockAddPackageFixer.Invoked = false;
         await VerifyCS.VerifyCodeFixAsync(source, source);
+        Assert.True(MockAddPackageFixer.Invoked);
+    }
+
+    public class MockAddPackageFixer : AddPackageFixer
+    {
+        internal static bool Invoked { get; set; }
+        internal override Task<CodeAction> TryCreateCodeActionAsync(
+            Document document,
+            int position,
+            AspNetCoreInstallPackageData packageInstallData,
+            CancellationToken cancellationToken)
+        {
+            Invoked = true;
+            Assert.Equal("Microsoft.AspNetCore.OpenApi", packageInstallData.PackageName);
+            return Task.FromResult<CodeAction>(null);
+        }
     }
 }

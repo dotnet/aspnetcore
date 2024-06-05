@@ -4,9 +4,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.AddPackage;
@@ -14,7 +16,7 @@ using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.AddPackage;
 namespace Microsoft.AspNetCore.Analyzers.Dependencies;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AddPackageFixer)), Shared]
-public sealed class AddPackageFixer : CodeFixProvider
+public class AddPackageFixer : CodeFixProvider
 {
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -86,7 +88,7 @@ public sealed class AddPackageFixer : CodeFixProvider
                     packageName: packageSourceAndNamespace.packageName,
                     packageVersionOpt: null,
                     packageNamespaceName: packageSourceAndNamespace.namespaceName);
-                var codeAction = await AspNetCoreAddPackageCodeAction.TryCreateCodeActionAsync(
+                var codeAction = await TryCreateCodeActionAsync(
                     context.Document,
                     position,
                     packageInstallData,
@@ -104,4 +106,19 @@ public sealed class AddPackageFixer : CodeFixProvider
     public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ["CS1061"];
+
+    internal virtual async Task<CodeAction?> TryCreateCodeActionAsync(
+        Document document,
+        int position,
+        AspNetCoreInstallPackageData packageInstallData,
+        CancellationToken cancellationToken)
+    {
+        var codeAction = await AspNetCoreAddPackageCodeAction.TryCreateCodeActionAsync(
+            document,
+            position,
+            packageInstallData,
+            cancellationToken);
+
+        return codeAction;
+    }
 }
