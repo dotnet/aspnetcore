@@ -25,7 +25,8 @@ internal
     private static Type GetElementType(JsonTypeInfo typeInfo)
     {
         Debug.Assert(typeInfo.Kind is JsonTypeInfoKind.Enumerable or JsonTypeInfoKind.Dictionary);
-        return (Type)typeof(JsonTypeInfo).GetProperty("ElementType", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(typeInfo)!;
+        // Element type is non-null for enumerable and dictionary types
+        return typeInfo.ElementType!;
     }
 
     // The source generator currently doesn't populate attribute providers for properties
