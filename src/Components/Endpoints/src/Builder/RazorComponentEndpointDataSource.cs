@@ -127,7 +127,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             }
 
             // Extract the endpoint collection from any of the endpoints
-            var resourceCollection = endpoints[^1].Metadata.GetMetadata<ResourceAssetCollection>();
+            var resourceCollection = endpoints.Count > 0 ? endpoints[^1].Metadata.GetMetadata<ResourceAssetCollection>() : null;
 
             ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
             foreach (var renderMode in renderModes)

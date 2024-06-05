@@ -54,7 +54,11 @@ internal class ResourceCollectionProvider
 
     private async Task<ResourceAssetCollection> LoadResourceCollection()
     {
-        _url ??= "/_framework/resource-collection.js";
+        if (_url == null)
+        {
+            return ResourceAssetCollection.Empty;
+        }
+
         var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", _url);
         var result = await module.InvokeAsync<ResourceAsset[]>("get");
         return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);

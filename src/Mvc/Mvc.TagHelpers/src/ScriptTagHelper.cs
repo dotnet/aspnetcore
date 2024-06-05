@@ -428,7 +428,10 @@ public class ScriptTagHelper : UrlResolutionTagHelper
                 }
             }
 
-            srcValue = FileVersionProvider.AddFileVersionToPath(pathBase, srcValue);
+            if (srcValue != null)
+            {
+                srcValue = FileVersionProvider.AddFileVersionToPath(pathBase, srcValue);
+            }
         }
 
         return srcValue;

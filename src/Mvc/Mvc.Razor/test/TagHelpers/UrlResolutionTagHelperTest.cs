@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -85,7 +86,10 @@ public class UrlResolutionTagHelperTest
         urlHelperFactory
             .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
             .Returns(urlHelperMock.Object);
-        var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
+        var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder())
+        {
+            ViewContext = new Rendering.ViewContext { HttpContext = new DefaultHttpContext() }
+        };
 
         var context = new TagHelperContext(
             tagName: "a",
@@ -142,7 +146,10 @@ public class UrlResolutionTagHelperTest
         urlHelperFactory
             .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
             .Returns(urlHelperMock.Object);
-        var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
+        var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder())
+        {
+            ViewContext = new Rendering.ViewContext { HttpContext = new DefaultHttpContext() }
+        };
 
         var context = new TagHelperContext(
             tagName: "a",
@@ -333,7 +340,10 @@ public class UrlResolutionTagHelperTest
         urlHelperFactory
             .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
             .Returns(urlHelperMock.Object);
-        var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
+        var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder())
+        {
+            ViewContext = new Rendering.ViewContext { HttpContext = new DefaultHttpContext() }
+        };
 
         var context = new TagHelperContext(
             tagName: "a",

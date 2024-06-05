@@ -129,7 +129,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private static void InitializeResourceCollection(HttpContext httpContext)
     {
-        var resourceCollectionProvider = httpContext.RequestServices.GetRequiredService<ResourceCollectionProvider>();
 
         var endpoint = httpContext.GetEndpoint();
         var resourceCollection = GetResourceCollection(httpContext);
@@ -137,12 +136,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             endpoint.Metadata.GetMetadata<ResourceCollectionUrlMetadata>() :
             null;
 
-        if (resourceCollectionUrl != null)
+        var resourceCollectionProvider = resourceCollectionUrl != null ? httpContext.RequestServices.GetService<ResourceCollectionProvider>() : null;
+        if (resourceCollectionUrl != null && resourceCollectionProvider != null)
         {
             resourceCollectionProvider.SetResourceCollectionUrl(resourceCollectionUrl.Url);
+            resourceCollectionProvider.SetResourceCollection(resourceCollection ?? ResourceAssetCollection.Empty);
         }
-
-        resourceCollectionProvider.SetResourceCollection(resourceCollection ?? ResourceAssetCollection.Empty);
     }
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)

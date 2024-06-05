@@ -172,7 +172,22 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         var config = endpoints.ServiceProvider.GetRequiredService<IConfiguration>();
         var hotReloadHandler = new StaticAssetDevelopmentRuntimeHandler(descriptors);
         builder.Add(hotReloadHandler.AttachRuntimePatching);
-        var disableFallback = bool.TryParse(config["DisableStaticAssetNotFoundRuntimeFallback"], out var disableFallbackValue) && disableFallbackValue;
+        var disableFallback = IsEnabled(config, "DisableStaticAssetNotFoundRuntimeFallback");
+
+        foreach (var descriptor in descriptors)
+        {
+            var enableDevelopmentCaching = IsEnabled(config, "EnableStaticAssetsDevelopmentCaching");
+            if (!enableDevelopmentCaching)
+            {
+                DisableCachingHeaders(descriptor);
+            }
+
+            var enableDevelopmentIntegrity = IsEnabled(config, "EnableStaticAssetsDevelopmentIntegrity");
+            if (!enableDevelopmentIntegrity)
+            {
+                RemoveIntegrityProperty(descriptor);
+            }
+        }
 
         if (!disableFallback)
         {
@@ -224,6 +239,62 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
 
             // Limit matching to supported methods.
             fallback.Add(b => b.Metadata.Add(new HttpMethodMetadata(["GET", "HEAD"])));
+        }
+    }
+
+    private static bool IsEnabled(IConfiguration config, string key)
+    {
+        return bool.TryParse(config[key], out var value) && value;
+    }
+
+    private static void DisableCachingHeaders(StaticAssetDescriptor descriptor)
+    {
+        if (descriptor.ResponseHeaders.Count == 0)
+        {
+            return;
+        }
+
+        var responseHeaders = new List<StaticAssetResponseHeader>(descriptor.ResponseHeaders);
+        var replaced = false;
+        for (var i = 0; i < descriptor.ResponseHeaders.Count; i++)
+        {
+            var responseHeader = descriptor.ResponseHeaders[i];
+            if (string.Equals(responseHeader.Name, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.Equals(responseHeader.Value, "no-cache", StringComparison.OrdinalIgnoreCase))
+                {
+                    responseHeaders.RemoveAt(i);
+                    responseHeaders.Insert(i, new StaticAssetResponseHeader(HeaderNames.CacheControl, "no-cache"));
+                    replaced = true;
+                }
+            }
+        }
+
+        if (replaced)
+        {
+            descriptor.ResponseHeaders = responseHeaders;
+        }
+    }
+
+    private static void RemoveIntegrityProperty(StaticAssetDescriptor descriptor)
+    {
+        if (descriptor.Properties.Count == 0)
+        {
+            return;
+        }
+        var propertiesList = new List<StaticAssetProperty>(descriptor.Properties);
+        for (var i = 0; i < descriptor.Properties.Count; i++)
+        {
+            var property = descriptor.Properties[i];
+            if (string.Equals(property.Name, "integrity", StringComparison.OrdinalIgnoreCase))
+            {
+                propertiesList.RemoveAt(i);
+            }
+        }
+
+        if (propertiesList.Count < descriptor.Properties.Count)
+        {
+            descriptor.Properties = propertiesList;
         }
     }
 
