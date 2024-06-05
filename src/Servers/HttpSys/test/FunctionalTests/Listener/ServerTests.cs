@@ -136,7 +136,7 @@ public class ServerTests
 
         var exception = Assert.Throws<HttpSysException>(() => listener.Start());
 
-        Assert.Equal((int)ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
+        Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS, exception.ErrorCode);
         Assert.Contains($"The prefix '{address1}' is already registered.", exception.Message);
     }
 

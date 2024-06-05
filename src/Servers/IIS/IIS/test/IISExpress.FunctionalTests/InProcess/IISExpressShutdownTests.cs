@@ -36,10 +36,6 @@ public class IISExpressShutdownTests : IISFunctionalTestBase
         {
             // Server might close a connection before request completes
         }
-        finally
-        {
-            deploymentResult.HttpClient.Dispose();
-        }
 
         deploymentResult.AssertWorkerProcessStop();
     }
@@ -65,10 +61,6 @@ public class IISExpressShutdownTests : IISFunctionalTestBase
         catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
         {
             // Server might close a connection before request completes
-        }
-        finally
-        {
-            deploymentResult.HttpClient.Dispose();
         }
 
         deploymentResult.AssertWorkerProcessStop();

@@ -3,9 +3,8 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
-using Windows.Win32;
-using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -29,58 +28,58 @@ internal sealed partial class RequestQueue
         _mode = mode;
         _logger = logger;
 
-        var flags = 0u;
+        var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
         Created = true;
 
         if (_mode == RequestQueueMode.Attach)
         {
-            flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
+            flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
             Created = false;
             if (receiver)
             {
-                flags |= PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_DELEGATION;
+                flags |= HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
             }
         }
 
-        var statusCode = PInvoke.HttpCreateRequestQueue(
+        var statusCode = HttpApi.HttpCreateRequestQueue(
                 HttpApi.Version,
                 requestQueueName,
-                default,
+                IntPtr.Zero,
                 flags,
                 out var requestQueueHandle);
 
-        if (_mode == RequestQueueMode.CreateOrAttach && statusCode == ErrorCodes.ERROR_ALREADY_EXISTS)
+        if (_mode == RequestQueueMode.CreateOrAttach && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
         {
             // Tried to create, but it already exists so attach to it instead.
             Created = false;
-            flags = PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING;
-            statusCode = PInvoke.HttpCreateRequestQueue(
+            flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
+            statusCode = HttpApi.HttpCreateRequestQueue(
                     HttpApi.Version,
                     requestQueueName,
-                    default,
+                    IntPtr.Zero,
                     flags,
                     out requestQueueHandle);
         }
 
-        if ((flags & PInvoke.HTTP_CREATE_REQUEST_QUEUE_FLAG_OPEN_EXISTING) != 0 && statusCode == ErrorCodes.ERROR_FILE_NOT_FOUND)
+        if (flags.HasFlag(HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting) && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
         {
             throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
         }
-        else if (statusCode == ErrorCodes.ERROR_INVALID_NAME)
+        else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_NAME)
         {
             throw new HttpSysException((int)statusCode, $"The given request queue name '{requestQueueName}' is invalid.");
         }
-        else if (statusCode != ErrorCodes.ERROR_SUCCESS)
+        else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
         {
             throw new HttpSysException((int)statusCode);
         }
 
         // Disabling callbacks when IO operation completes synchronously (returns ErrorCodes.ERROR_SUCCESS)
         if (HttpSysListener.SkipIOCPCallbackOnSuccess &&
-            !PInvoke.SetFileCompletionNotificationModes(
+            !UnsafeNclNativeMethods.SetFileCompletionNotificationModes(
                 requestQueueHandle,
-                (byte)(PInvoke.FILE_SKIP_COMPLETION_PORT_ON_SUCCESS |
-                PInvoke.FILE_SKIP_SET_EVENT_ON_HANDLE)))
+                UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
+                UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipSetEventOnHandle))
         {
             requestQueueHandle.Dispose();
             throw new HttpSysException(Marshal.GetLastWin32Error());
@@ -109,9 +108,9 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
-        var result = PInvoke.HttpSetRequestQueueProperty(Handle,
-            HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
-            &length, (uint)Marshal.SizeOf<long>());
+        var result = HttpApi.HttpSetRequestQueueProperty(Handle,
+            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
+            new IntPtr((void*)&length), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
 
         if (result != 0)
         {
@@ -125,9 +124,9 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
-        var result = PInvoke.HttpSetRequestQueueProperty(Handle,
-            HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
-            &verbosity, (uint)Marshal.SizeOf<long>());
+        var result = HttpApi.HttpSetRequestQueueProperty(Handle,
+            HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
+            new IntPtr((void*)&verbosity), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
 
         if (result != 0)
         {

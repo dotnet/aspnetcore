@@ -65,7 +65,6 @@ public class IISTestSiteFixture : IDisposable
 
     public void Dispose()
     {
-        _deploymentResult?.Dispose();
         _deployer?.Dispose();
     }
 

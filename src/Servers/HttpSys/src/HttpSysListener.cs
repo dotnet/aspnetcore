@@ -6,9 +6,6 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -52,6 +49,8 @@ internal sealed partial class HttpSysListener : IDisposable
         {
             throw new PlatformNotSupportedException();
         }
+
+        Debug.Assert(HttpApi.ApiVersion == HttpApiTypes.HTTP_API_VERSION.Version20, "Invalid Http api version");
 
         Options = options;
 
@@ -305,12 +304,10 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
     {
-        var httpResponse = new HTTP_RESPONSE_V2();
-        httpResponse.Base.Version = new()
-        {
-            MajorVersion = 1,
-            MinorVersion = 1
-        };
+        HttpApiTypes.HTTP_RESPONSE_V2 httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
+        httpResponse.Response_V1.Version = new HttpApiTypes.HTTP_VERSION();
+        httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
+        httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
 
         using UnmanagedBufferAllocator allocator = new();
 
@@ -320,29 +317,29 @@ internal sealed partial class HttpSysListener : IDisposable
         // Copied from the multi-value headers section of SerializeHeaders
         if (authChallenges != null && authChallenges.Count > 0)
         {
-            var knownHeaderInfo = allocator.AllocAsPointer<HTTP_RESPONSE_INFO>(1);
+            HttpApiTypes.HTTP_RESPONSE_INFO* knownHeaderInfo = allocator.AllocAsPointer<HttpApiTypes.HTTP_RESPONSE_INFO>(1);
             httpResponse.pResponseInfo = knownHeaderInfo;
 
-            knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+            knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
             knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-                (uint)sizeof(HTTP_MULTIPLE_KNOWN_HEADERS);
+                (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
 
-            var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+            HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.AllocAsPointer<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
-            header->HeaderId = HTTP_HEADER_ID.HttpHeaderWwwAuthenticate;
-            header->Flags = PInvoke.HTTP_RESPONSE_INFO_FLAGS_PRESERVE_ORDER; // The docs say this is for www-auth only.
+            header->HeaderId = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
+            header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
             header->KnownHeaderCount = 0;
 
-            var nativeHeaderValues = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(authChallenges.Count);
+            HttpApiTypes.HTTP_KNOWN_HEADER* nativeHeaderValues = allocator.AllocAsPointer<HttpApiTypes.HTTP_KNOWN_HEADER>(authChallenges.Count);
             header->KnownHeaders = nativeHeaderValues;
 
-            for (var headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
+            for (int headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
             {
                 // Add Value
-                var headerValue = authChallenges[headerValueIndex];
+                string headerValue = authChallenges[headerValueIndex];
                 bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
                 nativeHeaderValues[header->KnownHeaderCount].RawValueLength = checked((ushort)bytesLength);
-                nativeHeaderValues[header->KnownHeaderCount].pRawValue = (PCSTR)bytes;
+                nativeHeaderValues[header->KnownHeaderCount].pRawValue = bytes;
                 header->KnownHeaderCount++;
             }
 
@@ -351,38 +348,40 @@ internal sealed partial class HttpSysListener : IDisposable
             httpResponse.ResponseInfoCount = 1;
         }
 
-        httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
-        var statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
+        httpResponse.Response_V1.StatusCode = checked((ushort)httpStatusCode);
+        string statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
         uint dataWritten = 0;
         uint statusCode;
 
         bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
-        httpResponse.Base.pReason = (PCSTR)bytes;
-        httpResponse.Base.ReasonLength = checked((ushort)bytesLength);
+        httpResponse.Response_V1.pReason = bytes;
+        httpResponse.Response_V1.ReasonLength = checked((ushort)bytesLength);
 
         const int contentLengthLength = 1;
-        var pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
+        byte* pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
         pContentLength[0] = (byte)'0';
         pContentLength[1] = 0; // null terminator
 
-        var knownHeaders = httpResponse.Base.Headers.KnownHeaders.AsSpan();
-        knownHeaders[(int)HttpSysResponseHeader.ContentLength].pRawValue = (PCSTR)pContentLength;
-        knownHeaders[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
-        httpResponse.Base.Headers.UnknownHeaderCount = 0;
+        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = pContentLength;
+        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
+        httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
 
-        statusCode = PInvoke.HttpSendHttpResponse(
-            _requestQueue.Handle,
-            requestId,
-            0,
-            httpResponse,
-            null,
-            &dataWritten,
-            null,
-            null);
-        if (statusCode != ErrorCodes.ERROR_SUCCESS)
+        statusCode =
+            HttpApi.HttpSendHttpResponse(
+                _requestQueue.Handle,
+                requestId,
+                0,
+                &httpResponse,
+                null,
+                &dataWritten,
+                IntPtr.Zero,
+                0,
+                SafeNativeOverlapped.Zero,
+                IntPtr.Zero);
+        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
         {
             // if we fail to send a 401 something's seriously wrong, abort the request
-            PInvoke.HttpCancelHttpRequest(_requestQueue.Handle, requestId, default);
+            HttpApi.HttpCancelHttpRequest(_requestQueue.Handle, requestId, IntPtr.Zero);
         }
     }
 

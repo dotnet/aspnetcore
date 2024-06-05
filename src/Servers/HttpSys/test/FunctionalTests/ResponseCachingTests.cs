@@ -1,29 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
 public class ResponseCachingTests : LoggedTest
 {
-    private readonly string _absoluteFilePath;
-    private readonly long _fileLength;
+    private static readonly string _absoluteFilePath;
+    private static readonly long _fileLength;
 
-    public ResponseCachingTests()
+    static ResponseCachingTests()
     {
-        _absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Microsoft.AspNetCore.Server.HttpSys.dll");
-        _fileLength = new FileInfo(_absoluteFilePath).Length;
+        _absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), "HttpSysTestsCachePayload.bin");
+        var arr = new byte[150_000]; // http.sys has default max cached payload size of 262144 bytes
+        Random.Shared.NextBytes(arr);
+        File.WriteAllBytes(_absoluteFilePath, arr);
+        _fileLength = arr.Length;
     }
 
     [ConditionalFact]

@@ -3,9 +3,9 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
-using Windows.Win32;
-using Windows.Win32.Networking.HttpServer;
+using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -144,21 +144,28 @@ internal sealed partial class ResponseBody : Stream
         Span<GCHandle> pinnedBuffers = default;
         try
         {
-            BuildDataChunks(ref allocator, endOfRequest, data, out var dataChunks, out pinnedBuffers);
+            Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks;
+            BuildDataChunks(ref allocator, endOfRequest, data, out dataChunks, out pinnedBuffers);
             if (!started)
             {
                 statusCode = _requestContext.Response.SendHeaders(ref allocator, dataChunks, null, flags, false);
             }
             else
             {
-                statusCode = PInvoke.HttpSendResponseEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    dataChunks,
-                    null,
-                    null,
-                    null);
+                fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
+                {
+                    statusCode = HttpApi.HttpSendResponseEntityBody(
+                            RequestQueueHandle,
+                            RequestId,
+                            (uint)flags,
+                            (ushort)dataChunks.Length,
+                            pDataChunks,
+                            null,
+                            IntPtr.Zero,
+                            0,
+                            SafeNativeOverlapped.Zero,
+                            IntPtr.Zero);
+                }
             }
         }
         finally
@@ -187,7 +194,7 @@ internal sealed partial class ResponseBody : Stream
         }
     }
 
-    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
+    private unsafe void BuildDataChunks(scoped ref UnmanagedBufferAllocator allocator, bool endOfRequest, ArraySegment<byte> data, out Span<HttpApiTypes.HTTP_DATA_CHUNK> dataChunks, out Span<GCHandle> pins)
     {
         var hasData = data.Count > 0;
         var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
@@ -199,7 +206,7 @@ internal sealed partial class ResponseBody : Stream
         // Figure out how many data chunks
         if (chunked && !hasData && endOfRequest)
         {
-            dataChunks = allocator.AllocAsSpan<HTTP_DATA_CHUNK>(1);
+            dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(1);
             SetDataChunkWithPinnedData(dataChunks, ref currentChunk, Helpers.ChunkTerminator);
             pins = default;
             return;
@@ -237,7 +244,7 @@ internal sealed partial class ResponseBody : Stream
         // Manually initialize the allocated GCHandles
         pins.Clear();
 
-        dataChunks = allocator.AllocAsSpan<HTTP_DATA_CHUNK>(chunkCount);
+        dataChunks = allocator.AllocAsSpan<HttpApiTypes.HTTP_DATA_CHUNK>(chunkCount);
 
         if (chunked)
         {
@@ -273,7 +280,7 @@ internal sealed partial class ResponseBody : Stream
     }
 
     private static unsafe void SetDataChunk(
-        Span<HTTP_DATA_CHUNK> chunks,
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
         ArraySegment<byte> buffer,
         out GCHandle handle)
@@ -283,17 +290,17 @@ internal sealed partial class ResponseBody : Stream
     }
 
     private static unsafe void SetDataChunkWithPinnedData(
-        Span<HTTP_DATA_CHUNK> chunks,
+        Span<HttpApiTypes.HTTP_DATA_CHUNK> chunks,
         ref int chunkIndex,
         ReadOnlySpan<byte> bytes)
     {
         ref var chunk = ref chunks[chunkIndex++];
-        chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+        chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
         fixed (byte* ptr = bytes)
         {
-            chunk.Anonymous.FromMemory.pBuffer = ptr;
+            chunk.fromMemory.pBuffer = (IntPtr)ptr;
         }
-        chunk.Anonymous.FromMemory.BufferLength = (uint)bytes.Length;
+        chunk.fromMemory.BufferLength = (uint)bytes.Length;
     }
 
     private static void FreeDataBuffers(Span<GCHandle> pinnedBuffers)
@@ -357,7 +364,7 @@ internal sealed partial class ResponseBody : Stream
                 statusCode = HttpApi.HttpSendResponseEntityBody(
                     RequestQueueHandle,
                     RequestId,
-                    flags,
+                    (uint)flags,
                     asyncResult.DataChunkCount,
                     asyncResult.DataChunks,
                     &bytesSent,
@@ -409,7 +416,7 @@ internal sealed partial class ResponseBody : Stream
         }
 
         // Last write, cache it for special cancellation handling.
-        if ((flags & PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+        if ((flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
         {
             _lastWrite = asyncResult;
         }
@@ -459,9 +466,9 @@ internal sealed partial class ResponseBody : Stream
         _requestContext.Abort();
     }
 
-    private uint ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
+    private HttpApiTypes.HTTP_FLAGS ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
     {
-        var flags = 0u;
+        var flags = HttpApiTypes.HTTP_FLAGS.NONE;
         if (!_requestContext.Response.HasComputedHeaders)
         {
             flags = _requestContext.Response.ComputeHeaders(writeCount, endOfRequest);
@@ -484,19 +491,19 @@ internal sealed partial class ResponseBody : Stream
 
         if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
         {
-            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
         }
         else if (!endOfRequest
             && (_leftToWrite != writeCount || _requestContext.Response.TrailersExpected))
         {
-            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
         }
         if (EnableKernelResponseBuffering)
         {
             // "When this flag is set, it should also be used consistently in calls to the HttpSendResponseEntityBody function."
             // so: make sure we add it in *all* scenarios where it applies - our "close" could be at the end of a bunch
             // of buffered chunks
-            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA;
+            flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_BUFFER_DATA;
         }
 
         // Update _leftToWrite now so we can queue up additional async writes.
@@ -680,7 +687,7 @@ internal sealed partial class ResponseBody : Stream
                 statusCode = HttpApi.HttpSendResponseEntityBody(
                         RequestQueueHandle,
                         RequestId,
-                        flags,
+                        (uint)flags,
                         asyncResult.DataChunkCount,
                         asyncResult.DataChunks,
                         &bytesSent,
@@ -702,7 +709,7 @@ internal sealed partial class ResponseBody : Stream
             allocator.Dispose();
         }
 
-        if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
+        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -732,7 +739,7 @@ internal sealed partial class ResponseBody : Stream
         }
 
         // Last write, cache it for special cancellation handling.
-        if ((flags & PInvoke.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+        if ((flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
         {
             _lastWrite = asyncResult;
         }
@@ -772,7 +779,7 @@ internal sealed partial class ResponseBody : Stream
         ResponseStreamAsyncResult? asyncState = _lastWrite;
         if (asyncState != null && !asyncState.IsCompleted)
         {
-            HttpApi.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped!);
+            UnsafeNclNativeMethods.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped!);
         }
     }
 

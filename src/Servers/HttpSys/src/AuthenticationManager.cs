@@ -4,10 +4,10 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Windows.Win32;
-using Windows.Win32.Networking.HttpServer;
+using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 public sealed class AuthenticationManager
 {
     private static readonly int AuthInfoSize =
-        Marshal.SizeOf<HTTP_SERVER_AUTHENTICATION_INFO>();
+        Marshal.SizeOf<HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO>();
 
     private UrlGroup? _urlGroup;
     private AuthenticationSchemes _authSchemes;
@@ -97,23 +97,25 @@ public sealed class AuthenticationManager
             return;
         }
 
-        var authInfo = new HTTP_SERVER_AUTHENTICATION_INFO();
-        authInfo.Flags = HttpApi.HTTP_PROPERTY_FLAGS_PRESENT;
+        HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO authInfo =
+            new HttpApiTypes.HTTP_SERVER_AUTHENTICATION_INFO();
 
-        if (_authSchemes != AuthenticationSchemes.None)
+        authInfo.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+        var authSchemes = (HttpApiTypes.HTTP_AUTH_TYPES)_authSchemes;
+        if (authSchemes != HttpApiTypes.HTTP_AUTH_TYPES.NONE)
         {
-            authInfo.AuthSchemes = (uint)_authSchemes;
+            authInfo.AuthSchemes = authSchemes;
 
             authInfo.ExFlags = 0;
 
             if (EnableKerberosCredentialCaching)
             {
-                authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING;
+                authInfo.ExFlags |= (byte)HTTP_AUTH_EX_FLAGS.HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING;
             }
 
             if (CaptureCredentials)
             {
-                authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL;
+                authInfo.ExFlags |= (byte)HTTP_AUTH_EX_FLAGS.HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL;
             }
 
             // TODO:
@@ -122,16 +124,16 @@ public sealed class AuthenticationManager
             // Digest domain and realm - HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
             // Basic realm - HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
 
-            HTTP_SERVER_PROPERTY property;
+            HttpApiTypes.HTTP_SERVER_PROPERTY property;
             if (authInfo.ExFlags != 0)
             {
                 // We need to modify extended fields such as ExFlags, set the extended auth property.
-                property = HTTP_SERVER_PROPERTY.HttpServerExtendedAuthenticationProperty;
+                property = HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerExtendedAuthenticationProperty;
             }
             else
             {
                 // Otherwise set the regular auth property.
-                property = HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty;
+                property = HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty;
             }
 
             IntPtr infoptr = new IntPtr(&authInfo);

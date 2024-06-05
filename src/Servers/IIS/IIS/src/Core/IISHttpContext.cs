@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
-using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -78,7 +77,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         IISHttpServer server,
         ILogger logger,
         bool useLatin1)
-        : base((HTTP_REQUEST_V1*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
+        : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
     {
         _memoryPool = memoryPool;
         _requestNativeHandle = pInProcessHandler;
@@ -90,7 +89,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     }
 
     private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
-    private int ResumeWriterThreshold => PauseWriterThreshold / 2;
+    private int ResumeWriterTheshold => PauseWriterThreshold / 2;
     private bool IsHttps => SslStatus != SslStatus.Insecure;
 
     public Version HttpVersion { get; set; } = default!;
@@ -134,7 +133,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
     internal bool HasTrailers => _trailers?.Count > 0;
 
-    internal HTTP_VERB KnownMethod { get; private set; }
+    internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
     private bool HasStartedConsumingRequestBody { get; set; }
     public long? MaxRequestBodySize { get; set; }
@@ -143,7 +142,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         // create a memory barrier between initialize and disconnect to prevent a possible
         // NullRef with disconnect being called before these fields have been written
-        // disconnect acquires this lock as well
+        // disconnect aquires this lock as well
         lock (_abortLock)
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -164,7 +163,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 pathBase = pathBase[..^1];
             }
 
-            if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
@@ -302,7 +301,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 // schedules app code when backpressure is relieved which may block.
                 readerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: PauseWriterThreshold,
-                resumeWriterThreshold: ResumeWriterThreshold,
+                resumeWriterThreshold: ResumeWriterTheshold,
                 minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
         }
@@ -393,27 +392,27 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private void GetTlsHandshakeResults()
     {
-        var handshake = GetTlsHandshake();
-        Protocol = (SslProtocols)handshake.Protocol;
-        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
+        var handshake = this.GetTlsHandshake();
+        Protocol = handshake.Protocol;
+        CipherAlgorithm = handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
-        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
+        HashAlgorithm = handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
-        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
+        KeyExchangeAlgorithm = handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
 
         var sni = GetClientSni();
-        SniHostName = sni.Hostname.ToString();
+        SniHostName = sni.Hostname;
     }
 
-    private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    private unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
         fixed (byte* pBuffer = buffer)
         {
             var statusCode = NativeMethods.HttpQueryRequestProperty(
                 RequestId,
-                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
                 qualifier: null,
                 qualifierSize: 0,
                 (void*)pBuffer,
@@ -421,7 +420,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 bytesReturned: null,
                 IntPtr.Zero);
 
-            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
+            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
         }
     }
 
@@ -591,7 +590,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 continue;
             }
 
-            var isKnownHeader = HttpApiTypes.KnownResponseHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
+            var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
             for (var i = 0; i < headerValues.Count; i++)
             {
                 var headerValue = headerValues[i];
@@ -606,7 +605,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
                 fixed (byte* pHeaderValue = headerValueBytes)
                 {
-                    if (!isKnownHeader)
+                    if (knownHeaderIndex == -1)
                     {
                         var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                         fixed (byte* pHeaderName = headerNameBytes)

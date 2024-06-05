@@ -4,8 +4,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
-using Windows.Win32;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -133,25 +133,26 @@ internal sealed partial class RequestStream : Stream
 
                 uint flags = 0;
 
-                statusCode = PInvoke.HttpReceiveRequestEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    (pBuffer + offset),
-                    (uint)size,
-                    &extraDataRead,
-                    default);
+                statusCode =
+                    HttpApi.HttpReceiveRequestEntityBody(
+                        RequestQueueHandle,
+                        RequestId,
+                        flags,
+                        (IntPtr)(pBuffer + offset),
+                        (uint)size,
+                        out extraDataRead,
+                        SafeNativeOverlapped.Zero);
 
                 dataRead += extraDataRead;
             }
 
             // Zero-byte reads
-            if (statusCode == ErrorCodes.ERROR_MORE_DATA && size == 0)
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && size == 0)
             {
                 // extraDataRead returns 1 to let us know there's data available. Don't count it against the request body size yet.
                 dataRead = 0;
             }
-            else if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_HANDLE_EOF)
+            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
                 Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                 Log.ErrorWhileRead(Logger, exception);
@@ -171,8 +172,8 @@ internal sealed partial class RequestStream : Stream
 
     internal void UpdateAfterRead(uint statusCode, uint dataRead)
     {
-        if (statusCode == ErrorCodes.ERROR_HANDLE_EOF
-            || statusCode != ErrorCodes.ERROR_MORE_DATA && dataRead == 0)
+        if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF
+            || statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA && dataRead == 0)
         {
             Dispose();
         }
@@ -207,7 +208,7 @@ internal sealed partial class RequestStream : Stream
             dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
             if (dataRead > 0)
             {
-                UpdateAfterRead(ErrorCodes.ERROR_SUCCESS, dataRead);
+                UpdateAfterRead(UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS, dataRead);
                 if (TryCheckSizeLimit((int)dataRead, out var exception))
                 {
                     return Task.FromException<int>(exception);
@@ -258,10 +259,10 @@ internal sealed partial class RequestStream : Stream
             throw;
         }
 
-        if (statusCode != ErrorCodes.ERROR_SUCCESS && statusCode != ErrorCodes.ERROR_IO_PENDING)
+        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
         {
             asyncResult.Dispose();
-            if (statusCode == ErrorCodes.ERROR_HANDLE_EOF)
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
             {
                 uint totalRead = dataRead + bytesReturned;
                 UpdateAfterRead(statusCode, totalRead);
@@ -280,7 +281,7 @@ internal sealed partial class RequestStream : Stream
                 throw exception;
             }
         }
-        else if (statusCode == ErrorCodes.ERROR_SUCCESS &&
+        else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     HttpSysListener.SkipIOCPCallbackOnSuccess)
         {
             // IO operation completed synchronously - callback won't be called to signal completion.

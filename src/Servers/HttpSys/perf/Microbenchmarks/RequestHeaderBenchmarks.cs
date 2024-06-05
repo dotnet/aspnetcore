@@ -6,8 +6,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Windows.Win32.Foundation;
-using Windows.Win32.Networking.HttpServer;
 using RequestHeaders = Microsoft.AspNetCore.HttpSys.Internal.RequestHeaders;
 
 [SimpleJob, MemoryDiagnoser]
@@ -56,7 +54,7 @@ public class RequestHeaderBenchmarks
         var nativeContext = new NativeRequestContext(MemoryPool<byte>.Shared, null, 0, false);
         var nativeMemory = new Span<byte>(nativeContext.NativeRequest, (int)nativeContext.Size + 8);
 
-        var requestStructure = new HTTP_REQUEST_V1();
+        var requestStructure = new HttpApiTypes.HTTP_REQUEST();
         var remainingMemory = SetUnknownHeaders(nativeMemory, ref requestStructure, GenerateUnknownHeaders(unknowHeaderCount));
         SetHostHeader(remainingMemory, ref requestStructure);
         MemoryMarshal.Write(nativeMemory, in requestStructure);
@@ -66,15 +64,15 @@ public class RequestHeaderBenchmarks
         return requestHeaders;
     }
 
-    private unsafe Span<byte> SetHostHeader(Span<byte> nativeMemory, ref HTTP_REQUEST_V1 requestStructure)
+    private unsafe Span<byte> SetHostHeader(Span<byte> nativeMemory, ref HttpApiTypes.HTTP_REQUEST requestStructure)
     {
         // Writing localhost to Host header
-        var dataDestination = nativeMemory[Marshal.SizeOf<HTTP_REQUEST_V1>()..];
-        var length = Encoding.ASCII.GetBytes("localhost:5001", dataDestination);
+        var dataDestination = nativeMemory.Slice(Marshal.SizeOf<HttpApiTypes.HTTP_REQUEST>());
+        int length = Encoding.ASCII.GetBytes("localhost:5001", dataDestination);
         fixed (byte* address = &MemoryMarshal.GetReference(dataDestination))
         {
-            requestStructure.Headers.KnownHeaders._28.pRawValue = (PCSTR)address;
-            requestStructure.Headers.KnownHeaders._28.RawValueLength = (ushort)length;
+            requestStructure.Headers.KnownHeaders_29.pRawValue = address;
+            requestStructure.Headers.KnownHeaders_29.RawValueLength = (ushort)length;
         }
         return dataDestination;
     }
@@ -82,48 +80,48 @@ public class RequestHeaderBenchmarks
     /// <summary>
     /// Writes an array HTTP_UNKNOWN_HEADER and an array of header key-value pairs to nativeMemory. Pointers in the HTTP_UNKNOWN_HEADER structure points to the corresponding key-value pair.
     /// </summary>
-    private unsafe Span<byte> SetUnknownHeaders(Span<byte> nativeMemory, ref HTTP_REQUEST_V1 requestStructure, IReadOnlyCollection<(string Key, string Value)> headerNames)
+    private unsafe Span<byte> SetUnknownHeaders(Span<byte> nativeMemory, ref HttpApiTypes.HTTP_REQUEST requestStructure, IReadOnlyCollection<(string Key, string Value)> headerNames)
     {
-        var unknownHeaderStructureDestination = nativeMemory[Marshal.SizeOf<HTTP_REQUEST_V1>()..];
+        var unknownHeaderStructureDestination = nativeMemory.Slice(Marshal.SizeOf<HttpApiTypes.HTTP_REQUEST>());
         fixed (byte* address = &MemoryMarshal.GetReference(unknownHeaderStructureDestination))
         {
-            requestStructure.Headers.pUnknownHeaders = (HTTP_UNKNOWN_HEADER*)address;
+            requestStructure.Headers.pUnknownHeaders = (HttpApiTypes.HTTP_UNKNOWN_HEADER*)address;
         }
         requestStructure.Headers.UnknownHeaderCount += (ushort)headerNames.Count;
 
-        var unknownHeadersSize = Marshal.SizeOf<HTTP_UNKNOWN_HEADER>();
-        var dataDestination = unknownHeaderStructureDestination[(unknownHeadersSize * headerNames.Count)..];
-        foreach (var (headerKey, headerValue) in headerNames)
+        var unknownHeadersSize = Marshal.SizeOf<HttpApiTypes.HTTP_UNKNOWN_HEADER>();
+        var dataDestination = unknownHeaderStructureDestination.Slice(unknownHeadersSize * headerNames.Count);
+        foreach (var headerName in headerNames)
         {
-            var unknownHeaderStructure = new HTTP_UNKNOWN_HEADER();
-            var nameLength = Encoding.ASCII.GetBytes(headerKey, dataDestination);
+            var unknownHeaderStructure = new HttpApiTypes.HTTP_UNKNOWN_HEADER();
+            int nameLength = Encoding.ASCII.GetBytes(headerName.Key, dataDestination);
             fixed (byte* address = &MemoryMarshal.GetReference(dataDestination))
             {
-                unknownHeaderStructure.pName = (PCSTR)address;
+                unknownHeaderStructure.pName = address;
                 unknownHeaderStructure.NameLength = (ushort)nameLength;
             }
-            dataDestination = dataDestination[nameLength..];
+            dataDestination = dataDestination.Slice(nameLength);
 
-            if (!string.IsNullOrEmpty(headerValue))
+            if (!string.IsNullOrEmpty(headerName.Value))
             {
-                var valueLength = Encoding.ASCII.GetBytes(headerValue, dataDestination);
+                int valueLength = Encoding.ASCII.GetBytes(headerName.Value, dataDestination);
                 fixed (byte* address = &MemoryMarshal.GetReference(dataDestination))
                 {
-                    unknownHeaderStructure.pRawValue = (PCSTR)address;
+                    unknownHeaderStructure.pRawValue = address;
                     unknownHeaderStructure.RawValueLength = (ushort)valueLength;
                 }
-                dataDestination = dataDestination[nameLength..];
+                dataDestination = dataDestination.Slice(nameLength);
             }
             MemoryMarshal.Write(unknownHeaderStructureDestination, in unknownHeaderStructure);
-            unknownHeaderStructureDestination = unknownHeaderStructureDestination[unknownHeadersSize..];
+            unknownHeaderStructureDestination = unknownHeaderStructureDestination.Slice(unknownHeadersSize);
         }
         return dataDestination;
     }
 
-    private static List<(string, string)> GenerateUnknownHeaders(int count)
+    private IReadOnlyCollection<(string, string)> GenerateUnknownHeaders(int count)
     {
         var result = new List<(string, string)>();
-        for (var i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
             result.Add(($"X-Custom-{i}", $"Value-{i}"));
         }
