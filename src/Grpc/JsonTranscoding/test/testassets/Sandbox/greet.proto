@@ -7,12 +7,15 @@ import "google/api/annotations.proto";
 
 package greet;
 
+// The greeting service definition.
 service Greeter {
+  // Sends a greeting.
   rpc SayHello (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
       get: "/v1/greeter/{name}"
     };
   }
+  // Sends a greeting from someone.
   rpc SayHelloFrom (HelloRequestFrom) returns (HelloReply) {
     option (google.api.http) = {
       post: "/v1/greeter"
@@ -22,15 +25,19 @@ service Greeter {
 }
 
 message HelloRequest {
+  // Name to greet.
   string name = 1;
 }
 
 message HelloRequestFrom {
+  // Name to greet.
   string name = 1;
+  // Greeting from.
   string from = 2;
 }
 
 message HelloReply {
+  // Greeting message.
   string message = 1;
   HelloReply nested = 2;
 }
