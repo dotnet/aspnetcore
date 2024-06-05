@@ -30,7 +30,7 @@ internal sealed class OpenApiDocumentService(
     IServiceProvider serviceProvider)
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
-    private readonly OpenApiComponentService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiComponentService>(documentName);
+    private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
     private readonly IOpenApiDocumentTransformer _scrubExtensionsTransformer = new ScrubExtensionsTransformer();
 
     private static readonly OpenApiEncoding _defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };

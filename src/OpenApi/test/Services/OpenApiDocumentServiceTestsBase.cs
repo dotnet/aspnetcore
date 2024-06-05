@@ -2,10 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -18,7 +15,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using Moq;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
@@ -217,27 +213,38 @@ public abstract class OpenApiDocumentServiceTestBase
         public static TestServiceProvider Instance { get; } = new TestServiceProvider();
         private IKeyedServiceProvider _serviceProvider;
         internal OpenApiDocumentService TestDocumentService { get; set; }
-        internal OpenApiComponentService TestComponentService { get; set; } = new OpenApiComponentService(Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()));
+        internal OpenApiSchemaStore TestSchemaStoreService { get; } = new OpenApiSchemaStore();
+        private OpenApiSchemaService _testSchemaService;
 
         public void SetInternalServiceProvider(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddKeyedSingleton<OpenApiSchemaStore>("Test");
             _serviceProvider = serviceCollection.BuildServiceProvider();
+            _testSchemaService = new OpenApiSchemaService(
+                "Test",
+                Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()),
+                _serviceProvider
+            );
         }
 
         public object GetKeyedService(Type serviceType, object serviceKey)
         {
+
             if (serviceType == typeof(OpenApiDocumentService))
             {
                 return TestDocumentService;
             }
-            if (serviceType == typeof(OpenApiComponentService))
+            if (serviceType == typeof(OpenApiSchemaService))
             {
-                return TestComponentService;
+                return _testSchemaService;
             }
-
-            if (serviceType == typeof(OpenApiComponentService))
+            if (serviceType == typeof(OpenApiSchemaService))
             {
-                return TestComponentService;
+                return _testSchemaService;
+            }
+            if (serviceType == typeof(OpenApiSchemaStore))
+            {
+                return TestSchemaStoreService;
             }
 
             return _serviceProvider.GetKeyedService(serviceType, serviceKey);
@@ -249,14 +256,14 @@ public abstract class OpenApiDocumentServiceTestBase
             {
                 return TestDocumentService;
             }
-            if (serviceType == typeof(OpenApiComponentService))
+            if (serviceType == typeof(OpenApiSchemaService))
             {
-                return TestComponentService;
+                return _testSchemaService;
             }
 
-            if (serviceType == typeof(OpenApiComponentService))
+            if (serviceType == typeof(OpenApiSchemaService))
             {
-                return TestComponentService;
+                return _testSchemaService;
             }
 
             return _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey);
