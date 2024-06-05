@@ -8,7 +8,6 @@
       "src\\Grpc\\Interop\\test\\testassets\\InteropWebsite\\InteropWebsite.csproj",
       "src\\Grpc\\JsonTranscoding\\perf\\Microsoft.AspNetCore.Grpc.Microbenchmarks\\Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj",
       "src\\Grpc\\JsonTranscoding\\src\\Microsoft.AspNetCore.Grpc.JsonTranscoding\\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj",
-      "src\\Grpc\\JsonTranscoding\\src\\Microsoft.AspNetCore.Grpc.OpenApi\\Microsoft.AspNetCore.Grpc.OpenApi.csproj",
       "src\\Grpc\\JsonTranscoding\\src\\Microsoft.AspNetCore.Grpc.Swagger\\Microsoft.AspNetCore.Grpc.Swagger.csproj",
       "src\\Grpc\\JsonTranscoding\\test\\Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests\\Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj",
       "src\\Grpc\\JsonTranscoding\\test\\Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests\\Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj",
