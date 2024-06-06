@@ -61,18 +61,18 @@ internal static class HPackHeaderWriter
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
     public static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length) =>
-        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iteratorBeforeFirstElement: true, out length);
+        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iterateBeforeFirstElement: true, out length);
 
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame without stepping the iterator.
     /// </summary>
     public static HeaderWriteResult RetryBeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length) =>
-        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iteratorBeforeFirstElement: false, out length);
+        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iterateBeforeFirstElement: false, out length);
 
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
-    private static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool iteratorBeforeFirstElement, out int length)
+    private static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool iterateBeforeFirstElement, out int length)
     {
         length = 0;
 
@@ -82,7 +82,7 @@ internal static class HPackHeaderWriter
         }
         length += sizeUpdateLength;
 
-        if (iteratorBeforeFirstElement && !headersEnumerator.MoveNext())
+        if (iterateBeforeFirstElement && !headersEnumerator.MoveNext())
         {
             return HeaderWriteResult.Done;
         }
