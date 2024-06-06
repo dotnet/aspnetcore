@@ -59,10 +59,10 @@ The steps you follow next depend on your preferred development environment:
     ./restore.cmd
     ```
 
-1. You'll typically focus on one project in the repo. You can use the `startvs.cmd` command to launch Visual Studio in a particular project area. For example, to launch Visual Studio in the `Components` project:
+1. You'll typically focus on one project in the repo. You can use the `startvs.cmd` command to launch Visual Studio in a particular project area. For example, to launch Visual Studio in the `src/Http` project:
 
     ```powershell
-    cd src\Components
+    cd src\Http
     ./startvs.cmd
     ```
 
