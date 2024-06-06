@@ -75,6 +75,7 @@ internal sealed class Http2FrameWriter
 
     private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
     private byte[] _headerEncodingBuffer;
+
     // Keep track of the high-water mark of _headerEncodingBuffer's size so we don't have to grow
     // through intermediate sizes repeatedly.
     private int _headersEncodingLargeBufferSize = Http2PeerSettings.MinAllowedMaxFrameSize * HeaderBufferSizeMultiplier;
@@ -574,7 +575,7 @@ internal sealed class Http2FrameWriter
         }
     }
 
-    private void SplitHeaderFramesToOutput(int streamId, ReadOnlySpan<byte> dataToFrame, bool endOfHeaders, bool isFramePrepared)
+    private void SplitHeaderAcrossFrames(int streamId, ReadOnlySpan<byte> dataToFrame, bool endOfHeaders, bool isFramePrepared)
     {
         var shouldPrepareFrame = !isFramePrepared;
         while (dataToFrame.Length > 0)
@@ -631,12 +632,10 @@ internal sealed class Http2FrameWriter
                 writeResult = HPackHeaderWriter.RetryBeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
                 if (writeResult != HeaderWriteResult.BufferTooSmall)
                 {
-                    SplitHeaderFramesToOutput(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HeaderWriteResult.Done, isFramePrepared: true);
+                    SplitHeaderAcrossFrames(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HeaderWriteResult.Done, isFramePrepared: true);
                 }
                 else
                 {
-                    // The size is backed in a local field and not reset for further streams on the connections.
-                    // When a large header is repeatedly returned on a connection, the buffer size won't need to be repeatedly increased.
                     _headersEncodingLargeBufferSize = checked(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier);
                 }
                 ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
@@ -658,9 +657,6 @@ internal sealed class Http2FrameWriter
                 if (largeHeaderBuffer != null)
                 {
                     ArrayPool<byte>.Shared.Return(largeHeaderBuffer);
-
-                    // The size is backed in a local field and not reset for further streams on the connections.
-                    // When a large header is repeatedly returned on a connection, the buffer size won't need to be repeatedly increased.
                     _headersEncodingLargeBufferSize = checked(_headersEncodingLargeBufferSize * HeaderBufferSizeMultiplier);
                 }
                 largeHeaderBuffer = ArrayPool<byte>.Shared.Rent(_headersEncodingLargeBufferSize);
@@ -669,7 +665,7 @@ internal sealed class Http2FrameWriter
             else
             {
                 // In case of Done or MoreHeaders: write to output.
-                SplitHeaderFramesToOutput(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HeaderWriteResult.Done, isFramePrepared: false);
+                SplitHeaderAcrossFrames(streamId, buffer[..payloadLength], endOfHeaders: writeResult == HeaderWriteResult.Done, isFramePrepared: false);
             }
         }
         if (largeHeaderBuffer != null)
