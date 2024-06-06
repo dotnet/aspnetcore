@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -21,9 +22,14 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// an OpenAPI document. In particular, this is the API that is used to
 /// interact with the JSON schemas that are managed by a given OpenAPI document.
 /// </summary>
-internal sealed class OpenApiSchemaService([ServiceKey] string documentName, IOptions<JsonOptions> jsonOptions, IServiceProvider serviceProvider)
+internal sealed class OpenApiSchemaService(
+    [ServiceKey] string documentName,
+    IOptions<JsonOptions> jsonOptions,
+    IServiceProvider serviceProvider,
+    IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly OpenApiSchemaStore _schemaStore = serviceProvider.GetRequiredKeyedService<OpenApiSchemaStore>(documentName);
+    private readonly OpenApiOptions _openApiOptions = optionsMonitor.Get(documentName);
     private readonly JsonSerializerOptions _jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
     private readonly JsonSchemaMapperConfiguration _configuration = new()
     {
@@ -57,7 +63,7 @@ internal sealed class OpenApiSchemaService([ServiceKey] string documentName, IOp
         }
     };
 
-    internal OpenApiSchema GetOrCreateSchema(Type type, ApiParameterDescription? parameterDescription = null)
+    internal async Task<OpenApiSchema> GetOrCreateSchemaAsync(Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
         var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
             && parameterDescription.ModelMetadata.PropertyName is null
@@ -68,7 +74,26 @@ internal sealed class OpenApiSchemaService([ServiceKey] string documentName, IOp
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription);
         }
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
-        return deserializedSchema != null ? deserializedSchema.Schema : new OpenApiSchema();
+        Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
+        var schema = deserializedSchema.Schema;
+        await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
+        return schema;
+    }
+
+    internal async Task ApplySchemaTransformersAsync(OpenApiSchema schema, Type type, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
+    {
+        var context = new OpenApiSchemaTransformerContext
+        {
+            DocumentName = documentName,
+            Type = type,
+            ParameterDescription = parameterDescription,
+            ApplicationServices = serviceProvider
+        };
+        for (var i = 0; i < _openApiOptions.SchemaTransformers.Count; i++)
+        {
+            var transformer = _openApiOptions.SchemaTransformers[i];
+            await transformer(schema, context, cancellationToken);
+        }
     }
 
     private JsonObject CreateSchema(OpenApiSchemaKey key)
