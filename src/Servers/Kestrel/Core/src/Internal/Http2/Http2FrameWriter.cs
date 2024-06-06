@@ -75,6 +75,8 @@ internal sealed class Http2FrameWriter
 
     private int _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
     private byte[] _headerEncodingBuffer;
+    // Keep track of the high-water mark of _headerEncodingBuffer's size so we don't have to grow
+    // through intermediate sizes repeatedly.
     private int _headersEncodingLargeBufferSize = Http2PeerSettings.MinAllowedMaxFrameSize * HeaderBufferSizeMultiplier;
     private long _unflushedBytes;
 
