@@ -60,30 +60,19 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
-    public static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
-    {
-        length = 0;
-
-        if (!hpackEncoder.EnsureDynamicTableSizeUpdate(buffer, out var sizeUpdateLength))
-        {
-            throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
-        }
-        length += sizeUpdateLength;
-
-        if (!headersEnumerator.MoveNext())
-        {
-            return HeaderWriteResult.Done;
-        }
-
-        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: true, out var headersLength);
-        length += headersLength;
-        return done;
-    }
+    public static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length) =>
+        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iteratorBeforeFirstElement: true, out length);
 
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame without stepping the iterator.
     /// </summary>
-    public static HeaderWriteResult RetryBeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+    public static HeaderWriteResult RetryBeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length) =>
+        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iteratorBeforeFirstElement: false, out length);
+
+    /// <summary>
+    /// Begin encoding headers in the first HEADERS frame.
+    /// </summary>
+    private static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool iteratorBeforeFirstElement, out int length)
     {
         length = 0;
 
@@ -92,6 +81,11 @@ internal static class HPackHeaderWriter
             throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
         }
         length += sizeUpdateLength;
+
+        if (iteratorBeforeFirstElement && !headersEnumerator.MoveNext())
+        {
+            return HeaderWriteResult.Done;
+        }
 
         var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: true, out var headersLength);
         length += headersLength;
