@@ -50,8 +50,8 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     try
                     {
                         document.Serialize(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                        await context.Response.BodyWriter.WriteAsync(output.ToArray());
-                        await context.Response.BodyWriter.FlushAsync();
+                        await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
+                        await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                     }
                     finally
                     {
