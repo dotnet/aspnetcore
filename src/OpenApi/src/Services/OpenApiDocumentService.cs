@@ -99,7 +99,7 @@ internal sealed class OpenApiDocumentService(
     /// the object to support filtering each
     /// description instance into its appropriate document.
     /// </remarks>
-    private async Task<OpenApiPaths> GetOpenApiPathsAsync(HashSet<OpenApiTag> capturedTags, CancellationToken cancellationToken = default)
+    private async Task<OpenApiPaths> GetOpenApiPathsAsync(HashSet<OpenApiTag> capturedTags, CancellationToken cancellationToken)
     {
         var descriptionsByPath = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
             .SelectMany(group => group.Items)
@@ -114,7 +114,7 @@ internal sealed class OpenApiDocumentService(
         return paths;
     }
 
-    private async Task<Dictionary<OperationType, OpenApiOperation>> GetOperationsAsync(IGrouping<string?, ApiDescription> descriptions, HashSet<OpenApiTag> capturedTags, CancellationToken cancellationToken = default)
+    private async Task<Dictionary<OperationType, OpenApiOperation>> GetOperationsAsync(IGrouping<string?, ApiDescription> descriptions, HashSet<OpenApiTag> capturedTags, CancellationToken cancellationToken)
     {
         var operations = new Dictionary<OperationType, OpenApiOperation>();
         foreach (var description in descriptions)
@@ -132,7 +132,7 @@ internal sealed class OpenApiDocumentService(
         return operations;
     }
 
-    private async Task<OpenApiOperation> GetOperationAsync(ApiDescription description, HashSet<OpenApiTag> capturedTags, CancellationToken cancellationToken = default)
+    private async Task<OpenApiOperation> GetOperationAsync(ApiDescription description, HashSet<OpenApiTag> capturedTags, CancellationToken cancellationToken)
     {
         var tags = GetTags(description);
         if (tags != null)
@@ -177,7 +177,7 @@ internal sealed class OpenApiDocumentService(
         return [new OpenApiTag { Name = description.ActionDescriptor.RouteValues["controller"] }];
     }
 
-    private async Task<OpenApiResponses> GetResponsesAsync(ApiDescription description, CancellationToken cancellationToken = default)
+    private async Task<OpenApiResponses> GetResponsesAsync(ApiDescription description, CancellationToken cancellationToken)
     {
         // OpenAPI requires that each operation have a response, usually a successful one.
         // if there are no response types defined, we assume a successful 200 OK response
@@ -205,7 +205,7 @@ internal sealed class OpenApiDocumentService(
         return responses;
     }
 
-    private async Task<OpenApiResponse> GetResponseAsync(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType, CancellationToken cancellationToken = default)
+    private async Task<OpenApiResponse> GetResponseAsync(ApiDescription apiDescription, int statusCode, ApiResponseType apiResponseType, CancellationToken cancellationToken)
     {
         var description = ReasonPhrases.GetReasonPhrase(statusCode);
         var response = new OpenApiResponse
@@ -240,7 +240,7 @@ internal sealed class OpenApiDocumentService(
         return response;
     }
 
-    private async Task<List<OpenApiParameter>?> GetParametersAsync(ApiDescription description, CancellationToken cancellationToken = default)
+    private async Task<List<OpenApiParameter>?> GetParametersAsync(ApiDescription description, CancellationToken cancellationToken)
     {
         List<OpenApiParameter>? parameters = null;
         foreach (var parameter in description.ParameterDescriptions)
@@ -273,7 +273,7 @@ internal sealed class OpenApiDocumentService(
         return parameters;
     }
 
-    private async Task<OpenApiRequestBody?> GetRequestBodyAsync(ApiDescription description, CancellationToken cancellationToken = default)
+    private async Task<OpenApiRequestBody?> GetRequestBodyAsync(ApiDescription description, CancellationToken cancellationToken)
     {
         // Only one parameter can be bound from the body in each request.
         if (description.TryGetBodyParameter(out var bodyParameter))
@@ -290,7 +290,7 @@ internal sealed class OpenApiDocumentService(
         return null;
     }
 
-    private async Task<OpenApiRequestBody> GetFormRequestBody(IList<ApiRequestFormat> supportedRequestFormats, IEnumerable<ApiParameterDescription> formParameters, CancellationToken cancellationToken = default)
+    private async Task<OpenApiRequestBody> GetFormRequestBody(IList<ApiRequestFormat> supportedRequestFormats, IEnumerable<ApiParameterDescription> formParameters, CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
         {
@@ -415,7 +415,7 @@ internal sealed class OpenApiDocumentService(
         return requestBody;
     }
 
-    private async Task<OpenApiRequestBody> GetJsonRequestBody(IList<ApiRequestFormat> supportedRequestFormats, ApiParameterDescription bodyParameter, CancellationToken cancellationToken = default)
+    private async Task<OpenApiRequestBody> GetJsonRequestBody(IList<ApiRequestFormat> supportedRequestFormats, ApiParameterDescription bodyParameter, CancellationToken cancellationToken)
     {
         if (supportedRequestFormats.Count == 0)
         {

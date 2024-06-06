@@ -19,11 +19,10 @@ public sealed class OpenApiSchemaTransformerContext
     /// <summary>
     /// Gets the <see cref="Type" /> associated with the current <see cref="OpenApiSchema"/>
     /// </summary>
-    /// <value></value>
     public required Type Type { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="ApiParameterDescription"/>  associated with target schema.
+    /// Gets the <see cref="ApiParameterDescription"/> associated with the target schema.
     /// Null when processing an OpenAPI schema for a response type.
     /// </summary>
     public required ApiParameterDescription? ParameterDescription { get; init; }

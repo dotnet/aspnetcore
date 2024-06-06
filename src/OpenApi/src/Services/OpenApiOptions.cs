@@ -92,7 +92,7 @@ public sealed class OpenApiOptions
     }
 
     /// <summary>
-    /// Registers a given delegate as an schema transformer on the current <see cref="OpenApiOptions"/> instance.
+    /// Registers a given delegate as a schema transformer on the current <see cref="OpenApiOptions"/> instance.
     /// </summary>
     /// <param name="transformer">The delegate representing the schema transformer.</param>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
