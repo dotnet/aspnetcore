@@ -486,7 +486,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
         }
 
-        var parRequired = ConfigFlagEnabled("require_pushed_authoriation_requests");
+            var parRequired = ConfigFlagEnabled("require_pushed_authorization_requests");
 
         if (Options.UsePushedAuthorization || parRequired)
         {
@@ -552,36 +552,50 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
     private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
     {
+        // TODO - Make this check happen later, so that the event can decide what to do if there is nothing configured or in disco?
         if (GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint))
         {
             // Build context and run event
-            var parRequest = new HttpRequestMessage(HttpMethod.Post, parEndpoint)
-            {
-                Content = new FormUrlEncodedContent(authorizeRequest.Parameters),
-            };
+            var parRequest = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
             var context = new PushedAuthorizationContext(Context, Scheme, Options, authorizeRequest, parRequest, properties);
             await Events.PushAuthorization(context);
 
-            // If the event handled auth, we skip out default auth behavior
+            // If the event handled client authentication, skip the default auth behavior
             if (context.HandledClientAuthentication)
             {
                 Logger.PushAuthorizationHandledClientAuthentication();
             }
             else
             {
-                SetClientAuthenticationHeader(parRequest);
+                // Otherwise, add the client secret to the parameters (if available)
+                if (!string.IsNullOrEmpty(Options.ClientSecret))
+                {
+                    authorizeRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
+                }
             }
 
-            // If the event handled the push, there's nothing left to do and we bail out
-            if (context.HandledPush)
+            string requestUri;
+
+            // If the event handled the push, it either means the event will
+            // supply the request uri, or that it decided to skip the push.
+            if (context.SkippedPush)
             {
-                Logger.PushAuthorizationHandledPush();
+                Logger.PushAuthorizationSkippedPush();
                 return;
             }
+            else if (context.HandledPush)
+            {
+                Logger.PushAuthorizationHandledPush();
+                requestUri = context.RequestUri;
+            }
+            else
+            {
+                // TODO - Log this too?
+                parRequest.Content = new FormUrlEncodedContent(authorizeRequest.Parameters);
+                var parResponseMessage = await Backchannel.SendAsync(parRequest, Context.RequestAborted);
+                requestUri = await GetPushedAuthorizationRequestUri(parResponseMessage);
+            }
 
-            var parResponseMessage = await Backchannel.SendAsync(parRequest, Context.RequestAborted);
-
-            var requestUri = await GetRequestUri(parResponseMessage);
             authorizeRequest.Parameters.Clear();
             authorizeRequest.Parameters.Add("client_id", Options.ClientId);
             authorizeRequest.Parameters.Add("request_uri", requestUri);
@@ -592,7 +606,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
     }
 
-    private async Task<string> GetRequestUri(HttpResponseMessage parResponseMessage)
+    private async Task<string> GetPushedAuthorizationRequestUri(HttpResponseMessage parResponseMessage)
     {
         // Check content type
         var contentType = parResponseMessage.Content.Headers.ContentType;
@@ -606,29 +620,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         var message = new OpenIdConnectMessage(parResponseString);
 
         var requestUri = message.GetParameter("request_uri");
-        if(requestUri == null)
+        if (requestUri == null)
         {
             throw CreateOpenIdConnectProtocolException(message, parResponseMessage);
         }
         return requestUri;
-    }
-
-    private void SetClientAuthenticationHeader(HttpRequestMessage parRequest)
-    {
-        if (string.IsNullOrEmpty(Options.ClientId))
-        {
-            throw new InvalidOperationException("Missing client id");
-        }
-        if (string.IsNullOrEmpty(Options.ClientSecret))
-        {
-            throw new InvalidOperationException("Missing client secret");
-        }
-        var escapedClientId = Uri.EscapeDataString(Options.ClientId);
-        var escapedClientSecret = Uri.EscapeDataString(Options.ClientSecret);
-        var credential = $"{escapedClientId}:{escapedClientSecret}";
-        var encodedCredential = Convert.ToBase64String(Encoding.UTF8.GetBytes(credential));
-
-        parRequest.Headers.Authorization = new AuthenticationHeaderValue("basic", encodedCredential);
     }
 
     /// <summary>

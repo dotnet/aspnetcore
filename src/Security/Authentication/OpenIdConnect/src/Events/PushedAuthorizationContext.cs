@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -18,26 +19,61 @@ public class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions
     /// <inheritdoc />
     public PushedAuthorizationContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage message, HttpRequestMessage parRequest, AuthenticationProperties properties)
         : base(context, scheme, options, properties)
-        => ProtocolMessage = message;
+    {
+        ProtocolMessage = message;
+        PushedAuthorizationRequest = parRequest;
+    }
 
     /// <summary>
     /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
     /// </summary>
     public OpenIdConnectMessage ProtocolMessage { get; }
+    public HttpRequestMessage PushedAuthorizationRequest { get; }
 
     /// <summary>
     /// Indicates if the OnPushAuthorization event chose to handle pushing the
     /// authorization request. If true, the handler will not attempt to push the
-    /// authorization request.
+    /// authorization request, and will instead use the RequestUri from this
+    /// event in the subsequent authorize request.
     /// </summary>
-    public bool HandledPush { get; private set; }
+    public bool HandledPush { [MemberNotNull("RequestUri")]get; private set; }
 
     /// <summary>
-    /// Tells the handler to skip the process of pushing authorization. The
-    /// OnPushAuthorization event may have pushed the request or decided that
-    /// pushing the request was not required.
+    /// Indicates if the OnPushAuthorization event chose to skip pushing the
+    /// authorization request. If true, the handler will not attempt to push the
+    /// authorization request, and will not use pushed authorization in the
+    /// subsequent authorize request.
     /// </summary>
-    public void HandlePush() => HandledPush = true;
+    public bool SkippedPush { get; private set; }
+
+    /// <summary>
+    /// The request_uri parameter to use in the subsequent authorize call, if
+    /// the OnPushAuthorization event chose to handle pushing the authorization
+    /// request, and null otherwise.
+    /// </summary>
+    public string? RequestUri { get; private set; }
+
+    /// <summary>
+    /// Tells the handler that the OnPushAuthorization event has handled the
+    /// process of pushing authorization, and that the handler should use the
+    /// provided request_uri on the subsequent authorize call.
+    /// </summary>
+    [MemberNotNull("RequestUri")]
+    public void HandlePush(string requestUri)
+    {
+        HandledPush = true;
+        RequestUri = requestUri;
+    }
+
+    /// <summary>
+    /// Tells the handler to skip pushing authorization entirely. If this is
+    /// called, the handler will not use pushed authorization on the subsequent
+    /// authorize call.
+    /// </summary>
+    public void SkipPush()
+    {
+        SkippedPush = true;
+    }
 
     /// <summary>
     /// Indicates if the OnPushAuthorization event chose to handle client
