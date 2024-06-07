@@ -14,10 +14,11 @@ class Program
         builder.Services.AddAuthenticationStateDeserialization();
 
         #endif
-
+        #if (WeatherForecastApi)
         // Register an HttpClient service to use for calling APIs on the server
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+        #endif
         await builder.Build().RunAsync();
     }
 }

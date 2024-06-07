@@ -8,8 +8,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationStateDeserialization();
 
 #endif
-
-// Register an HttpClient service to use for calling APIs on the server
+#if (WeatherForecastApi)
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+#endif
 await builder.Build().RunAsync();

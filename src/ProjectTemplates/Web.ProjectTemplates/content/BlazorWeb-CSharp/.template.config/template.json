@@ -77,15 +77,17 @@
           ]
         },
         {
-          "condition": "(UseWebAssembly)",
+          "condition": "(WeatherForecastApi)",
           "exclude": [
             "BlazorWeb-CSharp/Components/Pages/Weather.razor"
           ]
         },
         {
-          "condition": "(!UseWebAssembly)",
+          "condition": "(!WeatherForecastApi)",
           "exclude": [
-            "BlazorWeb-CSharp.Client/Pages/Weather.razor"
+            "BlazorWeb-CSharp.Client/Pages/Weather.razor",
+            "BlazorWeb-CSharp.Client/Data/WeatherForecast.cs",
+            "BlazorWeb-CSharp/Data/WeatherForecastService.cs"
           ]
         },
         {
@@ -133,7 +135,11 @@
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/**",
-            "BlazorWeb-CSharp/Data/**",
+            "BlazorWeb-CSharp/Data/SqlLite/**",
+            "BlazorWeb-CSharp/Data/SqlServer/**",
+            "BlazorWeb-CSharp/Data/app.db/**",
+            "BlazorWeb-CSharp/Data/ApplicationDbContext.cs",
+            "BlazorWeb-CSharp/Data/ApplicationUser.cs",
             "BlazorWeb-CSharp.Client/UserInfo.cs",
             "BlazorWeb-CSharp.Client/Pages/Auth.razor"
           ]
@@ -417,6 +423,10 @@
     "SampleContent": {
       "type": "computed",
       "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+    },
+    "WeatherForecastApi": {
+      "type": "computed",
+      "value": "(UseWebAssembly && !UseServer && SampleContent)"
     },
     "AllInteractive": {
       "type": "parameter",

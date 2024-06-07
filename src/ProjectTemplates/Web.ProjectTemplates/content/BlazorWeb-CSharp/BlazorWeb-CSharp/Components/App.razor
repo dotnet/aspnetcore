@@ -21,8 +21,10 @@
     <HeadOutlet @rendermode="InteractiveAuto" />
     ##elseif (UseServer)
     <HeadOutlet @rendermode="InteractiveServer" />
-    ##else
+    ##elseif (WeatherForecastApi)
     <HeadOutlet @rendermode="@(new InteractiveWebAssemblyRenderMode(false))" />
+    ##else
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
     ##endif*@
 </head>
 
