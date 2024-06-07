@@ -562,9 +562,9 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             Logger.PushAuthorizationHandledClientAuthentication();
         }
+        // Otherwise, add the client secret to the parameters (if available)
         else
         {
-            // Otherwise, add the client secret to the parameters (if available)
             if (!string.IsNullOrEmpty(Options.ClientSecret))
             {
                 parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
@@ -573,13 +573,13 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         string requestUri;
 
-        // If the event handled the push, it either means the event will
-        // supply the request uri, or that it decided to skip the push.
+        // The event can either entirely skip pushing to the par endpoint...
         if (context.SkippedPush)
         {
             Logger.PushAuthorizationSkippedPush();
             return;
         }
+        // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
         else if (context.HandledPush)
         {
             Logger.PushAuthorizationHandledPush();
