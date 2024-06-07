@@ -33,7 +33,18 @@ public class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions
     /// authorization request, and will instead use the RequestUri from this
     /// event in the subsequent authorize request.
     /// </summary>
-    public bool HandledPush { [MemberNotNull("RequestUri")]get; private set; }
+    public bool HandledPush { [MemberNotNull("RequestUri")] get; private set; }
+
+    /// <summary>
+    /// Tells the handler that the OnPushAuthorization event has handled the process of pushing
+    /// authorization, and that the handler should use the provided request_uri
+    /// on the subsequent authorize call.
+    /// </summary>
+    public void HandlePush(string requestUri)
+    {
+        HandledPush = true;
+        RequestUri = requestUri;
+    }
 
     /// <summary>
     /// Indicates if the OnPushAuthorization event chose to skip pushing the
@@ -49,17 +60,6 @@ public class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions
     /// request, and null otherwise.
     /// </summary>
     public string? RequestUri { get; private set; }
-
-    /// <summary>
-    /// Tells the handler that the OnPushAuthorization event has handled the process of pushing
-    /// authorization, and that the handler should use the provided request_uri
-    /// on the subsequent authorize call.
-    /// </summary>
-    public void HandlePush(string requestUri)
-    {
-        HandledPush = true;
-        RequestUri = requestUri;
-    }
 
     /// <summary>
     /// Tells the handler to skip pushing authorization entirely. If this is
