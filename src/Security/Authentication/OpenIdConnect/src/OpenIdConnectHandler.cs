@@ -552,60 +552,63 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
     private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties)
     {
-        // TODO - Make this check happen later, so that the event can decide what to do if there is nothing configured or in disco?
-        if (GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint))
+        // Build context and run event
+        var parRequest = authorizeRequest.Clone();
+        var context = new PushedAuthorizationContext(Context, Scheme, Options, parRequest, properties);
+        await Events.PushAuthorization(context);
+
+        // If the event handled client authentication, skip the default auth behavior
+        if (context.HandledClientAuthentication)
         {
-            // Build context and run event
-            var parRequest = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
-            var context = new PushedAuthorizationContext(Context, Scheme, Options, authorizeRequest, parRequest, properties);
-            await Events.PushAuthorization(context);
-
-            // If the event handled client authentication, skip the default auth behavior
-            if (context.HandledClientAuthentication)
-            {
-                Logger.PushAuthorizationHandledClientAuthentication();
-            }
-            else
-            {
-                // Otherwise, add the client secret to the parameters (if available)
-                if (!string.IsNullOrEmpty(Options.ClientSecret))
-                {
-                    authorizeRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
-                }
-            }
-
-            string requestUri;
-
-            // If the event handled the push, it either means the event will
-            // supply the request uri, or that it decided to skip the push.
-            if (context.SkippedPush)
-            {
-                Logger.PushAuthorizationSkippedPush();
-                return;
-            }
-            else if (context.HandledPush)
-            {
-                Logger.PushAuthorizationHandledPush();
-                requestUri = context.RequestUri;
-            }
-            else
-            {
-                // TODO - Log this too?
-                parRequest.Content = new FormUrlEncodedContent(authorizeRequest.Parameters);
-                var parResponseMessage = await Backchannel.SendAsync(parRequest, Context.RequestAborted);
-                requestUri = await GetPushedAuthorizationRequestUri(parResponseMessage);
-            }
-
-            authorizeRequest.Parameters.Clear();
-            authorizeRequest.Parameters.Add("client_id", Options.ClientId);
-            authorizeRequest.Parameters.Add("request_uri", requestUri);
+            Logger.PushAuthorizationHandledClientAuthentication();
         }
         else
         {
-            throw new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
+            // Otherwise, add the client secret to the parameters (if available)
+            if (!string.IsNullOrEmpty(Options.ClientSecret))
+            {
+                parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
+            }
         }
+
+        string requestUri;
+
+        // If the event handled the push, it either means the event will
+        // supply the request uri, or that it decided to skip the push.
+        if (context.SkippedPush)
+        {
+            Logger.PushAuthorizationSkippedPush();
+            return;
+        }
+        else if (context.HandledPush)
+        {
+            Logger.PushAuthorizationHandledPush();
+            requestUri = context.RequestUri;
+        }
+        else
+        {
+            GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
+            if (string.IsNullOrEmpty(parEndpoint))
+            {
+                new InvalidOperationException("Attempt to push authorization with no pushed authorization endpoint configured.");
+            }
+
+            // TODO - If we get support for PAR in wilson, we can replace GetConfigString with something like this:
+            // var requestMessage = new HttpRequestMessage(HttpMethod.Post, parRequest.ParEndpoint ?? _configuration?.ParEndpoint);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
+            requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
+            var parResponseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
+            requestUri = await GetPushedAuthorizationRequestUri(parResponseMessage);
+        }
+
+        authorizeRequest.Parameters.Clear();
+        authorizeRequest.Parameters.Add("client_id", Options.ClientId);
+        authorizeRequest.Parameters.Add("request_uri", requestUri);
     }
 
+    // TODO Compare with similar use case in RedeemAuthorizationCodeAsync
     private async Task<string> GetPushedAuthorizationRequestUri(HttpResponseMessage parResponseMessage)
     {
         // Check content type

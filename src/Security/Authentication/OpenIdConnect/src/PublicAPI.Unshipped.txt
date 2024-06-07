@@ -10,8 +10,7 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.Han
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandledPush.get -> bool
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandlePush(string! requestUri) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.ProtocolMessage.get -> Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage!
-Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.PushedAuthorizationContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options, Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage! message, System.Net.Http.HttpRequestMessage! parRequest, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> void
-Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.PushedAuthorizationRequest.get -> System.Net.Http.HttpRequestMessage!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.PushedAuthorizationContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options, Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage! parRequest, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.RequestUri.get -> string?
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.SkippedPush.get -> bool
 Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.SkipPush() -> void

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -17,18 +16,16 @@ public class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions
     /// Initializes a new instance of <see cref="PushedAuthorizationContext"/>.
     /// </summary>
     /// <inheritdoc />
-    public PushedAuthorizationContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage message, HttpRequestMessage parRequest, AuthenticationProperties properties)
+    public PushedAuthorizationContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, OpenIdConnectMessage parRequest, AuthenticationProperties properties)
         : base(context, scheme, options, properties)
     {
-        ProtocolMessage = message;
-        PushedAuthorizationRequest = parRequest;
+        ProtocolMessage = parRequest;
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="OpenIdConnectMessage"/>.
+    /// Gets or sets the <see cref="OpenIdConnectMessage"/> that will be sent to the PAR endpoint.
     /// </summary>
     public OpenIdConnectMessage ProtocolMessage { get; }
-    public HttpRequestMessage PushedAuthorizationRequest { get; }
 
     /// <summary>
     /// Indicates if the OnPushAuthorization event chose to handle pushing the
@@ -54,11 +51,10 @@ public class PushedAuthorizationContext : PropertiesContext<OpenIdConnectOptions
     public string? RequestUri { get; private set; }
 
     /// <summary>
-    /// Tells the handler that the OnPushAuthorization event has handled the
-    /// process of pushing authorization, and that the handler should use the
-    /// provided request_uri on the subsequent authorize call.
+    /// Tells the handler that the OnPushAuthorization event has handled the process of pushing
+    /// authorization, and that the handler should use the provided request_uri
+    /// on the subsequent authorize call.
     /// </summary>
-    [MemberNotNull("RequestUri")]
     public void HandlePush(string requestUri)
     {
         HandledPush = true;
