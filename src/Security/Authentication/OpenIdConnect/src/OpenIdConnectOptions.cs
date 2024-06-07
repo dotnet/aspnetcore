@@ -412,7 +412,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <summary>
     /// Flag to set whether the handler should push authorization parameters on the backchannel before
     /// redirecting to the identity provider. See <see href="https://tools.ietf.org/html/9126"/>.
-    /// The default is 'false'.
+    /// The default is 'true'.
     /// </summary>
-    public bool UsePushedAuthorization { get; set; }
+    public bool UsePushedAuthorization { get; set; } = true;
 }

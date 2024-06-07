@@ -486,9 +486,10 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
         }
 
-            var parRequired = ConfigFlagEnabled("require_pushed_authorization_requests");
+        var parRequired = ConfigFlagEnabled("require_pushed_authorization_requests");
+        GetConfigString("pushed_authorization_request_endpoint", out var parEndpoint);
 
-        if (Options.UsePushedAuthorization || parRequired)
+        if ((Options.UsePushedAuthorization && !string.IsNullOrEmpty(parEndpoint)) || parRequired)
         {
             await PushAuthorizationRequest(message, properties);
         }
@@ -524,6 +525,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
     }
 
+    // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
+    // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/2499 merges
     private bool GetConfigString(string name, [NotNullWhen(true)] out string? value)
     {
         if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
@@ -538,6 +541,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         return false;
     }
 
+    // TODO GetConfigString and ConfigFlagEnabled are only used in PAR, and won't be necessary after
+    // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/pull/2499 merges
     private bool ConfigFlagEnabled(string name)
     {
         if (_configuration?.AdditionalData.TryGetValue(name, out var configValue) ?? false)
