@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -23,7 +24,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             return Task.CompletedTask;
         });
 
-        await VerifyOpenApiDocument(builder, document => { });
+        await VerifyOpenApiDocument(builder, options, document => { });
     }
 
     [Fact]
@@ -41,7 +42,46 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             return Task.CompletedTask;
         });
 
-        await VerifyOpenApiDocument(builder, document => { });
+        await VerifyOpenApiDocument(builder, options, document => { });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_CanAccessApplicationServicesAndDocumentName()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var options = new OpenApiOptions();
+        options.UseSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            var service = context.ApplicationServices.GetKeyedService<OpenApiDocumentService>(context.DocumentName);
+            Assert.NotNull(service);
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { });
+    }
+
+    [Fact]
+    public async Task SchemaTransformer_RespectsCancellationToken()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => new Todo(1, "Item1", false, DateTime.Now));
+
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var options = new OpenApiOptions();
+        options.UseSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            Assert.Equal(cts.Token, cancellationToken);
+            Assert.True(cancellationToken.IsCancellationRequested);
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { }, cts.Token);
     }
 
     [Fact]

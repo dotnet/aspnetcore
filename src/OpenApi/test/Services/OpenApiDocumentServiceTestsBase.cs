@@ -21,13 +21,13 @@ using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public abstract class OpenApiDocumentServiceTestBase
 {
-    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument)
-        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument);
+    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
+        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument, cancellationToken);
 
-    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument)
+    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
-        var document = await documentService.GetOpenApiDocumentAsync();
+        var document = await documentService.GetOpenApiDocumentAsync(cancellationToken);
         verifyOpenApiDocument(document);
     }
 

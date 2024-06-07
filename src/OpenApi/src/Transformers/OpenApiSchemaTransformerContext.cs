@@ -17,7 +17,7 @@ public sealed class OpenApiSchemaTransformerContext
     public required string DocumentName { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="Type" /> associated with the current <see cref="OpenApiSchema"/>
+    /// Gets the <see cref="Type" /> associated with the current <see cref="OpenApiSchema"/>.
     /// </summary>
     public required Type Type { get; init; }
 
