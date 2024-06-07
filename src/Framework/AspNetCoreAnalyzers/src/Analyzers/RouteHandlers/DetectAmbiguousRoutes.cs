@@ -173,9 +173,24 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 ParentOperation != null &&
                 Equals(ParentOperation, other.ParentOperation) &&
                 Builder != null &&
-                SymbolEqualityComparer.Default.Equals((Builder as ILocalReferenceOperation)?.Local, (other.Builder as ILocalReferenceOperation)?.Local) &&
+                AreBuildersEqual(Builder, other.Builder) &&
                 AmbiguousRoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
                 HasMatchingHttpMethods(HttpMethods, other.HttpMethods);
+
+            static bool AreBuildersEqual(IOperation builder, IOperation? other)
+            {
+                if (builder is ILocalReferenceOperation local && other is ILocalReferenceOperation otherLocal)
+                {
+                    return SymbolEqualityComparer.Default.Equals(local.Local, otherLocal.Local);
+                }
+
+                if (builder is IInvocationOperation invocation && other is IInvocationOperation otherInvocation)
+                {
+                    return AreArgumentsEqual(invocation.Arguments, otherInvocation.Arguments);
+                }
+
+                return true;
+            }
         }
 
         private static bool HasMatchingHttpMethods(ImmutableArray<string> httpMethods1, ImmutableArray<string> httpMethods2)
@@ -197,6 +212,28 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
 
             return false;
+        }
+
+        private static bool AreArgumentsEqual(ImmutableArray<IArgumentOperation> arguments1, ImmutableArray<IArgumentOperation> arguments2)
+        {
+            if (arguments1.Length != arguments2.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < arguments1.Length; i++)
+            {
+                var arg1 = arguments1[i];
+                var arg2 = arguments2[i];
+
+                if (arg1?.Parameter?.Name != arg2?.Parameter?.Name ||
+                    !Equals(arg1?.Value.ConstantValue.Value, arg2?.Value.ConstantValue.Value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public override int GetHashCode()

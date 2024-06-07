@@ -20,7 +20,8 @@ app.MapGet({|#1:""/""|}, () => Hello());
 void Hello() { }
 ";
 
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -43,7 +44,8 @@ app.MapGet({|#1:""/""|}, (HttpContext context) => Task.CompletedTask);
 void Hello() { }
 ";
 
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -71,7 +73,8 @@ RegisterEndpoints(app);
 void Hello() { }
 ";
 
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -140,7 +143,8 @@ switch (Random.Shared.Next())
 void Hello() { }
 ";
 
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -254,7 +258,8 @@ if (true)
 void Hello() { }
 ";
 
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -362,6 +367,42 @@ void Hello() { }
     }
 
     [Fact]
+    public async Task DuplicateRoutes_MultipleGroups_DirectInvocation_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGroup(""/group1"").MapGet(""/"", () => { });
+app.MapGroup(""/group2"").MapGet(""/"", () => { });
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_MultipleGroups_DirectInvocation_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app = WebApplication.Create();
+app.MapGroup(""/group1"").MapGet({|#0:""/""|}, () => { });
+app.MapGroup(""/group1"").MapGet({|#1:""/""|}, () => { });
+";
+
+        // Act & Assert
+        var expectedDiagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_EndpointsOnGroup_HasDiagnostics()
     {
         // Arrange
@@ -377,7 +418,8 @@ void Hello() { }
 ";
 
         // Act & Assert
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -409,7 +451,8 @@ app.MapGet({|#1:""/""|}, () => Hello());
 void Hello() { }
 ";
 
-        var expectedDiagnostics = new[] {
+        var expectedDiagnostics = new[]
+        {
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
             new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
         };
@@ -440,4 +483,3 @@ void Hello() { }
         await VerifyCS.VerifyAnalyzerAsync(source);
     }
 }
-
