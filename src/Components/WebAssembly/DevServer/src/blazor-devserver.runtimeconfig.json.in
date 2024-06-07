@@ -3,7 +3,7 @@
     "tfm": "net8.0",
     "framework": {
       "name": "Microsoft.AspNetCore.App",
-      "version": "${SharedFxVersion}"
+      "version": "${AspNetCoreMajorMinorVersion}.0"
     },
     "rollForwardOnNoCandidateFx": 2
   }
