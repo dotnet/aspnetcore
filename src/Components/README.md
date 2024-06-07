@@ -29,29 +29,41 @@ The following contains a description of each sub-directory in the `Components` d
 
 ## Development Setup
 
-### Build
+**Note**: To build other specific projects from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
 
-To build this specific project from source, follow the instructions [on building the project](../../docs/BuildFromSource.md#step-3-build-the-repo).
-
-**Note:** You also need to run the preceding `build` command in the command line before building in VS to ensure that the Web.JS dependency is built.
-
-### A Guide to build Web.JS
-
-Prior to building `src\Components\Web.JS\`
+### Building ASP.NET Core Components
 
 1. You'll need to install [Node](https://nodejs.org) on your machine.
 
-2. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
+1. Ensure the repository is clean from any asset that could remain from previous version of the repository. This is recommended when switching branches, or after updating the working branch.
+
+```powershell
+git clean -xdff
+```
+
+You may need to kill some processes holding on files that are being deleted. The following command may help you but be aware that this could also stop other important processes:
+
+```powershell
+Get-Process dotnet, escape-node-job, msbuild, VBCSCompiler, node, vstest.console, Microsoft.CodeAnalysis.LanguageServer -ErrorAction Continue | Stop-Process;
+```
+
+1. Use NPM to restore the required JavaScript modules. This doesn't require an Internet connection since the sources are read from a sub-module.
+
+```powershell
+npm ci --offline
+```
+
+1. You'll need to run the `restore` script locally to install the required dotnet dependencies and setup the repo. The `restore` script is located in the root of the repo.
 
 ```bash
 ./restore.sh
 ```
 
 ```powershell
-./restore.ps1
+./restore.cmd
 ```
 
-3. After the restore script has finished executing, activate the locally installed .NET by running the following command.
+1. After the restore script has finished executing, activate the locally installed .NET by running the following command.
 
 ```bash
 source activate.sh
@@ -61,10 +73,23 @@ source activate.sh
 . ./activate.ps1
 ```
 
-4. Now you can build `src\Components\Web.JS\` by running the following commands in the `src\Components\Web.JS` directory:
+1. Now you can build all the JavaScript assets required by the repository (including SignalR for instance) by running the following command:
 
 ```powershell
-dotnet build
+npm run build
+```
+
+1. Build the Components:
+
+```powershell
+cd src/Components
+./build.cmd
+```
+
+2. Optionally, open the Components in Visual Studio:
+
+```powershell
+.\startvs.cmd
 ```
 
 ### Test
@@ -84,23 +109,11 @@ These tests are run in the CI as part of the [`aspnetcore-components-e2e`](https
 
 #### How to run the E2E Tests
 
-To run the tests for this project, follow these steps (from the root directory):
+The E2E tests can be run and debugged directly from Visual Studio (as explained in the previous section).
 
-##### Windows
+To run the tests from the command line, follow the previous steps to build the Components, then run this command:
 
 ```powershell
-./restore.cmd
-npm install --prefix ./src/Components/test/E2ETest
-. .\activate.ps1
-dotnet test ./src/Components/test/E2ETest
-```
-
-##### Linux / MacOS
-
-```shell
-./restore.sh
-npm install --prefix ./src/Components/test/E2ETest
-source ./activate.sh
 dotnet test ./src/Components/test/E2ETest
 ```
 
@@ -123,4 +136,4 @@ dotnet test --no-build
 
 ## More Information
 
-For more information, see the [ASP.NET Core README](../../README.md).
+For more information, see the [ASP.NET Core README](https://github.com/dotnet/aspnetcore/blob/main/README.md).
