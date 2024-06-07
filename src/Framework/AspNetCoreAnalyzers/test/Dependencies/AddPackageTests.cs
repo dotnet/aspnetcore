@@ -60,7 +60,15 @@ app.{|CS1061:MapOpenApi|}();
 
     public class MockAddPackageFixer : AddPackageFixer
     {
+        /// <remarks>
+        /// This static property allows us to verify that the fixer was
+        /// able to successfully resolve the symbol and call into the
+        /// package install APIs. This is a workaround for the fact that
+        /// the package install APIs are not readily mockable. Note: this
+        /// is not intended for use across test classes.
+        /// </remarks>
         internal static bool Invoked { get; set; }
+
         internal override Task<CodeAction> TryCreateCodeActionAsync(
             Document document,
             int position,
