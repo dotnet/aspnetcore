@@ -202,7 +202,7 @@ public static class UriHelper
         }
         else
         {
-            return uri.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+            return uri.GetComponents(System.UriComponents.SerializationInfoString, UriFormat.UriEscaped);
         }
     }
 
