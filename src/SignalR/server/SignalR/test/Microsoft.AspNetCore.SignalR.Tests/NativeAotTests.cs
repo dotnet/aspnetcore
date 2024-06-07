@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
@@ -87,6 +88,35 @@ public partial class NativeAotTests : FunctionalTestBase
                     echoResults.Add(item);
                 }
                 Assert.Equal(["echo:some data", "echo:some more data", "echo:even more data"], echoResults);
+
+                var streamValueTypeResults = new List<int>();
+                await foreach (var item in connection.StreamAsync<int>(nameof(AsyncMethodHub.ReturnEnumerableValueType)))
+                {
+                    streamValueTypeResults.Add(item);
+                }
+                Assert.Equal([1, 2], streamValueTypeResults);
+
+                var returnChannelValueTypeResults = new List<char>();
+                var returnChannelValueTypeReader = await connection.StreamAsChannelAsync<char>(nameof(AsyncMethodHub.ReturnChannelValueType), "Hello");
+                await foreach (var item in returnChannelValueTypeReader.ReadAllAsync())
+                {
+                    returnChannelValueTypeResults.Add(item);
+                }
+                Assert.Equal(['H', 'e', 'l', 'l', 'o'], returnChannelValueTypeResults);
+
+                // Even though SignalR server doesn't support Hub methods with streaming value types in native AOT (https://github.com/dotnet/aspnetcore/issues/56179),
+                // still test that the client can send them.
+                var stringResult = await connection.InvokeAsync<string>(nameof(AsyncMethodHub.EnumerableIntParameter), StreamInts());
+                Assert.Equal("1, 2, 3", stringResult);
+
+                var channelShorts = Channel.CreateBounded<short>(10);
+                await channelShorts.Writer.WriteAsync(9);
+                await channelShorts.Writer.WriteAsync(8);
+                await channelShorts.Writer.WriteAsync(7);
+                channelShorts.Writer.Complete();
+
+                stringResult = await connection.InvokeAsync<string>(nameof(AsyncMethodHub.ChannelShortParameter), channelShorts.Reader);
+                Assert.Equal("9, 8, 7", stringResult);
             }
         });
     }
@@ -99,20 +129,30 @@ public partial class NativeAotTests : FunctionalTestBase
         yield return "message two";
     }
 
+    private static async IAsyncEnumerable<int> StreamInts()
+    {
+        await Task.Yield();
+        yield return 1;
+        await Task.Yield();
+        yield return 2;
+        await Task.Yield();
+        yield return 3;
+    }
+
     [ConditionalFact]
     [RemoteExecutionSupported]
     public void UsingValueTypesInStreamingThrows()
     {
         RunNativeAotTest(static async () =>
         {
-            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => InProcessTestServer<Startup<AsyncEnumerableIntMethodHub>>.StartServer(NullLoggerFactory.Instance));
-            Assert.Contains("Unable to stream an item with type 'System.Int32' on method 'Microsoft.AspNetCore.SignalR.Tests.NativeAotTests+AsyncEnumerableIntMethodHub.StreamValueType' because it is a ValueType.", e.Message);
+            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => InProcessTestServer<Startup<ChannelValueTypeMethodHub>>.StartServer(NullLoggerFactory.Instance));
+            Assert.Contains("Method 'Microsoft.AspNetCore.SignalR.Tests.NativeAotTests+ChannelValueTypeMethodHub.StreamValueType' is not supported with native AOT because it has a parameter of type 'System.Threading.Channels.ChannelReader`1[System.Double]'.", e.Message);
         });
 
         RunNativeAotTest(static async () =>
         {
-            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => InProcessTestServer<Startup<ChannelDoubleMethodHub>>.StartServer(NullLoggerFactory.Instance));
-            Assert.Contains("Unable to stream an item with type 'System.Double' on method 'Microsoft.AspNetCore.SignalR.Tests.NativeAotTests+ChannelDoubleMethodHub.StreamValueType' because it is a ValueType.", e.Message);
+            var e = await Assert.ThrowsAsync<InvalidOperationException>(() => InProcessTestServer<Startup<EnumerableValueTypeMethodHub>>.StartServer(NullLoggerFactory.Instance));
+            Assert.Contains("Method 'Microsoft.AspNetCore.SignalR.Tests.NativeAotTests+EnumerableValueTypeMethodHub.StreamValueType' is not supported with native AOT because it has a parameter of type 'System.Collections.Generic.IAsyncEnumerable`1[System.Single]'.", e.Message);
         });
     }
 
@@ -228,24 +268,92 @@ public partial class NativeAotTests : FunctionalTestBase
                 yield return "echo:" + item;
             }
         }
-    }
 
-    public class AsyncEnumerableIntMethodHub : TestHub
-    {
-        public async IAsyncEnumerable<int> StreamValueType()
+        public async IAsyncEnumerable<int> ReturnEnumerableValueType()
         {
             await Task.Yield();
             yield return 1;
             await Task.Yield();
             yield return 2;
         }
+
+        public ChannelReader<char> ReturnChannelValueType(string source)
+        {
+            Channel<char> output = Channel.CreateUnbounded<char>();
+
+            _ = Task.Run(async () =>
+            {
+                foreach (var item in source)
+                {
+                    await Task.Yield();
+                    await output.Writer.WriteAsync(item);
+                }
+
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
+        }
+
+        public async Task<string> EnumerableIntParameter(IAsyncEnumerable<object> source)
+        {
+            var result = new StringBuilder();
+            var first = true;
+            // These get deserialized as JsonElement since the parameter is 'ChannelReader<object>'
+            await foreach (JsonElement item in source)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    result.Append(", ");
+                }
+
+                result.Append(item.GetInt32());
+            }
+            return result.ToString();
+        }
+
+        public async Task<string> ChannelShortParameter(ChannelReader<object> source)
+        {
+            var result = new StringBuilder();
+            var first = true;
+            // These get deserialized as JsonElement since the parameter is 'ChannelReader<object>'
+            await foreach (JsonElement item in source.ReadAllAsync())
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    result.Append(", ");
+                }
+
+                result.Append(item.GetInt16());
+            }
+            return result.ToString();
+        }
     }
 
-    public class ChannelDoubleMethodHub : TestHub
+    public class ChannelValueTypeMethodHub : TestHub
     {
-        public async Task StreamValueType(ILogger<ChannelDoubleMethodHub> logger, ChannelReader<double> source)
+        public async Task StreamValueType(ILogger<ChannelValueTypeMethodHub> logger, ChannelReader<double> source)
         {
             await foreach (var item in source.ReadAllAsync())
+            {
+                logger.LogInformation("Received: {item}", item);
+            }
+        }
+    }
+
+    public class EnumerableValueTypeMethodHub : TestHub
+    {
+        public async Task StreamValueType(ILogger<EnumerableValueTypeMethodHub> logger, IAsyncEnumerable<float> source)
+        {
+            await foreach (var item in source)
             {
                 logger.LogInformation("Received: {item}", item);
             }
@@ -325,8 +433,11 @@ public partial class NativeAotTests : FunctionalTestBase
         }
     }
 
+    [JsonSerializable(typeof(object))]
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(int))]
+    [JsonSerializable(typeof(short))]
+    [JsonSerializable(typeof(char))]
     internal partial class AppJsonSerializerContext : JsonSerializerContext
     {
         public static void AddToJsonHubProtocol(IServiceCollection services)

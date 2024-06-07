@@ -69,4 +69,27 @@ internal static class ReflectionHelper
 
         return null;
     }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2070:UnrecognizedReflectionPattern",
+        Justification = "The 'IAsyncEnumerator<>' Type must exist and so trimmer kept it. In which case " +
+            "It also kept it on any type which implements it. The below call to GetInterfaces " +
+            "may return fewer results when trimmed but it will return 'IAsyncEnumerator<>' " +
+            "if the type implemented it, even after trimming.")]
+    public static Type? GetIAsyncEnumeratorInterface(Type type)
+    {
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>))
+        {
+            return type;
+        }
+
+        foreach (Type typeToCheck in type.GetInterfaces())
+        {
+            if (typeToCheck.IsGenericType && typeToCheck.GetGenericTypeDefinition() == typeof(IAsyncEnumerator<>))
+            {
+                return typeToCheck;
+            }
+        }
+
+        return null;
+    }
 }
