@@ -63,16 +63,6 @@ npm ci --offline
 ./restore.cmd
 ```
 
-1. After the restore script has finished executing, activate the locally installed .NET by running the following command.
-
-```bash
-source activate.sh
-```
-
-```powershell
-. ./activate.ps1
-```
-
 1. Now you can build all the JavaScript assets required by the repository (including SignalR for instance) by running the following command:
 
 ```powershell
@@ -109,9 +99,20 @@ These tests are run in the CI as part of the [`aspnetcore-components-e2e`](https
 
 #### How to run the E2E Tests
 
-The E2E tests can be run and debugged directly from Visual Studio (as explained in the previous section).
+The E2E tests can be run and debugged directly from Visual Studio (as explained in the previous section). To run the tests from the command line,
+follow the previous build steps and then these commands:
 
-To run the tests from the command line, follow the previous steps to build the Components, then run this command:
+1. Activate the locally installed .NET by running the following command.
+
+```bash
+source activate.sh
+```
+
+```powershell
+. ./activate.ps1
+```
+
+1. Start the tests.
 
 ```powershell
 dotnet test ./src/Components/test/E2ETest
