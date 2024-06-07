@@ -59,13 +59,6 @@ The steps you follow next depend on your preferred development environment:
     ./restore.cmd
     ```
 
-1. After the `restore` script finishes, activate the locally installed .NET by running the following command.
-
-    ```powershell
-    # Windows - note the leading period followed by a space
-    . ./activate.ps1
-    ```
-
 1. You'll typically focus on one project in the repo. You can use the `startvs.cmd` command to launch Visual Studio in a particular project area. For example, to launch Visual Studio in the `src/Http` project, after you have built it with `./build.cmd`:
 
     > :bulb: The `build.cmd` script will be local to the directory of the project you opened. For example, the script located in the `src/Http` directory. If you want to build the whole tree, use the `build.cmd` that is located in the `eng` directory.
