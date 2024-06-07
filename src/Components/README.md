@@ -41,7 +41,7 @@ The following contains a description of each sub-directory in the `Components` d
 git clean -xdff
 ```
 
-You may need to kill some processes holding on files that are being deleted. The following command may help you but be aware that this could also stop other important processes:
+You may need to kill some processes holding on files that are being deleted, like closing Visual Studio and other `msbuild` or `dotnet` processes. The following command may help you but be aware that this could also stop other important tasks:
 
 ```powershell
 Get-Process dotnet, escape-node-job, msbuild, VBCSCompiler, node, vstest.console, Microsoft.CodeAnalysis.LanguageServer -ErrorAction Continue | Stop-Process;
@@ -72,14 +72,13 @@ npm run build
 1. Build the Components:
 
 ```powershell
-cd src/Components
-./build.cmd
+./src/Components/build.cmd
 ```
 
 2. Optionally, open the Components in Visual Studio:
 
 ```powershell
-.\startvs.cmd
+./src/Components/startvs.cmd
 ```
 
 ### Test
