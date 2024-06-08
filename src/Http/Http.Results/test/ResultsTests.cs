@@ -1682,7 +1682,7 @@ public partial class ResultsTests
         (() => Results.NotFound(null), typeof(NotFound)),
         (() => Results.NotFound(new()), typeof(NotFound<object>)),
         (() => Results.Ok(null), typeof(Ok)),
-        (() => Results.Ok<object>(new()), typeof(Ok<object>)),
+        (() => Results.Ok(new()), typeof(Ok<object>)),
         (() => Results.Problem(new()), typeof(ProblemHttpResult)),
         (() => Results.Stream(new MemoryStream(), null, null, null, null, false), typeof(FileStreamHttpResult)),
         (() => Results.Stream(s => Task.CompletedTask, null, null, null, null), typeof(PushStreamHttpResult)),

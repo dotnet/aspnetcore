@@ -631,6 +631,23 @@ public static partial class Results
     public static IResult BadRequest<TValue>(TValue? error)
         => error is null ? TypedResults.BadRequest() : TypedResults.BadRequest(error);
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult BadRequest<TValue>(
+        TValue? error,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => error is null
+        ? TypedResults.BadRequest()
+        : TypedResults.BadRequest(error, contentType, contentEncoding);
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
     /// </summary>
