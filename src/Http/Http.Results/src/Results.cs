@@ -608,6 +608,23 @@ public static partial class Results
     public static IResult NotFound<TValue>(TValue? value)
         => value is null ? TypedResults.NotFound() : TypedResults.NotFound(value);
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status404NotFound"/> response.
+    /// </summary>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult NotFound<TValue>(
+        TValue? value,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => value is null
+        ? TypedResults.NotFound()
+        : TypedResults.NotFound(value, contentType, contentEncoding);
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
     /// </summary>
@@ -687,6 +704,23 @@ public static partial class Results
     public static IResult Ok<TValue>(TValue? value)
         => value is null ? TypedResults.Ok() : TypedResults.Ok(value);
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status200OK"/> response.
+    /// </summary>
+    /// <param name="value">The value to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult Ok<TValue>(
+        TValue? value,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => value is null
+        ? TypedResults.Ok()
+        : TypedResults.Ok(value, contentType, contentEncoding);
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
     /// </summary>
@@ -717,6 +751,21 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult InternalServerError<TValue>(TValue? error)
         => error is null ? TypedResults.InternalServerError() : TypedResults.InternalServerError(error);
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <param name="error">An error object to be included in the HTTP response body.</param>
+    /// <param name="contentType">The content type (MIME type).</param>
+    /// <param name="contentEncoding">The content encoding.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+    public static IResult InternalServerError<TValue>(
+        TValue? error,
+        string? contentType = null,
+        Encoding? contentEncoding = null
+    ) => error is null
+        ? TypedResults.InternalServerError()
+        : TypedResults.InternalServerError(error, contentType, contentEncoding);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
