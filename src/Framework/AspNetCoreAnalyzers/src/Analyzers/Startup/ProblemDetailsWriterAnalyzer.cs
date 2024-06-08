@@ -50,7 +50,7 @@ internal sealed class ProblemDetailsWriterAnalyzer
                 continue;
             }
 
-            var mvcServiceTextSpans = mvcServiceItems.Select(x => x.Operation.Syntax.Span);
+            var mvcServiceTextSpans = mvcServiceItems.ToDictionary(x => x, x => x.Operation.Syntax.Span);
 
             foreach (var problemDetailsWriterServiceItem in problemDetailsWriterServiceItems)
             {
@@ -58,12 +58,16 @@ internal sealed class ProblemDetailsWriterAnalyzer
 
                 foreach (var mvcServiceTextSpan in mvcServiceTextSpans)
                 {
+                    var mvcService = mvcServiceTextSpan.Key;
+                    var textSpan = mvcServiceTextSpan.Value;
+
                     // Check if the IProblemDetailsWriter registration is after the MVC registration in the source.
-                    if (problemDetailsWriterServiceTextSpan.CompareTo(mvcServiceTextSpan) > 0)
+                    if (problemDetailsWriterServiceTextSpan.CompareTo(textSpan) > 0)
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter,
-                            problemDetailsWriterServiceItem.Operation.Syntax.GetLocation()));
+                            problemDetailsWriterServiceItem.Operation.Syntax.GetLocation(),
+                            additionalLocations: [mvcService.Operation.Syntax.GetLocation()]));
 
                         break;
                     }

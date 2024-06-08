@@ -3,13 +3,15 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Microsoft.AspNetCore.Analyzers.Startup;
 
-internal sealed class StartupCSharpAnalyzerTest : CSharpAnalyzerTest<StartupAnalyzer, XUnitVerifier>
+internal sealed class StartupCSharpAnalyzerTest<TCodeFix> : CSharpCodeFixTest<StartupAnalyzer, TCodeFix, XUnitVerifier>
+    where TCodeFix : CodeFixProvider, new()
 {
     public StartupCSharpAnalyzerTest(StartupAnalyzer analyzer, ImmutableArray<MetadataReference> metadataReferences)
     {
