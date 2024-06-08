@@ -659,14 +659,8 @@ public static class TypedResults
     /// </summary>
     /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
     /// <param name="value">The value to be included in the HTTP response body.</param>
-    /// <param name="contentType">The content type (MIME type).</param>
-    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="HttpResults.NotFound{TValue}"/> for the response.</returns>
-    public static NotFound<TValue> NotFound<TValue>(
-        TValue? value,
-        string? contentType = null,
-        Encoding? contentEncoding = null
-    ) => new(value, contentType, contentEncoding);
+    public static NotFound<TValue> NotFound<TValue>(TValue? value) => new(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status401Unauthorized"/> response.
@@ -685,14 +679,8 @@ public static class TypedResults
     /// </summary>
     /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
     /// <param name="error">The value to be included in the HTTP response body.</param>
-    /// <param name="contentType">The content type (MIME type).</param>
-    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="HttpResults.BadRequest{TValue}"/> for the response.</returns>
-    public static BadRequest<TValue> BadRequest<TValue>(
-        TValue? error,
-        string? contentType = null,
-        Encoding? contentEncoding = null
-    ) => new(error, contentType, contentEncoding);
+    public static BadRequest<TValue> BadRequest<TValue>(TValue? error) => new(error);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status409Conflict"/> response.
@@ -725,14 +713,8 @@ public static class TypedResults
     /// </summary>
     /// <typeparam name="TValue">The type of object that will be JSON serialized to the response body.</typeparam>
     /// <param name="value">The value to be included in the HTTP response body.</param>
-    /// <param name="contentType">The content type (MIME type).</param>
-    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="HttpResults.Ok{TValue}"/> for the response.</returns>
-    public static Ok<TValue> Ok<TValue>(
-        TValue? value,
-        string? contentType = null,
-        Encoding? contentEncoding = null
-    ) => new(value, contentType, contentEncoding);
+    public static Ok<TValue> Ok<TValue>(TValue? value) => new(value);
 
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -759,14 +741,8 @@ public static class TypedResults
     /// </summary>
     /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
     /// <param name="error">The value to be included in the HTTP response body.</param>
-    /// <param name="contentType">The content type (MIME type).</param>
-    /// <param name="contentEncoding">The content encoding.</param>
     /// <returns>The created <see cref="HttpResults.InternalServerError{TValue}"/> for the response.</returns>
-    public static InternalServerError<TValue> InternalServerError<TValue>(
-        TValue? error,
-        string? contentType = null,
-        Encoding? contentEncoding = null
-    ) => new(error, contentType, contentEncoding);
+    public static InternalServerError<TValue> InternalServerError<TValue>(TValue? error) => new(error);
 
     /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.

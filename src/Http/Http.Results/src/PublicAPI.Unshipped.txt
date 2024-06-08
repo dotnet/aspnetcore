@@ -14,16 +14,3 @@ Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>.ContentEncoding.get -> Sy
 Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>.ContentType.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>.ContentEncoding.get -> System.Text.Encoding?
 Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>.ContentType.get -> string?
-static Microsoft.AspNetCore.Http.Results.BadRequest() -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.BadRequest<TValue>(TValue? error, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.InternalServerError() -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.NotFound() -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.NotFound<TValue>(TValue? value, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Ok() -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Ok<TValue>(TValue? value, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.TypedResults.BadRequest<TValue>(TValue? error, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.BadRequest<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.InternalServerError() -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError!
-static Microsoft.AspNetCore.Http.TypedResults.InternalServerError<TValue>(TValue? error, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.NotFound<TValue>(TValue? value, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.Ok<TValue>(TValue? value, string? contentType = null, System.Text.Encoding? contentEncoding = null) -> Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>!
