@@ -1,3 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
+override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
+static Microsoft.AspNetCore.Components.Endpoints.Infrastructure.ComponentEndpointConventionBuilderHelper.GetEndpointRouteBuilder(Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Routing.IEndpointRouteBuilder!
 static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.AcceptsInteractiveRouting(this Microsoft.AspNetCore.Http.HttpContext! context) -> bool

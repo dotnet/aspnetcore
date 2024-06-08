@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
 
@@ -21,6 +22,7 @@ public class RoutingGroupsWithMetadataTests : IClassFixture<MvcTestFixture<Start
 
     public WebApplicationFactory<StartupForRouteGroupsWithMetadata> Factory { get; }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55927")]
     [Fact]
     public async Task OrderedGroupMetadataForControllers()
     {

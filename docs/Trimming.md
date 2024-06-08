@@ -30,7 +30,7 @@ The first step to trimming an ASP.NET Core assembly is adding it to `Linkability
 
 ## Fix trim warnings
 
-[Introduction to trim warnings](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/fixing-warnings) and [Prepare .NET libraries for trimming](https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming) discuss how to fix trim warnings. There is also a complete list of all the trim warnings with some more detail.
+[Introduction to trim warnings](https://learn.microsoft.com/dotnet/core/deploying/trimming/fixing-warnings) and [Prepare .NET libraries for trimming](https://learn.microsoft.com/dotnet/core/deploying/trimming/prepare-libraries-for-trimming) discuss how to fix trim warnings. There is also a complete list of all the trim warnings with some more detail.
 
 ## Updating the baselines
 

@@ -155,7 +155,7 @@ foreach ($i in 0, 1, 2) {
     if ($process.ExitCode -eq 0) {
         break
     } else {
-        # https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
+        # https://learn.microsoft.com/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
         if ($process.ExitCode -eq 3010) {
             Write-Host -ForegroundColor Red "Error: Installation requires restart to finish the VS update."
             break

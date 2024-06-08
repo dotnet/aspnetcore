@@ -4,7 +4,7 @@
 ;
 ; Here are some resources for what's supported for .NET/C#
 ; https://kent-boogaart.com/blog/editorconfig-reference-for-c-developers
-; https://learn.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
+; https://learn.microsoft.com/visualstudio/ide/editorconfig-code-style-settings-reference
 ;
 ; Be **careful** editing this because some of the rules don't support adding a severity level
 ; For instance if you change to `dotnet_sort_system_directives_first = true:warning` (adding `:warning`)

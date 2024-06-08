@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Server;
 /// </summary>
 public class ServerAuthenticationStateProvider : AuthenticationStateProvider, IHostEnvironmentAuthenticationStateProvider
 {
-    private Task<AuthenticationState> _authenticationStateTask;
+    private Task<AuthenticationState>? _authenticationStateTask;
 
     /// <inheritdoc />
     public override Task<AuthenticationState> GetAuthenticationStateAsync()

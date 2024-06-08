@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal;
 
 internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
 {
+    private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
+
     private readonly Dictionary<string, HubMethodDescriptor> _methods = new(StringComparer.OrdinalIgnoreCase);
     private readonly Utf8HashLookup _cachedMethodNames = new();
     private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -76,10 +78,13 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
         var hub = hubActivator.Create();
+        Activity? activity = null;
         try
         {
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, invokeAllowed: false);
+
+            activity = StartActivity(connection, scope.ServiceProvider, nameof(hub.OnConnectedAsync));
 
             if (_onConnectedMiddleware != null)
             {
@@ -91,8 +96,14 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 await hub.OnConnectedAsync();
             }
         }
+        catch (Exception ex)
+        {
+            SetActivityError(activity, ex);
+            throw;
+        }
         finally
         {
+            activity?.Stop();
             hubActivator.Release(hub);
         }
     }
@@ -103,9 +114,12 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
         var hub = hubActivator.Create();
+        Activity? activity = null;
         try
         {
             InitializeHub(hub, connection);
+
+            activity = StartActivity(connection, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync));
 
             if (_onDisconnectedMiddleware != null)
             {
@@ -117,8 +131,14 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                 await hub.OnDisconnectedAsync(exception);
             }
         }
+        catch (Exception ex)
+        {
+            SetActivityError(activity, ex);
+            throw;
+        }
         finally
         {
+            activity?.Stop();
             hubActivator.Release(hub);
         }
     }
@@ -367,6 +387,10 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
 
+                        // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
+                        // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
+                        var activity = StartActivity(connection, scope.ServiceProvider, hubMethodInvocationMessage.Target);
+
                         object? result;
                         try
                         {
@@ -375,6 +399,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         }
                         catch (Exception ex)
                         {
+                            SetActivityError(activity, ex);
+
                             Log.FailedInvokingHubMethod(logger, hubMethodInvocationMessage.Target, ex);
                             await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                 ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, enableDetailedErrors));
@@ -382,6 +408,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
                         }
                         finally
                         {
+                            activity?.Stop();
+
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
                             if (isStreamCall)
@@ -467,6 +495,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
 
         streamCts ??= CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
 
+        var activity = StartActivity(connection, scope.ServiceProvider, hubMethodInvocationMessage.Target);
+
         try
         {
             if (!connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts))
@@ -483,6 +513,8 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
             }
             catch (Exception ex)
             {
+                SetActivityError(activity, ex);
+
                 Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
                 error = ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors);
                 return;
@@ -509,20 +541,27 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         catch (ChannelClosedException ex)
         {
             // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
-            Log.FailedStreaming(_logger, invocationId, descriptor.MethodExecutor.MethodInfo.Name, ex.InnerException ?? ex);
-            error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex.InnerException ?? ex, _enableDetailedErrors);
+            var exception = ex.InnerException ?? ex;
+            SetActivityError(activity, exception);
+
+            Log.FailedStreaming(_logger, invocationId, descriptor.MethodExecutor.MethodInfo.Name, exception);
+            error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", exception, _enableDetailedErrors);
         }
         catch (Exception ex)
         {
             // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
             if (!(ex is OperationCanceledException && streamCts.IsCancellationRequested))
             {
+                SetActivityError(activity, ex);
+
                 Log.FailedStreaming(_logger, invocationId, descriptor.MethodExecutor.MethodInfo.Name, ex);
                 error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex, _enableDetailedErrors);
             }
         }
         finally
         {
+            activity?.Stop();
+
             await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
             streamCts.Dispose();
@@ -748,5 +787,36 @@ internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> w
         }
 
         return null;
+    }
+
+    // Starts an Activity for a Hub method invocation and sets up all the tags and other state.
+    // Make sure to call Activity.Stop() once the Hub method completes, and consider calling SetActivityError on exception.
+    private static Activity? StartActivity(HubConnectionContext connectionContext, IServiceProvider serviceProvider, string methodName)
+    {
+        if (serviceProvider.GetService<SignalRActivitySource>() is SignalRActivitySource signalRActivitySource
+            && signalRActivitySource.ActivitySource.HasListeners())
+        {
+            var requestContext = connectionContext.OriginalActivity?.Context;
+
+            return signalRActivitySource.ActivitySource.StartActivity($"{_fullHubName}/{methodName}", ActivityKind.Server, parentId: null,
+                // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-spans.md#server-attributes
+                tags: [
+                    new("rpc.method", methodName),
+                    new("rpc.system", "signalr"),
+                    new("rpc.service", _fullHubName),
+                    // See https://github.com/dotnet/aspnetcore/blob/027c60168383421750f01e427e4f749d0684bc02/src/Servers/Kestrel/Core/src/Internal/Infrastructure/KestrelMetrics.cs#L308
+                    // And https://github.com/dotnet/aspnetcore/issues/43786
+                    //new("server.address", ...),
+                    ],
+                links: requestContext.HasValue ? [new ActivityLink(requestContext.Value)] : null);
+        }
+
+        return null;
+    }
+
+    private static void SetActivityError(Activity? activity, Exception ex)
+    {
+        activity?.SetTag("error.type", ex.GetType().FullName);
+        activity?.SetStatus(ActivityStatusCode.Error);
     }
 }

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -14,6 +15,7 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
 {
     private readonly object _lock;
     private readonly ComponentApplicationBuilder _builder;
+    private readonly IEndpointRouteBuilder _endpointRouteBuilder;
     private readonly RazorComponentDataSourceOptions _options;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
@@ -21,12 +23,14 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
     internal RazorComponentsEndpointConventionBuilder(
         object @lock,
         ComponentApplicationBuilder builder,
+        IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentDataSourceOptions options,
         List<Action<EndpointBuilder>> conventions,
         List<Action<EndpointBuilder>> finallyConventions)
     {
         _lock = @lock;
         _builder = builder;
+        _endpointRouteBuilder = endpointRouteBuilder;
         _options = options;
         _conventions = conventions;
         _finallyConventions = finallyConventions;
@@ -36,6 +40,8 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
     /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
     /// </summary>
     internal ComponentApplicationBuilder ApplicationBuilder => _builder;
+
+    internal IEndpointRouteBuilder EndpointRouteBuilder => _endpointRouteBuilder;
 
     /// <inheritdoc/>
     public void Add(Action<EndpointBuilder> convention)
