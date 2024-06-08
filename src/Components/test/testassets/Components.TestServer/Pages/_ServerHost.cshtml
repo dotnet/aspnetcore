@@ -49,8 +49,17 @@
             document.body.append(element);
         }
     </script>
-    
-    <script src="_framework/blazor.server.js"></script>
+
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            reconnectionOptions: {
+                // It's easier to test the reconnection logic if we wait a bit
+                // before attempting to reconnect
+                retryIntervalMilliseconds: Array.prototype.at.bind([5000, 5000, 5000, 10000, 30000]),
+            },
+        });
+    </script>
     <script src="js/jsRootComponentInitializers.js"></script>
 
     <!-- Used by ExternalContentPackage -->

@@ -59,6 +59,8 @@ public partial class HubConnectionContext
     // Tracks groups that the connection has been added to
     internal HashSet<string> GroupNames { get; } = new HashSet<string>();
 
+    internal Activity? OriginalActivity { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
     /// </summary>

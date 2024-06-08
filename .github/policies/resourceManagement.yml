@@ -527,7 +527,7 @@ configuration:
 
             Because there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.
 
-            You can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
+            You can find it [here](https://learn.microsoft.com/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
 
             If these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up.
       description: Provide Blazor WASM Debugging Troubleshooting link
@@ -670,7 +670,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 6.0.31
+          milestone: 6.0.32
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -681,7 +681,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.6
+          milestone: 8.0.7
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues

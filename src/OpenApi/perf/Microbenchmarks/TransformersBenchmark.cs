@@ -4,6 +4,7 @@
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
@@ -64,6 +65,28 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         _documentService = CreateDocumentService(_builder, _options);
     }
 
+    [GlobalSetup(Target = nameof(SchemaTransformer))]
+    public void SchemaTransformer_Setup()
+    {
+        _builder.MapPost("/", (Todo todo) => todo);
+        for (var i = 0; i <= TransformerCount; i++)
+        {
+            _options.UseSchemaTransformer((schema, context, token) =>
+            {
+                if (context.Type == typeof(Todo) && context.ParameterDescription != null)
+                {
+                    schema.Extensions["x-my-extension"] = new OpenApiString(context.ParameterDescription.Name);
+                }
+                else
+                {
+                    schema.Extensions["x-my-extension"] = new OpenApiString("response");
+                }
+                return Task.CompletedTask;
+            });
+        }
+        _documentService = CreateDocumentService(_builder, _options);
+    }
+
     [Benchmark]
     public async Task OperationTransformerAsDelegate()
     {
@@ -78,6 +101,12 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
 
     [Benchmark]
     public async Task DocumentTransformerAsDelegate()
+    {
+        await _documentService.GetOpenApiDocumentAsync();
+    }
+
+    [Benchmark]
+    public async Task SchemaTransformer()
     {
         await _documentService.GetOpenApiDocumentAsync();
     }

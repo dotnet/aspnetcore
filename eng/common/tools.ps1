@@ -254,7 +254,6 @@ function Retry($downloadBlock, $maxRetries = 5) {
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unable to download file in $maxRetries attempts."
       break
     }
-
   }
 }
 
@@ -424,7 +423,6 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
     InitializeVisualStudioEnvironmentVariables $vsInstallDir $vsMajorVersion
   } else {
-
     if (Get-Member -InputObject $GlobalJson.tools -Name 'xcopy-msbuild') {
       $xcopyMSBuildVersion = $GlobalJson.tools.'xcopy-msbuild'
       $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
@@ -504,6 +502,10 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
       Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
     })
 
+    if (!(Test-Path $packagePath)) {
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "See https://dev.azure.com/dnceng/internal/_wiki/wikis/DNCEng%20Services%20Wiki/1074/Updating-Microsoft.DotNet.Arcade.MSBuild.Xcopy-WAS-RoslynTools.MSBuild-(xcopy-msbuild)-generation?anchor=troubleshooting for help troubleshooting issues with XCopy MSBuild"
+      throw
+    }
     Unzip $packagePath $packageDir
   }
 
@@ -518,7 +520,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
 #       Two part minimal VS version, e.g. "15.9", "16.0", etc.
 #   "components": ["componentId1", "componentId2", ...]
 #       Array of ids of workload components that must be available in the VS instance.
-#       See e.g. https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2017
+#       See e.g. https://learn.microsoft.com/visualstudio/install/workload-component-id-vs-enterprise?view=vs-2017
 #
 # Returns JSON describing the located VS instance (same format as returned by vswhere),
 # or $null if no instance meeting the requirements is found on the machine.
