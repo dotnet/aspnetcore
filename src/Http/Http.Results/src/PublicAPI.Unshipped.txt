@@ -14,3 +14,7 @@ Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>.ContentEncoding.get -> Sy
 Microsoft.AspNetCore.Http.HttpResults.NotFound<TValue>.ContentType.get -> string?
 Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>.ContentEncoding.get -> System.Text.Encoding?
 Microsoft.AspNetCore.Http.HttpResults.Ok<TValue>.ContentType.get -> string?
+static Microsoft.AspNetCore.Http.Results.InternalServerError() -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.InternalServerError() -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError!
+static Microsoft.AspNetCore.Http.TypedResults.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>!
