@@ -25,7 +25,7 @@ public class PerformanceTest
         Navigate("/");
     }
 
-    public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+    public override Task InitializeAsync() => base.InitializeAsync(null);
 
     [Fact]
     public void HasTitle()

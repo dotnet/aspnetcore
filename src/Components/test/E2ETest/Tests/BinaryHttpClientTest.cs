@@ -39,7 +39,7 @@ public class BinaryHttpClientTest : BrowserTestBase,
         _appElement = Browser.MountTestComponent<BinaryHttpRequestsComponent>();
     }
 
-    public override Task InitializeAsync() => base.InitializeAsync(Guid.NewGuid().ToString());
+    public override Task InitializeAsync() => base.InitializeAsync(null);
 
     [Fact]
     public void CanSendAndReceiveBytes()

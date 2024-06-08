@@ -26,7 +26,7 @@ public class ProtectedBrowserStorageUsageTest : ServerTestBase<ToggleExecutionMo
     {
         // Since browser storage needs to be reset in between tests, it's easiest for each
         // test to run in its own browser instance.
-        await base.InitializeAsync(Guid.NewGuid().ToString());
+        await base.InitializeAsync(null);
     }
 
     protected override void InitializeAsyncCore()
