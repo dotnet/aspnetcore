@@ -173,12 +173,25 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
         var node = root.FindNode(location.SourceSpan, getInnermostNodeForTie: true);
 
         if (node is InvocationExpressionSyntax invocationExpression &&
-            invocationExpression.Parent is ExpressionStatementSyntax invocationExpressionStatement)
+            invocationExpression.Parent is ExpressionStatementSyntax invocationExpressionStatement &&
+            // Exclude expressions that may be part of an invocation chain to avoid moving unrelated code.
+            !IsPotentiallyPartOfInvocationChain(invocationExpression))
         {
             expressionStatement = invocationExpressionStatement;
             return true;
         }
 
         return false;
+    }
+
+    private static bool IsPotentiallyPartOfInvocationChain(InvocationExpressionSyntax invocationExpression)
+    {
+        if (invocationExpression.Expression is MemberAccessExpressionSyntax memberAccessExpression &&
+            memberAccessExpression.Expression is IdentifierNameSyntax)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -154,6 +154,91 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
     }
 
     [Theory]
+    [InlineData("AddControllers")]
+    [InlineData("AddControllersWithViews")]
+    [InlineData("AddMvc")]
+    [InlineData("AddRazorPages")]
+    public async Task StartupAnalyzer_ProblemDetailsWriterRegistrationChained_AfterMvcServiceCollectionsExtension_ReportsDiagnosticButDoesNotFix(string methodName)
+    {
+        // Arrange
+        var source = $@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{{
+    public class ProblemDetailsWriterRegistration
+    {{
+        public void ConfigureServices(IServiceCollection services)
+        {{
+            {{|#0:services.{methodName}()|}};
+
+            {{|#1:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterA>()|}}
+                .AddTransient<string[]>(provider => Array.Empty<string>());
+
+            {{|#2:services.AddTransient<string[]>(provider => Array.Empty<string>())
+                .AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterB>()|}};
+
+            {{|#3:services.AddTransient<string[]>(provider => Array.Empty<string>())
+                .AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterB>()|}}
+                .AddTransient<string[]>(provider => Array.Empty<string>());  
+        }}
+    }}
+    {GetSampleProblemDetailsWriterSource("A")}
+    {GetSampleProblemDetailsWriterSource("B")}
+    {GetSampleProblemDetailsWriterSource("C")}
+}}";
+
+        var diagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+                .WithLocation(1)
+                .WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+                .WithLocation(2)
+                .WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+                .WithLocation(3)
+                .WithLocation(0)
+        };
+
+        var fixedSource = $@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{{
+    public class ProblemDetailsWriterRegistration
+    {{
+        public void ConfigureServices(IServiceCollection services)
+        {{
+            {{|#0:services.{methodName}()|}};
+
+            {{|#1:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterA>()|}}
+                .AddTransient<string[]>(provider => Array.Empty<string>());
+
+            {{|#2:services.AddTransient<string[]>(provider => Array.Empty<string>())
+                .AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterB>()|}};
+
+            {{|#3:services.AddTransient<string[]>(provider => Array.Empty<string>())
+                .AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterB>()|}}
+                .AddTransient<string[]>(provider => Array.Empty<string>());  
+        }}
+    }}
+    {GetSampleProblemDetailsWriterSource("A")}
+    {GetSampleProblemDetailsWriterSource("B")}
+    {GetSampleProblemDetailsWriterSource("C")}
+}}";
+
+        // Act + Assert
+        await VerifyCodeFix(source, diagnostics, fixedSource);
+    }
+
+    [Theory]
     [InlineData("AddScoped")]
     [InlineData("AddSingleton")]
     public async Task StartupAnalyzer_ProblemDetailsWriter_OtherLifetimes_AfterMvcServiceCollectionsExtension_ReportsDiagnostic(string methodName)
