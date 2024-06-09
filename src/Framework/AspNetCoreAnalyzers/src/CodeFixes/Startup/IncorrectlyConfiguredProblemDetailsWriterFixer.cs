@@ -1,15 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.AspNetCore.Analyzers.Startup.Fixers;
 
@@ -18,7 +22,13 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
 {
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = [DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter.Id];
 
-    public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public sealed override FixAllProvider? GetFixAllProvider()
+    {
+        return FixAllProvider.Create(async (context, document, diagnostics) =>
+        {
+            return await CanFixOrderOfAllProblemDetailsWriters(document, diagnostics, context.CancellationToken).ConfigureAwait(false);
+        });
+    }
 
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -28,23 +38,25 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
             return;
         }
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel == null)
-        {
-            return;
-        }
-
         foreach (var diagnostic in context.Diagnostics)
         {
-            if (CanFixOrderOfProblemDetailsWriter(diagnostic, root, out var registerProblemDetailsWriterInvocation, out var mvcServiceInvocation))
+            if (CanFixOrderOfProblemDetailsWriter(diagnostic, root, out var problemDetailsWriter, out var mvcServiceCollectionExtension))
             {
                 const string title = "Fix order of ProblemDetailsWriter registration";
-                context.RegisterCodeFix(
-                    CodeAction.Create(
-                        title,
-                        cancellationToken => FixOrderOfProblemDetailsWriter(root, context.Document, registerProblemDetailsWriterInvocation, mvcServiceInvocation),
-                        equivalenceKey: DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter.Id),
-                    diagnostic);
+
+                async Task<Document> CreateChangedDocument(CancellationToken cancellationToken) =>
+                    await CanFixOrderOfProblemDetailsWriter(
+                        context.Document,
+                        problemDetailsWriter,
+                        mvcServiceCollectionExtension,
+                        cancellationToken).ConfigureAwait(false);
+
+                var codeAction = CodeAction.Create(
+                    title,
+                    CreateChangedDocument,
+                    equivalenceKey: DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter.Id);
+
+                context.RegisterCodeFix(codeAction, diagnostic);
             }
         }
     }
@@ -52,47 +64,121 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
     private static bool CanFixOrderOfProblemDetailsWriter(
         Diagnostic diagnostic,
         SyntaxNode root,
-        [NotNullWhen(true)] out InvocationExpressionSyntax? registerProblemDetailsWriterInvocation,
-        [NotNullWhen(true)] out InvocationExpressionSyntax? mvcServiceInvocation)
+        [NotNullWhen(true)] out ExpressionStatementSyntax? problemDetailsWriterStatement,
+        [NotNullWhen(true)] out ExpressionStatementSyntax? mvcServiceCollectionExtensionStatement)
     {
-        registerProblemDetailsWriterInvocation = null;
-        mvcServiceInvocation = null;
+        problemDetailsWriterStatement = null;
+        mvcServiceCollectionExtensionStatement = null;
 
-        var registerProblemDetailsWriterInvocationTarget = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        if (registerProblemDetailsWriterInvocationTarget is not InvocationExpressionSyntax registerProblemDetailsWriterInvocationSyntax)
-        {
-            return false;
-        }
+        Debug.Assert(diagnostic.AdditionalLocations.Count == 1,
+            "Expected exactly one additional location for the MvcServiceCollectionExtension.");
 
-        registerProblemDetailsWriterInvocation = registerProblemDetailsWriterInvocationSyntax;
-
-        var mvcServiceInvocationLocation = diagnostic.AdditionalLocations.FirstOrDefault();
-        if (mvcServiceInvocationLocation is null)
-        {
-            return false;
-        }
-
-        var mvcServiceInvocationTarget = root.FindNode(mvcServiceInvocationLocation.SourceSpan, getInnermostNodeForTie: true);
-        if (mvcServiceInvocationTarget is not InvocationExpressionSyntax mvcServiceInvocationSyntax)
-        {
-            return false;
-        }
-
-        mvcServiceInvocation = mvcServiceInvocationSyntax;
-
-        return true;
+        return diagnostic.AdditionalLocations.Count == 1 &&
+            // Ensure that the ProblemDetailsWriter registration appears after the MvcServiceCollectionExtension in source.
+            diagnostic.Location.SourceSpan.CompareTo(diagnostic.AdditionalLocations[0].SourceSpan) > 0 &&
+            TryGetInvocationExpressionStatement(diagnostic.Location, root, out problemDetailsWriterStatement) &&
+            TryGetInvocationExpressionStatement(diagnostic.AdditionalLocations[0], root, out mvcServiceCollectionExtensionStatement);
     }
 
-    private static Task<Document> FixOrderOfProblemDetailsWriter(
-        SyntaxNode root,
+    private static async Task<Document> CanFixOrderOfProblemDetailsWriter(
         Document document,
-        InvocationExpressionSyntax registerProblemDetailsWriterInvocation,
-        InvocationExpressionSyntax mvcServiceInvocation)
+        ExpressionStatementSyntax problemDetailsWriterExpression,
+        ExpressionStatementSyntax mvcServiceCollectionExtensionExpression,
+        CancellationToken cancellationToken)
     {
-        var newRoot = root.ReplaceNodes(
-            new[] { registerProblemDetailsWriterInvocation, mvcServiceInvocation },
-            (original, _) => original == registerProblemDetailsWriterInvocation ? mvcServiceInvocation : registerProblemDetailsWriterInvocation);
+        var groupedStatements = new Dictionary<ExpressionStatementSyntax, IList<ExpressionStatementSyntax>>
+        {
+            [mvcServiceCollectionExtensionExpression] = [problemDetailsWriterExpression],
+        };
 
-        return Task.FromResult(document.WithSyntaxRoot(newRoot));
+        return await MoveProblemDetailsWritersBeforeMvcExtensions(document, groupedStatements, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<Document> CanFixOrderOfAllProblemDetailsWriters(
+        Document document,
+        ImmutableArray<Diagnostic> diagnostics,
+        CancellationToken cancellationToken)
+    {
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        if (root == null)
+        {
+            return document;
+        }
+
+        var groupedStatements = new Dictionary<ExpressionStatementSyntax, IList<ExpressionStatementSyntax>>();
+
+        foreach (var diagnostic in diagnostics)
+        {
+            if (!CanFixOrderOfProblemDetailsWriter(diagnostic, root, out var problemDetailsWriterStatement, out var mvcServiceCollectionExtensionStatement))
+            {
+                continue;
+            }
+
+            if (groupedStatements.TryGetValue(mvcServiceCollectionExtensionStatement, out var problemDetailsWriterStatements))
+            {
+                problemDetailsWriterStatements.Add(problemDetailsWriterStatement);
+            }
+            else
+            {
+                groupedStatements[mvcServiceCollectionExtensionStatement] = [problemDetailsWriterStatement];
+            }
+        }
+
+        if (groupedStatements.Count == 0)
+        {
+            return document;
+        }
+
+        // Maintain the relative source order of the ProblemDetailsWriter registrations. 
+        var comparer = Comparer<ExpressionStatementSyntax>.Create((a, b) => a.Span.CompareTo(b.Span));
+
+        foreach (var group in groupedStatements)
+        {
+            groupedStatements[group.Key] = [.. group.Value.OrderBy(x => x, comparer)];
+        }
+
+        return await MoveProblemDetailsWritersBeforeMvcExtensions(document, groupedStatements, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<Document> MoveProblemDetailsWritersBeforeMvcExtensions(
+        Document document,
+        IDictionary<ExpressionStatementSyntax, IList<ExpressionStatementSyntax>> groupedStatements,
+        CancellationToken cancellationToken)
+    {
+        var documentEditor = await DocumentEditor.CreateAsync(document, cancellationToken);
+
+        foreach (var group in groupedStatements)
+        {
+            var mvcServiceExtensionExpression = group.Key;
+            var registerProblemDetailsWriterExpressions = group.Value;
+
+            foreach (var registerProblemDetailsWriterExpression in registerProblemDetailsWriterExpressions)
+            {
+                documentEditor.RemoveNode(registerProblemDetailsWriterExpression, SyntaxRemoveOptions.KeepNoTrivia);
+            }
+
+            documentEditor.InsertBefore(mvcServiceExtensionExpression, registerProblemDetailsWriterExpressions);
+        }
+
+        return documentEditor.GetChangedDocument();
+    }
+
+    private static bool TryGetInvocationExpressionStatement(
+        Location location,
+        SyntaxNode root,
+        [NotNullWhen(true)] out ExpressionStatementSyntax? expressionStatement)
+    {
+        expressionStatement = null;
+
+        var node = root.FindNode(location.SourceSpan, getInnermostNodeForTie: true);
+
+        if (node is InvocationExpressionSyntax invocationExpression &&
+            invocationExpression.Parent is ExpressionStatementSyntax invocationExpressionStatement)
+        {
+            expressionStatement = invocationExpressionStatement;
+            return true;
+        }
+
+        return false;
     }
 }

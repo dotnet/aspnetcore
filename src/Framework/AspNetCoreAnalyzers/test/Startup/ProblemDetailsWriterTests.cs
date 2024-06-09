@@ -51,16 +51,16 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
     {{
         public void ConfigureServices(IServiceCollection services)
         {{
-            {{|#1:services.{methodName}()|}};
-            {{|#0:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriter>()|}};
+            {{|#0:services.{methodName}()|}};
+            {{|#1:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriter>()|}};
         }}
     }}
-    {_sampleProblemDetailsWriterSource}
+    {GetSampleProblemDetailsWriterSource()}
 }}";
 
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
-            .WithLocation(0)
-            .WithLocation(1);
+            .WithLocation(1)
+            .WithLocation(0);
 
         var fixedSource = $@"
 using System.Threading.Tasks;
@@ -77,11 +77,80 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
             services.{methodName}();
         }}
     }}
-    {_sampleProblemDetailsWriterSource}
+    {GetSampleProblemDetailsWriterSource()}
 }}";
 
         // Act + Assert
-        await VerifyCodeFix(source, fixedSource, diagnostic);
+        await VerifyCodeFix(source, [diagnostic], fixedSource);
+    }
+
+    [Theory]
+    [InlineData("AddControllers")]
+    [InlineData("AddControllersWithViews")]
+    [InlineData("AddMvc")]
+    [InlineData("AddRazorPages")]
+    public async Task StartupAnalyzer_MultipleProblemDetailsWriters_AfterMvcServiceCollectionsExtension_ReportsDiagnostic(string methodName)
+    {
+        // Arrange
+        var source = $@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{{
+    public class ProblemDetailsWriterRegistration
+    {{
+        public void ConfigureServices(IServiceCollection services)
+        {{
+            {{|#0:services.{methodName}()|}};
+            {{|#1:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterA>()|}};
+            {{|#2:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterB>()|}};
+            {{|#3:services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterC>()|}};
+        }}
+    }}
+    {GetSampleProblemDetailsWriterSource("A")}
+    {GetSampleProblemDetailsWriterSource("B")}
+    {GetSampleProblemDetailsWriterSource("C")}
+}}";
+
+        var diagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+                .WithLocation(1)
+                .WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+                .WithLocation(2)
+                .WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
+                .WithLocation(3)
+                .WithLocation(0)
+        };
+
+        var fixedSource = $@"
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
+{{
+    public class ProblemDetailsWriterRegistration
+    {{
+        public void ConfigureServices(IServiceCollection services)
+        {{
+            services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterA>();
+            services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterB>();
+            services.AddTransient<IProblemDetailsWriter, SampleProblemDetailsWriterC>();
+            services.{methodName}();
+        }}
+    }}
+    {GetSampleProblemDetailsWriterSource("A")}
+    {GetSampleProblemDetailsWriterSource("B")}
+    {GetSampleProblemDetailsWriterSource("C")}
+}}";
+
+        // Act + Assert
+        await VerifyCodeFix(source, diagnostics, fixedSource);
     }
 
     [Theory]
@@ -101,16 +170,16 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
     {{
         public void ConfigureServices(IServiceCollection services)
         {{
-            {{|#1:services.AddControllers()|}};
-            {{|#0:services.{methodName}<IProblemDetailsWriter, SampleProblemDetailsWriter>()|}};
+            {{|#0:services.AddControllers()|}};
+            {{|#1:services.{methodName}<IProblemDetailsWriter, SampleProblemDetailsWriter>()|}};
         }}
     }}
-    {_sampleProblemDetailsWriterSource}
+    {GetSampleProblemDetailsWriterSource()}
 }}";
 
         var diagnostic = new DiagnosticResult(DiagnosticDescriptors.IncorrectlyConfiguredProblemDetailsWriter)
-            .WithLocation(0)
-            .WithLocation(1);
+            .WithLocation(1)
+            .WithLocation(0);
 
         var fixedSource = $@"
 using System.Threading.Tasks;
@@ -127,11 +196,11 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
             services.AddControllers();
         }}
     }}
-    {_sampleProblemDetailsWriterSource}
+    {GetSampleProblemDetailsWriterSource()}
 }}";
 
         // Act + Assert
-        await VerifyCodeFix(source, fixedSource, diagnostic);
+        await VerifyCodeFix(source, [diagnostic], fixedSource);
     }
 
     [Theory]
@@ -157,7 +226,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
             services.{methodName}();
         }}
     }}
-    {_sampleProblemDetailsWriterSource}
+    {GetSampleProblemDetailsWriterSource()}
 }}";
 
         // Act
@@ -168,37 +237,60 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
         Assert.NotEmpty(middlewareAnalysis.Services);
     }
 
-    private const string _sampleProblemDetailsWriterSource = @"
-public class SampleProblemDetailsWriter : IProblemDetailsWriter
-{
+    private static string GetSampleProblemDetailsWriterSource(string suffix = null)
+    {
+        return $@"
+public class SampleProblemDetailsWriter{suffix} : IProblemDetailsWriter
+{{
     public bool CanWrite(ProblemDetailsContext context)
         => context.HttpContext.Response.StatusCode == 400;
+
     public ValueTask WriteAsync(ProblemDetailsContext context)
-    {
+    {{
         var response = context.HttpContext.Response;
         return new ValueTask(response.WriteAsJsonAsync(context.ProblemDetails));
+    }}
+}}";
     }
-}";
 
-    private Task VerifyNoCodeFix(string source)
+    private async Task VerifyNoCodeFix(string source)
     {
-        return VerifyCodeFix(source, source, Array.Empty<DiagnosticResult>());
+        await VerifyCodeFix(source, [], source);
     }
 
-    private async Task VerifyCodeFix(string source, string fixedSource, params DiagnosticResult[] expected)
+    private async Task VerifyCodeFix(string source, DiagnosticResult[] diagnostics, string fixedSource)
+    {
+        var test = CreateAnalyzerTest();
+
+        test.TestCode = source;
+        test.FixedCode = fixedSource;
+        test.ExpectedDiagnostics.AddRange(diagnostics);
+
+        await test.RunAsync();
+    }
+
+    private async Task VerifyCodeFixAll(string source, DiagnosticResult[] diagnostics, string fixedSource)
+    {
+        var test = CreateAnalyzerTest();
+
+        test.TestCode = source;
+        test.FixedCode = fixedSource;
+        test.ExpectedDiagnostics.AddRange(diagnostics);
+        test.NumberOfFixAllIterations = 1;
+
+        await test.RunAsync();
+    }
+
+    private StartupCSharpAnalyzerTest<IncorrectlyConfiguredProblemDetailsWriterFixer> CreateAnalyzerTest()
     {
         var test = new StartupCSharpAnalyzerTest<IncorrectlyConfiguredProblemDetailsWriterFixer>(StartupAnalyzer, TestReferences.MetadataReferences)
         {
-            TestCode = source,
-            FixedCode = fixedSource,
-            ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies,
+            ReferenceAssemblies = TestReferences.EmptyReferenceAssemblies
         };
 
         // Tests are just the Configure/ConfigureServices methods, no Main, so we need to mark the output as not console
         test.TestState.OutputKind = OutputKind.DynamicallyLinkedLibrary;
 
-        test.ExpectedDiagnostics.AddRange(expected);
-
-        await test.RunAsync();
+        return test;
     }
 }
