@@ -26,7 +26,7 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
     {
         return FixAllProvider.Create(async (context, document, diagnostics) =>
         {
-            return await CanFixOrderOfAllProblemDetailsWriters(document, diagnostics, context.CancellationToken).ConfigureAwait(false);
+            return await FixOrderOfAllProblemDetailsWriter(document, diagnostics, context.CancellationToken).ConfigureAwait(false);
         });
     }
 
@@ -45,7 +45,7 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
                 const string title = "Fix order of ProblemDetailsWriter registration";
 
                 async Task<Document> CreateChangedDocument(CancellationToken cancellationToken) =>
-                    await CanFixOrderOfProblemDetailsWriter(
+                    await FixOrderOfProblemDetailsWriter(
                         context.Document,
                         problemDetailsWriter,
                         mvcServiceCollectionExtension,
@@ -80,7 +80,7 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
             TryGetInvocationExpressionStatement(diagnostic.AdditionalLocations[0], root, out mvcServiceCollectionExtensionStatement);
     }
 
-    private static async Task<Document> CanFixOrderOfProblemDetailsWriter(
+    private static async Task<Document> FixOrderOfProblemDetailsWriter(
         Document document,
         ExpressionStatementSyntax problemDetailsWriterExpression,
         ExpressionStatementSyntax mvcServiceCollectionExtensionExpression,
@@ -94,7 +94,7 @@ public sealed class IncorrectlyConfiguredProblemDetailsWriterFixer : CodeFixProv
         return await MoveProblemDetailsWritersBeforeMvcExtensions(document, groupedStatements, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<Document> CanFixOrderOfAllProblemDetailsWriters(
+    private static async Task<Document> FixOrderOfAllProblemDetailsWriter(
         Document document,
         ImmutableArray<Diagnostic> diagnostics,
         CancellationToken cancellationToken)
