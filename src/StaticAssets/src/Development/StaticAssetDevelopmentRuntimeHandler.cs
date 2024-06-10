@@ -139,7 +139,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
 
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return _original.StartAsync(cancellationToken);
         }
     }
 
