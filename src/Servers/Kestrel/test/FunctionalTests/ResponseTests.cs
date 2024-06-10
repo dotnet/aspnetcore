@@ -263,7 +263,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), (string)m.Tags[KestrelMetrics.KestrelConnectionEndReason]);
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
         });
     }
 
@@ -471,7 +471,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 
         var measurement = connectionDuration.GetMeasurementSnapshot().First();
-        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), (string)measurement.Tags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.DoesNotContain(KestrelMetrics.ErrorType, measurement.Tags.Keys);
     }
 
     [Theory]
@@ -609,7 +609,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.Equal(nameof(ConnectionEndReason.MinResponseDataRate), (string)m.Tags[KestrelMetrics.KestrelConnectionEndReason]);
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinResponseDataRate), (string)m.Tags[KestrelMetrics.ErrorType]);
         });
     }
 
@@ -860,7 +860,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.Equal(nameof(ConnectionEndReason.MinResponseDataRate), (string)m.Tags[KestrelMetrics.KestrelConnectionEndReason]);
+            Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinResponseDataRate), (string)m.Tags[KestrelMetrics.ErrorType]);
         });
     }
 
@@ -1104,7 +1104,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            Assert.DoesNotContain(KestrelMetrics.KestrelConnectionEndReason, m.Tags.Keys);
+            Assert.DoesNotContain(KestrelMetrics.ErrorType, m.Tags.Keys);
         });
     }
 

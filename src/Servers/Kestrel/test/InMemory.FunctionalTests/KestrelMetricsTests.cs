@@ -25,6 +25,16 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
     [Fact]
+    public void ConnectionEndReasonMappings()
+    {
+        foreach (var reason in Enum.GetValues<ConnectionEndReason>())
+        {
+            var hasValue = KestrelMetrics.TryGetErrorType(reason, out var value);
+            Assert.True(hasValue || value == null, $"ConnectionEndReason '{reason}' doesn't have a mapping.");
+        }
+    }
+
+    [Fact]
     public async Task Http1Connection()
     {
         var sync = new SyncPoint();
@@ -484,7 +494,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
         Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
         {
-            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null, tlsProtocolVersion: null, error: ConnectionEndReason.TlsHandshakeFailed.ToString());
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", httpVersion: null, tlsProtocolVersion: null, error: KestrelMetrics.GetErrorType(ConnectionEndReason.TlsHandshakeFailed));
         });
 
         Assert.Collection(tlsHandshakeDuration.GetMeasurementSnapshot(), m =>

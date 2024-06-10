@@ -191,7 +191,7 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Null(await Http3Api.MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
 
         await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.ApplicationShutdown), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.MultiplexedConnectionContext.Abort();
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.ApplicationShutdown), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Theory]
@@ -248,7 +248,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.SettingsError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
-        Assert.Equal(nameof(ConnectionEndReason.InvalidSettings), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.InvalidSettings), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Theory]
@@ -268,7 +268,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.StreamCreationError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
-        Assert.Equal(nameof(ConnectionEndReason.StreamCreationError), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.StreamCreationError), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Theory]
@@ -290,7 +290,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(f)));
-        Assert.Equal(nameof(ConnectionEndReason.UnexpectedFrame), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.UnexpectedFrame), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -315,7 +315,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
-        Assert.Equal(nameof(ConnectionEndReason.ClosedCriticalStream), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ClosedCriticalStream), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -339,7 +339,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.CloseServerGracefully();
 
         await Http3Api.WaitForConnectionStopAsync(0, true, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.ClientGoAway), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.DoesNotContain(KestrelMetrics.ErrorType, Http3Api.ConnectionTags.Keys);
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
-        Assert.Equal(nameof(ConnectionEndReason.ClosedCriticalStream), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.ClosedCriticalStream), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
