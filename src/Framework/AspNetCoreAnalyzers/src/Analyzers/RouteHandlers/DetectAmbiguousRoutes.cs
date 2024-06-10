@@ -246,6 +246,13 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                         return false;
                     }
                 }
+                else if (argument1 is IParameterReferenceOperation parameter && argument2 is IParameterReferenceOperation otherParameter)
+                {
+                    if (!SymbolEqualityComparer.Default.Equals(parameter.Parameter, otherParameter.Parameter))
+                    {
+                        return false;
+                    }
+                }
                 else if (argument1 is ILiteralOperation literal && argument2 is ILiteralOperation otherLiteral)
                 {
                     if (!Equals(literal.ConstantValue, otherLiteral.ConstantValue))

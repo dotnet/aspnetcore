@@ -419,6 +419,35 @@ app.MapGroup(""/group1"").MapGet({|#1:""/""|}, () => { });
     }
 
     [Fact]
+    public async Task DuplicateRoutes_SingleGroup_DirectInvocation_InMethod_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+var app = WebApplication.Create();
+void RegisterEndpoints(IEndpointRouteBuilder builder)
+{
+    builder.MapGroup(""/group1"").MapGet({|#0:""/""|}, () => { });
+    builder.MapGroup(""/group1"").MapGet({|#1:""/""|}, () => { });
+}
+
+RegisterEndpoints(app);
+
+void Hello() { }
+";
+
+        var expectedDiagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
     public async Task DuplicateRoutes_SingleGroup_RoutePattern_DirectInvocation_HasDiagnostics()
     {
         // Arrange
