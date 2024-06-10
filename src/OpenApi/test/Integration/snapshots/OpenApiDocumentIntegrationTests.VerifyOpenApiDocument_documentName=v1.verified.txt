@@ -16,11 +16,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              }
+              "$ref": "#/components/schemas/bf441cfa-dc1c-404c-93e8-e047179b836a"
             }
           },
           {
@@ -38,11 +34,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uuid"
-                  }
+                  "$ref": "#/components/schemas/bf441cfa-dc1c-404c-93e8-e047179b836a"
                 }
               }
             }
@@ -79,18 +71,16 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "type": "integer",
-                    "format": "int32"
+                    "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
                   },
                   "title": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
                   },
                   "completed": {
-                    "type": "boolean"
+                    "$ref": "#/components/schemas/1a86c17b-a912-4967-8b2c-90cf219288a9"
                   },
                   "createdAt": {
-                    "type": "string",
-                    "format": "date-time"
+                    "$ref": "#/components/schemas/35c7234b-f326-4638-a6ce-d78344728101"
                   }
                 }
               }
@@ -117,8 +107,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
             }
           },
           {
@@ -146,22 +135,19 @@
                   "type": "object",
                   "properties": {
                     "dueDate": {
-                      "type": "string",
-                      "format": "date-time"
+                      "$ref": "#/components/schemas/35c7234b-f326-4638-a6ce-d78344728101"
                     },
                     "id": {
-                      "type": "integer",
-                      "format": "int32"
+                      "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
                     },
                     "title": {
-                      "type": "string"
+                      "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
                     },
                     "completed": {
-                      "type": "boolean"
+                      "$ref": "#/components/schemas/1a86c17b-a912-4967-8b2c-90cf219288a9"
                     },
                     "createdAt": {
-                      "type": "string",
-                      "format": "date-time"
+                      "$ref": "#/components/schemas/35c7234b-f326-4638-a6ce-d78344728101"
                     }
                   }
                 }
@@ -182,8 +168,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
             }
           },
           {
@@ -191,8 +176,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "minLength": 5,
-              "type": "string"
+              "$ref": "#/components/schemas/5b328dbb-e2cb-49f9-98d2-3f3233f5abd2"
             }
           },
           {
@@ -210,17 +194,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
                 }
               }
             }
@@ -250,15 +234,13 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "minLength": 5,
-                    "type": "string"
+                    "$ref": "#/components/schemas/5b328dbb-e2cb-49f9-98d2-3f3233f5abd2"
                   },
                   "Description": {
-                    "minLength": 5,
-                    "type": "string"
+                    "$ref": "#/components/schemas/5b328dbb-e2cb-49f9-98d2-3f3233f5abd2"
                   },
                   "IsCompleted": {
-                    "type": "boolean"
+                    "$ref": "#/components/schemas/1a86c17b-a912-4967-8b2c-90cf219288a9"
                   }
                 }
               },
@@ -280,6 +262,36 @@
     }
   },
   "components": {
+    "schemas": {
+      "09854117-8d70-4256-b885-9ac9711a4754": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "1a86c17b-a912-4967-8b2c-90cf219288a9": {
+        "type": "boolean"
+      },
+      "35c7234b-f326-4638-a6ce-d78344728101": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "5b328dbb-e2cb-49f9-98d2-3f3233f5abd2": {
+        "minLength": 5,
+        "type": "string"
+      },
+      "727d67af-5131-4af1-b143-3bf3aa18bd79": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "bf441cfa-dc1c-404c-93e8-e047179b836a": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/09854117-8d70-4256-b885-9ac9711a4754"
+        }
+      },
+      "f0608843-1a0c-47dd-add2-f785048742fa": {
+        "type": "string"
+      }
+    },
     "securitySchemes": {
       "Bearer": {
         "type": "http",

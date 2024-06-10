@@ -34,6 +34,7 @@ internal sealed class OpenApiDocumentService(
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
     private readonly IOpenApiDocumentTransformer _scrubExtensionsTransformer = new ScrubExtensionsTransformer();
+    private readonly IOpenApiDocumentTransformer _schemaReferenceTransformer = new OpenApiSchemaReferenceTransformer();
 
     private static readonly OpenApiEncoding _defaultFormEncoding = new OpenApiEncoding { Style = ParameterStyle.Form, Explode = true };
 
@@ -80,6 +81,8 @@ internal sealed class OpenApiDocumentService(
         }
         // Remove `x-aspnetcore-id` extension from operations after all transformers have run.
         await _scrubExtensionsTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+        // Move duplicated JSON schemas to the global components.schemas object and map references after all transformers have run.
+        await _schemaReferenceTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
     }
 
     // Note: Internal for testing.

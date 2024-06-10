@@ -25,7 +25,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
                   }
                 }
               }
@@ -64,8 +64,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "minLength": 5,
-              "type": "string"
+              "$ref": "#/components/schemas/54217b56-3bf2-46ff-b14c-1b8309df8fde"
             }
           }
         ],
@@ -75,17 +74,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
                 }
               }
             }
@@ -105,12 +104,10 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "minLength": 5,
-                    "type": "string"
+                    "$ref": "#/components/schemas/54217b56-3bf2-46ff-b14c-1b8309df8fde"
                   },
                   "Description": {
-                    "minLength": 5,
-                    "type": "string"
+                    "$ref": "#/components/schemas/54217b56-3bf2-46ff-b14c-1b8309df8fde"
                   },
                   "IsCompleted": {
                     "type": "boolean"
@@ -131,6 +128,17 @@
             "description": "OK"
           }
         }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "47ba0817-b436-4155-b6b2-f276bbe04270": {
+        "type": "string"
+      },
+      "54217b56-3bf2-46ff-b14c-1b8309df8fde": {
+        "minLength": 5,
+        "type": "string"
       }
     }
   },

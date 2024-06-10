@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// This comparer is used to maintain a globally unique list of tags encountered
 /// in a particular OpenAPI document.
 /// </summary>
-internal class OpenApiTagComparer : IEqualityComparer<OpenApiTag>
+internal sealed class OpenApiTagComparer : IEqualityComparer<OpenApiTag>
 {
     public static OpenApiTagComparer Instance { get; } = new OpenApiTagComparer();
 

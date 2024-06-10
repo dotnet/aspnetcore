@@ -102,6 +102,7 @@ internal sealed class OpenApiSchemaService(
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
         await ApplySchemaTransformersAsync(schema, type, parameterDescription, cancellationToken);
+        _schemaStore.PopulateSchemaIntoReferenceCache(schema);
         return schema;
     }
 

@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -27,6 +28,8 @@ internal sealed class OpenApiSchemaStore
         [new OpenApiSchemaKey(typeof(PipeReader), null)] = new JsonObject { ["type"] = "string", ["format"] = "binary" },
     };
 
+    private readonly ConcurrentDictionary<OpenApiSchema, string?> _schemasWithReference = new(OpenApiSchemaComparer.Instance);
+
     /// <summary>
     /// Resolves the JSON schema for the given type and parameter description.
     /// </summary>
@@ -37,4 +40,43 @@ internal sealed class OpenApiSchemaStore
     {
         return _schemas.GetOrAdd(key, valueFactory);
     }
+
+    /// <summary>
+    /// Add the provided schema to the schema-with-references cache that is eventually
+    /// used to populate the top-level components.schemas object. This method will
+    /// unwrap the provided schema and add any child schemas to the global cache. Child
+    /// schemas include those referenced in the schema.Items, schema.AdditionalProperties, or
+    /// schema.Properties collections. A unique identifier is generated for each schema
+    /// on the update step to avoid populating the cache with schemas that only appear once in
+    /// the document.
+    /// </summary>
+    /// <param name="schema">The <see cref="OpenApiSchema"/> to add to the schemas-with-references cache.</param>
+    public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema)
+    {
+        _schemasWithReference.AddOrUpdate(schema, (_) => null, (_, _) => Guid.NewGuid().ToString());
+        if (schema.AdditionalProperties is not null)
+        {
+            _schemasWithReference.AddOrUpdate(schema.AdditionalProperties, (_) => null, (_, _) => Guid.NewGuid().ToString());
+        }
+        if (schema.Items is not null)
+        {
+            _schemasWithReference.AddOrUpdate(schema.Items, (_) => null, (_, _) => Guid.NewGuid().ToString());
+        }
+        if (schema.AllOf is not null)
+        {
+            foreach (var allOfSchema in schema.AllOf)
+            {
+                _schemasWithReference.AddOrUpdate(allOfSchema, (_) => null, (_, _) => Guid.NewGuid().ToString());
+            }
+        }
+        if (schema.Properties is not null)
+        {
+            foreach (var property in schema.Properties.Values)
+            {
+                _schemasWithReference.AddOrUpdate(property, (_) => null, (_, _) => Guid.NewGuid().ToString());
+            }
+        }
+    }
+
+    public ConcurrentDictionary<OpenApiSchema, string?> SchemasByReference => _schemasWithReference;
 }
