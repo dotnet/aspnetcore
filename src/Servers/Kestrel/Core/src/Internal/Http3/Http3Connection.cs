@@ -483,8 +483,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             Log.RequestProcessingError(_context.ConnectionId, ex);
             error = ex;
             reason = ConnectionEndReason.UnexpectedError;
-
-            Debug.Fail("Figure out error reason");
         }
         catch (Http3ConnectionErrorException ex)
         {

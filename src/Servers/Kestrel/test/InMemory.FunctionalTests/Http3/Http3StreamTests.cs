@@ -2033,7 +2033,7 @@ public class Http3StreamTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.UnexpectedFrame,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.UnexpectedFrame), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.UnexpectedFrame), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -2109,7 +2109,7 @@ public class Http3StreamTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(Http3Formatting.ToFormattedType(f)));
-        Assert.Equal(nameof(ConnectionEndReason.UnsupportedFrame), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.UnsupportedFrame), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Theory]
@@ -2139,7 +2139,7 @@ public class Http3StreamTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.UnexpectedFrame,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.UnsupportedFrame), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.UnsupportedFrame), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]

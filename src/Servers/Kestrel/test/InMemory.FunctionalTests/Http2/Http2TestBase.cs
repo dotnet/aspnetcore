@@ -424,6 +424,11 @@ public class Http2TestBase : TestApplicationErrorLoggerLoggedTest, IDisposable, 
         base.Dispose();
     }
 
+    protected void AssertConnectionNoError()
+    {
+        Assert.DoesNotContain(KestrelMetrics.ErrorType, ConnectionTags.Keys);
+    }
+
     void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
         var nameStr = name.GetHeaderName();

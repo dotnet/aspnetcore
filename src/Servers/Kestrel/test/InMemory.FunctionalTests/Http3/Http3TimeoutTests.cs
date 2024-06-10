@@ -28,7 +28,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(nameof(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.KeepAliveTimeout), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
     }
 
     [Fact]
@@ -369,7 +369,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: 4,
             Http3ErrorCode.InternalError,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -413,7 +413,7 @@ public class Http3TimeoutTests : Http3TestBase
             Http3ErrorCode.InternalError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
-        Assert.Equal(nameof(ConnectionEndReason.MinResponseDataRate), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinResponseDataRate), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
     }
@@ -567,7 +567,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -622,7 +622,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -678,7 +678,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
-        Assert.Equal(nameof(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.MinRequestBodyDataRate), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }

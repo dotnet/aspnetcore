@@ -35,12 +35,12 @@ internal enum ConnectionEndReason
     FlowControlQueueSizeExceeded,
     OutputQueueSizeExceeded,
     ClosedCriticalStream,
-    AbortedByApplication,
+    AbortedByApp,
     ServerTimeout,
     StreamCreationError,
     IOError,
     ClientGoAway,
-    ApplicationShutdown,
+    AppShutdown,
     TransportCompleted,
     TlsHandshakeFailed
 }

@@ -19,7 +19,7 @@ internal sealed class KestrelMetrics
     // Note: Dot separated instead of dash.
     public const string MeterName = "Microsoft.AspNetCore.Server.Kestrel";
 
-    public const string KestrelConnectionEndReason = "kestrel.connection.end_reason";
+    public const string ErrorType = "error.type";
 
     public const string Http11 = "1.1";
     public const string Http2 = "2";
@@ -415,24 +415,68 @@ internal sealed class KestrelMetrics
 
     public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason)
     {
+        Debug.Assert(reason != ConnectionEndReason.Unknown);
+
         if (feature != null)
         {
-            var s = reason.ToString();
-            feature.TryAddTag(KestrelConnectionEndReason, s);
-            if (IsErrorReason(reason))
+            if (TryGetErrorType(reason, out var errorTypeValue))
             {
-                feature.TryAddTag("error.type", s);
+                feature.TryAddTag(ErrorType, errorTypeValue);
             }
         }
     }
 
-    private static bool IsErrorReason(ConnectionEndReason reason)
+    internal static string? GetErrorType(ConnectionEndReason reason)
     {
-        return reason switch
+        TryGetErrorType(reason, out var errorTypeValue);
+        return errorTypeValue;
+    }
+
+    internal static bool TryGetErrorType(ConnectionEndReason reason, [NotNullWhen(true)]out string? errorTypeValue)
+    {
+        errorTypeValue = reason switch
         {
-            ConnectionEndReason.ClientGoAway => false,
-            ConnectionEndReason.TransportCompleted => false,
-            _ => true,
+            ConnectionEndReason.Unknown => null, // Not an error
+            ConnectionEndReason.ClientGoAway => null, // Not an error
+            ConnectionEndReason.TransportCompleted => null, // Not an error
+            ConnectionEndReason.ConnectionReset => "connection_reset",
+            ConnectionEndReason.FlowControlWindowExceeded => "flow_control_window_exceeded",
+            ConnectionEndReason.KeepAliveTimeout => "keep_alive_timeout",
+            ConnectionEndReason.InsufficientTlsVersion => "insufficient_tls_version",
+            ConnectionEndReason.InvalidHandshake => "invalid_handshake",
+            ConnectionEndReason.InvalidStreamId => "invalid_stream_id",
+            ConnectionEndReason.FrameAfterStreamClose => "frame_after_stream_close",
+            ConnectionEndReason.UnknownStream => "unknown_stream",
+            ConnectionEndReason.UnsupportedFrame => "unsupported_frame",
+            ConnectionEndReason.UnexpectedFrame => "unexpected_frame",
+            ConnectionEndReason.InvalidFrameLength => "invalid_frame_length",
+            ConnectionEndReason.InvalidDataPadding => "invalid_data_padding",
+            ConnectionEndReason.InvalidRequestHeaders => "invalid_request_headers",
+            ConnectionEndReason.StreamResetLimitExceeded => "stream_reset_limit_exceeded",
+            ConnectionEndReason.WindowUpdateSizeInvalid => "window_update_size_invalid",
+            ConnectionEndReason.StreamSelfDependency => "stream_self_dependency",
+            ConnectionEndReason.InvalidSettings => "invalid_settings",
+            ConnectionEndReason.MissingStreamEnd => "missing_stream_end",
+            ConnectionEndReason.MaxFrameLengthExceeded => "max_frame_length_exceeded",
+            ConnectionEndReason.ErrorReadingHeaders => "error_reading_headers",
+            ConnectionEndReason.ErrorWritingHeaders => "error_writing_headers",
+            ConnectionEndReason.UnexpectedError => "unexpected_error",
+            ConnectionEndReason.InvalidHttpVersion => "invalid_http_version",
+            ConnectionEndReason.RequestHeadersTimeout => "request_headers_timeout",
+            ConnectionEndReason.MinRequestBodyDataRate => "min_request_body_data_rate",
+            ConnectionEndReason.MinResponseDataRate => "min_response_data_rate",
+            ConnectionEndReason.FlowControlQueueSizeExceeded => "flow_control_queue_size_exceeded",
+            ConnectionEndReason.OutputQueueSizeExceeded => "output_queue_size_exceeded",
+            ConnectionEndReason.ClosedCriticalStream => "closed_critical_stream",
+            ConnectionEndReason.AbortedByApp => "aborted_by_app",
+            ConnectionEndReason.ServerTimeout => "server_timeout",
+            ConnectionEndReason.StreamCreationError => "stream_creation_error",
+            ConnectionEndReason.IOError => "io_error",
+            ConnectionEndReason.AppShutdown => "app_shutdown",
+            ConnectionEndReason.TlsHandshakeFailed => "tls_handshake_failed",
+            _ => throw new InvalidOperationException($"Unable to calculate whether {reason} resolves to error.type value.")
         };
+
+        return errorTypeValue != null;
     }
 }

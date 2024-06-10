@@ -126,15 +126,15 @@ public class Http1OutputProducerTests : IDisposable
 
         mockConnectionContext.Verify(f => f.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never());
 
-        outputProducer.Abort(null, ConnectionEndReason.AbortedByApplication);
+        outputProducer.Abort(null, ConnectionEndReason.AbortedByApp);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
 
-        outputProducer.Abort(null, ConnectionEndReason.AbortedByApplication);
+        outputProducer.Abort(null, ConnectionEndReason.AbortedByApp);
 
         mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
 
-        Assert.Equal(nameof(ConnectionEndReason.AbortedByApplication), metricsTagsFeature.Tags.Single(t => t.Key == KestrelMetrics.KestrelConnectionEndReason).Value);
+        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp), metricsTagsFeature.Tags.Single(t => t.Key == KestrelMetrics.ErrorType).Value);
     }
 
     [Fact]
