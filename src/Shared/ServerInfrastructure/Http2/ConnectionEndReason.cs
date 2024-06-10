@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 
 internal enum ConnectionEndReason
 {
-    Unknown,
+    Unset,
     ConnectionReset,
     FlowControlWindowExceeded,
     KeepAliveTimeout,
