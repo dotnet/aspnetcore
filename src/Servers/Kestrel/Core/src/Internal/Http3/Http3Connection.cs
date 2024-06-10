@@ -342,7 +342,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         Http3ControlStream? outboundControlStream = null;
         ValueTask outboundControlStreamTask = default;
         bool clientAbort = false;
-        ConnectionEndReason reason = ConnectionEndReason.Unknown;
+        ConnectionEndReason reason = ConnectionEndReason.Unset;
 
         try
         {
@@ -543,7 +543,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                 }
 
                 // Use graceful close reason if it has been set.
-                if (reason == ConnectionEndReason.Unknown && _gracefulCloseReason != ConnectionEndReason.Unknown)
+                if (reason == ConnectionEndReason.Unset && _gracefulCloseReason != ConnectionEndReason.Unset)
                 {
                     reason = _gracefulCloseReason;
                 }
