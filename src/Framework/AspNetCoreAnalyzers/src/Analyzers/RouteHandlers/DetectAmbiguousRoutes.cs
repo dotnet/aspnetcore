@@ -181,15 +181,33 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             {
                 if (builder is ILocalReferenceOperation local && other is ILocalReferenceOperation otherLocal)
                 {
+                    // The builders are both local variables.
                     return SymbolEqualityComparer.Default.Equals(local.Local, otherLocal.Local);
+                }
+
+                if (builder is IParameterReferenceOperation parameter && other is IParameterReferenceOperation otherParameter)
+                {
+                    // The builders are both parameter variables.
+                    return SymbolEqualityComparer.Default.Equals(parameter.Parameter, otherParameter.Parameter);
                 }
 
                 if (builder is IInvocationOperation invocation && other is IInvocationOperation otherInvocation)
                 {
-                    return AreArgumentsEqual(invocation.Arguments, otherInvocation.Arguments);
+                    if (invocation.TargetMethod.Name == "MapGroup" &&
+                        invocation.TargetMethod.Parameters.Length == 2 &&
+                        SymbolEqualityComparer.Default.Equals(invocation.TargetMethod, otherInvocation.TargetMethod) &&
+                        invocation.Arguments.Length == 2 &&
+                        otherInvocation.Arguments.Length == 2)
+                    {
+                        // The builders are both method calls. Special case checking known MapGroup method.
+                        // For example, two MapGroup calls with the same route are considered equal:
+                        // builder.MapGroup("/v1").MapGet("account")
+                        // builder.MapGroup("/v1").MapGet("account")
+                        return AreArgumentsEqual(invocation.TargetMethod, invocation.Arguments, otherInvocation.Arguments);
+                    }
                 }
 
-                return true;
+                return false;
             }
         }
 
@@ -214,26 +232,57 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        private static bool AreArgumentsEqual(ImmutableArray<IArgumentOperation> arguments1, ImmutableArray<IArgumentOperation> arguments2)
+        private static bool AreArgumentsEqual(IMethodSymbol method, ImmutableArray<IArgumentOperation> arguments1, ImmutableArray<IArgumentOperation> arguments2)
         {
-            if (arguments1.Length != arguments2.Length)
+            for (var i = 0; i < method.Parameters.Length; i++)
             {
-                return false;
-            }
+                var argument1 = GetParameterArgument(method.Parameters[i], arguments1);
+                var argument2 = GetParameterArgument(method.Parameters[i], arguments2);
 
-            for (var i = 0; i < arguments1.Length; i++)
-            {
-                var arg1 = arguments1[i];
-                var arg2 = arguments2[i];
-
-                if (arg1?.Parameter?.Name != arg2?.Parameter?.Name ||
-                    !Equals(arg1?.Value.ConstantValue.Value, arg2?.Value.ConstantValue.Value))
+                if (argument1 is ILocalReferenceOperation local && argument2 is ILocalReferenceOperation otherLocal)
+                {
+                    if (!SymbolEqualityComparer.Default.Equals(local.Local, otherLocal.Local))
+                    {
+                        return false;
+                    }
+                }
+                else if (argument1 is ILiteralOperation literal && argument2 is ILiteralOperation otherLiteral)
+                {
+                    if (!Equals(literal.ConstantValue, otherLiteral.ConstantValue))
+                    {
+                        return false;
+                    }
+                }
+                else
                 {
                     return false;
                 }
             }
 
             return true;
+
+            static IOperation? GetParameterArgument(IParameterSymbol parameter, ImmutableArray<IArgumentOperation> arguments)
+            {
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(arguments[i].Parameter, parameter))
+                    {
+                        return WalkDownConversion(arguments[i].Value);
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        private static IOperation WalkDownConversion(IOperation operation)
+        {
+            while (operation is IConversionOperation conversionOperation)
+            {
+                operation = conversionOperation.Operand;
+            }
+
+            return operation;
         }
 
         public override int GetHashCode()

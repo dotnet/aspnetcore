@@ -382,7 +382,23 @@ app.MapGroup(""/group2"").MapGet(""/"", () => { });
     }
 
     [Fact]
-    public async Task DuplicateRoutes_MultipleGroups_DirectInvocation_HasDiagnostics()
+    public async Task DuplicateRoutes_SingleGroup_DifferentBuilderVariable_DirectInvocation_NoDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+var app1 = WebApplication.Create();
+var app2 = app1;
+app1.MapGroup(""/group1"").MapGet(""/"", () => { });
+app2.MapGroup(""/group1"").MapGet(""/"", () => { });
+";
+
+        // Act & Assert
+        await VerifyCS.VerifyAnalyzerAsync(source);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_SingleGroup_DirectInvocation_HasDiagnostics()
     {
         // Arrange
         var source = @"
@@ -390,6 +406,29 @@ using Microsoft.AspNetCore.Builder;
 var app = WebApplication.Create();
 app.MapGroup(""/group1"").MapGet({|#0:""/""|}, () => { });
 app.MapGroup(""/group1"").MapGet({|#1:""/""|}, () => { });
+";
+
+        // Act & Assert
+        var expectedDiagnostics = new[]
+        {
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(0),
+            new DiagnosticResult(DiagnosticDescriptors.AmbiguousRouteHandlerRoute).WithArguments("/").WithLocation(1)
+        };
+
+        await VerifyCS.VerifyAnalyzerAsync(source, expectedDiagnostics);
+    }
+
+    [Fact]
+    public async Task DuplicateRoutes_SingleGroup_RoutePattern_DirectInvocation_HasDiagnostics()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing.Patterns;
+var routePattern = RoutePatternFactory.Parse(""/group1"");
+var app = WebApplication.Create();
+app.MapGroup(routePattern).MapGet({|#0:""/""|}, () => { });
+app.MapGroup(routePattern).MapGet({|#1:""/""|}, () => { });
 ";
 
         // Act & Assert
