@@ -275,7 +275,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Exception? error = null;
         var errorCode = Http2ErrorCode.NO_ERROR;
-        var reason = ConnectionEndReason.Unknown;
+        var reason = ConnectionEndReason.Unset;
 
         try
         {

@@ -415,7 +415,7 @@ internal sealed class KestrelMetrics
 
     public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason)
     {
-        Debug.Assert(reason != ConnectionEndReason.Unknown);
+        Debug.Assert(reason != ConnectionEndReason.Unset);
 
         if (feature != null)
         {
@@ -436,7 +436,7 @@ internal sealed class KestrelMetrics
     {
         errorTypeValue = reason switch
         {
-            ConnectionEndReason.Unknown => null, // Not an error
+            ConnectionEndReason.Unset => null, // Not an error
             ConnectionEndReason.ClientGoAway => null, // Not an error
             ConnectionEndReason.TransportCompleted => null, // Not an error
             ConnectionEndReason.ConnectionReset => "connection_reset",
