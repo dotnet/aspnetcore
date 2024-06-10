@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -3778,7 +3779,7 @@ public class Http2StreamTests : Http2TestBase
             withStreamId: 1);
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
-        Assert.Equal(nameof(ConnectionEndReason.ErrorWritingHeaders), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
+        Assert.Equal(nameof(ConnectionEndReason.TransportCompleted), ConnectionTags[KestrelMetrics.KestrelConnectionEndReason]);
     }
 
     [Fact]
