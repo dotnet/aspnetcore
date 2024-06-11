@@ -33,18 +33,7 @@ public class AddPackageFixer : CodeFixProvider
         }
 
         var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-
-        Dictionary<ThisAndExtensionMethod, PackageSourceAndNamespace> _wellKnownExtensionMethodCache = new()
-        {
-            {
-                new(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_IServiceCollection), "AddOpenApi"),
-                new("Microsoft.AspNetCore.OpenApi", "Microsoft.Extensions.DependencyInjection")
-            },
-            {
-                new(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Builder_WebApplication), "MapOpenApi"),
-                new("Microsoft.AspNetCore.OpenApi", "Microsoft.AspNetCore.Builder")
-            }
-        };
+        var wellKnownExtensionMethodCache = ExtensionMethodsClass.ConstructFromWellKnownTypes(wellKnownTypes);
 
         foreach (var diagnostic in context.Diagnostics)
         {
@@ -80,7 +69,7 @@ public class AddPackageFixer : CodeFixProvider
             }
 
             var targetThisAndExtensionMethod = new ThisAndExtensionMethod(symbolType, methodName);
-            if (_wellKnownExtensionMethodCache.TryGetValue(targetThisAndExtensionMethod, out var packageSourceAndNamespace))
+            if (wellKnownExtensionMethodCache.TryGetValue(targetThisAndExtensionMethod, out var packageSourceAndNamespace))
             {
                 var position = diagnostic.Location.SourceSpan.Start;
                 var packageInstallData = new AspNetCoreInstallPackageData(
