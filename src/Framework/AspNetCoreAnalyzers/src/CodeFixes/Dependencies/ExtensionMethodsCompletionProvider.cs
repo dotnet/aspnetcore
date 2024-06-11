@@ -13,6 +13,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage;
 
+/// <summary>
+/// This completion provider expands the completion list of target symbols defined in the
+/// ExtensionMethodsCache to include extension methods that can be invoked on the target
+/// type that are defined in auxillary packages. This completion provider is designed to be
+/// used in conjunction with the `AddPackageFixer` to recommend adding the missing packages
+/// extension methods are defined in.
+/// </summary>
 [ExportCompletionProvider(nameof(ExtensionMethodsCompletionProvider), LanguageNames.CSharp)]
 [Shared]
 public sealed class ExtensionMethodsCompletionProvider : CompletionProvider
@@ -44,9 +51,13 @@ public sealed class ExtensionMethodsCompletionProvider : CompletionProvider
         }
 
         var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-        var wellKnownExtensionMethodCache = ExtensionMethodsClass.ConstructFromWellKnownTypes(wellKnownTypes);
-        var nearestMemberAccessExpression = FindNearestMemberAccessExpression(token.Parent);
+        var wellKnownExtensionMethodCache = ExtensionMethodsCache.ConstructFromWellKnownTypes(wellKnownTypes);
 
+        // We find the nearest member access expression to the adjacent expression to resolve the
+        // target type of the extension method that the user is invoking. For example, `app.` should
+        // allow us to resolve to a `WebApplication` instance and `builder.Services.Add` should resolve
+        // to an `IServiceCollection`.
+        var nearestMemberAccessExpression = FindNearestMemberAccessExpression(token.Parent);
         if (nearestMemberAccessExpression is not null && nearestMemberAccessExpression is MemberAccessExpressionSyntax memberAccess)
         {
             var symbol = semanticModel.GetSymbolInfo(memberAccess.Expression);
@@ -97,6 +108,9 @@ public sealed class ExtensionMethodsCompletionProvider : CompletionProvider
             return false;
         }
 
+        // If the token that we are parsing is some sort of identifier, this indicates that the user
+        // has triggered a completion with characters already inserted into the invocation (e.g. `builder.Services.Ad$$).
+        // In this case, we only want to provide completions that match the characters that have been inserted.
         var isIdentifierToken = token.IsKind(SyntaxKind.IdentifierName) || token.IsKind(SyntaxKind.IdentifierToken);
         return SymbolEqualityComparer.Default.Equals(pair.Key.ThisType, symbolType) &&
             (!isIdentifierToken || pair.Key.ExtensionMethod.Contains(token.ValueText));

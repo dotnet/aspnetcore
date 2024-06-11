@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -15,6 +14,15 @@ using Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.AddPackage;
 
 namespace Microsoft.AspNetCore.Analyzers.Dependencies;
 
+/// <summary>
+/// This fixer uses Roslyn's AspNetCoreAddPackageCodeAction to support providing a code fix for a missing
+/// package based on APIs defined in that package that are called in user code. This fixer is particularly
+/// helpful for providing guidance to users on how to add a missing package when they are using an extension
+/// method on well-known types like `IServiceCollection` and `IApplicationBuilder`.
+/// </summary>
+/// <remarks>
+/// This class is not sealed to support mocking of the virtual method `TryCreateCodeActionAsync` in unit tests.
+/// </remarks>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AddPackageFixer)), Shared]
 public class AddPackageFixer : CodeFixProvider
 {
@@ -33,8 +41,9 @@ public class AddPackageFixer : CodeFixProvider
         }
 
         var wellKnownTypes = WellKnownTypes.GetOrCreate(semanticModel.Compilation);
-        var wellKnownExtensionMethodCache = ExtensionMethodsClass.ConstructFromWellKnownTypes(wellKnownTypes);
+        var wellKnownExtensionMethodCache = ExtensionMethodsCache.ConstructFromWellKnownTypes(wellKnownTypes);
 
+        // Diagnostics are already filtered by FixableDiagnosticIds values.
         foreach (var diagnostic in context.Diagnostics)
         {
             var location = diagnostic.Location.SourceSpan;
@@ -94,6 +103,10 @@ public class AddPackageFixer : CodeFixProvider
 
     public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
+    /// <example>
+    /// 'IServiceCollection' does not contain a definition for 'AddOpenApi' and no accessible extension method 'AddOpenApi' accepting
+    /// a first argument of type 'IServiceCollection' could be found (are you missing a using directive or an assembly reference?).
+    /// </example>
     public override ImmutableArray<string> FixableDiagnosticIds { get; } = ["CS1061"];
 
     internal virtual async Task<CodeAction?> TryCreateCodeActionAsync(
