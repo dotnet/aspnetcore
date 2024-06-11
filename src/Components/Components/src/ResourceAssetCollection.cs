@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Describes a mapping of static assets to their corresponding unique URLs.
 /// </summary>
-public class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
+public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
 {
     /// <summary>
     /// An empty <see cref="ResourceAssetCollection"/>.

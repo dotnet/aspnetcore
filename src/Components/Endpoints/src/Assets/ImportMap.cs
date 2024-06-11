@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// Represents an <c><script type="importmap"></script></c> element that defines the import map for module scripts
 /// in the application.
 /// </summary>
-public class ImportMap : IComponent
+public sealed class ImportMap : IComponent
 {
     private RenderHandle _renderHandle;
     private bool _firstRender = true;

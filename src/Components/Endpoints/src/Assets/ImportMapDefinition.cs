@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <see cref="ImportMapDefinition"/> instances are expensive to create, so it is recommended to cache them if
 /// you are creating an additional instance.
 /// </remarks>
-public class ImportMapDefinition
+public sealed class ImportMapDefinition
 {
     private Dictionary<string, string>? _imports;
     private Dictionary<string, IReadOnlyDictionary<string, string>>? _scopes;

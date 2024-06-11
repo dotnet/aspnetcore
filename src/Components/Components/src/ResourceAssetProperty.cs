@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Components;
@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 /// <param name="name">The name of the property.</param>
 /// <param name="value">The value of the property.</param>
-public class ResourceAssetProperty(string name, string value)
+public sealed class ResourceAssetProperty(string name, string value)
 {
     /// <summary>
     /// Gets the name of the property.
