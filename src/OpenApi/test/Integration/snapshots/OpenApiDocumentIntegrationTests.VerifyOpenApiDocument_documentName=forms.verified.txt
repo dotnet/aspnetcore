@@ -36,7 +36,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/forms/form-files": {
@@ -73,7 +73,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/forms/form-file-multiple": {
@@ -124,7 +124,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/forms/form-todo": {
@@ -207,7 +207,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/forms/forms-pocos-and-files": {
@@ -271,7 +271,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     },
     "/getbyidandname/{id}/{name}": {
@@ -320,7 +320,7 @@
               }
             }
           }
-        },
+        }
       }
     },
     "/forms": {
@@ -360,7 +360,7 @@
           "200": {
             "description": "OK"
           }
-        },
+        }
       }
     }
   },

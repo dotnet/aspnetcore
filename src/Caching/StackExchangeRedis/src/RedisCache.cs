@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// </summary>
 public partial class RedisCache : IBufferDistributedCache, IDisposable
 {
-    // Note that the "force reconnect" pattern as described https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
+    // Note that the "force reconnect" pattern as described https://learn.microsoft.com/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
     // can be enabled via the "Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect" app-context switch
 
     private const string AbsoluteExpirationKey = "absexp";

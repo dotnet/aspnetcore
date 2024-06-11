@@ -334,7 +334,7 @@ public class FormFeature : IFormFeature
     private static Encoding FilterEncoding(Encoding? encoding)
     {
         // UTF-7 is insecure and should not be honored. UTF-8 will succeed for most cases.
-        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (encoding == null || encoding.CodePage == 65000)
         {
             return Encoding.UTF8;

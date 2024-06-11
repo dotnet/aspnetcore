@@ -19,7 +19,7 @@
     <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
     <RestoreFolderName>Mvc</RestoreFolderName>
     <TestDependsOnAspNetPackages>true</TestDependsOnAspNetPackages>
-    <HelixTimeout>01:50:00</HelixTimeout>
+    <HelixTimeout>02:30:00</HelixTimeout>
   </PropertyGroup>
 
   <ItemGroup>

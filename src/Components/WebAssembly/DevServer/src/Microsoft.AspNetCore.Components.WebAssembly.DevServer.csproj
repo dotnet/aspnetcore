@@ -37,7 +37,7 @@
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
     <PropertyGroup>
       <_RuntimeConfigProperties>
-        SharedFxVersion=$(SharedFxVersion);
+        AspNetCoreMajorMinorVersion=$(AspNetCoreMajorMinorVersion);
       </_RuntimeConfigProperties>
 
       <_RuntimeConfigPath>$(OutputPath)blazor-devserver.runtimeconfig.json</_RuntimeConfigPath>
