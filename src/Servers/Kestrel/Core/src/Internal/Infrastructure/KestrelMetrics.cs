@@ -413,7 +413,7 @@ internal sealed class KestrelMetrics
         return false;
     }
 
-    public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason)
+    public static void AddConnectionEndReason(IConnectionMetricsTagsFeature? feature, ConnectionEndReason reason, bool overwrite = false)
     {
         Debug.Assert(reason != ConnectionEndReason.Unset);
 
@@ -421,7 +421,14 @@ internal sealed class KestrelMetrics
         {
             if (TryGetErrorType(reason, out var errorTypeValue))
             {
-                feature.TryAddTag(ErrorType, errorTypeValue);
+                if (overwrite)
+                {
+                    feature.SetTag(ErrorType, errorTypeValue);
+                }
+                else
+                {
+                    feature.TryAddTag(ErrorType, errorTypeValue);
+                }
             }
         }
     }
@@ -439,6 +446,7 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.Unset => null, // Not an error
             ConnectionEndReason.ClientGoAway => null, // Not an error
             ConnectionEndReason.TransportCompleted => null, // Not an error
+            ConnectionEndReason.GracefulAppShutdown => null, // Not an error
             ConnectionEndReason.ConnectionReset => "connection_reset",
             ConnectionEndReason.FlowControlWindowExceeded => "flow_control_window_exceeded",
             ConnectionEndReason.KeepAliveTimeout => "keep_alive_timeout",
@@ -469,6 +477,7 @@ internal sealed class KestrelMetrics
             ConnectionEndReason.OutputQueueSizeExceeded => "output_queue_size_exceeded",
             ConnectionEndReason.ClosedCriticalStream => "closed_critical_stream",
             ConnectionEndReason.AbortedByApp => "aborted_by_app",
+            ConnectionEndReason.BodyReaderInvalidState => "body_reader_invalid_state",
             ConnectionEndReason.ServerTimeout => "server_timeout",
             ConnectionEndReason.StreamCreationError => "stream_creation_error",
             ConnectionEndReason.IOError => "io_error",

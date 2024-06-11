@@ -101,7 +101,7 @@ internal sealed class HttpConnection : ITimeoutHandler
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(ConnectionEndReason.AppShutdown), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(ConnectionEndReason.GracefulAppShutdown), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state!).OnConnectionClosed(), this);

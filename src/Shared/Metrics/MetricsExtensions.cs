@@ -23,6 +23,43 @@ internal static class MetricsExtensions
         return TryAddTagCore(name, value, tags);
     }
 
+    public static void SetTag(this IConnectionMetricsTagsFeature feature, string name, object? value)
+    {
+        var tags = feature.Tags;
+
+        SetTagCore(name, value, tags);
+    }
+
+    private static void SetTagCore(string name, object? value, ICollection<KeyValuePair<string, object?>> tags)
+    {
+        // Tags is internally represented as a List<T>.
+        // Prefer looping through the list to avoid allocating an enumerator.
+        if (tags is List<KeyValuePair<string, object?>> list)
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (list[i].Key == name)
+                {
+                    list.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            foreach (var tag in tags)
+            {
+                if (tag.Key == name)
+                {
+                    tags.Remove(tag);
+                    break;
+                }
+            }
+        }
+
+        tags.Add(new KeyValuePair<string, object?>(name, value));
+    }
+
     private static bool TryAddTagCore(string name, object? value, ICollection<KeyValuePair<string, object?>> tags)
     {
         // Tags is internally represented as a List<T>.

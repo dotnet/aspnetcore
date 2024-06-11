@@ -17,6 +17,10 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using System.Buffers;
+using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -152,6 +156,157 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
 
             Assert.False(hasConnectionMetricsTagsFeature);
         }
+    }
+
+    [Fact]
+    public async Task Http1Connection_RequestEndsWithIncompleteReadAsync()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        await using var server = new TestServer(async context =>
+        {
+            var result = await context.Request.BodyReader.ReadAsync();
+            await context.Response.BodyWriter.WriteAsync(result.Buffer.ToArray());
+            // No BodyReader.Advance. Connection will fail when attempting to complete body.
+        }, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(sendString);
+
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "Hello World?");
+
+            await connection.WaitForConnectionClose();
+
+            Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+            {
+                AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AbortedByApp));
+            });
+        }
+    }
+
+    [Fact]
+    public async Task Http1Connection_ServerShutdown_Graceful()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
+        {
+            ShutdownTimeout = TimeSpan.FromSeconds(60)
+        };
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+
+        var getNotificationFeatureTcs = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var server = new TestServer(async c =>
+        {
+            getNotificationFeatureTcs.TrySetResult(c.Features.Get<IConnectionLifetimeNotificationFeature>());
+            await EchoApp(c);
+        }, serviceContext);
+        using var connection = server.CreateConnection();
+
+        try
+        {
+            await connection.Send(sendString);
+        }
+        finally
+        {
+            Logger.LogInformation("Waiting for notification feature");
+            var notificationFeature = await getNotificationFeatureTcs.Task.DefaultTimeout();
+
+            // Dispose while the connection is in-progress.
+            var shutdownTask = server.DisposeAsync();
+
+            var waitForConnectionCloseRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            notificationFeature.ConnectionClosedRequested.Register(() =>
+            {
+                Logger.LogInformation("ConnectionClosedRequested");
+                waitForConnectionCloseRequest.TrySetResult();
+            });
+
+            Logger.LogInformation("Waiting for connection close request.");
+            await waitForConnectionCloseRequest.Task.DefaultTimeout();
+
+            Logger.LogInformation("Receiving data and closing connection.");
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "Hello World?");
+            await connection.WaitForConnectionClose();
+            connection.Dispose();
+
+            Logger.LogInformation("Finishing shutting down.");
+            await shutdownTask;
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11);
+        });
+    }
+
+    [Fact]
+    public async Task Http1Connection_ServerShutdown_Abort()
+    {
+        ThrowOnUngracefulShutdown = false;
+
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
+        {
+            MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool,
+            ShutdownTimeout = TimeSpan.Zero
+        };
+
+        var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
+        var connectionCloseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestReceivedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var server = new TestServer(async c =>
+        {
+            requestReceivedTcs.TrySetResult();
+            await c.Response.BodyWriter.WriteAsync(Encoding.UTF8.GetBytes("Hello world"));
+            await c.Response.BodyWriter.FlushAsync();
+            await connectionCloseTcs.Task;
+            Logger.LogInformation("Server request delegate finishing.");
+        }, serviceContext);
+
+        using var connection = server.CreateConnection();
+        connection.TransportConnection.ConnectionClosed.Register(() =>
+        {
+            Logger.LogInformation("Connection closed raised.");
+            connectionCloseTcs.TrySetResult();
+        });
+
+        try
+        {
+            await connection.Send(sendString);
+            await requestReceivedTcs.Task.DefaultTimeout();
+        }
+        finally
+        {
+            // Dispose while the connection is in-progress.
+            Logger.LogInformation("Shutting down server.");
+            await server.DisposeAsync();
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m =>
+        {
+            AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http11, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown));
+        });
     }
 
     [Fact]
@@ -325,6 +480,143 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
                 await upgradeFeature.UpgradeAsync();
             }
         }
+    }
+
+    [Fact]
+    public async Task Http2Connection_ServerShutdown_Graceful()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var getNotificationFeatureTcs = new TaskCompletionSource<IConnectionLifetimeNotificationFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var server = new TestServer(async context =>
+        {
+            getNotificationFeatureTcs.TrySetResult(context.Features.Get<IConnectionLifetimeNotificationFeature>());
+            await context.Response.BodyWriter.FlushAsync();
+            await tcs.Task;
+        },
+        new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
+        {
+            ShutdownTimeout = TimeSpan.FromSeconds(200)
+        },
+        listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        });
+
+        HttpResponseMessage responseMessage = null;
+        Stream responseStream = null;
+        using var connection = server.CreateConnection();
+        using var socketsHandler = new SocketsHttpHandler()
+        {
+            ConnectCallback = (_, _) =>
+            {
+                return new ValueTask<Stream>(connection.Stream);
+            }
+        };
+        using var httpClient = new HttpClient(socketsHandler);
+
+        try
+        {
+
+            var httpRequestMessage = new HttpRequestMessage()
+            {
+                RequestUri = new Uri("http://localhost/"),
+                Version = new Version(2, 0),
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+            };
+
+            responseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            responseMessage.EnsureSuccessStatusCode();
+            responseStream = await responseMessage.Content.ReadAsStreamAsync();
+        }
+        finally
+        {
+            var notificationFeature = await getNotificationFeatureTcs.Task.DefaultTimeout();
+
+            var shutdownTask = server.DisposeAsync();
+
+            var waitForConnectionCloseRequest = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            notificationFeature.ConnectionClosedRequested.Register(() =>
+            {
+                waitForConnectionCloseRequest.TrySetResult();
+            });
+
+            await waitForConnectionCloseRequest.Task.DefaultTimeout();
+            tcs.TrySetResult();
+
+            await responseStream.ReadUntilEndAsync().DefaultTimeout();
+            responseMessage.Dispose();
+
+            connection.Dispose();
+
+            await shutdownTask;
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2));
+    }
+
+    [Fact]
+    public async Task Http2Connection_ServerShutdown_Abort()
+    {
+        ThrowOnUngracefulShutdown = false;
+
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
+        {
+            ShutdownTimeout = TimeSpan.Zero,
+            MemoryPoolFactory = PinnedBlockMemoryPoolFactory.CreatePinnedBlockMemoryPool
+        };
+
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var server = new TestServer(async context =>
+        {
+            await context.Response.BodyWriter.FlushAsync();
+            await tcs.Task;
+        },
+        serviceContext,
+        listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        });
+
+        HttpResponseMessage responseMessage = null;
+        using var connection = server.CreateConnection();
+        connection.TransportConnection.ConnectionClosed.Register(() => tcs.TrySetResult());
+
+        using var socketsHandler = new SocketsHttpHandler()
+        {
+            ConnectCallback = (_, _) =>
+            {
+                return new ValueTask<Stream>(connection.Stream);
+            }
+        };
+
+        using var httpClient = new HttpClient(socketsHandler);
+
+        try
+        {
+            var httpRequestMessage = new HttpRequestMessage()
+            {
+                RequestUri = new Uri("http://localhost/"),
+                Version = new Version(2, 0),
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+            };
+
+            responseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).DefaultTimeout();
+            responseMessage.EnsureSuccessStatusCode();
+        }
+        finally
+        {
+            var shutdownTask = server.DisposeAsync().DefaultTimeout();
+
+            await shutdownTask;
+        }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => AssertDuration(m, "127.0.0.1", localPort: 0, "tcp", "ipv4", KestrelMetrics.Http2, error: KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown)));
     }
 
     [ConditionalFact]
@@ -529,7 +821,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("server.port"));
+            Assert.DoesNotContain("server.port", measurement.Tags.Keys);
         }
         if (networkType is not null)
         {
@@ -537,7 +829,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("network.type"));
+            Assert.DoesNotContain("network.type", measurement.Tags.Keys);
         }
         if (httpVersion is not null)
         {
@@ -546,8 +838,8 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("network.protocol.name"));
-            Assert.False(measurement.Tags.ContainsKey("network.protocol.version"));
+            Assert.DoesNotContain("network.protocol.name", measurement.Tags.Keys);
+            Assert.DoesNotContain("network.protocol.version", measurement.Tags.Keys);
         }
         if (tlsProtocolVersion is not null)
         {
@@ -555,7 +847,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("tls.protocol.version"));
+            Assert.DoesNotContain("tls.protocol.version", measurement.Tags.Keys);
         }
         if (error is not null)
         {
@@ -563,7 +855,14 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("error.type"));
+            try
+            {
+                Assert.DoesNotContain("error.type", measurement.Tags.Keys);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Connection has unexpected error.type value: {measurement.Tags["error.type"]}", ex);
+            }
         }
     }
 
@@ -578,7 +877,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("server.port"));
+            Assert.DoesNotContain("server.port", measurement.Tags.Keys);
         }
         if (networkType is not null)
         {
@@ -586,7 +885,7 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         }
         else
         {
-            Assert.False(measurement.Tags.ContainsKey("network.type"));
+            Assert.DoesNotContain("network.type", measurement.Tags.Keys);
         }
     }
 }
