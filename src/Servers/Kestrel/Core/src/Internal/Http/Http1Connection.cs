@@ -62,13 +62,15 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             _context.ServiceContext.Log,
             _context.TimeoutControl,
             minResponseDataRateFeature: this,
-            _context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>(),
+            ConnectionMetricsTagsFeature,
             outputAborter: this);
 
         Input = _context.Transport.Input;
         Output = _http1Output;
         MemoryPool = _context.MemoryPool;
     }
+
+    private IConnectionMetricsTagsFeature? ConnectionMetricsTagsFeature => _context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>();
 
     public PipeReader Input { get; }
 
@@ -132,6 +134,8 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// </summary>
     public void StopProcessingNextRequest(ConnectionEndReason reason)
     {
+        KestrelMetrics.AddConnectionEndReason(ConnectionMetricsTagsFeature, reason);
+
         _keepAlive = false;
         Input.CancelPendingRead();
     }

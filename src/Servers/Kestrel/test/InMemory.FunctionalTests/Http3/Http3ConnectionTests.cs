@@ -191,7 +191,7 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Null(await Http3Api.MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
 
         await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
+        Assert.DoesNotContain(KestrelMetrics.ErrorType, Http3Api.ConnectionTags.Keys);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.MultiplexedConnectionContext.Abort();
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
-        Assert.Equal(KestrelMetrics.GetErrorType(ConnectionEndReason.AppShutdown), Http3Api.ConnectionTags[KestrelMetrics.ErrorType]);
+        Assert.DoesNotContain(KestrelMetrics.ErrorType, Http3Api.ConnectionTags.Keys);
     }
 
     [Theory]

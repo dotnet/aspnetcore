@@ -104,11 +104,10 @@ internal abstract class Http1MessageBody : MessageBody
         }
         catch (InvalidOperationException ex)
         {
-            var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-            _context.ReportApplicationError(connectionAbortedException);
+            Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest(ConnectionEndReason.AbortedByApp);
+            _context.StopProcessingNextRequest(ConnectionEndReason.BodyReaderInvalidState);
         }
         finally
         {

@@ -1051,7 +1051,7 @@ public class RequestTests : TestApplicationErrorLoggerLoggedTest
             httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             readResult = await httpContext.Request.BodyReader.ReadAsync();
             Assert.Equal(5, readResult.Buffer.Length);
-
+            httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
         }, testContext))
         {
             using (var connection = server.CreateConnection())

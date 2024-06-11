@@ -36,11 +36,13 @@ internal enum ConnectionEndReason
     OutputQueueSizeExceeded,
     ClosedCriticalStream,
     AbortedByApp,
+    BodyReaderInvalidState,
     ServerTimeout,
     StreamCreationError,
     IOError,
     ClientGoAway,
     AppShutdown,
+    GracefulAppShutdown,
     TransportCompleted,
     TlsHandshakeFailed
 }
