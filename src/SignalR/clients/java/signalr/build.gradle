@@ -12,7 +12,7 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
 }
 
 allprojects {
@@ -22,7 +22,7 @@ allprojects {
     // If we're run from outside MSBuild, just assign a bogus dev version.
     version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
-    sourceCompatibility = 1.8
+    sourceCompatibility = 9
 
     repositories {
         mavenCentral()
