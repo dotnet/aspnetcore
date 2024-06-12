@@ -20,6 +20,10 @@ task sourceJar(type: Jar) {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
+
+    // Dismiss javadoc warnings about missing comments on public members
+    javadoc.options.addBooleanOption("Xdoclint:none", true)
+
     archiveClassifier = "javadoc"
     from javadoc.destinationDir
 }
