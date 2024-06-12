@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -18,14 +19,35 @@ internal sealed class OpenApiSchemaStore
     private readonly ConcurrentDictionary<OpenApiSchemaKey, JsonObject> _schemas = new()
     {
         // Pre-populate OpenAPI schemas for well-defined types in ASP.NET Core.
-        [new OpenApiSchemaKey(typeof(IFormFile), null)] = new JsonObject { ["type"] = "string", ["format"] = "binary" },
+        [new OpenApiSchemaKey(typeof(IFormFile), null)] = new JsonObject
+        {
+            ["type"] = "string",
+            ["format"] = "binary",
+            [OpenApiConstants.SchemaId] = "IFormFile"
+        },
         [new OpenApiSchemaKey(typeof(IFormFileCollection), null)] = new JsonObject
         {
             ["type"] = "array",
-            ["items"] = new JsonObject { ["type"] = "string", ["format"] = "binary" }
+            ["items"] = new JsonObject
+            {
+                ["type"] = "string",
+                ["format"] = "binary",
+                [OpenApiConstants.SchemaId] = "IFormFile"
+            },
+            [OpenApiConstants.SchemaId] = "IFormFileCollection"
         },
-        [new OpenApiSchemaKey(typeof(Stream), null)] = new JsonObject { ["type"] = "string", ["format"] = "binary" },
-        [new OpenApiSchemaKey(typeof(PipeReader), null)] = new JsonObject { ["type"] = "string", ["format"] = "binary" },
+        [new OpenApiSchemaKey(typeof(Stream), null)] = new JsonObject
+        {
+            ["type"] = "string",
+            ["format"] = "binary",
+            [OpenApiConstants.SchemaId] = "Stream"
+        },
+        [new OpenApiSchemaKey(typeof(PipeReader), null)] = new JsonObject
+        {
+            ["type"] = "string",
+            ["format"] = "binary",
+            [OpenApiConstants.SchemaId] = "PipeReader"
+        },
     };
 
     private readonly ConcurrentDictionary<OpenApiSchema, string?> _schemasWithReference = new(OpenApiSchemaComparer.Instance);
@@ -46,36 +68,54 @@ internal sealed class OpenApiSchemaStore
     /// used to populate the top-level components.schemas object. This method will
     /// unwrap the provided schema and add any child schemas to the global cache. Child
     /// schemas include those referenced in the schema.Items, schema.AdditionalProperties, or
-    /// schema.Properties collections. A unique identifier is generated for each schema
-    /// on the update step to avoid populating the cache with schemas that only appear once in
-    /// the document.
+    /// schema.Properties collections. Schema reference IDs are only set for schemas that have
+    /// been encountered more than once in the document to avoid unnecessarily capturing unique
+    /// schemas into the top-level document.
     /// </summary>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to add to the schemas-with-references cache.</param>
     public void PopulateSchemaIntoReferenceCache(OpenApiSchema schema)
     {
-        _schemasWithReference.AddOrUpdate(schema, (_) => null, (_, _) => Guid.NewGuid().ToString());
+        _schemasWithReference.AddOrUpdate(schema, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
         if (schema.AdditionalProperties is not null)
         {
-            _schemasWithReference.AddOrUpdate(schema.AdditionalProperties, (_) => null, (_, _) => Guid.NewGuid().ToString());
+            _schemasWithReference.AddOrUpdate(schema.AdditionalProperties, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
         }
         if (schema.Items is not null)
         {
-            _schemasWithReference.AddOrUpdate(schema.Items, (_) => null, (_, _) => Guid.NewGuid().ToString());
+            _schemasWithReference.AddOrUpdate(schema.Items, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
         }
         if (schema.AllOf is not null)
         {
             foreach (var allOfSchema in schema.AllOf)
             {
-                _schemasWithReference.AddOrUpdate(allOfSchema, (_) => null, (_, _) => Guid.NewGuid().ToString());
+                _schemasWithReference.AddOrUpdate(allOfSchema, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
+            }
+        }
+        if (schema.AnyOf is not null)
+        {
+            foreach (var anyOfSchema in schema.AnyOf)
+            {
+                _schemasWithReference.AddOrUpdate(anyOfSchema, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
             }
         }
         if (schema.Properties is not null)
         {
             foreach (var property in schema.Properties.Values)
             {
-                _schemasWithReference.AddOrUpdate(property, (_) => null, (_, _) => Guid.NewGuid().ToString());
+                _schemasWithReference.AddOrUpdate(property, (_) => null, (schema, _) => GetSchemaReferenceId(schema));
             }
         }
+    }
+
+    private static string GetSchemaReferenceId(OpenApiSchema schema)
+    {
+        if (schema.Extensions.TryGetValue(OpenApiConstants.SchemaId, out var referenceIdAny)
+            && referenceIdAny is OpenApiString { Value: string referenceId })
+        {
+            return referenceId;
+        }
+
+        throw new InvalidOperationException("The schema reference ID must be set on the schema.");
     }
 
     public ConcurrentDictionary<OpenApiSchema, string?> SchemasByReference => _schemasWithReference;

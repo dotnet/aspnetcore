@@ -79,10 +79,10 @@ internal sealed class OpenApiDocumentService(
             var transformer = _options.DocumentTransformers[i];
             await transformer.TransformAsync(document, documentTransformerContext, cancellationToken);
         }
-        // Remove `x-aspnetcore-id` extension from operations after all transformers have run.
-        await _scrubExtensionsTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
         // Move duplicated JSON schemas to the global components.schemas object and map references after all transformers have run.
         await _schemaReferenceTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
+        // Remove `x-aspnetcore-id` and `x-schema-id` extensions from operations after all transformers have run.
+        await _scrubExtensionsTransformer.TransformAsync(document, documentTransformerContext, cancellationToken);
     }
 
     // Note: Internal for testing.

@@ -14,10 +14,67 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransformer
 {
+    private readonly Dictionary<string, int> _referenceIdCounter = new();
+
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
         var schemaStore = context.ApplicationServices.GetRequiredKeyedService<OpenApiSchemaStore>(context.DocumentName);
         var schemasByReference = schemaStore.SchemasByReference;
+
+        document.Components ??= new OpenApiComponents();
+        document.Components.Schemas ??= new Dictionary<string, OpenApiSchema>();
+
+        foreach (var (schema, referenceId) in schemasByReference.OrderBy(kvp => kvp.Value))
+        {
+            // Reference IDs are only set for schemas that appear  more than once in the OpenAPI
+            // document and should be represented as references instead of inlined in the document.
+            if (referenceId is not null)
+            {
+                // Note: we create a copy of the schema here to avoid modifying the original schema
+                // so that comparisons between the original schema and the resolved schema during
+                // the transformation process are consistent.
+                var resolvedSchema = ResolveReferenceForSchema(new OpenApiSchema(schema), schemasByReference, skipResolution: true);
+                // If we've already used this reference ID else where in the document, increment a counter value to the reference
+                // ID to avoid name collisions. These collisions are most likely to occur when the same .NET type produces a different
+                // schema in the OpenAPI document because of special annotations provided on it. For example, in the two type definitions
+                // below:
+                // public class Todo
+                // {
+                //     public int Id { get; set; }
+                //     public string Name { get; set; }
+                // }
+                // public class Project
+                // {
+                //     public int Id { get; set; }
+                //     [MinLength(5)]
+                //     public string Title { get; set; }
+                // }
+                // The `Title` and `Name` properties are both strings but the `Title` property has a `minLength` annotation
+                // on it that will materialize into a different schema.
+                // {
+                //
+                //      "type": "string",
+                //      "minLength": 5
+                // }
+                // {
+                //      "type": "string"
+                // }
+                // In this case, although the reference ID  based on the .NET type we would use is `string`, the
+                // two schemas are distinct.
+                if (!document.Components.Schemas.TryAdd(referenceId, resolvedSchema))
+                {
+                    var counter = _referenceIdCounter[referenceId];
+                    _referenceIdCounter[referenceId] += 1;
+                    document.Components.Schemas.Add($"{referenceId}{counter}", resolvedSchema);
+                    schemasByReference[schema] = $"{referenceId}{counter}";
+                }
+                else
+                {
+                    _referenceIdCounter[referenceId] = 1;
+
+                }
+            }
+        }
 
         foreach (var pathItem in document.Paths.Values)
         {
@@ -56,17 +113,6 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
                         }
                     }
                 }
-            }
-        }
-
-        document.Components ??= new OpenApiComponents();
-        document.Components.Schemas ??= new Dictionary<string, OpenApiSchema>();
-
-        foreach (var (schema, referenceId) in schemasByReference.OrderBy(kvp => kvp.Value))
-        {
-            if (referenceId is not null)
-            {
-                document.Components.Schemas[referenceId] = ResolveReferenceForSchema(schema, schemasByReference, skipResolution: true);
             }
         }
 
@@ -137,7 +183,6 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
         {
             schema.Not = ResolveReferenceForSchema(schema.Not, schemasByReference);
         }
-
         return schema;
     }
 }

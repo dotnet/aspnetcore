@@ -17,7 +17,7 @@
                 "type": "object",
                 "properties": {
                   "resume": {
-                    "$ref": "#/components/schemas/a3557adb-bc64-4243-ad54-f48dcead08cf"
+                    "$ref": "#/components/schemas/IFormFile"
                   }
                 }
               },
@@ -50,7 +50,7 @@
                 "type": "object",
                 "properties": {
                   "files": {
-                    "$ref": "#/components/schemas/2a130426-7885-4e3e-a9d0-cc25e749c2c4"
+                    "$ref": "#/components/schemas/IFormFileCollection"
                   }
                 }
               },
@@ -86,7 +86,7 @@
                     "type": "object",
                     "properties": {
                       "resume": {
-                        "$ref": "#/components/schemas/a3557adb-bc64-4243-ad54-f48dcead08cf"
+                        "$ref": "#/components/schemas/IFormFile"
                       }
                     }
                   },
@@ -94,7 +94,7 @@
                     "type": "object",
                     "properties": {
                       "files": {
-                        "$ref": "#/components/schemas/2a130426-7885-4e3e-a9d0-cc25e749c2c4"
+                        "$ref": "#/components/schemas/IFormFileCollection"
                       }
                     }
                   }
@@ -126,7 +126,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/64d9d265-681d-406c-9ed4-45b24cba246e"
+                "$ref": "#/components/schemas/Todo"
               },
               "encoding": {
                 "multipart/form-data": {
@@ -137,7 +137,7 @@
             },
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/64d9d265-681d-406c-9ed4-45b24cba246e"
+                "$ref": "#/components/schemas/Todo"
               },
               "encoding": {
                 "application/x-www-form-urlencoded": {
@@ -168,13 +168,13 @@
                 "type": "object",
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/64d9d265-681d-406c-9ed4-45b24cba246e"
+                    "$ref": "#/components/schemas/Todo"
                   },
                   {
                     "type": "object",
                     "properties": {
                       "file": {
-                        "$ref": "#/components/schemas/a3557adb-bc64-4243-ad54-f48dcead08cf"
+                        "$ref": "#/components/schemas/IFormFile"
                       }
                     }
                   }
@@ -208,7 +208,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ebd68d78-03c3-4749-b0df-5378b1fc903a"
+              "$ref": "#/components/schemas/int"
             }
           },
           {
@@ -216,7 +216,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/59fe5d7e-ccb3-4651-882b-1d5995a4d0f4"
+              "$ref": "#/components/schemas/string1"
             }
           }
         ],
@@ -226,17 +226,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/9f4fb524-da71-49bb-9611-5c2734b4597c"
+                  "$ref": "#/components/schemas/string"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/9f4fb524-da71-49bb-9611-5c2734b4597c"
+                  "$ref": "#/components/schemas/string"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/9f4fb524-da71-49bb-9611-5c2734b4597c"
+                  "$ref": "#/components/schemas/string"
                 }
               }
             }
@@ -256,13 +256,13 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "$ref": "#/components/schemas/59fe5d7e-ccb3-4651-882b-1d5995a4d0f4"
+                    "$ref": "#/components/schemas/string1"
                   },
                   "Description": {
-                    "$ref": "#/components/schemas/59fe5d7e-ccb3-4651-882b-1d5995a4d0f4"
+                    "$ref": "#/components/schemas/string1"
                   },
                   "IsCompleted": {
-                    "$ref": "#/components/schemas/649e6d0e-0974-4050-85ab-1549ad6aa913"
+                    "$ref": "#/components/schemas/boolean"
                   }
                 }
               },
@@ -285,20 +285,35 @@
   },
   "components": {
     "schemas": {
-      "2a130426-7885-4e3e-a9d0-cc25e749c2c4": {
+      "boolean": {
+        "type": "boolean"
+      },
+      "DateTime": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
+      },
+      "IFormFileCollection": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/a3557adb-bc64-4243-ad54-f48dcead08cf"
+          "$ref": "#/components/schemas/IFormFile"
         }
       },
-      "59fe5d7e-ccb3-4651-882b-1d5995a4d0f4": {
+      "int": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "string": {
+        "type": "string"
+      },
+      "string1": {
         "minLength": 5,
         "type": "string"
       },
-      "649e6d0e-0974-4050-85ab-1549ad6aa913": {
-        "type": "boolean"
-      },
-      "64d9d265-681d-406c-9ed4-45b24cba246e": {
+      "Todo": {
         "required": [
           "id",
           "title",
@@ -308,33 +323,18 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/ebd68d78-03c3-4749-b0df-5378b1fc903a"
+            "$ref": "#/components/schemas/int"
           },
           "title": {
-            "$ref": "#/components/schemas/9f4fb524-da71-49bb-9611-5c2734b4597c"
+            "$ref": "#/components/schemas/string"
           },
           "completed": {
-            "$ref": "#/components/schemas/649e6d0e-0974-4050-85ab-1549ad6aa913"
+            "$ref": "#/components/schemas/boolean"
           },
           "createdAt": {
-            "$ref": "#/components/schemas/ff0058d0-c4f1-4595-93ce-138cef4d0ffc"
+            "$ref": "#/components/schemas/DateTime"
           }
         }
-      },
-      "9f4fb524-da71-49bb-9611-5c2734b4597c": {
-        "type": "string"
-      },
-      "a3557adb-bc64-4243-ad54-f48dcead08cf": {
-        "type": "string",
-        "format": "binary"
-      },
-      "ebd68d78-03c3-4749-b0df-5378b1fc903a": {
-        "type": "integer",
-        "format": "int32"
-      },
-      "ff0058d0-c4f1-4595-93ce-138cef4d0ffc": {
-        "type": "string",
-        "format": "date-time"
       }
     }
   },

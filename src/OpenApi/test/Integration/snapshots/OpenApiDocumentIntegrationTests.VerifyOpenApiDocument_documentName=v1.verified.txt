@@ -16,7 +16,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/f428dfbe-8f3f-4fde-9522-c7417768e8fb"
+              "$ref": "#/components/schemas/ArrayOfGuid"
             }
           },
           {
@@ -34,7 +34,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/f428dfbe-8f3f-4fde-9522-c7417768e8fb"
+                  "$ref": "#/components/schemas/ArrayOfGuid"
                 }
               }
             }
@@ -71,16 +71,16 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
+                    "$ref": "#/components/schemas/int"
                   },
                   "title": {
-                    "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
+                    "$ref": "#/components/schemas/string"
                   },
                   "completed": {
-                    "$ref": "#/components/schemas/5ca5a67f-8fa3-428b-913c-c9537cfad6f5"
+                    "$ref": "#/components/schemas/boolean"
                   },
                   "createdAt": {
-                    "$ref": "#/components/schemas/8c37f379-9055-41e8-8abb-5bb69f85117c"
+                    "$ref": "#/components/schemas/DateTime"
                   }
                 }
               }
@@ -107,7 +107,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
+              "$ref": "#/components/schemas/int"
             }
           },
           {
@@ -135,19 +135,19 @@
                   "type": "object",
                   "properties": {
                     "dueDate": {
-                      "$ref": "#/components/schemas/8c37f379-9055-41e8-8abb-5bb69f85117c"
+                      "$ref": "#/components/schemas/DateTime"
                     },
                     "id": {
-                      "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
+                      "$ref": "#/components/schemas/int"
                     },
                     "title": {
-                      "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
+                      "$ref": "#/components/schemas/string"
                     },
                     "completed": {
-                      "$ref": "#/components/schemas/5ca5a67f-8fa3-428b-913c-c9537cfad6f5"
+                      "$ref": "#/components/schemas/boolean"
                     },
                     "createdAt": {
-                      "$ref": "#/components/schemas/8c37f379-9055-41e8-8abb-5bb69f85117c"
+                      "$ref": "#/components/schemas/DateTime"
                     }
                   }
                 }
@@ -168,7 +168,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
+              "$ref": "#/components/schemas/int"
             }
           },
           {
@@ -176,7 +176,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3"
+              "$ref": "#/components/schemas/string1"
             }
           },
           {
@@ -194,17 +194,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
+                  "$ref": "#/components/schemas/string"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
+                  "$ref": "#/components/schemas/string"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
+                  "$ref": "#/components/schemas/string"
                 }
               }
             }
@@ -234,13 +234,13 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "$ref": "#/components/schemas/6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3"
+                    "$ref": "#/components/schemas/string1"
                   },
                   "Description": {
-                    "$ref": "#/components/schemas/6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3"
+                    "$ref": "#/components/schemas/string1"
                   },
                   "IsCompleted": {
-                    "$ref": "#/components/schemas/5ca5a67f-8fa3-428b-913c-c9537cfad6f5"
+                    "$ref": "#/components/schemas/boolean"
                   }
                 }
               },
@@ -263,33 +263,33 @@
   },
   "components": {
     "schemas": {
-      "57a98a68-509a-4f81-bb7d-219ba669527e": {
-        "type": "string"
+      "ArrayOfGuid": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Guid"
+        }
       },
-      "5ca5a67f-8fa3-428b-913c-c9537cfad6f5": {
+      "boolean": {
         "type": "boolean"
       },
-      "6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3": {
-        "minLength": 5,
-        "type": "string"
-      },
-      "766ab270-8249-4cc2-b011-89d948b951c9": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "8c37f379-9055-41e8-8abb-5bb69f85117c": {
+      "DateTime": {
         "type": "string",
         "format": "date-time"
       },
-      "ef4eaa9c-faba-4fe1-9772-27214c624406": {
+      "Guid": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "int": {
         "type": "integer",
         "format": "int32"
       },
-      "f428dfbe-8f3f-4fde-9522-c7417768e8fb": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/766ab270-8249-4cc2-b011-89d948b951c9"
-        }
+      "string": {
+        "type": "string"
+      },
+      "string1": {
+        "minLength": 5,
+        "type": "string"
       }
     },
     "securitySchemes": {

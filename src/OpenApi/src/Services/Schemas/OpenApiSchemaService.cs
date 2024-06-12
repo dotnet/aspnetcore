@@ -76,7 +76,8 @@ internal sealed class OpenApiSchemaService(
                     [OpenApiSchemaKeywords.FormatKeyword] = "binary"
                 };
             }
-            schema.ApplyPrimitiveTypesAndFormats(type);
+            schema.ApplyPrimitiveTypesAndFormats(context);
+            schema.ApplySchemaReferenceId(context);
             if (context.GetCustomAttributes(typeof(ValidationAttribute)) is { } validationAttributes)
             {
                 schema.ApplyValidationAttributes(validationAttributes);

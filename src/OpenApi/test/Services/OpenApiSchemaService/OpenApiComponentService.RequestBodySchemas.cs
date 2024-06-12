@@ -174,15 +174,11 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
                 var operation = document.Paths[$"/{path}"].Operations[OperationType.Post];
                 var requestBody = operation.RequestBody;
 
-                var effectiveSchema = requestBody.Content["application/octet-stream"].Schema.GetEffective(document);
+                var effectiveSchema = requestBody.Content["application/octet-stream"].Schema;
 
                 Assert.Equal("string", effectiveSchema.Type);
                 Assert.Equal("binary", effectiveSchema.Format);
             }
-
-            var schema = Assert.Single(document.Components.Schemas);
-            Assert.Equal("string", schema.Value.Type);
-            Assert.Equal("binary", schema.Value.Format);
         });
     }
 
