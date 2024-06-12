@@ -73,6 +73,12 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Resolves the provided schema into a reference if it is found in the schemas-by-reference cache.
+    /// </summary>
+    /// <param name="schema">The inline schema to replace with a reference.</param>
+    /// <param name="schemasByReference">A cache of schemas and their associated reference IDs.</param>
+    /// <param name="skipResolution">When <see langword="true" />, will skip resolving references for the top-most schema provided.</param>
     internal static OpenApiSchema? ResolveReferenceForSchema(OpenApiSchema? schema, ConcurrentDictionary<OpenApiSchema, string?> schemasByReference, bool skipResolution = false)
     {
         if (schema is null)
@@ -85,7 +91,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
             return new OpenApiSchema { Reference = new OpenApiReference { Type = ReferenceType.Schema, Id = referenceId } };
         }
 
-        if (schema.AllOf != null)
+        if (schema.AllOf is not null)
         {
             for (var i = 0; i < schema.AllOf.Count; i++)
             {
@@ -93,7 +99,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
             }
         }
 
-        if (schema.OneOf != null)
+        if (schema.OneOf is not null)
         {
             for (var i = 0; i < schema.OneOf.Count; i++)
             {
@@ -101,7 +107,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
             }
         }
 
-        if (schema.AnyOf != null)
+        if (schema.AnyOf is not null)
         {
             for (var i = 0; i < schema.AnyOf.Count; i++)
             {
@@ -119,7 +125,7 @@ internal sealed class OpenApiSchemaReferenceTransformer : IOpenApiDocumentTransf
             schema.Items = ResolveReferenceForSchema(schema.Items, schemasByReference);
         }
 
-        if (schema.Properties != null)
+        if (schema.Properties is not null)
         {
             foreach (var property in schema.Properties)
             {

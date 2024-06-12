@@ -21,6 +21,10 @@ internal sealed class OpenApiSchemaComparer : IEqualityComparer<OpenApiSchema>
         {
             return false;
         }
+        if (object.ReferenceEquals(x, y))
+        {
+            return true;
+        }
 
         return GetHashCode(x) == GetHashCode(y);
     }

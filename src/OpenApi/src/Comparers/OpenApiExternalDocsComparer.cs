@@ -16,10 +16,13 @@ internal sealed class OpenApiExternalDocsComparer : IEqualityComparer<OpenApiExt
         {
             return true;
         }
-
         if (x is null || y is null)
         {
             return false;
+        }
+        if (object.ReferenceEquals(x, y))
+        {
+            return true;
         }
 
         return GetHashCode(x) == GetHashCode(y);

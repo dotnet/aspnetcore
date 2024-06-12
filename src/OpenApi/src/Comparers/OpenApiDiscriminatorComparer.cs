@@ -19,6 +19,10 @@ internal sealed class OpenApiDiscriminatorComparer : IEqualityComparer<OpenApiDi
         {
             return false;
         }
+        if (object.ReferenceEquals(x, y))
+        {
+            return true;
+        }
 
         return GetHashCode(x) == GetHashCode(y);
     }

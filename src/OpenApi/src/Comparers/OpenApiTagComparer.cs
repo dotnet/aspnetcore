@@ -23,6 +23,11 @@ internal sealed class OpenApiTagComparer : IEqualityComparer<OpenApiTag>
         {
             return false;
         }
+        if (object.ReferenceEquals(x, y))
+        {
+            return true;
+        }
+
         // Tag comparisons are case-sensitive by default. Although the OpenAPI specification
         // only outlines case sensitivity for property names, we extend this principle to
         // property values for tag names as well.

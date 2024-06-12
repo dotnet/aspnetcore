@@ -16,7 +16,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/bf441cfa-dc1c-404c-93e8-e047179b836a"
+              "$ref": "#/components/schemas/f428dfbe-8f3f-4fde-9522-c7417768e8fb"
             }
           },
           {
@@ -34,7 +34,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/bf441cfa-dc1c-404c-93e8-e047179b836a"
+                  "$ref": "#/components/schemas/f428dfbe-8f3f-4fde-9522-c7417768e8fb"
                 }
               }
             }
@@ -71,16 +71,16 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
+                    "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
                   },
                   "title": {
-                    "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
+                    "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
                   },
                   "completed": {
-                    "$ref": "#/components/schemas/1a86c17b-a912-4967-8b2c-90cf219288a9"
+                    "$ref": "#/components/schemas/5ca5a67f-8fa3-428b-913c-c9537cfad6f5"
                   },
                   "createdAt": {
-                    "$ref": "#/components/schemas/35c7234b-f326-4638-a6ce-d78344728101"
+                    "$ref": "#/components/schemas/8c37f379-9055-41e8-8abb-5bb69f85117c"
                   }
                 }
               }
@@ -107,7 +107,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
+              "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
             }
           },
           {
@@ -135,19 +135,19 @@
                   "type": "object",
                   "properties": {
                     "dueDate": {
-                      "$ref": "#/components/schemas/35c7234b-f326-4638-a6ce-d78344728101"
+                      "$ref": "#/components/schemas/8c37f379-9055-41e8-8abb-5bb69f85117c"
                     },
                     "id": {
-                      "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
+                      "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
                     },
                     "title": {
-                      "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
+                      "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
                     },
                     "completed": {
-                      "$ref": "#/components/schemas/1a86c17b-a912-4967-8b2c-90cf219288a9"
+                      "$ref": "#/components/schemas/5ca5a67f-8fa3-428b-913c-c9537cfad6f5"
                     },
                     "createdAt": {
-                      "$ref": "#/components/schemas/35c7234b-f326-4638-a6ce-d78344728101"
+                      "$ref": "#/components/schemas/8c37f379-9055-41e8-8abb-5bb69f85117c"
                     }
                   }
                 }
@@ -168,7 +168,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/727d67af-5131-4af1-b143-3bf3aa18bd79"
+              "$ref": "#/components/schemas/ef4eaa9c-faba-4fe1-9772-27214c624406"
             }
           },
           {
@@ -176,7 +176,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/5b328dbb-e2cb-49f9-98d2-3f3233f5abd2"
+              "$ref": "#/components/schemas/6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3"
             }
           },
           {
@@ -194,17 +194,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
+                  "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
+                  "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/f0608843-1a0c-47dd-add2-f785048742fa"
+                  "$ref": "#/components/schemas/57a98a68-509a-4f81-bb7d-219ba669527e"
                 }
               }
             }
@@ -234,13 +234,13 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "$ref": "#/components/schemas/5b328dbb-e2cb-49f9-98d2-3f3233f5abd2"
+                    "$ref": "#/components/schemas/6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3"
                   },
                   "Description": {
-                    "$ref": "#/components/schemas/5b328dbb-e2cb-49f9-98d2-3f3233f5abd2"
+                    "$ref": "#/components/schemas/6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3"
                   },
                   "IsCompleted": {
-                    "$ref": "#/components/schemas/1a86c17b-a912-4967-8b2c-90cf219288a9"
+                    "$ref": "#/components/schemas/5ca5a67f-8fa3-428b-913c-c9537cfad6f5"
                   }
                 }
               },
@@ -263,33 +263,33 @@
   },
   "components": {
     "schemas": {
-      "09854117-8d70-4256-b885-9ac9711a4754": {
-        "type": "string",
-        "format": "uuid"
+      "57a98a68-509a-4f81-bb7d-219ba669527e": {
+        "type": "string"
       },
-      "1a86c17b-a912-4967-8b2c-90cf219288a9": {
+      "5ca5a67f-8fa3-428b-913c-c9537cfad6f5": {
         "type": "boolean"
       },
-      "35c7234b-f326-4638-a6ce-d78344728101": {
-        "type": "string",
-        "format": "date-time"
-      },
-      "5b328dbb-e2cb-49f9-98d2-3f3233f5abd2": {
+      "6c9029e9-73e8-4c85-9ba0-dcac0aeac2d3": {
         "minLength": 5,
         "type": "string"
       },
-      "727d67af-5131-4af1-b143-3bf3aa18bd79": {
+      "766ab270-8249-4cc2-b011-89d948b951c9": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "8c37f379-9055-41e8-8abb-5bb69f85117c": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "ef4eaa9c-faba-4fe1-9772-27214c624406": {
         "type": "integer",
         "format": "int32"
       },
-      "bf441cfa-dc1c-404c-93e8-e047179b836a": {
+      "f428dfbe-8f3f-4fde-9522-c7417768e8fb": {
         "type": "array",
         "items": {
-          "$ref": "#/components/schemas/09854117-8d70-4256-b885-9ac9711a4754"
+          "$ref": "#/components/schemas/766ab270-8249-4cc2-b011-89d948b951c9"
         }
-      },
-      "f0608843-1a0c-47dd-add2-f785048742fa": {
-        "type": "string"
       }
     },
     "securitySchemes": {

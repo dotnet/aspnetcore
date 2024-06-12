@@ -25,7 +25,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
+                    "$ref": "#/components/schemas/e59233cc-7558-4372-b87f-069434e1261e"
                   }
                 }
               }
@@ -64,7 +64,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/54217b56-3bf2-46ff-b14c-1b8309df8fde"
+              "$ref": "#/components/schemas/2dbc5935-d1cb-4ccd-9723-bd899adfe81b"
             }
           }
         ],
@@ -74,17 +74,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
+                  "$ref": "#/components/schemas/e59233cc-7558-4372-b87f-069434e1261e"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
+                  "$ref": "#/components/schemas/e59233cc-7558-4372-b87f-069434e1261e"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/47ba0817-b436-4155-b6b2-f276bbe04270"
+                  "$ref": "#/components/schemas/e59233cc-7558-4372-b87f-069434e1261e"
                 }
               }
             }
@@ -104,10 +104,10 @@
                 "type": "object",
                 "properties": {
                   "Title": {
-                    "$ref": "#/components/schemas/54217b56-3bf2-46ff-b14c-1b8309df8fde"
+                    "$ref": "#/components/schemas/2dbc5935-d1cb-4ccd-9723-bd899adfe81b"
                   },
                   "Description": {
-                    "$ref": "#/components/schemas/54217b56-3bf2-46ff-b14c-1b8309df8fde"
+                    "$ref": "#/components/schemas/2dbc5935-d1cb-4ccd-9723-bd899adfe81b"
                   },
                   "IsCompleted": {
                     "type": "boolean"
@@ -133,11 +133,11 @@
   },
   "components": {
     "schemas": {
-      "47ba0817-b436-4155-b6b2-f276bbe04270": {
+      "2dbc5935-d1cb-4ccd-9723-bd899adfe81b": {
+        "minLength": 5,
         "type": "string"
       },
-      "54217b56-3bf2-46ff-b14c-1b8309df8fde": {
-        "minLength": 5,
+      "e59233cc-7558-4372-b87f-069434e1261e": {
         "type": "string"
       }
     }

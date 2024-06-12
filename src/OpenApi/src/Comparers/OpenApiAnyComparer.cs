@@ -19,6 +19,10 @@ internal sealed class OpenApiAnyComparer : IEqualityComparer<IOpenApiAny>
         {
             return false;
         }
+        if (object.ReferenceEquals(x, y))
+        {
+            return true;
+        }
 
         return GetHashCode(x) == GetHashCode(y);
     }
