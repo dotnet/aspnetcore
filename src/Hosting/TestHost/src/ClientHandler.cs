@@ -135,6 +135,12 @@ public class ClientHandler : HttpMessageHandler
                         canHaveBody = false;
                     }
                 }
+                else
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.2-2
+                    // A sender MUST NOT send a Content-Length header field in any message that contains a Transfer-Encoding header field.
+                    requestContent.Headers.Remove(HeaderNames.ContentLength);
+                }
 
                 foreach (var header in requestContent.Headers)
                 {
