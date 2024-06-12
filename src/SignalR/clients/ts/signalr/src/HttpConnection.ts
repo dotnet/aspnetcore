@@ -444,8 +444,22 @@ export class HttpConnection implements IConnection {
                 if (this.features.reconnect) {
                     try {
                         this.features.disconnected();
-                        await this.transport!.connect(url, transferFormat);
-                        await this.features.resend();
+                        let error;
+                        for (let i = 0; i < 3; i++) {
+                            try {
+                                await this.transport!.connect(url, transferFormat);
+                                error = undefined;
+                                break;
+                            } catch (ex) {
+                                error = ex;
+                            }
+                        }
+
+                        if (error) {
+                            callStop = true;
+                        } else {
+                            await this.features.resend();
+                        }
                     } catch {
                         callStop = true;
                     }

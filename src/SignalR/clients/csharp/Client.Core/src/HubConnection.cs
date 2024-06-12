@@ -2085,7 +2085,7 @@ public partial class HubConnection : IAsyncDisposable
             {
                 if (!_messageBuffer.ShouldProcessMessage(message))
                 {
-                    Log.DroppingMessage(_logger, ((HubInvocationMessage)message).GetType().Name, ((HubInvocationMessage)message).InvocationId);
+                    Log.DroppingMessage(_logger, message.GetType().Name, (message as HubInvocationMessage)?.InvocationId ?? "(null}");
                     return false;
                 }
             }
@@ -2171,7 +2171,6 @@ public partial class HubConnection : IAsyncDisposable
         {
             if (!TryGetInvocation(invocationId, out var irq))
             {
-                Log.ReceivedUnexpectedResponse(_logger, invocationId);
                 throw new KeyNotFoundException($"No invocation with id '{invocationId}' could be found.");
             }
             return irq.ResultType;
@@ -2183,7 +2182,6 @@ public partial class HubConnection : IAsyncDisposable
             // literally the same code as the above method
             if (!TryGetInvocation(invocationId, out var irq))
             {
-                Log.ReceivedUnexpectedResponse(_logger, invocationId);
                 throw new KeyNotFoundException($"No invocation with id '{invocationId}' could be found.");
             }
             return irq.ResultType;
