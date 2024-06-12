@@ -190,8 +190,6 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
         {
             _missingManifestCache.TryAdd(cacheKey, null);
 
-            Log.ResourceNotFound(_logger, name);
-
             return null;
         }
     }
@@ -240,8 +238,5 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
 
         [LoggerMessage(2, LogLevel.Debug, $"A resource for '{{Key}}' with culture '{{Culture}}' was not found.", EventName = "ResourceNotFound")]
         public static partial void ResourceNotFound(ILogger logger, string key);
-
-        [LoggerMessage(3, LogLevel.Debug, $"The resource with key '{{Key}}' is found.", EventName = "ResourceFound")]
-        public static partial void ResourceFound(ILogger logger, string key);
     }
 }
