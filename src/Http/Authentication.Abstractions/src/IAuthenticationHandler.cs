@@ -18,19 +18,19 @@ public interface IAuthenticationHandler
     Task InitializeAsync(AuthenticationScheme scheme, HttpContext context);
 
     /// <summary>
-    /// Authenticate the request associated with the <see cref="HttpContext"/> passed to the InitializeAsync method.
+    /// Authenticate the current request using the <see cref="HttpContext"/> passed to the <see cref="InitializeAsync"/> method.
     /// </summary>
     /// <returns>The <see cref="AuthenticateResult"/> result.</returns>
     Task<AuthenticateResult> AuthenticateAsync();
 
     /// <summary>
-    /// Challenge the request associated with the <see cref="HttpContext"/> passed to the InitializeAsync method.
+    /// Challenge the current request using the <see cref="HttpContext"/> passed to the <see cref="InitializeAsync"/> method.
     /// </summary>
     /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
     Task ChallengeAsync(AuthenticationProperties? properties);
 
     /// <summary>
-    /// Forbid the request associated with the <see cref="HttpContext"/> passed to the InitializeAsync method.
+    /// Forbid the current request using the <see cref="HttpContext"/> passed to the <see cref="InitializeAsync"/> method.
     /// </summary>
     /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
     Task ForbidAsync(AuthenticationProperties? properties);
