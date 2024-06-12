@@ -420,11 +420,19 @@ public class ScriptTagHelper : UrlResolutionTagHelper
                 }
                 if (pathBase.HasValue && srcValue.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
                 {
-                    var relativePath = srcValue[pathBase.Value.Length..];
+                    var length = pathBase.Value.EndsWith('/') ? pathBase.Value.Length : pathBase.Value.Length + 1;
+                    var relativePath = srcValue[length..];
                     src = assetCollection[relativePath];
                     if (!string.Equals(src, relativePath, StringComparison.Ordinal))
                     {
-                        return src;
+                        if (pathBase.Value.EndsWith('/'))
+                        {
+                            return $"{pathBase}{src}";
+                        }
+                        else
+                        {
+                            return $"{pathBase}/{src}";
+                        }
                     }
                 }
             }
