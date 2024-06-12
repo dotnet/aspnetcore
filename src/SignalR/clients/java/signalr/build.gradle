@@ -23,7 +23,7 @@ allprojects {
     version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
     // https://docs.gradle.org/current/javadoc/org/gradle/api/JavaVersion.html
-    sourceCompatibility = 11
+    sourceCompatibility = 1.9
 
     repositories {
         mavenCentral()
