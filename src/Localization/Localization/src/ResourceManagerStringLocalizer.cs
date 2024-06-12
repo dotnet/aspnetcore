@@ -175,11 +175,7 @@ public partial class ResourceManagerStringLocalizer : IStringLocalizer
         {
             var value = _resourceManager.GetString(name, culture);
 
-            if (name == value)
-            {
-                Log.ResourceFound(_logger, name);
-            }
-            else
+            if (name != value)
             {
                 Log.ResourceNotFound(_logger, name);
             }
