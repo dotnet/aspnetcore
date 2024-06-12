@@ -413,15 +413,24 @@ public class ScriptTagHelper : UrlResolutionTagHelper
             if (assetCollection != null)
             {
                 var value = srcValue.StartsWith('/') ? srcValue[1..] : srcValue;
+                if (assetCollection.IsContentSpecificUrl(value))
+                {
+                    return srcValue;
+                }
                 var src = assetCollection[value];
                 if (!string.Equals(src, value, StringComparison.Ordinal))
                 {
                     return srcValue.StartsWith('/') ? $"/{src}" : src;
                 }
+
                 if (pathBase.HasValue && srcValue.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
                 {
                     var length = pathBase.Value.EndsWith('/') ? pathBase.Value.Length : pathBase.Value.Length + 1;
                     var relativePath = srcValue[length..];
+                    if (assetCollection.IsContentSpecificUrl(relativePath))
+                    {
+                        return srcValue;
+                    }
                     src = assetCollection[relativePath];
                     if (!string.Equals(src, relativePath, StringComparison.Ordinal))
                     {

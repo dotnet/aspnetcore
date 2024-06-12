@@ -16,6 +16,7 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
     public static readonly ResourceAssetCollection Empty = new([]);
 
     private readonly Dictionary<string, ResourceAsset> _uniqueUrlMappings;
+    private readonly HashSet<string> _contentSpecificUrls;
     private readonly IReadOnlyList<ResourceAsset> _resources;
 
     /// <summary>
@@ -25,6 +26,7 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
     public ResourceAssetCollection(IReadOnlyList<ResourceAsset> resources)
     {
         _uniqueUrlMappings = new Dictionary<string, ResourceAsset>(StringComparer.OrdinalIgnoreCase);
+        _contentSpecificUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         _resources = resources;
         foreach (var resource in resources)
         {
@@ -33,6 +35,7 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
                 if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                 {
                     _uniqueUrlMappings[property.Value] = resource;
+                    _contentSpecificUrls.Add(resource.Url);
                 }
             }
         }
@@ -54,6 +57,16 @@ public sealed class ResourceAssetCollection : IReadOnlyList<ResourceAsset>
 
             return key;
         }
+    }
+
+    /// <summary>
+    /// Determines whether the specified path is a content-specific URL.
+    /// </summary>
+    /// <param name="path">The path to check.</param>
+    /// <returns><c>true</c> if the path is a content-specific URL; otherwise, <c>false</c>.</returns>
+    public bool IsContentSpecificUrl(string path)
+    {
+        return _contentSpecificUrls.Contains(path);
     }
 
     ResourceAsset IReadOnlyList<ResourceAsset>.this[int index] => _resources[index];

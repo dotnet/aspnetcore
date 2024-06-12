@@ -666,22 +666,34 @@ public class ScriptTagHelperTest
         Assert.Equal("/js/site.fingerprint.js", output.Attributes["src"].Value);
     }
 
-    [Fact]
-    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection()
+    [Theory]
+    [InlineData("~/js/site.js")]
+    [InlineData("/approot/js/site.js")]
+    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection(string path)
     {
         // Arrange
         var context = MakeTagHelperContext(
             attributes: new TagHelperAttributeList
             {
-                    new TagHelperAttribute("src", "/approot/js/site.js"),
+                    new TagHelperAttribute("src", path),
                     new TagHelperAttribute("asp-append-version", "true")
             });
         var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
-        var helper = GetHelper();
+        var urlHelperFactory = MakeUrlHelperFactory(value =>
+        {
+            if (value.StartsWith("~/", StringComparison.Ordinal))
+            {
+                return value.Replace("~/", "/approot/");
+            }
+
+            return value;
+        });
+
+        var helper = GetHelper(urlHelperFactory: urlHelperFactory);
         helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
         helper.ViewContext.HttpContext.Request.PathBase = "/approot";
-        helper.Src = "/approot/js/site.js";
+        helper.Src = path;
         helper.AppendVersion = true;
 
         // Act
@@ -1103,13 +1115,13 @@ public class ScriptTagHelperTest
         return hostingEnvironment.Object;
     }
 
-    private static IUrlHelperFactory MakeUrlHelperFactory()
+    private static IUrlHelperFactory MakeUrlHelperFactory(Func<string, string> urlResolver = null)
     {
         var urlHelper = new Mock<IUrlHelper>();
-
+        urlResolver ??= (url) => url;
         urlHelper
             .Setup(helper => helper.Content(It.IsAny<string>()))
-            .Returns(new Func<string, string>(url => url));
+            .Returns(new Func<string, string>(urlResolver));
 
         var urlHelperFactory = new Mock<IUrlHelperFactory>();
         urlHelperFactory

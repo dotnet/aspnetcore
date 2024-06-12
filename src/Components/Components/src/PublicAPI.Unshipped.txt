@@ -16,6 +16,7 @@ Microsoft.AspNetCore.Components.ResourceAsset.Properties.get -> System.Collectio
 Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 Microsoft.AspNetCore.Components.ResourceAsset.Url.get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetCollection
+Microsoft.AspNetCore.Components.ResourceAssetCollection.IsContentSpecificUrl(string! path) -> bool
 Microsoft.AspNetCore.Components.ResourceAssetCollection.ResourceAssetCollection(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAsset!>! resources) -> void
 Microsoft.AspNetCore.Components.ResourceAssetCollection.this[string! key].get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetProperty
