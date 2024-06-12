@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -638,6 +638,43 @@ public class ScriptTagHelperTest
         Assert.Equal("/js/site.js?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", output.Attributes["src"].Value);
     }
 
+    [Theory]
+    [InlineData("~/js/site.js")]
+    [InlineData("/js/site.js")]
+    [InlineData("js/site.js")]
+    public void RenderScriptTags_WithFileVersion_UsingResourceCollection(string src)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-append-version", "true")
+            });
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        helper.Src = src;
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName);
+        Assert.Equal("/js/site.fingerprint.js", output.Attributes["src"].Value);
+    }
+
+    private Endpoint CreateEndpoint()
+    {
+        return new Endpoint(
+            (context) => Task.CompletedTask,
+            new EndpointMetadataCollection(
+                [new ResourceAssetCollection([new("js/site.fingerprint.js", [new ResourceAssetProperty("label", "js/site.js")])])]),
+            "Test");
+    }
+
     [Fact]
     public void RenderScriptTags_WithFileVersion_AndRequestPathBase()
     {
@@ -823,10 +860,10 @@ public class ScriptTagHelperTest
 
     private static ViewContext MakeViewContext(string requestPathBase = null)
     {
-        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        var actionContext = new ActionContext(new DefaultHttpContext(), new AspNetCore.Routing.RouteData(), new ActionDescriptor());
         if (requestPathBase != null)
         {
-            actionContext.HttpContext.Request.PathBase = new Http.PathString(requestPathBase);
+            actionContext.HttpContext.Request.PathBase = new PathString(requestPathBase);
         }
 
         var metadataProvider = new EmptyModelMetadataProvider();

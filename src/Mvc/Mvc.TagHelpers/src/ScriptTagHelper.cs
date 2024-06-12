@@ -412,10 +412,11 @@ public class ScriptTagHelper : UrlResolutionTagHelper
             var pathBase = ViewContext.HttpContext.Request.PathBase;
             if (assetCollection != null)
             {
-                var src = assetCollection[srcValue];
-                if (!string.Equals(src, srcValue, StringComparison.Ordinal))
+                var value = srcValue.StartsWith('/') ? srcValue[1..] : srcValue;
+                var src = assetCollection[value];
+                if (!string.Equals(src, value, StringComparison.Ordinal))
                 {
-                    return src;
+                    return srcValue.StartsWith('/') ? $"/{src}" : src;
                 }
                 if (pathBase.HasValue && srcValue.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
                 {

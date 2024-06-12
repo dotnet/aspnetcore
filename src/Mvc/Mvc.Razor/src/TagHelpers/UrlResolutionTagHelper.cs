@@ -310,24 +310,29 @@ public class UrlResolutionTagHelper : TagHelper
         var assetCollection = GetAssetCollection();
         if (assetCollection != null)
         {
-            var src = assetCollection[value];
-            if (!string.Equals(src, value, StringComparison.Ordinal))
+            var (key, remainder) = ExtractKeyAndRest(value);
+
+            var src = assetCollection[key];
+            if (!string.Equals(src, key, StringComparison.Ordinal))
             {
-                return src;
-            }
-            var pathBase = ViewContext.HttpContext.Request.PathBase;
-            if (pathBase.HasValue && value.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
-            {
-                var relativePath = value[pathBase.Value.Length..];
-                src = assetCollection[relativePath];
-                if (!string.Equals(src, relativePath, StringComparison.Ordinal))
-                {
-                    return src;
-                }
+                return $"~/{src}{value[remainder..]}";
             }
         }
 
         return value;
+
+        static (string key, int rest) ExtractKeyAndRest(string value)
+        {
+            var lastNonWhitespaceChar = value.AsSpan().TrimEnd().LastIndexOfAnyExcept(ValidAttributeWhitespaceChars);
+            var keyEnd = lastNonWhitespaceChar > -1 ? lastNonWhitespaceChar + 1 : value.Length;
+            var key = value.AsSpan();
+            if (key.StartsWith("~/", StringComparison.Ordinal))
+            {
+                key = value.AsSpan()[2..keyEnd].Trim();
+            }
+
+            return (key.ToString(), keyEnd);
+        }
     }
 
     private ResourceAssetCollection? GetAssetCollection()
