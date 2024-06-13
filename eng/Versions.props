@@ -116,6 +116,7 @@
     <SystemIOPipelinesVersion>9.0.0-preview.6.24307.2</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>9.0.0-preview.6.24307.2</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>9.0.0-preview.6.24307.2</SystemNetHttpWinHttpHandlerVersion>
+    <SystemNetServerSentEventsVersion>9.0.0-preview.6.24307.2</SystemNetServerSentEventsVersion>
     <SystemReflectionMetadataVersion>9.0.0-preview.6.24307.2</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>9.0.0-preview.6.24307.2</SystemResourcesExtensionsVersion>
     <SystemSecurityCryptographyPkcsVersion>9.0.0-preview.6.24307.2</SystemSecurityCryptographyPkcsVersion>

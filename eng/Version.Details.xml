@@ -218,6 +218,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>8fac5af2b11dc98fa0504f6fd06df790164ec958</Sha>
     </Dependency>
+    <Dependency Name="System.Net.ServerSentEvents" Version="9.0.0-preview.6.24307.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>8fac5af2b11dc98fa0504f6fd06df790164ec958</Sha>
+    </Dependency>
     <Dependency Name="System.Reflection.Metadata" Version="9.0.0-preview.6.24307.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>8fac5af2b11dc98fa0504f6fd06df790164ec958</Sha>

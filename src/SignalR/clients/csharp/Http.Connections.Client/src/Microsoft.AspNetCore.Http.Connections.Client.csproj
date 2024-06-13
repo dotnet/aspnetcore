@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Net.ServerSentEvents" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
