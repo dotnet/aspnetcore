@@ -76,7 +76,7 @@ internal sealed class OpenApiSchemaService(
         var schemaAsJsonObject = _schemaStore.GetOrAdd(key, CreateSchema);
         if (parameterDescription is not null)
         {
-            schemaAsJsonObject.ApplyParameterInfo(parameterDescription, OpenApiJsonSchemaContext.Default.GetTypeInfo(type));
+            schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
         }
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, OpenApiJsonSchemaContext.Default.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
