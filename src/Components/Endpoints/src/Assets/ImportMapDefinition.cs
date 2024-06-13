@@ -75,7 +75,7 @@ public sealed class ImportMapDefinition
             if (label != null)
             {
                 importMap._imports ??= [];
-                importMap._imports[label] = asset.Url;
+                importMap._imports[$"./{label}"] = $"./{asset.Url}";
             }
         }
 

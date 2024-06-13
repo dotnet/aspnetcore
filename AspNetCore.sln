@@ -1816,7 +1816,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocumentInsider.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocumentSample", "src\Tools\GetDocumentInsider\sample\GetDocumentSample.csproj", "{D8F7091E-A2D1-4E81-BA7C-97EAE392D683}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorUnitedApp.Client", "src\Components\Samples\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj", "{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorUnitedApp.Client", "src\Components\Samples\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj", "{757CBDE0-5D0A-4FD8-99F3-6C20BDDD4E63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
