@@ -137,6 +137,28 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_RespectsRequiredAttributeOnBodyProperties()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/required-properties", () => new RequiredTodo { Title = "Test Title", Completed = true });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
+            var response = operation.Responses["200"];
+            var content = Assert.Single(response.Content);
+            var schema = content.Value.Schema;
+            Assert.Collection(schema.Required,
+                property => Assert.Equal("title", property),
+                property => Assert.Equal("completed", property));
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_HandlesInheritedTypeResponse()
     {
         // Arrange

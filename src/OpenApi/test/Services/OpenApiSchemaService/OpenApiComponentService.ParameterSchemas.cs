@@ -344,6 +344,31 @@ public partial class OpenApiComponentServiceTests : OpenApiDocumentServiceTestBa
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesParametersWithRequiredAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act -- route parameters are always required so we test other
+        // parameter sources here.
+        builder.MapGet("/api-1", ([Required] string id) => { });
+        builder.MapGet("/api-2", ([Required] int? age) => { });
+        builder.MapGet("/api-3", ([Required] Guid guid) => { });
+        builder.MapGet("/api-4", ([Required][FromHeader] DateTime date) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            foreach (var path in document.Paths.Values)
+            {
+                var operation = path.Operations[OperationType.Get];
+                var parameter = Assert.Single(operation.Parameters);
+                Assert.True(parameter.Required);
+            }
+        });
+    }
+
     public static object[][] ArrayBasedQueryParameters =>
     [
         [(int[] id) => { }, "integer", false],

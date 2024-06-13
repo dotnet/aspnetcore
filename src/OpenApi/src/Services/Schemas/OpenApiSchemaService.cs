@@ -4,8 +4,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using JsonSchemaMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
@@ -30,7 +32,29 @@ internal sealed class OpenApiSchemaService(
 {
     private readonly OpenApiSchemaStore _schemaStore = serviceProvider.GetRequiredKeyedService<OpenApiSchemaStore>(documentName);
     private readonly OpenApiOptions _openApiOptions = optionsMonitor.Get(documentName);
-    private readonly JsonSerializerOptions _jsonSerializerOptions = jsonOptions.Value.SerializerOptions;
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
+    {
+        // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
+        // setting `JsonPropertyInfo.IsRequired` based on the presence of the `RequiredAttribute`.
+        TypeInfoResolver = jsonOptions.Value.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
+        {
+            if (jsonTypeInfo.Type is Type type)
+            {
+                if (jsonTypeInfo.Kind != JsonTypeInfoKind.Object)
+                {
+                    return;
+                }
+                foreach (var propertyInfo in jsonTypeInfo.Properties)
+                {
+                    var hasRequiredAttribute = propertyInfo.AttributeProvider?
+                        .GetCustomAttributes(inherit: false)
+                        .Any(attr => attr is RequiredAttribute);
+                    propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
+                }
+            }
+        })
+    };
+
     private readonly JsonSchemaMapperConfiguration _configuration = new()
     {
         OnSchemaGenerated = (context, schema) =>
@@ -59,7 +83,6 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
-
         }
     };
 

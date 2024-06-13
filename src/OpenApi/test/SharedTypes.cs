@@ -4,8 +4,8 @@
 // This file contains shared types that are used across tests, sample apps,
 // and benchmark apps.
 
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http;
 
 internal record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 
@@ -71,4 +71,13 @@ internal class PaginatedItems<T>(int pageIndex, int pageSize, long totalItems, i
     public long TotalItems { get; set; } = totalItems;
     public int TotalPages { get; set; } = totalPages;
     public IEnumerable<T> Items { get; set; } = items;
+}
+
+internal class RequiredTodo
+{
+    [Required]
+    public string Title { get; set; } = string.Empty;
+    [Required]
+    public bool Completed { get; set; }
+    public string Assignee { get; set; } = string.Empty;
 }
