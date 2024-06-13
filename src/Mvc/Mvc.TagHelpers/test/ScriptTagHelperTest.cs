@@ -639,21 +639,23 @@ public class ScriptTagHelperTest
     }
 
     [Theory]
-    [InlineData("~/js/site.js")]
-    [InlineData("/js/site.js")]
-    [InlineData("js/site.js")]
-    public void RenderScriptTags_WithFileVersion_UsingResourceCollection(string src)
+    [InlineData("~/js/site.js", "/js/site.fingerprint.js")]
+    [InlineData("/js/site.js", "/js/site.fingerprint.js")]
+    [InlineData("js/site.js", "js/site.fingerprint.js")]
+    public void RenderScriptTags_WithFileVersion_UsingResourceCollection(string src, string expected)
     {
         // Arrange
         var context = MakeTagHelperContext(
             attributes: new TagHelperAttributeList
             {
-                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("src", src),
                     new TagHelperAttribute("asp-append-version", "true")
             });
         var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
-        var helper = GetHelper();
+        var helper = GetHelper(urlHelperFactory: MakeUrlHelperFactory(value =>
+            value.StartsWith("~/", StringComparison.Ordinal) ? value[1..] : value));
+
         helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
         helper.Src = src;
         helper.AppendVersion = true;
@@ -663,7 +665,7 @@ public class ScriptTagHelperTest
 
         // Assert
         Assert.Equal("script", output.TagName);
-        Assert.Equal("/js/site.fingerprint.js", output.Attributes["src"].Value);
+        Assert.Equal(expected, output.Attributes["src"].Value);
     }
 
     [Theory]

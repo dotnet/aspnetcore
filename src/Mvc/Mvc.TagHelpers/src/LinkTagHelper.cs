@@ -531,7 +531,7 @@ public class LinkTagHelper : UrlResolutionTagHelper
             .AppendHtml("\" ");
     }
 
-    private string GetVersionedResourceUrl(string value)
+    private string GetVersionedResourceUrl(string url)
     {
         if (AppendVersion == true)
         {
@@ -539,26 +539,48 @@ public class LinkTagHelper : UrlResolutionTagHelper
             var pathBase = ViewContext.HttpContext.Request.PathBase;
             if (assetCollection != null)
             {
+                var value = url.StartsWith('/') ? url[1..] : url;
+                if (assetCollection.IsContentSpecificUrl(value))
+                {
+                    return url;
+                }
+
                 var src = assetCollection[value];
                 if (!string.Equals(src, value, StringComparison.Ordinal))
                 {
-                    return src;
+                    return url.StartsWith('/') ? $"/{src}" : src;
                 }
-                if (pathBase.HasValue && value.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
+                if (pathBase.HasValue && url.StartsWith(pathBase, StringComparison.OrdinalIgnoreCase))
                 {
-                    var relativePath = value[pathBase.Value.Length..];
+                    var length = pathBase.Value.EndsWith('/') ? pathBase.Value.Length : pathBase.Value.Length + 1;
+                    var relativePath = url[length..];
+                    if (assetCollection.IsContentSpecificUrl(relativePath))
+                    {
+                        return url;
+                    }
+
                     src = assetCollection[relativePath];
                     if (!string.Equals(src, relativePath, StringComparison.Ordinal))
                     {
-                        return src;
+                        if (pathBase.Value.EndsWith('/'))
+                        {
+                            return $"{pathBase}{src}";
+                        }
+                        else
+                        {
+                            return $"{pathBase}/{src}";
+                        }
                     }
                 }
             }
 
-            value = FileVersionProvider.AddFileVersionToPath(pathBase, value);
+            if (url != null)
+            {
+                url = FileVersionProvider.AddFileVersionToPath(pathBase, url);
+            }
         }
 
-        return value;
+        return url;
     }
 
     private ResourceAssetCollection GetAssetCollection()
